@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+:root {
+  --ui-text: var(--ui-color-neutral-600);
+}
+
+html {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #384f85 #f0f0f0; /* thumb + track */
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 5px;   /* super small width */
+  height: 5px;  /* horizontal scrollbar if needed */
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 5px;
+  margin: 2px 0; /* small spacing */
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #384f85, #43A047);
+  border-radius: 5px;
+  border: 1px solid #f0f0f0; /* minimal border to keep thumb visible */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2E3A78, #2E7D32); /* subtle hover */
+}
+
+.dark {
+  --ui-text: var(--color-white);
+}
+
+.text-title {
+  @apply text-4xl text-black font-semibold;
+}
+
+.text-subtitle {
+  @apply text-xl text-black font-semibold;
+}
+
+.text-mute {
+  @apply text-neutral-400;
+}
+
+body {
+  @apply bg-neutral-50 text-neutral-900;
+
+  font-family: var(--font-poppin);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-base);
+}
+
+@theme {
+  --font-poppin: "Poppins", sans-serif;
+  --font-noto-serif: "Noto Serif", "sans-serif";
+  --font-size-base: 13.5px;
+}
+
+@theme static {
+  --color-app-50: #f0f2f8;
+  --color-app-100: #d9dde9;
+  --color-app-200: #b3b9d5;
+  --color-app-300: #8c95c2;
+  --color-app-400: #6670ae;
+  --color-app-500: #415c9b;
+  --color-app-600: #384f85;
+  --color-app-700: #2f406e;
+  --color-app-800: #263257;
+  --color-app-900: #1d2340;
+  --color-app-950: #0f1220;
+
+  --color-sec-50: #e9f5ff;
+  --color-sec-100: #d7edff;
+  --color-sec-200: #b6dbff;
+  --color-sec-300: #8ac2ff;
+  --color-sec-400: #5d99ff;
+  --color-sec-500: #3871ff;
+  --color-sec-600: #1645ff;
+  --color-sec-700: #0b37f7;
+  --color-sec-800: #0d33c6;
+  --color-sec-900: #15339a;
+  --color-sec-950: #04091d;
+
+  --color-menu: #101727;
+
+}
