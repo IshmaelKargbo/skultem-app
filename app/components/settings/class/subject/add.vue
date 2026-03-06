@@ -1,5 +1,5 @@
 <template>
-    <u-slideover fu title="Add Class Subject" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" fu title="Add Class Subject" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
         <UButton color="primary" label="Add Class Subject" icon="prime:plus" @click="open = true" />
 

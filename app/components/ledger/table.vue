@@ -22,20 +22,38 @@ const columns: TableColumn<Ledger> = [
     header: 'Student'
   },
   {
-    accessorKey: 'description',
-    header: 'Description'
+    accessorKey: 'clazz',
+    header: 'Class'
   },
   {
     accessorKey: 'debit',
-    header: 'Debit'
+    header: 'Debit',
+    meta: {
+      class: {
+        th: 'text-right',
+        td: 'text-right'
+      }
+    },
   },
   {
     accessorKey: 'credit',
-    header: 'Credit'
+    header: 'Credit',
+    meta: {
+      class: {
+        th: 'text-right',
+        td: 'text-right'
+      }
+    },
   },
   {
     accessorKey: 'balance',
     header: 'Balance',
+    meta: {
+      class: {
+        th: 'text-right',
+        td: 'text-right'
+      }
+    },
     footer: () => {
       return format(total.value.finalBalance)
     }
@@ -60,7 +78,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
+  get: () => Number(route.query.size ?? runtimeConf().limit),
   set: (val) => updateQuery({ size: val })
 })
 
@@ -111,22 +129,16 @@ onMounted(async () => {
 <template>
   <UCard>
     <UTable :columns="columns" :data="data" :loading="loading" :ui="{
-      tfoot: 'bg-app-50/20'
+      tfoot: 'bg-app-50/10'
     }">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No classes found.</p>
+          <p class="text-gray-500">No ledger record found.</p>
         </div>
       </template>
       <template #debit-cell="{ row }">
         <p class="text-red-400">{{ row.original.debit ? format(row.original.debit || 0) : '-' }}</p>
-      </template>
-      <template #student-cell="{ row }">
-        <div>
-          <p>{{ row.original.student }}</p>
-          <p class="text-mute text-xs">{{ row.original.clazz }}</p>
-        </div>
       </template>
       <template #debit-footer>
         <p class="text-red-400">{{ format(total.totalDebit || 0) }}</p>
@@ -137,8 +149,8 @@ onMounted(async () => {
       <template #credit-footer>
         <p class="text-green-400">{{ format(total.totalCredit || 0) }}</p>
       </template>
-      <template #type-cell="{ getValue }">
-        <UBadge variant="subtle" :color="parseTypeColor[getValue()]" :label="parseType[getValue()]" />
+      <template #type-cell="{ row }">
+        <UBadge variant="subtle" :color="parseTypeColor[row.original.type]" :label="parseType[row.original.type]" />
       </template>
       <template #balance-cell="{ row }">
         <p>{{ format(row.original.balance || 0) }}</p>

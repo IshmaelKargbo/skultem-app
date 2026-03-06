@@ -4,31 +4,22 @@
 
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg text-gray-800">
+                    <h2 class="text-xl font-semibold">
                         Assign Subjects to Class
                     </h2>
                     <p class="text-sm text-mute">
                         Define the curriculum structure for this class.
                     </p>
                 </div>
-
-                <div v-if="state.classId" class="flex gap-3">
-                    <UButton type="submit" color="primary" icon="mynaui:save" label="Save Changes" :loading="saving" />
-                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
-                </div>
+                <UFormField class="min-w-sm" label="Select Class" name="classId">
+                    <USelect :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
+                        :items="classes" placeholder="Choose a class" />
+                </UFormField>
             </div>
-
-            <div class="px-6 py-4 bg-gray-50/20 border-b border-gray-100">
-                <div class="max-w-sm">
-                    <UFormField label="Select Class" name="classId">
-                        <USelect :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
-                            :items="classes" placeholder="Choose a class" />
-                    </UFormField>
-                </div>
-            </div>
-
             <div v-if="state.classId" class="px-6 py-3">
-
+                <div v-if="lockedCount > 0" class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    {{ lockedCount }} subject(s) are locked because student assessments already have grades. Locked rows are view-only.
+                </div>
                 <!-- Section Header -->
                 <div class="flex items-center border-b pb-3 border-gray-200 justify-between">
                     <h3 class="text-sm font-semibold text-gray-700">
@@ -54,33 +45,31 @@
                     <template #subjectId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.subjectId`">
                             <USelect :items="availableSubjects(row.index)" :loading="subjectStore.loading"
-                                placeholder="Select Subject" v-model="row.original.subjectId" />
+                                placeholder="Select Subject" v-model="row.original.subjectId" :disabled="Boolean(row.original.locked)" />
                         </UFormField>
                     </template>
 
                     <!-- Group -->
                     <template #groupId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.groupId`">
-                            <USelect :loading="subjectGroupStore.loading" :items="groups" placeholder="Select Group"
-                                v-model="row.original.groupId" />
+                            <USelect :loading="subjectGroupStore.loading" :items="groups"
+                                placeholder="Select Group" v-model="row.original.groupId" :disabled="disableByLevel || Boolean(row.original.locked)" />
                         </UFormField>
                     </template>
 
                     <!-- Mandatory Badge -->
                     <template #mandatory-cell="{ row }">
-                        <div class="flex justify-center">
-                            <UBadge v-if="row.original.mandatory" color="primary" variant="soft" label="Core"
-                                class="cursor-pointer" @click="row.original.mandatory = false" />
-                            <UBadge v-else color="neutral" variant="outline" label="Optional" class="cursor-pointer"
-                                @click="row.original.mandatory = true" />
+                        <div class="flex">
+                            <USwitch :disabled="disableByLevel || Boolean(row.original.locked)" label="Mandatory" v-model="row.original.mandatory" />
                         </div>
                     </template>
 
                     <!-- Actions -->
                     <template #actions-cell="{ row }">
                         <div class="flex justify-end">
-                            <UButton v-if="showDelete()" @click="remove(row.index)" variant="ghost" color="error"
+                            <UButton v-if="showDelete() && !row.original.locked" @click="remove(row.index)" variant="ghost" color="error"
                                 icon="mynaui:trash" />
+                            <UBadge v-else-if="row.original.locked" color="neutral" variant="soft" label="Locked" />
                         </div>
                     </template>
                 </UTable>
@@ -100,7 +89,10 @@
                         {{state.assignments.filter(a => !a.mandatory).length}}
                     </strong>
                 </div>
-
+                <div class="flex gap-3 border-t border-gray-200 py-4 mt-3">
+                    <UButton type="submit" color="primary" icon="mynaui:save" label="Save Changes" :loading="saving" />
+                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
+                </div>
             </div>
         </div>
     </UForm>
@@ -117,6 +109,8 @@ const subjectGroupStore = useSubjectGroupStore()
 const toast = useToast()
 
 const saving = ref(false)
+
+const disableByLevel = computed(() => selectedClass.value?.classLevel == 'PRIMARY')
 
 type ClassSubjectForm = {
     classId: string
@@ -142,21 +136,22 @@ const columns: TableColumn<any>[] = [
     { accessorKey: 'subjectId', header: 'Subject' },
     { accessorKey: 'groupId', header: 'Group' },
     {
-        accessorKey: 'mandatory', header: 'Type', meta: {
-            class: {
-                th: 'text-center'
-            }
-        }
+        accessorKey: 'mandatory', header: 'Type'
     },
     { id: 'actions' }
 ]
 
 const classes = computed(() =>
     classStore.records.filter(e => (e.classLevel != 'SSS')).map(e => ({
-        label: parseClassSession(e),
+        label: e.clazz,
         value: e.clazzId
     }))
 )
+
+const selectedClass = computed(() =>
+    classStore.records.find(e => (e.clazzId == state.classId))
+)
+const lockedCount = computed(() => state.assignments.filter(item => item.locked).length)
 
 const groups = ref<{ label: string; value: string }[]>([])
 
@@ -176,11 +171,19 @@ function add() {
     state.assignments.push({
         subjectId: '',
         groupId: '',
-        mandatory: false
+        mandatory: disableByLevel ? true : false,
+        locked: false
     })
 }
 
 function remove(index: number) {
+    if (state.assignments[index]?.locked) {
+        toast.add({
+            description: 'Locked subjects cannot be removed',
+            color: 'warning'
+        })
+        return
+    }
     state.assignments.splice(index, 1)
 }
 
@@ -199,7 +202,8 @@ async function fetchRecord() {
         state.assignments = list.map((e: ClassSubject) => ({
             subjectId: e.subjectId,
             groupId: e.groupId,
-            mandatory: e.mandatory
+            mandatory: e.mandatory,
+            locked: Boolean(e.locked)
         }))
     } else {
         state.assignments = []

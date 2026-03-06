@@ -1,5 +1,5 @@
 <template>
-    <u-slideover title="Add Holiday" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" title="Add Holiday" :open="open" @update:open="open = $event">
 
         <!-- Trigger -->
         <UButton color="primary" label="Add Holiday" icon="prime:plus" @click="open = true" />

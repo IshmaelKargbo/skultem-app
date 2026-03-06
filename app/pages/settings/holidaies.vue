@@ -23,6 +23,6 @@ const page = ref(1)
 const { meta, loading } = storeToRefs(useHolidayStore())
 onMounted(() => {
     useAppStore().setTitle('Halidaies')
-    document.title = 'Halidaies | Skultem'
+    document.title = 'Holidays | Settings | Skultem'
 })
 </script>

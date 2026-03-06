@@ -4,28 +4,18 @@
 
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg text-gray-800">
+                    <h2 class="text-xl font-semibold text-gray-800">
                         Assign Class Subjects to Teacher
                     </h2>
                     <p class="text-sm text-mute">
                         Define the curriculum structure for this class.
                     </p>
                 </div>
-                <div v-if="state.classId" class="flex gap-3">
-                    <UButton type="submit" color="primary" icon="mynaui:save" label="Save Changes" :loading="saving" />
-                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
-                </div>
+                <UFormField class="w-1/3" label="Select Class" name="classId">
+                    <USelect :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
+                        :items="classes" placeholder="Choose a class" />
+                </UFormField>
             </div>
-
-            <div class="px-6 py-4 bg-gray-50/20 border-b border-gray-100">
-                <div class="max-w-sm">
-                    <UFormField label="Select Class" name="classId">
-                        <USelect :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
-                            :items="classes" placeholder="Choose a class" />
-                    </UFormField>
-                </div>
-            </div>
-
             <div v-if="state.classId" class="px-6 py-3">
 
                 <!-- Section Header -->
@@ -33,8 +23,6 @@
                     <h3 class="text-sm font-semibold text-gray-700">
                         Subject Assignments ({{ state.assignments.length }})
                     </h3>
-
-                    <UButton variant="soft" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
                 </div>
 
                 <!-- Empty State -->
@@ -43,63 +31,29 @@
                     <p class="text-sm text-gray-500 mb-4">
                         No subjects assigned yet.
                     </p>
-                    <UButton icon="prime:plus" label="Add First Subject" @click="add" />
                 </div>
 
                 <!-- Table -->
                 <UTable v-else :columns="columns" :loading="store.loading" :data="state.assignments">
-
                     <!-- Subject -->
                     <template #subjectId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.subjectId`">
-                            <USelect :items="availableSubjects(row.index)" :loading="subjectStore.loading"
+                            <USelect disabled :items="subjects" :loading="subjectStore.loading"
                                 placeholder="Select Subject" v-model="row.original.subjectId" />
                         </UFormField>
                     </template>
-
-                    <!-- Group -->
-                    <template #groupId-cell="{ row }">
-                        <UFormField :name="`assignments.${row.index}.groupId`">
-                            <USelect :loading="subjectGroupStore.loading" :items="groups" placeholder="Select Group"
-                                v-model="row.original.groupId" />
+                    <!-- Teacher -->
+                    <template #teacherId-cell="{ row }">
+                        <UFormField :name="`assignments.${row.index}.teacherId`">
+                            <USelect :loading="teacherStore.loading" :items="teachers" placeholder="Select Teacher"
+                                v-model="row.original.teacherId" />
                         </UFormField>
                     </template>
-
-                    <!-- Mandatory Badge -->
-                    <template #mandatory-cell="{ row }">
-                        <div class="flex justify-center">
-                            <UBadge v-if="row.original.mandatory" color="primary" variant="soft" label="Core"
-                                class="cursor-pointer" @click="row.original.mandatory = false" />
-                            <UBadge v-else color="neutral" variant="outline" label="Optional" class="cursor-pointer"
-                                @click="row.original.mandatory = true" />
-                        </div>
-                    </template>
-
-                    <!-- Actions -->
-                    <template #actions-cell="{ row }">
-                        <div class="flex justify-end">
-                            <UButton v-if="showDelete()" @click="remove(row.index)" variant="ghost" color="error"
-                                icon="mynaui:trash" />
-                        </div>
-                    </template>
                 </UTable>
-
-                <!-- Summary -->
-                <div v-if="state.assignments.length" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-                    Total Subjects:
-                    <strong>{{ state.assignments.length }}</strong>
-                    |
-                    Core:
-                    <strong>
-                        {{state.assignments.filter(a => a.mandatory).length}}
-                    </strong>
-                    |
-                    Optional:
-                    <strong>
-                        {{state.assignments.filter(a => !a.mandatory).length}}
-                    </strong>
+             <div class="flex gap-3 py-4 border-t border-gray-200">
+                    <UButton type="submit" color="primary" icon="mynaui:save" label="Save Changes" :loading="saving" />
+                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
                 </div>
-
             </div>
         </div>
     </UForm>
@@ -109,17 +63,17 @@
 import type { TableColumn } from '@nuxt/ui'
 import * as yup from 'yup'
 
-const store = useClassSubjectStore()
+const store = useTeacherSubjectStore()
 const subjectStore = useSubjectStore()
 const classStore = useClassSessionStore()
-const subjectGroupStore = useSubjectGroupStore()
+const teacherStore = useTeacherStore()
 const toast = useToast()
 
 const saving = ref(false)
 
 type ClassSubjectForm = {
     classId: string
-    assignments: AssignmentSubject[]
+    assignments: AssignmentTeacherSubject[]
 }
 
 const state = reactive<ClassSubjectForm>({
@@ -132,85 +86,53 @@ const schema = yup.object({
     assignments: yup.array().of(
         yup.object({
             subjectId: yup.string().required('Subject is required'),
-            mandatory: yup.boolean().required()
+            teacherId: yup.string().required('Teacher is required')
         })
     )
 })
 
 const columns: TableColumn<any>[] = [
     { accessorKey: 'subjectId', header: 'Subject' },
-    { accessorKey: 'groupId', header: 'Group' },
-    {
-        accessorKey: 'mandatory', header: 'Type', meta: {
-            class: {
-                th: 'text-center'
-            }
-        }
-    },
-    { id: 'actions' }
+    { accessorKey: 'teacherId', header: 'Teacher' }
 ]
 
 const classes = computed(() =>
-    classStore.records.filter(e => (e.classLevel != 'SSS')).map(e => ({
+    classStore.records.map(e => ({
         label: parseClassSession(e),
-        value: e.clazzId
+        value: e.id
     }))
 )
 
-const groups = ref<{ label: string; value: string }[]>([])
+const teachers = computed(() =>
+    teacherStore.records.map(e => ({
+        label: `${e.user.givenNames} ${e.user.familyName}`,
+        value: e.id
+    }))
+)
 
-const availableSubjects = (index: number) => {
-    const selected = state.assignments
-        .map((a, i) => (i !== index ? a.subjectId : null))
-        .filter(Boolean)
-
-    return subjectStore.records
-        .filter(s => !selected.includes(s.id))
-        .map(s => ({ label: s.name, value: s.id }))
-}
-
-const showDelete = () => state.assignments.length > 1
-
-function add() {
-    state.assignments.push({
-        subjectId: '',
-        groupId: '',
-        mandatory: false
-    })
-}
-
-function remove(index: number) {
-    state.assignments.splice(index, 1)
-}
+const subjects = computed(() =>
+    subjectStore.records.map(e => ({
+        label: e.name,
+        value: e.id
+    }))
+)
 
 function resetForm() {
     state.classId = ''
     state.assignments = []
-    navigateTo("/curriculums/class-subjects")
+    navigateTo("/curriculums/teacher-assignment")
 }
 
 async function fetchRecord() {
     if (!state.classId) return
-
+    state.assignments = []
     const list = await store.fetchAllByClass(state.classId, 0, 0)
 
     if (list && list.length) {
-        state.assignments = list.map((e: ClassSubject) => ({
+        state.assignments = list.map((e: TeacherSubject) => ({
+            id: e.id,
             subjectId: e.subjectId,
-            groupId: e.groupId,
-            mandatory: e.mandatory
-        }))
-    } else {
-        state.assignments = []
-        add()
-    }
-
-    const groupRes = await subjectGroupStore.fetchAllByClass(state.classId)
-
-    if (groupRes) {
-        groups.value = groupRes.map((e: SubjectGroup) => ({
-            label: `${e.name} (${e.minSelection}/${e.maxSelection})`,
-            value: e.id
+            teacherId: e.teacherId
         }))
     }
 }
@@ -225,11 +147,11 @@ async function onSubmit() {
 
         toast.add({
             title: 'Success',
-            description: 'Class subjects assign successfully',
+            description: 'Teacher subjects assign successfully',
             color: 'success'
         })
 
-        navigateTo('/curriculums/class-subjects')
+        navigateTo('/curriculums/teacher-assignment')
 
     } catch (err: any) {
         toast.add({
@@ -244,7 +166,8 @@ async function onSubmit() {
 onMounted(() => {
     subjectStore.fetchAll(0, 0)
     classStore.fetchAll(0, 0)
-    useAppStore().setTitle('Assign Class Subject')
-    document.title = 'Class Subjects | Assign Class Subject | Skultem'
+    teacherStore.fetchAll(0, 0)
+    useAppStore().setTitle('Assign Teacher Subject')
+    document.title = 'Teacher Subject | Assign Teacher Subject | Skultem'
 })
 </script>

@@ -2,7 +2,7 @@
     <u-slideover :dismissible="false" title="Create Discount" :open="open" @update:open="open = $event">
 
         <!-- Trigger -->
-        <UButton variant="subtle" color="primary" label="Create Discount" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Create Discount" icon="prime:plus" @click="open = true" />
 
         <!-- Header -->
         <template #header>
@@ -100,7 +100,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <UButton icon="mynaui:save" :loading="isLoading" label="Save" variant="subtle"
+                <UButton icon="mynaui:save" :loading="isLoading" label="Save"
                     @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>

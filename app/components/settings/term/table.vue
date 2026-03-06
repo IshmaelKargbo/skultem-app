@@ -37,20 +37,14 @@ const colums: TableColumn<Term> = [
     header: 'Name'
   },
   {
-    accessorKey: 'academicYearId',
-    header: 'Academic Year'
-  },
-  {
     accessorKey: 'startDate',
-    header: 'Start Date'
+    header: 'Start Date',
+    cell: ({ row }: any) => formatDate(row.original.startDate)
   },
   {
     accessorKey: 'endDate',
-    header: 'End Date'
-  },
-  {
-    accessorKey: 'termNumber',
-    header: 'Term Number',
+    header: 'End Date',
+    cell: ({ row }: any) => formatDate(row.original.endDate)
   },
   {
     accessorKey: 'status',
@@ -150,9 +144,6 @@ onMounted(async () => {
         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
         <p class="text-gray-500">No academic years found.</p>
       </div>
-    </template>
-    <template #termNumber-cell="{ row }">
-      <p>Term {{ row.original.termNumber }}</p>
     </template>
     <template #academicYearId-cell="{ row }">
       <p>{{ row.original.academicYear.name }}</p>

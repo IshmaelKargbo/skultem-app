@@ -1,5 +1,5 @@
 <template>
-  <USlideover v-model:open="open">
+  <USlideover :dismissible="false" v-model:open="open">
     <!-- Trigger -->
     <UButton color="info" label="Assign Class Master" icon="hugeicons:assignments" @click="open = true" />
 

@@ -4,7 +4,7 @@ export const AcademicYearApi = () => {
   return {
     getAll: async (page: number, size: number) => {
       try {
-        const res = await $api(`/academic_year?page=${page}&size=${size}`) as any
+        const res = await $api(`/academic-year?page=${page}&size=${size}`) as any
 
         if (!res)
           throw new Error('Failed to fetch academic years')
@@ -20,7 +20,7 @@ export const AcademicYearApi = () => {
     },
     create: async (payload: CreateAcademicYearDto) => {
       try {
-        return await $api('/academic_year', {
+        return await $api('/academic-year', {
           method: 'POST',
           body: payload
         })
@@ -30,7 +30,7 @@ export const AcademicYearApi = () => {
     },
     getOne: async (id: string) => {
       try {
-        const res = await $api(`/academic_year/${id}`) as any
+        const res = await $api(`/academic-year/${id}`) as any
 
         if (!res)
           throw new Error('Failed to fetch academic year')

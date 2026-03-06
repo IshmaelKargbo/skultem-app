@@ -1,5 +1,5 @@
 <template>
-    <u-slideover title="Add Subject" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" title="Add Subject" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
         <UButton color="primary" label="Add Subject" icon="prime:plus" @click="open = true" />
 
@@ -16,19 +16,19 @@
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
                 <UFormField required label="Name" name="name">
                     <UInput v-model="state.name" placeholder="e.g. Mathematics" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">Enter the name of the subject (e.g. Mathematics).</p>
                     </template>
                 </UFormField>
                 <UFormField required label="Code" name="code">
                     <UInput v-model="state.code" placeholder="e.g. MATH101" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">Enter the code for this subject (e.g. MATH101).</p>
                     </template>
                 </UFormField>
                 <UFormField required label="Description" name="description">
                     <UTextarea v-model="state.description" placeholder="Enter description" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">Enter the description of the subject.</p>
                     </template>
                 </UFormField>

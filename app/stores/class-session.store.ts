@@ -22,5 +22,18 @@ export const useClassSessionStore = defineStore('classSession', {
         this.loading = false
       }
     },
+    async fetchAllUnassign(page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await ClassApi().getAllUnassignClassSessions(page, size) as any
+        this.records = response.data || []
+        this.meta = response.meta || {} as Meta
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class sessions'
+      } finally {
+        this.loading = false
+      }
+    },
   }
 })

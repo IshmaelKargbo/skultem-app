@@ -1,5 +1,5 @@
 <template>
-    <u-slideover title="Add Stream" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" title="Add Stream" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
         <UButton color="primary" label="Add Stream" icon="prime:plus" @click="open = true" />
 

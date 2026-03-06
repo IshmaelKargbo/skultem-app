@@ -7,19 +7,9 @@ const config: Config = {
   ],
   darkMode: false,
   theme: {
-    extend: {
-      borderRadius: {
-        xl: '1rem',
-      },
-      spacing: {
-        18: '4.5rem',
-        22: '5.5rem',
-      },
-    },
+    extend: {},
   },
-  plugins: [
-    // require('@tailwindcss/typography'),
-  ],
+  plugins: [],
 }
 
 export default config

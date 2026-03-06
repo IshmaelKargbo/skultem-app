@@ -23,9 +23,7 @@ const page = ref(1);
 const { meta } = storeToRefs(useAcademicYearStore());
 
 onMounted(() => {
-    useAppStore().setTitle('Academic Years');
-    definePageMeta({
-        title: 'Academic Years'
-    })
+    useAppStore().setTitle('Academic Years')
+    document.title = 'Academic Years | Settings | Skultem'
 })
 </script>

@@ -5,6 +5,8 @@ export type Student = {
     admissionNumber: string
     dateOfBirth: string
     gender: string
+    className: string
+    classId: string
     status: string
     createdAt: string
     updatedAt: string
@@ -36,4 +38,6 @@ export type CreateStudentDto = {
     academicNumber: string
     dateOfBirth: string
     gender: string
+    classSessionId: string
+    selectedOptionIds?: string[]
 }

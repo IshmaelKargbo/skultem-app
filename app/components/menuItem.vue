@@ -46,7 +46,7 @@
           :class="isActiveSub(nav) ? 'bg-app-800 font-semibold text-blue-400' : 'text-gray-400'"
         >
           <!-- Optional icon -->
-          <span v-if="nav.icon" class="w-4 h-4 flex-shrink-0">
+          <span v-if="nav.icon" class="w-4 h-4 shrink-0">
             <component :is="nav.icon" />
           </span>
           <span>{{ nav.label }}</span>

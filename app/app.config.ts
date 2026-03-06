@@ -26,8 +26,7 @@ export default defineAppConfig({
     },
     table: {
       slots: {
-        tr: 'hover:bg-app-50/20',
-        thead: 'hover:bg-white'
+        tr: 'hover:bg-app-50/20'
       }
     },
     card: {
@@ -63,6 +62,14 @@ export default defineAppConfig({
       },
       slots: {
         base: 'w-full',
+      }
+    },
+    selectMenu: {
+      slots: {
+        base: 'w-full'
+      },
+      defaultVariants: {
+        size: "lg"
       }
     },
     button: {

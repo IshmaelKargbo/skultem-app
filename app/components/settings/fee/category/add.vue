@@ -1,5 +1,5 @@
 <template>
-    <USlideover v-model:open="open">
+    <USlideover :dismissible="false" v-model:open="open">
         <!-- Trigger -->
         <UButton color="primary" label="Fee Category" icon="prime:plus" @click="open = true" />
 

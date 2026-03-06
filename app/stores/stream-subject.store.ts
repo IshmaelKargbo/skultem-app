@@ -35,8 +35,6 @@ export const useStreamSubjectStore = defineStore('streamSubject', {
       }
     },
     create(id: string, payload: CreateStreamSubjectDto) {
-      console.log(payload);
-      
       return StreamSubjectApi().create(id, payload)
     }
   }

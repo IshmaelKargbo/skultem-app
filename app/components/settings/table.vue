@@ -38,11 +38,13 @@ const colums: TableColumn<AcademicYear> = [
   },
   {
     accessorKey: 'startDate',
-    header: 'Start Date'
+    header: 'Start Date',
+    cell: ({ row }: any) => formatDate(row.original.startDate)
   },
   {
     accessorKey: 'endDate',
-    header: 'End Date'
+    header: 'End Date',
+    cell: ({ row }: any) => formatDate(row.original.endDate)
   },
   {
     accessorKey: 'active',
@@ -148,7 +150,7 @@ onMounted(async () => {
       </div>
     </template>
     <template #active-cell="{ row }">
-      <USwitch v-model="row.original.active" />
+      <UBadge :label="row.original.active ? 'Yes' : 'No'" variant="outline" />
     </template>
     <template #status-cell="{ row }">
       <UBadge variant="subtle" :color="parseStatusColor[row.original.status]">

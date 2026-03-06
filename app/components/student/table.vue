@@ -5,8 +5,7 @@ import type { Row } from '@tanstack/vue-table'
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
-const loading = ref(true)
-const { records: data } = storeToRefs(store)
+const { records: data, meta, loading } = storeToRefs(store)
 
 const editRcord = ref<Student | null>(null)
 const editState = ref(false)
@@ -56,7 +55,7 @@ const columns: TableColumn<Student> = [
     header: 'Gender'
   },
   {
-    accessorKey: 'clazz',
+    accessorKey: 'className',
     header: 'Class'
   },
   {
@@ -117,7 +116,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
+  get: () => Number(route.query.size ?? runtimeConf().limit),
   set: (val) => updateQuery({ size: val })
 })
 
@@ -134,6 +133,23 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
+async function fetchRecord() {
+  loading.value = true
+  await store.fetchAll(page.value, size.value)
+  loading.value = false
+}
+
+watch(() => page.value, () => {
+  router.replace({
+    query: {
+      page: page.value,
+      size: size.value
+    }
+  })
+
+  fetchRecord()
+}, { immediate: true })
+
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
@@ -144,38 +160,31 @@ onMounted(async () => {
     })
   }
 
-  loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
+  fetchRecord()
 })
 </script>
 
 <template>
-  <UTable :columns="columns" :data="data" :loading="loading">
-    <template #empty-state>
-      <div class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No students found.</p>
-      </div>
-    </template>
-    <template #status-cell="{ row }">
-      <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-        :icon="parseStatusIcon[row.original.status]" variant="outline" />
-    </template>
-    <template #clazz-cell="{ row }">
-      <StudentEnrollment :id="row.original.id">
-        <template #default="{ value }">
-          <div class="flex">
-            <p>{{ parseClass(value) }}</p>
-          </div>
-        </template>
-        <template #empty-state>
-          <p class="text-gray-300">N/A</p>
-        </template>
-      </StudentEnrollment>
-    </template>
-    <template #gender-cell="{ row }">
-      <UBadge :label="parseGender[row.original.gender]" color="neutral" variant="outline" />
-    </template>
-  </UTable>
+  <div>
+    <UTable :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No students found.</p>
+        </div>
+      </template>
+      <template #status-cell="{ row }">
+        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
+          :icon="parseStatusIcon[row.original.status]" variant="outline" />
+      </template>
+      <template #gender-cell="{ row }">
+        <UBadge :label="parseGender[row.original.gender]" color="neutral" variant="outline" />
+      </template>
+    </UTable>
+    <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
+    </div>
+  </div>
 </template>

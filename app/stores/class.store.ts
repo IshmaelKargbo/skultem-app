@@ -43,6 +43,9 @@ export const useClassStore = defineStore('class', {
     },
     findClassMaster(id: string) {
       return ClassApi().getCurrentClassMaster(id) 
+    },
+    updateTemplate(classId: string, templateId: string) {
+      return ClassApi().updateTemplate(classId, templateId)
     }
   }
 })

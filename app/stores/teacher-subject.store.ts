@@ -34,7 +34,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
         this.loading = false
       }
     },
-    create(id: string, payload: CreateClassSubjectDto) {
+    create(id: string, payload: CreateTeacherSubjectDto) {
       return TeacherSubjectApi().create(id, payload)
     }
   }

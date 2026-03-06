@@ -126,6 +126,7 @@ function getRowItems(row: Row<StudentFee>) {
     }
   ]
 }
+
 const parseStatusColor: Record<string, string> = {
   "Paid": "success",
   "Partial": "warning",

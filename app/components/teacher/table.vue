@@ -45,11 +45,12 @@ const columns: TableColumn<Teacher> = [
     header: 'Phone'
   },
   {
-    id: 'street',
-    header: 'Address',
-    cell: ({ row }: any) => {
-      return h('p', {}, row.original.address.street)
-    }
+    accessorKey: 'city',
+    header: 'City'
+  },
+  {
+    accessorKey: 'street',
+    header: 'Street'
   },
   {
     accessorKey: 'status',

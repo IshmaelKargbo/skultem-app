@@ -2,7 +2,7 @@
     <div class="p-5">
         <UCard>
             <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-lg font-normal">Sections Management</p>
+                <p class="text-xl font-semibold">Sections Management</p>
                 <div>
                     <CurriculumsSectionAdd />
                 </div>

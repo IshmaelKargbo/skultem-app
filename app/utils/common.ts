@@ -17,6 +17,13 @@ export type AssignmentSubject = {
     subjectId: string
     groupId: string
     mandatory: boolean
+    locked?: boolean
+}
+
+export type AssignmentTeacherSubject = {
+    id: string
+    subjectId: string
+    teacherId: string
 }
 
 export const runtimeConf = () => {
@@ -44,10 +51,10 @@ export function parseClass(clazz: Enrollment) {
 
 
 export function parseClassSession(clazz: ClassSession) {
-    let value = `${clazz.clazz} ( ${clazz.sectionName} )`
+    let value = `${clazz.clazz} (${clazz.sectionName})`
 
     if (!clazz.streamId) return value;
-    return `${clazz.clazz} ( ${clazz.sectionName} - ${clazz.streamName} )`
+    return `${clazz.clazz} (${clazz.sectionName} - ${clazz.streamName})`
 }
 
 export function formatDate(dateStr: string): string {

@@ -15,12 +15,12 @@
 
                 <!-- Name -->
                 <UFormField required label="Group Name" name="name">
-                    <UInput v-model="state.name" placeholder="e.g. Core Subjects" :disabled="isLoading" />
+                    <UInput v-model="state.name" placeholder="e.g. Optional Subjects" :disabled="isLoading" />
                 </UFormField>
 
                 <!-- Level -->
                 <UFormField required label="Level" name="level">
-                    <USelect v-model="state.level" :items="levels" placeholder="Select Level" />
+                    <USelect v-model="state.level" :items="levelsXPrimary" placeholder="Select Level" />
                 </UFormField>
 
                 <!-- Class -->
@@ -33,34 +33,10 @@
                     <USelect v-model="state.streamId" :items="streams" placeholder="Select Stream" />
                 </UFormField>
 
-                <!-- Required -->
-                <UFormField name="required">
-                    <div class="flex justify-between w-full py-2.5">
-                        <div>
-                            <p class="font-medium">Is Required?</p>
-                            <p class="text-xs text-muted">
-                                Enable if students must choose from this group.
-                            </p>
-                        </div>
-                        <USwitch v-model="state.required" :disabled="isLoading" />
-                    </div>
+                <!-- Total Selection -->
+                <UFormField required label="Total Selection" name="totalSelection">
+                    <UInput type="number" v-model.number="state.totalSelection" placeholder="e.g. 1" />
                 </UFormField>
-
-                <!-- Min Selection -->
-                <UFormField required label="Minimum Selection" name="minSelection">
-                    <UInput type="number" v-model.number="state.minSelection" placeholder="e.g. 1" />
-                </UFormField>
-
-                <!-- Max Selection -->
-                <UFormField required label="Maximum Selection" name="maxSelection">
-                    <UInput type="number" v-model.number="state.maxSelection" placeholder="e.g. 3" />
-                </UFormField>
-
-                <!-- Display Order -->
-                <UFormField label="Display Order" name="displayOrder">
-                    <UInput type="number" v-model.number="state.displayOrder" placeholder="Optional" />
-                </UFormField>
-
             </UForm>
         </template>
 
@@ -94,6 +70,8 @@ const streams = computed(() =>
     }))
 )
 
+const levelsXPrimary = computed(() => levels.filter(e => (e.label.toUpperCase() != "PRIMARY")))
+
 const classes = computed(() =>
     classStore.records.filter(e => (e.level.toLowerCase() == state.level?.toLowerCase())).map(s => ({
         label: s.name,
@@ -106,21 +84,15 @@ type SubjectGroupForm = {
     level: Level | null
     classId: string
     streamId: string
-    required: boolean
-    minSelection: number | null
-    maxSelection: number | null
-    displayOrder: number | null
+    totalSelection: number | null
 }
 
 const state = reactive<SubjectGroupForm>({
     name: '',
     level: null,
     streamId: '',
-    required: false,
     classId: '',
-    minSelection: null,
-    maxSelection: null,
-    displayOrder: null
+    totalSelection: null
 })
 
 const schema = yup.object({
@@ -146,19 +118,11 @@ const schema = yup.object({
             otherwise: schema =>
                 schema.nullable()
         }),
-    minSelection: yup
+    totalSelection: yup
         .number()
-        .typeError('Min must be a number')
-        .required('Min selection is required')
-        .min(0),
-    maxSelection: yup
-        .number()
-        .typeError('Max must be a number')
-        .required('Max selection is required')
-        .min(
-            yup.ref('minSelection'),
-            'Max must be greater than or equal to Min'
-        )
+        .typeError('Total must be a number')
+        .required('Total selection is required')
+        .min(1, "Total minimum selection must be 1"),
 })
 
 const close = () => {
@@ -167,10 +131,7 @@ const close = () => {
         name: '',
         level: '',
         streamId: '',
-        required: false,
-        minSelection: null,
-        maxSelection: null,
-        displayOrder: null
+        totalSelection: null,
     })
 }
 
@@ -180,13 +141,9 @@ const onSubmit = async (event: FormSubmitEvent<SubjectGroupForm>) => {
         await schema.validate(state, { abortEarly: false })
 
         await store.create({
-            displayOrder: state.displayOrder || 1,
-            level: state.level?.toUpperCase() || '',
-            maxSelection: state.maxSelection || 1,
-            minSelection: state.minSelection || 1,
+            totalSelection: state.totalSelection || 1,
             name: state.name,
             classId: state.classId,
-            required: state.required,
             streamId: state.streamId
         })
 

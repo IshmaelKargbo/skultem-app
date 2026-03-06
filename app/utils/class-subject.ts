@@ -9,6 +9,7 @@ export type ClassSubject = {
     teacherId: string
     groupId: string
     groupName: string
+    locked?: boolean
     createdAt: string
     updatedAt: string
 }

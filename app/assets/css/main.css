@@ -51,15 +51,16 @@ html {
 body {
   @apply bg-neutral-50 text-neutral-900;
 
-  font-family: var(--font-poppin);
+  font-family: var(--font-app);
   font-weight: var(--font-weight-normal);
   font-size: var(--font-size-base);
+  line-height: 1.45;
 }
 
 @theme {
-  --font-poppin: "Poppins", sans-serif;
+  --font-app: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-noto-serif: "Noto Serif", "sans-serif";
-  --font-size-base: 13.5px;
+  --font-size-base: 14px;
 }
 
 @theme static {

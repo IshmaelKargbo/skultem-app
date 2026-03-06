@@ -24,8 +24,6 @@ const { meta } = storeToRefs(useTermStore());
 
 onMounted(() => {
     useAppStore().setTitle('Fee Categories');
-    definePageMeta({
-        title: 'Fee Categories'
-    })
+    document.title = 'Fee Categories | Settings | Skultem';
 })
 </script>

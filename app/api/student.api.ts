@@ -48,21 +48,6 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
-    getAllStudentByClass: async (id: string) => {
-      try {
-        const res = await $api(`/report/finance/outstanding/list?studentId=${id}`) as any
-
-        if (!res)
-          throw new Error('Failed to fetch student fees')
-
-        const data = res.data
-
-        return { data }
-
-      } catch (err: any) {
-        useHandleError(err)
-      }
-    },
     getCurrentEnrollment: async (id: string) => {
       try {
         const res = await $api(`/enrollment/student/${id}`) as any

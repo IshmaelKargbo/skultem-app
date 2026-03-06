@@ -1,5 +1,5 @@
 <template>
-  <div class="w-62 border-r flex flex-col border-gray-200 bg-menu text-white">
+  <div class="border-r flex flex-col border-gray-200 bg-menu text-white">
     <!-- Header -->
     <div class="flex h-14 p-4 px-5 border-b border-gray-800 space-x-2 items-center">
       <nuxt-link to="/">
@@ -17,7 +17,29 @@
           </template>
           </MenuItem>
         </li>
+        <li>
+          <MenuItem label="Grades" :subNavs="[
+            { label: 'Grade Assignment', to: '/grades', icon: 'si:assignment-line', exact: true },
+            { label: 'Grade Approval', to: '/grades/approval', icon: 'material-symbols:order-approve-outline' }
+          ]">
+          <template #icon>
+            <UIcon class="text-xl" name="carbon:cobol-upgrade-advisor" />
+          </template>
 
+          <!-- Subnav Slot -->
+          <template #subNav="{ subNavs, isActiveSub }">
+            <div class="flex flex-col space-y-1">
+              <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
+                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-gray-400'">
+                <!-- Subnav icon -->
+                <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
+                <span>{{ nav.label }}</span>
+              </NuxtLink>
+            </div>
+          </template>
+          </MenuItem>
+        </li>
         <li>
           <MenuItem label="Attendance" to="/attendance">
           <template #icon>

@@ -1,5 +1,5 @@
 <template>
-    <u-slideover title="Add Section" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" title="Add Section" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
         <UButton color="primary" label="Add Section" icon="prime:plus" @click="open = true" />
 

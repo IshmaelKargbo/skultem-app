@@ -2,7 +2,8 @@ export type Teacher = {
     id: string
     user: User
     staffId: string
-    address: Address
+    street: string
+    city: string
     phone: string
     status: string
     createdAt: string
@@ -31,13 +32,15 @@ export type TeacherSubject = {
     updatedAt: string
 }
 
+export type CreateTeacherSubjectDto = {
+    assignments: AssignmentTeacherSubject[]
+}
+
 export type CreateTeacherDto = {
     givenNames: string
     familyName: string
     staffId: string
-    region: string
-    district: string
-    chiefdom: string
+    classMaster: string
     city: string
     street: string
     phone: string

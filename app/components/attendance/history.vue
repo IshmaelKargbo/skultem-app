@@ -55,7 +55,7 @@ watch(() => records.value, () => {
   <UCard>
     <div class="space-y-2">
       <div class="flex">
-        <p class="text-lg font-normal">Recent Attendance History ({{ meta.total }})</p>
+        <p class="text-lg font-normal">Recent Attendance History ({{ meta.total || 0 }})</p>
       </div>
       <div v-for="(item, index) in records" :key="index"
         :class="['flex p-3 justify-between cursor-pointer', index + 1 < records.length ? 'border-b border-gray-200' : '', selected?.classId == item.classId && selected.date == item.date ? 'bg-success-50/40 border-success-200 border rounded-md' : '']"

@@ -24,6 +24,9 @@ export const useTermStore = defineStore('term', {
     },
     create(payload: CreateTermDto) {
       return TermApi().create(payload)
+    },
+    activate(id: string) {
+      return TermApi().activate(id)
     }
   }
 })

@@ -23,9 +23,7 @@ const page = ref(1);
 const { meta } = storeToRefs(useTermStore());
 
 onMounted(() => {
-    useAppStore().setTitle('Terms');
-    definePageMeta({
-        title: 'Terms'
-    })
+    useAppStore().setTitle('Terms')
+    document.title = 'Terms | Settings | Skultem'
 })
 </script>

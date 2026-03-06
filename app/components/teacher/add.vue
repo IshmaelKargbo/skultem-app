@@ -1,5 +1,5 @@
 <template>
-    <u-slideover title="Add Teacher" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" title="Add Teacher" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
         <UButton color="primary" label="Add Teacher" icon="prime:plus" @click="open = true" />
 
@@ -44,27 +44,6 @@
                         <p class="text-xs text-muted">Enter the phone number of the teacher (e.g. +1234567890).</p>
                     </template>
                 </UFormField>
-                <UFormField label="Region" name="region">
-                    <USelect :items="regions" required v-model="state.region" :disabled="isLoading"
-                        placeholder="Select region" />
-                    <template #help>
-                        <p class="text-xs text-muted">Enter the region of the teacher address.</p>
-                    </template>
-                </UFormField>
-                <UFormField label="District" required name="district">
-                    <USelect :items="districts" v-model="state.district" :disabled="isLoading"
-                        placeholder="Select district" />
-                    <template #help>
-                        <p class="text-xs text-muted">Enter the district of the teacher address.</p>
-                    </template>
-                </UFormField>
-                <UFormField label="Chiefdom" required name="chiefdom">
-                    <USelect :items="chiefdoms" v-model="state.chiefdom" :disabled="isLoading"
-                        placeholder="Select chiefdom" />
-                    <template #help>
-                        <p class="text-xs text-muted">Enter the chiefdom of the teacher address.</p>
-                    </template>
-                </UFormField>
                 <UFormField label="City" required name="city">
                     <UInput v-model="state.city" placeholder="Select city" :disabled="isLoading" />
                     <template #help>
@@ -73,14 +52,22 @@
                 </UFormField>
                 <UFormField label="Street" required name="street">
                     <UInput v-model="state.street" placeholder="Enter street address" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">Enter the street address of the teacher.</p>
                     </template>
                 </UFormField>
                 <UFormField required label="Staff ID" name="staffId">
                     <UInput v-model="state.staffId" placeholder="e.g. ST12345" :disabled="isLoading" />
-                    <template #hint>
-                        <p class="text-xs text-muted">Enter the staff ID of the teacher (e.g. ST12345).</p>
+                    <template #help>
+                        <p class="text-xs text-muted">Enter the staff ID of the teacher (e.g. ST12345). Password is
+                            generated automatically.</p>
+                    </template>
+                </UFormField>
+                <UFormField label="Class Master" name="class">
+                    <USelect :items="classes" v-model="state.classMaster" placeholder="Select class master"
+                        :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">Assign this teacher as a class master</p>
                     </template>
                 </UFormField>
             </UForm>
@@ -99,25 +86,12 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 import { reactive, ref } from 'vue'
-import rdcsl from "rdcsl"
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useTeacherStore()
+const classStore = useClassSessionStore()
 const toast = useToast()
 const isLoading = ref(false)
-
-const regions = computed(() => rdcsl.regions.map(r => ({ label: r, value: r })))
-
-const districts = computed(() => {
-    state.district = '' // reset district when region changes
-    state.chiefdom = '' // reset chiefdom when region changes
-    return rdcsl.regionDistricts(state.region)?.map((r: string) => ({ label: r, value: r })) || []
-})
-
-const chiefdoms = computed(() => {
-    state.chiefdom = '' // reset chiefdom when district changes
-    return rdcsl.districtChiefdoms(state.district)?.map((r: string) => ({ label: r, value: r })) || []
-})
 
 type TeacherForm = {
     givenNames: string
@@ -125,40 +99,33 @@ type TeacherForm = {
     staffId: string
     email: string
     phone: string
-    region: string
-    district: string
-    chiefdom: string
     city: string
+    classMaster: string
     street: string
 }
 
-// reactive form state
 const state = reactive<TeacherForm>({
     givenNames: '',
     familyName: '',
     staffId: '',
     email: '',
     phone: '',
-    region: '',
-    district: '',
-    chiefdom: '',
+    classMaster: '',
     city: '',
     street: ''
 })
 
-// yup validation schema
 const schema = yup.object({
     givenNames: yup.string().required('Given names are required'),
     familyName: yup.string().required('Family name is required'),
     staffId: yup.string().required('Staff ID is required'),
     phone: yup.string().required('Phone number is required').matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
     email: yup.string().email('Invalid email address').required('Email is required'),
-    region: yup.string().required('Region is required'),
-    district: yup.string().required('District is required'),
-    chiefdom: yup.string().required('Chiefdom is required'),
     city: yup.string().required('City is required'),
     street: yup.string().required('Street is required')
 })
+
+const classes = computed(() => classStore.records.map((e) => ({ label: parseClassSession(e), value: e.id })))
 
 const formRef = ref<any>(null)
 const open = ref(false)
@@ -170,9 +137,7 @@ const close = () => {
     state.staffId = ''
     state.email = ''
     state.phone = ''
-    state.region = ''
-    state.district = ''
-    state.chiefdom = ''
+    state.classMaster = ''
     state.city = ''
     state.street = ''
 }
@@ -188,9 +153,7 @@ const onSubmit = async (event: FormSubmitEvent<TeacherForm>) => {
             familyName: state.familyName,
             email: state.email,
             phone: state.phone,
-            region: state.region,
-            district: state.district,
-            chiefdom: state.chiefdom,
+            classMaster: state.classMaster,
             city: state.city,
             street: state.street,
             staffId: state.staffId
@@ -207,6 +170,6 @@ const onSubmit = async (event: FormSubmitEvent<TeacherForm>) => {
 }
 
 onMounted(() => {
-    store.fetchAll()
+    classStore.fetchAllUnassign(0, 0)
 })
 </script>

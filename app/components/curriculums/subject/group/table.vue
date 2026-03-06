@@ -19,13 +19,6 @@ const columns: TableColumn<SubjectGroup> = [
     header: 'Name'
   },
   {
-    accessorKey: 'level',
-    header: 'Level',
-    cell: ({ row }: any) => {
-      return parseLevel[row.original.level];
-    }
-  },
-  {
     accessorKey: 'className',
     header: 'Class'
   },
@@ -34,16 +27,8 @@ const columns: TableColumn<SubjectGroup> = [
     header: 'Stream'
   },
   {
-    accessorKey: 'required',
-    header: 'Mandatory'
-  },
-  {
-    accessorKey: 'minSelection',
-    header: 'Min'
-  },
-  {
-    accessorKey: 'maxSelection',
-    header: 'Max'
+    accessorKey: 'totalSelection',
+    header: 'Select'
   },
   {
     id: 'actions',
@@ -160,14 +145,8 @@ onMounted(async () => {
           <p class="text-gray-500">No sections found.</p>
         </div>
       </template>
-      <template #required-cell="{ row }">
-        <USwitch v-model="row.original.required" />
-      </template>
-      <template #minSelection-cell="{ row }">
-        <UBadge :label="row.original.minSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
-      </template>
-      <template #maxSelection-cell="{ row }">
-        <UBadge :label="row.original.maxSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
+      <template #totalSelection-cell="{ row }">
+        <UBadge :label="row.original.totalSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
       </template>
     </UTable>
     <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">

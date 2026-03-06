@@ -36,7 +36,7 @@ export const ClassSubjectApi = () => {
     },
     create: async (id: string, payload: CreateClassSubjectDto) => {
       try {
-        return await $api(`/assignment/class/${id}`, {
+        return await $api(`/subject-assignment/class/${id}`, {
           method: 'POST',
           body: payload
         })

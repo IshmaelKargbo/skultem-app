@@ -1,9 +1,9 @@
 <template>
   <div class="flex h-screen overflow-hidden">
-    <Menu />
+    <Menu class="w-62" />
     <div class="flex-1 flex flex-col">
       <Header />
-      <div ref="scrollContainer" class="flex-1 overflow-auto">
+      <div ref="scrollContainer" class="flex-1 overflow-y-auto">
         <slot />
       </div>
     </div>

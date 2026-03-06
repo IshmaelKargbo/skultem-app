@@ -1,5 +1,5 @@
 <template>
-    <u-slideover title="Add Term" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" title="Add Term" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
         <UButton color="primary" label="Add Term" icon="prime:plus" @click="open = true" />
 
@@ -14,29 +14,47 @@
         <!-- Body / Form -->
         <template #body>
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
-                <UFormField required label="Name" name="name">
-                    <UInput v-model="state.name" placeholder="e.g. 2023/2024" :disabled="isLoading" />
-                    <template #hint>
-                        <p class="text-xs text-muted">Enter the academic year in the format YYYY/YYYY</p>
-                    </template>
-                </UFormField>
-                <UFormField required label="Academic Year" name="academicYearId">
-                    <USelect :items="academicYears" v-model="state.academicYearId" :disabled="isLoading" placeholder="Select academic year" />
-                    <template #hint>
-                        <p class="text-xs text-muted">Select the academic year this term belongs to.</p>
-                    </template>
-                </UFormField>
-                <UFormField required label="Start Date" name="startDate" class="flex-1">
-                    <UInput v-model="state.startDate" type="date" :disabled="isLoading" />
-                    <template #hint>
-                        <p class="text-xs text-muted">The first day of the academic year.</p>
+                <div class="rounded-md border border-primary-200 bg-primary-50 p-3">
+                    <p class="text-sm font-medium text-primary-800">Active Academic Year</p>
+                    <p v-if="activeAcademicYear" class="text-xs text-primary-700 mt-1">
+                        {{ activeAcademicYear.name }}: {{ formatDate(activeAcademicYear.startDate) }} - {{
+                            formatDate(activeAcademicYear.endDate) }}
+                    </p>
+                    <p v-else class="text-xs text-amber-700 mt-1">
+                        No active academic year found. Activate one before creating terms.
+                    </p>
+                </div>
+
+                <!-- Name -->
+                <UFormField required label="Term Name" name="name">
+                    <UInput v-model="state.name" placeholder="e.g. Term 1"
+                        :disabled="isLoading || !activeAcademicYear" />
+                    <template #help>
+                        <p class="text-xs text-mute">
+                            Enter the official name of the term (e.g. Term 1, Term 2, Term 3).
+                        </p>
                     </template>
                 </UFormField>
 
-                <UFormField required label="End Date" name="endDate" class="flex-1">
-                    <UInput v-model="state.endDate" type="date" :disabled="isLoading" />
-                    <template #hint>
-                        <p class="text-xs text-muted">The last day of the academic year.</p>
+                <!-- Start Date -->
+                <UFormField required label="Start Date" name="startDate">
+                    <UInput v-model="state.startDate" type="date" :min="activeAcademicYear?.startDate"
+                        :max="activeAcademicYear?.endDate" :disabled="isLoading || !activeAcademicYear" />
+                    <template #help>
+                        <p class="text-xs text-mute">
+                            Must be within the active academic year range.
+                        </p>
+                    </template>
+                </UFormField>
+
+                <!-- End Date -->
+                <UFormField required label="End Date" name="endDate">
+                    <UInput v-model="state.endDate" type="date" :min="activeAcademicYear?.startDate"
+                        :max="activeAcademicYear?.endDate" :disabled="isLoading || !activeAcademicYear" />
+                    <template #help>
+                        <p class="text-xs text-mute">
+                            Must be within the active academic year range.
+                        </p>
                     </template>
                 </UFormField>
             </UForm>
@@ -45,8 +63,8 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="mynaui:save" :loading="isLoading" label="Save"
-                    @click="formRef?.submit()" />
+                <u-button icon="mynaui:save" :loading="isLoading" label="Save" @click="formRef?.submit()"
+                    :disabled="!activeAcademicYear" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -67,33 +85,31 @@ type TermForm = {
     name: string
     startDate: string
     endDate: string
-    academicYearId: string
 }
 
-const academicYears = computed(() => academicYearStore.list)
+const activeAcademicYear = computed(() =>
+    academicYearStore.records.find((year) => year.active || year.status === 'ACTIVE')
+)
 
 // reactive form state
 const state = reactive<TermForm>({
     name: '',
     startDate: '',
-    endDate: '',
-    academicYearId: ''
+    endDate: ''
 })
 
 // reactive error state
 const errors = reactive<Record<string, string>>({
     name: '',
     startDate: '',
-    endDate: '',
-    academicYearId: ''
+    endDate: ''
 })
 
 // yup validation schema
 const schema = yup.object({
     name: yup.string().required('Name is required'),
     startDate: yup.string().required('Start date is required'),
-    endDate: yup.string().required('End date is required'),
-    academicYearId: yup.string().required('Academic year is required')
+    endDate: yup.string().required('End date is required')
 })
 
 const formRef = ref<any>(null)
@@ -104,12 +120,17 @@ const close = () => {
     state.name = ''
     state.startDate = ''
     state.endDate = ''
-    state.academicYearId = ''
     Object.keys(errors).forEach(key => (errors[key] = ''))
 }
 
 const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
     event.preventDefault()
+
+    if (!activeAcademicYear.value) {
+        toast.add({ description: 'Activate an academic year before creating terms', color: 'warning' })
+        return
+    }
+
     isLoading.value = true
 
     try {
@@ -117,8 +138,7 @@ const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
         await store.create({
             name: state.name,
             startDate: state.startDate,
-            endDate: state.endDate,
-            academicYearId: state.academicYearId
+            endDate: state.endDate
         })
 
         await store.fetchAll()
@@ -134,4 +154,9 @@ const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
 onMounted(() => {
     academicYearStore.fetchAll()
 })
+
+const formatDate = (value: string) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleDateString()
+}
 </script>

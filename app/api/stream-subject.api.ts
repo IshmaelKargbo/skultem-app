@@ -36,7 +36,7 @@ export const StreamSubjectApi = () => {
     },
     create: async (id: string, payload: CreateClassSubjectDto) => {
       try {
-        return await $api(`/assignment/stream/${id}`, {
+        return await $api(`/subject-assignment/stream/${id}`, {
           method: 'POST',
           body: payload
         })

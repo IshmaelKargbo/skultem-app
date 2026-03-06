@@ -1,5 +1,5 @@
 <template>
-    <USlideover :open="open" @update:open="open = $event">
+    <USlideover :dismissible="false" :open="open" @update:open="open = $event">
         <!-- Trigger -->
         <UButton color="primary" label="Add Class" icon="prime:plus" @click="open = true" />
 
@@ -42,12 +42,23 @@
                         :disabled="isLoading" />
                 </UFormField>
 
-                <!-- Level Order -->
-                <UFormField required label="Level Order" name="levelOrder">
+                <!-- Grade -->
+                <UFormField required label="Grade" name="levelOrder">
                     <UInput v-model="state.levelOrder" type="number" placeholder="e.g. 1" :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">
                             Display order of the class.
+                        </p>
+                    </template>
+                </UFormField>
+
+                <UFormField label="Assessment Template" name="assessmentTemplateId">
+                    <USelect v-model="state.assessmentTemplateId" :items="assessmentTemplates"
+                        placeholder="Select assessment template (optional)"
+                        :disabled="isLoading || assessmentStore.loading" />
+                    <template #help>
+                        <p class="text-xs text-muted">
+                            Template will be used when provisioning assessments for students in this class.
                         </p>
                     </template>
                 </UFormField>
@@ -72,6 +83,7 @@ import type { FormSubmitEvent } from '#ui/types'
 const store = useClassStore()
 const streamStore = useStreamStore()
 const sectionStore = useSectionStore()
+const assessmentStore = useAssessmentStore()
 const toast = useToast()
 
 const open = ref(false)
@@ -92,12 +104,20 @@ const sections = computed(() =>
     }))
 )
 
+const assessmentTemplates = computed(() =>
+    assessmentStore.records.map((e) => ({
+        label: e.name,
+        value: e.id
+    }))
+)
+
 type ClassForm = {
     name: string
     level: Level | ''
     sections: string[]
     streams: string[]
     levelOrder: number | null
+    assessmentTemplateId: string
 }
 
 const state = reactive<ClassForm>({
@@ -105,7 +125,8 @@ const state = reactive<ClassForm>({
     level: '',
     sections: [],
     streams: [],
-    levelOrder: null
+    levelOrder: null,
+    assessmentTemplateId: ''
 })
 
 const schema = yup.object({
@@ -131,8 +152,8 @@ const schema = yup.object({
 
     levelOrder: yup
         .number()
-        .typeError('Level order must be a number')
-        .required('Level order is required')
+        .typeError('Grade must be a number')
+        .required('Grade is required')
         .min(1)
 })
 
@@ -153,6 +174,7 @@ const close = () => {
     state.sections = []
     state.streams = []
     state.levelOrder = null
+    state.assessmentTemplateId = ''
 }
 
 const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
@@ -164,7 +186,8 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
             level: state.level as Level,
             sections: state.sections,
             streams: state.streams,
-            levelOrder: state.levelOrder as number
+            levelOrder: state.levelOrder as number,
+            assessmentTemplateId: state.assessmentTemplateId || undefined
         })
 
         toast.add({
@@ -188,5 +211,6 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
 onMounted(() => {
     streamStore.fetchAll()
     sectionStore.fetchAll()
+    assessmentStore.fetchAll(1, 0)
 })
 </script>

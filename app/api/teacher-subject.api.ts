@@ -20,10 +20,10 @@ export const TeacherSubjectApi = () => {
     },
     getAllByClass: async (id: string, page: number, size: number) => {
       try {
-        const res = await $api(`/class-subject/${id}?page=${page}&size=${size}`) as any
+        const res = await $api(`/teacher/subject/session/${id}?page=${page}&size=${size}`) as any
 
         if (!res)
-          throw new Error('Failed to fetch class subjects by class')
+          throw new Error('Failed to fetch teacher subjects by class')
 
         const data = res.data
         const meta = useMeta(res.meta)
@@ -34,9 +34,9 @@ export const TeacherSubjectApi = () => {
         useHandleError(err)
       }
     },
-    create: async (id: string, payload: CreateClassSubjectDto) => {
+    create: async (id: string, payload: CreateTeacherSubjectDto) => {
       try {
-        return await $api(`/assignment/class/${id}`, {
+        return await $api(`/teacher-assignment/subject/${id}`, {
           method: 'POST',
           body: payload
         })

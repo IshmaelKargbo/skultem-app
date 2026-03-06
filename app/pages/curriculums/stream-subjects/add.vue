@@ -4,7 +4,7 @@
 
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg text-gray-800">
+                    <h2 class="text-xl font-semibold">
                         Assign Subjects to Stream
                     </h2>
                     <p class="text-sm text-mute">
@@ -68,11 +68,8 @@
 
                     <!-- Mandatory Badge -->
                     <template #mandatory-cell="{ row }">
-                        <div class="flex justify-center">
-                            <UBadge v-if="row.original.mandatory" color="primary" variant="soft" label="Core"
-                                class="cursor-pointer" @click="row.original.mandatory = false" />
-                            <UBadge v-else color="neutral" variant="outline" label="Optional" class="cursor-pointer"
-                                @click="row.original.mandatory = true" />
+                        <div class="flex">
+                            <USwitch label="Mandatory" v-model="row.original.mandatory" />
                         </div>
                     </template>
 
@@ -142,11 +139,7 @@ const columns: TableColumn<any>[] = [
     { accessorKey: 'subjectId', header: 'Subject' },
     { accessorKey: 'groupId', header: 'Group' },
     {
-        accessorKey: 'mandatory', header: 'Type', meta: {
-            class: {
-                th: 'text-center'
-            }
-        }
+        accessorKey: 'mandatory', header: 'Type'
     },
     { id: 'actions' }
 ]
@@ -210,7 +203,7 @@ async function fetchRecord() {
 
     if (groupRes) {
         groups.value = groupRes.map((e: SubjectGroup) => ({
-            label: `${e.name} (${e.minSelection}/${e.maxSelection})`,
+            label: `${e.name} (${e.totalSelection})`,
             value: e.id
         }))
     }

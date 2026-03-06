@@ -23,16 +23,12 @@ const columns: TableColumn<ClassSubject> = [
     header: 'Subject'
   },
   {
+    accessorKey: 'mandatory',
+    header: 'Type'
+  },
+  {
     accessorKey: 'groupName',
     header: 'Group'
-  },
-  {
-    accessorKey: 'teacherName',
-    header: 'Teacher'
-  },
-  {
-    accessorKey: 'mandatory',
-    header: 'Mandatory'
   },
   {
     id: 'actions',
@@ -152,7 +148,7 @@ onMounted(async () => {
         </div>
       </template>
       <template #mandatory-cell="{ row }">
-        <USwitch v-model="row.original.mandatory" />
+        <UBadge variant="outline" :color="row.original.mandatory ? 'success' : 'info'" :label="row.original.mandatory ? 'Core' : 'Optional'" />
       </template>
     </UTable>
     <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">

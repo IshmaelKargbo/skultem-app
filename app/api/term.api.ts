@@ -28,6 +28,16 @@ export const TermApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    activate: async (id: string) => {
+      try {
+        return await $api(`/term/${id}/activate`, {
+          method: 'PUT'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

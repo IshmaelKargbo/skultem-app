@@ -3,7 +3,7 @@
         <UForm :schema="schema" :state="state" class="space-y-3" @submit.prevent="onSubmit">
             <!-- Header -->
             <div class="flex items-center">
-                <p class="text-lg font-normal flex-1">Mark Attendance</p>
+                <p class="text-lg font-normal flex-1">Mark Attendance <span v-if="state.date">for {{ formatDateString(state.date) }}</span></p>
 
                 <div class="flex flex-1 space-x-5">
                     <UFormField name="classId" class="w-full">
@@ -278,6 +278,7 @@ const onSubmit = async (event: FormSubmitEvent<AttendanceForm>) => {
             color: 'success'
         })
         calculateReport(true)
+        fetchRecords()
     } catch (err: any) {
         toast.add({
             description: err?.message || 'Something went wrong',

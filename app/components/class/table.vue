@@ -18,8 +18,8 @@ const columns: TableColumn<ClassSession> = [
     header: 'Name'
   },
   {
-    accessorKey: 'teacherName',
-    header: 'Class Teacher'
+    accessorKey: 'grade',
+    header: 'Grade'
   },
   {
     accessorKey: 'classLevel',
@@ -36,6 +36,10 @@ const columns: TableColumn<ClassSession> = [
   {
     accessorKey: 'totalStudent',
     header: 'Students'
+  },
+  {
+    accessorKey: 'teacherName',
+    header: 'Class Teacher'
   },
   {
     id: 'actions',

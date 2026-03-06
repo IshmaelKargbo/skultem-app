@@ -23,7 +23,8 @@ const columns: TableColumn<Holiday> = [
   },
   {
     accessorKey: 'date',
-    header: 'Date'
+    header: 'Date',
+    cell: ({ row }: any) => formatDate(row.original.date)
   },
   {
     accessorKey: 'fixed',
@@ -122,18 +123,18 @@ onMounted(async () => {
 </script>
 
 <template>
-    <UTable :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No sections found.</p>
-        </div>
-      </template>
-      <template #kind-cell="{ row }">
-        <UBadge variant="outline" color="neutral" :label="parseKind[row.original.kind]" />
-      </template>
-      <template #fixed-cell="{ row }">
-        <USwitch v-model="row.original.fixed" />
-      </template>
-    </UTable>
+  <UTable :columns="columns" :data="data" :loading="loading">
+    <template #empty-state>
+      <div class="flex flex-col items-center gap-2 py-10">
+        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        <p class="text-gray-500">No sections found.</p>
+      </div>
+    </template>
+    <template #kind-cell="{ row }">
+      <UBadge variant="outline" color="neutral" :label="parseKind[row.original.kind]" />
+    </template>
+    <template #fixed-cell="{ row }">
+      <USwitch v-model="row.original.fixed" />
+    </template>
+  </UTable>
 </template>

@@ -34,6 +34,8 @@ export type ClassSession = {
     streamId: string
     sectionName: string
     sectionId: string
+    teacherName: string
+    teacherId: string
     totalStudent: number
     classLevel: string
 }
@@ -54,7 +56,29 @@ export type CreateClassDto = {
     sections: string[],
     levelOrder: number,
     terminal?: boolean,
-    streams: string[]
+    streams: string[],
+    assessmentTemplateId?: string
+}
+
+export type ClassCurriculumSubject = {
+    id: string
+    name: string
+    code: string
+    description: string
+    createdAt: string
+    updatedAt: string
+}
+
+export type ClassCurriculumOptionGroup = {
+    groupId: string
+    name: string
+    select: number
+    list: ClassCurriculumSubject[]
+}
+
+export type ClassCurriculum = {
+    core: ClassCurriculumSubject[]
+    options: ClassCurriculumOptionGroup[]
 }
 
 export type AssignStudentsDto = {

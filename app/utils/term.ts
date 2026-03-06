@@ -13,6 +13,5 @@ export type Term = {
 export type CreateTermDto = {
     name: string
     startDate: string
-    academicYearId: string
     endDate: string
 }
