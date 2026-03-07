@@ -2,6 +2,7 @@ export type Student = {
     id: string
     givenNames: string
     familyName: string
+    enrollmentId: string
     admissionNumber: string
     dateOfBirth: string
     gender: string

@@ -42,6 +42,37 @@ export const parseLevel: Record<string, string> = {
     'SSS': 'SSS'
 }
 
+export const parseGender: Record<string, string> = {
+    'MALE': 'Male',
+    'FEMALE': 'Female'
+}
+
+export const parseBehaviourKind: Record<string, string> = {
+    'POSITIVE': 'Positive',
+    'NEGATIVE': 'Negative',
+    'NEUTRAL': 'Neutral'
+}
+
+export const parseBehaviourKindColor: Record<string, string> = {
+    'POSITIVE': 'success',
+    'NEGATIVE': 'error',
+    'NEUTRAL': 'neutral'
+}
+
+export const parseTitle: Record<string, string> = {
+  MR: 'Mr.',
+  MRS: 'Mrs.',
+  MISS: 'Miss',
+  MS: 'Ms.',
+  DR: 'Dr.',
+  PROF: 'Prof.',
+  REV: 'Rev.',
+  HON: 'Hon.',
+  ENG: 'Eng.',
+  SIR: 'Sir',
+  MADAM: 'Madam'
+}
+
 export function parseClass(clazz: Enrollment) {
     let value = `${clazz.clazz.name} ( ${clazz.section.name} )`
 

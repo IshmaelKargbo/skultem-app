@@ -4,64 +4,23 @@ import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
 const router = useRouter()
-const store = useTeacherStore()
-const { records: data, meta, loading } = storeToRefs(store)
-
-const editRcord = ref<Teacher | null>(null)
+const store = useBehaviourCategoryStore()
+const loading = ref(true)
+const { records: data, meta } = storeToRefs(store)
+const editRcord = ref<Holiday | null>(null)
 const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-
-const parseStaus: Record<string, string> = {
-  ACTIVE: 'Active',
-  INACTIVE: 'Inactive',
-  DELETED: 'Deleted'
-}
-
-const parseStatusColor: Record<string, string> = {
-  ACTIVE: 'success',
-  INACTIVE: 'warning',
-  DELETED: 'danger'
-}
-
-const parseStatusIcon: Record<string, string> = {
-  ACTIVE: 'i-lucide-check-circle',
-  INACTIVE: 'i-lucide-x-circle',
-  DELETED: 'i-lucide-trash'
-}
-
-const columns: TableColumn<Teacher> = [
+const columns: TableColumn<Holiday> = [
   {
     accessorKey: 'name',
-    header: 'Name',
-    cell: ({ row }: any) => `${parseTitle[row.original.title]} ${row.original.user.givenNames} ${row.original.user.familyName}`
+    header: 'Name'
   },
   {
-    accessorKey: 'gender',
-    header: 'Gender',
-    cell: ({ row }: any) => parseGender[row.original.gender]
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email'
-  },
-  {
-    accessorKey: 'phone',
-    header: 'Phone'
-  },
-  {
-    accessorKey: 'city',
-    header: 'City'
-  },
-  {
-    accessorKey: 'street',
-    header: 'Street'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
+    accessorKey: 'description',
+    header: 'Description'
   },
   {
     id: 'actions',
@@ -70,7 +29,7 @@ const columns: TableColumn<Teacher> = [
         td: 'text-right'
       }
     },
-    cell: ({ row }: any) => {
+    cell: ({ row }) => {
       return h(
         UDropdownMenu,
         {
@@ -94,7 +53,7 @@ const columns: TableColumn<Teacher> = [
   }
 ]
 
-function getRowItems(row: Row<Teacher>) {
+function getRowItems(row: Row<Holiday>) {
   return [
     {
       label: 'Edit Record',
@@ -121,23 +80,6 @@ const size = computed<number>({
   set: (val) => updateQuery({ size: val })
 })
 
-watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
-  router.replace({
-    query: {
-      page: page.value,
-      size: size.value
-    }
-  })
-
-  fetchRecord()
-}, { immediate: true })
-
 function updateQuery(newQuery: Record<string, any>) {
   const merged = { ...route.query, ...newQuery }
 
@@ -156,6 +98,23 @@ async function fetchRecord() {
   await store.fetchAll(page.value, size.value)
   loading.value = false
 }
+
+watch(() => page.value, () => {
+  nextTick(() => {
+    scrollContainer?.value?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  })
+  router.replace({
+    query: {
+      page: page.value,
+      size: size.value
+    }
+  })
+
+  fetchRecord()
+}, { immediate: true })
 
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
@@ -177,15 +136,8 @@ onMounted(async () => {
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No teachers found.</p>
+          <p class="text-gray-500">No category found.</p>
         </div>
-      </template>
-      <template #email-cell="{ row }">
-        {{ row.original.user.email }}
-      </template>
-      <template #status-cell="{ row }">
-        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-          :icon="parseStatusIcon[row.original.status]" variant="outline" />
       </template>
     </UTable>
     <div class="flex justify-between border-t border-gray-200 pt-3 items-center">

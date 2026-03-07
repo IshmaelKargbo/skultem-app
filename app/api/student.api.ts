@@ -61,6 +61,19 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    getAllEnrollmentByClass: async (id: string) => {
+      try {
+        const res = await $api(`/enrollment/class/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch student enrollments by class')
+
+        return res.data
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     sumFeesPaidByStudentAndFee: async (studentId: string, feeId: string) => {
       try {
         const res = await $api(`/payment/student/${studentId}/${feeId}`) as any

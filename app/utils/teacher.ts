@@ -1,6 +1,8 @@
 export type Teacher = {
     id: string
+    title: string
     user: User
+    gender: string
     staffId: string
     street: string
     city: string
@@ -41,6 +43,8 @@ export type CreateTeacherDto = {
     familyName: string
     staffId: string
     classMaster: string
+    gender: string
+    title: string
     city: string
     street: string
     phone: string

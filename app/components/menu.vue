@@ -55,7 +55,13 @@
           </template>
           </MenuItem>
         </li>
-
+        <li>
+          <MenuItem label="Behaviours" to="/behaviours">
+          <template #icon>
+            <UIcon class="text-xl" name="fluent:sparkle-action-20-filled" />
+          </template>
+          </MenuItem>
+        </li>
         <li>
           <MenuItem label="Teachers" to="/teachers">
           <template #icon>
@@ -63,7 +69,13 @@
           </template>
           </MenuItem>
         </li>
-
+        <li>
+          <MenuItem label="Parents" to="/parents">
+          <template #icon>
+            <UIcon class="text-xl" name="raphael:parent" />
+          </template>
+          </MenuItem>
+        </li>
         <li>
           <MenuItem label="Classes" to="/classes">
           <template #icon>
@@ -150,15 +162,6 @@
           </MenuItem>
         </li>
       </ul>
-    </div>
-
-    <!-- Footer -->
-    <div class="h-28 p-4 border-t border-gray-800 space-y-2.5">
-      <div class="flex flex-col ">
-        <p class="text-sm">Ishmael Kargbo</p>
-        <p class="text-xs text-muted">Ishmaelkargbo@skultem.com</p>
-      </div>
-      <UButton icon="hugeicons:logout-circle-02" label="Logout" variant="subtle" class="w-full flex justify-center" />
     </div>
   </div>
 </template>

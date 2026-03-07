@@ -14,6 +14,12 @@
         <!-- Body / Form -->
         <template #body>
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
+                <UFormField required label="Title" name="title">
+                    <USelectMenu value-key="value" v-model="state.title" :items="titles" placeholder="Select title" :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">Select the teacher title.</p>
+                    </template>
+                </UFormField>
                 <UFormField required label="Given Names" name="givenNames">
                     <UInput v-model="state.givenNames" placeholder="e.g. Ishmael, Aruna, Rahim" :disabled="isLoading" />
                     <template #help>
@@ -30,11 +36,17 @@
                         </p>
                     </template>
                 </UFormField>
+                <UFormField required label="Gender" name="gender">
+                    <URadioGroup v-model="state.gender" variant="card" :items="genders" :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">Select the teacher gender.</p>
+                    </template>
+                </UFormField>
                 <UFormField required label="Email" name="email">
-                    <UInput v-model="state.email" placeholder="e.g. john.doe@example.com" :disabled="isLoading" />
+                    <UInput v-model="state.email" placeholder="e.g. ishmael.kargbo@example.com" :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">Enter the email address of the teacher (e.g.
-                            john.doe@example.com).
+                            ishmael.kargbo@example.com).
                         </p>
                     </template>
                 </UFormField>
@@ -64,7 +76,7 @@
                     </template>
                 </UFormField>
                 <UFormField label="Class Master" name="class">
-                    <USelect :items="classes" v-model="state.classMaster" placeholder="Select class master"
+                    <USelectMenu value-key="value" :items="classes" v-model="state.classMaster" placeholder="Select class master"
                         :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">Assign this teacher as a class master</p>
@@ -100,9 +112,25 @@ type TeacherForm = {
     email: string
     phone: string
     city: string
+    gender: string
+    title: string
     classMaster: string
     street: string
 }
+
+const titles = [
+    { label: 'Mr', value: 'MR' },
+    { label: 'Mrs', value: 'MRS' },
+    { label: 'Miss', value: 'MISS' },
+    { label: 'Ms', value: 'MS' },
+    { label: 'Dr', value: 'DR' },
+    { label: 'Prof', value: 'PROF' }
+]
+
+const genders = [
+    { label: 'Male', value: 'MALE' },
+    { label: 'Female', value: 'FEMALE' }
+]
 
 const state = reactive<TeacherForm>({
     givenNames: '',
@@ -110,15 +138,19 @@ const state = reactive<TeacherForm>({
     staffId: '',
     email: '',
     phone: '',
+    gender: '',
+    title: '',
     classMaster: '',
     city: '',
     street: ''
 })
 
 const schema = yup.object({
+    title: yup.string().required('Title is required'),
     givenNames: yup.string().required('Given names are required'),
     familyName: yup.string().required('Family name is required'),
     staffId: yup.string().required('Staff ID is required'),
+    gender: yup.string().required('Gender is required'),
     phone: yup.string().required('Phone number is required').matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
     email: yup.string().email('Invalid email address').required('Email is required'),
     city: yup.string().required('City is required'),
@@ -153,6 +185,8 @@ const onSubmit = async (event: FormSubmitEvent<TeacherForm>) => {
             familyName: state.familyName,
             email: state.email,
             phone: state.phone,
+            gender: state.gender,
+            title: state.title,
             classMaster: state.classMaster,
             city: state.city,
             street: state.street,

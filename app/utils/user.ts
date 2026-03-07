@@ -12,6 +12,16 @@ export type CreateUserDto = {
     givenNames: string
     familyName: string
     email: string
-    role: string,
+    role: string
     password: string
+}
+
+export type LoginDto = {
+    domain: string
+    email: string
+    password: string
+}
+
+export type RefreshDto = {
+    refreshToken: string
 }

@@ -11,6 +11,7 @@
                 { label: 'Assessment Templates', to: '/settings/assessment-templates' },
                 { label: 'Assessment Cycle', to: '/settings/assessment-cycle' },
                 { label: 'Fee Categories', to: '/settings/fee-categories' },
+                { label: 'Behavoiur Categories', to: '/settings/behaviour-categories' },
                 { label: 'Holidaies', to: '/settings/holidaies' }
             ]" />
         </div>

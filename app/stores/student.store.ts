@@ -46,6 +46,18 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
+    async getAllEnrollmentByClass(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await StudentApi().getAllEnrollmentByClass(id) as any
+        return { records: response }
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch student fees'
+      } finally {
+        this.loading = false
+      }
+    },
     async getAllStudentOutstandingFeesById(id: string) {
       this.loading = true
       this.error = null

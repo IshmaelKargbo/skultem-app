@@ -17,8 +17,8 @@
                 <div class="rounded-md border border-primary-200 bg-primary-50 p-3">
                     <p class="text-sm font-medium text-primary-800">Active Academic Year</p>
                     <p v-if="activeAcademicYear" class="text-xs text-primary-700 mt-1">
-                        {{ activeAcademicYear.name }}: {{ formatDate(activeAcademicYear.startDate) }} - {{
-                            formatDate(activeAcademicYear.endDate) }}
+                        {{ activeAcademicYear.name }}: {{ formatDateString(activeAcademicYear.startDate) }} - {{
+                            formatDateString(activeAcademicYear.endDate) }}
                     </p>
                     <p v-else class="text-xs text-amber-700 mt-1">
                         No active academic year found. Activate one before creating terms.

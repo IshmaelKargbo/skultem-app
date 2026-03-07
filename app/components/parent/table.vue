@@ -4,10 +4,10 @@ import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
 const router = useRouter()
-const store = useTeacherStore()
+const store = useParentStore()
 const { records: data, meta, loading } = storeToRefs(store)
 
-const editRcord = ref<Teacher | null>(null)
+const editRcord = ref<Parent | null>(null)
 const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
@@ -32,16 +32,18 @@ const parseStatusIcon: Record<string, string> = {
   DELETED: 'i-lucide-trash'
 }
 
-const columns: TableColumn<Teacher> = [
+const columns: TableColumn<Parent> = [
   {
     accessorKey: 'name',
-    header: 'Name',
-    cell: ({ row }: any) => `${parseTitle[row.original.title]} ${row.original.user.givenNames} ${row.original.user.familyName}`
+    header: 'Guardian'
   },
   {
-    accessorKey: 'gender',
-    header: 'Gender',
-    cell: ({ row }: any) => parseGender[row.original.gender]
+    accessorKey: 'fatherName',
+    header: 'Father Name'
+  },
+  {
+    accessorKey: 'motherName',
+    header: 'Mother Name'
   },
   {
     accessorKey: 'email',
@@ -94,7 +96,7 @@ const columns: TableColumn<Teacher> = [
   }
 ]
 
-function getRowItems(row: Row<Teacher>) {
+function getRowItems(row: Row<Parent>) {
   return [
     {
       label: 'Edit Record',
@@ -177,11 +179,11 @@ onMounted(async () => {
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No teachers found.</p>
+          <p class="text-gray-500">No parents found.</p>
         </div>
       </template>
       <template #email-cell="{ row }">
-        {{ row.original.user.email }}
+        {{ row.original.email }}
       </template>
       <template #status-cell="{ row }">
         <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
