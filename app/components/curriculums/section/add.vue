@@ -1,13 +1,13 @@
 <template>
     <u-slideover :dismissible="false" title="Add Section" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
-        <UButton color="primary" label="Add Section" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Add Section" :icon="ADD_ICON" @click="open = true" />
 
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Section</p>
-                <u-button icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <u-button :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -33,7 +33,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="mynaui:save" :loading="isLoading" label="Save"
+                <u-button icon="lucide:save" :loading="isLoading" label="Save"
                     @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>

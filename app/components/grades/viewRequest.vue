@@ -81,9 +81,9 @@
           </div>
         </div>
         <div class="flex space-x-3 pt-3 border-t mt-3 border-gray-200" v-if="showAction">
-          <UButton icon="streamline-flex:return-square-2" variant="outline" color="neutral" size="xl"
+          <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
             class="w-full flex justify-center" label="Return" @click="returnForm = true" />
-          <UButton :loading="isApproveLoading" @click="approve" icon="material-symbols:order-approve-outline-rounded"
+          <UButton :loading="isApproveLoading" @click="approve" icon="lucide:check-circle"
             color="success" size="xl" class="w-full flex justify-center" label="Approve" />
         </div>
       </div>

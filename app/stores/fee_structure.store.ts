@@ -25,6 +25,9 @@ export const useFeeStructureStore = defineStore('fee_structure', {
     create(payload: CreateFeeStructureDto) {
       return FeeApi().createStructure(payload)
     },
+    assignToStudent(payload: AssignFeeToStudentDto) {
+      return FeeApi().assignFeeToStudent(payload)
+    },
     countStudentsByFee(id: string) {
       return FeeApi().countByStudentsByFee(id)
     },

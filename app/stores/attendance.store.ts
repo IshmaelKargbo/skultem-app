@@ -64,6 +64,7 @@ export const useAttendanceStore = defineStore('attendance', {
         marked: data.markedCount,
         rate: rate || 0
       }
+      
       return data.records
     }
   }

@@ -1,12 +1,12 @@
 <template>
     <u-slideover title="Add Subject Group" :open="open" @update:open="open = $event">
 
-        <UButton color="primary" label="Add Subject Group" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Add Subject Group" :icon="ADD_ICON" @click="open = true" />
 
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Subject Group</p>
-                <u-button icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <u-button :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -15,22 +15,22 @@
 
                 <!-- Name -->
                 <UFormField required label="Group Name" name="name">
-                    <UInput v-model="state.name" placeholder="e.g. Optional Subjects" :disabled="isLoading" />
+                    <USelectMenu value-key="value" v-model="state.name" placeholder="e.g. Optional Subjects" :disabled="isLoading" />
                 </UFormField>
 
                 <!-- Level -->
                 <UFormField required label="Level" name="level">
-                    <USelect v-model="state.level" :items="levelsXPrimary" placeholder="Select Level" />
+                    <USelectMenu value-key="value" v-model="state.level" :items="levelsXPrimary" placeholder="Select Level" />
                 </UFormField>
 
                 <!-- Class -->
                 <UFormField v-if="state.level && state.level !== Level.SSS" required label="Class" name="classId">
-                    <USelect v-model="state.classId" :items="classes" placeholder="Select class" />
+                    <USelectMenu value-key="value" v-model="state.classId" :items="classes" placeholder="Select class" />
                 </UFormField>
 
                 <!-- Stream -->
                 <UFormField v-if="state.level === Level.SSS" required label="Stream" name="streamId">
-                    <USelect v-model="state.streamId" :items="streams" placeholder="Select Stream" />
+                    <USelectMenu value-key="value" v-model="state.streamId" :items="streams" placeholder="Select Stream" />
                 </UFormField>
 
                 <!-- Total Selection -->
@@ -42,7 +42,7 @@
 
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="mynaui:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
+                <u-button :icon="SAVE_ICON" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>

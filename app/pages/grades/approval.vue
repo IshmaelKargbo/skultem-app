@@ -40,8 +40,8 @@
 
         <div class="w-1/2 flex space-x-3">
           <USelectMenu @change="fetchRecords" value-key="value" v-model="state.teacherId" :items="teachers"
-            icon="i-heroicons-magnifying-glass" placeholder="Search teacher" />
-          <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search teacher or subject" />
+            :icon="SEARCH_ICON" placeholder="Search teacher" />
+          <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search teacher or subject" />
         </div>
 
       </div>
@@ -64,6 +64,8 @@
 </template>
 
 <script setup lang="ts">
+import { SEARCH_ICON } from '~/utils/icons'
+
 type ApprovalRequestStatus = 'Pending Review' | 'Approved' | 'Returned'
 type RequestFilter = 'ALL' | ApprovalRequestStatus
 

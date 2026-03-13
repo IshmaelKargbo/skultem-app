@@ -62,6 +62,16 @@ const columns: TableColumn<ClassSubject> = [
 ]
 
 function getRowItems(row: Row<ClassSubject>) {
+  if (row.original.locked) {
+    return [
+      {
+        label: 'Locked',
+        icon: 'i-lucide-lock',
+        disabled: true
+      }
+    ]
+  }
+
   return [
     {
       label: 'Edit Record',
@@ -148,7 +158,11 @@ onMounted(async () => {
         </div>
       </template>
       <template #mandatory-cell="{ row }">
-        <UBadge variant="outline" :color="row.original.mandatory ? 'success' : 'info'" :label="row.original.mandatory ? 'Core' : 'Optional'" />
+        <div class="flex items-center gap-2">
+          <UBadge variant="outline" :color="row.original.mandatory ? 'success' : 'info'"
+            :label="row.original.mandatory ? 'Core' : 'Optional'" />
+          <UBadge v-if="row.original.locked" variant="outline" color="error" label="Locked" />
+        </div>
       </template>
     </UTable>
     <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">

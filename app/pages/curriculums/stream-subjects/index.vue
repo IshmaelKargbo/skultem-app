@@ -4,7 +4,7 @@
             <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
                 <p class="text-xl font-semibold">Stream Subject Management</p>
                 <div>
-                    <UButton to="/curriculums/stream-subjects/add" color="primary" label="Assign Stream Subject" icon="hugeicons:assignments" />
+                    <UButton to="/curriculums/stream-subjects/add" color="primary" label="Assign Stream Subject" :icon="ASSIGN_ICON" />
                 </div>
             </div>
             <CurriculumsStreamSubjectTable />

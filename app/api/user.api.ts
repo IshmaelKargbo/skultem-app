@@ -42,6 +42,17 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    logout: async () => {
+      try {
+        const res = await $api('/auth/logout', {
+          method: 'POST'
+        })
+        if (res == null) return
+        return (res as any).data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     refresh: async (payload: RefreshDto) => {
       try {
         const res = await $api('/auth/refresh', {

@@ -1,57 +1,54 @@
 <template>
   <USlideover :dismissible="false" v-model:open="open">
     <!-- Trigger -->
-    <UButton color="info" label="Assign Class Master" icon="hugeicons:assignments" @click="open = true" />
+    <UButton color="info" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON"
+      @click="open = true" />
 
     <!-- Header -->
     <template #header>
       <div class="flex justify-between w-full items-center">
         <p class="text-lg font-semibold">Assign Class Master</p>
-        <UButton icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+        <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
       </div>
     </template>
 
     <!-- Body -->
     <template #body>
-      <UForm ref="formRef" :schema="schema" :state="state" class="space-y-5 w-full" @submit="onSubmit">
+      <UForm ref="formRef" :schema="schema" :state="state" :disabled="isLoading" class="space-y-5 w-full"
+        @submit="onSubmit">
         <!-- Class -->
         <UFormField label="Class" name="classId" required>
-          <USelect :items="classes" v-model="state.classId" @change="fetchRecords" :disabled="isLoading"
-            placeholder="Select class" />
-          <template #hint>
-            <p class="text-xs text-muted">
-              Select the class where you want to assign a class master.
-            </p>
+          <USelectMenu value-key="value" :items="classes" v-model="state.classId" placeholder="Select class"
+            :disabled="isLoading" />
+          <template #help>
+            <p class="text-xs text-muted">Select the class where you want to assign a class master.</p>
           </template>
         </UFormField>
 
         <!-- Section -->
         <UFormField v-if="selectedClass" label="Section" name="sectionId" required>
-          <USelect :items="sections" v-model="state.sectionId" :disabled="isLoading" placeholder="Select section" />
-          <template #hint>
-            <p class="text-xs text-muted">
-              Choose the section within this class.
-            </p>
+          <USelectMenu value-key="value" :items="sections" v-model="state.sectionId" placeholder="Select section"
+            :disabled="isLoading || sections.length === 0" />
+          <template #help>
+            <p class="text-xs text-muted">Choose the section within this class.</p>
           </template>
         </UFormField>
 
         <!-- Stream (SSS only) -->
         <UFormField v-if="selectedClass?.level === Level.SSS" label="Stream" name="streamId" required>
-          <USelect :items="streams" v-model="state.streamId" :disabled="isLoading" placeholder="Select stream" />
-          <template #hint>
-            <p class="text-xs text-muted">
-              Select the stream for this SSS class.
-            </p>
+          <USelectMenu value-key="value" :items="streams" v-model="state.streamId" placeholder="Select stream"
+            :disabled="isLoading || streams.length === 0" />
+          <template #help>
+            <p class="text-xs text-muted">Select the stream for this SSS class.</p>
           </template>
         </UFormField>
 
         <!-- Teacher -->
         <UFormField v-if="selectedClass" label="Teacher" name="teacherId" required>
-          <USelect :items="teachers" v-model="state.teacherId" :disabled="isLoading" placeholder="Select teacher" />
-          <template #hint>
-            <p class="text-xs text-muted">
-              Select the teacher to assign as the class master.
-            </p>
+          <USelectMenu value-key="value" :items="teachers" v-model="state.teacherId" placeholder="Select teacher"
+            :disabled="isLoading || teachers.length === 0" />
+          <template #help>
+            <p class="text-xs text-muted">Select the teacher to assign as the class master.</p>
           </template>
         </UFormField>
       </UForm>
@@ -60,7 +57,7 @@
     <!-- Footer -->
     <template #footer>
       <div class="flex space-x-3">
-        <UButton icon="mynaui:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
+        <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
         <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
       </div>
     </template>
@@ -68,11 +65,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, onMounted } from 'vue'
 import * as yup from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useClassStore()
+const sessionStore = useClassSessionStore()
 const teacherStore = useTeacherStore()
 const toast = useToast()
 
@@ -92,42 +89,40 @@ const schema = yup.object({
   sectionId: yup.string().required('Section is required'),
   streamId: yup.string().when('classId', {
     is: (val: string) =>
-      store.records.find(c => c.id === val)?.level === 'SSS',
-    then: schema => schema.required('Stream is required')
+      sessionStore.records.find(c => c.clazzId === val)?.classLevel === 'SSS',
+    then: schema => schema.required('Stream is required'),
+    otherwise: schema => schema.notRequired()
   }),
   teacherId: yup.string().required('Teacher is required')
 })
 
-
-const classes = computed(() =>
-  store.records.map(c => ({
-    label: c.name,
-    value: c.id
-  }))
-)
-
-const selectedClass = computed(() =>
-  store.records.find(c => c.id === state.classId) || null
-)
-
-const teachers = computed(() =>
-  teacherStore.records.map(t => ({
-    label: `${t.user.givenNames} ${t.user.familyName}`,
-    value: t.id
-  }))
-)
-
+const classes = ref<{ label: string; value: string }[]>([])
 const sections = ref<{ label: string; value: string }[]>([])
 const streams = ref<{ label: string; value: string }[]>([])
 
+const selectedClass = computed(() => {
+  if (!state.classId) return null
+  return sessionStore.records.find(c => c.clazzId === state.classId)
+})
+
+const teachers = computed(() =>
+  teacherStore.records?.map(t => ({
+    label: `${t.user.givenNames} ${t.user.familyName}`,
+    value: t.id
+  })) || []
+)
+
+// Fetch sections and streams
 async function fetchRecords() {
+  if (!state.classId) return
+
+  // Reset dependent fields
+  state.sectionId = ''
+  state.streamId = ''
+  sections.value = []
+  streams.value = []
+
   try {
-    if (!state.classId) return
-
-    // Reset dependent fields
-    state.sectionId = ''
-    state.streamId = ''
-
     const resultSections = await store.findAllSections(state.classId)
     sections.value = resultSections?.map((s: ClassSection) => ({
       label: s.section.name,
@@ -139,7 +134,6 @@ async function fetchRecords() {
       label: s.stream.name,
       value: s.stream.id
     })) || []
-
   } catch (err) {
     sections.value = []
     streams.value = []
@@ -171,7 +165,7 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
     })
 
     close()
-    useClassSessionStore().fetchAll()
+    sessionStore.fetchAll()
   } catch (err: any) {
     toast.add({
       description: err.message || 'Something went wrong',
@@ -182,8 +176,19 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
   }
 }
 
-onMounted(async () => {
-  await store.fetchAll()
-  await teacherStore.fetchAll()
+watch(open, async (val) => {
+  if (val) {
+    const res = await sessionStore.fetchAllUnassign(0, 0)
+    if (res == null) return
+    classes.value = res.map((c: ClassSession) => ({
+      label: c.clazz,
+      value: c.clazzId
+    }))
+    await teacherStore.fetchAll()
+  }
+})
+
+watch(() => state.classId, () => {
+  fetchRecords()
 })
 </script>

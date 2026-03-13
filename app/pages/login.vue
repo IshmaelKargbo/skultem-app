@@ -103,14 +103,12 @@ const handleLogin = async () => {
 
         navigateTo("/")
     } catch (err: any) {
+        loading.value = false
         toast.add({
             description: err.message,
             color: "error"
         })
-    } finally {
-        loading.value = false
     }
-
 }
 
 definePageMeta({

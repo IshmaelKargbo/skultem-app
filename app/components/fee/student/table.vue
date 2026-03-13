@@ -4,6 +4,7 @@ import type { Row } from '@tanstack/vue-table'
 
 const props = defineProps<{
   student: Student
+  refreshKey?: number
 }>()
 
 const { format } = useMoney()
@@ -47,6 +48,13 @@ watch(
     await fetchData()
   },
   { immediate: true }
+)
+
+watch(
+  () => props.refreshKey,
+  async () => {
+    await fetchData()
+  }
 )
 
 const columns: TableColumn<StudentFee>[] = [

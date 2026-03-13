@@ -22,6 +22,8 @@ export type AttendanceHistory = {
     className: string
     presentCount: number,
     totalCount: number
+    createdAt: string
+    updatedAt: string
 }
 
 export type CreateAttendanceDto = {

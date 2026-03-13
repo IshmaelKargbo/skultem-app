@@ -2,13 +2,19 @@
     <u-slideover :dismissible="false" title="Create Discount" :open="open" @update:open="open = $event">
 
         <!-- Trigger -->
-        <UButton color="primary" label="Create Discount" icon="prime:plus" @click="open = true" />
+        <UButton
+            :color="triggerColor"
+            :label="triggerLabel"
+            :icon="triggerIcon"
+            :variant="triggerVariant"
+            :size="triggerSize"
+            @click="open = true" />
 
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Create Discount</p>
-                <UButton icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -26,7 +32,7 @@
                 </UFormField>
 
                 <!-- Assign to Student -->
-                <UFormField label="Assign to Student" name="studentId" required>
+                <UFormField v-if="showStudentSelect" label="Assign to Student" name="studentId" required>
                     <USelect @change="fetchRecords" :items="students" v-model="state.studentId"
                         placeholder="Select student" :disabled="isLoading" />
                     <template #help>
@@ -100,7 +106,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <UButton icon="mynaui:save" :loading="isLoading" label="Save"
+                <UButton icon="lucide:save" :loading="isLoading" label="Save"
                     @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
@@ -117,9 +123,23 @@ const { format } = useMoney()
 const studentStore = useStudentStore()
 const store = useFeeDiscountStore()
 const toast = useToast()
-const { refreshReport } = defineProps<{
-    refreshReport: Function
+const props = defineProps<{
+    refreshReport?: Function
+    studentId?: string
+    triggerLabel?: string
+    triggerIcon?: string
+    triggerVariant?: string
+    triggerSize?: string
+    triggerColor?: string
 }>()
+
+const refreshReport = props.refreshReport || (() => {})
+const showStudentSelect = computed(() => !props.studentId)
+const triggerLabel = computed(() => props.triggerLabel || 'Create Discount')
+const triggerIcon = computed(() => props.triggerIcon || 'prime:plus')
+const triggerVariant = computed(() => props.triggerVariant || 'solid')
+const triggerSize = computed(() => props.triggerSize || 'md')
+const triggerColor = computed(() => props.triggerColor || 'primary')
 
 const isLoading = ref(false)
 const open = ref(false)
@@ -322,6 +342,32 @@ const onSubmit = async (_event: FormSubmitEvent<FeeDiscountForm>) => {
 }
 
 onMounted(() => {
-    studentStore.fetchAll(0, 0)
+    if (showStudentSelect.value) {
+        studentStore.fetchAll(0, 0)
+    }
 })
+
+watch(
+    () => props.studentId,
+    async (value) => {
+        if (value) {
+            state.studentId = value
+            state.feeId = ''
+            fees.value = []
+            categories.value = []
+            fee.value = undefined
+            await fetchRecords()
+        }
+    },
+    { immediate: true }
+)
+
+watch(
+    () => open.value,
+    async (isOpen) => {
+        if (isOpen && state.studentId) {
+            await fetchRecords()
+        }
+    }
+)
 </script>

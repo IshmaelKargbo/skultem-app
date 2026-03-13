@@ -15,7 +15,7 @@
 <script setup lang="ts">
 onMounted(() => {
     useAppStore().setTitle('Parents');
-  
+
     document.title = 'Parents | Skultem'
 })
 </script>

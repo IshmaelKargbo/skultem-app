@@ -6,7 +6,11 @@
                     <p class="text-xl font-normal">Fee Structure Management</p>
                     <p class="font-light text-muted">Create and manage fee structures</p>
                 </div>
-                <div>
+                <div class="space-x-3">
+                    <UButton variant="outline" color="neutral" :icon="DOWNLOAD_ICON" label="Export CSV"
+                        :loading="exportingCsv" @click="exportFees('csv')" />
+                    <UButton variant="outline" color="neutral" :icon="DOWNLOAD_ICON" label="Export PDF"
+                        :loading="exportingPdf" @click="exportFees('pdf')" />
                     <FeeStructureAdd />
                 </div>
             </div>
@@ -15,7 +19,7 @@
             <div class="flex space-x-3">
                 <div class="flex-1">
                     <UFormField label="Search">
-                        <UInput placeholder="Search by class or category" leading-icon="iconamoon:search-light" />
+                        <UInput placeholder="Search by class or category" :leading-icon="SEARCH_ICON" />
                     </UFormField>
                 </div>
                 <div class="w-1/3 flex space-x-3">
@@ -43,8 +47,29 @@
 </template>
 
 <script setup lang="ts">
+import { DOWNLOAD_ICON, SEARCH_ICON } from '~/utils/icons'
+import { downloadBlob } from '~/utils/report'
+import { ReportApi } from '~/api/report.api'
+
 const page = ref(1);
 const { meta } = storeToRefs(useFeeStructureStore());
+const exportingCsv = ref(false)
+const exportingPdf = ref(false)
+const toast = useToast()
+
+async function exportFees(format: 'csv' | 'pdf') {
+    const loading = format === 'csv' ? exportingCsv : exportingPdf
+    loading.value = true
+    try {
+        const { blob, filename } = await ReportApi().exportFees(format)
+        downloadBlob(blob, filename)
+        toast.add({ title: 'Fee structures exported', color: 'success' })
+    } catch (err: any) {
+        toast.add({ title: err.message || 'Failed to export fee structures', color: 'error' })
+    } finally {
+        loading.value = false
+    }
+}
 
 onMounted(() => {
     useAppStore().setTitle('Fees Structures');

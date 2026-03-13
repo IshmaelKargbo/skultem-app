@@ -1,48 +1,59 @@
 <template>
     <UCard>
         <UForm :schema="schema" :state="state" class="space-y-3" @submit.prevent="onSubmit">
+
             <!-- Header -->
             <div class="flex items-center">
-                <p class="text-lg font-normal flex-1">Mark Attendance <span v-if="state.date">for {{ formatDateString(state.date) }}</span></p>
+                <p class="text-lg font-normal flex-1">
+                    Mark Attendance
+                    <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
+                </p>
 
                 <div class="flex flex-1 space-x-5">
                     <UFormField name="classId" class="w-full">
-                        <USelect @change="fetchRecords" :items="classes" v-model="state.classId"
-                            placeholder="Select class" />
+                        <USelect v-model="state.classId" :items="classes" placeholder="Select class"
+                            @change="fetchRecords" />
                     </UFormField>
+
                     <UFormField name="date" class="w-full">
-                        <UInput @change="fetchRecords" v-model="state.date" type="date" />
+                        <UInput v-model="state.date" type="date" @change="fetchRecords" />
                     </UFormField>
                 </div>
             </div>
 
             <div v-if="state.classId">
+
                 <!-- Actions -->
                 <div class="flex space-x-3 border-y border-gray-200 py-4 bg-gray-50/40 px-3">
-                    <UCheckbox v-if="report.holiday" size="xs" v-model="state.holiday" variant="card" color="info"
+
+                    <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
                         label="Mark on Holiday" />
+
                     <div class="flex space-x-3">
-                        <UButton :disabled="isDisable" variant="subtle" size="sm" color="success"
-                            label="Mark All Present" @click="markAllPresent" />
-                        <UButton :disabled="isDisable" variant="subtle" size="sm" color="error" label="Clear All"
+                        <UButton size="sm" color="success" variant="subtle" label="Mark All Present"
+                            :disabled="isDisable" @click="markAllPresent" />
+
+                        <UButton size="sm" color="error" variant="subtle" label="Clear All" :disabled="isDisable"
                             @click="clearAll" />
                     </div>
                 </div>
+
                 <!-- Table -->
                 <UTable :columns="columns" :data="state.records" :loading="isLoading">
+
                     <template #present-cell="{ row }">
-                        <UCheckbox :disabled="isDisable" color="success" variant="card" label="Present" size="xs"
-                            @change="stateChange(row.index, 'present')" :model-value="row.original.present" />
+                        <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
+                            :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
                     </template>
 
                     <template #late-cell="{ row }">
-                        <UCheckbox :disabled="isDisable" color="warning" variant="card" label="Late" size="xs"
-                            @change="stateChange(row.index, 'late')" :model-value="row.original.late" />
+                        <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
+                            :model-value="row.original.late" @change="stateChange(row.index, 'late')" />
                     </template>
 
                     <template #excused-cell="{ row }">
-                        <UCheckbox :disabled="isDisable" color="secondary" label="Excused" size="xs" variant="card"
-                            @change="stateChange(row.index, 'excused')" :model-value="row.original.excused" />
+                        <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
+                            :model-value="row.original.excused" @change="stateChange(row.index, 'excused')" />
                     </template>
 
                     <template #reason-cell="{ row }">
@@ -51,13 +62,16 @@
                                 :placeholder="row.original.excused ? 'Enter excuse reason...' : ''" />
                         </UFormField>
                     </template>
+
                 </UTable>
 
                 <!-- Submit -->
                 <div class="pt-3 border-t border-gray-200 flex justify-end">
-                    <UButton type="submit" icon="mynaui:save" label="Save Attendance" :loading="isLoading" />
+                    <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
                 </div>
+
             </div>
+
         </UForm>
     </UCard>
 </template>
@@ -68,12 +82,15 @@ import type { FormSubmitEvent, TableColumn } from '#ui/types'
 
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()
+
 const router = useRouter()
-const toast = useToast()
 const route = useRoute()
+const toast = useToast()
+
 const { report } = storeToRefs(store)
 
 const isLoading = ref(false)
+const selectedClass = ref<ClassSession>()
 
 function todayISO() {
     return new Date().toISOString().split('T')[0]
@@ -97,29 +114,6 @@ type AttendanceForm = {
     holiday: boolean
 }
 
-const clazz = computed<string>({
-    get: () => route.query.class as string,
-    set: (val) => updateQuery({ page: val })
-})
-
-const date = computed<string>({
-    get: () => route.query.date as string,
-    set: (val) => updateQuery({ size: val })
-})
-
-function updateQuery(newQuery: Record<string, any>) {
-    const merged = { ...route.query, ...newQuery }
-
-    if (
-        merged.date === route.query.date &&
-        merged.class === route.query.class
-    ) {
-        return
-    }
-
-    router.replace({ query: merged })
-}
-
 const state = reactive<AttendanceForm>({
     classId: '',
     date: todayISO() || '',
@@ -127,28 +121,55 @@ const state = reactive<AttendanceForm>({
     holiday: false
 })
 
-async function fetchRecords() {
-    selectedClass.value = classStore.records.find(e => e.clazzId == state.classId)
-
-    state.records = []
-    state.holiday = false
-    isLoading.value = true
-    if (selectedClass.value == null) return
-
+function updateQuery() {
     router.replace({
         query: {
             date: state.date,
             class: state.classId
         }
     })
-
-    const res: any = await store.getSession(selectedClass.value.id, state.date)
-    state.records = res
-
-    isLoading.value = false
-
-    await store.fetchAll(selectedClass.value.id)
 }
+
+const classes = computed(() =>
+    classStore.records.map((e: ClassSession) => {
+
+        let label = `${e.clazz} (${e.sectionName}) - ${e.totalStudent}`
+
+        if (e.streamName !== 'N/A') {
+            label = `${e.clazz} (${e.sectionName} - ${e.streamName}) - ${e.totalStudent}`
+        }
+
+        return {
+            label,
+            value: e.clazzId
+        }
+    })
+)
+
+watch(classes, (list) => {
+
+    if (!state.classId && list.length > 0) {
+        state.classId = list[0].value
+        fetchRecords()
+    }
+})
+
+watch(
+    () => [route.query.class, route.query.date],
+    ([newClass, newDate]) => {
+        if (newClass && newClass !== state.classId) {
+            state.classId = newClass as string
+        }
+        if (newDate && newDate !== state.date) {
+            state.date = newDate as string
+        }
+
+        if (state.classId) {
+            fetchRecords()
+        }
+    },
+    { immediate: true }
+)
 
 const columns: TableColumn<AttendanceRowRecord>[] = [
     { accessorKey: 'studentName', header: 'Student' },
@@ -158,49 +179,57 @@ const columns: TableColumn<AttendanceRowRecord>[] = [
     { accessorKey: 'reason', header: 'Reason' }
 ]
 
-function calculateReport(checkAbsent: boolean = false) {
+const isDisable = computed(() =>
+    report.value.holiday && !state.holiday
+)
+
+function calculateReport(checkAbsent = false) {
+
     let present = 0
     let late = 0
     let excused = 0
-    let marked = state.records.length
     let absent = 0
 
-    state.records.map(e => {
-        if (e.present) {
-            present = present + 1
-        } else if (e.late) {
-            late = late + 1
-        } else if (e.excused) {
-            excused = excused + 1
-        } else if (checkAbsent) {
-            absent = absent + 1
-        }
+    state.records.forEach(r => {
+
+        if (r.present) present++
+        else if (r.late) late++
+        else if (r.excused) excused++
+        else if (checkAbsent) absent++
+
     })
 
-    store.updateReport({ absent, excused, late, marked, present, rate: 0, holiday: false })
+    store.updateReport({
+        present,
+        late,
+        excused,
+        absent,
+        marked: state.records.length,
+        rate: 0,
+        holiday: false
+    })
 }
-const isDisable = computed(() => report.value.holiday && !state.holiday)
 
 function stateChange(index: number, type: 'present' | 'late' | 'excused') {
-    const record = state.records[index]
-    if (!record) return
 
-    if (record[type]) {
-        record.present = false
-        record.late = false
-        record.excused = false
-        record.reason = ''
+    const r = state.records[index]
+    if (!r) return
+
+    if (r[type]) {
+
+        r.present = false
+        r.late = false
+        r.excused = false
+        r.reason = ''
+
         return
     }
 
-    record.present = type === 'present'
-    record.late = type === 'late'
-    record.excused = type === 'excused'
+    r.present = type === 'present'
+    r.late = type === 'late'
+    r.excused = type === 'excused'
 
-
-    if (type !== 'excused') {
-        record.reason = ''
-    }
+    if (!r.excused) r.reason = ''
 
     calculateReport()
 }
@@ -212,102 +241,117 @@ function markAllPresent() {
         r.excused = false
         r.reason = ''
     })
+
+    calculateReport()
 }
 
 function clearAll() {
+    isLoading.value = false
     state.records.forEach(r => {
         r.present = false
         r.late = false
         r.excused = false
         r.reason = ''
     })
+
+    calculateReport()
 }
 
-const selectedClass = ref<ClassSession>()
-const classes = computed(() => classStore.records.map((e: ClassSession) => {
-    let label = `${e.clazz} (${e.sectionName}) - ${e.totalStudent}`
+async function fetchRecords() {
+    selectedClass.value = classStore.records.find(
+        e => e.clazzId === state.classId
+    )
 
-    if (e.streamName != "N/A") {
-        label = `${e.clazz} (${e.sectionName} - ${e.streamName}) - ${e.totalStudent}`
+    if (!selectedClass.value) return
+
+    isLoading.value = true
+
+    updateQuery()
+
+    try {
+        state.records = await store.getSession(
+            selectedClass.value.id,
+            state.date
+        )
+
+        state.holiday = report.value.holiday
+
+        await store.fetchAll(selectedClass.value.id)
+
+    } finally {
+
+        isLoading.value = false
+
     }
-    return { label, value: e.clazzId }
-}))
+}
 
 const schema = yup.object({
+
     classId: yup.string().required('Class is required'),
     date: yup.string().required('Date is required'),
 
     records: yup.array().of(
         yup.object({
-            present: yup.boolean().required(),
-            late: yup.boolean().required(),
-            excused: yup.boolean().required(),
+
+            present: yup.boolean(),
+            late: yup.boolean(),
+            excused: yup.boolean(),
 
             reason: yup.string().when('excused', {
                 is: true,
-                then: schema =>
-                    schema
-                        .required('Reason is required when student is excused')
-                        .min(3, 'Reason must be at least 3 characters'),
-                otherwise: schema => schema.notRequired()
+                then: s => s.required().min(3),
+                otherwise: s => s.notRequired()
             })
+
         })
     )
+
 })
 
-const onSubmit = async (event: FormSubmitEvent<AttendanceForm>) => {
-    if (selectedClass.value == null) return
+async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
+
+    if (!selectedClass.value) return
 
     isLoading.value = true
+
     try {
-        const records: AttendanceRecord[] = state.records.map(e => ({
-            studentId: e.studentId,
-            excused: e.excused,
-            late: e.late,
-            present: e.present,
-            reason: e.reason
+
+        const records: AttendanceRecord[] = state.records.map(r => ({
+            studentId: r.studentId,
+            present: r.present,
+            late: r.late,
+            excused: r.excused,
+            reason: r.reason
         }))
 
         await store.create(selectedClass.value.id, {
             date: state.date,
-            records: records,
+            records,
             holiday: state.holiday
         })
+
         toast.add({
             description: 'Attendance saved successfully',
             color: 'success'
         })
+
         calculateReport(true)
         fetchRecords()
+
     } catch (err: any) {
+
         toast.add({
             description: err?.message || 'Something went wrong',
             color: 'error'
         })
+
     } finally {
+
         isLoading.value = false
+
     }
 }
-
 onMounted(async () => {
     await classStore.fetchAll(0, 0)
-    state.records = []
-
-    if (date.value) {
-        state.date = date.value
-    }
-
-    if (clazz.value) {
-        state.classId = clazz.value
-        fetchRecords()
-    }
 })
-
-watch(() => [date.value, clazz.value], () => {
-    if (date.value && clazz.value) {
-        state.date = date.value
-        state.classId = clazz.value
-    }
-    fetchRecords()
-}, { immediate: true })
 </script>

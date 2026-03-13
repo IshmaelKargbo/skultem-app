@@ -1,13 +1,13 @@
 <template>
     <USlideover :dismissible="false" :open="open" @update:open="open = $event">
         <!-- Trigger -->
-        <UButton color="primary" label="Add Class" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Add Class" :icon="ADD_ICON" @click="open = true" />
 
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Class</p>
-                <UButton icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <UButton :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -17,29 +17,46 @@
                 <!-- Name -->
                 <UFormField required label="Name" name="name">
                     <UInput v-model="state.name" placeholder="e.g. Class 1" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">
-                            Enter the name of the class.
+                            Enter the name of the class. This will be used for display and identification.
                         </p>
                     </template>
                 </UFormField>
 
                 <!-- Level -->
                 <UFormField required label="Level" name="level">
-                    <USelect v-model="state.level" :items="levels" placeholder="Select class level"
-                        :disabled="isLoading" />
+                    <USelectMenu value-key="value" v-model="state.level" :items="levels"
+                        placeholder="Select class level" :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">
+                            Select the education level for this class, e.g., JSS, SSS.
+                        </p>
+                    </template>
                 </UFormField>
 
                 <!-- Stream (Only for SSS) -->
                 <UFormField v-if="state.level === Level.SSS" required label="Stream" name="streams">
-                    <USelect v-model="state.streams" :items="streams" multiple placeholder="Select stream"
-                        :disabled="isLoading" />
+                    <USelectMenu value-key="value" v-model="state.streams" :items="streams" multiple
+                        placeholder="Select stream" :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">
+                            Assign one or more streams for SSS classes. Streams differentiate student groups within the
+                            same level.
+                        </p>
+                    </template>
                 </UFormField>
 
                 <!-- Sections -->
                 <UFormField required label="Sections" name="sections">
-                    <USelect v-model="state.sections" :items="sections" multiple placeholder="Select sections"
-                        :disabled="isLoading" />
+                    <USelectMenu value-key="value" v-model="state.sections" :items="sections" multiple
+                        placeholder="Select sections" :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">
+                            Select one or more sections for this class. Sections help organize students into smaller
+                            groups.
+                        </p>
+                    </template>
                 </UFormField>
 
                 <!-- Grade -->
@@ -47,18 +64,20 @@
                     <UInput v-model="state.levelOrder" type="number" placeholder="e.g. 1" :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">
-                            Display order of the class.
+                            The display order of the class. Lower numbers appear first in lists.
                         </p>
                     </template>
                 </UFormField>
 
+                <!-- Assessment Template -->
                 <UFormField label="Assessment Template" name="assessmentTemplateId">
-                    <USelect v-model="state.assessmentTemplateId" :items="assessmentTemplates"
+                    <USelectMenu value-key="value" v-model="state.assessmentTemplateId" :items="assessmentTemplates"
                         placeholder="Select assessment template (optional)"
                         :disabled="isLoading || assessmentStore.loading" />
                     <template #help>
                         <p class="text-xs text-muted">
-                            Template will be used when provisioning assessments for students in this class.
+                            Optional. Select a template that will be used when provisioning assessments for students in
+                            this class.
                         </p>
                     </template>
                 </UFormField>
@@ -68,7 +87,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex gap-3">
-                <UButton icon="mynaui:save" label="Save" :loading="isLoading" @click="formRef?.submit()" />
+                <UButton :icon="SAVE_ICON" label="Save" :loading="isLoading" @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -131,44 +150,26 @@ const state = reactive<ClassForm>({
 
 const schema = yup.object({
     name: yup.string().required('Name is required'),
-
-    level: yup
-        .mixed<Level>()
-        .required('Level is required'),
-
-    sections: yup
-        .array()
-        .of(yup.string())
-        .min(1, 'At least one section is required'),
-
+    level: yup.mixed<Level>().required('Level is required'),
+    sections: yup.array().of(yup.string()).min(1, 'At least one section is required'),
     streams: yup.array().when('level', {
         is: Level.SSS,
         then: schema =>
-            schema
-                .of(yup.string())
-                .min(1, 'At least one stream is required for SSS'),
+            schema.of(yup.string()).min(1, 'At least one stream is required for SSS'),
         otherwise: schema => schema.notRequired()
     }),
-
-    levelOrder: yup
-        .number()
-        .typeError('Grade must be a number')
-        .required('Grade is required')
-        .min(1)
+    levelOrder: yup.number().typeError('Grade must be a number').required('Grade is required').min(1)
 })
 
 watch(
     () => state.level,
     (val) => {
-        if (val !== Level.SSS) {
-            state.streams = []
-        }
+        if (val !== Level.SSS) state.streams = []
     }
 )
 
 const close = () => {
     open.value = false
-
     state.name = ''
     state.level = ''
     state.sections = []
@@ -179,7 +180,6 @@ const close = () => {
 
 const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
     isLoading.value = true
-
     try {
         await store.create({
             name: state.name,
@@ -189,20 +189,11 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
             levelOrder: state.levelOrder as number,
             assessmentTemplateId: state.assessmentTemplateId || undefined
         })
-
-        toast.add({
-            description: 'Class created successfully',
-            color: 'success'
-        })
-
+        toast.add({ description: 'Class created successfully', color: 'success' })
         await useClassSessionStore().fetchAll(1, runtimeConf().limit)
         close()
-
     } catch (err: any) {
-        toast.add({
-            description: err?.message || 'Something went wrong',
-            color: 'error'
-        })
+        toast.add({ description: err?.message || 'Something went wrong', color: 'error' })
     } finally {
         isLoading.value = false
     }

@@ -29,6 +29,7 @@ function select(row: Student) {
     if (row == null) return;
     selectedStudent.value = row
 }
+
 onMounted(() => {
     useAppStore().setTitle('Student Fees')
     

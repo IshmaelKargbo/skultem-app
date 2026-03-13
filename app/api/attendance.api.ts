@@ -17,9 +17,9 @@ export const AttendanceApi = () => {
         useHandleError(err)
       }
     },
-    getHistory: async (id: string) => {
+    getHistory: async (id: string, page=1, size=6) => {
       try {
-        const res = await $api(`/attendance/session/report/${id}`) as any
+        const res = await $api(`/attendance/session/report/${id}?page=${page}&size=${size}`) as any
 
         if (!res)
           throw new Error('Failed to fetch attendance history')

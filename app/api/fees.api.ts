@@ -151,6 +151,16 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
+    assignFeeToStudent: async (payload: AssignFeeToStudentDto) => {
+      try {
+        return await $api('/fee/structure/assign', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     countByStudentsByFee: async (id: string) => {
       try {
         const res = await $api(`/fee/structure/count/${id}`) as any

@@ -30,6 +30,17 @@ export const runtimeConf = () => {
     return { limit: Number.parseInt(useRuntimeConfig().public.limit) }
 }
 
+export const parseGenderColor: Record<string, string> = {
+    MALE: 'success',
+    FEMALE: 'info'
+}
+
+
+export type Option = {
+    label: string
+    value: string
+}
+
 export const levels = [
     { label: 'Primary', value: Level.Primary },
     { label: 'JSS', value: Level.JSS },
@@ -47,6 +58,17 @@ export const parseGender: Record<string, string> = {
     'FEMALE': 'Female'
 }
 
+export const genderOption: Option[] = [
+    {
+        label: 'Male',
+        value: 'MALE'
+    },
+    {
+        label: 'Female',
+        value: 'FEMALE'
+    }
+]
+
 export const parseBehaviourKind: Record<string, string> = {
     'POSITIVE': 'Positive',
     'NEGATIVE': 'Negative',
@@ -60,17 +82,17 @@ export const parseBehaviourKindColor: Record<string, string> = {
 }
 
 export const parseTitle: Record<string, string> = {
-  MR: 'Mr.',
-  MRS: 'Mrs.',
-  MISS: 'Miss',
-  MS: 'Ms.',
-  DR: 'Dr.',
-  PROF: 'Prof.',
-  REV: 'Rev.',
-  HON: 'Hon.',
-  ENG: 'Eng.',
-  SIR: 'Sir',
-  MADAM: 'Madam'
+    MR: 'Mr.',
+    MRS: 'Mrs.',
+    MISS: 'Miss',
+    MS: 'Ms.',
+    DR: 'Dr.',
+    PROF: 'Prof.',
+    REV: 'Rev.',
+    HON: 'Hon.',
+    ENG: 'Eng.',
+    SIR: 'Sir',
+    MADAM: 'Madam'
 }
 
 export function parseClass(clazz: Enrollment) {

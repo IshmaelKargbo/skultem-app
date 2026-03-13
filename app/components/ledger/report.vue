@@ -4,8 +4,8 @@
         <UCard class="flex-1">
             <div class="flex items-center justify-between p-2">
                 <div class="space-y-1">
-                    <p class="text-mute">Total Debit</p>
-                    <p class="text-2xl text-red-400" v-if="report">{{ format(report.totalDebit) }}</p>
+                    <p class="text-mute text-xs">Total Debit</p>
+                    <p class="text-2xl text-error font-semibold" v-if="report">{{ format(report.totalDebit) }}</p>
                     <USkeleton class="w-8 h-8" v-else />
                 </div>
             </div>
@@ -13,8 +13,8 @@
         <UCard class="flex-1">
             <div class="flex items-center justify-between p-2">
                 <div class="space-y-1">
-                    <p class="text-mute">Total Credit</p>
-                    <p class="text-2xl text-success-400" v-if="report">{{ format(report.totalCredit) }}</p>
+                    <p class="text-mute text-xs">Total Credit</p>
+                    <p class="text-2xl text-success font-semibold" v-if="report">{{ format(report.totalCredit) }}</p>
                     <USkeleton class="w-8 h-8" v-else />
                 </div>
             </div>
@@ -22,8 +22,8 @@
         <UCard class="flex-1">
             <div class="flex items-center justify-between p-2">
                 <div class="space-y-1">
-                    <p class="text-mute">Net Balance</p>
-                    <p class="text-2xl text-blue-500" v-if="report">{{ format(report.netBalance) }}</p>
+                    <p class="text-mute text-xs">Net Balance</p>
+                    <p class="text-2xl text-info font-semibold" v-if="report">{{ format(report.netBalance) }}</p>
                     <USkeleton class="w-8 h-8" v-else />
                 </div>
             </div>

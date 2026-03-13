@@ -13,17 +13,17 @@
         <li>
           <MenuItem label="Dashboard" exact to="/">
           <template #icon>
-            <UIcon class="text-xl" name="si:dashboard-customize-line" />
+            <UIcon class="text-xl" :name="DASHBOARD_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Grades" :subNavs="[
-            { label: 'Grade Assignment', to: '/grades', icon: 'si:assignment-line', exact: true },
-            { label: 'Grade Approval', to: '/grades/approval', icon: 'material-symbols:order-approve-outline' }
+            { label: 'Grade Assignment', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true },
+            { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON }
           ]">
           <template #icon>
-            <UIcon class="text-xl" name="carbon:cobol-upgrade-advisor" />
+            <UIcon class="text-xl" :name="GRADES_ICON" />
           </template>
 
           <!-- Subnav Slot -->
@@ -43,7 +43,7 @@
         <li>
           <MenuItem label="Attendance" to="/attendance">
           <template #icon>
-            <UIcon class="text-xl" name="hugeicons:date-time" />
+            <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
           </template>
           </MenuItem>
         </li>
@@ -51,93 +51,100 @@
         <li>
           <MenuItem label="Students" to="/students">
           <template #icon>
-            <UIcon class="text-xl" name="hugeicons:student" />
+            <UIcon class="text-xl" :name="STUDENT_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Behaviours" to="/behaviours">
           <template #icon>
-            <UIcon class="text-xl" name="fluent:sparkle-action-20-filled" />
+            <UIcon class="text-xl" :name="BEHAVIOUR_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Teachers" to="/teachers">
           <template #icon>
-            <UIcon class="text-xl" name="hugeicons:teaching" />
+            <UIcon class="text-xl" :name="TEACHER_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Parents" to="/parents">
           <template #icon>
-            <UIcon class="text-xl" name="raphael:parent" />
+            <UIcon class="text-xl" :name="PARENT_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Classes" to="/classes">
           <template #icon>
-            <UIcon class="text-xl" name="streamline-plump:class-lesson" />
+            <UIcon class="text-xl" :name="CLASS_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Subjects" to="/subjects">
           <template #icon>
-            <UIcon class="text-xl" name="ph:books" />
+            <UIcon class="text-xl" :name="SUBJECT_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem to="/fees-structures" label="Fees Structures">
           <template #icon>
-            <UIcon class="text-xl" name="si:assignment-duotone" />
+            <UIcon class="text-xl" :name="FEE_STRUCTURE_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Student Fees" to="/student-fees">
           <template #icon>
-            <UIcon class="text-xl" name="fluent:feed-28-regular" />
+            <UIcon class="text-xl" :name="STUDENT_FEES_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem to="/payments" label="Payments">
           <template #icon>
-            <UIcon class="text-xl" name="streamline-ultimate:cash-payment-bills" />
+            <UIcon class="text-xl" :name="PAYMENT_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Discounts" to="/discounts">
           <template #icon>
-            <UIcon class="text-xl" name="mdi:discount-outline" />
+            <UIcon class="text-xl" :name="DISCOUNT_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem to="/ledger" label="Ledger">
           <template #icon>
-            <UIcon class="text-xl" name="solar:book-broken" />
+            <UIcon class="text-xl" :name="LEDGER_ICON" />
+          </template>
+          </MenuItem>
+        </li>
+        <li>
+          <MenuItem to="/analytics" label="Analytics">
+          <template #icon>
+            <UIcon class="text-xl" :name="REPORT_ICON" />
           </template>
           </MenuItem>
         </li>
         <li>
           <MenuItem label="Curriculums" :subNavs="[
-            { label: 'Subjects', to: '/curriculums', icon: 'carbon:document-subject', exact: true },
-            { label: 'Subject Groups', to: '/curriculums/subject-groups', icon: 'clarity:file-group-line' },
-            { label: 'Class Subjects', to: '/curriculums/class-subjects', icon: 'lineicons:books-2' },
-            { label: 'Stream Subjects', to: '/curriculums/stream-subjects', icon: 'lineicons:books-2' },
-            { label: 'Teacher Assignment', to: '/curriculums/teacher-assignment', icon: 'material-symbols:assignment-add-outline-rounded' },
-            { label: 'Sections', to: '/curriculums/sections', icon: 'tabler:section' },
-            { label: 'Streams', to: '/curriculums/streams', icon: 'carbon:downstream' },
+            { label: 'Subjects', to: '/curriculums', icon: CURRICULUM_SUBJECT_ICON, exact: true },
+            { label: 'Subject Groups', to: '/curriculums/subject-groups', icon: CURRICULUM_GROUP_ICON },
+            { label: 'Class Subjects', to: '/curriculums/class-subjects', icon: BOOK_OPEN_ICON },
+            { label: 'Stream Subjects', to: '/curriculums/stream-subjects', icon: BOOK_OPEN_ICON },
+            { label: 'Teacher Assignment', to: '/curriculums/teacher-assignment', icon: CLIPBOARD_ADD_ICON },
+            { label: 'Sections', to: '/curriculums/sections', icon: LAYERS_ICON },
+            { label: 'Streams', to: '/curriculums/streams', icon: CURRICULUM_STREAM_ICON },
           ]">
           <!-- Parent Icon -->
           <template #icon>
-            <UIcon class="text-xl" name="streamline:business-user-curriculum" />
+            <UIcon class="text-xl" :name="CURRICULUM_ICON" />
           </template>
 
           <!-- Subnav Slot -->
@@ -157,7 +164,7 @@
         <li>
           <MenuItem to="/settings" label="Settings">
           <template #icon>
-            <UIcon class="text-xl" name="ph:gear-light" />
+            <UIcon class="text-xl" :name="SETTINGS_ICON" />
           </template>
           </MenuItem>
         </li>
@@ -165,3 +172,33 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import {
+  ATTENDANCE_ICON,
+  STUDENT_ICON,
+  TEACHER_ICON,
+  PAYMENT_ICON,
+  DASHBOARD_ICON,
+  GRADES_ICON,
+  GRADES_ASSIGN_ICON,
+  GRADES_APPROVAL_ICON,
+  BEHAVIOUR_ICON,
+  PARENT_ICON,
+  CLASS_ICON,
+  SUBJECT_ICON,
+  FEE_STRUCTURE_ICON,
+  STUDENT_FEES_ICON,
+  DISCOUNT_ICON,
+  LEDGER_ICON,
+  REPORT_ICON,
+  CURRICULUM_ICON,
+  SETTINGS_ICON,
+  CURRICULUM_SUBJECT_ICON,
+  CURRICULUM_GROUP_ICON,
+  BOOK_OPEN_ICON,
+  CLIPBOARD_ADD_ICON,
+  LAYERS_ICON,
+  CURRICULUM_STREAM_ICON
+} from '~/utils/icons'
+</script>

@@ -3,7 +3,7 @@
         <div class="space-y-4">
 
             <!-- Search -->
-            <UInput placeholder="Search students . . ." leading-icon="iconamoon:search-light" :disabled="isLoading" />
+            <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON" :disabled="isLoading" />
 
             <!-- Loading State -->
             <div v-if="isLoading" class="space-y-3">
@@ -32,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import { SEARCH_ICON } from '~/utils/icons'
+
 const route = useRoute()
 const isLoading = ref(true)
 
@@ -74,6 +76,7 @@ const loadData = async () => {
     const res = await store.fetchAllAndReturn(page.value, size.value)
     if (res) {
         records.value = res.records
+        select(res.records[0])
         meta.value = res.meta
     }
 

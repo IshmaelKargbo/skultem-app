@@ -8,7 +8,7 @@
     <template #header>
       <div class="flex justify-between w-full items-center">
         <p class="text-lg font-semibold">Add Behaviour</p>
-        <UButton icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+        <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
       </div>
     </template>
 
@@ -44,7 +44,7 @@
     <!-- Footer -->
     <template #footer>
       <div class="flex gap-3">
-        <UButton icon="mynaui:save" label="Save" :loading="isLoading" @click="formRef?.submit()" />
+        <UButton icon="lucide:save" label="Save" :loading="isLoading" @click="formRef?.submit()" />
 
         <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
       </div>

@@ -4,7 +4,7 @@
 
     <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Active term</p>
+        <p class="text-xs tracking-wide text-slate-500">Active Term</p>
         <p class="mt-1 text-base font-semibold text-slate-800">{{ overview?.activeTerm?.name || 'Not set' }}</p>
         <p class="mt-1 text-xs text-slate-500">
           {{ overview?.activeTerm ? `${formatDate(overview.activeTerm.startDate)} - ${formatDate(overview.activeTerm.endDate)}` : 'Set an ACTIVE term to unlock cycle readiness.' }}
@@ -12,17 +12,17 @@
       </div>
 
       <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Total classes</p>
+        <p class="text-xs tracking-wide text-slate-500">Total Classes</p>
         <p class="mt-1 text-2xl font-semibold text-slate-800">{{ overview?.totalClasses || 0 }}</p>
       </div>
 
       <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Ready classes</p>
+        <p class="text-xs tracking-wide text-slate-500">Ready Classes</p>
         <p class="mt-1 text-2xl font-semibold text-green-700">{{ overview?.readyClasses || 0 }}</p>
       </div>
 
       <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Need attention</p>
+        <p class="text-xs tracking-wide text-slate-500">Need Attention</p>
         <p class="mt-1 text-2xl font-semibold text-amber-700">{{ overview?.notReadyClasses || 0 }}</p>
       </div>
     </div>
@@ -30,7 +30,7 @@
     <div class="mt-4 bg-white border border-gray-200 rounded-md p-4 space-y-3">
       <div class="flex items-center justify-between gap-2">
         <p class="text-sm font-medium text-slate-800">Quick Controls</p>
-        <UButton label="Refresh" icon="i-lucide-refresh-ccw" color="neutral" variant="soft" :loading="isRefreshing" @click="refreshAll" />
+        <UButton label="Refresh" icon="i-lucide-refresh-ccw" color="neutral" variant="outline" :loading="isRefreshing" @click="refreshAll" />
       </div>
 
       <div class="grid gap-3 xl:grid-cols-2">
@@ -65,7 +65,7 @@
       <div class="rounded-md border border-slate-200 p-3 space-y-3">
         <div class="flex items-center justify-between">
           <p class="text-xs uppercase tracking-wide text-slate-500">Grading scale</p>
-          <UButton label="Add Band" icon="i-lucide-plus" size="xs" color="neutral" variant="soft" @click="addGradeBand" />
+          <UButton label="Add Band" icon="i-lucide-plus" size="xs" color="neutral" variant="outline" @click="addGradeBand" />
         </div>
         <p class="text-xs text-slate-500">Configure grade bands used for student grade and ranking calculation.</p>
 
@@ -84,8 +84,8 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <UButton label="Manage Terms" icon="i-lucide-calendar" color="neutral" variant="soft" to="/settings/terms" />
-        <UButton label="Manage Templates" icon="i-lucide-clipboard-list" color="neutral" variant="soft" to="/settings/assessment-templates" />
+        <UButton label="Manage Terms" icon="i-lucide-calendar" color="neutral" variant="outline" to="/settings/terms" />
+        <UButton label="Manage Templates" icon="i-lucide-clipboard-list" color="neutral" variant="outline" to="/settings/assessment-templates" />
       </div>
     </div>
 
@@ -116,7 +116,7 @@
             v-for="item in filteredClasses"
             :key="item.classId"
             class="w-full text-left rounded-lg border p-3 transition"
-            :class="selectedClassId === item.classId ? 'border-primary-500 bg-primary-50' : 'border-slate-200 bg-white hover:border-slate-300'"
+            :class="selectedClassId === item.classId ? 'bg-app-50/50 border-app-100' : 'border-slate-200 bg-white hover:border-slate-300'"
             @click="selectClass(item.classId)"
           >
             <div class="flex items-start justify-between gap-3">
@@ -147,7 +147,7 @@
             <p class="text-sm text-slate-500">Detailed assessment order for the selected class template.</p>
           </div>
           <UBadge
-            :variant="'subtle'"
+            :variant="'outline'"
             :color="activeTerm ? 'success' : 'warning'"
             :icon="activeTerm ? 'i-lucide-check-circle' : 'i-lucide-alert-circle'"
             :label="activeTerm ? 'Active term set' : 'No active term'"

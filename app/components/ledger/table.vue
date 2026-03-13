@@ -7,6 +7,7 @@ const store = useLedgerStore()
 const loading = ref(true)
 const { format } = useMoney()
 const { records: data, meta, total } = storeToRefs(store)
+const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns: TableColumn<Ledger> = [
   {
@@ -102,6 +103,13 @@ async function fetchRecord() {
 }
 
 watch(() => page.value, () => {
+    nextTick(() => {
+        scrollContainer?.value?.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
+    })
+
   router.replace({
     query: {
       page: page.value,
@@ -138,25 +146,25 @@ onMounted(async () => {
         </div>
       </template>
       <template #debit-cell="{ row }">
-        <p class="text-red-400">{{ row.original.debit ? format(row.original.debit || 0) : '-' }}</p>
+        <p class="text-error font-semibold">{{ row.original.debit ? format(row.original.debit || 0) : '-' }}</p>
       </template>
       <template #debit-footer>
-        <p class="text-red-400">{{ format(total.totalDebit || 0) }}</p>
+        <p class="text-error font-semibold">{{ format(total.totalDebit || 0) }}</p>
       </template>
       <template #credit-cell="{ row }">
-        <p class="text-green-400">{{ row.original.credit ? format(row.original.credit || 0) : '-' }}</p>
+        <p class="text-success font-semibold">{{ row.original.credit ? format(row.original.credit || 0) : '-' }}</p>
       </template>
       <template #credit-footer>
-        <p class="text-green-400">{{ format(total.totalCredit || 0) }}</p>
+        <p class="text-success font-semibold">{{ format(total.totalCredit || 0) }}</p>
       </template>
       <template #type-cell="{ row }">
         <UBadge variant="subtle" :color="parseTypeColor[row.original.type]" :label="parseType[row.original.type]" />
       </template>
       <template #balance-cell="{ row }">
-        <p>{{ format(row.original.balance || 0) }}</p>
+        <p class="text-info font-semibold">{{ format(row.original.balance || 0) }}</p>
       </template>
       <template #balance-footer>
-        <p class="text-blue-400">{{ format(total.finalBalance || 0) }}</p>
+        <p class="text-info font-semibold">{{ format(total.finalBalance || 0) }}</p>
       </template>
       <template #date-footer>
         <p>Total</p>

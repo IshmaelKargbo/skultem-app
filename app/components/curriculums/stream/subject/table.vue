@@ -62,6 +62,16 @@ const columns: TableColumn<StreamSubject> = [
 ]
 
 function getRowItems(row: Row<StreamSubject>) {
+  if (row.original.locked) {
+    return [
+      {
+        label: 'Locked',
+        icon: 'i-lucide-lock',
+        disabled: true
+      }
+    ]
+  }
+
   return [
     {
       label: 'Edit Record',
@@ -148,7 +158,10 @@ onMounted(async () => {
         </div>
       </template>
       <template #mandatory-cell="{ row }">
-        <USwitch v-model="row.original.mandatory" />
+        <div class="flex items-center gap-2">
+          <USwitch v-model="row.original.mandatory" :disabled="row.original.locked" />
+          <UBadge v-if="row.original.locked" variant="outline" color="error" label="Locked" />
+        </div>
       </template>
     </UTable>
     <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">

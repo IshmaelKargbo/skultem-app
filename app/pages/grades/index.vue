@@ -7,10 +7,14 @@
           Enter scores for the active test. Locked assessments are read-only.
         </p>
       </div>
-      <div v-if="state.teacherSubjectId && hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
-        <UButton v-if="hasDraftAssessments" icon="mynaui:save" label="Save Grades" :loading="saving"
+      <div class="flex flex-wrap gap-2 md:justify-end">
+        <UButton variant="outline" color="neutral" icon="lucide:download" label="Export CSV"
+          :loading="exportingCsv" :disabled="!canExport" @click="exportGrades('csv')" />
+        <UButton variant="outline" color="neutral" icon="lucide:download" label="Export PDF"
+          :loading="exportingPdf" :disabled="!canExport" @click="exportGrades('pdf')" />
+        <UButton v-if="hasDraftAssessments" icon="lucide:save" label="Save Grades" :loading="saving"
           :disabled="disableActions" @click="saveGrades" />
-        <UButton icon="material-symbols:check-circle-outline" label="Complete Assessment" color="success"
+        <UButton icon="lucide:check-circle" label="Complete Assessment" color="success"
           :loading="completing" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
       </div>
     </div>
@@ -70,6 +74,8 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, h, onMounted, resolveComponent } from "vue"
+import { downloadBlob } from '~/utils/report'
+import { ReportApi } from '~/api/report.api'
 
 type GradeAssessmentForm = {
   classId: string
@@ -100,6 +106,8 @@ const completing = ref(false)
 const columns = ref<any[]>([])
 const rows = ref<StudentAssessment[]>([])
 const assessments = ref<Assessment[]>([])
+const exportingCsv = ref(false)
+const exportingPdf = ref(false)
 
 const teacherStore = useTeacherSubjectStore()
 const classSessionStore = useClassSessionStore()
@@ -122,6 +130,7 @@ const activeAssessmentPosition = computed<number | null>(() => {
 
 const disableActions = computed(() => !state.teacherSubjectId || !state.termId || !state.classId || !rows.value.length || loading.value)
 const hasDraftAssessments = computed(() => editableAssessments.value.length > 0)
+const canExport = computed(() => !!state.teacherSubjectId && !!state.termId)
 const gradingBands = computed(() => store.gradingScale?.bands || [])
 
 const completedAssessmentIds = computed(() => {
@@ -190,6 +199,25 @@ const workflowLabel = computed(() => {
   return "In progress"
 })
 
+async function exportGrades(format: 'csv' | 'pdf') {
+  if (!state.teacherSubjectId || !state.termId) {
+    toast.add({ title: 'Select subject and term first', color: 'warning' })
+    return
+  }
+
+  const loadingState = format === 'csv' ? exportingCsv : exportingPdf
+  loadingState.value = true
+  try {
+    const { blob, filename } = await ReportApi().exportGrades(state.teacherSubjectId, state.termId, format)
+    downloadBlob(blob, filename)
+    toast.add({ title: 'Grades exported', color: 'success' })
+  } catch (err: any) {
+    toast.add({ title: err.message || 'Failed to export grades', color: 'error' })
+  } finally {
+    loadingState.value = false
+  }
+}
+
 const statusSummary = computed<StatusCard[]>(() => {
   const counts = assessments.value.reduce((acc, assessment) => {
     const status = assessment.status as AssessmentStatus
@@ -202,7 +230,7 @@ const statusSummary = computed<StatusCard[]>(() => {
       status: "DRAFT",
       label: "Draft",
       count: counts.DRAFT || 0,
-      icon: "wordpress:pending",
+      icon: "lucide:clock",
       color: "warning",
       textClass: "text-amber-600"
     },
@@ -226,7 +254,7 @@ const statusSummary = computed<StatusCard[]>(() => {
       status: "APPROVED",
       label: "Approved",
       count: (counts.APPROVED || 0) + (counts.COMPLETED || 0),
-      icon: "material-symbols:verified-outline",
+      icon: "lucide:badge-check",
       color: "success",
       textClass: "text-emerald-600"
     },
@@ -234,7 +262,7 @@ const statusSummary = computed<StatusCard[]>(() => {
       status: "LOCKED",
       label: "Locked",
       count: counts.LOCKED || 0,
-      icon: "material-symbols:lock-outline",
+      icon: "lucide:lock",
       color: "neutral",
       textClass: "text-gray-600"
     }
@@ -421,7 +449,7 @@ function buildColumns() {
 
         case "DRAFT":
           color = "warning"
-          icon = "wordpress:pending"
+          icon = "lucide:clock"
           name = "Draft"
           break
 
@@ -439,13 +467,13 @@ function buildColumns() {
 
         case "APPROVED":
           color = "success"
-          icon = "gg:check-r"
+          icon = "lucide:check-circle"
           name = "Approved"
           break
 
         case "COMPLETED":
           color = "success"
-          icon = "material-symbols:lock"
+          icon = "lucide:lock"
           name = "Completed"
           break
 

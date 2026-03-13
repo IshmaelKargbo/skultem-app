@@ -48,6 +48,21 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    getPaymentHistoryByStudent: async (studentId: string, page: number, size: number) => {
+      try {
+        const res = await $api(`/report/finance/payments?studentId=${studentId}&page=${page}&size=${size}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch payment history')
+
+        const data = res.data
+        const meta = useMeta(res.meta)
+
+        return { data, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getCurrentEnrollment: async (id: string) => {
       try {
         const res = await $api(`/enrollment/student/${id}`) as any

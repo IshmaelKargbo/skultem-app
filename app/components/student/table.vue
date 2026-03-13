@@ -19,12 +19,6 @@ const parseStaus: Record<string, string> = {
   DELETED: 'Deleted'
 }
 
-const parseGender: Record<string, string> = {
-  MALE: 'Male',
-  FEMALE: 'Female',
-  OTHER: 'Other'
-}
-
 const parseStatusColor: Record<string, string> = {
   ACTIVE: 'success',
   INACTIVE: 'warning',
@@ -39,12 +33,11 @@ const parseStatusIcon: Record<string, string> = {
 
 const columns: TableColumn<Student> = [
   {
-    accessorKey: 'givenNames',
-    header: 'Given Names'
-  },
-  {
-    accessorKey: 'familyName',
-    header: 'Family Name'
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({row}: any) => {
+      return `${row.original.givenNames} ${row.original.familyName}`
+    }
   },
   {
     accessorKey: 'dateOfBirth',
@@ -57,6 +50,18 @@ const columns: TableColumn<Student> = [
   {
     accessorKey: 'className',
     header: 'Class'
+  },
+  {
+    accessorKey: 'guardianName',
+    header: 'Guardian'
+  },
+  {
+    accessorKey: 'fatherName',
+    header: 'Father'
+  },
+  {
+    accessorKey: 'motherName',
+    header: 'Mother'
   },
   {
     accessorKey: 'status',
@@ -178,10 +183,10 @@ onMounted(async () => {
           :icon="parseStatusIcon[row.original.status]" variant="outline" />
       </template>
       <template #gender-cell="{ row }">
-        <UBadge :label="parseGender[row.original.gender]" color="neutral" variant="outline" />
+        <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]" variant="outline" />
       </template>
     </UTable>
-    <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
+    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
       <Showing :meta="meta" />
       <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />

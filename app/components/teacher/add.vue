@@ -7,7 +7,7 @@
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Teacher</p>
-                <u-button icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <u-button icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -15,7 +15,8 @@
         <template #body>
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
                 <UFormField required label="Title" name="title">
-                    <USelectMenu value-key="value" v-model="state.title" :items="titles" placeholder="Select title" :disabled="isLoading" />
+                    <USelectMenu value-key="value" v-model="state.title" :items="titles" placeholder="Select title"
+                        :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">Select the teacher title.</p>
                     </template>
@@ -76,8 +77,8 @@
                     </template>
                 </UFormField>
                 <UFormField label="Class Master" name="class">
-                    <USelectMenu value-key="value" :items="classes" v-model="state.classMaster" placeholder="Select class master"
-                        :disabled="isLoading" />
+                    <USelectMenu value-key="value" :items="classes" v-model="state.classMaster"
+                        placeholder="Select class master" :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">Assign this teacher as a class master</p>
                     </template>
@@ -88,7 +89,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="mynaui:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
+                <u-button icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -157,7 +158,7 @@ const schema = yup.object({
     street: yup.string().required('Street is required')
 })
 
-const classes = computed(() => classStore.records.map((e) => ({ label: parseClassSession(e), value: e.id })))
+const classes = ref<{ label: string; value: string }[]>([])
 
 const formRef = ref<any>(null)
 const open = ref(false)
@@ -169,6 +170,8 @@ const close = () => {
     state.staffId = ''
     state.email = ''
     state.phone = ''
+    state.title = ''
+    state.gender = ''
     state.classMaster = ''
     state.city = ''
     state.street = ''
@@ -203,7 +206,14 @@ const onSubmit = async (event: FormSubmitEvent<TeacherForm>) => {
     }
 }
 
-onMounted(() => {
-    classStore.fetchAllUnassign(0, 0)
+watch(open, async (val) => {
+    if (val) {
+        const res = await classStore.fetchAllUnassign(0, 0)
+        if (res == null) return
+        classes.value = res.map((c: ClassSession) => ({
+            label: c.clazz,
+            value: c.clazzId
+        }))
+    }
 })
 </script>

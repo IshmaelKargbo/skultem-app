@@ -1,9 +1,19 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/ui', '@pinia/nuxt'],
+  modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt'],
   ui: {
     fonts: false,
+  },
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap'
+        }
+      ]
+    }
   },
   css: ["~/assets/css/main.css"],
   imports: {
@@ -17,6 +27,14 @@ export default defineNuxtConfig({
   },
   pwa: {
     registerType: 'autoUpdate',
+    includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+    devOptions: {
+      enabled: true
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js']
+    },
     manifest: {
       name: 'Skultem',
       short_name: 'Skultem',

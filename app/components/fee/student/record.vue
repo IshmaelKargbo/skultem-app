@@ -4,8 +4,16 @@
             <div class="flex justify-between items-center border-gray-200">
                 <p class="text-lg font-normal">{{ student.givenNames }} {{ student.familyName }}'s Fees</p>
                 <div class="space-x-2">
-                    <UButton label="Apply Discount" variant="outline" size="sm" icon="mdi:discount-outline" />
-                    <UButton label="View Ledger" variant="outline" size="sm" icon="fluent:feed-24-regular" />
+                    <FeeStudentAssign :student="student" @assigned="refreshFees" />
+                    <FeeDiscountAdd
+                        :student-id="student.id"
+                        :refresh-report="refreshFees"
+                        trigger-label="Apply Discount"
+                        trigger-variant="outline"
+                        trigger-size="sm"
+                        trigger-icon="mdi:discount-outline"
+                        trigger-color="neutral" />
+                    <FeeStudentPayments :student="student" />
                 </div>
             </div>
             <div class="grid gap-3 grid-cols-4">
@@ -34,7 +42,7 @@
                     </div>
                 </UCard>
             </div>
-            <FeeStudentTable :student="student" />
+            <FeeStudentTable :student="student" :refresh-key="refreshKey" />
         </div>
         <div v-else>
             <div
@@ -58,6 +66,7 @@ const feesState = ref<{
     total: number,
     discount: number
 }>()
+const refreshKey = ref(0)
 
 async function fetchFees() {
     if (student == null) return
@@ -74,7 +83,14 @@ async function fetchFees() {
         discount += e.discount
     })
 
+    
+
     feesState.value = { outstanding, paid, discount, total }
+}
+
+function refreshFees() {
+    refreshKey.value += 1
+    fetchFees()
 }
 
 watch(() => student, () => fetchFees(), { immediate: true })

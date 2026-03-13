@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
+import { downloadBlob } from '~/utils/report'
+import { ReportApi } from '~/api/report.api'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +18,9 @@ function refreshReport() {
 
 const editRcord = ref<Behaviour | null>(null)
 const editState = ref(false)
+const exportingCsv = ref(false)
+const exportingPdf = ref(false)
+const toast = useToast()
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -133,6 +138,24 @@ async function fetchRecords() {
   loading.value = false
 }
 
+async function exportBehaviour(format: 'csv' | 'pdf') {
+  if (!state.clazz) {
+    toast.add({ title: 'Select a class first', color: 'warning' })
+    return
+  }
+  const loadingState = format === 'csv' ? exportingCsv : exportingPdf
+  loadingState.value = true
+  try {
+    const { blob, filename } = await ReportApi().exportBehaviour(state.clazz, format)
+    downloadBlob(blob, filename)
+    toast.add({ title: 'Behaviour report exported', color: 'success' })
+  } catch (err: any) {
+    toast.add({ title: err.message || 'Failed to export behaviour report', color: 'error' })
+  } finally {
+    loadingState.value = false
+  }
+}
+
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
@@ -158,6 +181,10 @@ onMounted(async () => {
         </div>
         <div class="flex space-x-3 w-1/3">
           <USelectMenu :items="classes" placeholder="Select class" value-key="value" v-model="state.clazz" />
+          <UButton variant="outline" color="neutral" icon="lucide:download" label="CSV"
+            :loading="exportingCsv" @click="exportBehaviour('csv')" />
+          <UButton variant="outline" color="neutral" icon="lucide:download" label="PDF"
+            :loading="exportingPdf" @click="exportBehaviour('pdf')" />
           <BehaviourAdd @refresh="refreshReport" :clazz="state.clazz" />
         </div>
       </div>

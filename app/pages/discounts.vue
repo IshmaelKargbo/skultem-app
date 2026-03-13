@@ -4,7 +4,7 @@
             <div class="flex py-2 justify-between items-center border-gray-200">
                 <div class="space-y-1">
                     <p class="text-2xl font-semibold">Discounts & Scholarships</p>
-                    <p class="font-light text-mute">Manage student discounts and scholarships</p>
+                    <p class="text-mute">Manage student discounts and scholarships</p>
                 </div>
                 <div>
                     <FeeDiscountAdd :refresh-report="refreshReport" />

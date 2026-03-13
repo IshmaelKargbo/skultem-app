@@ -5,6 +5,7 @@ export const useUserStore = defineStore('user', {
     records: [] as User[],
     meta: {} as Meta,
     loading: false,
+    meLoading: true,
     user: {} as User,
     error: null as string | null
   }),
@@ -27,13 +28,17 @@ export const useUserStore = defineStore('user', {
       return UserApi().create(payload)
     },
     async me() {
-      const res = await UserApi().me()
-      if (res == null) return
-      this.user = res
+      try {
+        this.meLoading = true
+        const res = await UserApi().me()
+        if (res == null) return
+        this.user = res
+      } finally {
+        this.meLoading = false
+      }
     },
     async login(payload: LoginDto) {
       const res = await UserApi().login(payload)
-
       const accessToken = useCookie("access_token")
       const refreshToken = useCookie("refresh_token")
 
@@ -41,6 +46,15 @@ export const useUserStore = defineStore('user', {
       refreshToken.value = res.refreshToken
 
       return res
+    },
+    async logout() {
+      await UserApi().logout()
+
+      const accessToken = useCookie("access_token")
+      const refreshToken = useCookie("refresh_token")
+
+      accessToken.value = null
+      refreshToken.value = null
     },
     findOne(id: string) {
       return UserApi().getOne(id)

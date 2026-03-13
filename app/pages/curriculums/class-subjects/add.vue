@@ -3,16 +3,16 @@
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
 
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold">
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-semibold">
                         Assign Subjects to Class
                     </h2>
-                    <p class="text-sm text-mute">
+                    <p class="text-xs text-mute">
                         Define the curriculum structure for this class.
                     </p>
                 </div>
                 <UFormField class="min-w-sm" label="Select Class" name="classId">
-                    <USelect :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
+                    <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
                         :items="classes" placeholder="Choose a class" />
                 </UFormField>
             </div>
@@ -26,7 +26,7 @@
                         Subject Assignments ({{ state.assignments.length }})
                     </h3>
 
-                    <UButton variant="soft" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
+                    <UButton variant="subtle" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
                 </div>
 
                 <!-- Empty State -->
@@ -44,7 +44,7 @@
                     <!-- Subject -->
                     <template #subjectId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.subjectId`">
-                            <USelect :items="availableSubjects(row.index)" :loading="subjectStore.loading"
+                            <USelectMenu value-key="value" :items="availableSubjects(row.index)" :loading="subjectStore.loading"
                                 placeholder="Select Subject" v-model="row.original.subjectId" :disabled="Boolean(row.original.locked)" />
                         </UFormField>
                     </template>
@@ -52,7 +52,7 @@
                     <!-- Group -->
                     <template #groupId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.groupId`">
-                            <USelect :loading="subjectGroupStore.loading" :items="groups"
+                            <USelectMenu value-key="value" :loading="subjectGroupStore.loading" :items="groups"
                                 placeholder="Select Group" v-model="row.original.groupId" :disabled="disableByLevel || Boolean(row.original.locked)" />
                         </UFormField>
                     </template>
@@ -68,7 +68,7 @@
                     <template #actions-cell="{ row }">
                         <div class="flex justify-end">
                             <UButton v-if="showDelete() && !row.original.locked" @click="remove(row.index)" variant="ghost" color="error"
-                                icon="mynaui:trash" />
+                                icon="lucide:trash-2" />
                             <UBadge v-else-if="row.original.locked" color="neutral" variant="soft" label="Locked" />
                         </div>
                     </template>
@@ -90,7 +90,7 @@
                     </strong>
                 </div>
                 <div class="flex gap-3 border-t border-gray-200 py-4 mt-3">
-                    <UButton type="submit" color="primary" icon="mynaui:save" label="Save Changes" :loading="saving" />
+                    <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
                     <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
                 </div>
             </div>

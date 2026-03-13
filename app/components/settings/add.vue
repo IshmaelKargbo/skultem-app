@@ -7,7 +7,7 @@
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Academic Year</p>
-                <u-button icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <u-button icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -40,7 +40,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="mynaui:save" :loading="isLoading" label="Save"
+                <u-button icon="lucide:save" :loading="isLoading" label="Save"
                     @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>

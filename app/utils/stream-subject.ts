@@ -7,6 +7,7 @@ export type StreamSubject = {
     mandatory: boolean
     groupId: string
     groupName: string
+    locked?: boolean
     createdAt: string
     updatedAt: string
 }

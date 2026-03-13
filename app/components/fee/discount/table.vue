@@ -149,21 +149,21 @@ onMounted(async () => {
       </template>
       <template #name-cell="{ row }">
         <div class="space-y-0.5">
-          <p class="font-semibold">{{ row.original.name }}</p>
-          <p class="text-sm text-mute">{{ row.original.reason || 'Fetch' }}</p>
+          <p class="font-semibold text-gray-700">{{ row.original.name }}</p>
+          <p class="text-xs text-mute">{{ row.original.reason || 'Fetch' }}</p>
         </div>
       </template>
       <template #student-cell="{ row }">
         <div class="space-y-0.5">
-          <p class="font-semibold">{{ row.original.student }}</p>
-          <p class="text-sm text-mute">{{ row.original.clazz }}</p>
+          <p class="font-semibold text-gray-700">{{ row.original.student }}</p>
+          <p class="text-xs text-mute">{{ row.original.clazz }}</p>
         </div>
       </template>
       <template #type-cell="{ row }">
         <UBadge color="neutral" :label="parseKind[row.original.type]" variant="subtle" />
       </template>
       <template #totalSaved-cell="{ row }">
-        <p class="text-success">{{ row.original.totalSaved }}</p>
+        <p class="text-success font-semibold">{{ row.original.totalSaved }}</p>
       </template>
     </UTable>
     <div class="flex justify-between border-t border-gray-200 pt-3 items-center">

@@ -80,3 +80,8 @@ export type CreateFeeDiscountDto = {
     reason: string
     expiryDate: string
 }
+
+export type AssignFeeToStudentDto = {
+    studentId: string
+    feeId: string
+}

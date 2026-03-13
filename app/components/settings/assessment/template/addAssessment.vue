@@ -6,7 +6,7 @@
                     <p class="text-lg font-semibold">Assign Assessments</p>
                     <p class="text-xs text-slate-500">{{ template?.name || 'Select template' }}</p>
                 </div>
-                <UButton icon="codicon:close" variant="ghost" color="neutral" @click="close" />
+                <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
 
@@ -71,7 +71,7 @@
 
         <template #footer>
             <div class="flex space-x-3">
-                <UButton icon="mynaui:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
+                <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>

@@ -12,7 +12,9 @@
                 { label: 'Assessment Cycle', to: '/settings/assessment-cycle' },
                 { label: 'Fee Categories', to: '/settings/fee-categories' },
                 { label: 'Behavoiur Categories', to: '/settings/behaviour-categories' },
-                { label: 'Holidaies', to: '/settings/holidaies' }
+                { label: 'Holidaies', to: '/settings/holidaies' },
+                { label: 'Audit Logs', to: '/settings/audit' },
+                { label: 'User Sessions', to: '/settings/sessions' }
             ]" />
         </div>
     </div>

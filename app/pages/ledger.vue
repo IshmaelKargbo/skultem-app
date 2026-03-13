@@ -4,10 +4,13 @@
             <div class="flex py-2 justify-between items-center border-gray-200">
                 <div class="space-y-1">
                     <p class="text-2xl font-semibold">School Ledger</p>
-                    <p class="font-light text-mute">Complete financial transaction history</p>
+                    <p class="text-mute">Complete financial transaction history</p>
                 </div>
-                <div>
-                    <FeeDiscountAdd :refresh-report="refreshReport" />
+                <div class="space-x-3">
+                    <UButton variant="outline" color="neutral" :icon="DOWNLOAD_ICON" label="Export CSV"
+                        :loading="exportingCsv" @click="exportLedger('csv')" />
+                    <UButton variant="outline" color="neutral" :icon="DOWNLOAD_ICON" label="Export PDF"
+                        :loading="exportingPdf" @click="exportLedger('pdf')" />
                 </div>
             </div>
         </div>
@@ -21,13 +24,13 @@
                         <UInput type="date" />
                     </UFormField>
                     <UFormField label="Transaction Type" class="flex-1">
-                        <USelect placeholder="Select Type" />
+                        <USelectMenu placeholder="Select Type" />
                     </UFormField>
                     <UFormField label="Class" class="flex-1">
-                        <USelect placeholder="Select Class" />
+                        <USelectMenu placeholder="Select Class" />
                     </UFormField>
                     <UFormField label="Term" class="flex-1">
-                        <USelect placeholder="Select Term" />
+                        <USelectMenu placeholder="Select Term" />
                     </UFormField>
                 </div>
             </UCard>
@@ -38,10 +41,31 @@
 </template>
 
 <script setup lang="ts">
+import { DOWNLOAD_ICON } from '~/utils/icons'
+import { downloadBlob } from '~/utils/report'
+import { ReportApi } from '~/api/report.api'
+
 const reportRef = ref()
+const exportingCsv = ref(false)
+const exportingPdf = ref(false)
+const toast = useToast()
 
 function refreshReport() {
     reportRef.value?.fetchRecord()
+}
+
+async function exportLedger(format: 'csv' | 'pdf') {
+    const loading = format === 'csv' ? exportingCsv : exportingPdf
+    loading.value = true
+    try {
+        const { blob, filename } = await ReportApi().exportLedger(format)
+        downloadBlob(blob, filename)
+        toast.add({ title: 'Ledger exported', color: 'success' })
+    } catch (err: any) {
+        toast.add({ title: err.message || 'Failed to export ledger', color: 'error' })
+    } finally {
+        loading.value = false
+    }
 }
 
 onMounted(() => {

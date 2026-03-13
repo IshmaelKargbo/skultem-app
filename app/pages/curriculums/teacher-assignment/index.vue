@@ -5,7 +5,7 @@
                 <p class="text-xl font-semibold">Teacher Assignment Management</p>
                 <div>
                     <UButton to="/curriculums/teacher-assignment/add" color="primary" label="Assign Teacher Subject"
-                        icon="hugeicons:assignments" />
+                        :icon="ASSIGN_ICON" />
                 </div>
             </div>
             <CurriculumsTeacherAssignmntTable />

@@ -70,6 +70,18 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
+    async getPaymentHistoryByStudent(studentId: string, page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await StudentApi().getPaymentHistoryByStudent(studentId, page, size) as any
+        return { records: response.data || [], meta: response.meta || {} as Meta }
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch payment history'
+      } finally {
+        this.loading = false
+      }
+    },
     create(payload: CreateStudentDto) {
       return StudentApi().create(payload)
     },

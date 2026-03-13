@@ -3,11 +3,11 @@
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
 
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-800">
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-semibold text-gray-800">
                         Assign Class Subjects to Teacher
                     </h2>
-                    <p class="text-sm text-mute">
+                    <p class="text-xs text-mute">
                         Define the curriculum structure for this class.
                     </p>
                 </div>
@@ -50,8 +50,8 @@
                         </UFormField>
                     </template>
                 </UTable>
-             <div class="flex gap-3 py-4 border-t border-gray-200">
-                    <UButton type="submit" color="primary" icon="mynaui:save" label="Save Changes" :loading="saving" />
+                <div class="flex gap-3 py-4 border-t border-gray-200">
+                    <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
                     <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
                 </div>
             </div>

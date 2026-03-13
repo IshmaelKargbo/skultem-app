@@ -6,8 +6,8 @@
 }
 
 html {
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #384f85 #f0f0f0; /* thumb + track */
+  scrollbar-width: thin;
+  scrollbar-color: #384f85 #f0f0f0;
 }
 
 /* Chrome, Edge, Safari */
@@ -58,9 +58,13 @@ body {
 }
 
 @theme {
-  --font-app: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-noto-serif: "Noto Serif", "sans-serif";
+  --font-app: "Geist", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Geist", "Segoe UI", "Helvetica Neue", sans-serif;
   --font-size-base: 14px;
+}
+
+.font-display {
+  font-family: var(--font-display);
 }
 
 @theme static {
