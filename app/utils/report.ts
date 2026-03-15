@@ -30,8 +30,13 @@ export type ReportTable = {
 }
 
 export type ReportSelectPayload = {
-    name: string
-    filters: ReportFilter[]
+  entity: string
+  filters: ReportFilter[]
+}
+
+export type ReportSelectFilterPayload = {
+  entity: string
+  filters: ReportFilterSelected[]
 }
 
 export type ReportOperator = {
@@ -40,6 +45,14 @@ export type ReportOperator = {
   type: string
   input: string
   options: Option[]
+}
+
+export type ReportFilterSelected = {
+  field: string
+  type: string
+  operator: string
+  value: string
+  valueTo: string
 }
 
 export type ReportFilter = {

@@ -39,16 +39,8 @@
           <template #help>
             <div class="flex items-center justify-between">
               <p class="text-xs text-muted">Choose an existing parent/guardian for this student.</p>
-              <UButton
-                v-if="parentLoadError"
-                size="xs"
-                variant="ghost"
-                color="error"
-                label="Retry"
-                icon="lucide:refresh-cw"
-                :loading="parentsLoading"
-                @click="loadParents"
-              />
+              <UButton v-if="parentLoadError" size="xs" variant="ghost" color="error" label="Retry"
+                icon="lucide:refresh-cw" :loading="parentsLoading" @click="loadParents" />
             </div>
           </template>
 
@@ -59,39 +51,30 @@
           </div>
 
           <!-- Error state -->
-          <div v-else-if="parentLoadError" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 flex items-center gap-2">
+          <div v-else-if="parentLoadError"
+            class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 flex items-center gap-2">
             <UIcon name="lucide:alert-circle" />
             Failed to load parents.
             <UButton size="xs" variant="ghost" color="error" label="Retry" @click="loadParents" />
           </div>
 
           <!-- Empty state -->
-          <div v-else-if="parents.length === 0" class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-700 flex items-center gap-2">
+          <div v-else-if="parents.length === 0"
+            class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-700 flex items-center gap-2">
             <UIcon name="lucide:alert-circle" />
             No parents found. Please add a parent first.
           </div>
 
           <!-- Select -->
-          <USelect
-            v-else
-            :items="parents"
-            v-model="state.parentId"
-            placeholder="Select parent/guardian"
-            :disabled="isLoading"
-            class="w-full"
-          />
+          <USelectMenu value-key="value" v-else :items="parents" v-model="state.parentId"
+            placeholder="Select parent/guardian" :disabled="isLoading" class="w-full" />
         </UFormField>
 
         <!-- CLASS -->
         <UFormField required label="Class" name="classId"
           help="Choose the class session the student will be enrolled in.">
-          <USelect
-            :items="classes"
-            v-model="state.classId"
-            placeholder="Select class session"
-            :disabled="classSession.loading || isLoading"
-            class="w-full"
-          />
+          <USelectMenu value-key="value" :items="classes" v-model="state.classId" placeholder="Select class session"
+            :disabled="classSession.loading || isLoading" class="w-full" />
         </UFormField>
 
         <!-- SUBJECT SELECTION -->
@@ -101,7 +84,8 @@
             Loading class subjects...
           </div>
 
-          <div v-else-if="curriculumLoadError" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 flex items-center gap-2">
+          <div v-else-if="curriculumLoadError"
+            class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 flex items-center gap-2">
             <UIcon name="lucide:alert-circle" />
             Failed to load subjects.
             <UButton size="xs" variant="ghost" color="error" label="Retry" @click="loadCurriculum" />
@@ -118,31 +102,21 @@
             </div>
 
             <!-- OPTIONAL SUBJECTS -->
-            <div
-              v-for="group in curriculum?.options || []"
-              :key="group.groupId"
-              class="border-t pt-3 border-gray-200 space-y-2"
-            >
+            <div v-for="group in curriculum?.options || []" :key="group.groupId"
+              class="border-t pt-3 border-gray-200 space-y-2">
               <div class="flex justify-between items-center">
                 <p class="font-medium text-sm">{{ group.name }}</p>
-                <UBadge
-                  :color="optionError(group) && submitted ? 'error' : 'neutral'"
-                  variant="soft"
-                  :label="`${selectedOptionsByGroup[group.groupId]?.length || 0} / ${group.select}`"
-                />
+                <UBadge :color="optionError(group) && submitted ? 'error' : 'neutral'" variant="soft"
+                  :label="`${selectedOptionsByGroup[group.groupId]?.length || 0} / ${group.select}`" />
               </div>
 
               <p class="text-xs text-muted">Please select exactly {{ group.select }} subject(s) from this group.</p>
 
-              <USelect
-                :items="group.list.map((s: any) => ({ label: s.name, value: s.id }))"
-                :multiple="group.select > 1"
-                :model-value="getGroupModelValue(group)"
+              <USelectMenu value-key="value" :items="group.list.map((s: any) => ({ label: s.name, value: s.id }))"
+                :multiple="group.select > 1" :model-value="getGroupModelValue(group)"
                 @update:model-value="val => updateGroupSelection(group, val)"
                 :placeholder="group.select === 1 ? 'Select one subject' : `Select up to ${group.select} subjects`"
-                :disabled="isLoading"
-                class="w-full"
-              />
+                :disabled="isLoading" class="w-full" />
 
               <p v-if="submitted && optionError(group)" class="text-xs text-red-500">
                 You must select exactly {{ group.select }} subject(s).

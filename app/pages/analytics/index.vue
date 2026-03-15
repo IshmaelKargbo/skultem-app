@@ -18,7 +18,6 @@
                 { label: 'Saved Reports', to: '/analytics/saved', exact: true }
             ]" />
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <UCard v-for="card in reportStats" :key="card.label">
                 <div class="flex items-center justify-between">
@@ -57,8 +56,6 @@
 </template>
 
 <script setup lang="ts">
-import { ReportApi } from '~/api/report.api'
-
 const isLoadingReports = ref(false)
 
 const SAVED_ICON = 'lucide:bookmark'
@@ -146,7 +143,7 @@ const quickExplore = [
 ]
 
 const goToBuilder = (entity: string) => {
-    navigateTo(`/reports/builder?entity=${entity}`)
+    navigateTo(`/analytics/builder?entity=${entity}`)
 }
 
 const loadSavedReports = async () => {

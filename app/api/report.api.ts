@@ -51,21 +51,18 @@ export const ReportApi = () => {
       download('/report/export/fees', { format, ...filters }),
     exportGrades: (teacherSubjectId: string, termId: string, format: string) =>
       download('/report/export/grades', { teacherSubjectId, termId, format }),
-    runReport: async (payload: {
-      type: string
-      classId?: string
-      classSessionId?: string
-      teacherSubjectId?: string
-      termId?: string
-      startDate?: string
-      endDate?: string
-      limit?: number
-    }) => {
+    runReport: async (payload: ReportSelectFilterPayload, page: number = 1, size: number = 12) => {
       try {
-        return await $api('/report/export/run', {
+        const res: any = await $api(`/report/export/run?page=${page}&size=${size}`, {
           method: 'POST',
           body: payload
         })
+        if (res == null) return
+
+        const meta = useMeta(res.meta)
+        const data = res.data
+
+        return { data, meta }
       } catch (err: any) {
         useHandleError(err)
       }

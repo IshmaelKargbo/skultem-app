@@ -6,7 +6,7 @@
             <UForm :state="state" @submit.prevent="onSubmit" :schema="schema" class="space-y-3">
                 <!-- Student -->
                 <UFormField required label="Student" name="studentId">
-                    <USelect :items="students" @change="fetchRecords" v-model="state.studentId"
+                    <USelectMenu value-key="value" :items="students" @change="fetchRecords" v-model="state.studentId"
                         placeholder="Select Student" />
                     <template #help>
                         <p class="text-xs text-mute">
@@ -17,7 +17,7 @@
 
                 <!-- Fee Category -->
                 <UFormField required label="Fee" name="category">
-                    <USelect :disabled="!state.studentId" v-model="state.category" @change="changeFee"
+                    <USelectMenu value-key="value" :disabled="!state.studentId" v-model="state.category" @change="changeFee"
                         :items="categories" placeholder="Select Fee">
                         <template #item="{ item }: any">
                             <div class="flex justify-between w-full">
@@ -29,7 +29,7 @@
                                 </span>
                             </div>
                         </template>
-                    </USelect>
+                    </USelectMenu>
                     <template #help>
                         <p class="text-xs text-mute">
                             Choose the type of fee being paid (e.g., Tuition, Development).
@@ -65,7 +65,7 @@
                 </div>
                 <!-- Payment Method -->
                 <UFormField label="Payment Method" name="method" required>
-                    <USelect v-model="state.method" :items="methodOptions" placeholder="Select Payment Method" />
+                    <USelectMenu value-key="value" v-model="state.method" :items="methodOptions" placeholder="Select Payment Method" />
                     <template #help>
                         <p class="text-xs text-mute">
                             Select how the payment was
@@ -216,7 +216,7 @@ async function fetchRecords() {
 
 const students = computed(() =>
     studentStore.records.map(s => ({
-        label: `${s.givenNames} ${s.familyName}`,
+        label: `${s.givenNames} ${s.familyName} (${s.admissionNumber})`,
         value: s.id
     }))
 )

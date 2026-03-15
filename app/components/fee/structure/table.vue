@@ -152,13 +152,13 @@ onMounted(async () => {
       </div>
     </template>
     <template #allowInstallment-cell="{ row }">
-      <USwitch v-model="row.original.allowInstallment" />
+      <UBadge variant="outline" :label="row.original.allowInstallment ? 'Yes' : 'No'" :color="row.original.allowInstallment ? 'success' : 'neutral'" />
     </template>
     <template #students-cell="{ row }">
       <FeeStructureCount :id="row.original.id">
         <template #default="{ value }">
           <div class="flex space-x-2">
-            <UBadge variant="outline" trailing-icon="ph:student-light" :label="`${value} -`" />
+            <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${value} -`" />
           </div>
         </template>
       </FeeStructureCount>

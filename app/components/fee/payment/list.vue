@@ -100,8 +100,10 @@
                         </div>
                     </div>
                 </UCard>
-                <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
-                    :items-per-page="meta.size" :total="meta.total" show-edges />
+                <div class="flex justify-center" v-if="records.length > 0 && !isLoading">
+                    <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
+                        :items-per-page="meta.size" :total="meta.total" show-edges />
+                </div>
             </div>
         </div>
     </UCard>

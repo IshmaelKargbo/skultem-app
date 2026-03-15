@@ -212,7 +212,7 @@ watch(open, async (val) => {
         if (res == null) return
         classes.value = res.map((c: ClassSession) => ({
             label: c.clazz,
-            value: c.clazzId
+            value: c.id
         }))
     }
 })

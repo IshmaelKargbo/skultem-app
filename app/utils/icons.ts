@@ -1,4 +1,4 @@
-export const STUDENT_ICON = "hugeicons:student"
+export const STUDENT_ICON = "ph:student-light"
 export const ATTENDANCE_ICON = "hugeicons:date-time"
 export const TEACHER_ICON = "hugeicons:teaching"
 export const PAYMENT_ICON = "streamline-ultimate:cash-payment-bills"

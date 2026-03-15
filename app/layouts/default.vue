@@ -1,10 +1,17 @@
 <template>
-  <div class="flex h-screen overflow-hidden">
-    <Menu class="w-62" />
-    <div class="flex-1 flex flex-col">
+  <div class="flex h-dvh overflow-hidden">
+    <!-- Sidebar -->
+    <Menu class="w-64" />
+
+    <!-- Main Area -->
+    <div class="flex flex-1 flex-col min-w-0">
       <Header />
+
+      <!-- Scrollable Content -->
       <div ref="scrollContainer" class="flex-1 overflow-y-auto">
-        <slot />
+        <div class="max-w-screen-2xl mx-auto p-2">
+          <slot />
+        </div>
       </div>
     </div>
   </div>

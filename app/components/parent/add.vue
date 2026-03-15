@@ -140,7 +140,7 @@ const onSubmit = async (event: FormSubmitEvent<ParentForm>) => {
     await schema.validate(state, { abortEarly: false })
     await store.create({ ...state })
     toast.add({ description: 'Parent added successfully', color: 'success' })
-    store.fetchAll(0, runtimeConf().limit)
+    store.fetchAll(1, runtimeConf().limit)
     close()
   } catch (err: any) {
     toast.add({ description: err.message, color: 'error' })

@@ -14,19 +14,30 @@
             ]" />
         </div>
         <ReportBuilderSource @select="selectEntity" />
-        <ReportBuilderFilters v-if="selected" :selected="selected" @change="filterChange" />
+        <ReportBuilderFilters ref="filterRef" v-if="selected" :selected="selected" @change="filterChange" />
         <ReportBuilderRun />
     </div>
 </template>
 
 <script setup lang="ts">
 const selected = ref<ReportSelectPayload>()
-function selectEntity(param: ReportSelectPayload) {
-    selected.value = param
+const filterRef = ref()
+const query = ref<ReportSelectFilterPayload>()
+
+async function validate(): Promise<boolean> {
+    return filterRef.value?.validate() ?? true
 }
 
-function filterChange(params: ReportSelectPayload) {
-    console.log(params)
+function selectEntity(param: ReportSelectPayload) {
+    selected.value = param
+    query.value = {
+        entity: param.entity,
+        filters: []
+    }
+}
+
+function filterChange(param: ReportSelectFilterPayload) {
+    query.value = param
 }
 
 onMounted(() => {

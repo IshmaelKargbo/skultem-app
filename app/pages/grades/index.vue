@@ -7,15 +7,11 @@
           Enter scores for the active test. Locked assessments are read-only.
         </p>
       </div>
-      <div class="flex flex-wrap gap-2 md:justify-end">
-        <UButton variant="outline" color="neutral" icon="lucide:download" label="Export CSV"
-          :loading="exportingCsv" :disabled="!canExport" @click="exportGrades('csv')" />
-        <UButton variant="outline" color="neutral" icon="lucide:download" label="Export PDF"
-          :loading="exportingPdf" :disabled="!canExport" @click="exportGrades('pdf')" />
-        <UButton v-if="hasDraftAssessments" icon="lucide:save" label="Save Grades" :loading="saving"
+      <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
+        <UButton icon="lucide:save" label="Save Grades" :loading="saving"
           :disabled="disableActions" @click="saveGrades" />
         <UButton icon="lucide:check-circle" label="Complete Assessment" color="success"
-          :loading="completing" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
+          :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
       </div>
     </div>
 
@@ -59,7 +55,7 @@
                 <UIcon :name="summary.icon" :class="summary.textClass" class="text-xl" />
                 <p class="text-xs text-gray-600">{{ summary.label }}</p>
               </div>
-              <p :class="['text-3xl', summary.textClass]">{{ summary.count }}</p>
+              <p :class="['text-3xl font-semibold', summary.textClass]">{{ summary.count }}</p>
             </div>
           </UCard>
         </div>
@@ -74,8 +70,6 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, h, onMounted, resolveComponent } from "vue"
-import { downloadBlob } from '~/utils/report'
-import { ReportApi } from '~/api/report.api'
 
 type GradeAssessmentForm = {
   classId: string
@@ -106,8 +100,6 @@ const completing = ref(false)
 const columns = ref<any[]>([])
 const rows = ref<StudentAssessment[]>([])
 const assessments = ref<Assessment[]>([])
-const exportingCsv = ref(false)
-const exportingPdf = ref(false)
 
 const teacherStore = useTeacherSubjectStore()
 const classSessionStore = useClassSessionStore()
@@ -122,15 +114,9 @@ const teachers = ref<{ label: string, value: string }[]>([])
 const terms = computed(() => termStore.records.map(e => ({ label: e.name, value: e.id })))
 const classes = computed(() => classSessionStore.records.map(e => ({ label: parseClassSession(e), value: e.id })))
 const editableAssessments = computed(() => assessments.value.filter(a => isEditableStatus(a.status as ScoreStatus)))
-const sortedAssessments = computed(() => [...assessments.value].sort((a, b) => a.position - b.position))
-const activeAssessmentPosition = computed<number | null>(() => {
-  const active = sortedAssessments.value.find(assessment => assessment.status !== "LOCKED")
-  return active ? active.position : null
-})
 
 const disableActions = computed(() => !state.teacherSubjectId || !state.termId || !state.classId || !rows.value.length || loading.value)
 const hasDraftAssessments = computed(() => editableAssessments.value.length > 0)
-const canExport = computed(() => !!state.teacherSubjectId && !!state.termId)
 const gradingBands = computed(() => store.gradingScale?.bands || [])
 
 const completedAssessmentIds = computed(() => {
@@ -198,25 +184,6 @@ const workflowLabel = computed(() => {
 
   return "In progress"
 })
-
-async function exportGrades(format: 'csv' | 'pdf') {
-  if (!state.teacherSubjectId || !state.termId) {
-    toast.add({ title: 'Select subject and term first', color: 'warning' })
-    return
-  }
-
-  const loadingState = format === 'csv' ? exportingCsv : exportingPdf
-  loadingState.value = true
-  try {
-    const { blob, filename } = await ReportApi().exportGrades(state.teacherSubjectId, state.termId, format)
-    downloadBlob(blob, filename)
-    toast.add({ title: 'Grades exported', color: 'success' })
-  } catch (err: any) {
-    toast.add({ title: err.message || 'Failed to export grades', color: 'error' })
-  } finally {
-    loadingState.value = false
-  }
-}
 
 const statusSummary = computed<StatusCard[]>(() => {
   const counts = assessments.value.reduce((acc, assessment) => {
@@ -335,6 +302,9 @@ async function fetchRecord() {
   try {
     const res = await teacherStore.fetchAllByClass(state.classId, 0, 0)
     teachers.value = (res || []).map((e: TeacherSubject) => ({ label: `${e.subjectName} (${e.teacherName})`, value: e.id }))
+    if (teachers.value.length > 0)
+    state.teacherSubjectId = teachers.value[0]?.value || ""
+    await fetchStudents()
   } catch (error: any) {
     teachers.value = []
     toast.add({ description: error?.data?.message || error?.message || 'Failed to load class subjects', color: 'error' })
@@ -386,6 +356,7 @@ async function fetchStudents() {
 function getAssessment(id: string) {
   return assessments.value.find(e => e.id === id)
 }
+
 function buildColumns() {
 
   const baseColumn = [
@@ -583,12 +554,25 @@ async function completeAssessment() {
   } finally { completing.value = false }
 }
 
-onMounted(() => {
+
+onMounted(async () => {
   useAppStore().setTitle('Grade Assignment')
   document.title = 'Grade Assignment | Grades | Skultem'
-  teacherStore.fetchAll(0, 0)
-  classSessionStore.fetchAll(0, 0)
-  termStore.fetchAll(0, 0)
-  store.fetchGradingScale().catch(() => null)
+
+  await teacherStore.fetchAll(0, 0)
+  await classSessionStore.fetchAll(0, 0)
+  await termStore.fetchAll(0, 0)
+  await store.fetchGradingScale().catch(() => null)
+
+  // default select first term
+  if (terms.value.length > 0) {
+    state.termId = terms.value[0]?.value || ''
+  }
+
+  // default select first class and trigger teacher fetch
+  if (classSessionStore.records.length) {
+    state.classId = classSessionStore.records[0]?.id || ''
+    await fetchRecord()
+  }
 })
 </script>

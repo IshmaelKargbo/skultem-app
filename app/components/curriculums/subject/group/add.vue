@@ -15,7 +15,7 @@
 
                 <!-- Name -->
                 <UFormField required label="Group Name" name="name">
-                    <USelectMenu value-key="value" v-model="state.name" placeholder="e.g. Optional Subjects" :disabled="isLoading" />
+                    <UInput v-model="state.name" placeholder="e.g. Optional Subjects" :disabled="isLoading" />
                 </UFormField>
 
                 <!-- Level -->
