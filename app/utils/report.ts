@@ -12,16 +12,17 @@ export function downloadBlob(blob: Blob, filename: string) {
 export type SavedReport = {
   id: string
   name: string
-  type: string
-  format: string
-  classId?: string | null
-  classSessionId?: string | null
-  teacherSubjectId?: string | null
-  termId?: string | null
-  startDate?: string | null
-  endDate?: string | null
+  entity: string
+  filters: ReportFilterSelected[]
   createdAt: string
   updatedAt: string
+}
+
+export type CreateSavedReport = {
+  id?: string
+  name: string
+  entity: string
+  filters: ReportFilterSelected[]
 }
 
 export type ReportTable = {
@@ -35,6 +36,7 @@ export type ReportSelectPayload = {
 }
 
 export type ReportSelectFilterPayload = {
+  name?: string
   entity: string
   filters: ReportFilterSelected[]
 }
@@ -59,6 +61,7 @@ export type ReportFilter = {
   field: string
   label: string
   operators: ReportOperator[]
+  default?: number
 }
 
 export type ReportFilters = {

@@ -14,19 +14,14 @@
             ]" />
         </div>
         <ReportBuilderSource @select="selectEntity" />
-        <ReportBuilderFilters ref="filterRef" v-if="selected" :selected="selected" @change="filterChange" />
+        <ReportBuilderFilters v-if="selected" :selected="selected" @change="filterChange" />
         <ReportBuilderRun />
     </div>
 </template>
 
 <script setup lang="ts">
 const selected = ref<ReportSelectPayload>()
-const filterRef = ref()
 const query = ref<ReportSelectFilterPayload>()
-
-async function validate(): Promise<boolean> {
-    return filterRef.value?.validate() ?? true
-}
 
 function selectEntity(param: ReportSelectPayload) {
     selected.value = param

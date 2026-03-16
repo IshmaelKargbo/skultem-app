@@ -3,7 +3,7 @@
         <p class="text-base">Data Source</p>
         <p class="text-xs text-mute">Select the data entity you want to explore</p>
 
-        <div class="mt-3 grid grid-cols-6 gap-3">
+        <div class="mt-3 grid grid-cols-5 gap-3">
             <UButton v-for="(item, index) in datasource" :key="item.key" :label="item.value" size="lg"
                 class="w-full flex justify-center" :color="active === index ? 'primary' : 'neutral'"
                 :variant="active === index ? 'solid' : 'outline'" @click="onSelect(index)" />
@@ -12,6 +12,9 @@
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
+const router = useRouter()
+
 type Option = {
     label: string
     value: string | number
@@ -29,6 +32,7 @@ type ReportFilter = {
     field: string
     label: string
     operators: ReportOperator[]
+    default?: number
 }
 
 type Datasource = {
@@ -41,9 +45,8 @@ const datasource: Datasource[] = [
     { key: "teachers", value: "Teachers" },
     { key: "classes", value: "Classes" },
     { key: "subjects", value: "Subjects" },
-    { key: "attendance", value: "Attendance" },
-    { key: "exams", value: "Exams" },
-    { key: "results", value: "Results" },
+    { key: "attendances", value: "Attendances" },
+    { key: "grades", value: "Grades" },
     { key: "parents", value: "Parents" },
     { key: "fees", value: "Fees" },
     { key: "payments", value: "Payments" },
@@ -80,7 +83,7 @@ const dateOperators: ReportOperator[] = [
     { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "date", input: "date" },
     { name: "After (>)", operator: "GREATER_THAN", type: "date", input: "date" },
     { name: "Before (<)", operator: "LESS_THAN", type: "date", input: "date" },
-    { name: "Between (↔)", operator: "BETWEEN", type: "range", input: "date-range" },
+    { name: "Between (↔)", operator: "BETWEEN", type: "date", input: "date-range" },
 ]
 
 const instantOperators: ReportOperator[] = [
@@ -97,7 +100,7 @@ const selectOperators = (options: Option[] = []): ReportOperator[] => [
     { name: "In List (∈)", operator: "IN_LIST", type: "multi-select", input: "multi-select", options },
 ]
 
-const equalOperators = (options: Option[] = []): ReportOperator[] => [
+const equalSelectOperators = (options: Option[] = []): ReportOperator[] => [
     { name: "Equals (=)", operator: "EQUALS", type: "select", input: "select", options },
     { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "select", input: "select", options }
 ]
@@ -105,7 +108,11 @@ const equalOperators = (options: Option[] = []): ReportOperator[] => [
 const sessionStore = useClassSessionStore()
 const sectionStore = useSectionStore()
 const streamStore = useStreamStore()
+const studentStore = useStudentStore()
 const teacherStore = useTeacherStore()
+const termStore = useTermStore()
+const assessmentStore = useAssessmentStore()
+const subjectStore = useSubjectStore()
 
 const sessions = computed(() =>
     sessionStore.records.map((e) => ({
@@ -121,9 +128,38 @@ const sections = computed(() =>
     }))
 )
 
+
+const students = computed(() =>
+    studentStore.records.map((e) => ({
+        label: `${e.givenNames} ${e.familyName} (${e.admissionNumber})`,
+        value: e.id
+    }))
+)
+
 const teachers = computed(() =>
     teacherStore.records.map((e) => ({
         label: `${e.user.givenNames} ${e.user.familyName} (${e.staffId})`,
+        value: e.id
+    }))
+)
+
+const assessments = computed(() =>
+    assessmentStore.assessments.map((e) => ({
+        label: e.name,
+        value: e.id
+    }))
+)
+
+const terms = computed(() =>
+    termStore.records.map((e) => ({
+        label: e.name,
+        value: e.id
+    }))
+)
+
+const subjects = computed(() =>
+    subjectStore.records.map((e) => ({
+        label: e.name,
         value: e.id
     }))
 )
@@ -171,13 +207,47 @@ const status = [
     }
 ]
 
+const assessmentStatus = [
+    {
+        label: "Draft", value: "DRAFT"
+    },
+    {
+        label: "Submited", value: "SUBMITED"
+    },
+    {
+        label: "Returned", value: "RETURNED"
+    },
+
+    {
+        label: "Approved", value: "APPROVED"
+    },
+    {
+        label: "Locked", value: "LOCKED"
+    }
+]
+
+const attendanceState = [
+    {
+        label: "Present", value: "Present"
+    },
+    {
+        label: "Absent", value: "Absent"
+    },
+    {
+        label: "Late", value: "Late"
+    },
+    {
+        label: "Excused", value: "Excused"
+    }
+]
+
 const filtersMap: Record<string, () => ReportFilter[]> = {
     Students: () => [
         { field: "student.givenNames", label: "Given Names", operators: textOperators },
         { field: "student.familyName", label: "Family Name", operators: textOperators },
         { field: "student.dateOfBirth", label: "Age", operators: ageOperators },
         { field: "student.gender", label: "Gender", operators: selectOperators(genderOption) },
-        { field: "clazz.id", label: "Class", operators: equalOperators(sessions.value) },
+        { field: "clazz.id", label: "Class", operators: equalSelectOperators(sessions.value) },
         { field: "createdAt", label: "Admission Date", operators: instantOperators },
         { field: "student.status", label: "Status", operators: selectOperators(studentStatus) },
     ],
@@ -193,37 +263,31 @@ const filtersMap: Record<string, () => ReportFilter[]> = {
     Classes: () => [
         { field: "clazz.name", label: "Name", operators: textOperators },
         { field: "clazz.level", label: "Level", operators: selectOperators(levels) },
-        { field: "clazz.status", label: "Status", operators: equalOperators(status) },
+        { field: "clazz.status", label: "Status", operators: equalSelectOperators(status) },
     ],
 
     Subjects: () => [
         { field: "subject.name", label: "Name", operators: textOperators },
-        { field: "session.clazz.id", label: "Class", operators: equalOperators(sessions.value) },
-        { field: "session.section.id", label: "Section", operators: equalOperators(sections.value) },
-        { field: "session.stream.id", label: "Stream", operators: equalOperators(streams.value) },
-        { field: "teacher.id", label: "Teacher", operators: equalOperators(teachers.value) },
+        { field: "session.clazz.id", label: "Class", operators: equalSelectOperators(sessions.value) },
+        { field: "session.section.id", label: "Section", operators: equalSelectOperators(sections.value) },
+        { field: "session.stream.id", label: "Stream", operators: equalSelectOperators(streams.value) },
+        { field: "teacher.id", label: "Teacher", operators: equalSelectOperators(teachers.value) },
     ],
 
-    Attendance: () => [
-        { field: "student", label: "Student", operators: textOperators },
-        { field: "class", label: "Class", operators: selectOperators(sessions.value) },
+    Attendances: () => [
+        { field: "enrollment.student.id", label: "Student", operators: selectOperators(students.value) },
+        { field: "enrollment.clazz.id", label: "Class", operators: selectOperators(sessions.value) },
         { field: "date", label: "Date", operators: dateOperators },
-        { field: "status", label: "Status", operators: selectOperators() },
+        { field: "status", label: "Status", operators: equalSelectOperators(attendanceState) },
     ],
 
-    Exams: () => [
-        { field: "name", label: "Name", operators: textOperators },
-        { field: "class", label: "Class", operators: selectOperators(sessions.value) },
-        { field: "date", label: "Date", operators: dateOperators },
-        { field: "status", label: "Status", operators: selectOperators() },
-    ],
-
-    Results: () => [
-        { field: "student", label: "Student", operators: textOperators },
-        { field: "subject", label: "Subject", operators: selectOperators() },
-        { field: "score", label: "Score", operators: numberOperators },
-        { field: "grade", label: "Grade", operators: selectOperators() },
-        { field: "term", label: "Term", operators: selectOperators() },
+    Grades: () => [
+        { field: "studentAssessment.enrollment.clazz.id", label: "Class", operators: selectOperators(sessions.value), default: 0 },
+        { field: "cycle.term.id", label: "Term", operators: equalSelectOperators(terms.value) },
+        { field: "cycle.assessment.id", label: "Assessment", operators: equalSelectOperators(assessments.value) },
+        { field: "studentAssessment.enrollment.student.id", label: "Student", operators: equalSelectOperators(students.value) },
+        { field: "cycle.subject.subject.id", label: "Subject", operators: equalSelectOperators(subjects.value) },
+        { field: "cycle.status", label: "Status", operators: equalSelectOperators(assessmentStatus) },
     ],
 
     Parents: () => [
@@ -264,6 +328,16 @@ function onSelect(index: number) {
     const selected = datasource[index]
     if (!selected) return
 
+    // update url query
+    router.replace({
+        query: {
+            ...route.query,
+            page: 1,
+            size: runtimeConf().limit,
+            entity: selected.key
+        }
+    })
+
     const filters = filtersMap[selected.value]?.() ?? []
 
     emit("select", {
@@ -276,10 +350,22 @@ onMounted(async () => {
     await sessionStore.fetchAll(0, 0)
     await sectionStore.fetchAll(0, 0)
     await teacherStore.fetchAll(0, 0)
+    await studentStore.fetchAll(0, 0)
+    await termStore.fetchAll(0, 0)
+    await subjectStore.fetchAll(0, 0)
+    await assessmentStore.fetchAssessments()
 
     const selected = datasource[active.value]
     if (selected) {
         onSelect(active.value)
     }
 })
+
+watch(() => route.query.entity, () => {
+    const entity = route.query.entity as string
+    if (entity == null) return
+    const index = datasource.findIndex(e => (e.key == entity))
+    if (index < 0) return
+    onSelect(index)
+}, { immediate: true })
 </script>

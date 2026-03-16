@@ -52,6 +52,20 @@ export type AssessmentScore = {
     status: string
 }
 
+export type Grade = {
+    id: string
+    name: string
+    assessment: string
+    term: string
+    teacher: string
+    student: string
+    score: number
+    weight: number
+    weightScore: number
+    grade?: string
+    status: string
+}
+
 export type StudentAssessment = {
     id: string
     name: string

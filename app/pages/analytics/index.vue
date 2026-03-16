@@ -18,7 +18,7 @@
                 { label: 'Saved Reports', to: '/analytics/saved', exact: true }
             ]" />
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <UCard v-for="card in reportStats" :key="card.label">
                 <div class="flex items-center justify-between">
                     <div>
@@ -81,13 +81,11 @@ const reportStats = computed(() => {
         if (!report.createdAt) return false
         return new Date(report.createdAt) >= weekAgo
     }).length
-    const scheduled = 0
 
     return [
         { label: 'Total Reports', value: total, icon: 'lucide:bar-chart-3', bg: 'bg-blue-50', color: 'text-blue-600' },
         { label: 'Reports This Week', value: thisWeek, icon: 'lucide:trending-up', bg: 'bg-emerald-50', color: 'text-emerald-600' },
-        { label: 'Saved Reports', value: total, icon: 'lucide:bookmark', bg: 'bg-violet-50', color: 'text-violet-600' },
-        { label: 'Scheduled Reports', value: scheduled, icon: 'lucide:calendar', bg: 'bg-amber-50', color: 'text-amber-600' }
+        { label: 'Saved Reports', value: total, icon: 'lucide:bookmark', bg: 'bg-violet-50', color: 'text-violet-600' }
     ]
 })
 

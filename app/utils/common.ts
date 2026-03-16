@@ -1,3 +1,5 @@
+export const TITLE = "Skultem"
+
 export type Meta = {
     size: number;
     page: number;

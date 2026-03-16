@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useAssessmentStore = defineStore('assessment', {
   state: () => ({
     records: [] as AssessmentTemplate[],
+    assessments: [] as Assessment[],
     gradingScale: null as GradingScale | null,
     meta: {} as Meta,
     loading: false,
@@ -41,6 +42,18 @@ export const useAssessmentStore = defineStore('assessment', {
       try {
         const response = await AssessmentApi().getAllAssessment(subjectId, termId) as any
         return response
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch template assessments'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchAssessments() {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await AssessmentApi().getAssessments() as any
+        this.assessments = response
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch template assessments'
       } finally {

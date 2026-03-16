@@ -5,7 +5,8 @@ import type { Row } from '@tanstack/vue-table'
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
-const { classes: data, meta, loading } = storeToRefs(store)
+const { classes: data, report, meta, loading } = storeToRefs(store)
+const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns: TableColumn<ClassSession> = [
   {
@@ -48,6 +49,11 @@ const size = computed<number>({
   set: (val) => updateQuery({ size: val })
 })
 
+function fetchReport() {
+  if (report.value == null) return
+  store.runReport(report.value, page.value, size.value)
+}
+
 function updateQuery(newQuery: Record<string, any>) {
   const merged = { ...route.query, ...newQuery }
 
@@ -61,13 +67,21 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
-watch(() => page.value, () => {
+watch(() => page.value, async () => {
+  nextTick(() => {
+    scrollContainer?.value?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  })
   router.replace({
     query: {
       page: page.value,
       size: size.value
     }
   })
+
+  await fetchReport()
 }, { immediate: true })
 </script>
 

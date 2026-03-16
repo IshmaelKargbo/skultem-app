@@ -6,6 +6,15 @@ export type AttendanceRecord = {
     late: boolean
 }
 
+export type Attendance = {
+    studentId: string
+    student: string
+    state: string
+    clazz: string
+    date: string
+    reason: string
+}
+
 export type AttendanceReport = {
     absent: number
     present: number

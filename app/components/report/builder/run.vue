@@ -5,6 +5,8 @@
             <ReportTableTeacher v-if="entity.toLowerCase() == 'teachers'" />
             <ReportTableClazz v-if="entity.toLowerCase() == 'classes'" />
             <ReportTableSubject v-if="entity.toLowerCase() == 'subjects'" />
+            <ReportTableAttendance v-if="entity.toLowerCase() == 'attendances'" />
+            <ReportTableGrade v-if="entity.toLowerCase() == 'grades'" />
             <UCard>
                 <div>
                     <p>Export Report</p>

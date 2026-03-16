@@ -6,7 +6,7 @@
                 <p class="text-mute text-xs">Access and manage your saved reports</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <UButton :icon="PLUS_ICON" label="Create New Report" to="/analytics/builder" />
+                <UButton :icon="ADD_ICON" label="Create New Report" to="/analytics/builder" />
             </div>
         </div>
         <div class="mt-5 flex">
@@ -20,7 +20,7 @@
             <UInput v-model="search" placeholder="Search saved reports..." icon="lucide:search" />
         </UCard>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UCard v-for="card in stats" :key="card.label">
                 <div class="flex items-center justify-between">
                     <div class="space-y-2">
@@ -64,22 +64,9 @@
 </template>
 
 <script setup lang="ts">
-const PLUS_ICON = 'lucide:plus'
-
 const search = ref('')
-const loading = ref(false)
-
-type SavedReport = {
-    id: string
-    name: string
-    type: string
-    format: string
-    createdAt?: string
-    updatedAt?: string
-    description: string
-    updated: string
-    preview: number[]
-}
+const store = useReportStore()
+const { saves: records } = storeToRefs(store)
 
 const reportTypes: Record<string, string> = {
     ledger: 'Ledger report',
@@ -91,16 +78,15 @@ const reportTypes: Record<string, string> = {
     grades: 'Grades report'
 }
 
-const savedReports = ref<SavedReport[]>([])
+const savedReports = computed(() => records.value.map((report: any) => ({
+    ...report,
+    description: reportTypes[report.type] || 'Saved report',
+    updated: report.updatedAt ? formatDateTime(report.updatedAt) : '-',
+    preview: buildPreview(report.id || report.name || report.type)
+})))
 
 const stats = computed(() => {
     const total = savedReports.value.length
-    const popular = savedReports.value.reduce<Record<string, number>>((acc, report) => {
-        acc[report.type] = (acc[report.type] || 0) + 1
-        return acc
-    }, {})
-    const mostPopularType = Object.entries(popular).sort((a, b) => b[1] - a[1])[0]?.[0]
-    const mostPopularLabel = mostPopularType ? (reportTypes[mostPopularType] || mostPopularType) : '-'
     const latest = savedReports.value
         .map((report) => report.updatedAt)
         .filter(Boolean)
@@ -110,7 +96,6 @@ const stats = computed(() => {
 
     return [
         { label: 'Total Saved', value: total, icon: 'lucide:bar-chart-3', bg: 'bg-blue-50', color: 'text-blue-600' },
-        { label: 'Most Popular', value: mostPopularLabel, icon: 'lucide:bar-chart-3', bg: 'bg-violet-50', color: 'text-violet-600' },
         { label: 'Last Updated', value: lastUpdated, icon: 'lucide:clock', bg: 'bg-emerald-50', color: 'text-emerald-600' }
     ]
 })
@@ -128,22 +113,6 @@ const buildPreview = (seed: string) => {
     return bars
 }
 
-const loadReports = async () => {
-    loading.value = true
-    try {
-        const res = await ReportApi().listReports(1, 50)
-        if (!res) return
-        savedReports.value = (res.data || []).map((report: any) => ({
-            ...report,
-            description: reportTypes[report.type] || 'Saved report',
-            updated: report.updatedAt ? formatDateTime(report.updatedAt) : '-',
-            preview: buildPreview(report.id || report.name || report.type)
-        }))
-    } finally {
-        loading.value = false
-    }
-}
-
 const filteredReports = computed(() => {
     if (!search.value) return savedReports.value
     const term = search.value.toLowerCase()
@@ -153,9 +122,9 @@ const filteredReports = computed(() => {
     )
 })
 
-onMounted(() => {
+onMounted(async () => {
     useAppStore().setTitle('Analytics')
     document.title = 'Saved Reports | Analytics | Skultem'
-    loadReports()
+    await store.fetchAll(1, runtimeConf().limit)
 })
 </script>

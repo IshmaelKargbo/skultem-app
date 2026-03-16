@@ -67,19 +67,9 @@ export const ReportApi = () => {
         useHandleError(err)
       }
     },
-    saveReport: async (payload: {
-      name: string
-      type: string
-      format: string
-      classId?: string
-      classSessionId?: string
-      teacherSubjectId?: string
-      termId?: string
-      startDate?: string
-      endDate?: string
-    }) => {
+    saveReport: async (payload: CreateSavedReport) => {
       try {
-        return await $api('/report/config', {
+        return await $api('/report/save', {
           method: 'POST',
           body: payload
         })
@@ -89,9 +79,9 @@ export const ReportApi = () => {
     },
     listReports: async (page: number, size: number) => {
       try {
-        const res = await $api(`/report/config?page=${page}&size=${size}`) as any
+        const res = await $api(`/report/save?page=${page}&size=${size}`) as any
         if (!res)
-          throw new Error('Failed to fetch reports')
+          throw new Error('Failed to fetch save reports')
         const data = res.data
         const meta = useMeta(res.meta)
         return { data, meta }
@@ -101,9 +91,9 @@ export const ReportApi = () => {
     },
     getReport: async (id: string) => {
       try {
-        const res = await $api(`/report/config/${id}`) as any
+        const res = await $api(`/report/save/${id}`) as any
         if (!res)
-          throw new Error('Failed to fetch report')
+          throw new Error('Failed to fetch save report')
         return res.data
       } catch (err: any) {
         useHandleError(err)
@@ -111,7 +101,7 @@ export const ReportApi = () => {
     },
     deleteReport: async (id: string) => {
       try {
-        return await $api(`/report/config/${id}`, {
+        return await $api(`/report/save/${id}`, {
           method: 'DELETE'
         })
       } catch (err: any) {

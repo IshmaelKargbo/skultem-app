@@ -17,45 +17,25 @@
                         <div class="flex space-x-3">
 
                             <UFormField :name="`filters.${index}.field`" label="Field" class="flex-1" required>
-                                <USelectMenu
-                                    v-model="item.field"
-                                    value-key="value"
-                                    placeholder="Select Field"
-                                    :items="availableFields(index)"
-                                    @change="fieldChange(index)"
-                                />
+                                <USelectMenu v-model="item.field" value-key="value" placeholder="Select Field"
+                                    :items="availableFields(index)" @change="fieldChange(index)" />
                             </UFormField>
 
                             <UFormField :name="`filters.${index}.operator`" label="Operator" class="flex-1" required>
-                                <USelectMenu
-                                    v-model="item.operator"
-                                    value-key="value"
-                                    placeholder="Select Operator"
-                                    :items="availableOperators(item.field)"
-                                    :disabled="!item.field"
-                                    @change="operatorChange(index)"
-                                />
+                                <USelectMenu v-model="item.operator" value-key="value" placeholder="Select Operator"
+                                    :items="availableOperators(item.field)" :disabled="!item.field"
+                                    @change="operatorChange(index)" />
                             </UFormField>
 
                             <!-- text -->
-                            <UFormField
-                                v-if="inputType(item.field, item.operator) === 'text'"
-                                :name="`filters.${index}.value`"
-                                label="Value"
-                                class="flex-1"
-                                required
-                            >
+                            <UFormField v-if="inputType(item.field, item.operator) === 'text'"
+                                :name="`filters.${index}.value`" label="Value" class="flex-1" required>
                                 <UInput v-model="item.value" type="text" placeholder="Enter value" />
                             </UFormField>
 
                             <!-- number -->
-                            <UFormField
-                                v-if="inputType(item.field, item.operator) === 'number'"
-                                :name="`filters.${index}.value`"
-                                label="Value"
-                                class="flex-1"
-                                required
-                            >
+                            <UFormField v-if="inputType(item.field, item.operator) === 'number'"
+                                :name="`filters.${index}.value`" label="Value" class="flex-1" required>
                                 <UInput v-model="item.value" type="number" placeholder="Enter number" />
                             </UFormField>
 
@@ -70,13 +50,8 @@
                             </template>
 
                             <!-- date -->
-                            <UFormField
-                                v-if="inputType(item.field, item.operator) === 'date'"
-                                :name="`filters.${index}.value`"
-                                label="Value"
-                                class="flex-1"
-                                required
-                            >
+                            <UFormField v-if="inputType(item.field, item.operator) === 'date'"
+                                :name="`filters.${index}.value`" label="Value" class="flex-1" required>
                                 <UInput v-model="item.value" type="date" placeholder="Select date" />
                             </UFormField>
 
@@ -91,40 +66,22 @@
                             </template>
 
                             <!-- select -->
-                            <UFormField
-                                v-if="inputType(item.field, item.operator) === 'select'"
-                                :name="`filters.${index}.value`"
-                                label="Value"
-                                class="flex-1"
-                                required
-                            >
-                                <USelectMenu
-                                    v-model="item.value"
-                                    value-key="value"
-                                    :items="operatorOptions(item.field, item.operator)"
-                                    placeholder="Select value"
-                                />
+                            <UFormField v-if="inputType(item.field, item.operator) === 'select'"
+                                :name="`filters.${index}.value`" label="Value" class="flex-1" required>
+                                <USelectMenu v-model="item.value" value-key="value"
+                                    :items="operatorOptions(item.field, item.operator)" placeholder="Select value" />
                             </UFormField>
 
                             <!-- multi-select -->
-                            <UFormField
-                                v-if="inputType(item.field, item.operator) === 'multi-select'"
-                                :name="`filters.${index}.values`"
-                                label="Value"
-                                class="flex-1"
-                                required
-                            >
-                                <USelectMenu
-                                    v-model="item.values"
-                                    value-key="value"
-                                    multiple
-                                    :items="operatorOptions(item.field, item.operator)"
-                                    placeholder="Select values"
-                                />
+                            <UFormField v-if="inputType(item.field, item.operator) === 'multi-select'"
+                                :name="`filters.${index}.values`" label="Value" class="flex-1" required>
+                                <USelectMenu v-model="item.values" value-key="value" multiple
+                                    :items="operatorOptions(item.field, item.operator)" placeholder="Select values" />
                             </UFormField>
 
                             <div class="mt-6">
-                                <UButton color="error" @click="remove(index)" :icon="DELETE_ICON" variant="ghost" />
+                                <UButton v-if="!item.default" color="error" @click="remove(index)" :icon="DELETE_ICON"
+                                    variant="ghost" />
                             </div>
                         </div>
                     </UCard>
@@ -142,18 +99,12 @@
 
         <UCard class="mt-5">
             <div class="flex space-x-3">
-                <UButton
-                    type="submit"
-                    :loading="loading"
-                    :icon="PLAY_ICON"
-                    label="Run Query"
-                    class="flex-1 justify-center"
-                    size="lg"
-                    color="primary"
-                />
+                <UButton type="submit" :loading="loading" :icon="PLAY_ICON" label="Run Query"
+                    class="flex-1 justify-center" size="lg" color="primary" />
                 <div v-if="isRun" class="flex space-x-3">
                     <UInput class="w-80" placeholder="Report Name" v-model="state.name" />
-                    <UButton :icon="SAVE_ICON" label="Save Report" size="lg" color="neutral" variant="outline" />
+                    <UButton @click="save" :loading="saveLoading" :disabled="!state.name" :icon="SAVE_ICON"
+                        label="Save Report" size="lg" color="neutral" variant="outline" />
                 </div>
             </div>
         </UCard>
@@ -163,20 +114,28 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 
+const route = useRoute()
+const router = useRouter()
+const toast = useToast()
+
 type FilterState = {
     field: string
     operator: string
     type: string
     value: string
     valueTo: string
+    default?: boolean
     values: string[]
 }
 
 type ReportBuilder = {
+    id?: string
     name: string
+    entity: string
     filters: FilterState[]
 }
 
+const saveLoading = ref(false)
 const { selected: entity } = defineProps<{
     selected: ReportSelectPayload
 }>()
@@ -186,6 +145,7 @@ const { loading, run: isRun } = storeToRefs(store)
 
 const state = reactive<ReportBuilder>({
     name: "",
+    entity: "",
     filters: []
 })
 
@@ -198,26 +158,21 @@ const schema = computed(() =>
                 field: yup.string()
                     .required("Field is required")
                     .min(1, "Field is required"),
-
                 operator: yup.string()
                     .required("Operator is required")
                     .min(1, "Operator is required"),
-
                 type: yup.string(),
-
                 value: yup.string().when(['field', 'operator', 'type'], {
                     is: (field: string, operator: string, type: string) =>
                         !!field && !!operator && ['text', 'select', 'date', 'number', 'range', 'date-range'].includes(type),
                     then: s => s.required("Value is required").min(1, "Value cannot be empty"),
                     otherwise: s => s,
                 }),
-
                 valueTo: yup.string().when('type', {
                     is: (type: string) => type === 'range' || type === 'date-range',
                     then: s => s.required("To value is required").min(1, "To value is required"),
                     otherwise: s => s,
                 }),
-
                 values: yup.array().of(yup.string()).when('type', {
                     is: (type: string) => type === 'multi-select',
                     then: s => s.min(1, "Select at least one value").required("Please select at least one value"),
@@ -228,20 +183,99 @@ const schema = computed(() =>
     })
 )
 
+async function save() {
+    try {
+        saveLoading.value = true
+        const res = await store.save({
+            id: state.id,
+            entity: state.entity,
+            filters: state.filters,
+            name: state.name
+        })
+        if (res == null) return
+        router.replace({
+            query: {
+                ...route.query,
+                id: res.id
+            }
+        })
+        saveLoading.value = false
+        toast.add({
+            title: TITLE,
+            color: 'success',
+            description: "Report saved successfully"
+        })
+    } catch (error: any) {
+        toast.add({
+            title: TITLE,
+            color: 'error',
+            description: error
+        })
+    } finally {
+        saveLoading.value = false
+    }
+}
+
 async function run() {
     await store.runReport({
-        entity: state.name.toLowerCase(),
+        name: state.name,
+        entity: state.entity.toLowerCase(),
         filters: state.filters
             .filter(e => e.field && e.operator && e.type)
-            .map(e => ({
-                field: e.field,
-                operator: e.operator,
-                type: e.type,
-                value: e.value,
-                valueTo: e.valueTo,
-                values: e.values,
-            }))
+            .map(e => parseAttendanceState(e, state.entity))
     }, 1, runtimeConf().limit)
+}
+
+function parseAttendanceState(filter: any, entity: string) {
+    let field = filter.field
+    let type = filter.type
+    let value = filter.value
+
+    if (entity.toLowerCase() == "attendances") {
+        switch (filter.value) {
+            case "Present":
+                if (type == 'select') {
+                    field = "present"
+                    type = "boolean"
+                    value = true
+                }
+                break
+            case "Absent":
+                if (type == 'select') {
+                    field = "present"
+                    type = "boolean"
+                    value = false
+                }
+                break
+            case "Late":
+                if (type == 'select') {
+                    field = "late"
+                    type = "boolean"
+                    value = true
+                }
+                break
+            case "Excused":
+                if (type == 'select') {
+                    field = "excused"
+                    type = "boolean"
+                    value = true
+                }
+                break
+
+            default:
+                break
+        }
+    }
+
+
+    return {
+        field: field,
+        operator: filter.operator,
+        type: type,
+        value: value,
+        valueTo: filter.valueTo,
+        values: filter.values,
+    }
 }
 
 function fieldChange(index: number) {
@@ -258,6 +292,11 @@ function operatorChange(index: number) {
     const found = entity.filters.find(e => e.field === selected.field)
     const operator = found?.operators.find(e => e.operator === selected.operator)
     selected.type = operator?.type ?? ""
+
+    // if (found?.default) {
+    //     selected.value = operator?.options[found.default]?.value || ""
+    // }
+
     resetFilterValue(selected)
 }
 
@@ -295,6 +334,26 @@ function inputType(field: string, opVal: string): string | null {
     return operator?.input ?? null
 }
 
+async function fetchReport() {
+    const id = route.query.id as string
+    const res = await store.get(id || '')
+    if (res == null) return
+    state.id = res.id
+    state.name = res.name
+    state.entity = res.entity
+    state.filters = res.filters
+
+    // update url query
+    router.replace({
+        query: {
+            ...route.query,
+            entity: res.entity.toLowerCase()
+        }
+    })
+
+    run()
+}
+
 function addFilter() {
     state.filters.push({
         field: "",
@@ -314,10 +373,32 @@ watch(
     () => entity,
     (val) => {
         if (!val) return
-        state.name = val.entity
+        state.entity = val.entity
         state.filters = []
         store.clear()
+
+        val.filters.forEach((f) => {
+            if (f.default !== undefined && f.default !== null) {
+
+                const operator = f.operators[f.default]
+
+                state.filters.push({
+                    field: f.field,
+                    operator: operator?.operator ?? "",
+                    type: operator?.type ?? "",
+                    value: operator?.options?.[0]?.value ?? "",
+                    default: true,
+                    valueTo: "",
+                    values: [],
+                })
+            }
+        })
     },
     { immediate: true }
 )
+
+watch(() => route.query.id, () => {
+    if (route.query.id == null) return
+    fetchReport()
+}, { immediate: true })
 </script>
