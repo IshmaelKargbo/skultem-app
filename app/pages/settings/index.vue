@@ -26,4 +26,8 @@ onMounted(() => {
     useAppStore().setTitle('Academic Years')
     document.title = 'Academic Years | Settings | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

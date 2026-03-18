@@ -72,4 +72,8 @@ onMounted(() => {
     useAppStore().setTitle('Ledger')
     document.title = 'Ledger | Skultem'
 })
+
+definePageMeta({
+    role: [Role.ACCOUNTANT]
+})
 </script>

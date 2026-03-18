@@ -18,4 +18,8 @@ onMounted(() => {
     useAppStore().setTitle('Teacher Assignment')
     document.title = 'Teacher Assignment | Curriculums | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

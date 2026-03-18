@@ -1,3 +1,6 @@
+clean for me this code the builder receiver id and fetch and update the builder the also the entity can change but it
+doent work well
+
 <template>
     <UForm ref="form" :schema="schema" :state="state" @submit="run">
         <UCard variant="subtle">
@@ -141,7 +144,7 @@ const { selected: entity } = defineProps<{
 }>()
 
 const store = useReportStore()
-const { loading, run: isRun } = storeToRefs(store)
+const { loading, run: isRun, report } = storeToRefs(store)
 
 const state = reactive<ReportBuilder>({
     name: "",
@@ -267,6 +270,12 @@ function parseAttendanceState(filter: any, entity: string) {
         }
     }
 
+    if (entity.toLowerCase() == "fees") {
+        if (field == "fee.clazz.id" && value == "null") {
+            field = "fee.clazz"
+            value = null
+        }
+    }
 
     return {
         field: field,
@@ -292,10 +301,6 @@ function operatorChange(index: number) {
     const found = entity.filters.find(e => e.field === selected.field)
     const operator = found?.operators.find(e => e.operator === selected.operator)
     selected.type = operator?.type ?? ""
-
-    // if (found?.default) {
-    //     selected.value = operator?.options[found.default]?.value || ""
-    // }
 
     resetFilterValue(selected)
 }
@@ -338,6 +343,7 @@ async function fetchReport() {
     const id = route.query.id as string
     const res = await store.get(id || '')
     if (res == null) return
+
     state.id = res.id
     state.name = res.name
     state.entity = res.entity
@@ -369,30 +375,37 @@ function remove(index: number) {
     state.filters.splice(index, 1)
 }
 
+function initDefaultFilters() {
+    state.filters = []
+
+    entity.filters.forEach((f) => {
+        if (f.default == null) return
+
+        const operator = f.operators[f.default]
+
+        state.filters.push({
+            field: f.field,
+            operator: operator?.operator ?? "",
+            type: operator?.type ?? "",
+            value: operator?.options?.[0]?.value ?? "",
+            valueTo: "",
+            values: [],
+            default: true
+        })
+    })
+}
+
 watch(
     () => entity,
     (val) => {
         if (!val) return
+
         state.entity = val.entity
-        state.filters = []
+
+        if (route.query.id) return
+
+        initDefaultFilters()
         store.clear()
-
-        val.filters.forEach((f) => {
-            if (f.default !== undefined && f.default !== null) {
-
-                const operator = f.operators[f.default]
-
-                state.filters.push({
-                    field: f.field,
-                    operator: operator?.operator ?? "",
-                    type: operator?.type ?? "",
-                    value: operator?.options?.[0]?.value ?? "",
-                    default: true,
-                    valueTo: "",
-                    values: [],
-                })
-            }
-        })
     },
     { immediate: true }
 )
@@ -401,4 +414,6 @@ watch(() => route.query.id, () => {
     if (route.query.id == null) return
     fetchReport()
 }, { immediate: true })
+
+onUnmounted(() => store.clear())
 </script>

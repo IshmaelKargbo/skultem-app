@@ -4,7 +4,7 @@ export const TermApi = () => {
   return {
     getAll: async (page: number, size: number) => {
       try {
-        const res = await $api(`/term?page=${page}&size=${size}`)
+        const res: any = await $api(`/term?page=${page}&size=${size}`)
 
         if (!res)
           throw new Error('Failed to fetch terms')
@@ -18,7 +18,18 @@ export const TermApi = () => {
         useHandleError(err)
       }
     },
+    getActive: async () => {
+      try {
+        const res: any = await $api('/term/active')
 
+        if (!res)
+          throw new Error('Failed to fetch active term')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     create: async (payload: CreateTermDto) => {
       try {
         return await $api('/term', {

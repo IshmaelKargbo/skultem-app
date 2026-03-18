@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div class="space-y-1">
                 <p class="text-2xl font-semibold">Saved Reports</p>
-                <p class="text-mute text-xs">Access and manage your saved reports</p>
+                <p class="text-mute">Access and manage your saved reports</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <UButton :icon="ADD_ICON" label="Create New Report" to="/analytics/builder" />
@@ -13,52 +13,18 @@
             <Tab :tabs="[
                 { label: 'Reports', to: '/analytics', exact: true },
                 { label: 'Report Builder', to: '/analytics/builder', exact: true },
-                { label: 'Saved Reports', to: '/analytics/saved', exact: true }
+                { label: 'Saved Reports', to: '/analytics/saved', exact: true },
+                { label: 'Dashboard Widgets', to: '/analytics/dashboard', exact: true }
             ]" />
         </div>
         <UCard>
             <UInput v-model="search" placeholder="Search saved reports..." icon="lucide:search" />
         </UCard>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UCard v-for="card in stats" :key="card.label">
-                <div class="flex items-center justify-between">
-                    <div class="space-y-2">
-                        <p class="text-xs text-mute">{{ card.label }}</p>
-                        <p class="text-2xl font-semibold text-slate-900">{{ card.value }}</p>
-                    </div>
-                    <div :class="['h-12 w-12 rounded-xl flex items-center justify-center', card.bg]">
-                        <UIcon :name="card.icon" class="text-2xl" :class="card.color" />
-                    </div>
-                </div>
-            </UCard>
-        </div>
+        <ReportSavedReport />
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            <UCard v-for="report in filteredReports" :key="report.id">
-                <div class="space-y-4">
-                    <div class="flex items-start gap-3">
-                        <div class="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                            <UIcon name="lucide:bar-chart-3" class="text-lg text-slate-700" />
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-base font-semibold text-slate-900">{{ report.name }}</p>
-                            <p class="text-sm text-mute">{{ report.description }}</p>
-                        </div>
-                    </div>
-                    <div class="rounded-xl bg-slate-50 h-28 flex items-center justify-center">
-                        <div class="flex items-end gap-2">
-                            <span v-for="(bar, index) in report.preview" :key="index"
-                                class="w-2 rounded-full bg-blue-400" :style="{ height: `${bar}px` }" />
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between text-xs text-mute">
-                        <span>Updated {{ report.updated }}</span>
-                        <UButton variant="outline" color="neutral" size="xs" label="Open"
-                            :to="`/analytics/builder?id=${report.id}`" />
-                    </div>
-                </div>
-            </UCard>
+            <ReportSavedCardSkeleton v-if="loading" v-for="item in 6" :key="item" />
+            <ReportSavedCard v-else v-for="report in filteredReports" :record="report" :key="report.id" />
         </div>
     </div>
 </template>
@@ -66,7 +32,7 @@
 <script setup lang="ts">
 const search = ref('')
 const store = useReportStore()
-const { saves: records } = storeToRefs(store)
+const { saves: records, loading } = storeToRefs(store)
 
 const reportTypes: Record<string, string> = {
     ledger: 'Ledger report',
@@ -95,8 +61,8 @@ const stats = computed(() => {
     const lastUpdated = latest ? formatDateTime(latest as string) : '-'
 
     return [
-        { label: 'Total Saved', value: total, icon: 'lucide:bar-chart-3', bg: 'bg-blue-50', color: 'text-blue-600' },
-        { label: 'Last Updated', value: lastUpdated, icon: 'lucide:clock', bg: 'bg-emerald-50', color: 'text-emerald-600' }
+        { label: 'Total Saved', value: total, icon: 'lucide:bar-chart-3', bg: 'bg-blue-50', color: 'warning' },
+        { label: 'Last Updated', value: lastUpdated, icon: 'lucide:clock', bg: 'bg-emerald-50', color: 'success' }
     ]
 })
 
@@ -126,5 +92,9 @@ onMounted(async () => {
     useAppStore().setTitle('Analytics')
     document.title = 'Saved Reports | Analytics | Skultem'
     await store.fetchAll(1, runtimeConf().limit)
+})
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
 })
 </script>

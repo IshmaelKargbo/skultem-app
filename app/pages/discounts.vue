@@ -27,4 +27,8 @@ onMounted(() => {
     useAppStore().setTitle('Discounts')
     document.title = 'Discounts | Skultem'
 })
+
+definePageMeta({
+    role: [Role.ACCOUNTANT]
+})
 </script>

@@ -56,4 +56,8 @@ onMounted(() => {
 onUnmounted(() => {
     useAttendanceStore().cleanUp()
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN, Role.TEACHER, Role.PARENT]
+})
 </script>

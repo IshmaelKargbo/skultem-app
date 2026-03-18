@@ -9,7 +9,6 @@ export const useUserStore = defineStore('user', {
     user: {} as User,
     error: null as string | null
   }),
-
   actions: {
     async fetchAll(page: number = 1, size: number = 6) {
       this.loading = true

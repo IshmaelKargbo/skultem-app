@@ -13,11 +13,12 @@
 </template>
 
 <script setup lang="ts">
-const page = ref(1);
-const { meta } = storeToRefs(useTermStore());
-
 onMounted(() => {
     useAppStore().setTitle('Subjects')
     document.title = 'Subjects | Curriculums | Skultem'
+})
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
 })
 </script>

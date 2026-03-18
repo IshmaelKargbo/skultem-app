@@ -22,6 +22,16 @@ export const useTermStore = defineStore('term', {
         this.loading = false
       }
     },
+    async getActive() {
+      try {
+        const response = await TermApi().getActive()
+        return response
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch terms'
+      } finally {
+        this.loading = false
+      }
+    },
     create(payload: CreateTermDto) {
       return TermApi().create(payload)
     },

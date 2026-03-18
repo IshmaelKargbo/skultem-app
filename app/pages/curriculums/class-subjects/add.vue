@@ -287,4 +287,8 @@ onMounted(() => {
     document.title =
         'Class Subjects | Assign Class Subject | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

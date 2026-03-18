@@ -18,4 +18,8 @@ onMounted(() => {
     useAppStore().setTitle('Behavoiur Categories');
     document.title = 'Behavoiur Categories | Settings | Skultem';
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

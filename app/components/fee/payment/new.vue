@@ -216,7 +216,7 @@ async function fetchRecords() {
 
 const students = computed(() =>
     studentStore.records.map(s => ({
-        label: `${s.givenNames} ${s.familyName} (${s.admissionNumber})`,
+        label: `${s.givenNames} ${s.familyName} (${s.className})`,
         value: s.id
     }))
 )

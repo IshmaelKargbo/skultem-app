@@ -241,4 +241,8 @@ onMounted(() => {
     useAppStore().setTitle('Assign Stream Subject')
     document.title = 'Stream Subjects | Assign Stream Subject | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

@@ -575,4 +575,8 @@ onMounted(async () => {
     await fetchRecord()
   }
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN, Role.TEACHER]
+})
 </script>

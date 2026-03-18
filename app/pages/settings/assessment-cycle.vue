@@ -509,4 +509,8 @@ watch(() => selectedClassId.value, async () => {
   syncSelectionsFromData()
   await loadCycle()
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

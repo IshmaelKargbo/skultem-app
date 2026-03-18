@@ -18,4 +18,8 @@ onMounted(() => {
   
     document.title = 'Teachers | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

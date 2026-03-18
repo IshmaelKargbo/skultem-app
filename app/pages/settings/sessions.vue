@@ -91,4 +91,8 @@ onMounted(() => {
     useAppStore().setTitle('User Sessions')
     document.title = 'User Sessions | Settings | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

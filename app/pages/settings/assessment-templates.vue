@@ -21,4 +21,8 @@ onMounted(() => {
     useAppStore().setTitle('Assessment Templates')
     document.title = 'Assessment Templates | Settings | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

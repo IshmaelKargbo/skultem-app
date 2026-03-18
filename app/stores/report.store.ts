@@ -5,12 +5,14 @@ export const useReportStore = defineStore('report', {
     saves: [] as SavedReport[],
     students: [] as Student[],
     teachers: [] as Teacher[],
+    fees: [] as Fee[],
+    payments: [] as Payment[],
     attendances: [] as Attendance[],
     grades: [] as Grade[],
     classes: [] as ClassSession[],
     subjects: [] as TeacherSubject[],
     report: null as ReportSelectFilterPayload | null,
-    loading: false,
+    loading: true,
     entity: "",
     meta: null as Meta | null,
     error: null as string | null,
@@ -31,17 +33,28 @@ export const useReportStore = defineStore('report', {
         switch (query.entity.toLowerCase()) {
           case "students":
             this.students = response.data
+            break
           case "teachers":
             this.teachers = response.data
+            break
           case "classes":
             this.classes = response.data
+            break
           case "subjects":
             this.subjects = response.data
+            break
           case "attendances":
             this.attendances = response.data
+            break
+          case "fees":
+            this.fees = response.data
+            break
+          case "payments":
+            this.payments = response.data
+            break
           case "grades":
             this.grades = response.data
-            break;
+            break
           default:
             break;
         }

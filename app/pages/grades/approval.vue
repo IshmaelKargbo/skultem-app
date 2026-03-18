@@ -151,4 +151,8 @@ onMounted(() => {
   document.title = 'Grade Approval Requests | Grades | Skultem'
   sessionStore.fetchAll(0, 0)
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN, Role.TEACHER]
+})
 </script>

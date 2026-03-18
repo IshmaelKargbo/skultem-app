@@ -35,4 +35,8 @@ onMounted(() => {
     
     document.title = 'Student Fees | Skultem'
 })
+
+definePageMeta({
+    role: [Role.ACCOUNTANT]
+})
 </script>

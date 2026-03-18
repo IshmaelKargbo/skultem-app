@@ -3,10 +3,11 @@
         <p class="text-base">Data Source</p>
         <p class="text-xs text-mute">Select the data entity you want to explore</p>
 
-        <div class="mt-3 grid grid-cols-5 gap-3">
+        <div class="mt-3 grid grid-cols-4 gap-3">
             <UButton v-for="(item, index) in datasource" :key="item.key" :label="item.value" size="lg"
                 class="w-full flex justify-center" :color="active === index ? 'primary' : 'neutral'"
-                :variant="active === index ? 'solid' : 'outline'" @click="onSelect(index)" />
+                :variant="active === index ? 'solid' : 'outline'" @click="onSelect(index)"
+                :disabled="isDisable(item.key)" />
         </div>
     </UCard>
 </template>
@@ -14,6 +15,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
+const { report } = storeToRefs(useReportStore())
 
 type Option = {
     label: string
@@ -47,10 +49,8 @@ const datasource: Datasource[] = [
     { key: "subjects", value: "Subjects" },
     { key: "attendances", value: "Attendances" },
     { key: "grades", value: "Grades" },
-    { key: "parents", value: "Parents" },
     { key: "fees", value: "Fees" },
-    { key: "payments", value: "Payments" },
-    { key: "announcements", value: "Announcements" },
+    { key: "payments", value: "Payments" }
 ]
 
 const textOperators: ReportOperator[] = [
@@ -111,6 +111,7 @@ const streamStore = useStreamStore()
 const studentStore = useStudentStore()
 const teacherStore = useTeacherStore()
 const termStore = useTermStore()
+const feeStore = useFeeStore()
 const assessmentStore = useAssessmentStore()
 const subjectStore = useSubjectStore()
 
@@ -121,6 +122,14 @@ const sessions = computed(() =>
     }))
 )
 
+const allocationType = computed(() => [
+    { label: "All Classes", value: "null" },
+    ...sessionStore.records.map((e) => ({
+        label: parseClassSession(e),
+        value: e.clazzId
+    }))
+])
+
 const sections = computed(() =>
     sectionStore.records.map((e) => ({
         label: e.name,
@@ -128,6 +137,13 @@ const sections = computed(() =>
     }))
 )
 
+function isDisable(entity: string) {
+    if (report.value && route.query.id) {
+        return entity != report.value.entity
+    }
+
+    return false
+}
 
 const students = computed(() =>
     studentStore.records.map((e) => ({
@@ -171,6 +187,13 @@ const streams = computed(() =>
     }))
 )
 
+const fees = computed(() =>
+    feeStore.records.map((e) => ({
+        label: e.name,
+        value: e.id
+    }))
+)
+
 const emit = defineEmits<{
     select: [payload: ReportSelectPayload]
 }>()
@@ -204,6 +227,18 @@ const status = [
     },
     {
         label: "Deleted", value: "DELETED"
+    }
+]
+
+const feeStatus = [
+    {
+        label: "Pending", value: "PENDING"
+    },
+    {
+        label: "Overdue", value: "OVERDUE"
+    },
+    {
+        label: "Paid", value: "PAID"
     }
 ]
 
@@ -241,28 +276,40 @@ const attendanceState = [
     }
 ]
 
+const paymentMethods = [
+    {
+        label: "Cash", value: "CASH"
+    },
+    {
+        label: "Bank Transfer", value: "BANK"
+    },
+    {
+        label: "Mobile Money", value: "MOBILE_MONEY"
+    }
+]
+
 const filtersMap: Record<string, () => ReportFilter[]> = {
     Students: () => [
         { field: "student.givenNames", label: "Given Names", operators: textOperators },
         { field: "student.familyName", label: "Family Name", operators: textOperators },
         { field: "student.dateOfBirth", label: "Age", operators: ageOperators },
-        { field: "student.gender", label: "Gender", operators: selectOperators(genderOption) },
+        { field: "student.gender", label: "Gender", operators: equalSelectOperators(genderOption) },
         { field: "clazz.id", label: "Class", operators: equalSelectOperators(sessions.value) },
         { field: "createdAt", label: "Admission Date", operators: instantOperators },
-        { field: "student.status", label: "Status", operators: selectOperators(studentStatus) },
+        { field: "student.status", label: "Status", operators: equalSelectOperators(studentStatus) },
     ],
 
     Teachers: () => [
         { field: "user.givenNames", label: "Given Names", operators: textOperators },
         { field: "user.familyName", label: "Family Name", operators: textOperators },
-        { field: "gender", label: "Gender", operators: selectOperators(genderOption) },
+        { field: "gender", label: "Gender", operators: equalSelectOperators(genderOption) },
         { field: "hireDate", label: "Hire Date", operators: dateOperators },
         { field: "status", label: "Status", operators: selectOperators() },
     ],
 
     Classes: () => [
         { field: "clazz.name", label: "Name", operators: textOperators },
-        { field: "clazz.level", label: "Level", operators: selectOperators(levels) },
+        { field: "clazz.level", label: "Level", operators: equalSelectOperators(levels) },
         { field: "clazz.status", label: "Status", operators: equalSelectOperators(status) },
     ],
 
@@ -275,8 +322,8 @@ const filtersMap: Record<string, () => ReportFilter[]> = {
     ],
 
     Attendances: () => [
-        { field: "enrollment.student.id", label: "Student", operators: selectOperators(students.value) },
-        { field: "enrollment.clazz.id", label: "Class", operators: selectOperators(sessions.value) },
+        { field: "enrollment.student.id", label: "Student", operators: equalSelectOperators(students.value) },
+        { field: "enrollment.clazz.id", label: "Class", operators: equalSelectOperators(sessions.value) },
         { field: "date", label: "Date", operators: dateOperators },
         { field: "status", label: "Status", operators: equalSelectOperators(attendanceState) },
     ],
@@ -290,50 +337,32 @@ const filtersMap: Record<string, () => ReportFilter[]> = {
         { field: "cycle.status", label: "Status", operators: equalSelectOperators(assessmentStatus) },
     ],
 
-    Parents: () => [
-        { field: "name", label: "Name", operators: textOperators },
-        { field: "gender", label: "Gender", operators: selectOperators(genderOption) },
-        { field: "student", label: "Student", operators: textOperators },
-        { field: "status", label: "Status", operators: selectOperators() },
-    ],
-
     Fees: () => [
-        { field: "name", label: "Name", operators: textOperators },
-        { field: "amount", label: "Amount", operators: numberOperators },
-        { field: "due_date", label: "Due Date", operators: dateOperators },
-        { field: "status", label: "Status", operators: selectOperators() },
+        { field: "fee.term.id", label: "Term", operators: equalSelectOperators(terms.value) },
+        { field: "fee.category.id", label: "Fee", operators: equalSelectOperators(fees.value) },
+        { field: "fee.clazz.id", label: "Class", operators: equalSelectOperators(allocationType.value) },
+        { field: "student.id", label: "Student", operators: equalSelectOperators(students.value) },
+        { field: "status", label: "Status", operators: equalSelectOperators(feeStatus) },
     ],
 
     Payments: () => [
-        { field: "student", label: "Student", operators: textOperators },
+        { field: "fee.category.id", label: "Fee", operators: equalSelectOperators(fees.value) },
+        { field: "method", label: "Method", operators: selectOperators(paymentMethods) },
         { field: "amount", label: "Amount", operators: numberOperators },
         { field: "date", label: "Date", operators: dateOperators },
-        { field: "method", label: "Method", operators: selectOperators() },
-        { field: "status", label: "Status", operators: selectOperators() },
+        { field: "student.id", label: "Student", operators: equalSelectOperators(students.value) }
     ],
-
-    Announcements: () => [
-        { field: "title", label: "Title", operators: textOperators },
-        { field: "date", label: "Date", operators: dateOperators },
-        { field: "audience", label: "Audience", operators: selectOperators() },
-        { field: "status", label: "Status", operators: selectOperators() },
-    ],
-
 }
 
 function onSelect(index: number) {
-
     active.value = index
 
     const selected = datasource[index]
     if (!selected) return
 
-    // update url query
     router.replace({
         query: {
             ...route.query,
-            page: 1,
-            size: runtimeConf().limit,
             entity: selected.key
         }
     })
@@ -354,6 +383,7 @@ onMounted(async () => {
     await termStore.fetchAll(0, 0)
     await subjectStore.fetchAll(0, 0)
     await assessmentStore.fetchAssessments()
+    await feeStore.fetchAll(0, 0)
 
     const selected = datasource[active.value]
     if (selected) {

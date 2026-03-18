@@ -85,4 +85,8 @@ onMounted(() => {
     useAppStore().setTitle('Audit Logs')
     document.title = 'Audit Logs | Settings | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

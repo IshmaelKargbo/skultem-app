@@ -75,6 +75,7 @@ watch(() => page.value, async () => {
   })
   router.replace({
     query: {
+      ...route.query,
       page: page.value,
       size: size.value
     }

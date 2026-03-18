@@ -8,6 +8,21 @@ export type FeeCategory = {
     updatedAt: string
 }
 
+export type Fee = {
+    id: string
+    term: string
+    clazz: string
+    student: string
+    amount: number
+    amountPaid: number
+    fee: string
+    outstanding: number
+    state: string
+    createdAt: string
+    updatedAt: string
+}
+
+
 export type FeeStructure = {
     id: string
     term: Term
@@ -47,6 +62,19 @@ export type FeePayment = {
     id: string
     fee: FeeStructure
     student: Student
+    amount: number
+    paymentMethod: string
+    paidAt: string
+    referenceNo: string
+    note: string
+    createdAt: string
+    updatedAt: string
+}
+
+export type Payment = {
+    id: string
+    fee: string
+    student: string
     amount: number
     paymentMethod: string
     paidAt: string

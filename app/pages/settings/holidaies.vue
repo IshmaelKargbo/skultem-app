@@ -25,4 +25,8 @@ onMounted(() => {
     useAppStore().setTitle('Halidaies')
     document.title = 'Holidays | Settings | Skultem'
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

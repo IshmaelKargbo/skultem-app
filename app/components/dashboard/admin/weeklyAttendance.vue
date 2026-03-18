@@ -6,7 +6,7 @@
     </div>
     <client-only v-else>
       <!-- Show chart when ready -->
-      <ApexChart type="line" height="350" :options="chartOptions" :series="chartSeries" />
+      <ApexChart type="area" height="350" :options="chartOptions" :series="chartSeries" />
     </client-only>
   </div>
 </template>

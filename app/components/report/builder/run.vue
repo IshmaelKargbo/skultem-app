@@ -6,18 +6,18 @@
             <ReportTableClazz v-if="entity.toLowerCase() == 'classes'" />
             <ReportTableSubject v-if="entity.toLowerCase() == 'subjects'" />
             <ReportTableAttendance v-if="entity.toLowerCase() == 'attendances'" />
+            <ReportTableFee v-if="entity.toLowerCase() == 'fees'" />
+            <ReportTablePayment v-if="entity.toLowerCase() == 'payments'" />
             <ReportTableGrade v-if="entity.toLowerCase() == 'grades'" />
             <UCard>
                 <div>
                     <p>Export Report</p>
-                    <div class="mt-3 grid-cols-4 grid gap-3">
-                        <UButton :icon="DOWNLOAD_ICON" label="Export CSV" size="xl" class="w-full flex justify-center"
+                    <div class="mt-3 grid-cols-3 grid gap-3">
+                        <UButton :icon="DOWNLOAD_ICON" label="Export CSV" size="lg" class="w-full flex justify-center"
                             color="neutral" variant="outline" />
-                        <UButton :icon="DOWNLOAD_ICON" label="Export Excel" size="xl" class="w-full flex justify-center"
+                        <UButton :icon="DOWNLOAD_ICON" label="Export Excel" size="lg" class="w-full flex justify-center"
                             color="neutral" variant="outline" />
-                        <UButton :icon="DOWNLOAD_ICON" label="Export PDF" size="xl" class="w-full flex justify-center"
-                            color="neutral" variant="outline" />
-                        <UButton :icon="DOWNLOAD_ICON" label="Export JSON" size="xl" class="w-full flex justify-center"
+                        <UButton :icon="DOWNLOAD_ICON" label="Export PDF" size="lg" class="w-full flex justify-center"
                             color="neutral" variant="outline" />
                     </div>
                 </div>

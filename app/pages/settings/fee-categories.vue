@@ -26,4 +26,8 @@ onMounted(() => {
     useAppStore().setTitle('Fee Categories');
     document.title = 'Fee Categories | Settings | Skultem';
 })
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN]
+})
 </script>

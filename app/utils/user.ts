@@ -3,7 +3,7 @@ export type User = {
     givenNames: string
     familyName: string
     email: string
-    role: string
+    roles: string
     createdAt: string
     updatedAt: string
 }

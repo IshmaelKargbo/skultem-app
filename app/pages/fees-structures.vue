@@ -73,8 +73,10 @@ async function exportFees(format: 'csv' | 'pdf') {
 
 onMounted(() => {
     useAppStore().setTitle('Fees Structures');
-    definePageMeta({
-        title: 'Fees Structures'
-    })
+})
+
+definePageMeta({
+    title: 'Fees Structures',
+    role: [Role.ACCOUNTANT]
 })
 </script>

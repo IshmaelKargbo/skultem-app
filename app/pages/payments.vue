@@ -50,4 +50,8 @@ onMounted(() => {
     useAppStore().setTitle('Payments')
     document.title = 'Payments | Skultem'
 })
+
+definePageMeta({
+    role: [Role.ACCOUNTANT]
+})
 </script>

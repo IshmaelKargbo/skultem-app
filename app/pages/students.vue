@@ -18,10 +18,6 @@
 </template>
 
 <script setup lang="ts">
-import { DOWNLOAD_ICON } from '~/utils/icons'
-import { downloadBlob } from '~/utils/report'
-import { ReportApi } from '~/api/report.api'
-
 const page = ref(1);
 const { meta } = storeToRefs(useStudentStore());
 const exportingCsv = ref(false)
@@ -45,5 +41,9 @@ async function exportStudents(format: 'csv' | 'pdf') {
 onMounted(() => {
     useAppStore().setTitle('Students');
     document.title = 'Students | Skultem'
+})
+
+definePageMeta({
+    role: [Role.SCHOOL_ADMIN, Role.ACCOUNTANT]
 })
 </script>

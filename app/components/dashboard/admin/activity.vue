@@ -75,17 +75,17 @@ onMounted(async () => {
       <div 
         v-for="(item, index) in activities"
         :key="item.id" 
-        class="flex gap-4 py-4 first:pt-0 last:pb-0 border-b border-gray-100 last:border-0"
+        class="flex gap-4 py-2.5 first:pt-0 last:pb-0 border-b border-gray-100 last:border-0"
       >
         <div class="mt-1.5 shrink-0">
           <div :class="[typeColor[item.type] || 'bg-slate-500', 'h-3 w-3 rounded-full']"></div>
         </div>
 
         <div class="flex flex-col">
-          <span class="font-semibold leading-tight">
+          <span class="font-semibold text-sm leading-tight">
             {{ item.title }}
           </span>
-          <span class="text-sm text-muted mt-0.5">
+          <span class="text-xs text-muted mt-0.5">
             {{ item.subject }}
           </span>
           <span class="text-xs text-mute mt-1">

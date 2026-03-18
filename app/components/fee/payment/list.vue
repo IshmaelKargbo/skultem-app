@@ -60,8 +60,7 @@
                         <!-- Top Row: Student + Status -->
                         <div class="flex justify-between">
                             <div>
-                                <p class="text-base font-medium">{{ item.student.givenNames }} {{
-                                    item.student.familyName }}</p>
+                                <p class="text-base font-medium">{{ item.student}}</p>
                                 <StudentEnrollment :id="item.student.id">
                                     <template #default="{ value }">
                                         <p class="text-xs text-mute">
@@ -79,7 +78,7 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <p class="text-xs text-mute">Category</p>
-                                <p>{{ item.fee.category.name }}</p>
+                                <p>{{ item.fee }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-mute">Amount</p>

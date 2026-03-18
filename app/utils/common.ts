@@ -15,6 +15,20 @@ export enum Level {
     SSS = 'SSS',
 }
 
+export enum Role {
+    SCHOOL_ADMIN = 'SCHOOL_ADMIN',
+    TEACHER = 'TEACHER',
+    PARENT = 'PARENT',
+    ACCOUNTANT = 'ACCOUNTANT'
+}
+
+export const parseRole: Record<string, string> = {
+    SCHOOL_ADMIN: 'School Admin',
+    TEACHER: 'Teacher',
+    PARENT: 'Parent',
+    ACCOUNTANT: 'Accounttant'
+}
+
 export type AssignmentSubject = {
     subjectId: string
     groupId: string
