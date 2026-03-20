@@ -5,7 +5,10 @@
                 <p v-if="title" class="text-lg font-semibold">{{ title }}</p>
                 <USkeleton v-else class="h-4 w-44" />
             </div>
-            <div>
+            <div class="flex items-center space-x-2">
+                <div class="flex space-x-2 border-r border-gray-100 pr-2">
+                    <UButton variant="ghost" :icon="BELL_ICON" />
+                </div>
                 <Me />
             </div>
         </div>

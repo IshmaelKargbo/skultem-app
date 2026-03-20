@@ -116,10 +116,7 @@ definePageMeta({
     middleware: "guest"
 })
 
-console.log("Yooooo Login");
 onMounted(() => {
     document.title = "Login | Skultem"
-
-
 })
 </script>

@@ -101,7 +101,7 @@ const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 const isApproveLoading = ref(false)
 const isReturnLoading = ref(false)
 const store = useAssessmentStore()
-const toast = useToast()
+const {error: toastError, success: toastSuccess} = useNotify()
 
 const state = reactive({
   note: ''
@@ -142,10 +142,7 @@ async function approve() {
 
     isApproveLoading.value = true
     await store.approveRequest(selected.value.id, "Grade approved successfully")
-    toast.add({
-      description: "Assessment approved successfully",
-      color: "success"
-    })
+    toastSuccess("Assessment approved successfully")
     emit("refresh")
     nextTick(() => {
       scrollContainer?.value?.scrollTo({
@@ -154,10 +151,7 @@ async function approve() {
       })
     })
   } catch (error: any) {
-    toast.add({
-      description: error?.data?.message || error?.message || 'Failed to approve request',
-      color: "error"
-    })
+    toastError(error?.data?.message || error?.message || 'Failed to approve request')
   } finally {
     isApproveLoading.value = false
   }
@@ -169,10 +163,7 @@ async function remove() {
 
     isReturnLoading.value = true
     await store.returnRequest(selected.value.id, state.note)
-    toast.add({
-      description: "Assessment returned successfully",
-      color: "success"
-    })
+    toastSuccess("Assessment returned successfully")
     emit("refresh")
     nextTick(() => {
       scrollContainer?.value?.scrollTo({
@@ -183,10 +174,7 @@ async function remove() {
     returnForm.value = false
     state.note = ''
   } catch (error: any) {
-    toast.add({
-      description: error?.data?.message || error?.message || 'Failed to return request',
-      color: "error"
-    })
+    toastError(error?.data?.message || error?.message || 'Failed to return request')
   } finally {
     isReturnLoading.value = false
   }

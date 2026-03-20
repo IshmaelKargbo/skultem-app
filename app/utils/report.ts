@@ -54,7 +54,7 @@ export type ReportFilterSelected = {
   type: string
   operator: string
   value: string
-  valueTo: string
+  valueTo?: string
 }
 
 export type ReportFilter = {

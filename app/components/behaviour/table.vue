@@ -1,26 +1,18 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
-import { downloadBlob } from '~/utils/report'
-import { ReportApi } from '~/api/report.api'
 
 const route = useRoute()
 const router = useRouter()
-const classSession = useClassSessionStore()
+
+const {classId} = defineProps<{
+  classId: string
+}>()
 const store = useBehaviourStore()
 const { records: data, meta, loading } = storeToRefs(store)
 
-const reportRef = ref()
-
-function refreshReport() {
-    reportRef.value?.fetchRecord()
-}
-
 const editRcord = ref<Behaviour | null>(null)
 const editState = ref(false)
-const exportingCsv = ref(false)
-const exportingPdf = ref(false)
-const toast = useToast()
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -73,11 +65,6 @@ const columns: TableColumn<Behaviour> = [
   }
 ]
 
-const classes = computed(() => classSession.records.map(e => ({ label: parseClassSession(e), value: e.clazzId })))
-
-const state = reactive({
-  clazz: ''
-})
 
 function getRowItems(row: Row<Behaviour>) {
   return [
@@ -119,6 +106,12 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
+async function fetchRecords() {
+  loading.value = true
+  await store.fetchAll(classId, page.value, size.value)
+  loading.value = false
+}
+
 watch(() => page.value, () => {
   router.replace({
     query: {
@@ -130,31 +123,7 @@ watch(() => page.value, () => {
   fetchRecords()
 }, { immediate: true })
 
-watch(() => state.clazz, () => fetchRecords(), { immediate: true })
-
-async function fetchRecords() {
-  loading.value = true
-  await store.fetchAll(state.clazz, page.value, size.value)
-  loading.value = false
-}
-
-async function exportBehaviour(format: 'csv' | 'pdf') {
-  if (!state.clazz) {
-    toast.add({ title: 'Select a class first', color: 'warning' })
-    return
-  }
-  const loadingState = format === 'csv' ? exportingCsv : exportingPdf
-  loadingState.value = true
-  try {
-    const { blob, filename } = await ReportApi().exportBehaviour(state.clazz, format)
-    downloadBlob(blob, filename)
-    toast.add({ title: 'Behaviour report exported', color: 'success' })
-  } catch (err: any) {
-    toast.add({ title: err.message || 'Failed to export behaviour report', color: 'error' })
-  } finally {
-    loadingState.value = false
-  }
-}
+watch(() => classId, () => fetchRecords(), { immediate: true })
 
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
@@ -166,45 +135,28 @@ onMounted(async () => {
     })
   }
 
-  classSession.fetchAll(0, 0)
   fetchRecords()
 })
 </script>
 
 <template>
-  <div class="p-5 space-y-5">
-    <BehaviourReport ref="reportRef" :clazz="state.clazz" />
-    <UCard>
-      <div class="flex justify-between items-center pb-3 border-b border-gray-300">
-        <div>
-          <p class="text-xl font-semibold">Behaviour Notes</p>
+  <UCard>
+    <UTable :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No behaviour found.</p>
         </div>
-        <div class="flex space-x-3 w-1/3">
-          <USelectMenu :items="classes" placeholder="Select class" value-key="value" v-model="state.clazz" />
-          <UButton variant="outline" color="neutral" icon="lucide:download" label="CSV"
-            :loading="exportingCsv" @click="exportBehaviour('csv')" />
-          <UButton variant="outline" color="neutral" icon="lucide:download" label="PDF"
-            :loading="exportingPdf" @click="exportBehaviour('pdf')" />
-          <BehaviourAdd @refresh="refreshReport" :clazz="state.clazz" />
-        </div>
-      </div>
-      <UTable :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No behaviour found.</p>
-          </div>
-        </template>
-        <template #kind-cell="{ row }">
-          <UBadge :label="parseBehaviourKind[row.original.kind]" :color="parseBehaviourKindColor[row.original.kind]"
-            variant="outline" />
-        </template>
-      </UTable>
-      <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
-    </UCard>
-  </div>
+      </template>
+      <template #kind-cell="{ row }">
+        <UBadge :label="parseBehaviourKind[row.original.kind]" :color="parseBehaviourKindColor[row.original.kind]"
+          variant="outline" />
+      </template>
+    </UTable>
+    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
+    </div>
+  </UCard>
 </template>

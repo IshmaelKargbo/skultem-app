@@ -1,26 +1,29 @@
 <template>
     <div class="grid grid-cols-3 gap-5">
-        <UCard>
-            <div class="space-y-1">
-                <USkeleton v-if="isLoading" class="w-10 h-10" />
-                <p v-else class="text-3xl font-semibold text-success">{{ kindRecord("Positive")?.count || 0 }}</p>
-                <p class="text-mute">Positive Notes</p>
-            </div>
-        </UCard>
-        <UCard>
-            <div class="space-y-1">
-                <USkeleton v-if="isLoading" class="w-10 h-10" />
-                <p v-else class="text-3xl font-semibold text-error">{{ kindRecord("Negative")?.count || 0 }}</p>
-                <p class="text-mute">Negative Notes</p>
-            </div>
-        </UCard>
-        <UCard>
-            <div class="space-y-1">
-                <USkeleton v-if="isLoading" class="w-10 h-10" />
-                <p v-else class="text-3xl font-semibold text-neutral">{{ kindRecord("Neutral")?.count || 0 }}</p>
-                <p class="text-mute">Neutral Notes</p>
-            </div>
-        </UCard>
+        <Metric :record="{
+            label: 'Positive Notes',
+            value: kindRecord('Positive')?.count || 0,
+            color: 'success',
+            isReady: !isLoading,
+            icon: 'mdi:trophy',
+            subtle: 'Positive behaviour recorded in class.'
+        }" />
+        <Metric :record="{
+            label: 'Negative Notes',
+            value: kindRecord('Negative')?.count || 0,
+            color: 'error',
+            isReady: !isLoading,
+            icon: 'mdi:close-circle',
+            subtle: 'Negative behaviour recorded in class.'
+        }" />
+        <Metric :record="{
+            label: 'Neutral Notes',
+            value: kindRecord('Negative')?.count || 0,
+            color: 'error',
+            isReady: !isLoading,
+            icon: 'codicon:screen-normal',
+            subtle: 'Neutral behaviour recorded in class.'
+        }" />
     </div>
 </template>
 

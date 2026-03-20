@@ -103,7 +103,7 @@ import type { FormSubmitEvent } from '#ui/types'
 
 const store = useTeacherStore()
 const classStore = useClassSessionStore()
-const toast = useToast()
+const { success, error } = useNotify()
 const isLoading = ref(false)
 
 type TeacherForm = {
@@ -197,10 +197,10 @@ const onSubmit = async (event: FormSubmitEvent<TeacherForm>) => {
         })
 
         await store.fetchAll()
-        toast.add({ description: 'Teacher created successfully', color: 'success' })
+        success('Teacher created successfully')
         close()
     } catch (err: any) {
-        toast.add({ description: err.message, color: 'error' })
+        error(err.message)
     } finally {
         isLoading.value = false
     }

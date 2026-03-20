@@ -64,8 +64,6 @@
 </template>
 
 <script setup lang="ts">
-import { SEARCH_ICON } from '~/utils/icons'
-
 type ApprovalRequestStatus = 'Pending Review' | 'Approved' | 'Returned'
 type RequestFilter = 'ALL' | ApprovalRequestStatus
 

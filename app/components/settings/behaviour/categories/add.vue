@@ -49,11 +49,10 @@
 
 <script setup lang="ts">
 import * as yup from "yup"
-import { reactive, ref } from "vue"
 import type { FormSubmitEvent } from "#ui/types"
 
 const store = useBehaviourCategoryStore()
-const toast = useToast()
+const { error, success } = useNotify()
 
 const isLoading = ref(false)
 const open = ref(false)
@@ -92,18 +91,10 @@ const onSubmit = async (event: FormSubmitEvent<BehaviourCategoryForm>) => {
         })
 
         await store.fetchAll(1, runtimeConf().limit)
-
-        toast.add({
-            description: "Behaviour category created successfully",
-            color: "success"
-        })
-
+        success("Behaviour category created successfully")
         close()
     } catch (err: any) {
-        toast.add({
-            description: err.message || "Something went wrong",
-            color: "error"
-        })
+        error(err.message || "Something went wrong")
     } finally {
         isLoading.value = false
     }

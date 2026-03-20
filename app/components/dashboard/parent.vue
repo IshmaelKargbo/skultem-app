@@ -1,33 +1,32 @@
 <template>
     <div class="p-5 space-y-5">
         <UCard>
-            <USelectMenu placeholder="Select Student" />
+            <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading" :items="children"
+                placeholder="Select Student" />
         </UCard>
-        <div class="grid grid-cols-4 gap-5">
+        <div class="grid grid-cols-3 gap-5">
+            <DashboardParentAvarage :session-id="selected?.sessionId || ''" :id="state.student" />
+            <DashboardParentAttendance :id="state.student" />
             <Metric v-for="item in reports" :key="item.id" :record="item" />
         </div>
         <div class="grid grid-cols-2 gap-5">
+            <DashboardParentGradeTrend :id="state.student" />
+            <DashboardParentSubjectPerformance :id="state.student" />
             <UCard>
-                <p>Grade Trend</p>
-            </UCard>
-            <UCard>
-                <p>Performance by Subject</p>
-            </UCard>
-            <UCard>
-                <div>
-                    <p>Student Information</p>
-                    <div class="mt-1">
-                        <div class="justify-between flex border-b py-2 border-gray-200">
+                <div v-if="selected">
+                    <p class="text-mute">Student Information</p>
+                    <div class="mt-2">
+                        <div class="justify-between flex border-b py-3.5 border-gray-200">
                             <p class="text-muted">Class:</p>
-                            <p>Grade 8-A</p>
+                            <p>{{ selected.className }}</p>
                         </div>
-                        <div class="justify-between flex border-b py-2 border-gray-200">
+                        <div class="justify-between flex border-b py-3.5 border-gray-200">
                             <p class="text-muted">Class Teacher:</p>
-                            <p>Dr. John Smith</p>
+                            <p>{{ selected.classTeacher }}</p>
                         </div>
-                        <div class="justify-between flex border-b py-2 border-gray-200">
+                        <div class="justify-between flex border-b py-3.5 border-gray-200">
                             <p class="text-muted">Total Students:</p>
-                            <p>28</p>
+                            <p>{{ selected.classSize }}</p>
                         </div>
                         <div class="justify-between flex py-2 border-gray-200">
                             <p class="text-muted">Class Rank:</p>
@@ -36,11 +35,7 @@
                     </div>
                 </div>
             </UCard>
-            <UCard>
-                <div>
-                    <p>Recent Updates</p>
-                </div>
-            </UCard>
+            <DashboardParentUpdate />
         </div>
         <UCard>
             <div class="grid grid-cols-4 gap-3">
@@ -76,48 +71,50 @@
         </UCard>
     </div>
 </template>
-
 <script setup lang="ts">
+const store = useParentStore()
+const studentStore = useStudentStore()
+const { activeCycle } = storeToRefs(studentStore)
+const { students, loading } = storeToRefs(store)
+
+const state = reactive<{ student: string }>({
+    student: ''
+})
+
+const selected = ref<Student | undefined>()
+
+const terms = computed(() => activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })))
+
+const children = computed(() =>
+    students.value.map(e => ({
+        label: `${e.givenNames} ${e.familyName} - ${e.className}`,
+        value: e.id
+    }))
+)
+
 const reports = [
-    {
-        id: '1',
-        label: 'Term Average',
-        icon: STUDENT_ICON,
-        value: '87%',
-        subtle: '+2% from last term',
-        isReady: true,
-        color: "success"
-    },
-    {
-        id: '1',
-        label: 'Attendance Rate',
-        icon: ATTENDANCE_ICON,
-        value: '96%',
-        subtle: 'This term',
-        isReady: true,
-        color: "info"
-    },
-    {
-        id: '1',
-        label: 'Fee Balance',
-        icon: PAYMENT_ICON,
-        value: 'NLE 0',
-        subtle: 'All Paid',
-        isReady: true,
-        color: "error"
-    },
-    {
-        id: '1',
-        label: 'Upcoming Events',
-        icon: DOWNLOAD_ICON,
-        value: '3',
-        subtle: 'This Month',
-        isReady: true,
-        color: "warning"
-    }
+    { id: '3', label: 'Fee Balance', icon: PAYMENT_ICON, value: 'NLE 0', subtle: 'All Paid', isReady: true, color: 'error' },
 ]
-onMounted(() => {
+
+function change() {
+    const select = students.value.find(e => e.id === state.student) // ← fix: === not =
+    selected.value = select
+}
+
+watch(() => children.value, (val) => {
+    if (val.length && !state.student) {
+        state.student = val[0].value  // ← set first, then change
+        change()
+    }
+}, { immediate: true })
+
+async function fetchRecord() {
+    await store.fetchAllStudents(0, 0)
+}
+
+onMounted(async () => {
     useAppStore().setTitle('Dashboard')
-    document.title = "Dashboard | Skultem"
+    document.title = 'Dashboard | Skultem'
+    await fetchRecord()
 })
 </script>

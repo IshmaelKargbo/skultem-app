@@ -65,6 +65,18 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
+    getClassAssessments: async (id: string) => {
+      try {
+        const res = await $api(`/assessment/list/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class assessments list')
+  
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getActiveCycle: async (classId?: string) => {
       try {
         const query = classId ? `?classId=${encodeURIComponent(classId)}` : ''

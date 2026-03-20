@@ -6,19 +6,11 @@
     <!-- Main Area -->
     <div class="flex flex-1 flex-col min-w-0">
       <Header />
-
-      <!-- Scrollable Content -->
-      <div ref="scrollContainer" class="flex-1 overflow-y-auto">
-        <div class="max-w-screen-2xl mx-auto p-2">
-          <slot />
+      <div class="flex-1 min-h-0">
+        <div class="max-w-screen-2xl mx-auto h-full">
+          <NuxtPage />
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-const scrollContainer = ref<HTMLElement | null>(null)
-
-provide('scrollContainer', scrollContainer)
-</script>

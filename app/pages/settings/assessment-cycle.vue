@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5">
+  <div class="p-5 h-full overflow-y-auto">
     <SettingsHeader />
 
     <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -7,7 +7,8 @@
         <p class="text-xs tracking-wide text-slate-500">Active Term</p>
         <p class="mt-1 text-base font-semibold text-slate-800">{{ overview?.activeTerm?.name || 'Not set' }}</p>
         <p class="mt-1 text-xs text-slate-500">
-          {{ overview?.activeTerm ? `${formatDate(overview.activeTerm.startDate)} - ${formatDate(overview.activeTerm.endDate)}` : 'Set an ACTIVE term to unlock cycle readiness.' }}
+          {{ overview?.activeTerm ? `${formatDate(overview.activeTerm.startDate)} -
+          ${formatDate(overview.activeTerm.endDate)}` : 'Set an ACTIVE term to unlock cycle readiness.' }}
         </p>
       </div>
 
@@ -30,15 +31,16 @@
     <div class="mt-4 bg-white border border-gray-200 rounded-md p-4 space-y-3">
       <div class="flex items-center justify-between gap-2">
         <p class="text-sm font-medium text-slate-800">Quick Controls</p>
-        <UButton label="Refresh" icon="i-lucide-refresh-ccw" color="neutral" variant="outline" :loading="isRefreshing" @click="refreshAll" />
+        <UButton label="Refresh" icon="i-lucide-refresh-ccw" color="neutral" variant="outline" :loading="isRefreshing"
+          @click="refreshAll" />
       </div>
 
       <div class="grid gap-3 xl:grid-cols-2">
         <div class="rounded-md border border-slate-200 p-3 space-y-2">
           <p class="text-xs uppercase tracking-wide text-slate-500">Activate term</p>
           <USelect v-model="selectedTermId" :items="termOptions" placeholder="Select term" />
-          <UButton label="Set Active Term" icon="i-lucide-check-check" color="success" variant="soft" :loading="isActivatingTerm"
-            :disabled="!selectedTermId" @click="activateSelectedTerm" />
+          <UButton label="Set Active Term" icon="i-lucide-check-check" color="success" variant="soft"
+            :loading="isActivatingTerm" :disabled="!selectedTermId" @click="activateSelectedTerm" />
         </div>
 
         <div class="rounded-md border border-slate-200 p-3 space-y-2">
@@ -47,16 +49,20 @@
             {{ selectedClassName || 'Select a class first' }}
             <span v-if="selectedClass?.templateLocked" class="text-amber-700"> · Locked after grading started</span>
           </p>
-          <USelect v-model="selectedTemplateId" :items="templateOptions" placeholder="Select template" :disabled="!selectedClassId" />
-          <UButton label="Apply Template" icon="i-lucide-clipboard-check" color="info" variant="soft" :loading="isUpdatingTemplate"
-            :disabled="!selectedClassId || !selectedTemplateId || Boolean(selectedClass?.templateLocked)" @click="updateSelectedClassTemplate" />
+          <USelect v-model="selectedTemplateId" :items="templateOptions" placeholder="Select template"
+            :disabled="!selectedClassId" />
+          <UButton label="Apply Template" icon="i-lucide-clipboard-check" color="info" variant="soft"
+            :loading="isUpdatingTemplate"
+            :disabled="!selectedClassId || !selectedTemplateId || Boolean(selectedClass?.templateLocked)"
+            @click="updateSelectedClassTemplate" />
         </div>
       </div>
 
       <div class="rounded-md border border-slate-200 p-3 space-y-2">
         <p class="text-xs uppercase tracking-wide text-slate-500">Assessment stage control</p>
         <p class="text-xs text-slate-500">
-          Moves the term from current assessment to the next one. Allowed only when all class assessments for the current stage are approved.
+          Moves the term from current assessment to the next one. Allowed only when all class assessments for the
+          current stage are approved.
         </p>
         <UButton label="Move to Next Assessment" icon="i-lucide-arrow-right-circle" color="warning" variant="soft"
           :loading="isAdvancingAssessment" :disabled="!selectedTermId" @click="advanceAssessmentStage" />
@@ -65,7 +71,8 @@
       <div class="rounded-md border border-slate-200 p-3 space-y-3">
         <div class="flex items-center justify-between">
           <p class="text-xs uppercase tracking-wide text-slate-500">Grading scale</p>
-          <UButton label="Add Band" icon="i-lucide-plus" size="xs" color="neutral" variant="outline" @click="addGradeBand" />
+          <UButton label="Add Band" icon="i-lucide-plus" size="xs" color="neutral" variant="outline"
+            @click="addGradeBand" />
         </div>
         <p class="text-xs text-slate-500">Configure grade bands used for student grade and ranking calculation.</p>
 
@@ -74,18 +81,19 @@
             <UInput class="col-span-4" type="number" v-model.number="band.maxScore" placeholder="Max" />
             <UInput class="col-span-4" type="number" v-model.number="band.minScore" placeholder="Min" />
             <UInput class="col-span-3" v-model="band.grade" placeholder="Grade" />
-            <UButton class="col-span-1" icon="i-lucide-trash-2" color="error" variant="ghost" :disabled="gradingBands.length <= 1"
-              @click="removeGradeBand(index)" />
+            <UButton class="col-span-1" icon="i-lucide-trash-2" color="error" variant="ghost"
+              :disabled="gradingBands.length <= 1" @click="removeGradeBand(index)" />
           </div>
         </div>
 
-        <UButton label="Save Grading Scale" icon="i-lucide-save" color="info" variant="soft" :loading="isSavingGradingScale"
-          @click="saveGradingScale" />
+        <UButton label="Save Grading Scale" icon="i-lucide-save" color="info" variant="soft"
+          :loading="isSavingGradingScale" @click="saveGradingScale" />
       </div>
 
       <div class="flex flex-wrap gap-2">
         <UButton label="Manage Terms" icon="i-lucide-calendar" color="neutral" variant="outline" to="/settings/terms" />
-        <UButton label="Manage Templates" icon="i-lucide-clipboard-list" color="neutral" variant="outline" to="/settings/assessment-templates" />
+        <UButton label="Manage Templates" icon="i-lucide-clipboard-list" color="neutral" variant="outline"
+          to="/settings/assessment-templates" />
       </div>
     </div>
 
@@ -112,19 +120,17 @@
         </div>
 
         <div v-else class="mt-3 space-y-2 max-h-140 overflow-auto pr-1">
-          <button
-            v-for="item in filteredClasses"
-            :key="item.classId"
+          <button v-for="item in filteredClasses" :key="item.classId"
             class="w-full text-left rounded-lg border p-3 transition"
             :class="selectedClassId === item.classId ? 'bg-app-50/50 border-app-100' : 'border-slate-200 bg-white hover:border-slate-300'"
-            @click="selectClass(item.classId)"
-          >
+            @click="selectClass(item.classId)">
             <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-sm font-medium text-slate-800">{{ item.className }}</p>
                 <p class="text-xs text-slate-500">{{ item.templateName || 'No template assigned' }}</p>
               </div>
-              <UBadge :color="item.ready ? 'success' : 'warning'" variant="subtle" :label="item.ready ? 'Ready' : 'Fix'" />
+              <UBadge :color="item.ready ? 'success' : 'warning'" variant="subtle"
+                :label="item.ready ? 'Ready' : 'Fix'" />
             </div>
 
             <div class="mt-2 flex items-center justify-between text-xs text-slate-600">
@@ -134,7 +140,8 @@
             <p class="mt-1 text-xs" :class="item.ready ? 'text-green-700' : 'text-amber-700'">{{ item.note }}</p>
           </button>
 
-          <div v-if="!filteredClasses.length" class="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 text-center">
+          <div v-if="!filteredClasses.length"
+            class="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 text-center">
             No class matched your search.
           </div>
         </div>
@@ -146,12 +153,9 @@
             <p class="text-lg font-normal">Selected Class Assessment Cycle</p>
             <p class="text-sm text-slate-500">Detailed assessment order for the selected class template.</p>
           </div>
-          <UBadge
-            :variant="'outline'"
-            :color="activeTerm ? 'success' : 'warning'"
+          <UBadge :variant="'outline'" :color="activeTerm ? 'success' : 'warning'"
             :icon="activeTerm ? 'i-lucide-check-circle' : 'i-lucide-alert-circle'"
-            :label="activeTerm ? 'Active term set' : 'No active term'"
-          />
+            :label="activeTerm ? 'Active term set' : 'No active term'" />
         </div>
 
         <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -176,11 +180,9 @@
             </div>
             <div class="flex items-center justify-between text-sm">
               <p class="text-slate-600">Total weight</p>
-              <UBadge
-                :variant="'subtle'"
+              <UBadge :variant="'subtle'"
                 :color="totalWeight === 100 ? 'success' : totalWeight > 100 ? 'error' : 'warning'"
-                :label="`${totalWeight}%`"
-              />
+                :label="`${totalWeight}%`" />
             </div>
           </div>
         </div>
@@ -196,21 +198,21 @@
           </div>
 
           <div v-if="assessmentItems.length" class="mt-3 space-y-3">
-            <div
-              v-for="(assessment, index) in assessmentItems"
-              :key="assessment.id"
-              class="rounded-lg border border-slate-200 bg-white px-3 py-2 flex items-center justify-between"
-            >
+            <div v-for="(assessment, index) in assessmentItems" :key="assessment.id"
+              class="rounded-lg border border-slate-200 bg-white px-3 py-2 flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <span class="h-7 w-7 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold grid place-content-center">
+                <span
+                  class="h-7 w-7 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold grid place-content-center">
                   {{ index + 1 }}
                 </span>
                 <div>
-                  <p class="text-sm font-medium text-slate-800">{{ toOrdinal(index + 1) }} Assessment - {{ assessment.name }}</p>
+                  <p class="text-sm font-medium text-slate-800">{{ toOrdinal(index + 1) }} Assessment - {{
+                    assessment.name }}</p>
                   <p class="text-xs text-slate-500">Weight: {{ assessment.weight }}%</p>
                 </div>
               </div>
-              <UBadge variant="outline" :color="parseAssessmentStatusColor[assessment.status]" :label="parseAssessmentStatus[assessment.status]" />
+              <UBadge variant="outline" :color="parseAssessmentStatusColor[assessment.status]"
+                :label="parseAssessmentStatus[assessment.status]" />
             </div>
           </div>
 
@@ -231,7 +233,7 @@ const classStore = useClassStore()
 const termStore = useTermStore()
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
+const { error: toastError, success: toastSuccess, warning } = useNotify()
 
 const overview = ref<AssessmentCycleOverview | null>(null)
 const cycle = ref<ActiveAssessmentCycle | null>(null)
@@ -392,7 +394,7 @@ async function loadGradingScale() {
     gradingBands.value = (res?.bands || []).map(band => ({ ...band }))
   } catch (error: any) {
     gradingBands.value = []
-    toast.add({ description: error?.message || 'Failed to load grading scale', color: 'error' })
+    toastError(error?.message || 'Failed to load grading scale')
   }
 }
 
@@ -418,9 +420,9 @@ async function saveGradingScale() {
     }
     const res = await assessmentStore.updateGradingScale(payload)
     gradingBands.value = (res?.bands || []).map(band => ({ ...band }))
-    toast.add({ description: 'Grading scale updated successfully', color: 'success' })
+    toastSuccess('Grading scale updated successfully')
   } catch (error: any) {
-    toast.add({ description: error?.message || 'Failed to update grading scale', color: 'error' })
+    toastError(error?.message || 'Failed to update grading scale')
   } finally {
     isSavingGradingScale.value = false
   }
@@ -432,10 +434,10 @@ async function activateSelectedTerm() {
   isActivatingTerm.value = true
   try {
     await termStore.activate(selectedTermId.value)
-    toast.add({ description: 'Term activated successfully', color: 'success' })
+    toastSuccess('Term activated successfully')
     await refreshAll()
   } catch (error: any) {
-    toast.add({ description: error?.message || 'Failed to activate term', color: 'error' })
+    toastError(error?.message || 'Failed to activate term')
   } finally {
     isActivatingTerm.value = false
   }
@@ -444,17 +446,17 @@ async function activateSelectedTerm() {
 async function updateSelectedClassTemplate() {
   if (!selectedClassId.value || !selectedTemplateId.value) return
   if (selectedClass.value?.templateLocked) {
-    toast.add({ description: 'Template is locked because grading already started for this class', color: 'warning' })
+    warning('Template is locked because grading already started for this class')
     return
   }
 
   isUpdatingTemplate.value = true
   try {
     await classStore.updateTemplate(selectedClassId.value, selectedTemplateId.value)
-    toast.add({ description: 'Class template updated successfully', color: 'success' })
+    toastSuccess('Class template updated successfully')
     await refreshAll()
   } catch (error: any) {
-    toast.add({ description: error?.message || 'Failed to update class template', color: 'error' })
+    toastError(error?.message || 'Failed to update class template')
   } finally {
     isUpdatingTemplate.value = false
   }
@@ -471,14 +473,11 @@ async function advanceAssessmentStage() {
       throw new Error(assessmentStore.error || 'Failed to advance assessment stage')
     }
 
-    toast.add({
-      description: res.message || 'Assessment stage updated',
-      color: res.completed ? 'info' : 'success'
-    })
+    toastSuccess(res.message || 'Assessment stage updated')
 
     await refreshAll()
   } catch (error: any) {
-    toast.add({ description: error?.message || 'Failed to advance assessment stage', color: 'error' })
+    toastError(error?.message || 'Failed to advance assessment stage')
   } finally {
     isAdvancingAssessment.value = false
   }
@@ -511,6 +510,6 @@ watch(() => selectedClassId.value, async () => {
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+  role: [Role.SCHOOL_ADMIN]
 })
 </script>

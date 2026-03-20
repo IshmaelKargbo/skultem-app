@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useStudentStore = defineStore('student', {
   state: () => ({
     records: [] as Student[],
+    activeCycle: null as ActiveCycle | null,
     meta: {} as Meta,
     loading: false,
     error: null as string | null
@@ -18,6 +19,30 @@ export const useStudentStore = defineStore('student', {
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch students'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchActiveCycle(sessionId: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await StudentApi().getActiveCycle(sessionId) as any
+        this.activeCycle = response || null
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch student active cycle'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchRank(id: string, termId: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await StudentApi().getRank(id, termId) as any
+        return response
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch student rank'
       } finally {
         this.loading = false
       }

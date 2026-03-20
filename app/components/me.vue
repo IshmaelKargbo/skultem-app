@@ -8,9 +8,9 @@
             class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-transparent hover:bg-gray-100 hover:border-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-700 transition-all duration-150"
             :class="{ 'bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700': dropdownOpen }"
         >
-            <div class="text-right">
+            <div class="text-left">
                 <p class="text-xs font-semibold text-gray-800 dark:text-gray-100 leading-tight">{{ name }}</p>
-                <p class="text-xs text-gray-400 leading-tight capitalize">{{ parseRole[activeRole] || 'No Role' }}</p>
+                <p class="text-[10px] text-gray-400 leading-tight capitalize">Role: {{ parseRole[activeRole] || 'No Role' }}</p>
             </div>
             <div class="relative">
                 <UAvatar :alt="name" size="sm" />

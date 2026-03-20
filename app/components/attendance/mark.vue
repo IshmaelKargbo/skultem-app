@@ -85,7 +85,7 @@ const store = useAttendanceStore()
 
 const router = useRouter()
 const route = useRoute()
-const toast = useToast()
+const { error, success } = useNotify()
 
 const { report } = storeToRefs(store)
 
@@ -330,25 +330,15 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
             holiday: state.holiday
         })
 
-        toast.add({
-            description: 'Attendance saved successfully',
-            color: 'success'
-        })
+        success('Attendance saved successfully')
 
         calculateReport(true)
         fetchRecords()
 
     } catch (err: any) {
-
-        toast.add({
-            description: err?.message || 'Something went wrong',
-            color: 'error'
-        })
-
+        error('Something went wrong')
     } finally {
-
         isLoading.value = false
-
     }
 }
 onMounted(async () => {

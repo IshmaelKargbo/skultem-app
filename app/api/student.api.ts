@@ -18,6 +18,30 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    getActiveCycle: async (sessionId: string) => {
+      try {
+        const res = await $api(`/student/cycle/${sessionId}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch active cycle')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getRank: async (id: string, termId: string) => {
+      try {
+        const res = await $api(`/student/rank/${id}?termId=${termId}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch rank')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAllStudentFeesById: async (id: string) => {
       try {
         const res = await $api(`/report/finance/outstanding?studentId=${id}`) as any

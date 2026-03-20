@@ -8,9 +8,20 @@ export type Student = {
     gender: string
     className: string
     classId: string
+    classSize: number
+    sessionId: string
+    classTeacher: string
+    rank: string
     status: string
     createdAt: string
     updatedAt: string
+}
+
+export type ActiveCycle = {
+    id: string
+    year: string
+    clazz: string
+    terms: Term[]
 }
 
 export type StudentFee = {

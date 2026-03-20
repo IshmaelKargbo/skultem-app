@@ -60,6 +60,18 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
+    async fetchClassAssessments(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await AssessmentApi().getClassAssessments(id) as any
+        this.assessments = response
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class assessments'
+      } finally {
+        this.loading = false
+      }
+    },
     async fetchAllAssessmentApprovalRequest(teacherId: string) {
       this.loading = true
       this.error = null

@@ -57,6 +57,7 @@ export type Grade = {
     name: string
     assessment: string
     term: string
+    subject: string
     teacher: string
     student: string
     score: number
@@ -70,6 +71,9 @@ export type StudentAssessment = {
     id: string
     name: string
     scores: AssessmentScore[]
+    total?: number
+    position?: any
+    allCompleted?: boolean
     status: string
     createdAt: string
     updatedAt: string

@@ -1,6 +1,5 @@
 export default defineNuxtRouteMiddleware((to) => {
     const token = useCookie("access_token")
-    const { activeRole } = useAuth()
 
     if (!token.value && to.path !== "/login") {
         if (import.meta.client) {
@@ -10,17 +9,19 @@ export default defineNuxtRouteMiddleware((to) => {
         return navigateTo("/login")
     }
 
-    const requiredRole = to.meta.role as string | string[] | undefined
-
-    if (requiredRole) {
-        const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-        if (!allowed.includes(activeRole.value)) {
-            return navigateTo('/unauthorized')
-        }
-    }
-
     if (import.meta.client) {
+        const { activeRole } = useAuth()
         const { hide } = useGlobalLoader()
+
+        const requiredRole = to.meta.role as string | string[] | undefined
+
+        if (requiredRole && activeRole.value) {
+            const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
+            if (!allowed.includes(activeRole.value)) {
+                return navigateTo('/unauthorized')
+            }
+        }
+
         hide()
     }
 })

@@ -3,8 +3,16 @@ export function useAuth() {
     const activeRole = useState<string>('active-role', () => '')
 
     function setActiveRole(role: string) {
-        if (userStore.user?.roles?.includes(role)) {
-            activeRole.value = role
+        activeRole.value = role
+        if (import.meta.client) {
+            localStorage.setItem('active-role', role)
+        }
+    }
+
+    function clearRole() {
+        activeRole.value = ''
+        if (import.meta.client) {
+            localStorage.removeItem('active-role')
         }
     }
 
@@ -19,5 +27,18 @@ export function useAuth() {
         return hasRole(role)
     }
 
-    return { activeRole, setActiveRole, hasRole, can }
+    watch(() => userStore.user, (user) => {
+        if (!user) {
+            clearRole()
+            return
+        }
+        const cached = import.meta.client ? localStorage.getItem('active-role') : null
+        if (cached && user.roles?.includes(cached)) {
+            activeRole.value = cached
+        } else {
+            activeRole.value = user.roles?.[0] ?? ''
+        }
+    }, { immediate: true })
+
+    return { activeRole, setActiveRole, clearRole, hasRole, can }
 }

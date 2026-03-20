@@ -3,8 +3,10 @@ export const BehaviourApi = () => {
 
   return {
     getAll: async (classId: string, page: number, size: number) => {
+      console.log(classId);
+      
       try {
-        const res = await $api(`/behaviours?classId=${classId}page=${page}&size=${size}`) as any
+        const res = await $api(`/behaviours?classId=${classId}&page=${page}&size=${size}`) as any
 
         if (!res)
           throw new Error('Failed to fetch behaviours')

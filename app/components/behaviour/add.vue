@@ -55,7 +55,6 @@
 
 <script setup lang="ts">
 import * as yup from "yup"
-import { reactive, ref, computed, onMounted } from "vue"
 import type { FormSubmitEvent } from "#ui/types"
 
 const { clazz } = defineProps<{
@@ -67,7 +66,7 @@ const emit = defineEmits(["refresh"])
 const behaviourStore = useBehaviourStore()
 const studentStore = useStudentStore()
 const categoryStore = useBehaviourCategoryStore()
-const toast = useToast()
+const { error, success } = useNotify()
 
 const open = ref(false)
 const isLoading = ref(false)
@@ -140,20 +139,14 @@ const onSubmit = async (event: FormSubmitEvent<BehaviourForm>) => {
       note: state.note
     })
 
-    toast.add({
-      description: "Behaviour recorded successfully",
-      color: "success"
-    })
+    success("Behaviour recorded successfully")
 
     await behaviourStore.fetchAll(clazz)
     emit("refresh")
     close()
 
   } catch (err: any) {
-    toast.add({
-      description: err?.message || "Something went wrong",
-      color: "error"
-    })
+    error(err?.message || "Something went wrong")
   } finally {
     isLoading.value = false
   }

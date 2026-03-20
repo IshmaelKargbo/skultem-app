@@ -6,8 +6,8 @@ const { record } = defineProps<{
         value: any
         subtle?: string
         icon: string
-        color: "success" | "warning" | "error"
-        subtileColor?: "success" | "warning" | "error"
+        color: "success" | "warning" | "error" | "info" | "primary"
+        subtileColor?: "success" | "warning" | "error" | "info" | "primary"
     }
 }>()
 </script>
