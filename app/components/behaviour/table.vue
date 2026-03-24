@@ -65,7 +65,6 @@ const columns: TableColumn<Behaviour> = [
   }
 ]
 
-
 function getRowItems(row: Row<Behaviour>) {
   return [
     {

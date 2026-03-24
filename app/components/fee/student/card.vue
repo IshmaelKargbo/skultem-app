@@ -1,7 +1,7 @@
 <template>
     <UCard @click="click" :class="['hover:bg-app-50/50 cursor-pointer hover:ring-app-100', active ? 'bg-app-50/50 ring-app-100' : '']">
         <div class="flex justify-between items-center">
-            <p class="text-base">
+            <p class="font-semibold">
                 {{ student.givenNames }} {{ student.familyName }}
             </p>
             <UBadge :color="outstanding == 0 ? 'success' : 'error'" variant="subtle" :label="format(outstanding)" />

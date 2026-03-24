@@ -38,8 +38,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <UButton icon="lucide:save" :loading="isLoading" label="Save"
-                    @click="formRef?.submit()" />
+                <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -52,7 +51,7 @@ import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useFeeStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 const open = ref(false)
 const isLoading = ref(false)
@@ -86,17 +85,11 @@ const onSubmit = async (event: FormSubmitEvent<FeeCategoryForm>) => {
         await store.create(event.data)
         await store.fetchAll()
 
-        toast.add({
-            description: 'Fee category created successfully',
-            color: 'success'
-        })
+        toastSuccess('Fee category created successfully')
 
         close()
     } catch (err: any) {
-        toast.add({
-            description: err?.message || 'Something went wrong',
-            color: 'error'
-        })
+        toastSuccess(err?.message || 'Something went wrong')
     } finally {
         isLoading.value = false
     }

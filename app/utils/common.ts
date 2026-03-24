@@ -15,6 +15,21 @@ export enum Level {
     SSS = 'SSS',
 }
 
+export const parseTrend = {
+    Improved: {
+        icon: IMPROVED_ICON,
+        color: 'success'
+    },
+    Stable: {
+        icon: STABLE_ICON,
+        color: 'neutral'
+    },
+    Dropped: {
+        icon: DROPPED_ICON,
+        color: 'error'
+    }
+}
+
 export enum Role {
     SCHOOL_ADMIN = 'SCHOOL_ADMIN',
     TEACHER = 'TEACHER',
@@ -22,11 +37,37 @@ export enum Role {
     ACCOUNTANT = 'ACCOUNTANT'
 }
 
+export const roles = [
+    {
+        label: 'School Admin',
+        value: Role.SCHOOL_ADMIN.toString()
+    },
+    {
+        label: 'Accountant',
+        value: Role.ACCOUNTANT.toString()
+    }
+]
+
 export const parseRole: Record<string, string> = {
     SCHOOL_ADMIN: 'School Admin',
     TEACHER: 'Teacher',
     PARENT: 'Parent',
     ACCOUNTANT: 'Accounttant'
+}
+
+export const parseRoleColor: Record<string, string> = {
+    SCHOOL_ADMIN: 'success',
+    TEACHER: 'info',
+    PARENT: 'primary',
+    ACCOUNTANT: 'error'
+}
+
+export const parseRoleIcon: Record<string, string> = {
+    SCHOOL_ADMIN: 'fluent:building-24-regular',
+    PROPRIETOR: 'fluent:crown-24-regular',
+    TEACHER: 'fluent:hat-graduation-24-regular',
+    PARENT: 'fluent:people-24-regular',
+    ACCOUNTANT: 'fluent:calculator-24-regular'
 }
 
 export type AssignmentSubject = {
@@ -62,6 +103,19 @@ export const levels = [
     { label: 'JSS', value: Level.JSS },
     { label: 'SSS', value: Level.SSS },
 ]
+
+export function handleScroll(event: Event) {
+    const target = event.target as HTMLElement
+    const scrollTop = target.scrollTop
+    const scrollHeight = target.scrollHeight
+    const clientHeight = target.clientHeight
+
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+        console.log("Reached bottom!")
+    }
+
+    console.log("Current scroll position:", scrollTop)
+}
 
 export const parseLevel: Record<string, string> = {
     'PRIMARY': 'Primary',

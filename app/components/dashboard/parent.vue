@@ -1,17 +1,25 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 space-y-5">
         <UCard>
-            <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading" :items="children"
-                placeholder="Select Student" />
+            <div class="flex space-x-3">
+                <UFormField class="w-full" label="Student">
+                    <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
+                        :items="children" placeholder="Select Student" />
+                </UFormField>
+                <UFormField label="Term" class="w-full">
+                    <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
+                        placeholder="Select Term" />
+                </UFormField>
+            </div>
         </UCard>
         <div class="grid grid-cols-3 gap-5">
             <DashboardParentAvarage :session-id="selected?.sessionId || ''" :id="state.student" />
             <DashboardParentAttendance :id="state.student" />
-            <Metric v-for="item in reports" :key="item.id" :record="item" />
+            <DashboardParentFees :id="state.student" />
         </div>
         <div class="grid grid-cols-2 gap-5">
             <DashboardParentGradeTrend :id="state.student" />
-            <DashboardParentSubjectPerformance :id="state.student" />
+            <DashboardParentSubjectPerformance :term="state.term" :id="state.student" />
             <UCard>
                 <div v-if="selected">
                     <p class="text-mute">Student Information</p>
@@ -77,8 +85,9 @@ const studentStore = useStudentStore()
 const { activeCycle } = storeToRefs(studentStore)
 const { students, loading } = storeToRefs(store)
 
-const state = reactive<{ student: string }>({
-    student: ''
+const state = reactive<{ student: string, term: string }>({
+    student: '',
+    term: ''
 })
 
 const selected = ref<Student | undefined>()
@@ -92,18 +101,24 @@ const children = computed(() =>
     }))
 )
 
-const reports = [
-    { id: '3', label: 'Fee Balance', icon: PAYMENT_ICON, value: 'NLE 0', subtle: 'All Paid', isReady: true, color: 'error' },
-]
+async function fetchCycle() {
+    if (selected.value == null) return null
+    await studentStore.fetchActiveCycle(selected.value.sessionId)
+    if (activeCycle.value == null) return null
+    const active = activeCycle.value.terms.find(e => e.status == "ACTIVE")
+    if (active == null) return
+    const termIndex = terms.value.findIndex(e => e.value == active.id)
+    state.term = terms.value[termIndex]?.value || ''
+}
 
 function change() {
-    const select = students.value.find(e => e.id === state.student) // ← fix: === not =
+    const select = students.value.find(e => e.id === state.student)
     selected.value = select
 }
 
 watch(() => children.value, (val) => {
     if (val.length && !state.student) {
-        state.student = val[0].value  // ← set first, then change
+        state.student = val[0].value
         change()
     }
 }, { immediate: true })
@@ -111,6 +126,14 @@ watch(() => children.value, (val) => {
 async function fetchRecord() {
     await store.fetchAllStudents(0, 0)
 }
+
+watch(
+    () => selected.value,
+    async () => {
+        await fetchCycle()
+    },
+    { immediate: true }
+)
 
 onMounted(async () => {
     useAppStore().setTitle('Dashboard')

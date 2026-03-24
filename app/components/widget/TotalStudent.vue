@@ -48,15 +48,13 @@ onMounted(async () => {
   if (!widget) return
 
   if (Array.isArray(widget)) {
-    // Shape: [{ "Total Students": 920 }]
     const row = widget[0]
     totalStudents.value = Number(row?.["Total Students"] ?? 0).toLocaleString()
   } else if (widget.datasets) {
-    // Shape: { datasets: [{ label: "Total Students", data: [920] }] }
+
     const dataset = widget.datasets.find((d: any) => d.label === "Total Students")
     totalStudents.value = Number(dataset?.data?.[0] ?? 0).toLocaleString()
   } else {
-    // Shape: flat object { "Total Students": 920 }
     totalStudents.value = Number(widget["Total Students"] ?? 0).toLocaleString()
   }
 

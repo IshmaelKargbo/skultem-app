@@ -6,15 +6,15 @@ const { record } = defineProps<{
         value: any
         subtle?: string
         icon: string
-        color: "success" | "warning" | "error" | "info" | "primary"
-        subtileColor?: "success" | "warning" | "error" | "info" | "primary"
+        color: "success" | "warning" | "error" | "info" | "primary" | "neutral"
+        subtileColor?: "success" | "warning" | "error" | "info" | "primary" | "neutral"
     }
 }>()
 </script>
 
 <template>
     <UCard>
-        <div class="space-y-1">
+        <div class="space-y-2">
             <p class="text-xs text-mute">{{ record.label }}</p>
 
             <div v-if="!record.isReady" class="animate-pulse space-y-2">

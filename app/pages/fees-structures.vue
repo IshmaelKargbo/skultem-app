@@ -1,5 +1,5 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 space-y-5">
         <div>
             <div class="flex py-2 justify-between items-center border-gray-200">
                 <div class="space-y-1">
@@ -24,18 +24,15 @@
                 </div>
                 <div class="w-1/3 flex space-x-3">
                     <UFormField label="Academic Year" class="w-full">
-                        <USelect placeholder="Select Academic Year" />
+                        <USelectMenu placeholder="Select Academic Year" />
                     </UFormField>
                     <UFormField label="Class" class="w-full">
-                        <USelect placeholder="Select Class" />
+                        <USelectMenu placeholder="Select Class" />
                     </UFormField>
                 </div>
             </div>
         </UCard>
         <UCard>
-            <div class="flex py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-lg font-normal">Fee Structures ({{ meta.total }})</p>
-            </div>
             <FeeStructureTable />
             <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
                 <Showing :meta="meta" />

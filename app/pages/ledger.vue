@@ -1,5 +1,5 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 h-full overflow-y-auto space-y-5">
         <div>
             <div class="flex py-2 justify-between items-center border-gray-200">
                 <div class="space-y-1">
@@ -41,18 +41,9 @@
 </template>
 
 <script setup lang="ts">
-import { DOWNLOAD_ICON } from '~/utils/icons'
-import { downloadBlob } from '~/utils/report'
-import { ReportApi } from '~/api/report.api'
-
-const reportRef = ref()
 const exportingCsv = ref(false)
 const exportingPdf = ref(false)
 const toast = useToast()
-
-function refreshReport() {
-    reportRef.value?.fetchRecord()
-}
 
 async function exportLedger(format: 'csv' | 'pdf') {
     const loading = format === 'csv' ? exportingCsv : exportingPdf
@@ -74,6 +65,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT]
+    role: [Role.SCHOOL_ADMIN, Role.ACCOUNTANT]
 })
 </script>

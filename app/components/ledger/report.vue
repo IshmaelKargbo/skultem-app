@@ -1,33 +1,30 @@
 <template>
 
-    <div class="flex space-x-5">
-        <UCard class="flex-1">
-            <div class="flex items-center justify-between p-2">
-                <div class="space-y-1">
-                    <p class="text-mute text-xs">Total Debit</p>
-                    <p class="text-2xl text-error font-semibold" v-if="report">{{ format(report.totalDebit) }}</p>
-                    <USkeleton class="w-8 h-8" v-else />
-                </div>
-            </div>
-        </UCard>
-        <UCard class="flex-1">
-            <div class="flex items-center justify-between p-2">
-                <div class="space-y-1">
-                    <p class="text-mute text-xs">Total Credit</p>
-                    <p class="text-2xl text-success font-semibold" v-if="report">{{ format(report.totalCredit) }}</p>
-                    <USkeleton class="w-8 h-8" v-else />
-                </div>
-            </div>
-        </UCard>
-        <UCard class="flex-1">
-            <div class="flex items-center justify-between p-2">
-                <div class="space-y-1">
-                    <p class="text-mute text-xs">Net Balance</p>
-                    <p class="text-2xl text-info font-semibold" v-if="report">{{ format(report.netBalance) }}</p>
-                    <USkeleton class="w-8 h-8" v-else />
-                </div>
-            </div>
-        </UCard>
+    <div class="grid gap-5 grid-cols-3">
+        <Metric :record="{
+            label: 'Total Debit',
+            value: format(report?.totalDebit || 0),
+            icon: DEBIT_ICON,
+            color: 'error',
+            subtle: 'Fees charged',
+            isReady: !isLoading
+        }" />
+        <Metric :record="{
+            label: 'Total Credit',
+            value: format(report?.totalCredit || 0),
+            icon: CREDIT_ICON,
+            color: 'success',
+            subtle: 'Payments made',
+            isReady: !isLoading
+        }" />
+        <Metric :record="{
+            label: 'Net Balance',
+            value: format(report?.netBalance || 0),
+            icon: NET_ICON,
+            color: 'info',
+            subtle: 'Balance due',
+            isReady: !isLoading
+        }" />
     </div>
 </template>
 

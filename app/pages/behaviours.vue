@@ -1,5 +1,5 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 h-full overflow-y-auto space-y-5">
         <div class="flex justify-between items-center">
             <div>
                 <p class="text-2xl font-semibold">Behaviour Notes</p>

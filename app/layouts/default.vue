@@ -7,10 +7,15 @@
     <div class="flex flex-1 flex-col min-w-0">
       <Header />
       <div class="flex-1 min-h-0">
-        <div class="max-w-screen-2xl mx-auto h-full">
-          <NuxtPage />
+        <div class="max-w-screen-2xl mx-auto h-full" ref="scrollContainer">
+          <slot />
         </div>
       </div>
     </div>
   </div>
 </template>
+<script setup lang="ts">
+const scrollContainer = ref<HTMLElement | null>(null)
+
+provide('scrollContainer', scrollContainer)
+</script>

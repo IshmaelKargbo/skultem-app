@@ -1,5 +1,5 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 h-full overflow-y-auto space-y-5">
         <div>
             <div class="flex py-2 justify-between items-center border-gray-200">
                 <div class="space-y-1">
@@ -29,6 +29,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT]
+    role: [Role.ACCOUNTANT, Role.SCHOOL_ADMIN]
 })
 </script>

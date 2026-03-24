@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 space-y-5 overflow-y-auto h-full">
+  <div class="p-7 space-y-5 overflow-y-auto h-full">
     <div class="flex flex-col gap-3 pb-2 md:flex-row md:items-center md:justify-between">
       <div class="space-y-1">
         <p class="text-xl font-semibold">Grade Entry</p>

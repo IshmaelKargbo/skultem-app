@@ -5,7 +5,7 @@
         <button
             v-if="user && user.email && !loading"
             @click="dropdownOpen = !dropdownOpen"
-            class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-transparent hover:bg-gray-100 hover:border-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-700 transition-all duration-150"
+            class="flex items-center gap-2 px-2 py-1.5 rounded-md border border-transparent hover:bg-gray-100 hover:border-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-700 transition-all duration-150"
             :class="{ 'bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700': dropdownOpen }"
         >
             <div class="text-left">
@@ -39,17 +39,17 @@
         >
             <div
                 v-if="dropdownOpen && user"
-                class="absolute top-[calc(100%+8px)] right-0 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl shadow-black/10 z-50 overflow-hidden"
+                class="absolute top-[calc(100%+8px)] right-0 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl shadow-black/10 z-50 overflow-hidden"
             >
                 <!-- Header -->
-                <div class="flex items-center gap-3 px-4 py-3.5 bg-gradient-to-br from-app-500 to-app-600 relative">
+                <div class="flex items-center gap-3 px-4 py-3.5 relative">
                     <div class="relative shrink-0">
                         <UAvatar :alt="name" size="md" />
                         <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-indigo-500 rounded-full" />
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-white truncate">{{ name }}</p>
-                        <p class="text-xs text-indigo-200 truncate">{{ user.email }}</p>
+                        <p class="text-sm font-semiboldtruncate">{{ name }}</p>
+                        <p class="text-[12px] text-mute truncate">{{ user.email }}</p>
                     </div>
                     <UButton
                         icon="lucide:x"

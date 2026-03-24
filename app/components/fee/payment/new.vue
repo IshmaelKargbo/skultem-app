@@ -17,8 +17,8 @@
 
                 <!-- Fee Category -->
                 <UFormField required label="Fee" name="category">
-                    <USelectMenu value-key="value" :disabled="!state.studentId" v-model="state.category" @change="changeFee"
-                        :items="categories" placeholder="Select Fee">
+                    <USelectMenu value-key="value" :disabled="!state.studentId" v-model="state.category"
+                        @change="changeFee" :items="categories" placeholder="Select Fee">
                         <template #item="{ item }: any">
                             <div class="flex justify-between w-full">
                                 <span>
@@ -65,7 +65,8 @@
                 </div>
                 <!-- Payment Method -->
                 <UFormField label="Payment Method" name="method" required>
-                    <USelectMenu value-key="value" v-model="state.method" :items="methodOptions" placeholder="Select Payment Method" />
+                    <USelectMenu value-key="value" v-model="state.method" :items="methodOptions"
+                        placeholder="Select Payment Method" />
                     <template #help>
                         <p class="text-xs text-mute">
                             Select how the payment was
@@ -110,7 +111,7 @@ const isLoading = ref(false)
 const studentStore = useStudentStore()
 const store = useFeePaymentStore()
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 function isRemaning() {
     if (state.feeAmount && state.amountPaid)
@@ -258,10 +259,7 @@ const onSubmit = async (_event: FormSubmitEvent<NewRecordPaymentDTO>) => {
 
         await store.fetchAll(1, 3)
 
-        toast.add({
-            description: 'Payment rcoarded successfully',
-            color: 'success'
-        })
+        toastSuccess('Payment rcoarded successfully')
 
         nextTick(() => {
             scrollContainer?.value?.scrollTo({
@@ -271,10 +269,7 @@ const onSubmit = async (_event: FormSubmitEvent<NewRecordPaymentDTO>) => {
         })
         reset()
     } catch (err: any) {
-        toast.add({
-            description: err.errors?.[0] || err.message,
-            color: 'error'
-        })
+        toastError(err.errors?.[0] || err.message)
     } finally {
         isLoading.value = false
     }

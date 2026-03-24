@@ -40,9 +40,6 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     title: { text: "Average Score" },
-    min: 0,
-    max: 5,
-    tickAmount: 5,
     labels: {
       formatter: (val: number) => val.toFixed(2)
     }

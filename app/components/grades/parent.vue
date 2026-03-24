@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 h-full overflow-y-auto space-y-5">
+  <div class="p-7 h-full overflow-y-auto space-y-5">
     <UCard>
       <div class="flex items-center justify-between">
         <div class="space-y-2">
@@ -135,19 +135,17 @@ watch(() => children.value, () => {
   change()
 }, { immediate: true })
 
-
 watch(() => state.term, async () => {
   await loadAvarageData()
 }, { immediate: true })
 
-watch
-  (
-    () => selected.value,
-    async () => {
-      await fetchCycle()
-    },
-    { immediate: true }
-  )
+watch(
+  () => selected.value,
+  async () => {
+    await fetchCycle()
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   useAppStore().setTitle('Grades')

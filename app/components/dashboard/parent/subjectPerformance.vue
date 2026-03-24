@@ -5,19 +5,14 @@
     </div>
 
     <client-only v-else>
-      <ApexChart
-        type="bar"
-        height="350"
-        :options="chartOptions"
-        :series="chartSeries"
-      />
+      <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
     </client-only>
   </UCard>
 </template>
 
 <script setup lang="ts">
 const store = useWidgetStore()
-const { id } = defineProps<{ id: string }>()
+const { id, term } = defineProps<{ id: string | undefined, term: string | undefined }>()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
@@ -94,6 +89,7 @@ const chartOptions = computed(() => ({
 }))
 
 async function loadData() {
+  if (id == '' || term == '') return
   try {
     const payload = {
       entity: "assessments",
@@ -104,12 +100,18 @@ async function loadData() {
           value: id,
           operator: "EQUALS",
           type: "select"
+        },
+        {
+          field: 'cycle.term.id',
+          value: term,
+          operator: "EQUALS",
+          type: "select"
         }
       ],
       metrics: [
         {
           name: "Average Score",
-          aggregation: "avg",
+          aggregation: "sum",
           field: "weightScore",
           tags: { groupBy: "subject" }
         }
@@ -136,7 +138,7 @@ async function loadData() {
 }
 
 watch(
-  () => id,
+  () => [id, term],
   async () => {
     isReady.value = false
     await loadData()
@@ -159,7 +161,14 @@ watch(
 }
 
 @keyframes pulse {
-  0%,100% { opacity: 1 }
-  50% { opacity: 0.4 }
+
+  0%,
+  100% {
+    opacity: 1
+  }
+
+  50% {
+    opacity: 0.4
+  }
 }
 </style>

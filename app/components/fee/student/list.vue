@@ -32,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { SEARCH_ICON } from '~/utils/icons'
-
 const route = useRoute()
 const isLoading = ref(true)
 

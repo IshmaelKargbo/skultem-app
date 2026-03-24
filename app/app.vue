@@ -1,7 +1,9 @@
 <template>
   <UApp :toaster="toaster">
     <GlobalLoader />
-    <NuxtLayout />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </UApp>
 </template>
 

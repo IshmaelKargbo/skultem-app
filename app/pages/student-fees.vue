@@ -1,10 +1,10 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 space-y-5 h-full overflow-y-auto">
         <div>
-            <div class="flex py-2 justify-between items-center border-gray-200">
+            <div class="flex justify-between items-center border-gray-200">
                 <div class="space-y-1">
-                    <p class="text-xl font-normal">Student Fees Management</p>
-                    <p class="font-light text-muted">Manage student-specific fees and balances</p>
+                    <p class="text-2xl font-semibold">Student Fees Management</p>
+                    <p class="text-mute">Manage student-specific fees and balances</p>
                 </div>
                 <div>
                     <FeeStructureAdd />

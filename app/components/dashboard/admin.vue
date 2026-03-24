@@ -1,5 +1,5 @@
 <template>
-    <div class="p-5 space-y-5">
+    <div class="p-7 space-y-5">
         <div class="grid gap-5 grid-cols-4 space-y-0 w-full"><DashboardAdminReport /></div>
         <UCard>
             <div class="grid gap-5 grid-cols-4">

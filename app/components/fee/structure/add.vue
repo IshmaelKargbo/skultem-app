@@ -18,7 +18,8 @@
 
                 <!-- Term -->
                 <UFormField label="Term" name="termId" required>
-                    <USelect :items="terms" v-model="state.termId" placeholder="Select term" :disabled="isLoading" />
+                    <USelectMenu value-key="value" :items="terms" v-model="state.termId" placeholder="Select term"
+                        :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">
                             Select the academic term this fee structure applies to.
@@ -28,7 +29,7 @@
 
                 <!-- Class -->
                 <UFormField label="Class" name="classId" required>
-                    <USelect :items="classes" v-model="state.classId" placeholder="Select class"
+                    <USelectMenu value-key="value" :items="classes" v-model="state.classId" placeholder="Select class"
                         :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">
@@ -39,8 +40,8 @@
 
                 <!-- Fee Category -->
                 <UFormField label="Fee Category" name="feeCategory" required>
-                    <USelect :items="categories" v-model="state.feeCategory" placeholder="Select fee category"
-                        :disabled="isLoading" />
+                    <USelectMenu value-key="value" :items="categories" v-model="state.feeCategory"
+                        placeholder="Select fee category" :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">
                             Select the type of fee (e.g., Tuition, Exam, Development, PTA).
@@ -114,7 +115,7 @@ const feeStructureStore = useFeeStructureStore()
 const feeCategoryStore = useFeeStore()
 const termStore = useTermStore()
 const clazzStore = useClassStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 const isLoading = ref(false)
 const open = ref(false)
@@ -205,17 +206,11 @@ const onSubmit = async (_event: FormSubmitEvent<FeeStructureForm>) => {
 
         await feeStructureStore.fetchAll()
 
-        toast.add({
-            description: 'Fee structure created successfully',
-            color: 'success'
-        })
+        toastSuccess('Fee structure created successfully')
 
         close()
     } catch (err: any) {
-        toast.add({
-            description: err.errors?.[0] || err.message,
-            color: 'error'
-        })
+        toastError(err.errors?.[0] || err.message)
     } finally {
         isLoading.value = false
     }

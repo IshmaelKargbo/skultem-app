@@ -1,7 +1,25 @@
 <script lang="ts" setup>
+const student = ref("")
 
+function change(id:string) {
+    student.value = id
+}
+
+onMounted(() => {
+    useAppStore().setTitle('Fees')
+    
+    document.title = 'Fees | Skultem'
+})
+
+definePageMeta({
+    role: [Role.PARENT]
+})
 </script>
 
 <template>
-    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Rem, soluta, sed iusto repellendus nihil suscipit repudiandae accusantium, dolorem numquam fugiat eaque deserunt. Iste magnam deleniti commodi ut, necessitatibus maxime obcaecati!
+    <div class="p-7 space-y-5 h-full overflow-y-auto">
+        <FeeParentReport :student="student" />
+        <FeeParentHistory @change="change" />
+        <FeeParentPayment :student="student" />
+    </div>
 </template>

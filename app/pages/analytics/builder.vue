@@ -1,5 +1,5 @@
 <template>
-    <div class="p-5 space-y-5 h-full overflow-y-auto">
+    <div class="p-7 space-y-5 h-full overflow-y-auto">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div class="space-y-1">
                 <p class="text-2xl font-semibold">Report Builder</p>
