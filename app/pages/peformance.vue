@@ -1,17 +1,13 @@
 <template>
   <div class="p-7 overflow-y-auto h-full space-y-5">
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div class="space-y-1">
-        <p class="text-2xl font-semibold">Performance Breakdown</p>
-        <p class="text-mute">Create custom reports and explore your school data</p>
-      </div>
-      <div class="flex space-x-3 w-1/2">
+    <Heading title="Performance Breakdown" subtitle="Create custom reports and explore your school data">
+      <div class="flex space-x-3 w-1/3">
         <USelectMenu @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
           placeholder="Select Student" />
         <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
           placeholder="Select Term" />
       </div>
-    </div>
+    </Heading>
     <DashboardParentSubjectPerformance :term="term?.id || ''" :id="selected?.id || ''" />
     <UCard v-for="value in data">
       <div>

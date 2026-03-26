@@ -34,8 +34,20 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
         this.loading = false
       }
     },
+    async fetchAllByTeacher(page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await TeacherSubjectApi().getAllByTeacher(page, size) as any        
+        return response || []
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch teacher subjects'
+      } finally {
+        this.loading = false
+      }
+    },
     create(id: string, payload: CreateTeacherSubjectDto) {
       return TeacherSubjectApi().create(id, payload)
     }
-  }
+  },
 })

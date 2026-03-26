@@ -23,7 +23,7 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async fetchActiveCycle(sessionId: string) {
+    async fetchActiveCycle(sessionId: string = "") {
       this.loading = true
       this.error = null
       try {

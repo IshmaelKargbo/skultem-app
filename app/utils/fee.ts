@@ -60,7 +60,8 @@ export type RecordPaymentDto = {
 
 export type FeePayment = {
     id: string
-    fee: FeeStructure
+    fee: string
+    term: string
     student: Student
     amount: number
     paymentMethod: string

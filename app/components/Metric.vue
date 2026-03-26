@@ -24,7 +24,7 @@ const { record } = defineProps<{
 
             <template v-else>
                 <div class="flex justify-between items-center">
-                    <p class="text-2xl font-semibold">{{ record.value }}</p>
+                    <p class="text-2xl font-display font-semibold">{{ record.value }}</p>
                     <UBadge :icon="record.icon" variant="subtle" size="xl" class="p-1.5" :color="record.color" />
                 </div>
                 <div v-if="record.subtle" :class="[`text-xs text-${record.subtileColor|| 'neutral-100'}`]">

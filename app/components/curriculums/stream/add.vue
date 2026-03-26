@@ -32,8 +32,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button :icon="SAVE_ICON" :loading="isLoading" label="Save"
-                    @click="formRef?.submit()" />
+                <u-button :icon="SAVE_ICON" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -46,7 +45,7 @@ import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useStreamStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 const isLoading = ref(false)
 
 type StreamForm = {
@@ -85,10 +84,10 @@ const onSubmit = async (event: FormSubmitEvent<StreamForm>) => {
         })
 
         await store.fetchAll()
-        toast.add({ description: 'Stream created successfully', color: 'success' })
+        toastSuccess('Stream created successfully')
         close()
     } catch (err: any) {
-        toast.add({ description: err.message, color: 'error' })
+        toastError(err.message)
     } finally {
         isLoading.value = false
     }

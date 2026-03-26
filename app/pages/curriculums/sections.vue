@@ -1,12 +1,9 @@
 <template>
-    <div class="p-5">
+    <div class="p-7 overflow-y-auto h-full space-y-5">
+        <Heading title="Sections Management" subtitle="Manage all sections">
+            <CurriculumsSectionAdd />
+        </Heading>
         <UCard>
-            <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-xl font-semibold">Sections Management</p>
-                <div>
-                    <CurriculumsSectionAdd />
-                </div>
-            </div>
             <CurriculumsSectionTable />
             <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
                 <Showing :meta="meta" />
@@ -22,11 +19,11 @@ const page = ref(1);
 const { meta } = storeToRefs(useFeeStore())
 
 onMounted(() => {
-    useAppStore().setTitle('Sections')
+    useAppStore().setTitle('Curriculums')
     document.title = 'Sections | Curriculums | Skultem'
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

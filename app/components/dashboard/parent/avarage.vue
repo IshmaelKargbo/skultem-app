@@ -13,22 +13,18 @@
 import { ref, watch } from 'vue'
 
 const store = useWidgetStore()
-const { id, sessionId } = defineProps<{
+const { id, sessionId, term } = defineProps<{
   id: string
   sessionId: string
+  term: Term | undefined
 }>()
 
 const isReady = ref(false)
 const termAverage = ref("0")
 const message = ref('')
-const studentStore = useStudentStore()
-
-const { activeCycle } = storeToRefs(studentStore)
 
 async function fetchTermAverage() {
-  if (activeCycle == null) return
-
-  const term = activeTerm()
+  if (term == null) return
   const res = await store.runAnalytic({
     entity: "assessments",
     title: "Term Average",
@@ -41,7 +37,7 @@ async function fetchTermAverage() {
       },
       {
         field: 'cycle.term.id',
-        value: term,
+        value: term.id,
         operator: "EQUALS",
         type: "select"
       }
@@ -56,7 +52,7 @@ async function fetchTermAverage() {
     chartType: "stat"
   })
 
-  message.value = `Assessment for ${activeTermName()}`
+  message.value = `Assessment for ${term.name}`
   const widget = res?.data ?? res
   const currentAverage = Number(widget?.datasets?.[0]?.data?.[0] ?? 0)
   termAverage.value = currentAverage.toFixed(0)
@@ -64,36 +60,12 @@ async function fetchTermAverage() {
   isReady.value = true
 }
 
-async function fetchCycle() {
-  if (sessionId == "") return null
-  await studentStore.fetchActiveCycle(sessionId)
-  fetchTermAverage()
-}
-
-function activeTerm() {
-  if (activeCycle.value == null) return
-
-  const active = activeCycle.value.terms.find(e => e.status == "ACTIVE")
-  if (active == null) return ""
-
-  return active.id
-}
-
-function activeTermName() {
-  if (activeCycle.value == null) return
-
-  const active = activeCycle.value.terms.find(e => e.status == "ACTIVE")
-  if (active == null) return ""
-
-  return active.name
-}
-
 watch
   (
-    () => sessionId,
+    () => [sessionId, id, term],
     async () => {
       isReady.value = false
-      await fetchCycle()
+      fetchTermAverage()
     },
     { immediate: true }
   )

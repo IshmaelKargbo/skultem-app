@@ -1,5 +1,5 @@
 <template>
-  <UApp :toaster="toaster">
+  <UApp>
     <GlobalLoader />
     <NuxtLayout>
       <NuxtPage />
@@ -8,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-const toaster = { position: 'top-right' }
 const { hide } = useGlobalLoader()
 onMounted(async () => {
   hide()

@@ -5,7 +5,11 @@ export default defineNuxtPlugin(async () => {
     const { activeRole, setActiveRole } = useAuth()
     const userStore = useUserStore()
 
-    await userStore.me()
+    try {
+        await userStore.me()
+    } catch (error) {
+        console.log(error, "------------- client");
+    }
 
     const cached = localStorage.getItem('active-role')
 

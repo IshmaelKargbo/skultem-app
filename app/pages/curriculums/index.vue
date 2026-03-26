@@ -1,24 +1,19 @@
 <template>
-    <div class="p-5">
-        <div class="bg-white border border-gray-200 rounded-md p-3">
-            <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-xl font-semibold">Subjects</p>
-                <div>
-                    <CurriculumsSubjectAdd />
-                </div>
-            </div>
-            <CurriculumsSubjectTable />
-        </div>
+    <div class="p-7 overflow-y-auto h-full space-y-5">
+        <Heading title="Subjects Management" subtitle="Manage all subjects">
+            <CurriculumsSubjectAdd />
+        </Heading>
+        <CurriculumsSubjectTable />
     </div>
 </template>
 
 <script setup lang="ts">
 onMounted(() => {
-    useAppStore().setTitle('Subjects')
+    useAppStore().setTitle('Curriculums')
     document.title = 'Subjects | Curriculums | Skultem'
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

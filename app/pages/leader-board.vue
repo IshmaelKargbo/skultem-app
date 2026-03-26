@@ -185,6 +185,6 @@ async function loadAvarageData() {
 }
 
 definePageMeta({
-  role: [Role.SCHOOL_ADMIN, Role.TEACHER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.TEACHER]
 })
 </script>

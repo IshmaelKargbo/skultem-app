@@ -56,8 +56,8 @@
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <p class="text-sm font-medium">{{ item.fee.category.name }}</p>
-                                    <p class="text-xs text-mute">{{ item.fee.term.name }}</p>
+                                    <p class="text-sm font-medium">{{ item.fee }}</p>
+                                    <p class="text-xs text-mute">{{ item.term }}</p>
                                 </div>
                                 <p class="text-sm font-semibold text-success">{{ format(item.amount) }}</p>
                             </div>
@@ -115,8 +115,8 @@ const filtered = computed(() => {
     if (!search.value) return records.value
     const term = search.value.toLowerCase()
     return records.value.filter((item) =>
-        item.fee.category.name.toLowerCase().includes(term) ||
-        item.fee.term.name.toLowerCase().includes(term) ||
+        item.term.includes(term) ||
+        item.term.toLowerCase().includes(term) ||
         item.referenceNo?.toLowerCase().includes(term)
     )
 })

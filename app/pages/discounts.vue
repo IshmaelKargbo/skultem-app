@@ -1,16 +1,8 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto space-y-5">
-        <div>
-            <div class="flex py-2 justify-between items-center border-gray-200">
-                <div class="space-y-1">
-                    <p class="text-2xl font-semibold">Discounts & Scholarships</p>
-                    <p class="text-mute">Manage student discounts and scholarships</p>
-                </div>
-                <div>
-                    <FeeDiscountAdd :refresh-report="refreshReport" />
-                </div>
-            </div>
-        </div>
+    <div class="p-7 overflow-y-auto h-full space-y-5">
+        <Heading title="Discounts & Scholarships" subtitle="Manage student discounts and scholarships">
+            <FeeDiscountAdd :refresh-report="refreshReport" />
+        </Heading>
         <FeeDiscountReport ref="reportRef" />
         <FeeDiscountTable />
     </div>
@@ -29,6 +21,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.SCHOOL_ADMIN]
+    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.ADMIN]
 })
 </script>

@@ -510,6 +510,6 @@ watch(() => selectedClassId.value, async () => {
 })
 
 definePageMeta({
-  role: [Role.SCHOOL_ADMIN]
+  role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

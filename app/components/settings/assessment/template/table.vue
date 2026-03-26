@@ -234,7 +234,7 @@ watch(
 </script>
 
 <template>
-  <div class="py-2">
+  <UCard>
     <UTable :columns="columns" :data="data" :loading="loading" expandable :ui="{
       td: 'align-top'
     }">
@@ -326,7 +326,6 @@ watch(
       <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />
     </div>
-
     <SettingsAssessmentTemplateAddAssessment v-model:open="assignState" :template="assignRecord" @saved="fetchRecord" />
-  </div>
+  </UCard>
 </template>

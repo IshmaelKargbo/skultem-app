@@ -92,6 +92,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

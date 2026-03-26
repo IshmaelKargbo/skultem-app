@@ -1,16 +1,10 @@
 <template>
-    <div class="p-7 space-y-5 h-full overflow-y-auto">
-        <div>
-            <div class="flex justify-between items-center border-gray-200">
-                <div class="space-y-1">
-                    <p class="text-2xl font-semibold">Student Fees Management</p>
-                    <p class="text-mute">Manage student-specific fees and balances</p>
-                </div>
-                <div>
-                    <FeeStructureAdd />
-                </div>
+    <div class="p-7 overflow-y-auto h-full space-y-5">
+        <Heading title="Student Fees Management" subtitle="Manage student-specific fees and balances">
+            <div v-if="can([Role.ACCOUNTANT])">
+                <FeeStructureAdd />
             </div>
-        </div>
+        </Heading>
         <div class="space-x-5 flex">
             <div class="w-1/3">
                 <FeeStudentList @select="select" />
@@ -24,7 +18,7 @@
 
 <script setup lang="ts">
 const selectedStudent = ref<Student | null>()
-
+const { can } = useAuth()
 function select(row: Student) {
     if (row == null) return;
     selectedStudent.value = row
@@ -32,11 +26,11 @@ function select(row: Student) {
 
 onMounted(() => {
     useAppStore().setTitle('Student Fees')
-    
+
     document.title = 'Student Fees | Skultem'
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT]
+    role: [Role.ACCOUNTANT, Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

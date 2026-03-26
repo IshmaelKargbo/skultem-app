@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 export const useWidgetStore = defineStore('widget', {
   state: () => ({
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
   actions: {

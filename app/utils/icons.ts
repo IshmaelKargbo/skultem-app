@@ -5,6 +5,9 @@ export const PAYMENT_ICON = "streamline-ultimate:cash-payment-bills"
 export const OVERDUE_ICON = "pajamas:calendar-overdue"
 export const DEBIT_ICON = 'i-fluent-receipt-24-regular'
 export const CREDIT_ICON = 'i-fluent-payment-24-regular'
+export const COLLETED_ICON = 'bi:collection'
+export const OUTSTANDING_ICON = 'fluent:receipt-money-20-regular'
+export const RATE_ICON = 'streamline:discount-percent-coupon'
 export const NET_ICON = 'i-fluent-calculator-24-regular'
 export const ASSIGN_ICON = "streamline-plump:class-lesson"
 

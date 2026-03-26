@@ -4,12 +4,7 @@
   </div>
 
   <client-only v-else>
-    <ApexChart
-      type="bar"
-      height="350"
-      :options="chartOptions"
-      :series="chartSeries"
-    />
+    <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
   </client-only>
 </template>
 
@@ -17,11 +12,15 @@
 import { ref, computed, onMounted, defineAsyncComponent } from "vue"
 
 const store = useWidgetStore()
+const studentStore = useStudentStore()
+const { activeCycle } = storeToRefs(studentStore)
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
 const labels = ref<string[]>([])
 const chartSeries = ref<any[]>([])
+
+const term = ref<Term | undefined>()
 
 const chartOptions = computed(() => ({
   chart: {
@@ -67,12 +66,28 @@ const chartOptions = computed(() => ({
 
 onMounted(loadData)
 
+async function fetchCycle() {
+  await studentStore.fetchActiveCycle("all")
+  if (activeCycle.value == null) return null
+  const active = activeCycle.value.terms.find(e => e.status == "ACTIVE")
+  if (active == null) return
+  term.value = active
+}
+
 async function loadData() {
+  if (term.value == null) return
   try {
     const payload = {
       entity: "assessments",
       title: "Class Performance",
-      filters: [],
+      filters: [
+        {
+          field: 'cycle.term.id',
+          value: term.value.id,
+          operator: "EQUALS",
+          type: "select"
+        }
+      ],
       metrics: [
         {
           name: "Average Score",
@@ -101,8 +116,15 @@ async function loadData() {
     console.error("Failed to load class performance", err)
   }
 }
-</script>
 
+onMounted(async () => {
+  await fetchCycle()
+})
+
+watch(() => term.value, async () => {
+  await loadData()
+}, { immediate: true })
+</script>
 <style scoped>
 .skeleton-loader {
   height: 350px;
@@ -117,7 +139,14 @@ async function loadData() {
 }
 
 @keyframes pulse {
-  0%,100% { opacity: 1 }
-  50% { opacity: 0.4 }
+
+  0%,
+  100% {
+    opacity: 1
+  }
+
+  50% {
+    opacity: 0.4
+  }
 }
 </style>

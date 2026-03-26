@@ -14,7 +14,7 @@
 
         <!-- Body -->
         <template #body>
-            <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit="onSubmit">
+            <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
 
                 <!-- Name -->
                 <UFormField required label="Holiday Name" name="name">
@@ -75,8 +75,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <UButton icon="lucide:save" :loading="isLoading" label="Save"
-                    @click="formRef?.submit()" />
+                <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -86,11 +85,10 @@
 
 <script setup lang="ts">
 import * as yup from 'yup'
-import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useHolidayStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 const kinds = [
     { label: 'Public', value: 'PUBLIC' },
@@ -148,17 +146,11 @@ const onSubmit = async (event: FormSubmitEvent<HolidayForm>) => {
 
         await store.fetchAll()
 
-        toast.add({
-            description: 'Holiday created successfully',
-            color: 'success'
-        })
+        toastSuccess('Holiday created successfully')
 
         close()
     } catch (err: any) {
-        toast.add({
-            description: err.message || 'Something went wrong',
-            color: 'error'
-        })
+        toastError(err.message || 'Something went wrong')
     } finally {
         isLoading.value = false
     }

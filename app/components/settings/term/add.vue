@@ -73,12 +73,11 @@
 
 <script setup lang="ts">
 import * as yup from 'yup'
-import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useTermStore()
 const academicYearStore = useAcademicYearStore()
-const toast = useToast()
+const {error: toastError, success: toastSuccess, warning: toastWarning} = useNotify()
 const isLoading = ref(false)
 
 type TermForm = {
@@ -127,7 +126,7 @@ const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
     event.preventDefault()
 
     if (!activeAcademicYear.value) {
-        toast.add({ description: 'Activate an academic year before creating terms', color: 'warning' })
+        toastWarning('Activate an academic year before creating terms')
         return
     }
 
@@ -142,10 +141,10 @@ const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
         })
 
         await store.fetchAll()
-        toast.add({ description: 'Term created successfully', color: 'success' })
+        toastSuccess('Term created successfully')
         close()
     } catch (err: any) {
-        toast.add({ description: err.message, color: 'error' })
+        toastError(err.message)
     } finally {
         isLoading.value = false
     }
@@ -154,9 +153,4 @@ const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
 onMounted(() => {
     academicYearStore.fetchAll()
 })
-
-const formatDate = (value: string) => {
-    if (!value) return '-'
-    return new Date(value).toLocaleDateString()
-}
 </script>

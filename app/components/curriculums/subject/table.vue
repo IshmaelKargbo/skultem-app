@@ -133,12 +133,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <UCard>
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No sections found.</p>
+          <p class="text-gray-500">No subject found.</p>
         </div>
       </template>
     </UTable>
@@ -147,5 +147,5 @@ onMounted(async () => {
       <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />
     </div>
-  </div>
+  </UCard>
 </template>

@@ -89,7 +89,7 @@ const onSubmit = async (event: FormSubmitEvent<FeeCategoryForm>) => {
 
         close()
     } catch (err: any) {
-        toastSuccess(err?.message || 'Something went wrong')
+        toastError(err?.message || 'Something went wrong')
     } finally {
         isLoading.value = false
     }

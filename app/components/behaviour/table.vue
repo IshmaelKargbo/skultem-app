@@ -5,7 +5,7 @@ import type { Row } from '@tanstack/vue-table'
 const route = useRoute()
 const router = useRouter()
 
-const {classId} = defineProps<{
+const { classId } = defineProps<{
   classId: string
 }>()
 const store = useBehaviourStore()
@@ -106,6 +106,7 @@ function updateQuery(newQuery: Record<string, any>) {
 }
 
 async function fetchRecords() {
+  if (classId == null) return
   loading.value = true
   await store.fetchAll(classId, page.value, size.value)
   loading.value = false

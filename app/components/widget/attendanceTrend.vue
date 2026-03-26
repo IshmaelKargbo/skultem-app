@@ -25,11 +25,6 @@ const isReady = ref(false)
 const labels = ref<string[]>([])
 const chartSeries = ref<any[]>([])
 
-/*
-|--------------------------------------------------------------------------
-| Month Parser
-|--------------------------------------------------------------------------
-*/
 function parseMonth(month: string) {
   const months: Record<string, string> = {
     JANUARY: "Jan",

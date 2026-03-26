@@ -9,7 +9,14 @@ export type Parent = {
     city: string
     fatherName: string
     motherName: string
+    feeDetail?: {
+        total: number
+        balance: number
+        paid: number
+        status: string
+    }
     status: string
+    students: number
     createdAt: string
     updatedAt: string
 }

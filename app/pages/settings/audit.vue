@@ -1,16 +1,6 @@
 <template>
-    <div class="p-5 space-y-5">
-        <SettingsHeader />
-
-        <UCard>
-            <div class="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-                <UInput v-model="search" placeholder="Search action, user, or details" class="md:w-80" />
-                <div class="text-xs text-muted">
-                    Showing {{ meta?.showingFrom || 0 }} - {{ meta?.showingTo || 0 }} of {{ meta?.total || 0 }}
-                </div>
-            </div>
-        </UCard>
-
+    <div class="p-7 h-full overflow-y-auto">
+        <SettingsHeader title="Auth Log" subtitle="Tracked system activities" />
         <UCard>
             <UTable :columns="columns" :data="filtered" :loading="loading">
                 <template #empty-state>
@@ -52,7 +42,7 @@ const { records, meta, loading } = storeToRefs(store)
 const search = ref('')
 
 const columns: TableColumn<AuditLog>[] = [
-    { accessorKey: 'action', header: 'Action' },
+    { accessorKey: 'action', header: 'Action', cell: ({row}: any) => clean(row.original.action) },
     { accessorKey: 'userName', header: 'User' },
     { accessorKey: 'status', header: 'Status' },
     { accessorKey: 'ipAddress', header: 'IP Address' },
@@ -87,6 +77,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

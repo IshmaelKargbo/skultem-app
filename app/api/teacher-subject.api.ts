@@ -18,6 +18,18 @@ export const TeacherSubjectApi = () => {
         useHandleError(err)
       }
     },
+    getAllByTeacher: async (page: number, size: number) => {
+      try {
+        const res = await $api(`/teacher/subject/me?page=${page}&size=${size}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch teacher subjects')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAllByClass: async (id: string, page: number, size: number) => {
       try {
         const res = await $api(`/teacher/subject/session/${id}?page=${page}&size=${size}`) as any

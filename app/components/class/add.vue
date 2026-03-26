@@ -13,7 +13,7 @@
 
         <!-- Body -->
         <template #body>
-            <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
+            <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4" @submit.prevent="onSubmit">
                 <!-- Name -->
                 <UFormField required label="Name" name="name">
                     <UInput v-model="state.name" placeholder="e.g. Class 1" :disabled="isLoading" />
@@ -103,7 +103,7 @@ const store = useClassStore()
 const streamStore = useStreamStore()
 const sectionStore = useSectionStore()
 const assessmentStore = useAssessmentStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 const open = ref(false)
 const isLoading = ref(false)
@@ -189,11 +189,11 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
             levelOrder: state.levelOrder as number,
             assessmentTemplateId: state.assessmentTemplateId || undefined
         })
-        toast.add({ description: 'Class created successfully', color: 'success' })
+        toastSuccess('Class created successfully')
         await useClassSessionStore().fetchAll(1, runtimeConf().limit)
         close()
     } catch (err: any) {
-        toast.add({ description: err?.message || 'Something went wrong', color: 'error' })
+        toastError(err?.message || 'Something went wrong')
     } finally {
         isLoading.value = false
     }

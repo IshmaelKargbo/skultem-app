@@ -1,36 +1,30 @@
 <template>
 
-    <div class="flex space-x-5">
-        <UCard class="flex-1">
-            <div class="flex items-center justify-between p-2">
-                <div class="space-y-2">
-                    <p class="text-mute text-xs">Active Discounts</p>
-                    <p class="text-2xl font-semibold" v-if="report">{{ report.activeDiscounts }}</p>
-                    <USkeleton class="w-8 h-8" v-else />
-                </div>
-                <UAvatar icon="lucide:user-check" size="2xl" class="bg-app-50/50" />
-            </div>
-        </UCard>
-        <UCard class="flex-1">
-            <div class="flex items-center justify-between p-2">
-                <div class="space-y-2">
-                    <p class="text-mute text-xs">Total Savings</p>
-                    <p class="text-2xl text-success font-semibold" v-if="report">{{ report.totalSavings }}</p>
-                    <USkeleton class="w-8 h-8" v-else />
-                </div>
-                <UAvatar icon="mdi:discount-outline" size="2xl" class="bg-success-50 text-success" />
-            </div>
-        </UCard>
-        <UCard class="flex-1">
-            <div class="flex items-center justify-between p-2">
-                <div class="space-y-2">
-                    <p class="text-mute text-xs">Expired</p>
-                    <p class="text-2xl text-error font-semibold" v-if="report">{{ report.expired }}</p>
-                    <USkeleton class="w-8 h-8" v-else />
-                </div>
-                <UAvatar icon="mdi:book-cancel-outline" size="2xl" class="bg-error-50" />
-            </div>
-        </UCard>
+    <div class="grid grid-cols-3 gap-5">
+        <Metric :record="{
+            label: 'Active Discounts',
+            value: report.activeDiscounts,
+            icon: PARENT_ICON,
+            isReady: !isLoading,
+            subtle: 'Discounts currently applied',
+            color: 'success'
+        }" />
+        <Metric :record="{
+            label: 'Total Savings',
+            value: report.totalSavings,
+            icon: PARENT_ICON,
+            isReady: !isLoading,
+            subtle: 'Total amount saved from discounts',
+            color: 'primary'
+        }" />
+        <Metric :record="{
+            label: 'Expired',
+            value: report.expired,
+            icon: PARENT_ICON,
+            isReady: !isLoading,
+            subtle: 'Discounts no longer active',
+            color: 'error'
+        }" />
     </div>
 </template>
 
@@ -43,7 +37,11 @@ type DiscountReport = {
 
 const isLoading = ref(true)
 const store = useFeeDiscountStore()
-const report = ref<DiscountReport>()
+const report = ref<DiscountReport>({
+    activeDiscounts: 0,
+    expired: 0,
+    totalSavings: ''
+})
 
 async function fetchRecord() {
     isLoading.value = true

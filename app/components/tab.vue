@@ -1,13 +1,13 @@
 <template>
   <div class="overflow-x-auto">
-    <div class="bg-neutral-200/60 p-1.5 rounded-full inline-flex gap-1 min-w-max">
+    <div class="bg-neutral-200/60 p-1 rounded-full inline-flex gap-1 min-w-max">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.to"
         :to="tab.to"
-        class="px-4 py-1.5 rounded-full transition-all duration-200 whitespace-nowrap"
+        class="px-2.5 py-1 text-[13px] rounded-full transition-all duration-200 whitespace-nowrap"
         :class="isActive(tab.to, tab.exact)
-          ? 'bg-white shadow text-gray-900 font-medium'
+          ? 'bg-white shadow text-gray-900'
           : 'text-gray-600 hover:text-gray-900'"
       >
         {{ tab.label }}

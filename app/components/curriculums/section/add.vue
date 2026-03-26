@@ -16,14 +16,14 @@
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
                 <UFormField required label="Name" name="name">
                     <UInput v-model="state.name" placeholder="e.g. Section A" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">Enter the name of the section (e.g. Section A).</p>
                     </template>
                 </UFormField>
                 <UFormField required label="Description" name="description">
                     <UTextarea :items="classes" v-model="state.description" :disabled="isLoading"
                         placeholder="Enter description" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">Select the class for this section.</p>
                     </template>
                 </UFormField>
@@ -33,8 +33,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="lucide:save" :loading="isLoading" label="Save"
-                    @click="formRef?.submit()" />
+                <u-button icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -49,7 +48,7 @@ import type { FormSubmitEvent } from '#ui/types'
 const store = useSectionStore()
 const classStore = useClassStore()
 const classes = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 const isLoading = ref(false)
 
 type SectionForm = {
@@ -57,13 +56,11 @@ type SectionForm = {
     description: string
 }
 
-// reactive form state
 const state = reactive<SectionForm>({
     name: '',
     description: '',
 })
 
-// yup validation schema
 const schema = yup.object({
     name: yup.string().required('Name is required'),
     description: yup.string().required('Description is required')
@@ -90,10 +87,10 @@ const onSubmit = async (event: FormSubmitEvent<SectionForm>) => {
         })
 
         await store.fetchAll()
-        toast.add({ description: 'Section created successfully', color: 'success' })
+        toastSuccess('Section created successfully')
         close()
     } catch (err: any) {
-        toast.add({ description: err.message, color: 'error' })
+        toastError(err.message)
     } finally {
         isLoading.value = false
     }

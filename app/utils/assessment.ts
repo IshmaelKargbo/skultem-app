@@ -46,6 +46,7 @@ export type AssessmentScore = {
     name: string
     assessment: string
     score: number
+    student: string
     weight: number
     weightScore: number
     grade?: string

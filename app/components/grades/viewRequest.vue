@@ -61,7 +61,7 @@
             </thead>
             <tbody>
               <tr v-for="student in selected.studentScores" :key="student.id" class="border-t border-gray-300">
-                <td class="p-2">{{ student.name }}</td>
+                <td class="p-2">{{ student.student }}</td>
                 <td class="p-2 font-medium"> {{ student.score }} </td>
                 <td class="p-2 text-right">
                   <UBadge size="sm" variant="outline" color="primary"> {{ student.grade }} </UBadge>

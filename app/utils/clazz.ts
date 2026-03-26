@@ -38,6 +38,12 @@ export type ClassSession = {
     teacherId: string
     totalStudent: number
     classLevel: string
+    feeDetail: {
+        total: number
+        balance: number
+        paid: number
+        status: string
+    }
 }
 
 export type ClassTeacher = {

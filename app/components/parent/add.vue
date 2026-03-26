@@ -88,7 +88,7 @@ import * as yup from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useParentStore()
-const toast = useToast()
+const { success: toastSuccess, error: toastError } = useNotify()
 const isLoading = ref(false)
 
 type ParentForm = {
@@ -139,11 +139,11 @@ const onSubmit = async (event: FormSubmitEvent<ParentForm>) => {
   try {
     await schema.validate(state, { abortEarly: false })
     await store.create({ ...state })
-    toast.add({ description: 'Parent added successfully', color: 'success' })
+    toastSuccess('Parent added successfully')
     store.fetchAll(1, runtimeConf().limit)
     close()
   } catch (err: any) {
-    toast.add({ description: err.message, color: 'error' })
+    toastError(err.message)
   } finally {
     isLoading.value = false
   }

@@ -3,7 +3,7 @@ export type User = {
     givenNames: string
     familyName: string
     email: string
-    roles: string
+    roles: string[]
     status: string
     createdAt: string
     updatedAt: string

@@ -1,35 +1,21 @@
 <template>
-  <div class="p-7 space-y-5 overflow-y-auto h-full">
-    <div class="flex flex-col gap-3 pb-2 md:flex-row md:items-center md:justify-between">
-      <div class="space-y-1">
-        <p class="text-xl font-semibold">Grade Entry</p>
-        <p class="font-light text-mute">
-          Enter scores for the active test. Locked assessments are read-only.
-        </p>
-      </div>
+  <div class="p-7 overflow-y-auto h-full space-y-5">
+    <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
         <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
         <UButton icon="lucide:check-circle" label="Complete Assessment" color="success" :loading="completing"
           variant="subtle" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
       </div>
-    </div>
+    </Heading>
     <UCard>
       <div class="flex space-x-3">
-        <UFormField label="Term" required class="w-full">
-          <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
-            @change="fetchStudents" />
-        </UFormField>
-
-        <UFormField label="Class" required class="w-full">
-          <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
-            @change="fetchRecord" />
-        </UFormField>
-
-        <UFormField label="Subject" required class="w-full">
-          <USelectMenu value-key="value" :items="teachers" placeholder="Select Subject" v-model="state.teacherSubjectId"
-            @change="fetchStudents" />
-        </UFormField>
+        <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
+          @change="fetchStudents" />
+        <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
+          @change="fetchRecord" />
+        <USelectMenu value-key="value" :items="teachers" placeholder="Select Subject" v-model="state.teacherSubjectId"
+          @change="fetchStudents" />
       </div>
     </UCard>
     <UCard v-if="assessments.length && state.teacherSubjectId">
@@ -64,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+const { can } = useAuth()
 type GradeAssessmentForm = {
   classId: string
   teacherSubjectId: string
@@ -569,6 +556,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.SCHOOL_ADMIN, Role.TEACHER]
+  role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

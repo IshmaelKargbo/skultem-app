@@ -9,6 +9,19 @@ export type Meta = {
     totalPages: number;
 }
 
+
+export const parseFeeStatusColor: Record<string, string> = {
+    Paid: 'success',
+    Pending: 'error',
+    Partial: 'info'
+}
+
+export const parseFeeStatusIcon: Record<string, string> = {
+    Pending: 'i-lucide-clock',
+    Paid: 'i-lucide-check-circle',
+    Partial: 'ph:circle-half-tilt-duotone',
+}
+
 export enum Level {
     Primary = 'Primary',
     JSS = 'JSS',
@@ -31,7 +44,8 @@ export const parseTrend = {
 }
 
 export enum Role {
-    SCHOOL_ADMIN = 'SCHOOL_ADMIN',
+    PROPRIETOR = 'PROPRIETOR',
+    ADMIN = 'ADMIN',
     TEACHER = 'TEACHER',
     PARENT = 'PARENT',
     ACCOUNTANT = 'ACCOUNTANT'
@@ -39,8 +53,8 @@ export enum Role {
 
 export const roles = [
     {
-        label: 'School Admin',
-        value: Role.SCHOOL_ADMIN.toString()
+        label: 'Admin',
+        value: Role.ADMIN.toString()
     },
     {
         label: 'Accountant',
@@ -49,25 +63,35 @@ export const roles = [
 ]
 
 export const parseRole: Record<string, string> = {
-    SCHOOL_ADMIN: 'School Admin',
+    PROPRIETOR: 'Proprietor',
+    ADMIN: 'Admin',
     TEACHER: 'Teacher',
     PARENT: 'Parent',
     ACCOUNTANT: 'Accounttant'
 }
 
 export const parseRoleColor: Record<string, string> = {
-    SCHOOL_ADMIN: 'success',
-    TEACHER: 'info',
+    PROPRIETOR: 'success',
+    ADMIN: 'info',
+    TEACHER: 'neutral',
     PARENT: 'primary',
     ACCOUNTANT: 'error'
 }
 
 export const parseRoleIcon: Record<string, string> = {
-    SCHOOL_ADMIN: 'fluent:building-24-regular',
+    ADMIN: 'fluent:building-24-regular',
     PROPRIETOR: 'fluent:crown-24-regular',
     TEACHER: 'fluent:hat-graduation-24-regular',
     PARENT: 'fluent:people-24-regular',
     ACCOUNTANT: 'fluent:calculator-24-regular'
+}
+
+export function clean(str: string) {
+  return str
+    .toLowerCase()
+    .split("_")
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 export type AssignmentSubject = {

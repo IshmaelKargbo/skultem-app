@@ -110,12 +110,12 @@ async function fetchRecord() {
                 chartType: "bar"
             })
         ])
-        const widget = res?.datasets ?? []
+        const widget = res?.data?.datasets ?? []
 
         const revenueDataset = widget.find((e: any) => e.label == 'Revenue')
         totalRevenue.value = format(revenueDataset.data[0] || 0)
 
-        const monthlyDataset = monthlys?.datasets ?? []
+        const monthlyDataset = monthlys?.data?.datasets ?? []
 
         const monthlyRow = monthlyDataset.find((e: any) => e.label == 'Monthly')
         totalRevenue.value = format(monthlyRow.data[0] || 0)
@@ -123,7 +123,7 @@ async function fetchRecord() {
         monthRevenue.value = format(revenueDataset.data[0] || 0)
 
 
-        const datasets = payments?.datasets ?? []
+        const datasets = payments?.data?.datasets ?? []
 
         const paid = datasets.find((e: any) => e.label === "Paid")
         const partial = datasets.find((e: any) => e.label === "Partial")

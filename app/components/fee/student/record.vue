@@ -4,15 +4,10 @@
             <div class="flex justify-between items-center border-gray-200">
                 <p class="text-lg font-normal">{{ student.givenNames }} {{ student.familyName }}'s Fees</p>
                 <div class="space-x-2">
-                    <FeeStudentAssign :student="student" @assigned="refreshFees" />
-                    <FeeDiscountAdd
-                        :student-id="student.id"
-                        :refresh-report="refreshFees"
-                        trigger-label="Apply Discount"
-                        trigger-variant="outline"
-                        trigger-size="sm"
-                        trigger-icon="mdi:discount-outline"
-                        trigger-color="neutral" />
+                    <FeeStudentAssign v-if="can([Role.ACCOUNTANT])" :student="student" @assigned="refreshFees" />
+                    <FeeDiscountAdd v-if="can([Role.ACCOUNTANT])" :student-id="student.id" :refresh-report="refreshFees"
+                        trigger-label="Apply Discount" trigger-variant="outline" trigger-size="sm"
+                        trigger-icon="mdi:discount-outline" trigger-color="neutral" />
                     <FeeStudentPayments :student="student" />
                 </div>
             </div>
@@ -58,7 +53,7 @@
 const { student } = defineProps<{
     student: Student | null
 }>()
-
+const { can } = useAuth()
 const store = useStudentStore()
 const feesState = ref<{
     paid: number,
@@ -83,7 +78,7 @@ async function fetchFees() {
         discount += e.discount
     })
 
-    
+
 
     feesState.value = { outstanding, paid, discount, total }
 }

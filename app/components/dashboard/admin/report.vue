@@ -1,4 +1,5 @@
 <template>
+        <div class="grid gap-5 grid-cols-4 space-y-0 w-full">
         <UCard>
             <div class="space-y-1">
                 <p class="text-xs text-mute">Total Students</p>
@@ -10,7 +11,7 @@
 
                 <template v-else-if="report">
                     <div class="flex justify-between items-center">
-                        <p class="text-2xl font-semibold">{{ report.totalStudents }}</p>
+                        <p class="text-2xl font-display font-semibold">{{ report.totalStudents }}</p>
                         <UBadge :icon="ATTENDANCE_ICON" variant="subtle" size="xl" class="p-1.5" color="primary" />
                     </div>
                     <div class="flex text-xs text-primary space-x-1">
@@ -31,7 +32,7 @@
 
                 <template v-else-if="report">
                     <div class="flex justify-between items-center">
-                        <p class="text-2xl font-semibold">{{ report.totalTeachers }}</p>
+                        <p class="text-2xl font-display font-semibold">{{ report.totalTeachers }}</p>
                         <UBadge :icon="TEACHER_ICON" variant="subtle" size="xl" class="p-1.5" color="warning" />
                     </div>
                     <div class="flex text-xs text-muted space-x-1">
@@ -51,7 +52,7 @@
 
                 <template v-else-if="report">
                     <div class="flex justify-between items-center">
-                        <p class="text-2xl font-semibold">{{ report.activeYear }}</p>
+                        <p class="text-2xl font-display font-semibold">{{ report.activeYear }}</p>
                         <UBadge :icon="ATTENDANCE_ICON" variant="subtle" size="xl" class="p-1.5" color="info" />
                     </div>
                     <div class="flex text-xs text-muted space-x-1">
@@ -71,7 +72,7 @@
 
                 <template v-else-if="report">
                     <div class="flex justify-between items-center">
-                        <p class="text-2xl font-semibold">{{ format(report.monthlyRevenue) }}</p>
+                        <p class="text-2xl font-display font-semibold">{{ format(report.monthlyRevenue) }}</p>
                         <UBadge :icon="PAYMENT_ICON" variant="subtle" size="xl" class="p-1.5" color="success" />
                     </div>
                     <div class="flex text-xs text-success space-x-1">
@@ -81,6 +82,7 @@
                 </template>
             </div>
         </UCard>
+        </div>
 </template>
 
 <script setup lang="ts">

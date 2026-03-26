@@ -1,122 +1,162 @@
 <template>
-    <div class="min-h-screen flex">
+  <div class="min-h-screen flex font-sans">
 
-        <!-- Left Panel -->
-        <div class="hidden md:flex w-1/2 bg-gray-50 flex-col justify-center items-center p-10 space-y-10">
-            <img src="/teacher.svg" alt="School Illustration" class="w-3/4" />
-            <div class="text-center">
-                <h1 class="text-3xl font-bold mb-5">Welcome to Skultem</h1>
-                <p class="text-lg text-gray-600">
-                    Making school life simple, smart, and stress-free.
-                </p>
-            </div>
-        </div>
+    <!-- Left Panel -->
+    <div class="hidden md:flex w-[44%] flex-col justify-end p-10 relative overflow-hidden"
+      style="background: #0F1E3C;">
+      <div class="absolute rounded-full  bg-cyan-600" style="width:320px;height:320px;top:-90px;right:-90px;opacity:0.06;" />
+      <div class="absolute rounded-full  bg-cyan-400" style="width:180px;height:180px;bottom:60px;left:-50px;opacity:0.06;" />
 
-        <!-- Right Panel -->
-        <div class="flex flex-1 justify-center items-center p-6 bg-white">
+      <div class="self-start flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide bg-primary-700/50 text-gray-300">
+        <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
+        School management platform
+      </div>
 
-            <div class="w-full max-w-md">
+      <h1 class="font-medium text-5xl leading-tight mb-4 text-white">
+        Making school<br>life <em class="text-primary">simpler</em>
+      </h1>
+      <p class="text-sm leading-relaxed mb-8" style="color:rgba(245,240,232,0.5);">
+        Attendance, grades, schedules, and communication — all in one place.
+      </p>
 
-                <!-- Logo -->
-                <div class="text-center mb-6 space-y-8">
-                    <img src="/icon.svg" alt="Skultem Logo" class="mx-auto h-18" />
-                    <h2 class="text-2xl font-bold text-gray-700">
-                        Sign in to Skultem
-                    </h2>
-                </div>
-
-                <!-- Login Form -->
-                <UForm :schema="schema" :state="state" @submit.prevent="handleLogin" class="space-y-5">
-
-                    <!-- Email -->
-                    <UFormField label="Email" name="email">
-                        <UInput size="xl" v-model="state.email" placeholder="Enter your email" />
-                    </UFormField>
-
-                    <!-- Password -->
-                    <UFormField label="Password" name="password">
-                        <UInput size="xl" type="password" v-model="state.password" placeholder="Enter your password" />
-                    </UFormField>
-
-                    <!-- Remember + Forgot -->
-                    <div class="flex items-center justify-between">
-                        <label class="flex items-center space-x-2 text-gray-600">
-                            <input type="checkbox" v-model="state.rememberMe"
-                                class="form-checkbox h-4 w-4 text-blue-600" />
-                            <span>Remember me</span>
-                        </label>
-
-                        <a href="#" class="text-blue-600 hover:underline text-sm">
-                            Forgot Password?
-                        </a>
-                    </div>
-
-                    <!-- Login Button -->
-                    <UButton type="submit" size="xl" :loading="loading" class="w-full flex justify-center">
-                        Login
-                    </UButton>
-                </UForm>
-            </div>
-
-        </div>
-
+      <div class="flex gap-2">
+        <span class="w-2 h-2 rounded-full bg-primary"/>
+        <span class="w-2 h-2 rounded-full bg-primary-800" />
+        <span class="w-2 h-2 rounded-full bg-primary-800" />
+      </div>
     </div>
+
+    <!-- Right Panel -->
+    <div class="flex flex-1 items-center justify-center px-8 py-12 bg-white dark:bg-gray-950">
+      <div class="w-full max-w-sm">
+
+        <!-- Brand mark -->
+        <div class="flex items-center gap-1 mb-9">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center">
+            <img src="/icon.svg" alt="Skultem" class="w-7 h-7" />
+          </div>
+          <span class="text-xl font-semibold font-display">SkulTem</span>
+        </div>
+
+        <h2 class="text-2xl font-display font-semibold mb-1">
+          Welcome Back !
+        </h2>
+        <p class="text-sm text-gray-400 mb-7">Sign in to your school account</p>
+
+        <!-- Form -->
+        <UForm :schema="schema" :state="state" @submit="handleLogin" class="space-y-4">
+
+          <UFormField
+            name="email"
+            label="Email"
+            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-gray-400 mb-1' }"
+          >
+            <UInput
+              v-model="state.email"
+              size="lg"
+              placeholder="you@school.edu"
+              type="email"
+              class="w-full"
+              :ui="{
+                base: 'w-full',
+                rounded: 'rounded-lg',
+              }"
+            />
+          </UFormField>
+
+          <UFormField
+            name="password"
+            label="Password"
+            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-gray-400 mb-1' }"
+          >
+            <UInput
+              v-model="state.password"
+              size="lg"
+              type="password"
+              placeholder="••••••••"
+              class="w-full"
+              :ui="{
+                base: 'w-full',
+                rounded: 'rounded-lg',
+              }"
+            />
+          </UFormField>
+
+          <!-- Remember + Forgot -->
+          <div class="flex items-center justify-between pt-1">
+            <UCheckbox
+              v-model="state.rememberMe"
+              label="Remember me"
+              :ui="{
+                label: 'text-sm text-gray-500 cursor-pointer',
+                base: 'accent-[#0F1E3C]'
+              }"
+            />
+            <UButton
+              variant="link"
+              to="#"
+              class="text-sm font-medium p-0"
+              :ui="{ base: 'text-[#1A3A72]' }"
+            >
+              Forgot password?
+            </UButton>
+          </div>
+
+          <!-- Submit -->
+          <UButton
+            type="submit"
+            size="lg"
+            :loading="loading"
+            block
+            :ui="{
+              base: 'w-full justify-center font-medium tracking-wide transition-all',
+              rounded: 'rounded-lg',
+              color: {
+                primary: {
+                  solid: 'bg-[#0F1E3C] hover:bg-[#1A3A72] text-[#F5F0E8] border-none'
+                }
+              }
+            }"
+          >
+            Sign in
+          </UButton>
+
+        </UForm>
+      </div>
+    </div>
+
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
 import * as yup from "yup"
 
 const state = reactive({
-    email: "",
-    password: "",
-    rememberMe: false
+  email: "",
+  password: "",
+  rememberMe: false
 })
 
 const loading = ref(false)
 const toast = useToast()
-
 const userStore = useUserStore()
 
 const schema = yup.object({
-    email: yup
-        .string()
-        .email("Enter a valid email")
-        .required("Email is required"),
-
-    password: yup
-        .string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required")
+  email: yup.string().email("Enter a valid email").required("Email is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required")
 })
 
 const handleLogin = async () => {
-    try {
-
-        loading.value = true
-
-        const res = await userStore.login({
-            domain: "kings-way",
-            email: state.email,
-            password: state.password
-        })
-
-        navigateTo("/")
-    } catch (err: any) {
-        loading.value = false
-        toast.add({
-            description: err.message,
-            color: "error"
-        })
-    }
+  try {
+    loading.value = true
+    await userStore.login({ domain: "kings-way", email: state.email, password: state.password })
+    navigateTo("/")
+  } catch (err: any) {
+    loading.value = false
+    toast.add({ description: err.message, color: "error" })
+  }
 }
 
-definePageMeta({
-    layout: "blank",
-    middleware: "guest"
-})
-
-onMounted(() => {
-    document.title = "Login | Skultem"
-})
+definePageMeta({ layout: "blank", middleware: "guest" })
+onMounted(() => { document.title = "Login | Skultem" })
 </script>

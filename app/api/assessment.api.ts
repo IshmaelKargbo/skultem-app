@@ -41,6 +41,18 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
+    getAllMeAssessmentApprovalRequest: async () => {
+      try {
+        const res = await $api('/assessment/approval/me') as any
+
+        if (!res)
+          throw new Error('Failed to fetch assessment approval requests')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAllAssessment: async (subjectId: string, termId: string) => {
       try {
         const res = await $api(`/assessment/template/${subjectId}?termId=${termId}`) as any

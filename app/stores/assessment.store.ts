@@ -84,6 +84,18 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
+    async fetchAllMeAssessmentApprovalRequest() {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest() as any
+        return response || []
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch approval requests'
+      } finally {
+        this.loading = false
+      }
+    },
     async fetchActiveCycle(classId?: string) {
       this.loading = true
       this.error = null

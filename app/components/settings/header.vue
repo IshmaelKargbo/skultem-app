@@ -1,11 +1,10 @@
 <template>
     <div>
-        <div class="space-y-2">
-            <p class="text-2xl font-semibold tracking-tight text-slate-900">Settings</p>
-            <p class="text-sm text-mute">Configure system settings</p>
-        </div>
-        <div class="mt-5 flex">
-            <Tab v-if="can([Role.SCHOOL_ADMIN])" :tabs="[
+        <Heading :title="title" :subtitle="subtitle">
+            <slot />
+        </Heading>
+        <div class="my-6 flex">
+            <Tab v-if="can([Role.ADMIN, Role.PROPRIETOR])" :tabs="[
                 { label: 'Academic Years', to: '/settings', exact: true },
                 { label: 'Terms', to: '/settings/terms' },
                 { label: 'Assessment Templates', to: '/settings/assessment-templates' },
@@ -17,12 +16,18 @@
                 { label: 'User Sessions', to: '/settings/sessions' }
             ]" />
             <Tab v-if="can([Role.ACCOUNTANT])" :tabs="[
-                { label: 'Fee Categories', to: '/settings/fee-categories' }
+                { label: 'Fee Categories', to: '/settings/fee-categories' },
+                { label: 'Expense Categories', to: '/settings/expense-categories' }
             ]" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+const { subtitle, title } = defineProps<{
+    title: string
+    subtitle: string
+}>()
+
 const { can } = useAuth()
 </script>

@@ -150,7 +150,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <UCard>
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -164,5 +164,5 @@ onMounted(async () => {
       <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />
     </div>
-  </div>
+  </UCard>
 </template>

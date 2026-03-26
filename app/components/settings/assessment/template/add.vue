@@ -57,7 +57,7 @@ import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useAssessmentStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 const isLoading = ref(false)
 const open = ref(false)
@@ -97,17 +97,11 @@ const onSubmit = async (event: FormSubmitEvent<AssessmentTemplateForm>) => {
 
         await store.fetchAll()
 
-        toast.add({
-            description: 'Assessment template created successfully',
-            color: 'success'
-        })
+        toastSuccess('Assessment template created successfully')
 
         close()
     } catch (err: any) {
-        toast.add({
-            description: err.message || 'Something went wrong',
-            color: 'error'
-        })
+        toastError(err.message || 'Something went wrong')
     } finally {
         isLoading.value = false
     }

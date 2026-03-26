@@ -13,7 +13,7 @@
             </div>
         </UCard>
         <div class="grid grid-cols-3 gap-5">
-            <DashboardParentAvarage :session-id="selected?.sessionId || ''" :id="state.student" />
+            <DashboardParentAvarage :term="term" :session-id="selected?.sessionId || ''" :id="state.student" />
             <DashboardParentAttendance :id="state.student" />
             <DashboardParentFees :id="state.student" />
         </div>
@@ -94,6 +94,8 @@ const selected = ref<Student | undefined>()
 
 const terms = computed(() => activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })))
 
+const term = ref<Term | undefined>()
+
 const children = computed(() =>
     students.value.map(e => ({
         label: `${e.givenNames} ${e.familyName} - ${e.className}`,
@@ -107,14 +109,27 @@ async function fetchCycle() {
     if (activeCycle.value == null) return null
     const active = activeCycle.value.terms.find(e => e.status == "ACTIVE")
     if (active == null) return
+    if (terms.value == null) return
     const termIndex = terms.value.findIndex(e => e.value == active.id)
     state.term = terms.value[termIndex]?.value || ''
+    term.value = active
 }
 
 function change() {
     const select = students.value.find(e => e.id === state.student)
     selected.value = select
 }
+
+watch(
+    () => state.term,
+    async () => {
+        if (activeCycle.value == null) return
+        const active = activeCycle.value.terms.find(e => e.id == state.term)
+        if (active == null) return
+        term.value = active
+    },
+    { immediate: true }
+)
 
 watch(() => children.value, (val) => {
     if (val.length && !state.student) {

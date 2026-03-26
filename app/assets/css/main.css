@@ -10,7 +10,6 @@ html {
   scrollbar-color: #384f85 #f0f0f0;
 }
 
-/* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -38,7 +37,7 @@ html {
 
 .text-title {
   font-size: clamp(1.8rem, 2.5vw, 2.25rem);
-  @apply text-black font-semibold;
+  @apply text-black font-bold;
 }
 
 .text-subtitle {
@@ -51,7 +50,7 @@ html {
 }
 
 body {
-  @apply bg-neutral-50 text-neutral-900;
+  @apply bg-primary-50 text-neutral-900;
 
   font-family: var(--font-app);
   font-weight: var(--font-weight-normal);
@@ -63,11 +62,14 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-@theme {
-  --font-app: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Geist", "Inter", system-ui, sans-serif;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
 
-  /* Responsive base font size */
+@theme {
+  --font-app: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Cabinet Grotesk", system-ui, sans-serif;
+
   --font-size-base: clamp(14px, 0.9vw, 16px);
 }
 

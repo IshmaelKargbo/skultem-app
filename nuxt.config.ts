@@ -9,8 +9,20 @@ export default defineNuxtConfig({
     head: {
       link: [
         {
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com'
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://api.fontshare.com'
+        },
+        {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap'
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap'
         }
       ]
     }

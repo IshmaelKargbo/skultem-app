@@ -62,7 +62,7 @@ onMounted(async () => {
 
     if (!res) return
 
-    const widget = res
+    const widget = res.data
 
     labels.value = widget.labels.map((e: any) => parseGender[e])
     chartSeries.value = widget.datasets[0].data

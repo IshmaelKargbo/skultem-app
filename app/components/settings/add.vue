@@ -40,8 +40,7 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="lucide:save" :loading="isLoading" label="Save"
-                    @click="formRef?.submit()" />
+                <u-button icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
             </div>
         </template>
@@ -54,7 +53,7 @@ import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useAcademicYearStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 const isLoading = ref(false)
 
 type AcademicYearForm = {
@@ -111,10 +110,10 @@ const onSubmit = async (event: FormSubmitEvent<AcademicYearForm>) => {
         })
 
         await store.fetchAll()
-        toast.add({ description: 'Academic year created successfully', color: 'success' })
+        toastSuccess('Academic year created successfully')
         close()
     } catch (err: any) {
-        toast.add({ description: err.message, color: 'error' })
+        toastSuccess(err.message)
     } finally {
         isLoading.value = false
     }

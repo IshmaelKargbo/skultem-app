@@ -99,17 +99,45 @@
                 <!-- Quick links -->
                 <div class="p-2 border-b border-gray-100">
                     <UButton
-                        v-for="item in quickLinks"
-                        :key="item.label"
-                        :icon="item.icon"
+                        icon="lucide:user"
                         variant="ghost"
                         color="neutral"
                         size="sm"
                         class="w-full justify-start"
-                        @click="handleLink(item)"
+                        to="/profile"
                     >
-                        <span class="flex-1 text-left">{{ item.label }}</span>
-                        <UBadge v-if="item.badge" color="error" variant="solid" size="xs">!</UBadge>
+                        <span class="flex-1 text-left">My Profile</span>
+                    </UButton>
+                    <UButton
+                        icon="lucide:settings"
+                        variant="ghost"
+                        color="neutral"
+                        size="sm"
+                        v-if="can([Role.ACCOUNTANT, Role.ADMIN, Role.PROPRIETOR])"
+                        class="w-full justify-start"
+                        to="/settings"
+                    >
+                        <span class="flex-1 text-left">Settings</span>
+                    </UButton>
+                    <UButton
+                        icon="lucide:bell"
+                        variant="ghost"
+                        color="neutral"
+                        size="sm"
+                        class="w-full justify-start"
+                        to="/notifications"
+                    >
+                        <span class="flex-1 text-left">Notifications</span>
+                    </UButton>
+                    <UButton
+                        icon="lucide:life-buoy"
+                        variant="ghost"
+                        color="neutral"
+                        size="sm"
+                        class="w-full justify-start"
+                        to="/support"
+                    >
+                        <span class="flex-1 text-left">Help & Support</span>
                     </UButton>
                 </div>
                 <!-- Logout -->
@@ -121,7 +149,7 @@
                         color="error"
                         size="sm"
                         class="w-full justify-start"
-                        @click="dropdownOpen = false"
+
                     >
                         Sign out
                     </UButton>
@@ -134,7 +162,7 @@
 <script setup lang="ts">
 const userStore = useUserStore()
 const { user, meLoading: loading } = storeToRefs(userStore)
-const { activeRole, setActiveRole } = useAuth()
+const { activeRole, can, setActiveRole } = useAuth()
 const { show, hide } = useGlobalLoader()
 
 const dropdownOpen = ref(false)
@@ -145,17 +173,19 @@ const name = computed(() =>
 )
 
 const roleDesc: Record<string, string> = {
-    admin: 'Full system access',
-    teacher: 'Classes & students',
-    student: 'Courses & grades',
-    parent: 'Child progress',
+  proprietor: 'School owner & oversight',
+  admin: 'Full system access',
+  teacher: 'Classes & students',
+  student: 'Courses & grades',
+  parent: 'Child progress',
 }
 
 const roleIcons: Record<string, string> = {
-    admin: 'lucide:shield',
-    teacher: 'lucide:book-open',
-    student: 'lucide:graduation-cap',
-    parent: 'lucide:users',
+  proprietor: 'lucide:crown',
+  admin: 'lucide:shield',
+  teacher: 'lucide:book-open',
+  student: 'lucide:graduation-cap',
+  parent: 'lucide:users',
 }
 
 const userRoles = computed(() =>

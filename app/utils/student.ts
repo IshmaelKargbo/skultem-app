@@ -8,6 +8,12 @@ export type Student = {
     gender: string
     className: string
     classId: string
+    feeDetail: {
+        total: number
+        balance: number
+        paid: number
+        status: string
+    }
     classSize: number
     sessionId: string
     classTeacher: string

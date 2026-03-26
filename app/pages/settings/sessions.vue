@@ -1,7 +1,6 @@
 <template>
-    <div class="p-5 space-y-5">
-        <SettingsHeader />
-
+    <div class="p-7 h-full overflow-y-auto">
+        <SettingsHeader title="User Sessions" subtitle="Active sessions overview" />
         <UCard>
             <UTable :columns="columns" :data="records" :loading="loading">
                 <template #empty-state>
@@ -88,11 +87,11 @@ function getRowItems(row: any) {
 }
 
 onMounted(() => {
-    useAppStore().setTitle('User Sessions')
+    useAppStore().setTitle('Settings')
     document.title = 'User Sessions | Settings | Skultem'
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

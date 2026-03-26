@@ -51,7 +51,7 @@ import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
 const store = useSubjectStore()
-const toast = useToast()
+const { error: toastError, success: toastSuccess } = useNotify()
 const isLoading = ref(false)
 
 type SubjectForm = {
@@ -67,7 +67,6 @@ const state = reactive<SubjectForm>({
     description: ''
 })
 
-// yup validation schema
 const schema = yup.object({
     name: yup.string().required('Name is required'),
     code: yup.string().required('Code is required'),
@@ -97,10 +96,10 @@ const onSubmit = async (event: FormSubmitEvent<SubjectForm>) => {
         })
 
         await store.fetchAll()
-        toast.add({ description: 'Subject created successfully', color: 'success' })
+        toastSuccess('Subject created successfully')
         close()
     } catch (err: any) {
-        toast.add({ description: err.message, color: 'error' })
+        toastError(err.message)
     } finally {
         isLoading.value = false
     }

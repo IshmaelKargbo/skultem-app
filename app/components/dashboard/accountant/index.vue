@@ -8,7 +8,7 @@
             <div class="space-x-3">
                 <UButton to="/fees-structures" label="Create Fee Structure" :icon="ADD_ICON" />
                 <UButton to="/payments" label="Record Payment" color="neutral" :icon="PAYMENT_ICON" variant="outline" />
-                <UButton to="/report" label="Generate Report" color="neutral" :icon="REPORT_ICON" variant="outline" />
+                <UButton to="/reports" label="Generate Report" color="neutral" :icon="REPORT_ICON" variant="outline" />
             </div>
         </div>
         <DashboardAccountantReport />

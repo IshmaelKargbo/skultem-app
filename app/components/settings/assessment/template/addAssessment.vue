@@ -112,7 +112,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useAssessmentStore()
-const toast = useToast()
+const {error: toastError, success: toastSuccess} = useNotify()
 
 const isLoading = ref(false)
 const formRef = ref<any>(null)
@@ -252,18 +252,12 @@ const onSubmit = async (event: FormSubmitEvent<AssessmentForm>) => {
         await store.assign(props.template.id, { assignments })
         await store.fetchAll()
 
-        toast.add({
-            description: 'Assessments updated successfully',
-            color: 'success'
-        })
+        toastSuccess('Assessments updated successfully')
 
         emit('saved')
         close()
     } catch (err: any) {
-        toast.add({
-            description: err.message || 'Something went wrong',
-            color: 'error'
-        })
+        toastError(err.message || 'Something went wrong')
     } finally {
         isLoading.value = false
     }

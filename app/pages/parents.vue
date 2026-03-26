@@ -1,25 +1,11 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto">
-        <div class="bg-white border border-gray-200 rounded-md p-3">
-            <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-xl font-semibold">Parents Management</p>
-                <div>
-                    <ParentAdd />
-                </div>
-            </div>
-            <ParentTable />
-        </div>
-    </div>
+    <ParentAccountant v-if="can([Role.ACCOUNTANT])" />
+    <ParentAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR])" />
 </template>
 
 <script setup lang="ts">
-onMounted(() => {
-    useAppStore().setTitle('Parents');
-
-    document.title = 'Parents | Skultem'
-})
-
+const { can } = useAuth()
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN, Role.ACCOUNTANT]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
 })
 </script>

@@ -67,13 +67,26 @@ export default defineNuxtPlugin(() => {
 
           accessToken.value = newToken
 
-          return $fetch(context.request, {
+          // ✅ Mutate the context options so the retry picks up the new token
+          context.options.headers = {
+            ...context.options.headers,
+            Authorization: `Bearer ${newToken}`,
+          }
+
+          // ✅ Re-assign the response by awaiting and mutating context.response
+          const retryResponse = await $fetch.raw(context.request, {
             ...context.options,
             headers: {
               ...context.options.headers,
               Authorization: `Bearer ${newToken}`,
             },
           })
+
+          // ✅ Overwrite the response so the original caller gets the retried result
+          context.response = retryResponse
+          context.response._data = retryResponse._data
+
+          return
         } else {
           await logoutAndRedirect()
         }

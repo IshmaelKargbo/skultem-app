@@ -1,20 +1,16 @@
 <template>
-    <div class="p-5">
-        <SettingsHeader />
-        <div class="bg-white border border-gray-200 rounded-md p-3 mt-5">
-            <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-lg font-normal">Holidaies ({{ meta.total || 0 }})</p>
-                <div>
-                    <SettingsHolidayAdd />
-                </div>
-            </div>
+    <div class="p-7 h-full overflow-y-auto">
+        <SettingsHeader title="Halidaies" subtitle="Scheduled school breaks">
+            <SettingsHolidayAdd />
+        </SettingsHeader>
+        <UCard>
             <SettingsHolidayTable />
             <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
                 <Showing :meta="meta" />
                 <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
                     :total="meta.total" show-edges />
             </div>
-        </div>
+        </UCard>
     </div>
 </template>
 
@@ -22,11 +18,11 @@
 const page = ref(1)
 const { meta, loading } = storeToRefs(useHolidayStore())
 onMounted(() => {
-    useAppStore().setTitle('Halidaies')
+    useAppStore().setTitle('Settings')
     document.title = 'Holidays | Settings | Skultem'
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>

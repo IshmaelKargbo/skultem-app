@@ -1,15 +1,9 @@
 <template>
-    <div class="p-5">
-        <SettingsHeader />
-        <div class="bg-white border border-gray-200 rounded-md p-3 mt-5">
-            <div class="flex px-3 py-2 border-b justify-between pb-3 items-center border-gray-200">
-                <p class="text-lg font-normal">Assessment Templates</p>
-                <div>
-                    <SettingsAssessmentTemplateAdd />
-                </div>
-            </div>
-            <SettingsAssessmentTemplateTable />
-        </div>
+    <div class="p-7 h-full overflow-y-auto">
+        <SettingsHeader title="Assessment Template" subtitle="Configured grading structures">
+            <SettingsAssessmentTemplateAdd />
+        </SettingsHeader>
+        <SettingsAssessmentTemplateTable />
     </div>
 </template>
 
@@ -18,11 +12,11 @@ const page = ref(1);
 const { meta } = storeToRefs(useTermStore());
 
 onMounted(() => {
-    useAppStore().setTitle('Assessment Templates')
+    useAppStore().setTitle('Settings')
     document.title = 'Assessment Templates | Settings | Skultem'
 })
 
 definePageMeta({
-    role: [Role.SCHOOL_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR]
 })
 </script>
