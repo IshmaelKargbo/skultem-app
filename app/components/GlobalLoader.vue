@@ -20,14 +20,6 @@
                         <p class="loader-sub">{{ subtitle }}</p>
                     </div>
 
-                    <!-- Progress -->
-                    <div class="progress-wrap">
-                        <p class="progress-hint">{{ hint || 'Setting up your workspace' }}</p>
-                        <div class="progress-track">
-                            <div class="progress-fill" />
-                        </div>
-                    </div>
-
                     <!-- Pencil writing -->
                     <div class="writing-wrap">
                         <span class="pencil">✏️</span>

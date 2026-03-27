@@ -1,22 +1,25 @@
 <template>
   <div class="p-7 overflow-y-auto h-full space-y-5">
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div class="space-y-1">
-        <p class="text-2xl font-semibold">Leader Board</p>
-        <p class="text-mute">Create custom reports and explore your school data</p>
+    <!-- Header -->
+    <Heading title="Leader Board" subtitle="Create custom reports and explore your school data">
+      <div class="flex w-1/2 space-x-3">
+        <USelectMenu v-model="state.classId" :items="classes" value-key="value" class="w-full"
+          placeholder="Select Class" />
+        <USelectMenu v-model="state.termId" :items="terms" value-key="value" class="w-full" placeholder="Select Term" />
       </div>
-    </div>
+    </Heading>
+
+    <!-- Leaderboard Table -->
     <UCard>
-      <div>
-        <UTable :columns="columns" :data="data">
-          <template #trend-cell="{ row }">
-            <div class="flex justify-end">
-              <UBadge variant="outline" :label="row.original.trend" :color="parseTrend[row.original.trend].color"
-                :trailing-icon="parseTrend[row.original.trend].icon" />
-            </div>
-          </template>
-        </UTable>
-      </div>
+      <UTable :columns="columns" :data="leaderboard">
+        <template #trend-cell="{ row }">
+          <div class="flex justify-end items-center gap-2">
+            <UBadge variant="outline" :label="parseTrend[row.original.trend]?.label"
+              :color="parseTrend[row.original.trend]?.color || 'primary'"
+              :trailing-icon="parseTrend[row.original.trend]?.icon" />
+          </div>
+        </template>
+      </UTable>
     </UCard>
   </div>
 </template>
@@ -24,166 +27,105 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 
-const store = useReportStore()
+// Stores
+const reportStore = useReportStore()
+const { leaderboard } = storeToRefs(reportStore)
 
-const data = ref([
-  {
-    id: '1',
-    rank: 1,
-    student: 'Ishmael Kargbo',
-    score: 800,
-    weight: 90,
-    grade: 'A',
-    trend: 'Improved'
-  },
-  {
-    id: '2',
-    rank: 2,
-    student: 'Fatmata Bangura',
-    score: 780,
-    weight: 88,
-    grade: 'A',
-    trend: 'Stable'
-  },
-  {
-    id: '3',
-    rank: 3,
-    student: 'Mohamed Kamara',
-    score: 760,
-    weight: 85,
-    grade: 'A',
-    trend: 'Improved'
-  },
-  {
-    id: '4',
-    rank: 4,
-    student: 'Hawa Conteh',
-    score: 735,
-    weight: 82,
-    grade: 'B+',
-    trend: 'Dropped'
-  },
-  {
-    id: '5',
-    rank: 5,
-    student: 'Abdul Sesay',
-    score: 720,
-    weight: 80,
-    grade: 'B+',
-    trend: 'Stable'
-  },
-  {
-    id: '6',
-    rank: 6,
-    student: 'Mariama Koroma',
-    score: 705,
-    weight: 78,
-    grade: 'B',
-    trend: 'Improved'
-  },
-  {
-    id: '7',
-    rank: 7,
-    student: 'Alhaji Bah',
-    score: 690,
-    weight: 76,
-    grade: 'B',
-    trend: 'Dropped'
-  },
-  {
-    id: '8',
-    rank: 8,
-    student: 'Kadiatu Turay',
-    score: 675,
-    weight: 74,
-    grade: 'B',
-    trend: 'Stable'
-  },
-  {
-    id: '9',
-    rank: 9,
-    student: 'Sorie Jalloh',
-    score: 660,
-    weight: 72,
-    grade: 'C+',
-    trend: 'Improved'
-  },
-  {
-    id: '10',
-    rank: 10,
-    student: 'Isatu Mansaray',
-    score: 640,
-    weight: 70,
-    grade: 'C+',
-    trend: 'Dropped'
-  }
-])
-const { breakdown } = storeToRefs(store)
+const studentStore = useStudentStore()
+const { activeCycle } = storeToRefs(studentStore)
 
-onMounted(() => {
+const classStore = useClassSessionStore()
+
+// State
+const state = reactive({
+  classId: '',
+  termId: ''
+})
+
+const term = ref<Term | undefined>()
+
+// Computed
+const terms = computed(() =>
+  activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })) || []
+)
+
+const classes = computed(() =>
+  records.value.map((e: ClassSession) => {
+    let label = `${e.clazz} (${e.sectionName}) - ${e.totalStudent}`
+    if (e.streamName !== 'N/A') label = `${e.clazz} (${e.sectionName} - ${e.streamName}) - ${e.totalStudent}`
+    return { label, value: e.clazzId }
+  })
+)
+
+// Columns
+const columns: TableColumn<LeaderBoard>[] = [
+  { accessorKey: 'rank', header: 'Rank' },
+  { accessorKey: 'name', header: 'Student' },
+  { accessorKey: 'score', header: 'Score' },
+  { accessorKey: 'weight', header: 'Weighted' },
+  { accessorKey: 'grade', header: 'Grade' },
+  { accessorKey: 'trend', header: '' }
+]
+
+// Trend icon & color mapping
+const parseTrend: Record<string, { icon: string; color: string, label: string }> = {
+  IMPROVED: { icon: 'lucide:arrow-up', color: 'success', label: 'Improved' },
+  DROPPED: { icon: 'lucide:arrow-down', color: 'danger', label: 'Dropped' },
+  STABLE: { icon: 'lucide:minus', color: 'warning', label: 'Stable' }
+}
+
+// Records
+const records = ref<ClassSession[]>([])
+
+// Lifecycle
+onMounted(async () => {
   useAppStore().setTitle('Leader Board')
   document.title = 'Leader Board | Skultem'
 
-  loadAvarageData()
+  const res = await classStore.fetchAllMe()
+  records.value = res
+  await fetchCycle()
 })
 
-const columns: TableColumn<Behaviour> = [
-  {
-    accessorKey: 'rank',
-    header: 'Rank'
-  },
-  {
-    accessorKey: 'student',
-    header: 'Student'
-  },
-  {
-    accessorKey: 'score',
-    header: 'Score'
-  },
-  {
-    accessorKey: 'weight',
-    header: 'Weighted'
-  },
-  {
-    accessorKey: 'grade',
-    header: 'Grade'
-  },
-  {
-    accessorKey: 'trend',
-    header: ''
-  }
-]
+// Watchers
+watch(() => [state.termId, state.classId], async () => {
+  if (state.classId && state.termId) await loadAverageData()
+}, { immediate: true })
 
-async function loadAvarageData() {
+watch(() => state.classId, fetchCycle, { immediate: true })
+
+watch(() => classes.value, () => {
+  if (classes.value.length > 0) state.classId = classes.value[0]?.value || ''
+}, { immediate: true })
+
+// Functions
+async function fetchCycle() {
+  if (!state.classId) return
+  await studentStore.fetchActiveCycle('all')
+  const active = activeCycle.value?.terms.find(e => e.status === 'ACTIVE')
+  if (!active) return
+  const termIndex = terms.value.findIndex(e => e.value === active.id)
+  state.termId = terms.value[termIndex]?.value || ''
+  term.value = active
+}
+
+async function loadAverageData() {
   try {
     const payload = {
-      entity: "breakdown",
-      title: "Class Performance",
+      entity: 'leaderboard',
+      title: 'Class Performance',
       filters: [
-        {
-          field: 'cycle.term.id',
-          value: "TRM-2026-0001",
-          operator: "EQUALS",
-          type: "select"
-        },
-        {
-          field: 'studentAssessment.enrollment.clazz.id',
-          value: "CLS-2026-0001",
-          operator: "EQUALS",
-          type: "select"
-        }
-      ],
+        { field: 'cycle.term.id', value: state.termId, operator: 'EQUALS', type: 'select' },
+        { field: 'studentAssessment.enrollment.clazz.id', value: state.classId, operator: 'EQUALS', type: 'select' }
+      ]
     }
-
-    await store.runReport(payload, 0, 0)
-
+    await reportStore.runReport(payload, 0, 0)
   } catch (err) {
-    console.error("Failed to load class performance", err)
-  } finally {
-    // avarageLoading.value = false
+    console.error('Failed to load class performance', err)
   }
 }
 
+// Page meta
 definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.TEACHER]
 })

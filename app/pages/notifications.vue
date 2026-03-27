@@ -1,19 +1,12 @@
 <template>
-    <div class="flex flex-col bg-gray-50 overflow-hidden" style="height: calc(100vh - 64px)">
-
-        <!-- HEADER -->
-        <div class="shrink-0 p-6 border-b border-gray-300 space-y-4">
-            <div class="flex justify-between items-center">
-                <div class="space-y-0.5">
-                    <p class="text-xl font-semibold">Notification Center</p>
-                    <p class="text-sm text-gray-500">Stay updated with your latest notifications.</p>
-                </div>
+    <div class="space-y-5 h-full">
+        <div class="p-7 pb-0 space-y-3">
+            <Heading title="Notification Center" subtitle="Stay updated with your latest notifications">
                 <div class="flex gap-3">
                     <UBadge color="error" variant="outline" size="lg">{{ summary.unread }} Unread</UBadge>
                     <UBadge color="success" variant="outline" size="lg">{{ summary.read }} Read</UBadge>
                 </div>
-            </div>
-
+            </Heading>
             <div class="flex justify-between items-center">
                 <div class="flex gap-2">
                     <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">All {{
@@ -28,12 +21,9 @@
                 </div>
             </div>
         </div>
-
-        <!-- BODY — this row fills remaining height, no overflow -->
-        <div class="flex flex-1 min-h-0">
-
-            <!-- LEFT LIST — scrolls independently -->
-            <div class="flex-1 bg-white overflow-y-auto">
+        <div class="flex-1 flex h-full">
+            <!-- BODY — this row fills remaining height, no overflow -->
+            <div class="flex-1 h-full  overflow-y-auto bg-white pb-36">
                 <div v-if="isLoading" class="p-6 text-center text-gray-400">Loading notifications...</div>
                 <div v-else-if="filteredNotifications.length === 0" class="p-6 text-center text-gray-400">No
                     notifications found</div>
@@ -54,44 +44,18 @@
                     </div>
                 </div>
             </div>
-
-            <!-- RIGHT DETAIL — scrolls independently -->
             <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-x-4"
                 enter-to-class="opacity-100 translate-x-0" leave-active-class="transition duration-150 ease-in"
                 leave-from-class="opacity-100 translate-x-0" leave-to-class="opacity-0 translate-x-4">
-                <div v-if="selected" class="w-96 shrink-0 bg-white border-l border-gray-200 overflow-y-auto">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start gap-3">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-lg font-semibold">{{ selected.title }}</p>
-                                <p class="text-sm text-gray-400 mt-0.5">{{ formatDate(selected.createdAt) }}</p>
-                            </div>
-                            <UButton icon="i-heroicons-x-mark" variant="ghost" size="sm" @click="selected = null" />
-                        </div>
-
-                        <UDivider class="my-4" />
-
-                        <p class="text-sm text-gray-600 leading-relaxed">{{ selected.message }}</p>
-
-                        <div class="mt-6">
-                            <UButton v-if="!selected.read" color="primary" icon="lucide:check"
-                                @click="markAsRead(selected)">
-                                Mark as Read
-                            </UButton>
-                            <UBadge v-else color="success" variant="soft">Read</UBadge>
-                        </div>
-                    </div>
-                </div>
+                <NotificationView @close="selected = undefined" :record="selected" />
             </Transition>
-
         </div>
-
     </div>
 </template>
 <script setup lang="ts">
 type NotificationFilter = 'ALL' | 'READ' | 'UNREAD'
 
-const selected = ref<AppNotification | null>(null)
+const selected = ref<AppNotification | undefined>()
 const route = useRoute()
 const router = useRouter()
 const search = ref('')
@@ -108,43 +72,43 @@ const summary = computed(() => ({
 }))
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+    const merged = { ...route.query, ...newQuery }
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
+    if (
+        merged.page === route.query.page &&
+        merged.size === route.query.size
+    ) {
+        return
+    }
 
-  router.replace({ query: merged })
+    router.replace({ query: merged })
 }
 
 const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
+    get: () => Number(route.query.page ?? 1),
+    set: (val) => updateQuery({ page: val })
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val })
+    get: () => Number(route.query.size ?? runtimeConf().limit),
+    set: (val) => updateQuery({ size: val })
 })
 
 watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
+    nextTick(() => {
+        scrollContainer?.value?.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
     })
-  })
-  router.replace({
-    query: {
-      page: page.value,
-      size: size.value
-    }
-  })
+    router.replace({
+        query: {
+            page: page.value,
+            size: size.value
+        }
+    })
 
-  fetchNotifications()
+    fetchNotifications()
 }, { immediate: true })
 
 const filteredNotifications = computed(() => {
@@ -183,10 +147,6 @@ async function fetchNotifications() {
         isLoading.value = false
     }
 
-}
-
-function markAsRead(notification: AppNotification) {
-    notification.read = true
 }
 
 function formatDate(date: string) {

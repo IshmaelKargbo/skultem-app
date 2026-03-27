@@ -60,6 +60,18 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    getAllMeClassSessions: async () => {
+      try {
+        const res = await $api('/class-session/me') as any
+
+        if (!res)
+          throw new Error('Failed to fetch class sessions')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAllUnassignClassSessions: async (page: number = 1, size: number = 6) => {
       try {
         const res = await $api(`/class-session/unassigned?page=${page}&size=${size}`) as any

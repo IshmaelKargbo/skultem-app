@@ -70,7 +70,7 @@
                                 </StudentEnrollment>
                             </div>
                             <div>
-                                <UBadge label="Completed" />
+                                <UBadge variant="outline" color="success" label="Completed" />
                             </div>
                         </div>
 

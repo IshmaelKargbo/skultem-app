@@ -49,7 +49,7 @@ function buildColumns() {
         accessorKey: a.id,
         cell: ({ row }: any) => {
             const scoreObj = row.original.scores.find((s: any) => s.assessment === a.id)
-            if (!scoreObj || scoreObj.weightScore === undefined)
+            if (!scoreObj || scoreObj.weightScore === undefined || (scoreObj.status != "APPROVED" && scoreObj.status != "COMPLETED"))
                 return h("div", { class: "text-gray-400" }, "-")
             return h("div", { class: "font-medium text-gray-800" }, scoreObj.weightScore)
         }
@@ -78,10 +78,13 @@ function buildColumns() {
 }
 
 function calculateWeightedTotal(row: any) {
-    const scores = row.scores as Array<{ score?: number; weightScore?: number }>
+    const scores = row.scores as Array<{ score?: number; weightScore?: number; status: string }>
     if (!scores || scores.length === 0) return 0
 
-    return scores.reduce((sum, s) => sum + (s.weightScore || 0), 0)
+    return scores.reduce((sum, s) => {
+        const value = (s.status === "APPROVED" || s.status === "COMPLETED") ? s.weightScore || 0 : 0
+        return sum + value
+    }, 0)
 }
 
 function calculateGrade(row: any) {

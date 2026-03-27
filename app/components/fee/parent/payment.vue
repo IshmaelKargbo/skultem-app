@@ -24,11 +24,6 @@ const { student } = defineProps<{
 const loading = ref(true)
 
 const data = ref<any>([])
-const parseFeeStatusColor = {
-  Unpaid: 'error',
-  Paid: 'success',
-  Partial: 'info'
-}
 
 const columns: TableColumn<any> = [
   {
@@ -67,6 +62,5 @@ async function fetchRecord() {
 
 watch(() => student, () => {
   fetchRecord()
-  emit('change', student)
 })
 </script>

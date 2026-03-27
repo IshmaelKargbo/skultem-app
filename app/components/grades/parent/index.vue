@@ -120,7 +120,7 @@ async function loadAvarageData() {
     if (!widget?.labels || !widget?.datasets) return
 
     const value = widget.datasets[0].data[0]
-    if (value) avarage.value = `${value}%`
+    if (value) avarage.value = `${Number.parseInt(value || '0').toFixed(0)}%`
     else avarage.value = value
 
   } catch (err) {

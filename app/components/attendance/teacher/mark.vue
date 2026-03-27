@@ -130,8 +130,10 @@ function updateQuery() {
     })
 }
 
+const records = ref<ClassSession[]>([])
+
 const classes = computed(() =>
-    classStore.records.map((e: ClassSession) => {
+    records.value.map((e: ClassSession) => {
 
         let label = `${e.clazz} (${e.sectionName}) - ${e.totalStudent}`
 
@@ -258,7 +260,7 @@ function clearAll() {
 }
 
 async function fetchRecords() {
-    selectedClass.value = classStore.records.find(
+    selectedClass.value = records.value.find(
         e => e.clazzId === state.classId
     )
 
@@ -341,7 +343,9 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
         isLoading.value = false
     }
 }
+
 onMounted(async () => {
-    await classStore.fetchAll(0, 0)
+    const res = await classStore.fetchAllMe()
+    records.value = res
 })
 </script>

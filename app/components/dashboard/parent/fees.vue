@@ -1,10 +1,10 @@
 <template>
     <Metric :record="{
         label: 'Fee\'s Balance',
-        color: 'primary',
+        color: 'error',
         value: `${balance}`,
         isReady: isReady,
-        icon: FEE_STRUCTURE_ICON,
+        icon: STUDENT_FEES_ICON,
         subtle: 'Outstanding Balance'
     }" />
 </template>
@@ -57,7 +57,7 @@ async function fetchRecord() {
         }, 1, 10),
     ])
 
-    const datasets = payments?.datasets ?? []
+    const datasets = payments?.data?.datasets ?? []
 
     const paid = datasets.find((e: any) => e.label === "Paid")
     const partial = datasets.find((e: any) => e.label === "Partial")

@@ -37,6 +37,26 @@ export type AssessmentApprovalRequest = {
     studentScores: AssessmentScore[]
 }
 
+export type LeaderBoard = {
+    id: string
+    rank: number
+    name: string
+    score: number
+    weight: number
+    grade: string
+    trend: string
+}
+
+export type Breakdown = {
+    id: string
+    name: string
+    score: number
+    scores: AssessmentScore[]
+    show: boolean
+    trend: string
+    grade: string
+}
+
 export type ApprovalRequestDTO = {
     note: string
 }

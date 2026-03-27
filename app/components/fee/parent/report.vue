@@ -119,9 +119,9 @@ async function fetchRecord() {
         }, 1, 10)
     ])
 
-    const paidDatasets = payments?.datasets ?? []
-    const pendingDatasets = pendingRes?.datasets ?? []
-    const overdueDatasets = overdueRes?.datasets ?? []
+    const paidDatasets = payments?.data?.datasets ?? []
+    const pendingDatasets = pendingRes?.data?.datasets ?? []
+    const overdueDatasets = overdueRes?.data?.datasets ?? []
 
     const paid = paidDatasets.find((e: any) => e.label === "Paid")
     const partial = paidDatasets.find((e: any) => e.label === "Partial")

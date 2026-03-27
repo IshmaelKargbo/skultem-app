@@ -13,9 +13,6 @@ const store = useStudentStore()
 const loading = ref(false)
 const records = ref<StudentFee[]>([])
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
-
 let requestId = 0
 
 async function fetchData() {
@@ -91,49 +88,8 @@ const columns: TableColumn<StudentFee>[] = [
   {
     accessorKey: 'status',
     header: 'Status'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: { td: 'text-right' }
-    },
-    cell: ({ row }) =>
-      h(
-        UDropdownMenu,
-        {
-          content: { align: 'end' },
-          size: 'sm',
-          items: getRowItems(row)
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost'
-          })
-      )
   }
 ]
-
-function getRowItems(row: Row<StudentFee>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        console.log('Edit:', row.original)
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-      onClick: () => {
-        console.log('Delete:', row.original)
-      }
-    }
-  ]
-}
 
 const parseStatusColor: Record<string, string> = {
   "Paid": "success",
@@ -144,7 +100,7 @@ const parseStatusColor: Record<string, string> = {
 
 const columnPinning = ref({
   left: ['feeName'],
-  right: ['actions']
+  right: ['status']
 })
 </script>
 

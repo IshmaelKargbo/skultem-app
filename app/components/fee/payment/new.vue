@@ -22,7 +22,7 @@
                         <template #item="{ item }: any">
                             <div class="flex justify-between w-full">
                                 <span>
-                                    {{ item.name }} ({{ format(item.total) }})
+                                    {{ item.term }}: {{ item.name }} ({{ format(item.total) }})
                                 </span>
                                 <span class="text-red-500 font-medium">
                                     - {{ format(item.outstanding) }}
@@ -208,6 +208,7 @@ async function fetchRecords() {
             outstanding: s.outstanding,
             total: s.total,
             name: s.feeName,
+            term: s.term,
             value: s.feeId
         })) || []
     } catch (err) {

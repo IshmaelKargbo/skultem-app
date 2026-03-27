@@ -1,10 +1,5 @@
 <script lang="ts" setup>
-const student = ref("")
-
-function change(id:string) {
-    student.value = id
-}
-
+const {can} = useAuth()
 onMounted(() => {
     useAppStore().setTitle('Fees')
     
@@ -12,14 +7,11 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.PARENT]
+    role: [Role.PARENT, Role.TEACHER]
 })
 </script>
 
 <template>
-    <div class="p-7 space-y-5 h-full overflow-y-auto">
-        <FeeParentReport :student="student" />
-        <FeeParentHistory @change="change" />
-        <FeeParentPayment :student="student" />
-    </div>
+    <FeeParent v-if="can([Role.PARENT])" />
+    <FeeTeacher v-if="can([Role.TEACHER])" />
 </template>

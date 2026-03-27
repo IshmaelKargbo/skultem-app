@@ -2,14 +2,10 @@
     <div class="p-7 space-y-5">
         <UCard>
             <div class="flex space-x-3">
-                <UFormField class="w-full" label="Student">
-                    <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
-                        :items="children" placeholder="Select Student" />
-                </UFormField>
-                <UFormField label="Term" class="w-full">
-                    <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
-                        placeholder="Select Term" />
-                </UFormField>
+                <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
+                    :items="children" placeholder="Select Student" />
+                <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
+                    placeholder="Select Term" />
             </div>
         </UCard>
         <div class="grid grid-cols-3 gap-5">
@@ -36,10 +32,7 @@
                             <p class="text-muted">Total Students:</p>
                             <p>{{ selected.classSize }}</p>
                         </div>
-                        <div class="justify-between flex py-2 border-gray-200">
-                            <p class="text-muted">Class Rank:</p>
-                            <p>5th</p>
-                        </div>
+                        <DashboardParentRank :term="state.term" :student="selected" />
                     </div>
                 </div>
             </UCard>
@@ -47,32 +40,30 @@
         </div>
         <UCard>
             <div class="grid grid-cols-4 gap-3">
-                <UButton to="/teachers" color="neutral" class="w-full flex justify-center py-4 rounded-xl"
+                <UButton to="/performance" color="success" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
+                    <div class="flex flex-col items-center space-y-2">
+                        <UIcon class="text-xl" :name="PERFORMANCE_ICON" />
+                        <p>Performance</p>
+                    </div>
+                </UButton>
+                <UButton to="/grades" color="info" class="w-full flex justify-center py-4 rounded-xl" variant="subtle">
                     <div class="flex flex-col items-center space-y-2">
                         <UIcon class="text-xl" :name="GRADES_ICON" />
                         <p>View Grade</p>
                     </div>
                 </UButton>
-                <UButton to="/teachers" color="neutral" class="w-full flex justify-center py-4 rounded-xl"
+                <UButton to="/fees" color="error" class="w-full flex justify-center py-4 rounded-xl" variant="subtle">
+                    <div class="flex flex-col items-center space-y-2">
+                        <UIcon class="text-xl" :name="PAYMENT_ICON" />
+                        <p>Check Fee</p>
+                    </div>
+                </UButton>
+                <UButton to="/attendance" color="primary" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
                     <div class="flex flex-col items-center space-y-2">
                         <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
                         <p>Check Attendance</p>
-                    </div>
-                </UButton>
-                <UButton to="/teachers" color="neutral" class="w-full flex justify-center py-4 rounded-xl"
-                    variant="subtle">
-                    <div class="flex flex-col items-center space-y-2">
-                        <UIcon class="text-xl" :name="PAYMENT_ICON" />
-                        <p>Fee</p>
-                    </div>
-                </UButton>
-                <UButton to="/teachers" color="neutral" class="w-full flex justify-center py-4 rounded-xl"
-                    variant="subtle">
-                    <div class="flex flex-col items-center space-y-2">
-                        <UIcon class="text-xl" :name="HISTORY_ICON" />
-                        <p>Download Report</p>
                     </div>
                 </UButton>
             </div>
