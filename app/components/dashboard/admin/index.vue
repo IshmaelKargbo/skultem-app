@@ -24,7 +24,7 @@
                         <p>Add Class</p>
                     </div>
                 </UButton>
-                <UButton to="/curriculums" color="neutral" class="w-full flex justify-center py-4 rounded-xl"
+                <UButton to="/curriculums" color="error" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
                     <div class="flex flex-col items-center space-y-2">
                         <UIcon class="text-xl" :name="SUBJECT_ICON" />

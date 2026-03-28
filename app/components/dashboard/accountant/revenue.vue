@@ -21,6 +21,7 @@ const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 const isReady = ref(false)
 const labels = ref<string[]>([])
 const chartSeries = ref<any[]>([])
+const colors = ref<string[]>([])
 
 const chartOptions = computed(() => ({
     chart: {
@@ -57,11 +58,11 @@ const chartOptions = computed(() => ({
             formatter: (val: number) => format(val)
         }
     },
-
     plotOptions: {
         bar: {
-            borderRadius: 4,
-            columnWidth: "50%"
+            borderRadius: 6,
+            columnWidth: "45%",
+            distributed: true
         }
     },
 
@@ -70,7 +71,7 @@ const chartOptions = computed(() => ({
         formatter: (val: number) => format(val)
     },
 
-    colors: ["#048339"]
+    colors: colors.value
 }))
 
 onMounted(loadData)
@@ -101,6 +102,7 @@ async function loadData() {
         if (!widget?.labels || !widget?.datasets) return
 
         labels.value = widget.labels
+        colors.value = generateColors(labels.value.length)
         chartSeries.value = widget.datasets.map((d: any) => ({
             name: d.label,
             data: d.data

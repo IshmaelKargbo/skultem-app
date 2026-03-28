@@ -151,6 +151,13 @@
           </template>
           </MenuItem>
         </li>
+        <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.ADMIN])">
+          <MenuItem label="Expenses" to="/expenses">
+          <template #icon>
+            <UIcon class="text-xl" :name="EXPENSES_ICON" />
+          </template>
+          </MenuItem>
+        </li>
         <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT])">
           <MenuItem to="/ledger" label="Ledger">
           <template #icon>
@@ -161,7 +168,7 @@
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR])">
           <MenuItem to="/analytics" label="Analytics">
           <template #icon>
-            <UIcon class="text-xl" :name="REPORT_ICON" />
+            <UIcon class="text-xl" :name="ANALYTICS_ICON" />
           </template>
           </MenuItem>
         </li>

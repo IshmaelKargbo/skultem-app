@@ -17,9 +17,6 @@ async function fetchRecord() {
     const partials = fees.value.filter(e => (e.status == 'Partial'))
     const overdue = fees.value.filter(e => (e.status == 'Pending'))
 
-    console.log(paids, partials, overdue, fees.value);
-    
-
     report.value = {
         paid: paids.length.toString(),
         pending: partials.length.toString(),

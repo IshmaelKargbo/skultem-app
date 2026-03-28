@@ -6,7 +6,7 @@
 
       <!-- HEADER -->
       <div>
-        <p class="text-xs text-gray-500 uppercase"> {{ selected.subject }} · {{ selected.assessment }} </p>
+        <p class="text-xs text-gray-500 uppercase"> {{ selected.subject }} · {{ selected.assessment }} · {{ selected.term }}</p>
         <p class="text-lg font-semibold"> {{ selected.teacher }} </p>
         <p class="text-sm text-gray-500"> {{ selected.class }} </p>
       </div>

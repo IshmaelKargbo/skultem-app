@@ -10,7 +10,7 @@
         </div>
         <LedgerReport />
         <UCard>
-            <div class="flex space-x-5">
+            <div class="flex space-x-2">
                 <UInput type="date" />
                 <UInput type="date" />
                 <USelectMenu placeholder="Select Type" />

@@ -113,9 +113,20 @@
                         variant="ghost"
                         color="neutral"
                         size="sm"
-                        v-if="can([Role.ACCOUNTANT, Role.ADMIN, Role.PROPRIETOR])"
+                        v-if="can([Role.ADMIN, Role.PROPRIETOR])"
                         class="w-full justify-start"
                         to="/settings"
+                    >
+                        <span class="flex-1 text-left">Settings</span>
+                    </UButton>
+                    <UButton
+                        icon="lucide:settings"
+                        variant="ghost"
+                        color="neutral"
+                        size="sm"
+                        v-if="can([Role.ACCOUNTANT])"
+                        class="w-full justify-start"
+                        to="/settings/fee-categories"
                     >
                         <span class="flex-1 text-left">Settings</span>
                     </UButton>

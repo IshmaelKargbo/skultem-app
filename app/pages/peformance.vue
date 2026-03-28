@@ -13,19 +13,17 @@
       <div>
         <div class="flex justify-between items-center cursor-pointer" @click="toggleSubject(value.id)">
           <div class="flex space-x-2.5 items-center">
-            <UAvatar :alt="value.name" />
             <p class="text-base font-semibold">{{ value.name }}</p>
           </div>
           <div class="w-1/3 flex space-x-5 items-center">
             <div class="flex space-x-3 flex-1 items-center">
-              <UProgress color="neutral" size="md" :max="100" v-model="value.score" />
+              <UProgress color="primary" size="md" :max="100" v-model="value.score" />
               <p>{{ value.score }}%</p>
             </div>
             <div class="flex space-x-5 items-center">
-              <UBadge :label="value.grade" variant="outline" />
               <UBadge :label="parseTrend[value.trend].label" :color="parseTrend[value.trend].color"
                 :trailing-icon="parseTrend[value.trend].icon" variant="outline" />
-              <UButton variant="link" :icon="value.show ? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'" />
+              <UButton variant="link" :icon="expanded.has(value.id)? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'" />
             </div>
           </div>
         </div>
@@ -166,17 +164,17 @@ onMounted(async () => {
 
 const parseTrend: Record<string, any> = {
   IMPROVED: {
-    icon: 'i-heroicons-arrow-trending-up',
+    icon: IMPROVED_ICON,
     color: 'success',
     label: 'Improved'
   },
   STABLE: {
-    icon: 'i-heroicons-minus',
+    icon: STABLE_ICON,
     color: 'neutral',
     label: 'Stable'
   },
   DROPPED: {
-    icon: 'i-heroicons-arrow-trending-down',
+    icon: DROPPED_ICON,
     color: 'error',
     label: 'Dropped'
   }
@@ -202,14 +200,6 @@ const columns: TableColumn<any>[] = [
   {
     accessorKey: 'grade',
     header: 'Grade'
-  },
-  {
-    accessorKey: 'level',
-    header: 'Level'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
   },
   {
     accessorKey: 'trend',

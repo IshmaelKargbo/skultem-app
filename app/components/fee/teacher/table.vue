@@ -5,10 +5,11 @@ const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
 const { format } = useMoney()
+
 const { fees: data, report, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const columns: TableColumn<Fee> = [
+const columns: TableColumn<Fee>[] = [
   {
     accessorKey: 'student',
     header: 'Student'
@@ -23,18 +24,15 @@ const columns: TableColumn<Fee> = [
   },
   {
     accessorKey: 'amount',
-    header: 'Amount',
-    cell: ({ row }: any) => format(row.original.amount)
+    header: 'Amount'
   },
   {
     accessorKey: 'amountPaid',
-    header: 'Amount Paid',
-    cell: ({ row }: any) => format(row.original.amountPaid)
+    header: 'Amount Paid'
   },
   {
     accessorKey: 'outstanding',
-    header: 'Outstanding',
-    cell: ({ row }: any) => format(row.original.outstanding)
+    header: 'Outstanding'
   },
   {
     accessorKey: 'status',
@@ -43,9 +41,9 @@ const columns: TableColumn<Fee> = [
 ]
 
 const parseStateColor: Record<string, string> = {
-  "Paid": "success",
-  "Partial": "info",
-  "Pending": "error"
+  Paid: 'success',
+  Partial: 'warning',
+  Pending: 'error'
 }
 
 const page = computed<number>({
@@ -59,71 +57,96 @@ const size = computed<number>({
 })
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
+  router.replace({
+    query: { ...route.query, ...newQuery }
+  })
 }
 
-function fetchReport() {
-  if (report.value == null) return
-  store.runReport(report.value, page.value, size.value)
+async function fetchReport() {
+  if (!report.value) return
+  await store.runReport(report.value, page.value, size.value)
 }
 
-watch(() => page.value, async () => {
+watch(page, async () => {
+
   nextTick(() => {
     scrollContainer?.value?.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: 'smooth'
     })
-  })
-  router.replace({
-    query: {
-      ...route.query,
-      page: page.value,
-      size: size.value
-    }
   })
 
   await fetchReport()
+
 }, { immediate: true })
 </script>
 
 <template>
   <UCard>
-    <UTable :columns="columns" :data="data" :loading="loading">
+
+    <UTable
+      :columns="columns"
+      :data="data"
+      :loading="loading"
+    >
+
+      <!-- Empty State -->
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No Attendance found.</p>
+          <UIcon name="ph:wallet-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No fee records found.</p>
         </div>
       </template>
-      <template #state-cell="{ row }">
-        <UBadge :label="row.original.state" variant="outline" :color="parseStateColor[row.original.state]" />
-      </template>
+
+      <!-- Amount -->
       <template #amount-cell="{ row }">
-        <p class="text-info">{{ format(row.original.amount) }}</p>
+        <span class="text-info">
+          {{ format(row.original.amount) }}
+        </span>
       </template>
+
+      <!-- Amount Paid -->
       <template #amountPaid-cell="{ row }">
-        <p class="text-success">{{ format(row.original.amountPaid) }}</p>
+        <span class="text-success">
+          {{ format(row.original.amountPaid) }}
+        </span>
       </template>
+
+      <!-- Outstanding -->
       <template #outstanding-cell="{ row }">
-        <p class="text-error">{{ format(row.original.outstanding) }}</p>
+        <span class="text-error">
+          {{ format(row.original.outstanding) }}
+        </span>
       </template>
+
+      <!-- Status -->
       <template #status-cell="{ row }">
-        <UBadge :label="row.original.status" variant="outline" :color="parseStateColor[row.original.status]" />
+        <UBadge
+          :label="row.original.status"
+          variant="outline"
+          :color="parseStateColor[row.original.status]"
+        />
       </template>
+
     </UTable>
-    <div v-if="meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
+
+    <!-- Pagination -->
+    <div
+      v-if="meta"
+      class="flex justify-between border-t border-gray-200 pt-3 items-center"
+    >
       <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
+
+      <UPagination
+        v-model:page="page"
+        size="sm"
+        :page-size="meta.size"
+        :items-per-page="meta.size"
+        :total="meta.total"
+        show-edges
+      />
+
     </div>
+
   </UCard>
 </template>

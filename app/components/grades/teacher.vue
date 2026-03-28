@@ -376,8 +376,10 @@ function buildColumns() {
 
       const status = score.status as ScoreStatus
 
+      const scoreTxt = `${score.score} (${score.weightScore})`
+
       if (!isEditableStatus(status))
-        return h("div", { class: "text-gray-500 font-medium" }, score.weightScore)
+        return h("div", { class: "text-gray-500 font-medium" }, scoreTxt)
 
       return h(UInput, {
         modelValue: score.score,

@@ -51,25 +51,22 @@ function buildColumns() {
             const scoreObj = row.original.scores.find((s: any) => s.assessment === a.id)
             if (!scoreObj || scoreObj.weightScore === undefined || (scoreObj.status != "APPROVED" && scoreObj.status != "COMPLETED"))
                 return h("div", { class: "text-gray-400" }, "-")
-            return h("div", { class: "font-medium text-gray-800" }, scoreObj.weightScore)
+
+
+            const scoreTxt = `${scoreObj.score} (${scoreObj.weightScore})`
+
+            return h("div", { class: "font-medium text-gray-800" }, scoreTxt)
         }
     }))
 
     const summaryColumns = [
         {
             id: "total",
-            header: "Final",
+            header: "Final (100)",
             cell: ({ row }: any) => {
                 const total = calculateWeightedTotal(row.original)
-                return h("div", { class: "font-semibold" }, total)
-            }
-        },
-        {
-            id: "grade",
-            header: "Grade",
-            cell: ({ row }: any) => {
-                const grade = calculateGrade(row.original)
-                return h(UBadge, { variant: 'outline', color: 'neutral' }, grade)
+                const totalTxt = `${total[0]} (${total[1]})`
+                return h("div", { class: "font-semibold" }, totalTxt)
             }
         }
     ]
@@ -81,10 +78,16 @@ function calculateWeightedTotal(row: any) {
     const scores = row.scores as Array<{ score?: number; weightScore?: number; status: string }>
     if (!scores || scores.length === 0) return 0
 
-    return scores.reduce((sum, s) => {
+    const totalScore = scores.reduce((sum, s) => {
+        const value = (s.status === "APPROVED" || s.status === "COMPLETED") ? s.score || 0 : 0
+        return sum + value
+    }, 0)
+
+    const totalWeight = scores.reduce((sum, s) => {
         const value = (s.status === "APPROVED" || s.status === "COMPLETED") ? s.weightScore || 0 : 0
         return sum + value
     }, 0)
+    return [totalScore, totalWeight]
 }
 
 function calculateGrade(row: any) {
@@ -94,7 +97,7 @@ function calculateGrade(row: any) {
 
     const total = calculateWeightedTotal(row)
 
-    const band = gradingBands.value.find(item => total >= item.minScore && total <= item.maxScore)
+    const band = gradingBands.value.find(item => total[1] >= item.minScore && total[1] <= item.maxScore)
     return band?.grade || '-'
 }
 

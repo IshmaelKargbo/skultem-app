@@ -16,20 +16,7 @@ const state = reactive({
     term: ''
 })
 
-const expanded = ref<Set<string>>(new Set())
-
 const records = ref<ClassSession[]>([])
-const term = computed(() =>
-    activeCycle.value?.terms.find(e => e.id === state.term)
-)
-
-function toggleSubject(id: string) {
-    if (expanded.value.has(id)) {
-        expanded.value.delete(id)
-    } else {
-        expanded.value.add(id)
-    }
-}
 
 const terms = computed(() =>
     activeCycle.value?.terms.map(e => ({
@@ -80,7 +67,7 @@ watch(
 )
 
 watch(
-    () => state.term,
+    () => [state.term, state.classId],
     async () => {
         await loadAvarageData()
     },

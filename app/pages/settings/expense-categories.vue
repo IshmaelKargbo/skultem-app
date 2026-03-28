@@ -1,10 +1,10 @@
 <template>
     <div class="p-7 h-full overflow-y-auto">
         <SettingsHeader title="Expense Categories" subtitle="School spending categories">
-            <SettingsFeeCategoryAdd />
+            <SettingsExpenseAdd />
         </SettingsHeader>
         <UCard>
-            <SettingsFeeCategoryTable />
+            <SettingsExpenseTable />
             <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
                 <Showing :meta="meta" />
                 <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"

@@ -1,14 +1,14 @@
 <template>
-    <UCard>
-        <div class="space-y-5">
-            <div class="flex justify-between items-center">
-                <p class="text-base text-mute">Fee History</p>
-                <div class="w-72">
-                    <USelectMenu v-model="state.student" value-key="value" :loading="loading" :items="children"
-                        placeholder="Select Student" />
-                </div>
+    <div class="space-y-5">
+        <Heading title="Fee History" subtitle="History of fee payments and transactions">
+            <div class="w-72">
+                <USelectMenu v-model="state.student" value-key="value" :loading="loading" :items="children"
+                    placeholder="Select Student" />
             </div>
-            <div>
+        </Heading>
+        <FeeParentReport :student="state.student" />
+        <UCard>
+            <div class="space-y-5">
                 <UTable :columns="columns" :data="data" :loading="loading">
                     <template #empty-state>
                         <div class="flex flex-col items-center gap-2 py-10">
@@ -31,8 +31,8 @@
                     </template>
                 </UTable>
             </div>
-        </div>
-    </UCard>
+        </UCard>
+    </div>
 </template>
 
 <script lang="ts" setup>

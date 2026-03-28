@@ -21,6 +21,7 @@ const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
 const labels = ref<string[]>([])
+const colors = ref<string[]>([])
 const chartSeries = ref<any[]>([])
 
 const chartOptions = computed(() => ({
@@ -41,7 +42,6 @@ const chartOptions = computed(() => ({
       color: "#6b7280"
     }
   },
-  colors: ["#048339"],
   xaxis: {
     categories: labels.value,
     labels: { style: { fontSize: "12px" } }
@@ -52,21 +52,28 @@ const chartOptions = computed(() => ({
       formatter: (val: number) => val.toFixed(2)
     }
   },
+
+  colors: colors.value,
+
   grid: {
     borderColor: "#f1f5f9",
     strokeDashArray: 4
   },
+
+  plotOptions: {
+    bar: {
+      borderRadius: 6,
+      columnWidth: "45%",
+      distributed: true
+    }
+  },
+
   tooltip: {
     y: {
       formatter: (val: number) => val.toFixed(2)
     }
   },
-  plotOptions: {
-    bar: {
-      borderRadius: 4,
-      columnWidth: "45%"
-    }
-  },
+
   dataLabels: {
     enabled: true,
     formatter: (val: number) => val.toFixed(2)
@@ -103,10 +110,11 @@ async function loadData() {
     if (!widget?.labels || !widget?.datasets) return
 
     labels.value = widget.labels
+    colors.value = generateColors(labels.value.length)
 
     chartSeries.value = widget.datasets.map((d: any) => ({
       name: d.label,
-      data: d.data
+      data: d.data.map((v: number) => Math.round(v))
     }))
 
     isReady.value = true

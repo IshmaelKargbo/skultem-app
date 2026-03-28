@@ -8,28 +8,28 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, defineAsyncComponent } from "vue"
+
 const { format } = useMoney()
 const store = useWidgetStore()
-const {title} = defineProps<{
-  title?: string
-}>()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
 const labels = ref<string[]>([])
+const colors = ref<string[]>([])
 const chartSeries = ref<any[]>([])
 
 const chartOptions = computed(() => ({
   chart: {
-    id: "fee-by-class",
+    id: "monthly-revenue-trend",
     toolbar: { show: false },
   },
   title: {
-    text: title || "Fee Collection by Class",
+    text: "Monthly Revenue Trend",
     align: "left",
     style: { fontWeight: "600" },
   },
-  colors: ["#029444", "#ce031e"],
+  colors: colors.value,
   xaxis: {
     categories: labels.value,
     labels: {
@@ -48,8 +48,9 @@ const chartOptions = computed(() => ({
   },
   plotOptions: {
     bar: {
-      borderRadius: 4,
-      barHeight: "60%",
+      borderRadius: 6,
+      barHeight: "45%",
+      distributed: true
     },
   },
   dataLabels: {
@@ -66,7 +67,7 @@ const chartOptions = computed(() => ({
 onMounted(async () => {
   const res = await store.runAnalytic({
     entity: "fees",
-    title: title || "Fee Collection by Class",
+    title: "Fee Collection by Class",
     filters: [],
     metrics: [
       {
@@ -111,20 +112,21 @@ onMounted(async () => {
   if (Array.isArray(widget)) {
     labels.value = widget.map((r: any) => r.clazz)
     chartSeries.value = [
-      { name: "Paid",   data: widget.map((r: any) => Number(r.Paid ?? 0) + Number(r.Partial ?? 0)) },
+      { name: "Paid", data: widget.map((r: any) => Number(r.Paid ?? 0) + Number(r.Partial ?? 0)) },
       { name: "Unpaid", data: widget.map((r: any) => Number(r.Unpaid ?? 0)) },
     ]
   } else {
     labels.value = widget.labels
+    colors.value = generateColors(labels.value.length)
 
-    const paid    = widget.datasets.find((d: any) => d.label === "Paid")
+    const paid = widget.datasets.find((d: any) => d.label === "Paid")
     const partial = widget.datasets.find((d: any) => d.label === "Partial")
-    const unpaid  = widget.datasets.find((d: any) => d.label === "Unpaid")
+    const unpaid = widget.datasets.find((d: any) => d.label === "Unpaid")
 
     const mergedPaid = paid?.data.map((v: number, i: number) => v + (partial?.data[i] ?? 0)) ?? []
 
     chartSeries.value = [
-      { name: "Paid",   data: mergedPaid },
+      { name: "Paid", data: mergedPaid },
       { name: "Unpaid", data: unpaid?.data ?? [] },
     ]
   }
@@ -147,7 +149,14 @@ onMounted(async () => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 </style>

@@ -12,7 +12,7 @@
           </div>
 
           <div>
-            <UProgress color="neutral" size="md" :max="100" v-model="item.value" />
+            <UProgress color="primary" size="md" :max="100" v-model="item.value" />
           </div>
         </div>
 

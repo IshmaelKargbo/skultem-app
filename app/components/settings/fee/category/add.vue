@@ -16,7 +16,7 @@
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
                 <UFormField label="Name" name="name" required>
                     <UInput v-model="state.name" placeholder="e.g. Tuition, Library, Exam" :disabled="isLoading" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">
                             Enter the name of the fee category.
                         </p>
@@ -26,7 +26,7 @@
                 <UFormField label="Description" name="description" required>
                     <UTextarea v-model="state.description" placeholder="Enter a short description" :disabled="isLoading"
                         :rows="3" />
-                    <template #hint>
+                    <template #help>
                         <p class="text-xs text-muted">
                             Brief explanation of what this fee covers.
                         </p>

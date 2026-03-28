@@ -17,6 +17,7 @@ const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
 const labels = ref<string[]>([])
+const colors = ref<string[]>([])
 const chartSeries = ref<any[]>([])
 
 const chartOptions = computed(() => ({
@@ -25,11 +26,11 @@ const chartOptions = computed(() => ({
     toolbar: { show: false },
   },
   title: {
-    text: title || "Fee Collection by Class",
+    text: title || "Profit & Loss Summary",
     align: "left",
     style: { fontWeight: "600" },
   },
-  colors: ["#029444", "#ce031e"],
+  colors: colors.value,
   xaxis: {
     categories: labels.value,
     labels: {
@@ -66,7 +67,7 @@ const chartOptions = computed(() => ({
 onMounted(async () => {
   const res = await store.runAnalytic({
     entity: "fees",
-    title: title || "Fee Collection by Class",
+    title: title || "Profit & Loss Summary",
     filters: [],
     metrics: [
       {
@@ -74,7 +75,7 @@ onMounted(async () => {
         aggregation: "sum",
         name: "Paid",
         tags: {
-          groupBy: "clazz",
+          groupBy: "term",
           field: "status",
           value: "Paid",
           orderBy: "Paid",
@@ -86,7 +87,7 @@ onMounted(async () => {
         aggregation: "sum",
         name: "Unpaid",
         tags: {
-          groupBy: "clazz",
+          groupBy: "term",
           field: "status",
           value: "Pending",
         },
@@ -96,7 +97,7 @@ onMounted(async () => {
         aggregation: "sum",
         name: "Partial",
         tags: {
-          groupBy: "clazz",
+          groupBy: "term",
           field: "status",
           value: "Partial",
         },
@@ -128,6 +129,7 @@ onMounted(async () => {
       { name: "Unpaid", data: unpaid?.data ?? [] },
     ]
   }
+  colors.value = generateColors(labels.value.length)
 
   isReady.value = true
 })

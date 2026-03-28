@@ -43,6 +43,12 @@ export const parseTrend = {
     }
 }
 
+export function generateColors(count: number) {
+  return Array.from({ length: count }, (_, i) => 
+    `hsl(${Math.floor(Math.random()*360)},70%,55%)`
+  )
+}
+
 export enum Role {
     PROPRIETOR = 'PROPRIETOR',
     ADMIN = 'ADMIN',

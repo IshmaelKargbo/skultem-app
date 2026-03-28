@@ -1,7 +1,6 @@
 <template>
   <UCard>
     <div class="space-y-5">
-      <p class="text-base text-mute">Payment History</p>
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">

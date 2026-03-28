@@ -22,6 +22,7 @@ export type AssessmentApprovalRequest = {
     teacher: string
     subject: string
     assessment: string
+    term: string
     class: string
     status: ApprovalRequestStatus
     studentCount: number
@@ -43,6 +44,13 @@ export type LeaderBoard = {
     name: string
     score: number
     weight: number
+    assessments: {
+        assessmentId: string
+        assessmentName: string
+        score: number
+        weight: number
+        weightedScore: number
+    }[]
     grade: string
     trend: string
 }

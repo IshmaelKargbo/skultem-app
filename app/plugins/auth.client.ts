@@ -1,6 +1,6 @@
 export default defineNuxtPlugin(async () => {
     const token = useCookie('access_token')
-    if (!token.value) return  // ← stop here if not logged in
+    if (!token.value) return
 
     const { activeRole, setActiveRole } = useAuth()
     const userStore = useUserStore()
@@ -8,7 +8,7 @@ export default defineNuxtPlugin(async () => {
     try {
         await userStore.me()
     } catch (error) {
-        console.log(error, "------------- client");
+        console.log(error)
     }
 
     const cached = localStorage.getItem('active-role')

@@ -8,7 +8,7 @@ const { format } = useMoney()
 const { payments: data, report, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const columns: TableColumn<TeacherSubject> = [
+const columns: TableColumn<Payment> = [
   {
     accessorKey: 'student',
     header: 'Student'

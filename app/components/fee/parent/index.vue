@@ -18,7 +18,6 @@ definePageMeta({
 
 <template>
     <div class="p-7 space-y-5 h-full overflow-y-auto">
-        <FeeParentReport :student="student" />
         <FeeParentHistory @change="change" />
         <FeeParentPayment :student="student" />
     </div>

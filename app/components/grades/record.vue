@@ -4,7 +4,7 @@
 
         <div class="flex items-center justify-between w-full">
 
-            <p class="font-medium text-base">{{ record.subject }} · {{ record.assessment }}</p>
+            <p class="font-medium">{{ record.subject }} · {{ record.assessment }} · {{ record.term }}</p>
 
             <UBadge size="sm" variant="outline" :color="statusColor(record.status)"
                 :label="statusLabel(record.status)" />
@@ -29,7 +29,7 @@
             <span>{{ record.passPercentage }}% pass</span>
 
         </div>
-        <GradeDistributionBar :height="2" :show-label="false" :average="record.avgPercentage"
+        <GradeDistributionBar :height="1" :show-label="false" :average="record.avgPercentage"
             :pass="record.passPercentage" :fail="record.failPercentage" />
     </div>
 </template>

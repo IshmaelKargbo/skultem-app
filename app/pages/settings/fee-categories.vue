@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 const page = ref(1);
-const { meta } = storeToRefs(useTermStore());
+const { meta } = storeToRefs(useFeeStore());
 
 onMounted(() => {
     useAppStore().setTitle('Settings');
