@@ -9,6 +9,19 @@ export type Ledger = {
     balance: number
 }
 
+export type Transaction = {
+    id: string
+    academicYearId: string
+    termId: string
+    type: string
+    direction: string,
+    amount: number
+    balance: number
+    referenceId: string
+    referenceType: string
+    createdAt: string
+}
+
 export type LedgerReport = {
     totalDebit: number,
     totalCredit: number,

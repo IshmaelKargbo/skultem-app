@@ -1,6 +1,3 @@
-clean for me this code the builder receiver id and fetch and update the builder the also the entity can change but it
-doent work well
-
 <template>
     <UForm ref="form" :schema="schema" :state="state" @submit="run">
         <UCard variant="subtle">

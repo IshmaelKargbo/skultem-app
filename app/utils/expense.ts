@@ -11,7 +11,6 @@ export type Expense = {
     title: string
     category: string
     amount: number
-    expenseDate: string
     description: string
     createdAt: string
     updatedAt: string
@@ -23,9 +22,8 @@ export type CreateExpenseCategoryDTO = {
 }
 
 export type CreateExpenseDTO = {
-    title: string
+    name: string
     category: string
     amount: number
-    expenseDate: string
     description: string
 }

@@ -68,6 +68,59 @@ export const roles = [
     }
 ]
 
+export const directionOptions = [
+    {
+        label: 'Credit',
+        value: "CREDIT"
+    },
+    {
+        label: 'Decit',
+        value: "DEBIT"
+    }
+]
+ 
+export const typeOptions = [
+    {
+        label: 'Fee Assignment',
+        value: "FEE_ASSIGNMENT"
+    },
+    {
+        label: 'Payment',
+        value: "PAYMENT"
+    },
+    {
+        label: 'Discount',
+        value: "DISCOUNT"
+    },
+    {
+        label: 'Expense',
+        value: "EXPENSE"
+    },
+    {
+        label: 'Adjustment',
+        value: "ADJUSTMENT"
+    }
+]
+
+export const referenceTypeOptions = [
+    {
+        label: 'Student',
+        value: "STUDENT"
+    },
+    {
+        label: 'Expense',
+        value: "EXPENSE"
+    },
+    {
+        label: 'System',
+        value: "SYSTEM"
+    },
+    {
+        label: 'Other',
+        value: "OTHER"
+    }
+]
+
 export const parseRole: Record<string, string> = {
     PROPRIETOR: 'Proprietor',
     ADMIN: 'Admin',
@@ -143,8 +196,6 @@ export function handleScroll(event: Event) {
     if (scrollTop + clientHeight >= scrollHeight - 10) {
         console.log("Reached bottom!")
     }
-
-    console.log("Current scroll position:", scrollTop)
 }
 
 export const parseLevel: Record<string, string> = {

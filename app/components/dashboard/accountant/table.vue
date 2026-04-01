@@ -1,29 +1,45 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 
-const route = useRoute()
-const router = useRouter()
-const store = useLedgerStore()
+const store = useFeePaymentStore()
 const loading = ref(true)
 const { format } = useMoney()
-const { records: data, meta, total } = storeToRefs(store)
+const { records: data } = storeToRefs(store)
+
+const parseMethod = {
+  BANK: 'Bank',
+  MOBILE_MONEY: 'Mobile Money',
+  CASH: 'Cash'
+}
 
 const columns: TableColumn<Ledger> = [
   {
-    accessorKey: 'date',
-    header: 'Date'
-  },
-  {
-    accessorKey: 'type',
-    header: 'Type'
+    accessorKey: 'paidAt',
+    header: 'Date',
+    cell: ({ row }: any) => formatDate(row.original.paidAt)
   },
   {
     accessorKey: 'student',
     header: 'Student'
   },
   {
-    accessorKey: 'clazz',
-    header: 'Class'
+    accessorKey: 'fee',
+    header: 'Fee'
+  },
+  {
+    accessorKey: 'amount',
+    header: 'Amount',
+    cell: ({ row }: any) => format(row.original.amount)
+  },
+  {
+    accessorKey: 'paymentMethod',
+    header: 'Method',
+    cell: ({ row }: any) => parseMethod[row.original.paymentMethod]
+  },
+  {
+    accessorKey: 'referenceNo',
+    header: 'Reference',
+    cell: ({ row }: any) => row.original.referenceNo || '-'
   }
 ]
 

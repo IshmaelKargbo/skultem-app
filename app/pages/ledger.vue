@@ -3,8 +3,8 @@
         <div>
             <div class="flex justify-between items-center border-gray-200">
                 <div class="space-y-1">
-                    <p class="text-2xl font-semibold">School Ledger</p>
-                    <p class="text-mute">Complete financial transaction history</p>
+                    <p class="text-2xl font-semibold">Student Ledger</p>
+                    <p class="text-mute">Detailed view of student financial activities.</p>
                 </div>
             </div>
         </div>

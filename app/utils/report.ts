@@ -46,7 +46,7 @@ export type ReportOperator = {
   operator: string
   type: string
   input: string
-  options: Option[]
+  options?: Option[]
 }
 
 export type ReportFilterSelected = {

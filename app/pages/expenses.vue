@@ -1,18 +1,23 @@
 <template>
     <div class="p-7 overflow-y-auto h-full space-y-5">
-        <Heading title="Discounts & Scholarships" subtitle="Manage student discounts and scholarships">
-            <FeeDiscountAdd :refresh-report="refreshReport" />
+        <Heading title="Expenses Management" subtitle="Manage student discounts and scholarships">
+            <ExpensesAdd @refresh-report="refreshReport" />
         </Heading>
-        <FeeDiscountReport ref="reportRef" />
-        <FeeDiscountTable />
+        <ExpensesReport ref="reportRef" />
+        <UCard>
+            <WidgetExpenseCategory ref="categoryRef" />
+        </UCard>
+        <ExpensesTable />
     </div>
 </template>
 
 <script setup lang="ts">
 const reportRef = ref()
+const categoryRef = ref()
 
 function refreshReport() {
     reportRef.value?.fetchRecord()
+    categoryRef.value?.fetchRecord()
 }
 
 onMounted(() => {

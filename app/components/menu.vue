@@ -165,6 +165,13 @@
           </template>
           </MenuItem>
         </li>
+        <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT])">
+          <MenuItem to="/transactions" label="Transactions">
+          <template #icon>
+            <UIcon class="text-xl" :name="TRANSACTION_ICON" />
+          </template>
+          </MenuItem>
+        </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR])">
           <MenuItem to="/analytics" label="Analytics">
           <template #icon>
