@@ -275,7 +275,4 @@ async function installApp() {
     }
 }
 
-onMounted(async () => {
-    await userStore.me()
-})
 </script>
