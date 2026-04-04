@@ -8,7 +8,17 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      meta: [
+        { name: 'theme-color', content: '#0f172a' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+        { name: 'apple-mobile-web-app-title', content: 'Skultem' }
+      ],
       link: [
+        {
+          rel: 'manifest',
+          href: '/manifest.webmanifest'
+        },
         {
           rel: 'preconnect',
           href: 'https://fonts.googleapis.com'

@@ -1,7 +1,7 @@
 <template>
     <div class="md:p-7 p-4 md:space-y-5 space-y-3 h-full overflow-y-auto">
         <Heading title="Attendance" subtitle="Track class attendance and export reports">
-            <div class="grid grid-cols-2 w-full gap-3">
+            <div class="grid grid-cols-2 w-full md:w-2/3 gap-3">
                 <USelectMenu @change="change" :loading="loading" :items="children" value-key="value"
                     v-model="state.student" placeholder="Select Student" />
                 <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
