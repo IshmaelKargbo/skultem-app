@@ -36,7 +36,7 @@ const columns: TableColumn<Fee>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status'
+    header: ''
   }
 ]
 
@@ -68,7 +68,6 @@ async function fetchReport() {
 }
 
 watch(page, async () => {
-
   nextTick(() => {
     scrollContainer?.value?.scrollTo({
       top: 0,
@@ -79,15 +78,24 @@ watch(page, async () => {
   await fetchReport()
 
 }, { immediate: true })
+
+onMounted(async () => {
+  if (!route.query.page || !route.query.size) {
+    router.replace({
+      query: {
+        page: page.value,
+        size: size.value
+      }
+    })
+  }
+  await fetchReport()
+})
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div>
-        <p>Fee records</p>
-      </div>
-    </template>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
     <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
 
       <!-- Empty State -->
@@ -100,40 +108,43 @@ watch(page, async () => {
 
       <!-- Amount -->
       <template #amount-cell="{ row }">
-        <span class="text-info">
+        <span class="text-info font-medium">
           {{ format(row.original.amount) }}
         </span>
       </template>
 
       <!-- Amount Paid -->
       <template #amountPaid-cell="{ row }">
-        <span class="text-success">
+        <span class="text-success font-medium">
           {{ format(row.original.amountPaid) }}
         </span>
       </template>
 
       <!-- Outstanding -->
       <template #outstanding-cell="{ row }">
-        <span class="text-error">
+        <span class="text-error font-medium">
           {{ format(row.original.outstanding) }}
         </span>
       </template>
 
       <!-- Status -->
       <template #status-cell="{ row }">
-        <UBadge :label="row.original.status" variant="outline" :color="parseStateColor[row.original.status]" />
+        <div class="flex justify-end">
+          <UBadge :label="row.original.status" variant="outline" :color="parseStateColor[row.original.status]" />
+        </div>
       </template>
 
     </UTable>
-
+    <FeeTeacherTableMobile :records="data" :seed="6" :loading="loading" />
     <!-- Pagination -->
     <template v-if="meta" #footer>
       <div class="flex justify-between items-center">
         <Showing :meta="meta" />
-
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+        <UPagination v-model:page="page" class="hidden md:flex" size="sm" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
 
+        <UPagination v-model:page="page" size="xs" class="md:hidden" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </template>
   </UCard>

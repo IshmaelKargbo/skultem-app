@@ -6,10 +6,10 @@ const { subtitle, title } = defineProps<{
 </script>
 
 <template>
-    <div class="flex justify-between items-center">
-        <div class="hidden md:block">
-            <p class="text-2xl font-display font-semibold">{{ title }}</p>
-            <p class="text-mute">{{ subtitle }}</p>
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div class="min-w-0">
+            <p class="text-lg md:text-2xl font-display font-semibold">{{ title }}</p>
+            <p class="text-sm text-mute">{{ subtitle }}</p>
         </div>
         <slot />
     </div>

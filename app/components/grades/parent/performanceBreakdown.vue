@@ -2,7 +2,7 @@
   <UCard>
     <div class="space-y-4">
       <div v-for="item in source" :key="item.subject" class="space-y-2">
-        <div class="flex justify-between font-semibold">
+        <div class="flex justify-between">
           <p>{{ item.subject }}</p>
           <p>{{ item.value }}%</p>
         </div>

@@ -34,9 +34,9 @@ function updateQuery(newQuery: Record<string, any>) {
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 async function click(row: AttendanceHistory) {
-  updateQuery({ 
-    date: row.date, 
-    class: row.classId 
+  updateQuery({
+    date: row.date,
+    class: row.classId
   })
 
   nextTick(() => {
@@ -49,31 +49,26 @@ async function click(row: AttendanceHistory) {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+        body: 'p-0 sm:p-0'
+    }">
     <div>
-      <div class="space-y-2">
-        <div class="flex">
-          <p class="text-lg font-normal">Recent Attendance History</p>
+      <div v-for="(item, index) in records" :key="index" :class="[
+        'flex p-3 justify-between cursor-pointer transition-colors',
+        index + 1 < records.length ? 'border-b border-gray-200' : '',
+        selected?.classId == item.classId && selected.date == item.date
+          ? 'bg-success-50/40 rounded-md'
+          : 'hover:bg-gray-50'
+      ]" @click="click(item)">
+        <div class="space-y-0.5">
+          <p class="md:text-base font-medium">{{ formatDateString(item.date) }}</p>
+          <p class="text-sm text-mute">{{ item.className }}</p>
         </div>
-        <div v-for="(item, index) in records" :key="index"
-          :class="[
-            'flex p-3 justify-between cursor-pointer transition-colors', 
-            index + 1 < records.length ? 'border-b border-gray-200' : '', 
-            selected?.classId == item.classId && selected.date == item.date 
-              ? 'bg-success-50/40 border-success-200 border rounded-md' 
-              : 'hover:bg-gray-50'
-          ]"
-          @click="click(item)">
-          <div class="space-y-0.5">
-            <p class="text-base font-medium">{{ formatDateString(item.date) }}</p>
-            <p class="text-sm text-mute">{{ item.className }}</p>
-          </div>
-          <div class="flex flex-col items-end">
-            <p class="text-2xl text-success-500">{{ (item.presentCount / item.totalCount * 100).toFixed(0) }}%</p>
-            <div class="flex space-x-2">
-              <p class="text-xs text-mute">{{ item.presentCount }}/{{ item.totalCount }} present</p>
-              <p class="text-xs text-info">| {{ formatDateTime(item.createdAt) }}</p>
-            </div>
+        <div class="flex flex-col items-end">
+          <p class="md:text-2xl text-xl text-success-500">{{ (item.presentCount / item.totalCount * 100).toFixed(0) }}%</p>
+          <div class="flex space-x-2">
+            <p class="text-xs text-mute">{{ item.presentCount }}/{{ item.totalCount }} present</p>
+            <p class="text-xs text-info">| {{ formatDateTime(item.createdAt) }}</p>
           </div>
         </div>
       </div>

@@ -1,30 +1,32 @@
 <template>
-    <UCard>
-        <UForm :schema="schema" :state="state" class="space-y-3" @submit.prevent="onSubmit">
+    <UForm :schema="schema" :state="state" class="space-y-3" @submit.prevent="onSubmit">
+        <UCard :ui="{
+            body: 'p-0 sm:p-0'
+        }">
 
             <!-- Header -->
-            <div class="flex items-center">
-                <p class="text-lg font-normal flex-1">
-                    Mark Attendance
-                    <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
-                </p>
+            <template #header>
+                <div class="flex items-center">
+                    <p class="text-lg font-normal hidden md:block flex-1">
+                        Mark Attendance
+                        <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
+                    </p>
 
-                <div class="flex flex-1 space-x-5">
-                    <UFormField name="classId" class="w-full">
-                        <USelect v-model="state.classId" :items="classes" placeholder="Select class"
-                            @change="fetchRecords" />
-                    </UFormField>
+                    <div class="flex flex-1 md:space-x-5 space-x-3">
+                        <UFormField name="classId" class="w-full">
+                            <USelect v-model="state.classId" :items="classes" placeholder="Select class"
+                                @change="fetchRecords" />
+                        </UFormField>
 
-                    <UFormField name="date" class="w-full">
-                        <UInput v-model="state.date" type="date" @change="fetchRecords" />
-                    </UFormField>
+                        <UFormField name="date" class="w-full">
+                            <UInput v-model="state.date" type="date" @change="fetchRecords" />
+                        </UFormField>
+                    </div>
                 </div>
-            </div>
-
+            </template>
             <div v-if="state.classId">
-
                 <!-- Actions -->
-                <div class="flex space-x-3 border-y border-gray-200 py-4 bg-gray-50/40 px-3">
+                <div class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
 
                     <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
                         label="Mark on Holiday" />
@@ -64,16 +66,14 @@
                     </template>
 
                 </UTable>
-
-                <!-- Submit -->
-                <div class="pt-3 border-t border-gray-200 flex justify-end">
+            </div>
+            <template #footer>
+                <div class="flex justify-end">
                     <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
                 </div>
-
-            </div>
-
-        </UForm>
-    </UCard>
+            </template>
+        </UCard>
+    </UForm>
 </template>
 
 <script setup lang="ts">

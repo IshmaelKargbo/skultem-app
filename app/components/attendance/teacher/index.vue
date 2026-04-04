@@ -1,6 +1,6 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
-        <Heading title="Attendance" subtitle="Track class attendance and export reports" />
+    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+        <Heading class="hidden md:flex" title="Attendance" subtitle="Track class attendance and export reports" />
         <AttendanceReport />
         <AttendanceTeacherMark />
         <AttendanceHistory />

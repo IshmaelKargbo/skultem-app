@@ -1,5 +1,5 @@
 <template>
-    <div class="grid grid-cols-5 gap-5" v-if="report">
+    <div class="grid md:grid-cols-5 grid-cols-2 md:gap-5 gap-3" v-if="report">
         <Metric :record="{
             label: 'Present',
             color: 'success',
@@ -32,7 +32,7 @@
             subtle: 'Authorized Absence',
             icon: ATTENDANCE_EXCUSED_ICON
         }" />
-        <Metric :record="{
+        <Metric class="col-span-2 md:col-span-1" :record="{
             label: 'Attendance Rate',
             color: 'primary',
             subtle: 'Overall Attendance Rate',

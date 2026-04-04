@@ -24,7 +24,7 @@ const { record } = defineProps<{
 
             <template v-else>
                 <div class="flex justify-between items-center">
-                    <p class="md:text-2xl text-lg font-display font-semibold">{{ record.value }}</p>
+                    <p class="text-2xl font-display font-semibold">{{ record.value }}</p>
                     <div>
                         <UBadge :icon="record.icon" variant="subtle" size="xl" class="p-1.5 hidden md:flex"
                             :color="record.color" />
