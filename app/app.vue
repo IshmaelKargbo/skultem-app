@@ -8,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-const {} = useAuth()
 const { hide } = useGlobalLoader()
 onMounted(async () => {
   hide()
