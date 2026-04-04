@@ -88,13 +88,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
 </script>
 <template>
     <UCard>
-        <template #header>
-            <div class="flex justify-between items-center">
-                <p class="text-mute">Monthly Breakdown</p>
-            </div>
-        </template>
-        <div>
-            <div class="space-y-2 mb-4">
+        <div class="space-y-4">
+            <div class="space-y-2">
                 <div class="flex justify-between font-semibold">
                     <p>Present Days</p>
                     <p>{{ report.present }}%</p>
@@ -103,7 +98,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.present" />
                 </div>
             </div>
-            <div class="space-y-2 mb-4">
+            <div class="space-y-2">
                 <div class="flex justify-between font-semibold">
                     <p>Absent Days</p>
                     <p>{{ report.absent }}%</p>
@@ -113,7 +108,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.absent" />
                 </div>
             </div>
-            <div class="space-y-2 mb-4">
+            <div class="space-y-2">
                 <div class="flex justify-between font-semibold">
                     <p>Late Days</p>
                     <p>{{ report.late }}%</p>
@@ -123,7 +118,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.late" />
                 </div>
             </div>
-            <div class="space-y-2 mb-4">
+            <div class="space-y-2">
                 <div class="flex justify-between font-semibold">
                     <p>Excused Days</p>
                     <p>{{ report.excused }}%</p>

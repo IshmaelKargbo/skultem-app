@@ -80,7 +80,7 @@ onMounted(async () => {
 
     await fetchRecord()
 })
-
+ border-t border-gray-200 pt-3
 const parseTrend: Record<string, any> = {
     IMPROVED: {
         icon: 'i-heroicons-arrow-trending-up',

@@ -1,12 +1,7 @@
 <template>
   <UCard>
-    <template #header>
-      <div class="flex items-center justify-between">
-        <p class="text-muted">Performance Breakdown</p>
-      </div>
-    </template>
-    <div>
-      <div v-for="item in source" :key="item.subject" class="space-y-2 mb-4">
+    <div class="space-y-4">
+      <div v-for="item in source" :key="item.subject" class="space-y-2">
         <div class="flex justify-between font-semibold">
           <p>{{ item.subject }}</p>
           <p>{{ item.value }}%</p>

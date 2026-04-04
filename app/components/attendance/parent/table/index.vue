@@ -7,10 +7,6 @@ const page = ref(1)
 
 const columns: TableColumn<Attendance> = [
     {
-        accessorKey: 'clazz',
-        header: 'Class'
-    },
-    {
         accessorKey: 'date',
         header: 'Date'
     },
@@ -32,27 +28,26 @@ const parseStateColor: Record<string, string> = {
 }
 </script>
 <template>
-    <UCard class="md:block hidden">
-        <div>
-            <p class="text-mute">Recent Attendance</p>
-            <div class="mt-3">
-                <UTable :columns="columns" :data="data" :loading="loading">
-                    <template #empty-state>
-                        <div class="flex flex-col items-center gap-2 py-10">
-                            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-                            <p class="text-gray-500">No behaviour found.</p>
-                        </div>
-                    </template>
-                    <template #state-cell="{ row }">
-                        <UBadge :label="row.original.state" :color="parseStateColor[row.original.state]" variant="outline" />
-                    </template>
-                </UTable>
-                <div v-if="!loading && meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-                    <Showing :meta="meta" />
-                    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
+    <UCard class="md:block hidden" :ui="{
+        body: 'sm:p-0'
+    }">
+        <UTable :columns="columns" :data="data" :loading="loading">
+            <template #empty-state>
+                <div class="flex flex-col items-center gap-2 py-10">
+                    <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+                    <p class="text-gray-500">No behaviour found.</p>
                 </div>
+            </template>
+            <template #state-cell="{ row }">
+                <UBadge :label="row.original.state" :color="parseStateColor[row.original.state]" variant="outline" />
+            </template>
+        </UTable>
+        <template v-if="!loading && meta" #footer>
+            <div class="flex justify-between items-center">
+                <Showing :meta="meta" />
+                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+                    :total="meta.total" show-edges />
             </div>
-        </div>
+        </template>
     </UCard>
 </template>

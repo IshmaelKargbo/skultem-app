@@ -8,8 +8,7 @@ const UCard = resolveComponent('UCard')
 const UIcon = resolveComponent('UIcon')
 
 const rows = ref<StudentAssessment[]>([])
-const { assessments, gradingScale } = storeToRefs(assessmentStore)
-const gradingBands = computed(() => gradingScale.value?.bands || [])
+const { assessments } = storeToRefs(assessmentStore)
 const { student, term, clazz } = defineProps<{
     term: string
     student: string
@@ -64,7 +63,7 @@ function buildColumns() {
             id: "total",
             header: "Final (100)",
             cell: ({ row }: any) => {
-                const total = calculateWeightedTotal(row.original)
+                const total: any = calculateWeightedTotal(row.original)
                 const totalTxt = `${total[0]} (${total[1]})`
                 return h("div", { class: "font-semibold" }, totalTxt)
             }
@@ -151,7 +150,7 @@ async function runReport() {
     prepareRecord()
 }
 
-watch(() => term, async () => {
+watch(() => [term, student], async () => {
     await fetchAssessment()
     await runReport()
 }, { immediate: true })
@@ -162,26 +161,20 @@ onMounted(async () => {
 </script>
 
 <template>
-    <UCard>
-        <div>
-            <div class="flex items-center justify-between">
-                <p class="text-muted">Subject Grades</p>
-                <UButton label="Download" :icon="DOWNLOAD_ICON" variant="outline" color="neutral" />
-            </div>
-            <div class="border-t border-gray-200 mt-3">
-                <UTable :columns="columns" :data="rows" :loading="loading">
-                    <template #empty-state>
-                        <div class="flex flex-col items-center gap-2 py-10">
-                            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-                            <p class="text-gray-500">No Attendance found.</p>
-                        </div>
-                    </template>
-                    <template #status-cell="{ row }">
-                        <UBadge :label="parseStatus[row.original.status]" variant="outline"
-                            :color="parseStatusColor[row.original.status]" />
-                    </template>
-                </UTable>
-            </div>
-        </div>
+    <UCard :ui="{
+        body: 'sm:p-0'
+    }">
+        <UTable :columns="columns" :data="rows" :loading="loading">
+            <template #empty-state>
+                <div class="flex flex-col items-center gap-2 py-10">
+                    <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+                    <p class="text-gray-500">No Attendance found.</p>
+                </div>
+            </template>
+            <template #status-cell="{ row }">
+                <UBadge :label="parseStatus[row.original.status]" variant="outline"
+                    :color="parseStatusColor[row.original.status]" />
+            </template>
+        </UTable>
     </UCard>
 </template>

@@ -25,10 +25,15 @@ const { record } = defineProps<{
             <template v-else>
                 <div class="flex justify-between items-center">
                     <p class="md:text-2xl text-lg font-display font-semibold">{{ record.value }}</p>
-                    <UBadge :icon="record.icon" variant="subtle" size="xl" class="p-1.5 hidden md:block" :color="record.color" />
-                    <UBadge class="md:hidden" :icon="record.icon" variant="subtle" size="lg" :color="record.color" />
+                    <div>
+                        <UBadge :icon="record.icon" variant="subtle" size="xl" class="p-1.5 hidden md:flex"
+                            :color="record.color" />
+                        <UBadge class="md:hidden" :icon="record.icon" variant="subtle" size="lg"
+                            :color="record.color" />
+                    </div>
                 </div>
-                <div v-if="record.subtle" :class="[`md:text-xs text-[11px] text-${record.subtileColor|| 'neutral-100'}`]">
+                <div v-if="record.subtle"
+                    :class="[`md:text-xs text-[11px] text-${record.subtileColor || 'neutral-100'}`]">
                     <p>{{ record.subtle }}</p>
                 </div>
             </template>
