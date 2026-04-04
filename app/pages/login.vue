@@ -141,6 +141,7 @@ const loading = ref(false)
 const toast = useToast()
 const userStore = useUserStore()
 const { initializeActiveRole, setAuthResolved } = useAuth()
+const { show, hide } = useGlobalLoader()
 
 const schema = yup.object({
   email: yup.string().email("Enter a valid email").required("Email is required"),
@@ -152,12 +153,19 @@ const handleLogin = async () => {
     loading.value = true
     setAuthResolved(false)
     await userStore.login({ domain: "kings-way", email: state.email, password: state.password })
+    show({
+      title: 'Signing you in...',
+      subtitle: 'Preparing your dashboard',
+      hint: 'Loading your workspace'
+    })
     await userStore.me()
     initializeActiveRole()
-    navigateTo("/")
+    setAuthResolved(true)
+    await navigateTo("/")
   } catch (err: any) {
     loading.value = false
     setAuthResolved(true)
+    hide()
     toast.add({ description: err.message, color: "error" })
   }
 }

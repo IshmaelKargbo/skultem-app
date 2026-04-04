@@ -36,7 +36,7 @@
       <GradesParentRank v-if="selected" :student="selected" :term="state.term" />
     </div>
     <!-- Tabs -->
-    <TabMobile :tabs="tabs">
+    <TabMobile class="md:hidden" :tabs="tabs">
       <template #overview-data>
         <GradesParentSubjectMobile v-if="selected" :student="state.student" :term="state.term"
           :clazz="selected.classId" />

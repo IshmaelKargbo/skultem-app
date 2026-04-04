@@ -10,9 +10,9 @@
     </Heading>
     <UCard>
       <div class="flex space-x-3">
-        <USelectMenu value-key="value" :items="subjects" placeholder="Select Subject" v-model="state.teacherSubjectId"
+        <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject" v-model="state.teacherSubjectId"
           @change="fetchStudents" />
-        <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
+        <USelectMenu value-key="value" :loading="termStore.loading" :items="terms" placeholder="Select Term" v-model="state.termId"
           @change="fetchStudents" />
       </div>
     </UCard>

@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-5 h-full">
         <div class="md:p-7 p-4 pb-0 space-y-3">
-            <Heading class="md:block hidden" title="Notification Center" subtitle="Stay updated with your latest notifications">
+            <Heading class="md:flex hidden" title="Notification Center" subtitle="Stay updated with your latest notifications">
                 <div class="flex gap-3">
                     <UBadge color="error" variant="outline" size="lg">{{ summary.unread }} Unread</UBadge>
                     <UBadge color="success" variant="outline" size="lg">{{ summary.read }} Read</UBadge>
