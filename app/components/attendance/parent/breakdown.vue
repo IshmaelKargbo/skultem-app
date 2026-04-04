@@ -71,7 +71,7 @@ async function fetchRecord() {
         }, 1, 10),
     ])
 
-    const datasets = count.datasets || []
+    const datasets = count?.data.datasets || []
 
     const present = datasets.find((e: any) => e.label === 'Present')
     const late = datasets.find((e: any) => e.label === 'Late')
@@ -88,46 +88,48 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
 </script>
 <template>
     <UCard>
+        <template #header>
+            <div class="flex justify-between items-center">
+                <p class="text-mute">Monthly Breakdown</p>
+            </div>
+        </template>
         <div>
-            <p class="text-mute">Monthly Breakdown</p>
-            <div class="mt-3">
-                <div class="space-y-2 mb-4">
-                    <div class="flex justify-between font-semibold">
-                        <p>Present Days</p>
-                        <p>{{ report.present }}%</p>
-                    </div>
-                    <div>
-                        <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.present" />
-                    </div>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between font-semibold">
+                    <p>Present Days</p>
+                    <p>{{ report.present }}%</p>
                 </div>
-                <div class="space-y-2 mb-4">
-                    <div class="flex justify-between font-semibold">
-                        <p>Absent Days</p>
-                        <p>{{ report.absent }}%</p>
-                    </div>
+                <div>
+                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.present" />
+                </div>
+            </div>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between font-semibold">
+                    <p>Absent Days</p>
+                    <p>{{ report.absent }}%</p>
+                </div>
 
-                    <div>
-                        <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.absent" />
-                    </div>
+                <div>
+                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.absent" />
                 </div>
-                <div class="space-y-2 mb-4">
-                    <div class="flex justify-between font-semibold">
-                        <p>Late Days</p>
-                        <p>{{ report.late }}%</p>
-                    </div>
+            </div>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between font-semibold">
+                    <p>Late Days</p>
+                    <p>{{ report.late }}%</p>
+                </div>
 
-                    <div>
-                        <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.late" />
-                    </div>
+                <div>
+                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.late" />
                 </div>
-                <div class="space-y-2 mb-4">
-                    <div class="flex justify-between font-semibold">
-                        <p>Excused Days</p>
-                        <p>{{ report.excused }}%</p>
-                    </div>
-                    <div>
-                        <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.excused" />
-                    </div>
+            </div>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between font-semibold">
+                    <p>Excused Days</p>
+                    <p>{{ report.excused }}%</p>
+                </div>
+                <div>
+                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.excused" />
                 </div>
             </div>
         </div>

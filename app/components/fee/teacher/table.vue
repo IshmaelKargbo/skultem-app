@@ -83,12 +83,12 @@ watch(page, async () => {
 
 <template>
   <UCard>
-
-    <UTable
-      :columns="columns"
-      :data="data"
-      :loading="loading"
-    >
+    <template #header>
+      <div>
+        <p>Fee records</p>
+      </div>
+    </template>
+    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
 
       <!-- Empty State -->
       <template #empty-state>
@@ -121,32 +121,20 @@ watch(page, async () => {
 
       <!-- Status -->
       <template #status-cell="{ row }">
-        <UBadge
-          :label="row.original.status"
-          variant="outline"
-          :color="parseStateColor[row.original.status]"
-        />
+        <UBadge :label="row.original.status" variant="outline" :color="parseStateColor[row.original.status]" />
       </template>
 
     </UTable>
 
     <!-- Pagination -->
-    <div
-      v-if="meta"
-      class="flex justify-between border-t border-gray-200 pt-3 items-center"
-    >
-      <Showing :meta="meta" />
+    <template v-if="meta" #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
 
-      <UPagination
-        v-model:page="page"
-        size="sm"
-        :page-size="meta.size"
-        :items-per-page="meta.size"
-        :total="meta.total"
-        show-edges
-      />
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
 
-    </div>
-
+      </div>
+    </template>
   </UCard>
 </template>

@@ -1,24 +1,22 @@
 <template>
-    <div class="p-7 space-y-5">
-        <UCard>
-            <div class="flex space-x-3">
-                <USelectMenu value-key="value" v-model="state.clazz" @change="change" :loading="loading"
-                    :items="subjects" placeholder="Select Subject" />
-                <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
-                    placeholder="Select Term" />
-            </div>
-        </UCard>
-        <div class="grid grid-cols-3 gap-5">
+    <div class="md:p-7 p-4 md:space-y-5 space-y-3">
+        <div class="flex space-x-3">
+            <USelectMenu value-key="value" v-model="state.clazz" @change="change" :loading="loading" :items="subjects"
+                placeholder="Select Subject" />
+            <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
+                placeholder="Select Term" />
+        </div>
+        <div class="grid md:grid-cols-3 grid-cols-2 md:gap-5 gap-3">
             <DashboardTeacherTotal :term="term" :session-id="selected?.classId" />
             <DashboardTeacherClassAvarage :term="term" :session-id="selected?.classId" />
-            <DashboardTeacherAttendance :classId="selected?.classId" />
+            <DashboardTeacherAttendance class="col-span-2 md:col-span-1" :classId="selected?.classId" />
         </div>
-        <div class="grid grid-cols-2 gap-5">
+        <div class="grid md:grid-cols-2 md:gap-5 gap-3">
             <DashboardTeacherGradeDistribution :term="state.term" :class-id="selected?.classId" />
             <DashboardTeacherAttendanceTrend :class-id="selected?.classId" />
         </div>
         <UCard>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid md:grid-cols-4 grid-cols-2 gap-3">
                 <UButton to="/grades" color="primary" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
                     <div class="flex flex-col items-center space-y-2">
@@ -92,7 +90,7 @@ function change() {
     selected.value = select
 }
 
-watch(() => subjects.value, (val) => {
+watch(() => subjects.value, (val: any) => {
     if (val.length && !state.clazz) {
         state.clazz = val[0].value
         change()

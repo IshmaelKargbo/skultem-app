@@ -63,36 +63,35 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <h3 class="text-sm font-semibold">Recent Activity</h3>
-    </template>
+  <ClientOnly>
+    <UCard>
+      <template #header>
+        <h3 class="text-sm font-semibold">Recent Activity</h3>
+      </template>
 
-    <div class="space-y-0">
-      <div v-if="dashboard.loading" class="py-4 text-sm text-muted">Loading…</div>
-      <div v-else-if="dashboard.error" class="py-4 text-sm text-red-600">{{ dashboard.error }}</div>
-      <div v-else-if="activities.length === 0" class="py-4 text-sm text-muted">No activity yet.</div>
-      <div 
-        v-for="(item, index) in activities"
-        :key="item.id" 
-        class="flex gap-4 py-2.5 first:pt-0 last:pb-0 border-b border-gray-100 last:border-0"
-      >
-        <div class="mt-1.5 shrink-0">
-          <div :class="[typeColor[item.type] || 'bg-slate-500', 'h-3 w-3 rounded-full']"></div>
-        </div>
+      <div class="space-y-0">
+        <div v-if="dashboard.loading" class="py-4 text-sm text-muted">Loading…</div>
+        <div v-else-if="dashboard.error" class="py-4 text-sm text-red-600">{{ dashboard.error }}</div>
+        <div v-else-if="activities.length === 0" class="py-4 text-sm text-muted">No activity yet.</div>
+        <div v-for="(item, index) in activities" :key="item.id"
+          class="flex gap-4 py-2.5 first:pt-0 last:pb-0 border-b border-gray-100 last:border-0">
+          <div class="mt-1.5 shrink-0">
+            <div :class="[typeColor[item.type] || 'bg-slate-500', 'h-3 w-3 rounded-full']"></div>
+          </div>
 
-        <div class="flex flex-col">
-          <span class="font-semibold text-sm leading-tight">
-            {{ item.title }}
-          </span>
-          <span class="text-xs text-muted mt-0.5">
-            {{ item.subject }}
-          </span>
-          <span class="text-xs text-mute mt-1">
-            {{ timeAgo(item.createdAt) }}
-          </span>
+          <div class="flex flex-col">
+            <span class="font-semibold text-sm leading-tight">
+              {{ item.title }}
+            </span>
+            <span class="text-xs text-muted mt-0.5">
+              {{ item.subject }}
+            </span>
+            <span class="text-xs text-mute mt-1">
+              {{ timeAgo(item.createdAt) }}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  </UCard>
+    </UCard>
+  </ClientOnly>
 </template>

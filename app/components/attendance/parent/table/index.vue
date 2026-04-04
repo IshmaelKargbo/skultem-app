@@ -32,7 +32,7 @@ const parseStateColor: Record<string, string> = {
 }
 </script>
 <template>
-    <UCard>
+    <UCard class="md:block hidden">
         <div>
             <p class="text-mute">Recent Attendance</p>
             <div class="mt-3">

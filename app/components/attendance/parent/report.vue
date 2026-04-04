@@ -76,11 +76,11 @@ async function fetchRecord() {
                 }
             ],
             chartType: "stat"
-        }, 1, 10),
+        }, 1, 200),
     ])
 
-    const datasets = count.datasets || []
-
+    const datasets = count?.data.datasets || []
+    
     const present = datasets.find((e: any) => e.label === 'Present Count')
     const presentRate = datasets.find((e: any) => e.label === 'Present')
     const late = datasets.find((e: any) => e.label === 'Late Count')
@@ -102,8 +102,8 @@ async function fetchRecord() {
 watch(() => [term, student], () => fetchRecord(), { immediate: true })
 </script>
 <template>
-    <div class="grid gap-3 grid-cols-5">
-        <Metric :record="{
+    <div class="grid gap-3 md:grid-cols-5 grid-cols-2">
+        <Metric class="col-span-2 md:col-span-1" :record="{
             label: 'Attendance Rate',
             icon: ATTENDANCE_ICON,
             value: report?.rate,

@@ -10,6 +10,11 @@ const { records: data, meta } = storeToRefs(store)
 
 const columns: TableColumn<Expense> = [
   {
+    accessorKey: 'createdAt',
+    header: 'Date',
+    cell: ({ row }: any) => formatDateString(row.original.createdAt)
+  },
+  {
     accessorKey: 'title',
     header: 'Name'
   },
@@ -21,11 +26,6 @@ const columns: TableColumn<Expense> = [
     accessorKey: 'amount',
     header: 'Amount',
     cell: ({ row }: any) => format(row.original.amount)
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Date',
-    cell: ({ row }: any) => formatDateString(row.original.createdAt)
   }
 ]
 
@@ -77,6 +77,9 @@ onMounted(async () => {
           <p class="text-gray-500">No fee discounts found.</p>
         </div>
       </template>
+        <template #amount-cell="{ row }">
+          <p class="font-semibold text-error">- {{ format(row.original.amount || 0) }}</p>
+        </template>
     </UTable>
     <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
       <Showing :meta="meta" />

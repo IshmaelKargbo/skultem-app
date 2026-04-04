@@ -1,13 +1,13 @@
 <template>
     <div class="space-y-5 h-full">
-        <div class="p-7 pb-0 space-y-3">
-            <Heading title="Notification Center" subtitle="Stay updated with your latest notifications">
+        <div class="md:p-7 p-4 pb-0 space-y-3">
+            <Heading class="md:block hidden" title="Notification Center" subtitle="Stay updated with your latest notifications">
                 <div class="flex gap-3">
                     <UBadge color="error" variant="outline" size="lg">{{ summary.unread }} Unread</UBadge>
                     <UBadge color="success" variant="outline" size="lg">{{ summary.read }} Read</UBadge>
                 </div>
             </Heading>
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col md:flex-row justify-between md:items-center space-y-2">
                 <div class="flex gap-2">
                     <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">All {{
                         notifications.length }}</UButton>
@@ -16,7 +16,7 @@
                     <UButton size="sm" :variant="filter === 'UNREAD' ? 'outline' : 'ghost'" @click="filter = 'UNREAD'">
                         Unread {{ summary.unread }}</UButton>
                 </div>
-                <div class="w-1/3">
+                <div class="md:w-1/3 w-full">
                     <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search notifications" />
                 </div>
             </div>

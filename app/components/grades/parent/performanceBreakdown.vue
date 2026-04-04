@@ -1,24 +1,24 @@
 <template>
   <UCard>
-    <div>
+    <template #header>
       <div class="flex items-center justify-between">
         <p class="text-muted">Performance Breakdown</p>
       </div>
-      <div class="mt-5">
-        <div v-for="item in source" :key="item.subject" class="space-y-2 mb-4">
-          <div class="flex justify-between font-semibold">
-            <p>{{ item.subject }}</p>
-            <p>{{ item.value }}%</p>
-          </div>
-
-          <div>
-            <UProgress color="primary" size="md" :max="100" v-model="item.value" />
-          </div>
+    </template>
+    <div>
+      <div v-for="item in source" :key="item.subject" class="space-y-2 mb-4">
+        <div class="flex justify-between font-semibold">
+          <p>{{ item.subject }}</p>
+          <p>{{ item.value }}%</p>
         </div>
 
-        <div v-if="!isReady" class="text-gray-400 text-sm w-full flex items-center justify-center h-56">
-          Loading performance...
+        <div>
+          <UProgress color="primary" size="md" :max="100" v-model="item.value" />
         </div>
+      </div>
+
+      <div v-if="!isReady" class="text-gray-400 text-sm w-full flex items-center justify-center h-56">
+        Loading performance...
       </div>
     </div>
   </UCard>

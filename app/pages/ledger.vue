@@ -1,13 +1,5 @@
 <template>
     <div class="p-7 h-full overflow-y-auto space-y-5">
-        <div>
-            <div class="flex justify-between items-center border-gray-200">
-                <div class="space-y-1">
-                    <p class="text-2xl font-semibold">Student Ledger</p>
-                    <p class="text-mute">Detailed view of student financial activities.</p>
-                </div>
-            </div>
-        </div>
         <LedgerReport />
         <UCard>
             <div class="flex space-x-2">

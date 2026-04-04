@@ -1,5 +1,5 @@
 <template>
-  <div class="border-r flex flex-col border-gray-200 bg-menu text-white">
+  <div class="border-r flex flex-col border-gray-200 bg-menu text-white h-full">
     <!-- Header -->
     <div class="flex py-3 px-5 border-b border-gray-800 space-x-2 items-center">
       <nuxt-link to="/">
@@ -61,7 +61,7 @@
           </MenuItem>
         </li>
         <li v-if="can([Role.PARENT])">
-          <MenuItem to="/peformance" label="Performance">
+          <MenuItem to="/performance" label="Performance">
           <template #icon>
             <UIcon class="text-xl" :name="PERFORMANCE_ICON" />
           </template>

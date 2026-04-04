@@ -1,7 +1,7 @@
 <template>
     <UCard>
         <div class="space-y-2 text-center">
-            <p class="text-2xl font-semibold">{{ count }}</p>
+            <p class="text-2xl font-display font-semibold">{{ count }}</p>
             <p>{{ grade }} Grades</p>
         </div>
     </UCard>

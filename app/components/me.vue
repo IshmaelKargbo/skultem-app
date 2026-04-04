@@ -208,13 +208,6 @@ const userRoles = computed(() =>
     }))
 )
 
-const quickLinks = [
-    { label: 'My Profile',       icon: 'lucide:user',      path: '/profile' },
-    { label: 'Account Settings', icon: 'lucide:settings',  path: '/settings' },
-    { label: 'Notifications',    icon: 'lucide:bell',      path: '/notifications', badge: true },
-    { label: 'Help & Support',   icon: 'lucide:life-buoy', path: '/support' },
-]
-
 async function switchRole(role: string) {
     dropdownOpen.value = false
     show({ title: `Switching to ${role}`, subtitle: 'Updating your workspace' })

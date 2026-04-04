@@ -9,11 +9,15 @@ const { format } = useMoney()
 
 const report = ref<{
     paid: string
+    total: string
     pending: string
+    balance: string
     overdue: string
 }>({
     paid: "0",
+    total: "0",
     pending: "0",
+    balance: "0",
     overdue: "0"
 })
 
@@ -46,6 +50,11 @@ async function fetchRecord() {
                     aggregation: "sum",
                     field: "amountPaid",
                     tags: { field: "status", value: "Partial" }
+                },
+                {
+                    name: "Total",
+                    aggregation: "sum",
+                    field: "amount"
                 }
             ],
             chartType: "bar"
@@ -124,6 +133,7 @@ async function fetchRecord() {
     const overdueDatasets = overdueRes?.data?.datasets ?? []
 
     const paid = paidDatasets.find((e: any) => e.label === "Paid")
+    const total = paidDatasets.find((e: any) => e.label === "Total")
     const partial = paidDatasets.find((e: any) => e.label === "Partial")
 
     const pendingPartial = pendingDatasets.find((e: any) => e.label === "Partial")
@@ -139,8 +149,13 @@ async function fetchRecord() {
         Number(paid?.data?.[0] ?? 0) +
         Number(partial?.data?.[0] ?? 0)
 
+    const totalValue = format(Number(paid?.data?.[0] ?? 0))
+    const balanceValue = format(Number(paid?.data?.[0] ?? 0) - totalPaid)
+
     report.value = {
         paid: format(totalPaid),
+        total: totalValue,
+        balance: balanceValue,
         pending: format(Number(totalPending)),
         overdue: format(Number(overdue?.data?.[0] ?? 0))
     }
@@ -149,8 +164,8 @@ async function fetchRecord() {
 watch(() => student, fetchRecord, { immediate: true })
 </script>
 <template>
-    <div class="grid gap-3 grid-cols-3">
-        <Metric :record="{
+    <div class="grid gap-3 md:grid-cols-3">
+        <Metric class="hidden md:block" :record="{
             label: 'Total Paid',
             icon: PAYMENT_ICON,
             value: report?.paid,
@@ -158,7 +173,7 @@ watch(() => student, fetchRecord, { immediate: true })
             color: 'success',
             subtle: 'This academic year'
         }" />
-        <Metric :record="{
+        <Metric class="hidden md:block" :record="{
             label: 'Pending',
             icon: PENDING_ICON,
             value: report?.pending,
@@ -174,5 +189,25 @@ watch(() => student, fetchRecord, { immediate: true })
             color: 'error',
             subtle: 'Requires attention'
         }" />
+    </div>
+    <div class="grid grid-cols-3 gap-2 md:hidden">
+        <UCard>
+            <div class="space-y-0.5">
+                <p class="text-[10px] text-mute">Total billed</p>
+                <p class="text-info font-medium">{{ report.total }}</p>
+            </div>
+        </UCard>
+        <UCard>
+            <div class="space-y-0.5">
+                <p class="text-[10px] text-mute">Total Paid</p>
+                <p class="text-success font-medium">{{ report.paid }}</p>
+            </div>
+        </UCard>
+        <UCard>
+            <div class="space-y-0.5">
+                <p class="text-[10px] text-mute">Total Balance</p>
+                <p class="text-error font-medium">{{ report.balance }}</p>
+            </div>
+        </UCard>
     </div>
 </template>

@@ -1,19 +1,18 @@
 <template>
-    <div class="p-7 space-y-5">
-        <UCard>
-            <div class="flex space-x-3">
-                <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
-                    :items="children" placeholder="Select Student" />
-                <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
-                    placeholder="Select Term" />
-            </div>
-        </UCard>
-        <div class="grid grid-cols-3 gap-5">
-            <DashboardParentAvarage :term="term" :session-id="selected?.sessionId || ''" :id="state.student" />
+    <div class="md:p-7 p-4 md:space-y-5 space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+            <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading" :items="children"
+                placeholder="Select Student" />
+            <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
+                placeholder="Select Term" />
+        </div>
+        <div class="grid md:grid-cols-3 grid-cols-2 md:gap-5 gap-3">
+            <DashboardParentAvarage class="col-span-2 md:col-span-1" :term="term"
+                :session-id="selected?.sessionId || ''" :id="state.student" />
             <DashboardParentAttendance :id="state.student" />
             <DashboardParentFees :id="state.student" />
         </div>
-        <div class="grid grid-cols-2 gap-5">
+        <div class="grid md:grid-cols-2 md:gap-5 gap-3">
             <DashboardParentGradeTrend :id="state.student" />
             <DashboardParentSubjectPerformance :term="state.term" :id="state.student" />
             <UCard>
@@ -39,7 +38,7 @@
             <DashboardParentUpdate />
         </div>
         <UCard>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid md:grid-cols-4 grid-cols-2 gap-3">
                 <UButton to="/performance" color="success" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
                     <div class="flex flex-col items-center space-y-2">

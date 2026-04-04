@@ -1,20 +1,24 @@
 <template>
-    <div class="p-7 space-y-5 h-full overflow-y-auto">
-        <div class="flex justify-between items-center">
-            <div class="space-y-1">
-                <p class="text-2xl font-semibold">Attendance</p>
-                <p class="text-mute">Track class attendance and export reports</p>
-            </div>
-            <div class="flex w-2/5 space-x-3">
+    <div class="md:p-7 p-4 md:space-y-5 space-y-3 h-full overflow-y-auto">
+        <Heading title="Attendance" subtitle="Track class attendance and export reports">
+            <div class="grid grid-cols-2 w-full gap-3">
                 <USelectMenu @change="change" :loading="loading" :items="children" value-key="value"
                     v-model="state.student" placeholder="Select Student" />
                 <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
                     placeholder="Select Term" />
             </div>
-        </div>
+        </Heading>
         <AttendanceParentReport :student="selected" :term="term" />
+        <TabMobile class="md:hidden block" :tabs="tabs">
+            <template #overview-data>
+                <AttendanceParentTableMobile />
+            </template>
+            <template #breakdown-data>
+                <AttendanceParentBreakdown :student="selected" :term="term" />
+            </template>
+        </TabMobile>
         <AttendanceParentTable />
-        <AttendanceParentBreakdown :student="selected" :term="term" />
+        <AttendanceParentBreakdown class="hidden md:block" :student="selected" :term="term" />
     </div>
 </template>
 
@@ -25,6 +29,17 @@ const reportStore = useReportStore()
 const { students, loading } = storeToRefs(store)
 
 const { activeCycle, loading: cycleLoading } = storeToRefs(studentStore)
+
+const tabs = [
+    {
+        label: 'Overview',
+        key: 'overview'
+    },
+    {
+        label: 'Breakdown',
+        key: 'breakdown'
+    }
+]
 
 const state = reactive<{
     student: string
@@ -83,7 +98,7 @@ async function fetchAttendance() {
                 type: "date"
             }
         ]
-    }, 1, 10);
+    }, 1, 7);
 }
 
 watch(() => children.value, () => {

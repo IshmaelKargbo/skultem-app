@@ -14,8 +14,8 @@ const { record } = defineProps<{
 
 <template>
     <UCard>
-        <div class="space-y-2">
-            <p class="text-xs text-mute">{{ record.label }}</p>
+        <div class="md:space-y-2 space-y-1">
+            <p class="md:text-xs text-[11px] text-mute">{{ record.label }}</p>
 
             <div v-if="!record.isReady" class="animate-pulse space-y-2">
                 <div class="h-7 w-24 bg-gray-200 rounded" />
@@ -24,10 +24,11 @@ const { record } = defineProps<{
 
             <template v-else>
                 <div class="flex justify-between items-center">
-                    <p class="text-2xl font-display font-semibold">{{ record.value }}</p>
-                    <UBadge :icon="record.icon" variant="subtle" size="xl" class="p-1.5" :color="record.color" />
+                    <p class="md:text-2xl text-lg font-display font-semibold">{{ record.value }}</p>
+                    <UBadge :icon="record.icon" variant="subtle" size="xl" class="p-1.5 hidden md:block" :color="record.color" />
+                    <UBadge class="md:hidden" :icon="record.icon" variant="subtle" size="lg" :color="record.color" />
                 </div>
-                <div v-if="record.subtle" :class="[`text-xs text-${record.subtileColor|| 'neutral-100'}`]">
+                <div v-if="record.subtle" :class="[`md:text-xs text-[11px] text-${record.subtileColor|| 'neutral-100'}`]">
                     <p>{{ record.subtle }}</p>
                 </div>
             </template>

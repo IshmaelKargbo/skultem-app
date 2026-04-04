@@ -1,15 +1,23 @@
 <template>
-  <UCard>
-    <div class="space-y-5">
-      <UTable :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No payment found.</p>
-          </div>
-        </template>
-      </UTable>
-    </div>
+  <UCard class="hidden md:block" :ui="{
+        body: 'sm:p-0'
+    }">
+    <template #header>
+      <div>
+        <p>Payment History</p>
+      </div>
+    </template>
+    <UTable :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No payment found.</p>
+        </div>
+      </template>
+    </UTable>
+    <!-- <template #footer>
+      
+    </template> -->
   </UCard>
 </template>
 

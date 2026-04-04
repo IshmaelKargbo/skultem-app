@@ -4,12 +4,12 @@
     <div
       @click="handleClick"
       :class="[
-        'flex items-center justify-between text-sm border p-2.5 px-3 rounded-md hover:bg-app-600 hover:border-gray-700 border-menu cursor-pointer',
-        isActive || open ? 'bg-app-800 border-gray-900' : '',
+        'flex items-center justify-between text-sm border md:p-2.5 py-1 md:px-3 rounded-md md:hover:bg-app-600 md:hover:border-gray-700 border-menu cursor-pointer',
+        isActive || open ? 'md:bg-app-800 md:border-gray-900 text-primary-500 md:text-white' : '',
         customClass
       ]"
     >
-      <div class="flex items-center space-x-2.5">
+      <div class="flex flex-col w-full md:w-auto md:flex-row items-center md:space-x-2.5 space-y-1 text-xs md:text-sm">
         <slot name="icon" :active="isActive" />
         <span><slot>{{ label }}</slot></span>
       </div>
@@ -17,7 +17,7 @@
       <!-- Chevron if dropdown -->
       <svg
         v-if="subNavs && subNavs.length"
-        class="w-4 h-4 transition-transform duration-200"
+        class="w-4 h-4 transition-transform duration-200 hidden md:block"
         :class="open ? 'rotate-90' : ''"
         fill="none"
         stroke="currentColor"

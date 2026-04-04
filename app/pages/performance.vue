@@ -1,7 +1,7 @@
 <template>
-  <div class="p-7 overflow-y-auto h-full space-y-5">
+  <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
     <Heading title="Performance Breakdown" subtitle="Create custom reports and explore your school data">
-      <div class="flex space-x-3 w-1/3">
+      <div class="flex md:space-x-3 space-x-2 md:w-1/3 w-full">
         <USelectMenu @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
           placeholder="Select Student" />
         <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
@@ -9,35 +9,50 @@
       </div>
     </Heading>
     <DashboardParentSubjectPerformance :term="term?.id || ''" :id="selected?.id || ''" />
-    <UCard v-for="value in breakdown">
-      <div>
-        <div class="flex justify-between items-center cursor-pointer" @click="toggleSubject(value.id)">
-          <div class="flex space-x-2.5 items-center">
-            <p class="text-base font-semibold">{{ value.name }}</p>
-          </div>
-          <div class="w-1/3 flex space-x-5 items-center">
-            <div class="flex space-x-3 flex-1 items-center">
-              <UProgress color="primary" size="md" :max="100" v-model="value.score" />
-              <p>{{ value.score }}%</p>
+    <UCard v-for="row in breakdown" :key="row.id" @click="toggle(row.id)">
+      <template #header>
+        <div class="flex justify-between cursor-pointer">
+          <div class="flex space-x-3 items-center">
+            <UAvatar size="lg" :alt="row.name" />
+
+            <div>
+              <p class="text-sm font-medium">{{ row.name }}</p>
+              <p :class="`text-[11px] text-muted text-${parseTrend[row.trend].color}`">Trend: {{
+                parseTrend[row.trend].label }}</p>
             </div>
-            <div class="flex space-x-5 items-center">
-              <UBadge :label="parseTrend[value.trend].label" :color="parseTrend[value.trend].color"
-                :trailing-icon="parseTrend[value.trend].icon" variant="outline" />
-              <UButton variant="link" :icon="expanded.has(value.id)? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'" />
+          </div>
+          <div class="flex space-x-3 items-center">
+            <div class="flex flex-col items-end">
+              <p class="text-xs text-mute">Term Total</p>
+              <p class="font-semibold">{{ row.score }}</p>
+            </div>
+
+            <UIcon :name="expanded[row.id] ? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'" class="text-lg text-mute"
+              variant="link" />
+          </div>
+        </div>
+      </template>
+
+      <template v-if="expanded[row.id]" #default>
+        <div class="space-y-1.5">
+          <div v-for="(score, i) in row.scores" :key="i" class="flex justify-between pb-1.5" :class="{
+            'border-b border-gray-100':
+              Number.parseInt(i) + 1 < row.scores.length
+          }">
+            <p class="text-sm">{{ score.name }}</p>
+            <div class="flex space-x-2">
+              <p class="text-sm font-medium">
+                <span>{{ score.score ?? '-' }}</span>
+                <span> ({{ score.weightScore ?? '-' }}) </span>
+              </p>
+              <p :class="`text-sm text-${parseTrend[score.trend].color}`"> | {{ parseTrend[score.trend].label }}</p>
             </div>
           </div>
         </div>
-        <div v-if="expanded.has(value.id)" class="mt-3 border-gray-200 border-t">
-          <UTable :columns="columns" :data="value.scores">
-            <template #trend-cell="{ row }">
-              <div class="flex justify-end">
-                <UBadge variant="outline" :label="parseTrend[row.original.trend].label" :color="parseTrend[row.original.trend].color"
-                  :trailing-icon="parseTrend[row.original.trend].icon" />
-              </div>
-            </template>
-          </UTable>
+        <div v-if="row.scores.length <= 0">
+          <p class="text-center text-xs text-mute">No Assessments Yet</p>
         </div>
-      </div>
+      </template>
     </UCard>
     <UCard v-if="!assessmentLoading && breakdown.length === 0" class="py-14">
       <div class="flex flex-col items-center justify-center text-center space-y-4">
@@ -77,18 +92,14 @@ const state = reactive({
   term: ''
 })
 
-const expanded = ref<Set<string>>(new Set())
+const expanded = ref<Record<string, boolean>>({})
 
 const term = computed(() =>
   activeCycle.value?.terms.find(e => e.id === state.term)
 )
 
-function toggleSubject(id: string) {
-  if (expanded.value.has(id)) {
-    expanded.value.delete(id)
-  } else {
-    expanded.value.add(id)
-  }
+function toggle(id: string) {
+  expanded.value[id] = !expanded.value[id]
 }
 
 const terms = computed(() =>
@@ -148,7 +159,7 @@ watch(
 )
 
 watch(
-  () => state.term,
+  () => [state.term, state.student],
   async () => {
     await loadAvarageData()
   },
@@ -233,7 +244,7 @@ async function loadAvarageData() {
       ]
     }
 
-    await store.runReport(payload, 0, 0)
+    await store.runReport(payload, 1, 200)
 
   } catch (err) {
 

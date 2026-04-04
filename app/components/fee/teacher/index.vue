@@ -160,7 +160,7 @@ async function loadAvarageData() {
             ]
         }
 
-        await store.runReport(payload, 0, 0)
+        await store.runReport(payload, 1, 200)
     } catch (err) {
         console.error("Failed to load class performance", err)
     } finally {
@@ -175,9 +175,9 @@ definePageMeta({
 </script>
 
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Fees Collected" subtitle="Create custom reports and explore your school data">
-            <div class="flex space-x-3 w-1/3">
+            <div class="flex space-x-3 md:w-1/3 w-full">
                 <USelectMenu @change="change" :loading="classStore.loading" :items="classes" value-key="value"
                     v-model="state.classId" placeholder="Select Student" />
                 <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"

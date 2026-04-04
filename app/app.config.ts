@@ -26,14 +26,16 @@ export default defineAppConfig({
     },
     table: {
       slots: {
-        tr: 'hover:bg-app-50/20'
+        tr: 'hover:bg-app-100/20',
+        th: 'font-display uppercase text-mute text-[12.5px]',
+        td: 'text-gray-800'
       }
     },
     card: {
       slots: {
-        body: 'p-5 sm:p-5',
-        header: 'p-5 sm:p-5',
-        footer: 'p-5 sm:p-5',
+        body: 'p-3 sm:p-4',
+        header: 'p-3 sm:p-4',
+        footer: 'p-3 sm:p-4',
       },
       variants: {
         variant: {

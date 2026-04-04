@@ -101,7 +101,7 @@ async function loadData() {
 
         if (!widget?.labels || !widget?.datasets) return
 
-        labels.value = widget.labels
+        labels.value = widget.labels.map((e: string) => clean(e))
         colors.value = generateColors(labels.value.length)
         chartSeries.value = widget.datasets.map((d: any) => ({
             name: d.label,

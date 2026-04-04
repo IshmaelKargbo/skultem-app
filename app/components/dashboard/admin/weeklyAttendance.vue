@@ -50,7 +50,6 @@ const chartOptions = computed(() => ({
   tooltip: { y: { formatter: (val: number) => `${val}%` } }
 }))
 
-// Simulate API fetch with delay
 onMounted(async () => {
   const res = await store.fetchAdminWeekly()
   if (res == null) return
@@ -73,7 +72,6 @@ onMounted(async () => {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;

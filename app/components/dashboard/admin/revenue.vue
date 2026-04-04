@@ -26,7 +26,7 @@ const chartOptions = computed(() => ({
         id: 'revenue-breakdown',
         type: 'donut',
     },
-    labels: revenueItems.value.map(item => item.label),
+    labels: revenueItems.value.map(item => clean(item.label)),
     title: { text: 'Revenue Brake Down', align: 'left', style: { fontWeight: '600' } },
 
     legend: {

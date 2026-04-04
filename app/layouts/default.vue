@@ -1,7 +1,9 @@
 <template>
   <div class="flex h-dvh overflow-hidden">
     <!-- Sidebar -->
-    <Menu class="w-64" />
+    <div class="w-60 hidden md:block">
+      <Menu />
+    </div>
 
     <!-- Main Area -->
     <div class="flex flex-1 flex-col min-w-0">
@@ -11,6 +13,7 @@
           <slot />
         </div>
       </div>
+      <MenuMobile class="md:hidden block" />
     </div>
   </div>
 </template>

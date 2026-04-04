@@ -77,6 +77,7 @@ export type AssessmentScore = {
     student: string
     weight: number
     weightScore: number
+    trend?: string
     grade?: string
     status: string
 }

@@ -90,17 +90,6 @@ function calculateWeightedTotal(row: any) {
     return [totalScore, totalWeight]
 }
 
-function calculateGrade(row: any) {
-    const scores = row.scores as Array<{ score?: number; status?: string; weightScore?: number }>
-    const allCompleted = scores.every(s => s.status === 'COMPLETED')
-    if (!allCompleted) return '-'
-
-    const total = calculateWeightedTotal(row)
-
-    const band = gradingBands.value.find(item => total[1] >= item.minScore && total[1] <= item.maxScore)
-    return band?.grade || '-'
-}
-
 function prepareRecord() {
     const map = new Map<string, any>()
 
@@ -157,7 +146,7 @@ async function runReport() {
                 type: "select"
             }
         ]
-    })
+    }, 1, 200)
 
     prepareRecord()
 }

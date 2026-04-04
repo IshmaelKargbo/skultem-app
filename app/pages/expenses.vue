@@ -4,10 +4,10 @@
             <ExpensesAdd @refresh-report="refreshReport" />
         </Heading>
         <ExpensesReport ref="reportRef" />
+        <ExpensesTable />
         <UCard>
             <WidgetExpenseCategory ref="categoryRef" />
         </UCard>
-        <ExpensesTable />
     </div>
 </template>
 

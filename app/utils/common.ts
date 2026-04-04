@@ -44,9 +44,9 @@ export const parseTrend = {
 }
 
 export function generateColors(count: number) {
-  return Array.from({ length: count }, (_, i) => 
-    `hsl(${Math.floor(Math.random()*360)},70%,55%)`
-  )
+    return Array.from({ length: count }, (_, i) =>
+        `hsl(${Math.floor(Math.random() * 360)},70%,55%)`
+    )
 }
 
 export enum Role {
@@ -78,7 +78,7 @@ export const directionOptions = [
         value: "DEBIT"
     }
 ]
- 
+
 export const typeOptions = [
     {
         label: 'Fee Assignment',
@@ -102,6 +102,21 @@ export const typeOptions = [
     }
 ]
 
+export const monthOrder: Record<string, number> = {
+    January: 1,
+    February: 2,
+    March: 3,
+    April: 4,
+    May: 5,
+    June: 6,
+    July: 7,
+    August: 8,
+    September: 9,
+    October: 10,
+    November: 11,
+    December: 12,
+}
+
 export const referenceTypeOptions = [
     {
         label: 'Student',
@@ -120,6 +135,24 @@ export const referenceTypeOptions = [
         value: "OTHER"
     }
 ]
+
+export const paymentMethods = {
+  BANK: {
+    label: 'Bank',
+    color: 'success',
+    icon: 'mdi-bank'
+  },
+  MOBILE_MONEY: {
+    label: 'Mobile Money',
+    color: 'info',
+    icon: 'mdi-cellphone'
+  },
+  CASH: {
+    label: 'Cash',
+    color: 'neutral',
+    icon: 'mdi-cash'
+  },
+}
 
 export const parseRole: Record<string, string> = {
     PROPRIETOR: 'Proprietor',
@@ -146,11 +179,11 @@ export const parseRoleIcon: Record<string, string> = {
 }
 
 export function clean(str: string) {
-  return str
-    .toLowerCase()
-    .split("_")
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+    return str
+        .toLowerCase()
+        .split("_")
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
 }
 
 export type AssignmentSubject = {

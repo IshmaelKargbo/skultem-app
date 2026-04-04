@@ -6,18 +6,7 @@ const loading = ref(true)
 const { format } = useMoney()
 const { records: data } = storeToRefs(store)
 
-const parseMethod = {
-  BANK: 'Bank',
-  MOBILE_MONEY: 'Mobile Money',
-  CASH: 'Cash'
-}
-
 const columns: TableColumn<Ledger> = [
-  {
-    accessorKey: 'paidAt',
-    header: 'Date',
-    cell: ({ row }: any) => formatDate(row.original.paidAt)
-  },
   {
     accessorKey: 'student',
     header: 'Student'
@@ -28,32 +17,18 @@ const columns: TableColumn<Ledger> = [
   },
   {
     accessorKey: 'amount',
-    header: 'Amount',
-    cell: ({ row }: any) => format(row.original.amount)
+    header: 'Amount'
   },
   {
     accessorKey: 'paymentMethod',
-    header: 'Method',
-    cell: ({ row }: any) => parseMethod[row.original.paymentMethod]
+    header: 'Method'
   },
   {
     accessorKey: 'referenceNo',
-    header: 'Reference',
+    header: 'Reference No',
     cell: ({ row }: any) => row.original.referenceNo || '-'
   }
 ]
-
-const parseType: Record<string, string> = {
-  "FEE_ASSINMENT": "Fee Assignment",
-  "DISCOUNT": "Discount",
-  "PAYMENT": "Payment",
-}
-
-const parseTypeColor: Record<string, string> = {
-  "FEE_ASSINMENT": "neutral",
-  "DISCOUNT": "info",
-  "PAYMENT": "success",
-}
 
 async function fetchRecord() {
   loading.value = true
@@ -68,8 +43,11 @@ onMounted(async () => {
 
 <template>
   <UCard>
-    <div class="space-y-5">
-      <p class="font-semibold">Recent Transactions</p>
+    <div class="space-y-2">
+      <div class="flex justify-between">
+        <p class="font-semibold font-display text-base">Recent Transactions</p>
+        <UBadge color="neutral" :label="formatDateString(new Date().toISOString())" variant="outline" />
+      </div>
       <UTable :columns="columns" :data="data" :loading="loading" :ui="{
         tfoot: 'bg-app-50/10'
       }">
@@ -82,26 +60,30 @@ onMounted(async () => {
         <template #debit-cell="{ row }">
           <p class="text-error font-semibold">{{ row.original.debit ? format(row.original.debit || 0) : '-' }}</p>
         </template>
-        <template #debit-footer>
-          <p class="text-error font-semibold">{{ format(total.totalDebit || 0) }}</p>
+        <template #student-cell="{ row }">
+          <div class="flex space-x-3">
+            <div>
+              <UAvatar :alt="row.original.student" />
+            </div>
+            <div>
+              <p>{{ row.original.student }}</p>
+              <p class="text-xs text-mute">{{ formatDateTime(row.original.createdAt) }}</p>
+            </div>
+          </div>
         </template>
-        <template #credit-cell="{ row }">
-          <p class="text-success font-semibold">{{ row.original.credit ? format(row.original.credit || 0) : '-' }}</p>
+        <template #paymentMethod-cell="{ row }">
+          <UBadge variant="outline" :color="paymentMethods[row.original.paymentMethod].color"
+            :label="` - ${paymentMethods[row.original.paymentMethod].label}`"
+            :icon="paymentMethods[row.original.paymentMethod].icon" />
         </template>
-        <template #credit-footer>
-          <p class="text-success font-semibold">{{ format(total.totalCredit || 0) }}</p>
+        <template #fee-cell="{ row }">
+          <UBadge variant="outline" color="info" :label="row.original.fee" />
         </template>
-        <template #type-cell="{ row }">
-          <UBadge variant="subtle" :color="parseTypeColor[row.original.type]" :label="parseType[row.original.type]" />
+        <template #amount-cell="{ row }">
+          <p class="font-semibold">{{ format(row.original.amount || 0) }}</p>
         </template>
-        <template #balance-cell="{ row }">
-          <p class="text-info font-semibold">{{ format(row.original.balance || 0) }}</p>
-        </template>
-        <template #balance-footer>
-          <p class="text-info font-semibold">{{ format(total.finalBalance || 0) }}</p>
-        </template>
-        <template #date-footer>
-          <p>Total</p>
+        <template #referenceNo-cell="{ row }">
+          <p class="font-medium">{{ row.original.referenceNo }}</p>
         </template>
       </UTable>
     </div>

@@ -27,8 +27,8 @@ async function fetchRecord() {
 watch(() => fees.value, fetchRecord, { immediate: true })
 </script>
 <template>
-    <div class="grid gap-3 grid-cols-3">
-        <Metric :record="{
+    <div class="grid gap-3 md:grid-cols-3 grid-cols-2">
+        <Metric class="col-span-2 md:col-span-1" :record="{
             label: 'Paid',
             icon: CHECK_ICON,
             value: report?.paid,
