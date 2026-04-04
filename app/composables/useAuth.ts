@@ -1,25 +1,32 @@
 export function useAuth() {
     const userStore = useUserStore()
-    const activeRole = useState<string>('active-role', () => '')
+    const roleCookie = useCookie<string | null>('active_role', {
+        default: () => null,
+        sameSite: 'lax'
+    })
+    const activeRole = useState<string>('active-role', () => roleCookie.value ?? '')
+    const authResolved = useState<boolean>('auth-resolved', () => false)
 
-    // ✅ Rehydrate from localStorage once on client mount
-    if (import.meta.client) {
-        const cached = localStorage.getItem('active-role')
-        if (cached) activeRole.value = cached
+    function resolveRole(user?: User | null) {
+        if (!user?.roles?.length) return ''
+        const preferredRole = roleCookie.value
+        if (preferredRole && user.roles.includes(preferredRole)) {
+            return preferredRole
+        }
+        return user.roles[0] ?? ''
+    }
+
+    function syncRole(role: string) {
+        activeRole.value = role
+        roleCookie.value = role || null
     }
 
     function setActiveRole(role: string) {
-        activeRole.value = role
-        if (import.meta.client) {
-            localStorage.setItem('active-role', role)
-        }
+        syncRole(role)
     }
 
     function clearRole() {
-        activeRole.value = ''
-        if (import.meta.client) {
-            localStorage.removeItem('active-role')
-        }
+        syncRole('')
     }
 
     function hasRole(role: string | string[]) {
@@ -33,25 +40,22 @@ export function useAuth() {
         return hasRole(role)
     }
 
+    function initializeActiveRole() {
+        syncRole(resolveRole(userStore.user))
+    }
+
+    function setAuthResolved(value: boolean) {
+        authResolved.value = value
+    }
+
     watch(() => userStore.user, (user) => {
-        if (!user) {
+        if (!user?.email) {
             clearRole()
             return
         }
 
-        // ✅ Only touch localStorage on client
-        if (import.meta.client) {
-            const cached = localStorage.getItem('active-role')
-            if (cached && user.roles?.includes(cached)) {
-                activeRole.value = cached
-            } else {
-                activeRole.value = user.roles?.[0] ?? ''
-            }
-        } else {
-            // ✅ Server: just use first role, don't touch localStorage
-            activeRole.value = user.roles?.[0] ?? ''
-        }
+        syncRole(resolveRole(user))
     }, { immediate: true })
 
-    return { activeRole, setActiveRole, clearRole, hasRole, can }
+    return { activeRole, authResolved, setActiveRole, clearRole, hasRole, can, initializeActiveRole, setAuthResolved }
 }

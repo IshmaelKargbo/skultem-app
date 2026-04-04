@@ -51,9 +51,11 @@ export const useUserStore = defineStore('user', {
 
       const accessToken = useCookie("access_token")
       const refreshToken = useCookie("refresh_token")
+      const activeRole = useCookie("active_role")
 
       accessToken.value = null
       refreshToken.value = null
+      activeRole.value = null
     },
     findOne(id: string) {
       return UserApi().getOne(id)

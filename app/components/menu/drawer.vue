@@ -5,6 +5,7 @@ const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 
 const { activeRole, can, setActiveRole } = useAuth()
+const { canInstall, install } = usePwaInstall()
 
 const router = useRouter()
 const open = ref(false)
@@ -45,6 +46,13 @@ function close() {
 function switchRole(role: string) {
   setActiveRole(role)
   close()
+}
+
+async function installApp() {
+  const installed = await install()
+  if (installed) {
+    close()
+  }
 }
 
 watch(
@@ -179,6 +187,16 @@ watch(
             @click="close"
           >
             Notifications
+          </UButton>
+
+          <UButton
+            v-if="canInstall"
+            icon="lucide:download"
+            variant="ghost"
+            class="w-full justify-start"
+            @click="installApp"
+          >
+            Install App
           </UButton>
         </div>
 

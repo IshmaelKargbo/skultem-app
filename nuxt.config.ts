@@ -48,22 +48,40 @@ export default defineNuxtConfig({
       globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js']
     },
     manifest: {
+      id: '/',
       name: 'Skultem',
       short_name: 'Skultem',
       description: 'School management and assessment system',
       theme_color: '#0f172a',
       background_color: '#ffffff',
+      start_url: '/',
+      scope: '/',
       display: 'standalone',
+      orientation: 'portrait',
       icons: [
         {
           src: '/pwa-192x192.png',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any'
         },
         {
           src: '/pwa-512x512.png',
           sizes: '512x512',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: '/pwa-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'maskable'
+        },
+        {
+          src: '/pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
         }
       ]
     }

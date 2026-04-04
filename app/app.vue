@@ -6,10 +6,3 @@
     </NuxtLayout>
   </UApp>
 </template>
-
-<script setup lang="ts">
-const { hide } = useGlobalLoader()
-onMounted(async () => {
-  hide()
-})
-</script>

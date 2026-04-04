@@ -140,6 +140,7 @@ const state = reactive({
 const loading = ref(false)
 const toast = useToast()
 const userStore = useUserStore()
+const { initializeActiveRole, setAuthResolved } = useAuth()
 
 const schema = yup.object({
   email: yup.string().email("Enter a valid email").required("Email is required"),
@@ -149,10 +150,14 @@ const schema = yup.object({
 const handleLogin = async () => {
   try {
     loading.value = true
+    setAuthResolved(false)
     await userStore.login({ domain: "kings-way", email: state.email, password: state.password })
+    await userStore.me()
+    initializeActiveRole()
     navigateTo("/")
   } catch (err: any) {
     loading.value = false
+    setAuthResolved(true)
     toast.add({ description: err.message, color: "error" })
   }
 }
