@@ -89,8 +89,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
 <template>
     <UCard>
         <div class="space-y-4">
-            <div class="space-y-2">
-                <div class="flex justify-between font-semibold">
+            <div class="space-y-1">
+                <div class="flex justify-between">
                     <p>Present Days</p>
                     <p>{{ report.present }}%</p>
                 </div>
@@ -98,8 +98,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.present" />
                 </div>
             </div>
-            <div class="space-y-2">
-                <div class="flex justify-between font-semibold">
+            <div class="space-y-1">
+                <div class="flex justify-between">
                     <p>Absent Days</p>
                     <p>{{ report.absent }}%</p>
                 </div>
@@ -108,8 +108,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.absent" />
                 </div>
             </div>
-            <div class="space-y-2">
-                <div class="flex justify-between font-semibold">
+            <div class="space-y-1">
+                <div class="flex justify-between">
                     <p>Late Days</p>
                     <p>{{ report.late }}%</p>
                 </div>
@@ -118,8 +118,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.late" />
                 </div>
             </div>
-            <div class="space-y-2">
-                <div class="flex justify-between font-semibold">
+            <div class="space-y-1">
+                <div class="flex justify-between">
                     <p>Excused Days</p>
                     <p>{{ report.excused }}%</p>
                 </div>
