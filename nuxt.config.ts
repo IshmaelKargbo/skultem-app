@@ -55,8 +55,11 @@ export default defineNuxtConfig({
       enabled: true
     },
     workbox: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-      globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js']
+      globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
+      globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
+      cleanupOutdatedCaches: true,
+      clientsClaim: true,
+      skipWaiting: true
     },
     manifest: {
       id: '/',
