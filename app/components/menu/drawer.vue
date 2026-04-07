@@ -64,20 +64,9 @@ watch(
 </script>
 
 <template>
-  <USlideover
-    :open="open"
-    :dismissible="false"
-    :ui="{ content: 'w-screen max-w-none' }"
-    @update:open="open = $event"
-  >
+  <USlideover :open="open" :dismissible="false" :ui="{ content: 'w-screen max-w-none' }" @update:open="open = $event">
     <!-- Trigger -->
-    <UButton
-      class="md:hidden"
-      color="neutral"
-      variant="link"
-      icon="lucide:menu"
-      @click="open = true"
-    />
+    <UButton class="md:hidden" color="neutral" variant="link" icon="lucide:menu" @click="open = true" />
 
     <!-- Header -->
     <template #header>
@@ -85,9 +74,7 @@ watch(
         <div class="flex items-center space-x-3">
           <div class="relative shrink-0">
             <UAvatar :alt="name" size="md" />
-            <span
-              class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-indigo-500 rounded-full"
-            />
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-indigo-500 rounded-full" />
           </div>
 
           <div class="min-w-0">
@@ -104,13 +91,7 @@ watch(
           </div>
         </div>
 
-        <UButton
-          icon="lucide:x"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          @click="close"
-        />
+        <UButton icon="lucide:x" color="neutral" variant="ghost" size="xs" @click="close" />
       </div>
     </template>
 
@@ -125,25 +106,15 @@ watch(
           </p>
 
           <div class="space-y-1 border-y py-2 border-gray-100">
-            <button
-              v-for="role in userRoles"
-              :key="role.value"
-              class="flex items-center gap-3 w-full px-3 py-2 rounded-xl border transition text-left"
-              :class="
-                activeRole === role.value
+            <button v-for="role in userRoles" :key="role.value"
+              class="flex items-center gap-3 w-full px-3 py-2 rounded-xl border transition text-left" :class="activeRole === role.value
                   ? 'bg-primary-50 border-primary-200'
                   : 'border-transparent hover:bg-gray-50'
-              "
-              @click="switchRole(role.value)"
-            >
-              <span
-                class="w-7 h-7 flex items-center justify-center rounded-lg"
-                :class="
-                  activeRole === role.value
-                    ? 'bg-primary-100'
-                    : 'bg-gray-100'
-                "
-              >
+                " @click="switchRole(role.value)">
+              <span class="w-7 h-7 flex items-center justify-center rounded-lg" :class="activeRole === role.value
+                  ? 'bg-primary-100'
+                  : 'bg-gray-100'
+                ">
                 <UIcon :name="role.icon" class="text-sm" />
               </span>
 
@@ -157,71 +128,41 @@ watch(
                 </p>
               </div>
 
-              <UIcon
-                v-if="activeRole === role.value"
-                name="lucide:check"
-                class="text-primary text-xs"
-              />
+              <UIcon v-if="activeRole === role.value" name="lucide:check" class="text-primary text-xs" />
             </button>
           </div>
         </div>
 
         <!-- Navigation -->
         <div class="border-b border-gray-100 pb-2">
-          <UButton
-            v-if="can(['admin','proprietor'])"
-            icon="lucide:settings"
-            variant="ghost"
-            class="w-full justify-start"
-            to="/settings"
-            @click="close"
-          >
+          <UButton v-if="can(['admin', 'proprietor'])" icon="lucide:settings" variant="ghost"
+            class="w-full justify-start" to="/settings" @click="close">
             Settings
           </UButton>
 
-          <UButton
-            :icon="BELL_ICON"
-            variant="ghost"
-            class="w-full justify-start"
-            to="/notifications"
-            @click="close"
-          >
+          <UButton :icon="BELL_ICON" variant="ghost" class="w-full justify-start" to="/notifications" @click="close">
             Notifications
           </UButton>
 
-          <UButton
-            v-if="canInstall"
-            icon="lucide:download"
-            variant="ghost"
-            class="w-full justify-start"
-            @click="installApp"
-          >
+          <UButton v-if="canInstall" icon="lucide:download" variant="ghost" class="w-full justify-start"
+            @click="installApp">
             Install App
           </UButton>
         </div>
-
         <!-- Performance -->
-        <UButton
-          :icon="PERFORMANCE_ICON"
-          variant="ghost"
-          class="w-full justify-start"
-          to="/performance"
-          @click="close"
-        >
+        <UButton v-if="can([Role.PARENT])" :icon="PERFORMANCE_ICON" variant="ghost" class="w-full justify-start" to="/performance" @click="close">
           Performance
+        </UButton>
+        <!-- leader-board -->
+        <UButton v-if="can([Role.TEACHER, Role.PROPRIETOR])" :icon="BEHAVIOUR_ICON" variant="ghost" class="w-full justify-start" to="/behaviours" @click="close">
+          Behaviours
         </UButton>
       </div>
     </template>
 
     <!-- Footer -->
     <template #footer>
-      <UButton
-        to="/logout"
-        icon="lucide:log-out"
-        color="error"
-        variant="ghost"
-        class="w-full justify-start"
-      >
+      <UButton to="/logout" icon="lucide:log-out" color="error" variant="ghost" class="w-full justify-start">
         Sign out
       </UButton>
     </template>

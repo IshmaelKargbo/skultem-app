@@ -131,19 +131,23 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No category found.</p>
+          <p class="text-gray-500">No behaviour found.</p>
         </div>
       </template>
     </UTable>
-    <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

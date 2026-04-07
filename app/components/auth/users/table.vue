@@ -25,12 +25,6 @@ const parseStatusColor: Record<string, string> = {
   DELETED: 'danger'
 }
 
-const parseStatusIcon: Record<string, string> = {
-  ACTIVE: 'i-lucide-check-circle',
-  INACTIVE: 'i-lucide-x-circle',
-  DELETED: 'i-lucide-trash'
-}
-
 const columns: TableColumn<User> = [
   {
     accessorKey: 'name',
@@ -154,28 +148,34 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
-    <div>
-      <UTable :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No users found.</p>
-          </div>
-        </template>
-        <template #status-cell="{row}">
-          <UBadge :label="parseStatus[row.original.status]" variant="outline" :color="parseStatusColor[row.original.status]" />
-        </template>
-        <template #roles-cell="{row}">
-          <UBadge v-if="row.original.roles.length > 1" :label="`${row.original.roles.length} - `" color="neutral" variant="outline" trailing-icon="eos-icons:role-binding-outlined" />
-          <UBadge v-else :label="`${parseRole[row.original.roles[0]||'']} - `" :color="parseRoleColor[row.original.roles[0]||'']" variant="outline" :trailing-icon="parseRoleIcon[row.original.roles[0]||'']" />
-        </template>
-      </UTable>
-      <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
+    <UTable :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No users found.</p>
+        </div>
+      </template>
+      <template #status-cell="{ row }">
+        <UBadge :label="parseStatus[row.original.status]" variant="outline"
+          :color="parseStatusColor[row.original.status]" />
+      </template>
+      <template #roles-cell="{ row }">
+        <UBadge v-if="row.original.roles.length > 1" :label="`${row.original.roles.length} - `" color="neutral"
+          variant="outline" trailing-icon="eos-icons:role-binding-outlined" />
+        <UBadge v-else :label="`${parseRole[row.original.roles[0] || '']} - `"
+          :color="parseRoleColor[row.original.roles[0] || '']" variant="outline"
+          :trailing-icon="parseRoleIcon[row.original.roles[0] || '']" />
+      </template>
+    </UTable>
+    <template #footer>
+      <div class="flex justify-between items-center">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
-    </div>
+    </template>
   </UCard>
 </template>

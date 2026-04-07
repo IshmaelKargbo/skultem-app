@@ -30,7 +30,7 @@
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                 class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-gray-400'">
+                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
                 <!-- Subnav icon -->
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>
@@ -50,13 +50,6 @@
           <MenuItem label="Attendance" to="/attendance">
           <template #icon>
             <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
-          </template>
-          </MenuItem>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.TEACHER])">
-          <MenuItem to="/leader-board" label="Leader Board">
-          <template #icon>
-            <UIcon class="text-xl" :name="LEADER_ICON" />
           </template>
           </MenuItem>
         </li>
@@ -205,7 +198,7 @@
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                 class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-gray-400'">
+                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
                 <!-- Subnav icon -->
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>
@@ -229,9 +222,26 @@
           </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR])">
-          <MenuItem to="/users" label="Users">
+          <MenuItem label="Auth" :subNavs="[
+            { label: 'Users', to: '/auth', icon: USERS_ICON, exact: true },
+            { label: 'Audits', to: '/auth/audits', icon: AUDIT_ICON },
+            { label: 'Sessions', to: '/auth/sessions', icon: SESSIONS_ICON },
+          ]">
+          <!-- Parent Icon -->
           <template #icon>
-            <UIcon class="text-xl" :name="USERS_ICON" />
+            <UIcon class="text-xl" :name="AUTH_ICON" />
+          </template>
+          <!-- Subnav Slot -->
+          <template #subNav="{ subNavs, isActiveSub }">
+            <div class="flex flex-col space-y-1">
+              <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
+                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
+                <!-- Subnav icon -->
+                <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
+                <span>{{ nav.label }}</span>
+              </NuxtLink>
+            </div>
           </template>
           </MenuItem>
         </li>

@@ -28,7 +28,7 @@ export default defineAppConfig({
       slots: {
         tr: 'hover:bg-app-100/20',
         th: 'font-display uppercase text-mute text-[12.5px]',
-        td: 'text-gray-800'
+        td: 'text-neutral-800'
       }
     },
     card: {

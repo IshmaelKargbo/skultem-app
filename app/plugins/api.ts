@@ -3,32 +3,61 @@ export default defineNuxtPlugin(() => {
   const configuredBase = (config.public.apiBase || "http://localhost:8080").replace(/\/+$/, "")
   const baseURL = /\/api\/v\d+$/.test(configuredBase) ? configuredBase : `${configuredBase}/api/v1`
 
-  let isRefreshing = false
   let refreshPromise: Promise<string | null> | null = null
 
-  const getNewAccessToken = async (refreshToken: string): Promise<string | null> => {
-    if (isRefreshing && refreshPromise) return refreshPromise
+  const getAuthCookies = () => {
+    const accessToken = useCookie<string | null>("access_token")
+    const refreshToken = useCookie<string | null>("refresh_token")
+    const activeRole = useCookie<string | null>("active_role")
 
-    isRefreshing = true
+    return { accessToken, refreshToken, activeRole }
+  }
+
+  const clearAuthState = () => {
+    const { accessToken, refreshToken, activeRole } = getAuthCookies()
+
+    accessToken.value = null
+    refreshToken.value = null
+    activeRole.value = null
+  }
+
+  const logoutAndRedirect = async () => {
+    clearAuthState()
+    await navigateTo("/login")
+  }
+
+  const getNewAccessToken = async (refreshToken: string): Promise<string | null> => {
+    if (refreshPromise) {
+      return refreshPromise
+    }
+
     refreshPromise = $fetch<any>(`${baseURL}/auth/refresh`, {
       method: 'POST',
       body: { refreshToken }
     })
       .then((res) => {
+        const { accessToken, refreshToken: refreshTokenCookie } = getAuthCookies()
         const newToken = res?.data?.accessToken
+        const newRefreshToken = res?.data?.refreshToken
+
         if (!newToken) throw new Error("No token returned")
+
+        accessToken.value = newToken
+        if (newRefreshToken) {
+          refreshTokenCookie.value = newRefreshToken
+        }
+
         return newToken as string
       })
       .catch(() => null)
       .finally(() => {
-        isRefreshing = false
         refreshPromise = null
       })
 
     return refreshPromise
   }
 
-  const api = $fetch.create({
+  const rawApi = $fetch.create({
     baseURL,
 
     onRequest(context: any) {
@@ -42,61 +71,49 @@ export default defineNuxtPlugin(() => {
     },
 
     async onResponseError(context: any) {
-      const accessToken = useCookie("access_token")
-      const refreshToken = useCookie("refresh_token")
-
-      const logoutAndRedirect = async () => {
-        accessToken.value = null
-        refreshToken.value = null
-        await navigateTo("/login")
-      }
-
-      if (context.response.status === 401) {
-        if (context.request.toString().includes('/auth/refresh')) {
-          await logoutAndRedirect()
-          return
-        }
-
-        if (refreshToken.value) {
-          const newToken = await getNewAccessToken(refreshToken.value)
-
-          if (!newToken) {
-            await logoutAndRedirect()
-            return
-          }
-
-          accessToken.value = newToken
-
-          // ✅ Mutate the context options so the retry picks up the new token
-          context.options.headers = {
-            ...context.options.headers,
-            Authorization: `Bearer ${newToken}`,
-          }
-
-          // ✅ Re-assign the response by awaiting and mutating context.response
-          const retryResponse = await $fetch.raw(context.request, {
-            ...context.options,
-            headers: {
-              ...context.options.headers,
-              Authorization: `Bearer ${newToken}`,
-            },
-          })
-
-          // ✅ Overwrite the response so the original caller gets the retried result
-          context.response = retryResponse
-          context.response._data = retryResponse._data
-
-          return
-        } else {
-          await logoutAndRedirect()
-        }
-      }
-
       if (context.response.status >= 500) {
         console.error("Server Error:", context.response.statusText)
       }
     },
   })
+
+  const api = async <T>(request: any, options: Record<string, any> = {}): Promise<T> => {
+    const requestUrl = typeof request === "string" ? request : request?.toString?.() || ""
+    const isRefreshRequest = requestUrl.includes("/auth/refresh")
+    const hasRetried = Boolean(options._retried)
+
+    try {
+      return await rawApi<T>(request, options)
+    } catch (error: any) {
+      const status = error?.response?.status
+      const { refreshToken } = getAuthCookies()
+
+      if (status !== 401) {
+        throw error
+      }
+
+      if (isRefreshRequest || hasRetried || !refreshToken.value) {
+        await logoutAndRedirect()
+        throw error
+      }
+
+      const newToken = await getNewAccessToken(refreshToken.value)
+
+      if (!newToken) {
+        await logoutAndRedirect()
+        throw error
+      }
+
+      return await rawApi<T>(request, {
+        ...options,
+        _retried: true,
+        headers: {
+          ...options.headers,
+          Authorization: `Bearer ${newToken}`,
+        },
+      })
+    }
+  }
 
   return { provide: { api } }
 })

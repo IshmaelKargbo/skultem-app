@@ -1,7 +1,9 @@
 <template>
     <div class="p-7 h-full overflow-y-auto">
         <SettingsHeader title="Behaviour Categories" subtitle="Student conduct classifications">
-            <SettingsBehaviourCategoriesAdd />
+            <div>
+                <SettingsBehaviourCategoriesAdd />
+            </div>
         </SettingsHeader>
         <SettingsBehaviourCategoriesTable />
     </div>

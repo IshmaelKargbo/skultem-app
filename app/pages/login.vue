@@ -7,7 +7,7 @@
       <div class="absolute rounded-full  bg-cyan-600" style="width:320px;height:320px;top:-90px;right:-90px;opacity:0.06;" />
       <div class="absolute rounded-full  bg-cyan-400" style="width:180px;height:180px;bottom:60px;left:-50px;opacity:0.06;" />
 
-      <div class="self-start flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide bg-primary-700/50 text-gray-300">
+      <div class="self-start flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide bg-primary-700/50 text-white/80">
         <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
         School management platform
       </div>
@@ -41,7 +41,7 @@
         <h2 class="text-2xl font-display font-semibold mb-1">
           Welcome Back !
         </h2>
-        <p class="text-sm text-gray-400 mb-7">Sign in to your school account</p>
+        <p class="text-sm text-mute mb-7">Sign in to your school account</p>
 
         <!-- Form -->
         <UForm :schema="schema" :state="state" @submit="handleLogin" class="space-y-4">
@@ -49,7 +49,7 @@
           <UFormField
             name="email"
             label="Email"
-            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-gray-400 mb-1' }"
+            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }"
           >
             <UInput
               v-model="state.email"
@@ -67,7 +67,7 @@
           <UFormField
             name="password"
             label="Password"
-            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-gray-400 mb-1' }"
+            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }"
           >
             <UInput
               v-model="state.password"
@@ -88,7 +88,7 @@
               v-model="state.rememberMe"
               label="Remember me"
               :ui="{
-                label: 'text-sm text-gray-500 cursor-pointer',
+                label: 'text-sm text-mute cursor-pointer',
                 base: 'accent-[#0F1E3C]'
               }"
             />
@@ -109,8 +109,7 @@
             :loading="loading"
             block
             :ui="{
-              base: 'w-full justify-center font-medium tracking-wide transition-all',
-              rounded: 'rounded-lg',
+              base: 'w-full justify-center rounded-lg font-medium tracking-wide transition-all',
               color: {
                 primary: {
                   solid: 'bg-[#0F1E3C] hover:bg-[#1A3A72] text-[#F5F0E8] border-none'

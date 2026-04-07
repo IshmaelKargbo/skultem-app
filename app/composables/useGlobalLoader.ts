@@ -5,7 +5,7 @@ interface LoaderOptions {
 }
 
 export function useGlobalLoader() {
-    const visible = useState('loader-visible', () => true)
+    const visible = useState('loader-visible', () => false)
     const title = useState('loader-title', () => 'Loading...')
     const subtitle = useState('loader-subtitle', () => 'Please wait')
     const hint = useState('loader-hint', () => '')

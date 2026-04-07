@@ -1,11 +1,11 @@
 <template>
-  <div class="p-7 overflow-y-auto h-full space-y-5">
+  <div class="md:p-7 overflow-y-auto h-full md:space-y-5 space-y-3 p-4">
     <!-- Page Header -->
     <Heading 
       title="Leaderboard" 
       subtitle="View class performance and explore detailed student reports"
     >
-      <div class="flex w-1/2 space-x-3">
+      <div class="flex md:w-1/2 w-full space-x-3">
         <USelectMenu 
           v-model="state.classId" 
           :items="classes" 
@@ -49,12 +49,11 @@
 import type { TableColumn } from '@nuxt/ui'
 
 const reportStore = useReportStore()
-const { leaderboard } = storeToRefs(reportStore)
-
 const studentStore = useStudentStore()
-const { activeCycle } = storeToRefs(studentStore)
-
 const classStore = useClassSessionStore()
+
+const { leaderboard } = storeToRefs(reportStore)
+const { activeCycle } = storeToRefs(studentStore)
 
 const state = reactive({
   classId: '',
@@ -64,7 +63,6 @@ const state = reactive({
 const term = ref<Term | undefined>()
 const records = ref<ClassSession[]>([])
 
-/* Compute dynamic assessment columns based on the leaderboard data */
 const assessmentColumns = computed(() => {
   if (!leaderboard.value?.length) return []
 
@@ -85,12 +83,10 @@ const assessmentColumns = computed(() => {
   }))
 })
 
-/* Table Columns for the Leaderboard */
 const columns = computed<TableColumn<LeaderBoard>[]>(() => [
   { accessorKey: 'rank', header: 'Rank' },
   { accessorKey: 'name', header: 'Student' },
 
-  // Assessment Scores (Dynamic Columns)
   ...assessmentColumns.value.map(a => ({
     id: a.id,
     header: a.name,
@@ -104,14 +100,12 @@ const columns = computed<TableColumn<LeaderBoard>[]>(() => [
   { accessorKey: 'trend', header: '' }
 ])
 
-/* Trend mapping for badges */
 const parseTrend: Record<string, { icon: string; color: string; label: string }> = {
   IMPROVED: { icon: 'lucide:arrow-up', color: 'success', label: 'Improved' },
   DROPPED:  { icon: 'lucide:arrow-down', color: 'error', label: 'Dropped' },
   STABLE:   { icon: 'lucide:minus', color: 'warning', label: 'Stable' }
 }
 
-/* Prepare class dropdown options */
 const classes = computed(() =>
   records.value.map(e => {
     let label = `${e.clazz} (${e.sectionName}) - ${e.totalStudent}`
@@ -127,7 +121,6 @@ const terms = computed(() =>
   activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })) || []
 )
 
-/* Lifecycle: Fetch initial data */
 onMounted(async () => {
   useAppStore().setTitle('Leaderboard')
   document.title = 'Leaderboard | Skultem'
@@ -136,7 +129,6 @@ onMounted(async () => {
   await fetchActiveTerm()
 })
 
-/* Watch for changes and reload leaderboard */
 watch(() => [state.termId, state.classId], async () => {
   if (state.classId && state.termId) await loadLeaderboardData()
 }, { immediate: true })
@@ -171,11 +163,11 @@ async function loadLeaderboardData() {
         { field: 'studentAssessment.enrollment.clazz.id', value: state.classId, operator: 'EQUALS', type: 'select' }
       ]
     }
-    await reportStore.runReport(payload, 0, 0)
+    await reportStore.runReport(payload, 1, 200)
   } catch (err) {
     console.error('Failed to load leaderboard', err)
   }
 }
 
-definePageMeta({ role: [Role.TEACHER] })
+// definePageMeta({ role: [Role.TEACHER] })
 </script>

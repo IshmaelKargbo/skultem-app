@@ -7,7 +7,7 @@ const { subtitle, title } = defineProps<{
 
 <template>
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div class="min-w-0">
+        <div class="min-w-0 hidden md:block">
             <p class="text-lg md:text-2xl font-display font-semibold">{{ title }}</p>
             <p class="text-sm text-mute">{{ subtitle }}</p>
         </div>

@@ -2,7 +2,7 @@
   <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
     <Heading class="hidden md:flex" title="Grade Entry"
       subtitle="Enter scores for the active test. Locked assessments are read-only">
-      <div v-if="hasDraftAssessments" class="grid w-full gap-2 md:flex md:w-auto md:flex-wrap md:justify-end">
+      <div v-if="hasDraftAssessments" class="flex w-full space-x-3 md:w-auto md:justify-end">
         <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
         <UButton icon="lucide:check-circle" label="Complete Assessment" color="success" :loading="completing"
@@ -17,7 +17,7 @@
           v-model="state.termId" @change="fetchStudents" />
       </div>
     </UCard>
-    <div class="grid md:gap-3 gap-x-3 gap-y-2 md:grid-cols-2 md:hidden">
+    <div class="flex space-x-3 md:hidden">
       <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject"
         v-model="state.teacherSubjectId" @change="fetchStudents" />
       <USelectMenu value-key="value" :loading="termStore.loading" :items="terms" placeholder="Select Term"

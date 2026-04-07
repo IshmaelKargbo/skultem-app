@@ -1,6 +1,6 @@
 export type Behaviour = {
     id: string
-    enrollment: string
+    student: string
     kind: string
     category: string
     note: string

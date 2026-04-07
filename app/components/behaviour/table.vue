@@ -140,8 +140,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
-    <UTable :columns="columns" :data="data" :loading="loading">
+  <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -153,10 +153,31 @@ onMounted(async () => {
           variant="outline" />
       </template>
     </UTable>
-    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
+    <div class="md:hidden" v-for="row in data">
+      <div class="p-3 flex justify-between items-center">
+        <div class="flex space-x-2">
+          <div>
+            <UAvatar :alt="row.student" size="lg" />
+          </div>
+          <div>
+            <p class="text-sm">{{ row.student }}</p>
+            <p class="text-[11px] text-mute">{{ row.category }}</p>
+          </div>
+        </div>
+        <div>
+          <UBadge :color="parseBehaviourKindColor[row.kind]" variant="outline" :label="clean(row.kind)" />
+        </div>
+      </div>
+      <div class="bg-gray-50 p-2 px-3 border-y border-gray-100">
+        <p class="text-xs text-mute">{{ row.note }}</p>
+      </div>
     </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

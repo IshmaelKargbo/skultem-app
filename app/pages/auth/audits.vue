@@ -1,7 +1,9 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto">
-        <SettingsHeader title="Auth Log" subtitle="Tracked system activities" />
-        <UCard>
+    <div class="md:p-7 p-4 h-full overflow-y-auto md:space-y-5 space-y-3">
+        <Heading title="Audit Logs" subtitle="Track system activity and user actions" />
+        <UCard :ui="{
+            body: 'p-0 sm:p-0'
+        }">
             <UTable :columns="columns" :data="filtered" :loading="loading">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
@@ -11,7 +13,7 @@
                 </template>
                 <template #status-cell="{ row }">
                     <UBadge :color="row.original.status === 'SUCCESS' ? 'success' : 'error'" variant="outline"
-                        :label="row.original.status" />
+                        :label="clean(row.original.status)" />
                 </template>
                 <template #userName-cell="{ row }">
                     <div>
@@ -24,11 +26,13 @@
                 </template>
             </UTable>
 
-            <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-                <Showing :meta="meta" />
-                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                    :total="meta.total" show-edges />
-            </div>
+            <template #footer>
+                <div class="flex justify-between items-center">
+                    <Showing :meta="meta" />
+                    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+                        :total="meta.total" show-edges />
+                </div>
+            </template>
         </UCard>
     </div>
 </template>
@@ -42,7 +46,7 @@ const { records, meta, loading } = storeToRefs(store)
 const search = ref('')
 
 const columns: TableColumn<AuditLog>[] = [
-    { accessorKey: 'action', header: 'Action', cell: ({row}: any) => clean(row.original.action) },
+    { accessorKey: 'action', header: 'Action', cell: ({ row }: any) => clean(row.original.action) },
     { accessorKey: 'userName', header: 'User' },
     { accessorKey: 'status', header: 'Status' },
     { accessorKey: 'ipAddress', header: 'IP Address' },
@@ -72,8 +76,8 @@ watch(
 )
 
 onMounted(() => {
-    useAppStore().setTitle('Audit Logs')
-    document.title = 'Audit Logs | Settings | Skultem'
+    useAppStore().setTitle('Auth Management')
+    document.title = 'Audit Logs | Auth | Skultem'
 })
 
 definePageMeta({

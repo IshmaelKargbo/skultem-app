@@ -1,7 +1,6 @@
 <template>
   <UForm :schema="schema" :state="state" class="space-y-3" @submit.prevent="onSubmit">
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
-
       <!-- Header -->
       <template #header>
         <div class="flex items-center">
@@ -12,20 +11,11 @@
 
           <div class="flex flex-1 md:space-x-5 space-x-3">
             <UFormField name="classId" class="w-full">
-              <USelect
-                v-model="state.classId"
-                :items="classes"
-                placeholder="Select class"
-                @change="fetchRecords"
-              />
+              <USelect v-model="state.classId" :items="classes" placeholder="Select class" @change="fetchRecords" />
             </UFormField>
 
             <UFormField name="date" class="w-full">
-              <UInput
-                v-model="state.date"
-                type="date"
-                @change="fetchRecords"
-              />
+              <UInput v-model="state.date" type="date" @change="fetchRecords" />
             </UFormField>
           </div>
         </div>
@@ -36,103 +26,70 @@
         <!-- Actions -->
         <div class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
 
-          <UCheckbox
-            v-if="report.holiday"
-            v-model="state.holiday"
-            size="xs"
-            variant="card"
-            color="info"
-            label="Mark on Holiday"
-          />
+          <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
+            label="Mark on Holiday" />
 
           <div class="flex space-x-3">
-            <UButton
-              size="sm"
-              color="success"
-              variant="subtle"
-              label="Mark All Present"
-              :disabled="isDisable"
-              @click="markAllPresent"
-            />
+            <UButton size="sm" color="success" variant="subtle" label="Mark All Present" :disabled="isDisable"
+              @click="markAllPresent" />
 
-            <UButton
-              size="sm"
-              color="error"
-              variant="subtle"
-              label="Clear All"
-              :disabled="isDisable"
-              @click="clearAll"
-            />
+            <UButton size="sm" color="error" variant="subtle" label="Clear All" :disabled="isDisable"
+              @click="clearAll" />
           </div>
 
         </div>
 
         <!-- Table -->
-        <UTable
-          :columns="columns"
-          :data="state.records"
-          :loading="isLoading"
-        >
-
+        <UTable class="hidden md:block" :columns="columns" :data="state.records" :loading="isLoading">
           <template #present-cell="{ row }">
-            <UCheckbox
-              label="Present"
-              size="xs"
-              color="success"
-              variant="card"
-              :disabled="isDisable"
-              :model-value="row.original.present"
-              @change="stateChange(row.index, 'present')"
-            />
+            <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
+              :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
           </template>
 
           <template #late-cell="{ row }">
-            <UCheckbox
-              label="Late"
-              size="xs"
-              color="warning"
-              variant="card"
-              :disabled="isDisable"
-              :model-value="row.original.late"
-              @change="stateChange(row.index, 'late')"
-            />
+            <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
+              :model-value="row.original.late" @change="stateChange(row.index, 'late')" />
           </template>
 
           <template #excused-cell="{ row }">
-            <UCheckbox
-              label="Excused"
-              size="xs"
-              color="secondary"
-              variant="card"
-              :disabled="isDisable"
-              :model-value="row.original.excused"
-              @change="stateChange(row.index, 'excused')"
-            />
+            <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
+              :model-value="row.original.excused" @change="stateChange(row.index, 'excused')" />
           </template>
 
           <template #reason-cell="{ row }">
             <UFormField :name="`records.${row.index}.reason`">
-              <UInput
-                v-model="row.original.reason"
-                :disabled="!row.original.excused"
-                :placeholder="row.original.excused ? 'Enter excuse reason...' : ''"
-              />
+              <UInput v-model="row.original.reason" :disabled="!row.original.excused"
+                :placeholder="row.original.excused ? 'Enter excuse reason...' : ''" />
             </UFormField>
           </template>
-
         </UTable>
+        <div  class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
+          <div class="flex space-x-2 p-2">
+            <div>
+              <UAvatar alt="Ishmael Kargbo" size="lg" />
+            </div>
+            <div>
+              <p>{{ row.studentName }}</p>
+              <p class="text-[11px] text-mute">{{ row.admissionNumber }}</p>
+            </div>
+          </div>
+          <div class="border-y border-gray-100 bg-gray-50 space-x-2 p-3">
+            <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
+              :model-value="row.present" @change="stateChange(i, 'present')" />
 
+            <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
+              :model-value="row.late" @change="stateChange(i, 'late')" />
+
+            <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
+              :model-value="row.excused" @change="stateChange(i, 'excused')" />
+          </div>
+        </div>
       </div>
 
       <!-- Footer -->
       <template #footer>
         <div class="flex justify-end">
-          <UButton
-            type="submit"
-            icon="lucide:save"
-            label="Save Attendance"
-            :loading="isLoading"
-          />
+          <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
         </div>
       </template>
 

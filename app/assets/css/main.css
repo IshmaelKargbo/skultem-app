@@ -2,7 +2,11 @@
 @import "@nuxt/ui";
 
 :root {
-  --ui-text: var(--ui-color-neutral-600);
+  --ui-text: #1f2f46;
+  --app-text-strong: #142136;
+  --app-text: #31445f;
+  --app-text-soft: #60748f;
+  --app-text-faint: #7c90aa;
 }
 
 html {
@@ -37,20 +41,48 @@ html {
 
 .text-title {
   font-size: clamp(1.8rem, 2.5vw, 2.25rem);
-  @apply text-black font-bold;
+  color: var(--app-text-strong);
+  @apply font-bold;
 }
 
 .text-subtitle {
   font-size: clamp(1.1rem, 1.5vw, 1.25rem);
-  @apply text-black font-semibold;
+  color: var(--app-text);
+  @apply font-semibold;
 }
 
+.text-muted,
 .text-mute {
-  @apply text-neutral-400;
+  color: var(--app-text-soft) !important;
+}
+
+.text-gray-400,
+.text-neutral-400 {
+  color: var(--app-text-faint) !important;
+}
+
+.text-gray-500,
+.text-neutral-500,
+.text-muted-foreground {
+  color: var(--app-text-soft) !important;
+}
+
+.text-gray-600,
+.text-neutral-600 {
+  color: var(--app-text) !important;
+}
+
+.text-gray-700,
+.text-neutral-700,
+.text-gray-800,
+.text-neutral-800,
+.text-black {
+  color: var(--app-text-strong) !important;
 }
 
 body {
-  @apply bg-primary-50 text-neutral-900;
+  @apply bg-primary-50;
+  color: var(--app-text-strong);
 
   font-family: var(--font-app);
   font-weight: var(--font-weight-normal);
@@ -64,6 +96,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  color: var(--app-text-strong);
 }
 
 @theme {

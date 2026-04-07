@@ -1,7 +1,7 @@
 <template>
     <div class="p-7 overflow-y-auto h-full space-y-5">
         <Heading title="Behaviour Notes" subtitle="Record and manage behaviour observations for students in your class">
-            <div class="flex space-x-3 w-1/3">
+            <div class="flex space-x-3 md:w-1/3">
                 <USelectMenu :items="classes" v-model="state.id" placeholder="Select class" value-key="value" />
                 <BehaviourAdd @refresh="refreshReport" :clazz="clazzId" />
             </div>

@@ -12,9 +12,7 @@
                 { label: 'Fee Categories', to: '/settings/fee-categories' },
                 { label: 'Expense Categories', to: '/settings/expense-categories' },
                 { label: 'Behavoiur Categories', to: '/settings/behaviour-categories' },
-                { label: 'Holidaies', to: '/settings/holidaies' },
-                { label: 'Audit Logs', to: '/settings/audit' },
-                { label: 'User Sessions', to: '/settings/sessions' }
+                { label: 'Holidaies', to: '/settings/holidaies' }
             ]" />
             <Tab v-if="can([Role.ACCOUNTANT])" :tabs="[
                 { label: 'Fee Categories', to: '/settings/fee-categories' },

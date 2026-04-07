@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     head: {
       meta: [
         { name: 'theme-color', content: '#0f172a' },
-        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
         { name: 'apple-mobile-web-app-title', content: 'Skultem' }
       ],
@@ -52,9 +52,10 @@ export default defineNuxtConfig({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
     devOptions: {
-      enabled: true
+      enabled: false
     },
     workbox: {
+      navigateFallback: null,
       globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
       globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
       cleanupOutdatedCaches: true,

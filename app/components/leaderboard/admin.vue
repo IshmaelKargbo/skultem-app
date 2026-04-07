@@ -160,5 +160,5 @@ async function loadLeaderboardData() {
   }
 }
 
-definePageMeta({ role: [Role.ADMIN, Role.PROPRIETOR] })
+// definePageMeta({ role: [Role.ADMIN, Role.PROPRIETOR] })
 </script>

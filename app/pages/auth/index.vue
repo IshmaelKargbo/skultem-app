@@ -1,12 +1,11 @@
 <template>
-  <div class="p-7 overflow-y-auto h-full space-y-5">
+  <div class="p-7 overflow-y-auto h-full md:space-y-5 space-y-3">
     <Heading title="Users Management" subtitle="Manage users and explore your school data">
-
-      <UsersAdd />
+      <AuthUsersAdd />
     </Heading>
 
     <!-- Users Table -->
-    <UsersTable />
+    <AuthUsersTable />
   </div>
 </template>
 
@@ -14,8 +13,8 @@
 const appStore = useAppStore()
 
 onMounted(() => {
-  appStore.setTitle('Users')
-  document.title = 'Users | Skultem'
+  appStore.setTitle('Auth Management')
+  document.title = 'Users | Auth | Skultem'
 })
 
 definePageMeta({

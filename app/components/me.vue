@@ -11,11 +11,11 @@
                     color="neutral"
                     variant="ghost"
                     class="gap-2 px-2 py-1.5 rounded-md"
-                    :ui="{ base: 'border border-transparent hover:bg-gray-100 hover:border-gray-200' }"
+                    :ui="{ base: 'border border-transparent hover:bg-app-50 hover:border-app-100' }"
                 >
                     <div class="text-left">
-                        <p class="text-xs font-semibold text-gray-800 leading-tight">{{ name }}</p>
-                        <p class="text-[10px] text-gray-400 leading-tight capitalize">
+                        <p class="text-xs font-semibold text-neutral-800 leading-tight">{{ name }}</p>
+                        <p class="text-[10px] text-mute leading-tight capitalize">
                             Role: {{ parseRole[activeRole] || 'No Role' }}
                         </p>
                     </div>
@@ -43,7 +43,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-semibold truncate">{{ name }}</p>
-                            <p class="text-[12px] text-gray-400 truncate">{{ user?.email }}</p>
+                            <p class="text-[12px] text-mute truncate">{{ user?.email }}</p>
                         </div>
                         <UButton
                             icon="lucide:x"
@@ -56,54 +56,54 @@
 
                 <template #body>
                     <div v-if="user" class="space-y-4">
-                        <div class="flex items-center gap-2 px-1 py-2 rounded-lg bg-gray-50 border border-gray-100">
+                        <div class="flex items-center gap-2 px-1 py-2 rounded-lg bg-app-50/70 border border-app-100/70">
                             <UIcon name="lucide:shield-check" class="text-green-500 text-xs" />
-                            <span class="text-xs text-gray-500">
+                            <span class="text-xs text-mute">
                                 Active as
                                 <strong class="text-primary capitalize">{{ parseRole[activeRole] }}</strong>
                             </span>
                         </div>
 
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 px-1 pb-1.5">
+                            <p class="text-xs font-semibold uppercase tracking-widest text-mute px-1 pb-1.5">
                                 Switch Role
                             </p>
-                            <div class="space-y-1 border-y py-2 border-gray-100">
+                            <div class="space-y-1 border-y py-2 border-app-100/70">
                                 <button
                                     v-for="role in userRoles"
                                     :key="role.value"
                                     class="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl border transition-all text-left"
                                     :class="activeRole === role.value
-                                        ? 'bg-indigo-50 border-indigo-200'
-                                        : 'border-transparent hover:bg-gray-50'"
+                                        ? 'bg-app-50 border-app-200'
+                                        : 'border-transparent hover:bg-app-50/70'"
                                     @click="switchRole(role.value)"
                                 >
                                     <span
                                         class="w-7 h-7 flex items-center justify-center rounded-lg shrink-0"
-                                        :class="activeRole === role.value ? 'bg-indigo-100' : 'bg-gray-100'"
+                                        :class="activeRole === role.value ? 'bg-app-100' : 'bg-app-50'"
                                     >
                                         <UIcon
                                             :name="role.icon"
                                             class="text-sm"
-                                            :class="activeRole === role.value ? 'text-indigo-600' : 'text-gray-500'"
+                                            :class="activeRole === role.value ? 'text-app-700' : 'text-mute'"
                                         />
                                     </span>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-xs font-semibold text-gray-700">
+                                        <p class="text-xs font-semibold text-neutral-800">
                                             {{ parseRole[role.label] }}
                                         </p>
-                                        <p class="text-xs text-gray-400 truncate">{{ role.desc }}</p>
+                                        <p class="text-xs text-mute truncate">{{ role.desc }}</p>
                                     </div>
                                     <UIcon
                                         v-if="activeRole === role.value"
                                         name="lucide:check"
-                                        class="text-indigo-500 text-xs shrink-0"
+                                        class="text-app-600 text-xs shrink-0"
                                     />
                                 </button>
                             </div>
                         </div>
 
-                        <div class="space-y-1 border-b border-gray-100 pb-3">
+                        <div class="space-y-1 border-b border-app-100/70 pb-3">
                             <UButton
                                 icon="lucide:user"
                                 variant="ghost"
