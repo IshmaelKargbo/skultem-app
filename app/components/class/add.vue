@@ -1,7 +1,7 @@
 <template>
     <USlideover :dismissible="false" :open="open" @update:open="open = $event">
         <!-- Trigger -->
-        <UButton color="primary" label="Add Class" :icon="ADD_ICON" @click="open = true" />
+        <UButton color="primary" class="flex justify-center" label="Add Class" :icon="ADD_ICON" @click="open = true" />
 
         <!-- Header -->
         <template #header>

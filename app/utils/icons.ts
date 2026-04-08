@@ -50,6 +50,7 @@ export const PERFORMANCE_ICON = "lucide:activity"
 export const PLAY_ICON = "hugeicons:play"
 export const LOADER_ICON = "lucide:loader-2"
 export const CHEVRON_DOWN_ICON = "lucide:chevron-down"
+export const CHEVRON_RIGHT_ICON = "lucide:chevron-right"
 
 export const DASHBOARD_ICON = "si:dashboard-customize-line"
 export const GRADES_ICON = "icon-park-outline:ranking-list"

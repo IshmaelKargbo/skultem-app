@@ -1,7 +1,7 @@
 <template>
   <USlideover :dismissible="false" v-model:open="open">
     <!-- Trigger -->
-    <UButton color="info" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON"
+    <UButton class="flex justify-center" color="info" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON"
       @click="open = true" />
 
     <!-- Header -->

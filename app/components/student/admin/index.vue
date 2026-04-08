@@ -1,7 +1,10 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:p-7 overflow-y-auto h-full md:space-y-5 p-4 space-y-3">
         <Heading title="Students Management" subtitle="Organize academic classes">
-            <StudentAdd />
+            <div class="flex space-x-2">
+                <UInput placeholder="Search by name" />
+                <StudentAdd />
+            </div>
         </Heading>
         <StudentAdminTable v-if="can([Role.ADMIN, Role.PROPRIETOR])" />
     </div>
@@ -9,7 +12,4 @@
 
 <script setup lang="ts">
 const { can } = useAuth()
-const exportingCsv = ref(false)
-const exportingPdf = ref(false)
-const toast = useToast()
 </script>

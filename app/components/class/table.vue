@@ -144,7 +144,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard class="md:block hidden" :ui="{ body: 'p-0 sm:p-0' }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -159,10 +159,120 @@ onMounted(async () => {
         <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} -`" />
       </template>
     </UTable>
-    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
+  <!-- Mobile Skeleton Loader -->
+  <div v-if="loading" class="md:hidden space-y-3">
+    <UCard v-for="i in 5" :key="i">
+      <template #header>
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-2 items-center">
+            <USkeleton class="h-10 w-10 rounded-full" />
+            <div class="space-y-2">
+              <USkeleton class="h-3 w-28" />
+              <USkeleton class="h-2 w-20" />
+            </div>
+          </div>
+
+          <USkeleton class="h-6 w-24 rounded-full" />
+        </div>
+      </template>
+
+      <div class="flex">
+        <div class="space-y-2 p-3 w-1/3">
+          <USkeleton class="h-2 w-14" />
+          <USkeleton class="h-3 w-20" />
+        </div>
+
+        <div class="space-y-2 border-x p-3 w-1/3 border-gray-100">
+          <USkeleton class="h-2 w-14" />
+          <USkeleton class="h-3 w-20" />
+        </div>
+
+        <div class="space-y-2 p-3 w-1/3">
+          <USkeleton class="h-2 w-14" />
+          <USkeleton class="h-3 w-20" />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-2 items-center">
+            <USkeleton class="h-8 w-8 rounded-full" />
+            <div class="space-y-2">
+              <USkeleton class="h-3 w-24" />
+              <USkeleton class="h-2 w-16" />
+            </div>
+          </div>
+
+          <USkeleton class="h-4 w-4" />
+        </div>
+      </template>
+    </UCard>
+  </div>
+  <UCard :ui="{ body: 'p-0 sm:p-0' }" v-for="item in data" :key="item.id" class="md:hidden">
+    <template #header>
+      <div>
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-2 items-center">
+            <div>
+              <UAvatar size="lg" :alt="item.clazz" />
+            </div>
+            <div>
+              <p class="text-sm">{{ item.clazz }}</p>
+              <div class="flex space-x-1 items-center  text-mute">
+                <p class="text-[11px]">{{ item.grade }}</p>
+                <p>-</p>
+                <p class="text-[11px] text-mute">{{ clean(item.classLevel) }}</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <UBadge variant="outline" :leading-icon="STUDENT_ICON" :label="` - ${item.totalStudent} Students`" />
+          </div>
+        </div>
+      </div>
+    </template>
+    <div class="flex">
+      <div class="space-y-0.5 p-3 w-1/3">
+        <p class="text-[10px] text-mute uppercase">Section</p>
+        <p>{{ item.sectionName }}</p>
+      </div>
+      <div class="space-y-0.5 border-x p-3 w-1/3 border-gray-100">
+        <p class="text-[10px] text-mute uppercase">Stream</p>
+        <p>{{ item.streamName }}</p>
+      </div>
+      <div class="space-y-0.5 w-1/3 p-3">
+        <p class="text-[10px] text-mute uppercase">Level</p>
+        <p>{{ item.classLevel }}</p>
+      </div>
+    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <div class="flex space-x-2 items-center">
+          <div>
+            <UAvatar :alt="item.teacherName" />
+          </div>
+          <div>
+            <p class="text-xs">{{ item.teacherName }}</p>
+            <p class="text-[9px] text-mute">Class Teacher</p>
+          </div>
+        </div>
+        <div>
+          <UIcon :name="CHEVRON_RIGHT_ICON" />
+        </div>
+      </div>
+    </template>
+  </UCard>
+  <div class="flex justify-between items-center mt-3 md:hidden">
+    <Showing :meta="meta" />
+    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+      show-edges />
+  </div>
 </template>

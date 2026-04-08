@@ -5,6 +5,9 @@ export type Student = {
     enrollmentId: string
     admissionNumber: string
     dateOfBirth: string
+    guardianName: string
+    fatherName: string
+    motherName: string
     gender: string
     className: string
     classId: string

@@ -1,7 +1,10 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Teachers Management" subtitle="Manage all teachers">
-            <TeacherAdd />
+            <div class="flex space-x-2">
+                <UInput placeholder="Search by name" />
+                <TeacherAdd />
+            </div>
         </Heading>
         <TeacherTable />
     </div>

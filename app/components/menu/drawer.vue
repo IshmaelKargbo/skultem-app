@@ -15,19 +15,19 @@ const name = computed(() =>
 )
 
 const roleDesc: Record<string, string> = {
-  proprietor: "School owner & oversight",
-  admin: "Full system access",
-  teacher: "Classes & students",
-  student: "Courses & grades",
-  parent: "Child progress"
+  PROPRIETOR: 'School owner & oversight',
+  ADMIN: 'Full system access',
+  TEACHER: 'Classes & students',
+  PARENT: 'Child progress',
+  ACCOUNTANT: 'Finance & fees',
 }
 
 const roleIcons: Record<string, string> = {
-  proprietor: "lucide:crown",
-  admin: "lucide:shield",
-  teacher: "lucide:book-open",
-  student: "lucide:graduation-cap",
-  parent: "lucide:users"
+  PROPRIETOR: 'lucide:crown',
+  ADMIN: 'lucide:shield',
+  TEACHER: 'lucide:book-open',
+  PARENT: 'lucide:users',
+  ACCOUNTANT: 'lucide:calculator',
 }
 
 const userRoles = computed(() =>
@@ -97,8 +97,7 @@ watch(
 
     <!-- Body -->
     <template #body>
-      <div class="flex flex-col gap-4">
-
+      <div class="flex flex-col">
         <!-- Switch Role -->
         <div>
           <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 px-2 pb-1">
@@ -108,12 +107,12 @@ watch(
           <div class="space-y-1 border-y py-2 border-gray-100">
             <button v-for="role in userRoles" :key="role.value"
               class="flex items-center gap-3 w-full px-3 py-2 rounded-xl border transition text-left" :class="activeRole === role.value
-                  ? 'bg-primary-50 border-primary-200'
-                  : 'border-transparent hover:bg-gray-50'
+                ? 'bg-primary-50 border-primary-200'
+                : 'border-transparent hover:bg-gray-50'
                 " @click="switchRole(role.value)">
               <span class="w-7 h-7 flex items-center justify-center rounded-lg" :class="activeRole === role.value
-                  ? 'bg-primary-100'
-                  : 'bg-gray-100'
+                ? 'bg-primary-100'
+                : 'bg-gray-100'
                 ">
                 <UIcon :name="role.icon" class="text-sm" />
               </span>
@@ -134,7 +133,7 @@ watch(
         </div>
 
         <!-- Navigation -->
-        <div class="border-b border-gray-100 pb-2">
+        <div class="border-b border-gray-100 py-2 space-y-0.5">
           <UButton v-if="can(['admin', 'proprietor'])" icon="lucide:settings" variant="ghost"
             class="w-full justify-start" to="/settings" @click="close">
             Settings
@@ -149,14 +148,116 @@ watch(
             Install App
           </UButton>
         </div>
-        <!-- Performance -->
-        <UButton v-if="can([Role.PARENT])" :icon="PERFORMANCE_ICON" variant="ghost" class="w-full justify-start" to="/performance" @click="close">
-          Performance
-        </UButton>
-        <!-- leader-board -->
-        <UButton v-if="can([Role.TEACHER, Role.PROPRIETOR])" :icon="BEHAVIOUR_ICON" variant="ghost" class="w-full justify-start" to="/behaviours" @click="close">
-          Behaviours
-        </UButton>
+
+        <!-- Navigation -->
+        <div class="border-b border-gray-100 py-2 space-y-0.5">
+          <!-- Grades -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="GRADES_ICON" variant="ghost"
+            class="w-full justify-start" to="/grades" @click="close">
+            Grades
+          </UButton>
+          <!-- Grade Approval -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="GRADES_APPROVAL_ICON" variant="ghost"
+            class="w-full justify-start" to="/grades/approval" @click="close">
+            Grade Approval
+          </UButton>
+          <!-- Attendance -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="ATTENDANCE_ICON" variant="ghost"
+            class="w-full justify-start" to="/attendance" @click="close">
+            Attendance
+          </UButton>
+          <!-- Performance -->
+          <UButton v-if="can([Role.PARENT])" :icon="PERFORMANCE_ICON" variant="ghost" class="w-full justify-start"
+            to="/performance" @click="close">
+            Performance
+          </UButton>
+          <!-- Behaviours -->
+          <UButton v-if="can([Role.TEACHER, Role.PROPRIETOR])" :icon="BEHAVIOUR_ICON" variant="ghost"
+            class="w-full justify-start" to="/behaviours" @click="close">
+            Behaviours
+          </UButton>
+          <!-- Parents -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="PARENT_ICON" variant="ghost"
+            class="w-full justify-start" to="/parents" @click="close">
+            Parents
+          </UButton>
+          <!-- Subjects -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="SUBJECT_ICON" variant="ghost"
+            class="w-full justify-start" to="/subjects" @click="close">
+            Subjects
+          </UButton>
+        </div>
+        <!-- Finance -->
+        <div class="border-b border-gray-100 py-2 space-y-0.5">
+          <!-- Fee Structures -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="FEE_STRUCTURE_ICON" variant="ghost"
+            class="w-full justify-start" to="/fees-structures" @click="close">
+            Fee Structures
+          </UButton>
+          <!-- Student Fees -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="STUDENT_FEES_ICON" variant="ghost"
+            class="w-full justify-start" to="/student-fees" @click="close">
+            Student Fees
+          </UButton>
+          <!-- Discounts -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="DISCOUNT_ICON" variant="ghost"
+            class="w-full justify-start" to="/discounts" @click="close">
+            Discounts
+          </UButton>
+          <!-- Expenses -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="EXPENSES_ICON" variant="ghost"
+            class="w-full justify-start" to="/expenses" @click="close">
+            Expenses
+          </UButton>
+          <!-- Ledger -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="LEDGER_ICON" variant="ghost"
+            class="w-full justify-start" to="/ledger" @click="close">
+            Ledger
+          </UButton>
+          <!-- Transactions -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="TRANSACTION_ICON" variant="ghost"
+            class="w-full justify-start" to="/transactions" @click="close">
+            Transactions
+          </UButton>
+          <!-- Analytics -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="ANALYTICS_ICON" variant="ghost"
+            class="w-full justify-start" to="/analytics" @click="close">
+            Analytics
+          </UButton>
+        </div>
+        <!-- Finance -->
+        <div class="border-b border-gray-100 py-2 space-y-0.5">
+          <!-- curriculums -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="CURRICULUM_ICON" variant="ghost"
+            class="w-full justify-start" to="/curriculums" @click="close">
+            Curriculums
+          </UButton>
+          <!-- Subject Groups -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="CURRICULUM_GROUP_ICON" variant="ghost"
+            class="w-full justify-start" to="/curriculums/subject-groups" @click="close">
+            Subject Groups
+          </UButton>
+          <!-- Class subjects -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="BOOK_OPEN_ICON" variant="ghost"
+            class="w-full justify-start" to="/curriculums/class-subjects" @click="close">
+            Class Subjects
+          </UButton>
+          <!-- Teacher Assignment -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="CLIPBOARD_ADD_ICON" variant="ghost"
+            class="w-full justify-start" to="/curriculums/teacher-assignment" @click="close">
+            Teacher Assignment
+          </UButton>
+          <!-- Sections -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="LAYERS_ICON" variant="ghost"
+            class="w-full justify-start" to="/curriculums/sections" @click="close">
+            Sections
+          </UButton>
+          <!-- Streams -->
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="CURRICULUM_STREAM_ICON" variant="ghost"
+            class="w-full justify-start" to="/curriculums/streams" @click="close">
+            Streams
+          </UButton>
+        </div>
       </div>
     </template>
 

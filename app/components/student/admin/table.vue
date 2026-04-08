@@ -35,7 +35,7 @@ const columns: TableColumn<Student> = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({row}: any) => {
+    cell: ({ row }: any) => {
       return `${row.original.givenNames} ${row.original.familyName}`
     }
   },
@@ -170,7 +170,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -180,16 +180,111 @@ onMounted(async () => {
       </template>
       <template #status-cell="{ row }">
         <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-          :icon="parseStatusIcon[row.original.status]" variant="outline" />
+          variant="outline" />
       </template>
       <template #gender-cell="{ row }">
-        <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]" variant="outline" />
+        <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
+          variant="outline" />
       </template>
     </UTable>
-    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
+  </UCard>
+  <!-- Mobile Skeleton Loader -->
+  <div v-if="loading" class="md:hidden space-y-3">
+    <UCard v-for="i in 5" :key="i">
+      <template #header>
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-2">
+            <USkeleton class="h-10 w-10 rounded-full" />
+            <div class="space-y-2">
+              <USkeleton class="h-3 w-28" />
+              <USkeleton class="h-2 w-20" />
+            </div>
+          </div>
+
+          <USkeleton class="h-5 w-16 rounded-full" />
+        </div>
+      </template>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-2">
+          <USkeleton class="h-2 w-16" />
+          <USkeleton class="h-3 w-24" />
+        </div>
+
+        <div class="space-y-2">
+          <USkeleton class="h-2 w-16" />
+          <USkeleton class="h-3 w-20" />
+        </div>
+
+        <div class="space-y-2">
+          <USkeleton class="h-2 w-16" />
+          <USkeleton class="h-3 w-28" />
+        </div>
+
+        <div class="space-y-2">
+          <USkeleton class="h-2 w-16" />
+          <USkeleton class="h-3 w-24" />
+        </div>
+
+        <div class="space-y-2">
+          <USkeleton class="h-2 w-16" />
+          <USkeleton class="h-3 w-28" />
+        </div>
+      </div>
+    </UCard>
+  </div>
+  <UCard v-for="item in data" :key="item.id" class="md:hidden">
+    <template #header>
+      <div>
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-2">
+            <div>
+              <UAvatar size="lg" :alt="`${item.givenNames} ${item.familyName}`" />
+            </div>
+            <div>
+              <p class="text-sm">{{ `${item.givenNames} ${item.familyName}` }}</p>
+              <p class="text-[11px] text-mute">{{ item.className }}</p>
+            </div>
+          </div>
+          <div>
+            <UBadge :label="parseStaus[item.status]" :color="parseStatusColor[item.status]" variant="outline" />
+          </div>
+        </div>
+      </div>
+    </template>
+    <div class="grid grid-cols-2 md:gap-5 gap-3">
+      <div class="space-y-0.5">
+        <p class="text-[10px] text-mute uppercase">Date of birth</p>
+        <p>{{ formatDate(item.dateOfBirth) }}</p>
+      </div>
+      <div class="space-y-0.5">
+        <p class="text-[10px] text-mute uppercase">Gender</p>
+        <UBadge :label="parseGender[item.gender]" :color="parseGenderColor[item.gender]" size="sm" variant="outline" />
+      </div>
+      <div class="space-y-0.5">
+        <p class="text-[10px] text-mute uppercase">Guardian</p>
+        <p>{{ item.guardianName }}</p>
+      </div>
+      <div class="space-y-0.5">
+        <p class="text-[10px] text-mute uppercase">Father</p>
+        <p>{{ item.fatherName }}</p>
+      </div>
+      <div class="space-y-0.5">
+        <p class="text-[10px] text-mute uppercase">Mother</p>
+        <p>{{ item.motherName }}</p>
+      </div>
     </div>
   </UCard>
+  <div class="flex justify-between items-center mt-3 md:hidden">
+    <Showing :meta="meta" />
+    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+      show-edges />
+  </div>
 </template>

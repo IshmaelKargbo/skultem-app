@@ -31,6 +31,7 @@ export type ClassSession = {
     clazz: string
     clazzId: string
     streamName: string
+    grade: string
     streamId: string
     sectionName: string
     sectionId: string
