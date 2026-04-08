@@ -118,7 +118,7 @@
 import * as yup from 'yup'
 import type { FormSubmitEvent, TableColumn } from '#ui/types'
 
-const skeletonRows = Array(12).fill({})
+const skeletonRows = Array(runtimeConf().limit).fill({})
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()
 

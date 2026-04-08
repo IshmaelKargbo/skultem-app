@@ -125,7 +125,7 @@ import type { FormSubmitEvent, TableColumn } from '#ui/types'
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()
 
-const skeletonRows = Array(12).fill({})
+const skeletonRows = Array(runtimeConf().limit).fill({})
 const router = useRouter()
 const route = useRoute()
 const { error, success } = useNotify()
