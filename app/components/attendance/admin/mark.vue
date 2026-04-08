@@ -24,33 +24,28 @@
       <div v-if="state.classId">
         <!-- Actions -->
         <div class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
-
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 
           <div class="flex space-x-3">
             <UButton size="sm" color="success" variant="subtle" label="Mark All Present" :disabled="isDisable"
               @click="markAllPresent" />
-
             <UButton size="sm" color="error" variant="subtle" label="Clear All" :disabled="isDisable"
               @click="clearAll" />
           </div>
-
         </div>
 
-        <!-- Table -->
+        <!-- Desktop Table -->
         <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #present-cell="{ row }">
             <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
               :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
           </template>
-
           <template #late-cell="{ row }">
             <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
               :model-value="row.original.late" @change="stateChange(row.index, 'late')" />
           </template>
-
           <template #excused-cell="{ row }">
             <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
               :model-value="row.original.excused" @change="stateChange(row.index, 'excused')" />
@@ -61,47 +56,67 @@
                 :placeholder="row.original.excused ? 'Enter excuse reason...' : ''" />
             </UFormField>
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #studentName-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #present-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #late-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #excused-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #reason-cell>
             <USkeleton class="h-4 w-32" />
           </template>
         </UTable>
-        <div class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
-          <div class="flex space-x-2 p-2">
-            <div>
-              <UAvatar alt="Ishmael Kargbo" size="lg" />
-            </div>
-            <div>
-              <p>{{ row.studentName }}</p>
-              <p class="text-[11px] text-mute">{{ row.admissionNumber }}</p>
-            </div>
-          </div>
-          <div class="border-y border-gray-100 bg-gray-50 space-x-2 p-3">
-            <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
-              :model-value="row.present" @change="stateChange(i, 'present')" />
 
-            <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
-              :model-value="row.late" @change="stateChange(i, 'late')" />
+        <!-- Mobile Cards -->
+        <div class="md:hidden divide-y divide-gray-100">
 
-            <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
-              :model-value="row.excused" @change="stateChange(i, 'excused')" />
+          <!-- Mobile Skeleton -->
+          <div v-if="isLoading" v-for="i in skeletonRows.length" :key="i" class="p-3 space-y-3">
+            <div class="flex items-center space-x-2">
+              <USkeleton class="h-10 w-10 rounded-full" />
+              <div class="space-y-1.5">
+                <USkeleton class="h-3.5 w-32" />
+                <USkeleton class="h-3 w-20" />
+              </div>
+            </div>
+            <div class="flex space-x-2">
+              <USkeleton class="h-7 w-20 rounded-md" />
+              <USkeleton class="h-7 w-20 rounded-md" />
+              <USkeleton class="h-7 w-20 rounded-md" />
+            </div>
+            <USkeleton class="h-8 w-full rounded-md" />
           </div>
+
+          <!-- Mobile Records -->
+          <div v-else v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
+            <div class="flex items-center space-x-2">
+              <UAvatar :alt="row.studentName" size="md" />
+              <div>
+                <p class="text-sm font-medium">{{ row.studentName }}</p>
+                <p class="text-[11px] text-gray-400">{{ row.admissionNumber }}</p>
+              </div>
+            </div>
+
+            <div class="flex space-x-2">
+              <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
+                :model-value="row.present" @change="stateChange(i, 'present')" />
+              <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
+                :model-value="row.late" @change="stateChange(i, 'late')" />
+              <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
+                :model-value="row.excused" @change="stateChange(i, 'excused')" />
+            </div>
+
+            <UFormField v-if="row.excused" :name="`records.${i}.reason`">
+              <UInput v-model="row.reason" placeholder="Enter excuse reason..." class="w-full" />
+            </UFormField>
+          </div>
+
         </div>
       </div>
 

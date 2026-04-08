@@ -25,85 +25,105 @@
 
         <!-- Actions -->
         <div class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
-
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 
           <div class="flex space-x-3">
             <UButton size="sm" color="success" variant="subtle" label="Mark All Present" :disabled="isDisable"
               @click="markAllPresent" />
-
             <UButton size="sm" color="error" variant="subtle" label="Clear All" :disabled="isDisable"
               @click="clearAll" />
           </div>
-
         </div>
 
-        <!-- Table -->
+        <!-- Desktop Table -->
         <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #present-cell="{ row }">
             <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
               :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
           </template>
-
           <template #late-cell="{ row }">
             <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
               :model-value="row.original.late" @change="stateChange(row.index, 'late')" />
           </template>
-
           <template #excused-cell="{ row }">
             <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
               :model-value="row.original.excused" @change="stateChange(row.index, 'excused')" />
           </template>
-
           <template #reason-cell="{ row }">
             <UFormField :name="`records.${row.index}.reason`">
               <UInput v-model="row.original.reason" :disabled="!row.original.excused"
                 :placeholder="row.original.excused ? 'Enter excuse reason...' : ''" />
             </UFormField>
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #studentName-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #present-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #late-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #excused-cell>
             <USkeleton class="h-4 w-32" />
           </template>
-          <!-- Skeleton for each column when loading -->
           <template v-if="isLoading" #reason-cell>
             <USkeleton class="h-4 w-32" />
           </template>
         </UTable>
-        <div class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
-          <div class="flex space-x-2 p-2">
-            <div>
-              <UAvatar alt="Ishmael Kargbo" size="lg" />
-            </div>
-            <div>
-              <p>{{ row.studentName }}</p>
-              <p class="text-[11px] text-mute">{{ row.admissionNumber }}</p>
-            </div>
-          </div>
-          <div class="border-y border-gray-100 bg-gray-50 space-x-2 p-3">
-            <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
-              :model-value="row.present" @change="stateChange(i, 'present')" />
 
-            <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
-              :model-value="row.late" @change="stateChange(i, 'late')" />
+        <!-- Mobile Cards -->
+        <div class="md:hidden divide-y divide-gray-100">
 
-            <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
-              :model-value="row.excused" @change="stateChange(i, 'excused')" />
-          </div>
+          <!-- Mobile Skeleton -->
+          <template v-if="isLoading">
+            <div v-for="i in skeletonRows.length" :key="i" class="p-3 space-y-3">
+              <div class="flex items-center space-x-2">
+                <USkeleton class="h-10 w-10 rounded-full shrink-0" />
+                <div class="space-y-1.5 flex-1">
+                  <USkeleton class="h-3.5 w-36" />
+                  <USkeleton class="h-3 w-24" />
+                </div>
+              </div>
+              <div class="flex space-x-2">
+                <USkeleton class="h-7 w-20 rounded-md" />
+                <USkeleton class="h-7 w-16 rounded-md" />
+                <USkeleton class="h-7 w-20 rounded-md" />
+              </div>
+              <USkeleton class="h-8 w-full rounded-md" />
+            </div>
+          </template>
+
+          <!-- Mobile Records -->
+          <template v-else>
+            <div v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
+              <div class="flex items-center space-x-2">
+                <UAvatar :alt="row.studentName" size="md" class="shrink-0" />
+                <div>
+                  <p class="text-sm font-medium leading-tight">{{ row.studentName }}</p>
+                  <p class="text-[11px] text-gray-400">{{ row.admissionNumber }}</p>
+                </div>
+              </div>
+
+              <div class="flex space-x-2">
+                <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
+                  :model-value="row.present" @change="stateChange(i, 'present')" />
+                <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"
+                  :model-value="row.late" @change="stateChange(i, 'late')" />
+                <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
+                  :model-value="row.excused" @change="stateChange(i, 'excused')" />
+              </div>
+
+              <Transition name="fade">
+                <UFormField v-if="row.excused" :name="`records.${i}.reason`">
+                  <UInput v-model="row.reason" placeholder="Enter excuse reason..." class="w-full" />
+                </UFormField>
+              </Transition>
+            </div>
+          </template>
+
         </div>
       </div>
 
@@ -113,7 +133,6 @@
           <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
         </div>
       </template>
-
     </UCard>
   </UForm>
 </template>
@@ -253,7 +272,6 @@ function markAllPresent() {
     r.excused = false
     r.reason = ''
   })
-
   calculateReport()
 }
 
@@ -264,7 +282,6 @@ function clearAll() {
     r.excused = false
     r.reason = ''
   })
-
   calculateReport()
 }
 
@@ -274,6 +291,7 @@ async function fetchRecords() {
   )
 
   if (!selectedClass.value) return
+
   scrollToTop()
   isLoading.value = true
 
@@ -292,6 +310,10 @@ async function fetchRecords() {
   } finally {
     isLoading.value = false
   }
+}
+
+function scrollToTop() {
+  document.getElementById('attendance-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const schema = yup.object({
@@ -318,8 +340,7 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
   isLoading.value = true
 
   try {
-
-    const records: AttendanceRecord[] = state.records.map(r => ({
+    const attendanceRecords: AttendanceRecord[] = state.records.map(r => ({
       studentId: r.studentId,
       present: r.present,
       late: r.late,
@@ -329,7 +350,7 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
 
     await store.create(selectedClass.value.id, {
       date: state.date,
-      records,
+      records: attendanceRecords,
       holiday: state.holiday
     })
 
@@ -345,12 +366,7 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
   }
 }
 
-function scrollToTop() {
-  document.getElementById('attendance-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
 onMounted(async () => {
-
   const res = await classStore.fetchAllMe()
   records.value = res
 
@@ -366,7 +382,6 @@ onMounted(async () => {
   if (state.classId) {
     await fetchRecords()
   }
-
 })
 
 watch(
@@ -386,3 +401,16 @@ watch(
   }
 )
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+</style>
