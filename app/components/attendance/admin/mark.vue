@@ -39,7 +39,7 @@
         </div>
 
         <!-- Table -->
-        <UTable class="hidden md:block" :columns="columns" :data="state.records" :loading="isLoading">
+        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records" :loading="isLoading">
           <template #present-cell="{ row }">
             <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
               :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
@@ -54,15 +54,34 @@
             <UCheckbox label="Excused" size="xs" color="secondary" variant="card" :disabled="isDisable"
               :model-value="row.original.excused" @change="stateChange(row.index, 'excused')" />
           </template>
-
           <template #reason-cell="{ row }">
             <UFormField :name="`records.${row.index}.reason`">
               <UInput v-model="row.original.reason" :disabled="!row.original.excused"
                 :placeholder="row.original.excused ? 'Enter excuse reason...' : ''" />
             </UFormField>
           </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #studentName-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #present-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #late-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #excused-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #reason-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
         </UTable>
-        <div  class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
+        <div class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
           <div class="flex space-x-2 p-2">
             <div>
               <UAvatar alt="Ishmael Kargbo" size="lg" />
@@ -91,7 +110,6 @@
           <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
         </div>
       </template>
-
     </UCard>
   </UForm>
 </template>
@@ -100,6 +118,7 @@
 import * as yup from 'yup'
 import type { FormSubmitEvent, TableColumn } from '#ui/types'
 
+const skeletonRows = Array(5).fill({})
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()
 
@@ -250,7 +269,6 @@ async function fetchRecords() {
   )
 
   if (!selectedClass.value) return
-
   isLoading.value = true
 
   try {
@@ -260,11 +278,9 @@ async function fetchRecords() {
       selectedClass.value.id,
       state.date
     )
-
     state.holiday = report.value.holiday
 
     await store.fetchAll(selectedClass.value.id)
-
   } finally {
     isLoading.value = false
   }
@@ -323,7 +339,7 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
 
 onMounted(async () => {
   await classStore.fetchAll()
-  
+
   state.classId =
     (route.query.class as string) ||
     classStore.records[0]?.clazzId ||
