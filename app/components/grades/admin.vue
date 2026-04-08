@@ -1,6 +1,6 @@
 <template>
-  <div class="p-7 overflow-y-auto h-full space-y-5">
-    <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
+  <div class="md:p-7 overflow-y-auto h-full md:space-y-5 space-y-3 p-3">
+    <Heading class="hidden md:flex" title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
         <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
@@ -8,7 +8,7 @@
           variant="subtle" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
       </div>
     </Heading>
-    <UCard>
+    <UCard class="hidden md:block">
       <div class="flex space-x-3">
         <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
           @change="fetchStudents" />
@@ -18,11 +18,19 @@
           @change="fetchStudents" />
       </div>
     </UCard>
+    <div class="grid gap-3 grid-cols-2">
+      <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
+        @change="fetchStudents" />
+      <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
+        @change="fetchRecord" />
+      <USelectMenu class="col-span-2" value-key="value" :items="teachers" placeholder="Select Subject"
+        v-model="state.teacherSubjectId" @change="fetchStudents" />
+    </div>
     <UCard v-if="assessments.length && state.teacherSubjectId">
       <div class="space-y-3">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
+        <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
           <div class="flex space-x-2">
-            <p class="text-sm text-gray-500">Assessment Progress:</p>
+            <p class="text-sm text-gray-500">State:</p>
             <p class="text-sm font-semibold text-gray-800">
               {{ workflowLabel }}
             </p>
@@ -33,12 +41,56 @@
         <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
       </div>
     </UCard>
-
-    <UCard v-if="state.teacherSubjectId && rows.length > 0">
+    <UCard class="hidden md:block" v-if="state.teacherSubjectId && rows.length > 0">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full" />
     </UCard>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      <Metric v-for="summary in statusSummary" :key="summary.status" :record="{
+    <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3 md:hidden">
+      <UCard :ui="{
+        body: 'p-0 sm:p-0'
+      }" v-for="student in rows" :key="student.id">
+        <template #header>
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate">{{ student.name }}</p>
+              <p class="text-xs text-gray-500">
+                Position: {{ hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A' }}
+              </p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-xs text-gray-500">Total</p>
+              <p class="text-sm font-semibold">{{ calculateTotal(student) }}</p>
+            </div>
+          </div>
+        </template>
+        <div class="">
+          <div class="grid">
+            <div v-for="assessment in assessments" :key="assessment.id" class="border-b border-gray-200 p-3 py-2">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 space-y-1">
+                  <p class="text-xs font-medium text-gray-900 truncate">{{ assessment.name }}</p>
+                  <p class="text-xs text-gray-500">Weight {{ assessment.weight }}</p>
+                </div>
+                <div v-if="isEditableStatus(getStudentScore(student, assessment.id)?.status as ScoreStatus)">
+                  <UInput :model-value="getStudentScore(student, assessment.id)?.score" type="number" min="0" max="100"
+                    size="sm" @update:model-value="updateStudentScore(student, assessment.id, $event)" />
+                </div>
+                <div v-else class="space-y-1">
+                  <UBadge size="xs" variant="outline" :color="statusBadgeColor(assessment.status)">
+                    {{ clean(assessment.status) }}
+                  </UBadge>
+                  <p class="font-medium">{{ getStudentScore(student, assessment.id)?.score ?? '-' }} ({{
+                    getStudentScore(student, assessment.id)?.weightScore ?? '-' }})</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </UCard>
+    </div>
+    <div class="grid gap-3 grid-cols-2 lg:grid-cols-5">
+      <Metric :class="{
+        'col-span-2 md:col-span-1': (i + 1 == statusSummary.length)
+      }" v-for="(summary, i) in statusSummary" :key="summary.status" :record="{
         color: summary.color,
         icon: summary.icon,
         label: summary.label,
@@ -46,6 +98,15 @@
         isReady: !loading
       }" />
     </div>
+    <UCard v-if="hasDraftAssessments">
+      <div class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
+        <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"
+          :disabled="disableActions" @click="saveGrades" />
+        <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
+          :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments"
+          @click="completeAssessment" />
+      </div>
+    </UCard>
   </div>
 </template>
 
@@ -98,6 +159,33 @@ const editableAssessments = computed(() => assessments.value.filter(a => isEdita
 const disableActions = computed(() => !state.teacherSubjectId || !state.termId || !state.classId || !rows.value.length || loading.value)
 const hasDraftAssessments = computed(() => editableAssessments.value.length > 0)
 const gradingBands = computed(() => store.gradingScale?.bands || [])
+
+function getStudentScore(student: StudentAssessment, assessmentId: string) {
+  return student.scores.find(score => score.assessment === assessmentId)
+}
+
+function updateStudentScore(student: StudentAssessment, assessmentId: string, value: unknown) {
+  const score = getStudentScore(student, assessmentId)
+  if (!score) return
+  score.score = toNumberInRange(value, 0, 100)
+}
+
+function statusBadgeColor(status: any) {
+  switch (status) {
+    case "DRAFT":
+      return "warning"
+    case "SUBMITTED":
+      return "info"
+    case "RETURNED":
+      return "error"
+    case "APPROVED":
+    case "COMPLETED":
+      return "success"
+    case "LOCKED":
+    default:
+      return "neutral"
+  }
+}
 
 const completedAssessmentIds = computed(() => {
   return assessments.value

@@ -38,7 +38,6 @@
         <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
       </div>
     </UCard>
-
     <UCard v-if="state.teacherSubjectId && rows.length > 0" class="hidden md:block">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full" />
     </UCard>
@@ -86,8 +85,8 @@
       </UCard>
     </div>
     <div class="grid gap-3 grid-cols-2 lg:grid-cols-5">
-      <Metric :class="{
-        'col-span-2 md:col-span-1': (i + 1 == statusSummary.length)
+     <Metric :class="{
+        'col -span-2 md:col-span-1': (i + 1 == statusSummary.length)
       }" v-for="(summary, i) in statusSummary" :key="summary.status" :record="{
         color: summary.color,
         icon: summary.icon,

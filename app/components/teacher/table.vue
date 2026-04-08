@@ -26,12 +26,6 @@ const parseStatusColor: Record<string, string> = {
   DELETED: 'danger'
 }
 
-const parseStatusIcon: Record<string, string> = {
-  ACTIVE: 'i-lucide-check-circle',
-  INACTIVE: 'i-lucide-x-circle',
-  DELETED: 'i-lucide-trash'
-}
-
 const columns: TableColumn<Teacher> = [
   {
     accessorKey: 'name',
@@ -284,4 +278,9 @@ onMounted(async () => {
       </div>
     </div>
   </UCard>
+  <div class="flex justify-between items-center">
+    <Showing :meta="meta" />
+    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+      show-edges />
+  </div>
 </template>
