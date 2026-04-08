@@ -157,7 +157,7 @@ watch(
             Grades
           </UButton>
           <!-- Grade Approval -->
-          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN])" :icon="GRADES_APPROVAL_ICON" variant="ghost"
+          <UButton v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER])" :icon="GRADES_APPROVAL_ICON" variant="ghost"
             class="w-full justify-start" to="/grades/approval" @click="close">
             Grade Approval
           </UButton>
@@ -267,6 +267,5 @@ watch(
         Sign out
       </UButton>
     </template>
-
   </USlideover>
 </template>

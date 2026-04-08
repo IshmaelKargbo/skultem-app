@@ -174,7 +174,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -186,14 +188,15 @@ onMounted(async () => {
         {{ row.original.email }}
       </template>
       <template #status-cell="{ row }">
-        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-          :icon="parseStatusIcon[row.original.status]" variant="outline" />
+        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]" variant="outline" />
       </template>
     </UTable>
-    <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

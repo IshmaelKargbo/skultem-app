@@ -1,5 +1,5 @@
 <template>
-    <div v-if="record" class="p-5 px-7 border-b border-gray-300 space-y-2 cursor-pointer hover:bg-gray-50"
+    <div v-if="record" class="p-4 md:px-7 border-b border-gray-300 space-y-2 cursor-pointer hover:bg-gray-50"
         :class="{ 'bg-app-50 border-app-500': selected?.id === record.id }">
 
         <div class="flex items-center justify-between w-full">

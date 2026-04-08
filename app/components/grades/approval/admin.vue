@@ -2,23 +2,15 @@
   <UForm :state="state" class="h-full flex flex-col bg-gray-50">
     <!-- HEADER -->
     <div class="p-6 border-b border-gray-300 space-y-4">
-      <div class="flex justify-between items-center">
-        <div class="space-y-0.5">
-          <p class="text-xl font-semibold">Approval Requests</p>
-          <p class="text-sm text-mute">{{ headerMessage }}</p>
-        </div>
-
+      <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
         <div class="flex gap-3">
           <UBadge color="warning" variant="outline" size="lg">{{ summary.pending }} Pending</UBadge>
           <UBadge color="success" variant="outline" size="lg">{{ summary.approved }} Approved</UBadge>
           <UBadge color="error" variant="outline" size="lg">{{ summary.returned }} Returned</UBadge>
         </div>
-      </div>
-
-      <div class="flex justify-between items-center">
-
-        <div class="flex gap-2">
-
+      </Heading>
+      <div class="flex flex-wrap justify-between items-center space-y-3">
+        <div class="flex gap-2 w-full">
           <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">
             All {{ requests.length }}
           </UButton>
@@ -35,17 +27,11 @@
           <UButton size="sm" :variant="filter === 'Returned' ? 'outline' : 'ghost'" @click="filter = 'Returned'">
             Returned {{ summary.returned }}
           </UButton>
-
         </div>
-
-        <div class="w-1/2 flex space-x-3">
-          <USelectMenu @change="fetchRecords" value-key="value" v-model="state.teacherId" :items="teachers"
-            :icon="SEARCH_ICON" placeholder="Search teacher" />
-          <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search teacher or subject" />
+        <div class="md:w-1/2 w-full flex space-x-3">
+          <USelectMenu @change="fetchRecords" value-key="value" v-model="state.teacherId" :items="teachers" placeholder="Search teacher" />
         </div>
-
       </div>
-
     </div>
 
     <!-- BODY -->
@@ -125,9 +111,10 @@ async function fetchRecordAndUpdate() {
 }
 
 async function loadRequests(keepSelection: boolean) {
+  if (state.teacherId == null) return;
   isLoading.value = true
   try {
-    const res = await store.fetchAllMeAssessmentApprovalRequest()
+    const res = await store.fetchAllAssessmentApprovalRequest(state.teacherId)
     requests.value = res || []
 
     if (!keepSelection) return
@@ -149,6 +136,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR]
 })
 </script>

@@ -1,6 +1,6 @@
 <template>
   <transition name="slide-over" appear>
-    <div v-if="open && selected" class="p-6 space-y-6 relative w-1/2 bg-white overflow-y-auto border-l border-gray-300">
+    <div v-if="open && selected" class="p-6 space-y-6 relative md:w-1/2 w-full bg-white overflow-y-auto border-l border-gray-300">
       <!-- CLOSE BUTTON -->
       <UButton icon="prime:times" size="sm" variant="ghost" class="absolute top-3 right-3" @click="close" />
 
@@ -60,7 +60,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="student in selected.studentScores" :key="student.id" class="border-t border-gray-300">
+              <tr v-for="student in sortedStudentScores" :key="student.id" class="border-t border-gray-300">
                 <td class="p-2">{{ student.student }}</td>
                 <td class="p-2 font-medium"> {{ student.score }} </td>
                 <td class="p-2 text-right">
@@ -109,6 +109,11 @@ const state = reactive({
 
 const returnForm = ref(false)
 const showAction = computed(() => selected.value?.status === 'Pending Review' && !returnForm.value)
+const sortedStudentScores = computed(() => {
+  if (!selected.value?.studentScores) return []
+
+  return [...selected.value.studentScores].sort((a, b) => b.score - a.score)
+})
 
 const open = ref(false)
 const emit = defineEmits(["close", "refresh"])

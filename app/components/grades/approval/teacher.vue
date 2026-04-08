@@ -1,24 +1,16 @@
 <template>
   <UForm :state="state" class="h-full flex flex-col bg-gray-50">
     <!-- HEADER -->
-    <div class="p-7 border-b border-gray-300 space-y-4">
-      <div class="flex justify-between items-center">
-        <div class="space-y-0.5">
-          <p class="text-xl font-semibold">Approval Requests</p>
-          <p class="text-sm text-mute">{{ headerMessage }}</p>
-        </div>
-
+    <div class="md:p-7 p-4 border-b border-gray-300 space-y-4">
+      <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
         <div class="flex gap-3">
           <UBadge color="warning" variant="outline" size="lg">{{ summary.pending }} Pending</UBadge>
           <UBadge color="success" variant="outline" size="lg">{{ summary.approved }} Approved</UBadge>
           <UBadge color="error" variant="outline" size="lg">{{ summary.returned }} Returned</UBadge>
         </div>
-      </div>
-
-      <div class="flex justify-between items-center">
-
-        <div class="flex gap-2">
-
+      </Heading>
+      <div class="flex flex-wrap justify-between items-center space-y-3">
+        <div class="flex gap-2 w-full">
           <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">
             All {{ requests.length }}
           </UButton>
@@ -38,12 +30,10 @@
 
         </div>
 
-        <div class="w-1/2 flex space-x-3">
+        <div class="md:w-1/2 w-full flex space-x-3">
           <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search teacher or subject" />
         </div>
-
       </div>
-
     </div>
 
     <!-- BODY -->

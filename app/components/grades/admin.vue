@@ -18,7 +18,7 @@
           @change="fetchStudents" />
       </div>
     </UCard>
-    <div class="grid gap-3 grid-cols-2">
+    <div class="grid gap-3 grid-cols-2 md:hidden">
       <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
         @change="fetchStudents" />
       <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
