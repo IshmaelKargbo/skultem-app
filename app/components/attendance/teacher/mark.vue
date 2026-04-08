@@ -274,7 +274,7 @@ async function fetchRecords() {
   )
 
   if (!selectedClass.value) return
-
+  scrollToTop()
   isLoading.value = true
 
   try {
@@ -345,6 +345,10 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
   }
 }
 
+function scrollToTop() {
+  document.getElementById('attendance-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 onMounted(async () => {
 
   const res = await classStore.fetchAllMe()
@@ -364,4 +368,21 @@ onMounted(async () => {
   }
 
 })
+
+watch(
+  () => route.query,
+  async (query) => {
+    const classId = query.class as string
+    const date = query.date as string
+
+    if (!classId || !date) return
+
+    if (classId !== state.classId || date !== state.date) {
+      state.classId = classId
+      state.date = date
+
+      await fetchRecords()
+    }
+  }
+)
 </script>

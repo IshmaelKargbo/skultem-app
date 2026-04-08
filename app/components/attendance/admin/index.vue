@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+    <div id="attendance-scroll" class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Attendance" subtitle="Track class attendance and export reports" />
         <AttendanceReport />
         <AttendanceAdminMark />

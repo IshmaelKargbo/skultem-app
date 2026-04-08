@@ -39,7 +39,8 @@
         </div>
 
         <!-- Table -->
-        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records" :loading="isLoading">
+        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+          :loading="isLoading">
           <template #present-cell="{ row }">
             <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
               :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
@@ -269,6 +270,9 @@ async function fetchRecords() {
   )
 
   if (!selectedClass.value) return
+
+  // Scroll BEFORE loading so the page is still short when we scroll
+  scrollToTop()
   isLoading.value = true
 
   try {
@@ -281,9 +285,18 @@ async function fetchRecords() {
     state.holiday = report.value.holiday
 
     await store.fetchAll(selectedClass.value.id)
+
   } finally {
     isLoading.value = false
+
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }, 50)
   }
+}
+
+function scrollToTop() {
+  document.getElementById('attendance-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const schema = yup.object({
@@ -354,4 +367,21 @@ onMounted(async () => {
   }
 
 })
+
+watch(
+  () => route.query,
+  async (query) => {
+    const classId = query.class as string
+    const date = query.date as string
+
+    if (!classId || !date) return
+
+    if (classId !== state.classId || date !== state.date) {
+      state.classId = classId
+      state.date = date
+
+      await fetchRecords()
+    }
+  }
+)
 </script>
