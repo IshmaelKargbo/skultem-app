@@ -103,12 +103,12 @@ async function fetchRecord() {
 }
 
 watch(() => page.value, () => {
-    nextTick(() => {
-        scrollContainer?.value?.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        })
+  nextTick(() => {
+    scrollContainer?.value?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
     })
+  })
 
   router.replace({
     query: {
@@ -135,7 +135,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading" :ui="{
       tfoot: 'bg-app-50/10'
     }">
@@ -170,10 +172,12 @@ onMounted(async () => {
         <p>Total</p>
       </template>
     </UTable>
-    <div v-if="data.length > 0" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

@@ -123,7 +123,9 @@ onMounted(async () => {
 <template>
   <div class="space-y-5">
     <TransactionFilters :selected="selected" />
-    <UCard>
+    <UCard :ui="{
+      body: 'p-0 sm:p-0'
+    }">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -146,11 +148,13 @@ onMounted(async () => {
           <p class="text-info font-medium">{{ format(row.original.balance) }}</p>
         </template>
       </UTable>
-      <div v-if="meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
+      <template #footer>
+        <div v-if="meta" class="flex justify-between items-center">
+          <Showing :meta="meta" />
+          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
+        </div>
+      </template>
     </UCard>
   </div>
 </template>

@@ -278,7 +278,7 @@ onMounted(async () => {
       </div>
     </div>
   </UCard>
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center md:hidden">
     <Showing :meta="meta" />
     <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
       show-edges />
