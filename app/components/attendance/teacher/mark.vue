@@ -40,7 +40,8 @@
         </div>
 
         <!-- Table -->
-        <UTable class="hidden md:block" :columns="columns" :data="state.records" :loading="isLoading">
+        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+          :loading="isLoading">
           <template #present-cell="{ row }">
             <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
               :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
@@ -62,8 +63,28 @@
                 :placeholder="row.original.excused ? 'Enter excuse reason...' : ''" />
             </UFormField>
           </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #studentName-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #present-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #late-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #excused-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
+          <!-- Skeleton for each column when loading -->
+          <template v-if="isLoading" #reason-cell>
+            <USkeleton class="h-4 w-32" />
+          </template>
         </UTable>
-        <div  class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
+        <div class="md:hidden" v-for="(row, i) in state.records" :key="row.studentId">
           <div class="flex space-x-2 p-2">
             <div>
               <UAvatar alt="Ishmael Kargbo" size="lg" />
@@ -104,6 +125,7 @@ import type { FormSubmitEvent, TableColumn } from '#ui/types'
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()
 
+const skeletonRows = Array(12).fill({})
 const router = useRouter()
 const route = useRoute()
 const { error, success } = useNotify()
