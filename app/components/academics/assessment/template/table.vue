@@ -266,8 +266,6 @@ watch(
           </div>
 
           <UProgress :max="100" :model-value="Math.min(calculateTotal(row.original.assessments), 100)" :color="calculateTotal(row.original.assessments) === 100 ? 'success' : 'warning'" />
-
-          <!-- Assessments Table -->
           <div class="overflow-hidden bg-white mt-4">
             <table class="min-w-full text-sm">
               <thead class="bg-slate-50 text-slate-600">

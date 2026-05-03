@@ -20,7 +20,7 @@ export const useUserStore = defineStore('user', {
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch users'
       } finally {
-        this.loading = false
+        // this.loading = false
       }
     },
     create(payload: CreateUserDto) {

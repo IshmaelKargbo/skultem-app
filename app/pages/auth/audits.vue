@@ -11,6 +11,9 @@
                         <p class="text-gray-500">No audit logs found.</p>
                     </div>
                 </template>
+                <template #loading>
+                    <TableLoading :size="columns.length" />
+                </template>
                 <template #status-cell="{ row }">
                     <UBadge :color="row.original.status === 'SUCCESS' ? 'success' : 'error'" variant="outline"
                         :label="clean(row.original.status)" />
@@ -25,7 +28,6 @@
                     <p class="text-sm">{{ formatDateTime(row.original.createdAt) }}</p>
                 </template>
             </UTable>
-
             <template #footer>
                 <div class="flex justify-between items-center">
                     <Showing :meta="meta" />
@@ -38,14 +40,12 @@
 </template>
 
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const store = useAuditStore()
 const { records, meta, loading } = storeToRefs(store)
 
 const search = ref('')
 
-const columns: TableColumn<AuditLog>[] = [
+const columns = [
     { accessorKey: 'action', header: 'Action', cell: ({ row }: any) => clean(row.original.action) },
     { accessorKey: 'userName', header: 'User' },
     { accessorKey: 'status', header: 'Status' },

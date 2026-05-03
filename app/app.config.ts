@@ -26,9 +26,9 @@ export default defineAppConfig({
     },
     table: {
       slots: {
-        tr: 'hover:bg-app-100/20',
         th: 'font-display uppercase text-mute text-[12.5px]',
-        td: 'text-neutral-800'
+        td: 'text-neutral-800 py-2.5',
+        loading: 'p-0'
       }
     },
     card: {

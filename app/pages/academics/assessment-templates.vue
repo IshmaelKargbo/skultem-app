@@ -1,9 +1,9 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto">
-        <SettingsHeader title="Assessment Template" subtitle="Configured grading structures">
-            <SettingsAssessmentTemplateAdd />
-        </SettingsHeader>
-        <SettingsAssessmentTemplateTable />
+    <div class="md:p-7 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+        <Heading title="Assessment Template" subtitle="Configured grading structures">
+            <AcademicsAssessmentTemplateAdd />
+        </Heading>
+        <AcademicsAssessmentTemplateTable />
     </div>
 </template>
 

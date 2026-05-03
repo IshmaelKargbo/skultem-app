@@ -1,17 +1,15 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto">
-        <SettingsHeader title="Behaviour Categories" subtitle="Student conduct classifications">
-            <div>
-                <SettingsBehaviourCategoriesAdd />
-            </div>
-        </SettingsHeader>
+    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+        <Heading title="Behaviour Categories" subtitle="Student conduct classifications">
+            <SettingsBehaviourCategoriesAdd />
+        </Heading>
         <SettingsBehaviourCategoriesTable />
     </div>
 </template>
 
 <script setup lang="ts">
 onMounted(() => {
-    useAppStore().setTitle('Behavoiur Categories');
+    useAppStore().setTitle('Settings');
     document.title = 'Behavoiur Categories | Settings | Skultem';
 })
 

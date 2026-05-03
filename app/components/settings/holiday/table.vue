@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
@@ -12,7 +11,7 @@ const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
-const columns: TableColumn<Holiday> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name'
@@ -37,7 +36,7 @@ const columns: TableColumn<Holiday> = [
         td: 'text-right'
       }
     },
-    cell: ({ row }) => {
+    cell: ({ row }: any) => {
       return h(
         UDropdownMenu,
         {
@@ -123,18 +122,32 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UTable :columns="columns" :data="data" :loading="loading">
-    <template #empty-state>
-      <div class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No sections found.</p>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
+    <UTable :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No sections found.</p>
+        </div>
+      </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
+      <template #kind-cell="{ row }">
+        <UBadge variant="outline" color="neutral" :label="parseKind[row.original.kind]" />
+      </template>
+      <template #fixed-cell="{ row }">
+        <USwitch v-model="row.original.fixed" />
+      </template>
+    </UTable>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </template>
-    <template #kind-cell="{ row }">
-      <UBadge variant="outline" color="neutral" :label="parseKind[row.original.kind]" />
-    </template>
-    <template #fixed-cell="{ row }">
-      <USwitch v-model="row.original.fixed" />
-    </template>
-  </UTable>
+  </UCard>
 </template>

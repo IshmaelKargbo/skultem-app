@@ -138,10 +138,10 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
+const skeletonRows = Array(runtimeConf().limit).fill({})
+
 async function fetchRecord() {
-  loading.value = true
   await store.fetchAll(page.value, size.value)
-  loading.value = false
 }
 
 watch(() => page.value, () => {
@@ -171,7 +171,7 @@ onMounted(async () => {
 
 <template>
   <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
-    <UTable :columns="columns" :data="data" :loading="loading">
+    <UTable :columns="columns" :data="loading ? skeletonRows : data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -185,6 +185,33 @@ onMounted(async () => {
       <template #gender-cell="{ row }">
         <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
           variant="outline" />
+      </template>
+      <template v-if="loading" #name-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #dateOfBirth-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #className-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #guardianName-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #motherName-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #fatherName-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #actions-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #gender-cell>
+        <USkeleton class="h-4 w-20" />
+      </template>
+      <template v-if="loading" #status-cell>
+        <USkeleton class="h-4 w-20" />
       </template>
     </UTable>
     <template #footer>

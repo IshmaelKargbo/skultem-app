@@ -1,29 +1,22 @@
 <template>
-    <div class="p-5">
-        <SettingsHeader title="Academic Years" subtitle="Configured academic sessions">
-            <SettingsAdd />
-        </SettingsHeader>
-        <UCard>
-            <SettingsTable />
-            <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
-                <Showing :meta="meta" />
-                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                    :total="meta.total" show-edges />
-            </div>
-        </UCard>
+    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+        <Heading title="Fee Categories" subtitle="Types of student fees">
+            <SettingsFeeCategoryAdd />
+        </Heading>
+        <SettingsFeeCategoryTable />
     </div>
 </template>
 
 <script setup lang="ts">
 const page = ref(1);
-const { meta } = storeToRefs(useAcademicYearStore());
+const { meta } = storeToRefs(useFeeStore());
 
 onMounted(() => {
-    useAppStore().setTitle('Settings')
-    document.title = 'Academic Years | Settings | Skultem'
+    useAppStore().setTitle('Settings');
+    document.title = 'Fee Categories | Settings | Skultem';
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
 })
 </script>

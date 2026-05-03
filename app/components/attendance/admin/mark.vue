@@ -20,10 +20,9 @@
           </div>
         </div>
       </template>
-
-      <div v-if="state.classId">
+      <div>
         <!-- Actions -->
-        <div class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
+        <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 
@@ -72,10 +71,8 @@
             <USkeleton class="h-4 w-32" />
           </template>
         </UTable>
-
         <!-- Mobile Cards -->
         <div class="md:hidden divide-y divide-gray-100">
-
           <!-- Mobile Skeleton -->
           <div v-if="isLoading" v-for="i in skeletonRows.length" :key="i" class="p-3 space-y-3">
             <div class="flex items-center space-x-2">
@@ -144,7 +141,7 @@ const { error, success } = useNotify()
 
 const { report } = storeToRefs(store)
 
-const isLoading = ref(false)
+const isLoading = ref(true)
 const selectedClass = ref<ClassSession>()
 
 function todayISO() {
@@ -286,7 +283,6 @@ async function fetchRecords() {
 
   if (!selectedClass.value) return
 
-  // Scroll BEFORE loading so the page is still short when we scroll
   scrollToTop()
   isLoading.value = true
 
@@ -303,10 +299,6 @@ async function fetchRecords() {
 
   } finally {
     isLoading.value = false
-
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    }, 50)
   }
 }
 

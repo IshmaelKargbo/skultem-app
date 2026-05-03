@@ -1,23 +1,13 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto">
-        <SettingsHeader title="Expense Categories" subtitle="School spending categories">
+    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+        <Heading title="Expense Categories" subtitle="School spending categories">
             <SettingsExpenseAdd />
-        </SettingsHeader>
-        <UCard>
-            <SettingsExpenseTable />
-            <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
-                <Showing :meta="meta" />
-                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                    :total="meta.total" show-edges />
-            </div>
-        </UCard>
+        </Heading>
+        <SettingsExpenseTable />    
     </div>
 </template>
 
 <script setup lang="ts">
-const page = ref(1);
-const { meta } = storeToRefs(useExpenseStore());
-
 onMounted(() => {
     useAppStore().setTitle('Settings');
     document.title = 'Expense Categories | Settings | Skultem';

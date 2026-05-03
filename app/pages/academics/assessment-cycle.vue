@@ -1,101 +1,26 @@
 <template>
-  <div class="p-5 h-full overflow-y-auto">
-    <SettingsHeader />
-
-    <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs tracking-wide text-slate-500">Active Term</p>
-        <p class="mt-1 text-base font-semibold text-slate-800">{{ overview?.activeTerm?.name || 'Not set' }}</p>
-        <p class="mt-1 text-xs text-slate-500">
-          {{ overview?.activeTerm ? `${formatDate(overview.activeTerm.startDate)} -
-          ${formatDate(overview.activeTerm.endDate)}` : 'Set an ACTIVE term to unlock cycle readiness.' }}
-        </p>
-      </div>
-
-      <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs tracking-wide text-slate-500">Total Classes</p>
-        <p class="mt-1 text-2xl font-semibold text-slate-800">{{ overview?.totalClasses || 0 }}</p>
-      </div>
-
-      <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs tracking-wide text-slate-500">Ready Classes</p>
-        <p class="mt-1 text-2xl font-semibold text-green-700">{{ overview?.readyClasses || 0 }}</p>
-      </div>
-
-      <div class="bg-white border border-gray-200 rounded-md p-4">
-        <p class="text-xs tracking-wide text-slate-500">Need Attention</p>
-        <p class="mt-1 text-2xl font-semibold text-amber-700">{{ overview?.notReadyClasses || 0 }}</p>
-      </div>
-    </div>
-
-    <div class="mt-4 bg-white border border-gray-200 rounded-md p-4 space-y-3">
-      <div class="flex items-center justify-between gap-2">
-        <p class="text-sm font-medium text-slate-800">Quick Controls</p>
-        <UButton label="Refresh" icon="i-lucide-refresh-ccw" color="neutral" variant="outline" :loading="isRefreshing"
-          @click="refreshAll" />
-      </div>
-
-      <div class="grid gap-3 xl:grid-cols-2">
-        <div class="rounded-md border border-slate-200 p-3 space-y-2">
-          <p class="text-xs uppercase tracking-wide text-slate-500">Activate term</p>
-          <USelect v-model="selectedTermId" :items="termOptions" placeholder="Select term" />
-          <UButton label="Set Active Term" icon="i-lucide-check-check" color="success" variant="soft"
-            :loading="isActivatingTerm" :disabled="!selectedTermId" @click="activateSelectedTerm" />
-        </div>
-
-        <div class="rounded-md border border-slate-200 p-3 space-y-2">
-          <p class="text-xs uppercase tracking-wide text-slate-500">Update class template</p>
-          <p class="text-xs text-slate-500">
-            {{ selectedClassName || 'Select a class first' }}
-            <span v-if="selectedClass?.templateLocked" class="text-amber-700"> · Locked after grading started</span>
-          </p>
-          <USelect v-model="selectedTemplateId" :items="templateOptions" placeholder="Select template"
-            :disabled="!selectedClassId" />
-          <UButton label="Apply Template" icon="i-lucide-clipboard-check" color="info" variant="soft"
-            :loading="isUpdatingTemplate"
-            :disabled="!selectedClassId || !selectedTemplateId || Boolean(selectedClass?.templateLocked)"
-            @click="updateSelectedClassTemplate" />
-        </div>
-      </div>
-
-      <div class="rounded-md border border-slate-200 p-3 space-y-2">
+  <div class="md:p-7 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+    <UCard>
+      <template #header>
         <p class="text-xs uppercase tracking-wide text-slate-500">Assessment stage control</p>
+      </template>
+      <div class="space-y-2">
         <p class="text-xs text-slate-500">
           Moves the term from current assessment to the next one. Allowed only when all class assessments for the
           current stage are approved.
         </p>
-        <UButton label="Move to Next Assessment" icon="i-lucide-arrow-right-circle" color="warning" variant="soft"
-          :loading="isAdvancingAssessment" :disabled="!selectedTermId" @click="advanceAssessmentStage" />
       </div>
-
-      <div class="rounded-md border border-slate-200 p-3 space-y-3">
-        <div class="flex items-center justify-between">
-          <p class="text-xs uppercase tracking-wide text-slate-500">Grading scale</p>
-          <UButton label="Add Band" icon="i-lucide-plus" size="xs" color="neutral" variant="outline"
-            @click="addGradeBand" />
+      <template #footer>
+        <div class="flex flex-wrap gap-2">
+          <UButton label="Move to Next Assessment" icon="i-lucide-arrow-right-circle" color="warning" variant="outline"
+            :loading="isAdvancingAssessment" :disabled="!selectedTermId" @click="advanceAssessmentStage" />
+          <UButton label="Manage Terms" icon="i-lucide-calendar" color="neutral" variant="outline"
+            to="/settings/terms" />
+          <UButton label="Manage Templates" icon="i-lucide-clipboard-list" color="neutral" variant="outline"
+            to="/settings/assessment-templates" />
         </div>
-        <p class="text-xs text-slate-500">Configure grade bands used for student grade and ranking calculation.</p>
-
-        <div class="space-y-2">
-          <div v-for="(band, index) in gradingBands" :key="`band-${index}`" class="grid grid-cols-12 gap-2">
-            <UInput class="col-span-4" type="number" v-model.number="band.maxScore" placeholder="Max" />
-            <UInput class="col-span-4" type="number" v-model.number="band.minScore" placeholder="Min" />
-            <UInput class="col-span-3" v-model="band.grade" placeholder="Grade" />
-            <UButton class="col-span-1" icon="i-lucide-trash-2" color="error" variant="ghost"
-              :disabled="gradingBands.length <= 1" @click="removeGradeBand(index)" />
-          </div>
-        </div>
-
-        <UButton label="Save Grading Scale" icon="i-lucide-save" color="info" variant="soft"
-          :loading="isSavingGradingScale" @click="saveGradingScale" />
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <UButton label="Manage Terms" icon="i-lucide-calendar" color="neutral" variant="outline" to="/settings/terms" />
-        <UButton label="Manage Templates" icon="i-lucide-clipboard-list" color="neutral" variant="outline"
-          to="/settings/assessment-templates" />
-      </div>
-    </div>
+      </template>
+    </UCard>
 
     <div v-if="loadError" class="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
       {{ loadError }}
@@ -161,16 +86,13 @@
         <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p class="text-xs uppercase tracking-wide text-slate-500">Active Term</p>
           <p class="mt-1 text-xl font-semibold text-slate-800">{{ activeTerm?.name || 'Not configured' }}</p>
-          <p class="mt-1 text-sm text-slate-600">
-            {{ activeTerm ? `${formatDate(activeTerm.startDate)} - ${formatDate(activeTerm.endDate)}` : 'Set one term to ACTIVE to start assessment entry.' }}
-          </p>
+          <p class="mt-1 text-sm text-slate-600">{{ academicPeriod }}</p>
         </div>
-
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           <div class="rounded-lg border border-slate-200 p-3">
             <p class="text-xs uppercase tracking-wide text-slate-500">Template in use</p>
             <p class="mt-1 text-sm font-semibold text-slate-800">{{ cycle?.templateName || 'No template' }}</p>
-            <p class="mt-1 text-xs text-slate-500">{{ cycle?.templateDescription || 'Assign a template to this class first.' }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ templateDescription }}</p>
           </div>
 
           <div class="rounded-lg border border-slate-200 p-3 space-y-2">
@@ -239,15 +161,16 @@ const overview = ref<AssessmentCycleOverview | null>(null)
 const cycle = ref<ActiveAssessmentCycle | null>(null)
 const search = ref('')
 const loadError = ref('')
+const loading = ref(false)
 const isRefreshing = ref(false)
 const isLoadingOverview = ref(false)
 const isLoadingCycle = ref(false)
 const isActivatingTerm = ref(false)
 const isUpdatingTemplate = ref(false)
 const isAdvancingAssessment = ref(false)
-const isSavingGradingScale = ref(false)
 
-
+const academicPeriod = computed(() => activeTerm ? `${formatDate(activeTerm.startDate)} - ${formatDate(activeTerm.endDate)}` : 'Set one term to ACTIVE to start assessment entry.')
+const templateDescription = computed(() => cycle?.templateDescription || 'Assign a template to this class first.')
 
 const selectedTermId = ref('')
 const selectedTemplateId = ref('')
@@ -271,21 +194,6 @@ const selectedClassId = computed(() => {
 })
 
 const selectedClass = computed(() => (overview.value?.classes || []).find((item) => item.classId === selectedClassId.value) || null)
-const selectedClassName = computed(() => selectedClass.value?.className || '')
-
-const termOptions = computed(() =>
-  termStore.records.map((term) => ({
-    label: `${term.name}${term.status === 'ACTIVE' ? ' (Active)' : ''}`,
-    value: term.id
-  }))
-)
-
-const templateOptions = computed(() =>
-  assessmentStore.records.map((template) => ({
-    label: template.name,
-    value: template.id
-  }))
-)
 
 const filteredClasses = computed(() => {
   const all = overview.value?.classes || []
@@ -398,69 +306,6 @@ async function loadGradingScale() {
   }
 }
 
-function addGradeBand() {
-  gradingBands.value.push({ minScore: 0, maxScore: 0, grade: '' })
-}
-
-function removeGradeBand(index: number) {
-  gradingBands.value.splice(index, 1)
-}
-
-async function saveGradingScale() {
-  if (!gradingBands.value.length) return
-
-  isSavingGradingScale.value = true
-  try {
-    const payload = {
-      bands: gradingBands.value.map(band => ({
-        minScore: Number(band.minScore),
-        maxScore: Number(band.maxScore),
-        grade: `${band.grade || ''}`.trim()
-      }))
-    }
-    const res = await assessmentStore.updateGradingScale(payload)
-    gradingBands.value = (res?.bands || []).map(band => ({ ...band }))
-    toastSuccess('Grading scale updated successfully')
-  } catch (error: any) {
-    toastError(error?.message || 'Failed to update grading scale')
-  } finally {
-    isSavingGradingScale.value = false
-  }
-}
-
-async function activateSelectedTerm() {
-  if (!selectedTermId.value) return
-
-  isActivatingTerm.value = true
-  try {
-    await termStore.activate(selectedTermId.value)
-    toastSuccess('Term activated successfully')
-    await refreshAll()
-  } catch (error: any) {
-    toastError(error?.message || 'Failed to activate term')
-  } finally {
-    isActivatingTerm.value = false
-  }
-}
-
-async function updateSelectedClassTemplate() {
-  if (!selectedClassId.value || !selectedTemplateId.value) return
-  if (selectedClass.value?.templateLocked) {
-    warning('Template is locked because grading already started for this class')
-    return
-  }
-
-  isUpdatingTemplate.value = true
-  try {
-    await classStore.updateTemplate(selectedClassId.value, selectedTemplateId.value)
-    toastSuccess('Class template updated successfully')
-    await refreshAll()
-  } catch (error: any) {
-    toastError(error?.message || 'Failed to update class template')
-  } finally {
-    isUpdatingTemplate.value = false
-  }
-}
 
 async function advanceAssessmentStage() {
   if (!selectedTermId.value) return
@@ -500,8 +345,9 @@ async function refreshAll() {
 onMounted(async () => {
   appStore.setTitle('Assessment Cycle')
   document.title = 'Assessment Cycle | Settings | Skultem'
-
+  loading.value = true
   await refreshAll()
+  loading.value = false
 })
 
 watch(() => selectedClassId.value, async () => {

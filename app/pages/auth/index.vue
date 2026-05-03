@@ -3,8 +3,6 @@
     <Heading title="Users Management" subtitle="Manage users and explore your school data">
       <AuthUsersAdd />
     </Heading>
-
-    <!-- Users Table -->
     <AuthUsersTable />
   </div>
 </template>

@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
 const router = useRouter()
 const store = useFeeStore()
 const loading = ref(true)
-const { records: data } = storeToRefs(store)
+const { records: data, meta } = storeToRefs(store)
 
 const editRcord = ref<FeeCategory | null>(null)
 const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
-const columns: TableColumn<FeeCategory> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name'
@@ -110,17 +109,26 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UTable :columns="columns" :data="data" :loading="loading">
-    <template #empty-state>
-      <div class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No categories found.</p>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
+    <UTable :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No categories found.</p>
+        </div>
+      </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
+    </UTable>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </template>
-    <template #classId-cell="{ row }">
-      <ClassRecord :id="row.original.classId" #default="{ value }">
-        {{ value?.name || 'Unknown Class' }}
-      </ClassRecord>
-    </template>
-  </UTable>
+  </UCard>
 </template>

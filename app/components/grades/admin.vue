@@ -41,7 +41,9 @@
         <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
       </div>
     </UCard>
-    <UCard class="hidden md:block" v-if="state.teacherSubjectId && rows.length > 0">
+    <UCard class="hidden md:block" :ui="{
+      body: 'sm:p-0'
+    }">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full" />
     </UCard>
     <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3 md:hidden">

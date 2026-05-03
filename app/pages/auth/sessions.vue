@@ -11,6 +11,9 @@
                         <p class="text-gray-500">No user sessions found.</p>
                     </div>
                 </template>
+                <template #loading>
+                    <TableLoading :size="columns.length" />
+                </template>
                 <template #userName-cell="{ row }">
                     <div>
                         <p class="text-sm font-medium">{{ row.original.userName || 'System' }}</p>
@@ -42,12 +45,10 @@
 </template>
 
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const store = useSessionStore()
 const { records, meta, loading } = storeToRefs(store)
 
-const columns: TableColumn<UserSession>[] = [
+const columns = [
     { accessorKey: 'userName', header: 'User' },
     { accessorKey: 'ipAddress', header: 'IP Address' },
     { accessorKey: 'device', header: 'Device' },

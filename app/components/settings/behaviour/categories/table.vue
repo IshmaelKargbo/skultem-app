@@ -13,7 +13,7 @@ const editState = ref(false)
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-const columns: TableColumn<Holiday> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name'
@@ -140,6 +140,9 @@ onMounted(async () => {
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No behaviour found.</p>
         </div>
+      </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
       </template>
     </UTable>
     <template #footer>
