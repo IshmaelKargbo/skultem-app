@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 const store = useWidgetStore()
+const colors = ref<string[]>([])
 const { term, classId, assessment, teacher } = defineProps<{
   term: string
   assessment: string,
@@ -44,7 +45,7 @@ const chartOptions: any = computed(() => ({
       color: "#6b7280"
     }
   },
-  colors: ["#0e9bbe"],
+  colors: colors.value,
   xaxis: {
     categories: labels.value,
     labels: { style: { fontSize: "12px" } }
@@ -95,14 +96,14 @@ async function loadData() {
           type: "select"
         },
         {
-          field: "cycle.assessment.id",
-          value: assessment,
+          field: "cycle.subject.id",
+          value: teacher,
           operator: "EQUALS",
           type: "select"
         },
         {
-          field: "cycle.subject.id",
-          value: teacher,
+          field: "cycle.assessment.id",
+          value: assessment,
           operator: "EQUALS",
           type: "select"
         },
@@ -139,6 +140,8 @@ async function loadData() {
       name: d.label,
       data: d.data
     }))
+
+    colors.value = generateColors(labels.value.length)
 
     isReady.value = true
   } catch (err) {

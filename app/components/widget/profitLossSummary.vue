@@ -30,7 +30,13 @@ const chartOptions = computed(() => ({
   xaxis: { categories: labels.value, labels: { style: { fontSize: "12px" } } },
   yaxis: { labels: { style: { fontSize: "12px" } } },
   colors: colors.value,
-  plotOptions: { bar: { borderRadius: 6, horizontal: false, columnWidth: "45%" } },
+  plotOptions: {
+    bar: {
+      borderRadius: 6,
+      columnWidth: "45%",
+      distributed: true
+    }
+  },
   dataLabels: { enabled: true, formatter: (val: number) => format(val), style: { fontSize: "11px", colors: ["#fff"] } },
   tooltip: { y: { formatter: (val: number) => format(val) } },
   legend: { position: "bottom" },
@@ -94,7 +100,14 @@ onMounted(async () => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 </style>
