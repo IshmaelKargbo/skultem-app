@@ -1,18 +1,24 @@
 <template>
     <div class="md:p-7 p-4 md:space-y-5 space-y-3">
-        <div class="flex space-x-3">
-            <USelectMenu value-key="value" v-model="state.clazz" @change="change" :loading="loading" :items="subjects"
-                placeholder="Select Subject" />
-            <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
-                placeholder="Select Term" />
-        </div>
+        <UCard>
+            <div class="flex space-x-3">
+                <USelectMenu value-key="value" v-model="state.clazz" @change="change" :loading="loading"
+                    :items="subjects" placeholder="Select Subject" />
+                <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
+                    placeholder="Select Term" />
+                <USelectMenu value-key="value" v-model="state.assessment" :loading="loading" :items="assessmentItems"
+                    placeholder="Select Assessment" />
+            </div>
+        </UCard>
         <div class="grid md:grid-cols-3 grid-cols-2 md:gap-5 gap-3">
             <DashboardTeacherTotal :term="term" :session-id="selected?.classId" />
-            <DashboardTeacherClassAvarage :term="term" :session-id="selected?.classId" />
+            <DashboardTeacherClassAvarage :assessment="state.assessment" :class-id="selected?.classId"
+                :teacher="selected?.id" :term="term" :session-id="selected?.classId" />
             <DashboardTeacherAttendance class="col-span-2 md:col-span-1" :classId="selected?.classId" />
         </div>
         <div class="grid md:grid-cols-2 md:gap-5 gap-3">
-            <DashboardTeacherGradeDistribution :term="state.term" :class-id="selected?.classId" />
+            <DashboardTeacherGradeDistribution :assessment="state.assessment" :term="state.term"
+                :class-id="selected?.classId" :teacher="selected?.id" />
             <DashboardTeacherAttendanceTrend :class-id="selected?.classId" />
         </div>
         <UCard>
@@ -51,18 +57,23 @@
 <script setup lang="ts">
 const store = useTeacherSubjectStore()
 const studentStore = useStudentStore()
+const assessmentStore = useAssessmentStore()
+const { assessments } = storeToRefs(assessmentStore)
 const { activeCycle } = storeToRefs(studentStore)
 const { loading } = storeToRefs(store)
 
 const records = ref<TeacherSubject[]>([])
-const state = reactive<{ clazz: string, term: string }>({
+const state = reactive<{ clazz: string, term: string, assessment: string }>({
     clazz: '',
-    term: ''
+    term: '',
+    assessment: ''
 })
 
 const selected = ref<TeacherSubject | undefined>()
 
 const terms = computed(() => activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })))
+
+const assessmentItems = computed(() => assessments.value?.map(e => ({ label: e.name, value: e.id })))
 
 const term = ref<Term | undefined>()
 
@@ -102,16 +113,37 @@ async function fetchRecord() {
     records.value = res
 }
 
+async function fetchAssessment() {
+    if (!selected.value) return null
+    await assessmentStore.fetchClassAssessments(selected.value.classId)
+
+    if (assessmentItems.value && assessmentItems.value.length > 0)
+        state.assessment = assessmentItems.value[0].value
+}
+
 watch(
     () => selected.value,
     async () => {
         await fetchCycle()
+        await fetchAssessment()
     },
     { immediate: true }
 )
 
 watch(
     () => state.term,
+    async () => {
+        if (activeCycle.value == null) return
+        const active = activeCycle.value.terms.find(e => e.id == state.term)
+        if (active == null) return
+        term.value = active
+    },
+    { immediate: true }
+)
+
+
+watch(
+    () => state.assessment,
     async () => {
         if (activeCycle.value == null) return
         const active = activeCycle.value.terms.find(e => e.id == state.term)

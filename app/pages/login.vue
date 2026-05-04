@@ -2,12 +2,14 @@
   <div class="min-h-screen flex font-sans">
 
     <!-- Left Panel -->
-    <div class="hidden md:flex w-[44%] flex-col justify-end p-10 relative overflow-hidden"
-      style="background: #0F1E3C;">
-      <div class="absolute rounded-full  bg-cyan-600" style="width:320px;height:320px;top:-90px;right:-90px;opacity:0.06;" />
-      <div class="absolute rounded-full  bg-cyan-400" style="width:180px;height:180px;bottom:60px;left:-50px;opacity:0.06;" />
+    <div class="hidden md:flex w-[44%] flex-col justify-end p-10 relative overflow-hidden" style="background: #0F1E3C;">
+      <div class="absolute rounded-full  bg-cyan-600"
+        style="width:320px;height:320px;top:-90px;right:-90px;opacity:0.06;" />
+      <div class="absolute rounded-full  bg-cyan-400"
+        style="width:180px;height:180px;bottom:60px;left:-50px;opacity:0.06;" />
 
-      <div class="self-start flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide bg-primary-700/50 text-white/80">
+      <div
+        class="self-start flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide bg-primary-700/50 text-white/80">
         <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
         School management platform
       </div>
@@ -20,7 +22,7 @@
       </p>
 
       <div class="flex gap-2">
-        <span class="w-2 h-2 rounded-full bg-primary"/>
+        <span class="w-2 h-2 rounded-full bg-primary" />
         <span class="w-2 h-2 rounded-full bg-primary-800" />
         <span class="w-2 h-2 rounded-full bg-primary-800" />
       </div>
@@ -46,80 +48,40 @@
         <!-- Form -->
         <UForm :schema="schema" :state="state" @submit="handleLogin" class="space-y-4">
 
-          <UFormField
-            name="email"
-            label="Email"
-            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }"
-          >
-            <UInput
-              v-model="state.email"
-              size="lg"
-              placeholder="you@school.edu"
-              type="email"
-              class="w-full"
-              :ui="{
-                base: 'w-full',
-                rounded: 'rounded-lg',
-              }"
-            />
+          <UFormField name="email" label="Email"
+            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }">
+            <UInput v-model="state.email" size="lg" placeholder="you@school.edu" type="email" class="w-full" :ui="{
+              base: 'w-full',
+              rounded: 'rounded-lg',
+            }" />
           </UFormField>
 
-          <UFormField
-            name="password"
-            label="Password"
-            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }"
-          >
-            <UInput
-              v-model="state.password"
-              size="lg"
-              type="password"
-              placeholder="••••••••"
-              class="w-full"
-              :ui="{
-                base: 'w-full',
-                rounded: 'rounded-lg',
-              }"
-            />
+          <UFormField name="password" label="Password"
+            :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }">
+            <UInput v-model="state.password" size="lg" :type="showConfirm ? 'text' : 'password'" placeholder="••••••••" class="w-full" :ui="{
+              base: 'w-full',
+              rounded: 'rounded-lg',
+            }">
+              <template #trailing>
+                <UButton variant="ghost" size="xs" tabindex="-1" :icon="showConfirm ? 'lucide:eye-off' : 'lucide:eye'"
+                  @click="showConfirm = !showConfirm" />
+              </template>
+            </UInput>
           </UFormField>
 
           <!-- Remember + Forgot -->
           <div class="flex items-center justify-between pt-1">
-            <UCheckbox
-              v-model="state.rememberMe"
-              label="Remember me"
-              :ui="{
-                label: 'text-sm text-mute cursor-pointer',
-                base: 'accent-[#0F1E3C]'
-              }"
-            />
-            <UButton
-              variant="link"
-              to="#"
-              class="text-sm font-medium p-0"
-              :ui="{ base: 'text-[#1A3A72]' }"
-            >
+            <UCheckbox v-model="state.rememberMe" label="Remember me" :ui="{
+              label: 'text-sm text-mute cursor-pointer',
+              base: 'accent-[#0F1E3C]'
+            }" />
+            <UButton variant="link" to="#" class="text-sm font-medium p-0" :ui="{ base: 'text-[#1A3A72]' }">
               Forgot password?
             </UButton>
           </div>
-
-          <!-- Submit -->
-          <UButton
-            type="submit"
-            size="lg"
-            :loading="loading"
-            block
-            :ui="{
-              base: 'w-full justify-center rounded-lg font-medium tracking-wide transition-all',
-              color: {
-                primary: {
-                  solid: 'bg-[#0F1E3C] hover:bg-[#1A3A72] text-[#F5F0E8] border-none'
-                }
-              }
-            }"
-          >
+          <UButton type="submit" size="lg" :loading="loading" block>
             Sign in
           </UButton>
-
         </UForm>
       </div>
     </div>
@@ -136,6 +98,7 @@ const state = reactive({
   rememberMe: false
 })
 
+const showConfirm = ref(false)
 const loading = ref(false)
 const toast = useToast()
 const userStore = useUserStore()

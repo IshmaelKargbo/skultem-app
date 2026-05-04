@@ -30,6 +30,16 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    resetPassword: async (payload: ResetPasswordDto) => {
+      try {
+        return await $api('/user/reset-password', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     login: async (payload: LoginDto) => {
       try {
         const res = await $api('/auth/login', {

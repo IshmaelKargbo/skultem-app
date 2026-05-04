@@ -9,7 +9,7 @@
           <UBadge color="error" variant="outline" size="lg">{{ summary.returned }} Returned</UBadge>
         </div>
       </Heading>
-      <div class="flex flex-wrap justify-between items-center space-y-3">
+      <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-3">
         <div class="flex gap-2 w-full">
           <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">
             All {{ requests.length }}

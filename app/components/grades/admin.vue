@@ -1,6 +1,7 @@
 <template>
   <div class="md:p-7 overflow-y-auto h-full md:space-y-5 space-y-3 p-3">
-    <Heading class="hidden md:flex" title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
+    <Heading class="hidden md:flex" title="Grade Entry"
+      subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
         <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
@@ -10,12 +11,12 @@
     </Heading>
     <UCard class="hidden md:block">
       <div class="flex space-x-3">
-        <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
-          @change="fetchStudents" />
-        <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
-          @change="fetchRecord" />
-        <USelectMenu value-key="value" :items="teachers" placeholder="Select Subject" v-model="state.teacherSubjectId"
-          @change="fetchStudents" />
+        <USelectMenu value-key="value" :loading="loadingTerm" :items="terms" placeholder="Select Term"
+          v-model="state.termId" @change="fetchStudents" />
+        <USelectMenu value-key="value" :items="classes" :loading="loadingClass" placeholder="Select Class"
+          v-model="state.classId" @change="fetchRecord" />
+        <USelectMenu value-key="value" :items="teachers" :loading="loadingSubject" placeholder="Select Subject"
+          v-model="state.teacherSubjectId" @change="fetchStudents" />
       </div>
     </UCard>
     <div class="grid gap-3 grid-cols-2 md:hidden">
@@ -44,7 +45,11 @@
     <UCard class="hidden md:block" :ui="{
       body: 'sm:p-0'
     }">
-      <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full" />
+      <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
+        <template #loading>
+          <TableLoading :size="7" />
+        </template>
+      </UTable>
     </UCard>
     <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3 md:hidden">
       <UCard :ui="{
@@ -113,7 +118,6 @@
 </template>
 
 <script setup lang="ts">
-const { can } = useAuth()
 type GradeAssessmentForm = {
   classId: string
   teacherSubjectId: string
@@ -136,6 +140,10 @@ const state = reactive<GradeAssessmentForm>({
   teacherSubjectId: '',
   termId: ''
 })
+
+const loadingTerm = ref(false)
+const loadingClass = ref(false)
+const loadingSubject = ref(false)
 
 const loading = ref(false)
 const saving = ref(false)
@@ -628,12 +636,19 @@ onMounted(async () => {
   useAppStore().setTitle('Grade Assignment')
   document.title = 'Grade Assignment | Grades | Skultem'
 
+  loadingTerm.value = true
+  loadingClass.value = true
+  loadingSubject.value = true
+
   await teacherStore.fetchAll(0, 0)
   await classSessionStore.fetchAll(0, 0)
   await termStore.fetchAll(0, 0)
   await store.fetchGradingScale().catch(() => null)
 
-  // default select first term
+  loadingTerm.value = false
+  loadingSubject.value = false
+  loadingClass.value = false
+
   if (terms.value.length > 0) {
     state.termId = terms.value[0]?.value || ''
   }

@@ -1,7 +1,18 @@
 export default defineNuxtRouteMiddleware((to) => {
     const token = useCookie("access_token")
     const { activeRole, authResolved } = useAuth()
+    const store = useUserStore()
+    const { user } = storeToRefs(store)
     const requiredRole = to.meta.role as string | string[] | undefined
+
+    if (user.value.status == "RESET_PASSWORD" && to.path !== "/reset-password") {
+        return navigateTo("/reset-password")
+    }
+
+
+    if (user.value.status != "RESET_PASSWORD" && to.path == "/reset-password") {
+        return navigateTo("/")
+    }
 
     if (!token.value && to.path !== "/login") {
         if (import.meta.client) {

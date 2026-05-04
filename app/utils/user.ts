@@ -16,6 +16,10 @@ export type CreateUserDto = {
     role: string
 }
 
+export type ResetPasswordDto = {
+    password: string
+}
+
 export type LoginDto = {
     domain: string
     email: string

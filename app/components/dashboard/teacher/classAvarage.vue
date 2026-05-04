@@ -10,20 +10,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-
 const store = useWidgetStore()
-const { sessionId, term } = defineProps<{
+const { sessionId, term, assessment, teacher } = defineProps<{
   sessionId: string | undefined
+  assessment: string | undefined
+  teacher: string | undefined
   term: Term | undefined
 }>()
 
 const isReady = ref(false)
 const termAverage = ref("0")
 const message = ref('')
-const studentStore = useStudentStore()
-
-const { activeCycle } = storeToRefs(studentStore)
 
 async function fetchTermAverage() {
   if (term == null) return
@@ -41,6 +38,18 @@ async function fetchTermAverage() {
       {
         field: 'cycle.term.id',
         value: term.id,
+        operator: "EQUALS",
+        type: "select"
+      },
+      {
+        field: "cycle.assessment.id",
+        value: assessment,
+        operator: "EQUALS",
+        type: "select"
+      },
+      {
+        field: "cycle.subject.id",
+        value: teacher,
         operator: "EQUALS",
         type: "select"
       }
@@ -65,7 +74,7 @@ async function fetchTermAverage() {
 
 watch
   (
-    () => [term, sessionId],
+    () => [term, sessionId, teacher, assessment],
     async () => {
       isReady.value = false
       await fetchTermAverage()

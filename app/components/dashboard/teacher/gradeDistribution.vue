@@ -14,8 +14,10 @@
 
 <script setup lang="ts">
 const store = useWidgetStore()
-const { term, classId } = defineProps<{
+const { term, classId, assessment, teacher } = defineProps<{
   term: string
+  assessment: string,
+  teacher: string | undefined,
   classId: string | undefined
 }>()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
@@ -24,7 +26,7 @@ const isReady = ref(false)
 const labels = ref<string[]>([])
 const chartSeries = ref<any[]>([])
 
-const chartOptions = computed(() => ({
+const chartOptions: any = computed(() => ({
   chart: {
     id: "grade-trend",
     toolbar: { show: false }
@@ -91,6 +93,18 @@ async function loadData() {
           value: term,
           operator: "EQUALS",
           type: "select"
+        },
+        {
+          field: "cycle.assessment.id",
+          value: assessment,
+          operator: "EQUALS",
+          type: "select"
+        },
+        {
+          field: "cycle.subject.id",
+          value: teacher,
+          operator: "EQUALS",
+          type: "select"
         }
       ],
       metrics: [
@@ -98,8 +112,12 @@ async function loadData() {
           name: "Grade Distribution",
           aggregation: "count",
           field: "grade",
-          tags: { groupBy: "grade" }
-        }
+          tags: {
+            groupBy: "grade",
+            field: "status",
+            value: "APPROVED",
+          }
+        },
       ],
       chartType: "bar"
     }
@@ -123,7 +141,7 @@ async function loadData() {
 }
 
 watch(
-  () => [term, classId],
+  () => [classId, term, assessment, teacher],
   async () => {
     isReady.value = false
     await loadData()

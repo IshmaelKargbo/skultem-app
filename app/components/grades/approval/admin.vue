@@ -1,6 +1,5 @@
 <template>
   <UForm :state="state" class="h-full flex flex-col bg-gray-50">
-    <!-- HEADER -->
     <div class="p-6 border-b border-gray-300 space-y-4">
       <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
         <div class="flex gap-3">
@@ -9,7 +8,7 @@
           <UBadge color="error" variant="outline" size="lg">{{ summary.returned }} Returned</UBadge>
         </div>
       </Heading>
-      <div class="flex flex-wrap justify-between items-center space-y-3">
+      <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-3">
         <div class="flex gap-2 w-full">
           <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">
             All {{ requests.length }}
@@ -29,21 +28,16 @@
           </UButton>
         </div>
         <div class="md:w-1/2 w-full flex space-x-3">
-          <USelectMenu @change="fetchRecords" value-key="value" v-model="state.teacherId" :items="teachers" placeholder="Search teacher" />
+          <USelectMenu @change="fetchRecords" value-key="value" v-model="state.teacherId" :items="teachers" :loading="loadingSession" placeholder="Search teacher" />
         </div>
       </div>
     </div>
-
-    <!-- BODY -->
     <div class="flex flex-1 overflow-hidden">
-      <!-- LEFT REQUEST LIST -->
       <div class="flex-1 bg-white overflow-y-auto">
         <GradesRecordLoading v-if="isLoading" v-for="(item, index) in 8" :key="index" />
         <GradesRecord v-else v-for="req in filteredRequests" :selected="selected" :key="req.id" @click="selected = req"
           :record="req" />
       </div>
-
-      <!-- RIGHT DETAILS -->
       <GradesViewRequest @refresh="fetchRecordAndUpdate" @close="close" :record="selected" />
     </div>
   </UForm>
@@ -67,6 +61,7 @@ const sessionStore = useTeacherStore()
 const store = useAssessmentStore()
 const { records } = storeToRefs(sessionStore)
 const isLoading = ref(false)
+const loadingSession = ref(true)
 const teachers = computed(() => records.value.map(e => ({ label: `${e.user.givenNames} ${e.user.familyName}`, value: e.id })))
 
 const search = ref('')
@@ -129,10 +124,12 @@ const state = reactive<ApprovalRequestForm>({
   teacherId: ""
 })
 
-onMounted(() => {
+onMounted(async () => {
   useAppStore().setTitle('Grade Approval Requests')
   document.title = 'Grade Approval Requests | Grades | Skultem'
-  sessionStore.fetchAll(0, 0)
+  loadingSession.value = true
+  await sessionStore.fetchAll(0, 0)
+  loadingSession.value = false
 })
 
 definePageMeta({

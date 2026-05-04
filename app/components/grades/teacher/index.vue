@@ -39,7 +39,11 @@
       </div>
     </UCard>
     <UCard v-if="state.teacherSubjectId && rows.length > 0" class="hidden md:block">
-      <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full" />
+      <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
+        <template #loading>
+          <TableLoading :size="7" />
+        </template>
+      </UTable>
     </UCard>
     <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3 md:hidden">
       <UCard :ui="{
@@ -85,7 +89,7 @@
       </UCard>
     </div>
     <div class="grid gap-3 grid-cols-2 lg:grid-cols-5">
-     <Metric :class="{
+      <Metric :class="{
         'col -span-2 md:col-span-1': (i + 1 == statusSummary.length)
       }" v-for="(summary, i) in statusSummary" :key="summary.status" :record="{
         color: summary.color,
