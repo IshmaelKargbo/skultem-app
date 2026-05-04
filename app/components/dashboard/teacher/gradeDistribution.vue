@@ -105,6 +105,12 @@ async function loadData() {
           value: teacher,
           operator: "EQUALS",
           type: "select"
+        },
+        {
+          field: "cycle.status",
+          values: ['APPROVED', 'COMPLETED'],
+          operator: "IN_LIST",
+          type: "select"
         }
       ],
       metrics: [
@@ -113,17 +119,15 @@ async function loadData() {
           aggregation: "count",
           field: "grade",
           tags: {
-            groupBy: "grade",
-            field: "status",
-            value: "APPROVED",
+            groupBy: "grade"
           }
-        },
+        }
       ],
       chartType: "bar"
     }
 
     if (assessment == "") return
-    
+
     const res = await store.runAnalytic(payload)
     const widget = res?.data ?? res
 
