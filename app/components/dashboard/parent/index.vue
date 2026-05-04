@@ -1,11 +1,13 @@
 <template>
     <div class="md:p-7 p-4 md:space-y-5 space-y-3">
-        <div class="grid grid-cols-2 gap-2">
-            <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading" :items="children"
-                placeholder="Select Student" />
-            <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
-                placeholder="Select Term" />
-        </div>
+        <UCard>
+            <div class="grid grid-cols-2 gap-2">
+                <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
+                    :items="children" placeholder="Select Student" />
+                <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
+                    placeholder="Select Term" />
+            </div>
+        </UCard>
         <div class="grid md:grid-cols-3 grid-cols-2 md:gap-5 gap-3">
             <DashboardParentAvarage class="col-span-2 md:col-span-1" :term="term"
                 :session-id="selected?.sessionId || ''" :id="state.student" />

@@ -52,7 +52,6 @@
             :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }">
             <UInput v-model="state.email" size="lg" placeholder="you@school.edu" type="email" class="w-full" :ui="{
               base: 'w-full',
-              rounded: 'rounded-lg',
             }" />
           </UFormField>
 
@@ -60,7 +59,6 @@
             :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }">
             <UInput v-model="state.password" size="lg" :type="showConfirm ? 'text' : 'password'" placeholder="••••••••" class="w-full" :ui="{
               base: 'w-full',
-              rounded: 'rounded-lg',
             }">
               <template #trailing>
                 <UButton variant="ghost" size="xs" tabindex="-1" :icon="showConfirm ? 'lucide:eye-off' : 'lucide:eye'"

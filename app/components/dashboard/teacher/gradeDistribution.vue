@@ -122,6 +122,8 @@ async function loadData() {
       chartType: "bar"
     }
 
+    if (assessment == "") return
+    
     const res = await store.runAnalytic(payload)
     const widget = res?.data ?? res
 

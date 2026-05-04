@@ -141,18 +141,6 @@ watch(
     { immediate: true }
 )
 
-
-watch(
-    () => state.assessment,
-    async () => {
-        if (activeCycle.value == null) return
-        const active = activeCycle.value.terms.find(e => e.id == state.term)
-        if (active == null) return
-        term.value = active
-    },
-    { immediate: true }
-)
-
 onMounted(async () => {
     useAppStore().setTitle('Dashboard')
     document.title = 'Dashboard | Skultem'
