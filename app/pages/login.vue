@@ -28,16 +28,13 @@
       </div>
     </div>
 
-    <!-- Right Panel -->
     <div class="flex flex-1 items-center justify-center px-8 py-12 bg-white dark:bg-gray-950">
       <div class="w-full max-w-sm">
-
-        <!-- Brand mark -->
         <div class="flex items-center gap-1 mb-9">
           <div class="w-9 h-9 rounded-xl flex items-center justify-center">
             <img src="/icon.svg" alt="Skultem" class="w-7 h-7" />
           </div>
-          <span class="text-xl font-semibold font-display">SkulTem</span>
+          <span class="text-xl font-semibold font-display">Skultem</span>
         </div>
 
         <h2 class="text-2xl font-display font-semibold mb-1">
@@ -45,7 +42,6 @@
         </h2>
         <p class="text-sm text-mute mb-7">Sign in to your school account</p>
 
-        <!-- Form -->
         <UForm :schema="schema" :state="state" @submit="handleLogin" class="space-y-4">
 
           <UFormField name="email" label="Email"
@@ -57,9 +53,10 @@
 
           <UFormField name="password" label="Password"
             :ui="{ label: 'text-xs font-medium tracking-widest uppercase text-mute mb-1' }">
-            <UInput v-model="state.password" size="lg" :type="showConfirm ? 'text' : 'password'" placeholder="••••••••" class="w-full" :ui="{
-              base: 'w-full',
-            }">
+            <UInput v-model="state.password" size="lg" :type="showConfirm ? 'text' : 'password'" placeholder="••••••••"
+              class="w-full" :ui="{
+                base: 'w-full',
+              }">
               <template #trailing>
                 <UButton variant="ghost" size="xs" tabindex="-1" :icon="showConfirm ? 'lucide:eye-off' : 'lucide:eye'"
                   @click="showConfirm = !showConfirm" />
@@ -67,7 +64,6 @@
             </UInput>
           </UFormField>
 
-          <!-- Remember + Forgot -->
           <div class="flex items-center justify-between pt-1">
             <UCheckbox v-model="state.rememberMe" label="Remember me" :ui="{
               label: 'text-sm text-mute cursor-pointer',
@@ -112,7 +108,15 @@ const handleLogin = async () => {
   try {
     loading.value = true
     setAuthResolved(false)
-    await userStore.login({ domain: "kings-way", email: state.email, password: state.password })
+    
+    const hostname = useRequestURL().hostname
+
+    const domain =
+      hostname.includes('localhost')
+        ? 'kings-way'
+        : hostname.split('.')[0]
+
+    await userStore.login({ domain: domain || '', email: state.email, password: state.password })
     show({
       title: 'Signing you in...',
       subtitle: 'Preparing your dashboard',

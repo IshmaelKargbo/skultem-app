@@ -32,15 +32,10 @@ export default defineAppConfig({
       }
     },
     card: {
-      slots: {
-        body: 'p-3 sm:p-4',
-        header: 'p-3 sm:p-4',
-        footer: 'p-3 sm:p-4',
-      },
       variants: {
         variant: {
           outline: {
-            root: 'bg-default ring-1 ring-default/40 divide-y divide-default/40'
+            root: 'bg-default shadow rounded-2xl shadown-md'
           },
         }
       }
