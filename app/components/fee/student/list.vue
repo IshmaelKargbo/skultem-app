@@ -1,11 +1,7 @@
 <template>
     <UCard>
         <div class="space-y-4">
-
-            <!-- Search -->
             <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON" :disabled="isLoading" />
-
-            <!-- Loading State -->
             <div v-if="isLoading" class="space-y-3">
                 <div v-for="n in 6" :key="n" class="border p-3 rounded-md border-gray-300 space-y-2">
                     <div class="flex justify-between items-center">
@@ -15,18 +11,15 @@
                     <USkeleton class="h-3 w-28" />
                 </div>
             </div>
-
-            <!-- Data -->
             <div v-else class="space-y-2">
                 <div @click="select(item)" v-for="(item, index) in records" :key="index">
                     <FeeStudentCard @click="select" :active="item.id == selected?.id" :student="item" />
                 </div>
             </div>
-
-            <!-- Pagination -->
-            <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
-                :items-per-page="meta.size" :total="meta.total" show-edges />
-
+            <div class="flex justify-center">
+                <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
+                    :items-per-page="meta.size" :total="meta.total" show-edges />
+            </div>
         </div>
     </UCard>
 </template>
@@ -46,26 +39,26 @@ const meta = ref<Meta>()
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
+    get: () => Number(route.query.page ?? 1),
+    set: (val) => updateQuery({ page: val })
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? 5),
-  set: (val) => updateQuery({ size: val })
+    get: () => Number(route.query.size ?? 5),
+    set: (val) => updateQuery({ size: val })
 })
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+    const merged = { ...route.query, ...newQuery }
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
+    if (
+        merged.page === route.query.page &&
+        merged.size === route.query.size
+    ) {
+        return
+    }
 
-  router.replace({ query: merged })
+    router.replace({ query: merged })
 }
 
 const loadData = async () => {

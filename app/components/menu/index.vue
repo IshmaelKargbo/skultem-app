@@ -1,13 +1,10 @@
 <template>
-  <div class="border-r flex flex-col border-gray-200 bg-menu text-white h-full">
-    <!-- Header -->
-    <div class="flex py-3 px-5 border-b border-gray-800 space-x-2 items-center">
+  <div class="flex flex-col rounded-2xl border-2 bg-white opacity-90 border-gray-200  h-full">
+    <div class="flex py-3 px-5 space-x-2 items-center">
       <nuxt-link to="/">
-        <img src="/menu-light.svg" class="h-7" />
+        <img src="/menu-dark.svg" class="h-7" />
       </nuxt-link>
     </div>
-
-    <!-- Menu -->
     <div class="flex-1 p-4 overflow-y-auto">
       <ul class="space-y-1">
         <li>
@@ -30,7 +27,7 @@
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                 class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
+                :class="isActiveSub(nav) ? 'font-semibold text-primary-500' : 'text-gray-700'">
                 <!-- Subnav icon -->
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>
@@ -196,7 +193,7 @@
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                 class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
+                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-gray-800'">
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>
               </NuxtLink>
@@ -218,8 +215,8 @@
           <template #subNav="{ subNavs, isActiveSub }">
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
+                class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
+                :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>
               </NuxtLink>
@@ -240,8 +237,8 @@
           <template #subNav="{ subNavs, isActiveSub }">
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
+                class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
+                :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>
               </NuxtLink>
@@ -263,8 +260,8 @@
           <template #subNav="{ subNavs, isActiveSub }">
             <div class="flex flex-col space-y-1">
               <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                :class="isActiveSub(nav) ? 'font-semibold text-blue-400' : 'text-white/55'">
+                class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
+                :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
                 <!-- Subnav icon -->
                 <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" />
                 <span>{{ nav.label }}</span>

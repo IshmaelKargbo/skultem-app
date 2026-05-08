@@ -1,5 +1,5 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:p-5 py-2 md:py-4 p-4 overflow-y-auto h-full space-y-5">
         <Heading title="Student Fees Management" subtitle="Manage student-specific fees and balances">
             <div v-if="can([Role.ACCOUNTANT])">
                 <FeeStructureAdd />

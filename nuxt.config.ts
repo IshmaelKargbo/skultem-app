@@ -1,3 +1,21 @@
+const appleSplashScreens = [
+  { width: 640, height: 1136, media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 750, height: 1334, media: '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 828, height: 1792, media: '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 1125, height: 2436, media: '(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1170, height: 2532, media: '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1179, height: 2556, media: '(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1242, height: 2208, media: '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1242, height: 2688, media: '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1284, height: 2778, media: '(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1290, height: 2796, media: '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)' },
+  { width: 1536, height: 2048, media: '(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 1620, height: 2160, media: '(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 1668, height: 2224, media: '(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 1668, height: 2388, media: '(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)' },
+  { width: 2048, height: 2732, media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)' }
+]
+
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-07-15',
@@ -11,6 +29,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'theme-color', content: '#0f172a' },
         { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
         { name: 'apple-mobile-web-app-title', content: 'Skultem' }
       ],
@@ -19,6 +38,15 @@ export default defineNuxtConfig({
           rel: 'manifest',
           href: '/manifest.webmanifest'
         },
+        {
+          rel: 'apple-touch-icon',
+          href: '/apple-touch-icon.png'
+        },
+        ...appleSplashScreens.map(({ width, height, media }) => ({
+          rel: 'apple-touch-startup-image',
+          href: `/splash/apple-splash-${width}x${height}.png`,
+          media
+        })),
         {
           rel: 'preconnect',
           href: 'https://fonts.googleapis.com'
@@ -68,10 +96,11 @@ export default defineNuxtConfig({
       short_name: 'Skultem',
       description: 'School management and assessment system',
       theme_color: '#0f172a',
-      background_color: '#ffffff',
+      background_color: '#0f172a',
       start_url: '/',
       scope: '/',
       display: 'standalone',
+      display_override: ['standalone', 'minimal-ui'],
       orientation: 'portrait',
       icons: [
         {

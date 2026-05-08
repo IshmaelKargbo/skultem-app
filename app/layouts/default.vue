@@ -1,11 +1,8 @@
 <template>
   <div v-if="layoutReady" class="flex h-dvh overflow-hidden">
-    <!-- Sidebar -->
-    <div class="w-60 hidden md:block">
-      <Menu />
+    <div class="w-72 hidden md:block p-4 pr-0.5">
+        <Menu />
     </div>
-
-    <!-- Main Area -->
     <div class="flex flex-1 flex-col min-w-0">
       <Header />
       <div class="flex-1 min-h-0">

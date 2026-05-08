@@ -151,6 +151,9 @@ onMounted(async () => {
           <p class="text-gray-500">No classes found.</p>
         </div>
       </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
       <template #classLevel-cell="{ row }">
         <p>{{ parseLevel[row.original.classLevel] }}</p>
       </template>

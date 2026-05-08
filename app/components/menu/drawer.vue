@@ -65,8 +65,7 @@ watch(
 
 <template>
   <USlideover :open="open" :dismissible="false" :ui="{ content: 'w-screen max-w-none' }" @update:open="open = $event">
-    <!-- Trigger -->
-    <UButton class="md:hidden" color="neutral" variant="link" icon="lucide:menu" @click="open = true" />
+    <UButton class="md:hidden mt-2" color="neutral" variant="link" icon="lucide:menu" @click="open = true" />
 
     <!-- Header -->
     <template #header>

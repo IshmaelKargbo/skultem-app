@@ -1,9 +1,9 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: "app",
-      secondary: "sec",
-      neutral: "zinc",
+      primary: "indigo",
+      secondary: "emerald",
+      neutral: "gray",
     },
     checkbox: {
       variants: {
@@ -35,14 +35,15 @@ export default defineAppConfig({
       variants: {
         variant: {
           outline: {
-            root: 'bg-default shadow rounded-2xl shadown-md'
+            root: 'bg-white/80 ring-2 shadow rounded-2xl shadown-md'
           },
         }
       }
     },
     textarea: {
       slots: {
-        root: "w-full"
+        root: "w-full",
+        base: 'rounded-xl'
       }
     },
     input: {
@@ -50,7 +51,8 @@ export default defineAppConfig({
         size: "lg",
       },
       slots: {
-        root: 'w-full'
+        root: 'w-full',
+        base: 'rounded-xl'
       }
     },
     select: {
@@ -58,7 +60,7 @@ export default defineAppConfig({
         size: "lg",
       },
       slots: {
-        base: 'w-full',
+        base: 'w-full rounded-xl',
       }
     },
     selectMenu: {
@@ -71,8 +73,11 @@ export default defineAppConfig({
     },
     button: {
       defaultVariants: {
-        size: "md",
+        size: "lg",
       },
+      slots: {
+        base: 'rounded-xl'
+      }
     },
   },
 });

@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async (to) => {
     const token = useCookie("access_token")
-    const { activeRole, authResolved } = useAuth()
+    const { activeRole } = useAuth()
     const store = useUserStore()
 
     const tenant = await checkTenant()
@@ -34,12 +34,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
         }
     }
 
-    if (import.meta.client) {
-        const { hide } = useGlobalLoader()
-        if (to.path === '/unauthorized' || !token.value || authResolved.value) {
-            hide()
-        }
-    }
 })
 
 async function checkTenant() {

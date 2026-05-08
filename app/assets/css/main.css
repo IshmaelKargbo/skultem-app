@@ -11,7 +11,7 @@
 
 html {
   scrollbar-width: thin;
-  scrollbar-color: #384f85 #f0f0f0;
+  scrollbar-color: var(--color-indigo-500) #f0f0f0;
 }
 
 ::-webkit-scrollbar {
@@ -82,10 +82,9 @@ html {
 
 body {
   @apply bg-primary-50;
-  color: var(--app-text-strong);
 
   font-family: var(--font-app);
-  font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-medium);
   font-size: var(--font-size-base);
   line-height: 1.5;
 
@@ -100,8 +99,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @theme {
-  --font-app: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Cabinet Grotesk", system-ui, sans-serif;
+  --font-app: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: system-ui, sans-serif;
 
   --font-size-base: clamp(14px, 0.9vw, 16px);
 }

@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+    <div class="md:p-5 p-4 py-2 md:py-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Teachers Management" subtitle="Manage all teachers">
             <div class="flex space-x-2">
                 <UInput placeholder="Search by name" />

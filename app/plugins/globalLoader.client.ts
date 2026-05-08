@@ -1,38 +1,29 @@
 export default defineNuxtPlugin(() => {
     const { show, hide } = useGlobalLoader()
-    const { authResolved } = useAuth()
     const token = useCookie('access_token')
-
+    const nuxtApp = useNuxtApp()
     const router = useRouter()
 
-    const shouldHideLoader = (path: string) => {
-        if (path === '/unauthorized') return true
-        if (!token.value) return true
-        return authResolved.value
-    }
-
     router.beforeEach((to) => {
+        if (to.path === router.currentRoute.value.path) return
+
         show({
             title: 'Loading page...',
             subtitle: 'Please wait',
             hint: 'Fetching content'
         })
-
-        if (shouldHideLoader(to.path)) {
-            hide()
-        }
     })
 
-    router.afterEach((to) => {
-        if (shouldHideLoader(to.path)) {
-            hide()
-        }
-    })
+    router.afterEach(() => hide())
+    router.onError(() => hide())
+
+    nuxtApp.hook('page:finish', () => hide())
+    nuxtApp.hook('app:error', () => hide())
 
     watch(
-        () => [authResolved.value, router.currentRoute.value.path, token.value] as const,
-        ([resolved, path, currentToken]) => {
-            if (path === '/unauthorized' || !currentToken || resolved) {
+        () => token.value,
+        (currentToken) => {
+            if (!currentToken) {
                 hide()
             }
         },

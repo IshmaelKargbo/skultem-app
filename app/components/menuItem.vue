@@ -1,11 +1,10 @@
 <template>
   <div>
-    <!-- Main Item -->
     <div
       @click="handleClick"
       :class="[
-        'flex items-center justify-between text-sm border md:p-2.5 py-1 md:px-3 rounded-md md:hover:bg-app-600 md:hover:border-gray-700 border-menu cursor-pointer',
-        isActive || open ? 'md:bg-app-800 md:border-gray-900 text-primary-500 md:text-white' : '',
+        'flex items-center justify-between text-sm border-2 md:p-2.5 py-1 md:px-3 rounded-xl md:hover:bg-primary-500 md:hover:border-primary-600 hover:text-white border-white cursor-pointer',
+        isActive || open ? 'md:bg-primary md:border-primary-600 text-primary-500 md:text-white' : '',
         customClass
       ]"
     >
@@ -13,8 +12,6 @@
         <slot name="icon" :active="isActive" />
         <span><slot>{{ label }}</slot></span>
       </div>
-
-      <!-- Chevron if dropdown -->
       <svg
         v-if="subNavs && subNavs.length"
         class="w-4 h-4 transition-transform duration-200 hidden md:block"
@@ -26,26 +23,21 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
     </div>
-
-    <!-- Nested Links / Subnav -->
-    <div v-if="open && subNavs && subNavs.length" class="ml-4 pl-2 mt-2 border-l border-dashed border-gray-700 flex flex-col space-y-1">
+    <div v-if="open && subNavs && subNavs.length" class="ml-4 pl-2 mt-2 border-l border-dashed border-primary-600 flex flex-col space-y-1">
       <slot
         name="subNav"
         :subNavs="subNavs"
         :route="route"
         :isActiveSub="isActiveSub"
       />
-
-      <!-- Default rendering if no slot provided -->
       <template v-if="!$slots.subNav">
         <router-link
           v-for="nav in subNavs"
           :key="nav.to"
           :to="nav.to"
-          class="flex items-center p-2 rounded-md hover:bg-app-600 space-x-2"
-          :class="isActiveSub(nav) ? 'bg-app-800 font-semibold text-blue-400' : 'text-gray-400'"
+          class="flex items-center p-2 rounded-md hover:bg-primary-500 space-x-2"
+          :class="isActiveSub(nav) ? 'bg-primary-500 font-semibold text-white' : 'text-gray-800'"
         >
-          <!-- Optional icon -->
           <span v-if="nav.icon" class="w-4 h-4 shrink-0">
             <component :is="nav.icon" />
           </span>

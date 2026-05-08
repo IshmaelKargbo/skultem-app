@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-const { visible, title, subtitle, hint } = useGlobalLoader()
+const { visible, title, subtitle } = useGlobalLoader()
 
 const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 </script>

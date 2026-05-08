@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
@@ -26,7 +25,7 @@ const parseStatusColor: Record<string, string> = {
   DELETED: 'danger'
 }
 
-const columns: TableColumn<Teacher> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -180,6 +179,9 @@ onMounted(async () => {
           <p class="text-gray-500">No teachers found.</p>
         </div>
       </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
       <template #email-cell="{ row }">
         {{ row.original.user.email }}
       </template>
@@ -200,7 +202,6 @@ onMounted(async () => {
       </div>
     </template>
   </UCard>
-  <!-- Mobile Loading -->
   <div v-if="loading" class="md:hidden space-y-3">
     <UCard v-for="i in 5" :key="i">
       <template #header>
