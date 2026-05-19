@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 
 const store = useStudentStore()

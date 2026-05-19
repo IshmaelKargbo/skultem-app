@@ -69,7 +69,7 @@
             <!-- Subject Results -->
             <div class="space-y-3">
                 <div v-if="loading" v-for="subject in runtimeConf().limit"
-                    class="border-2 border-gray-100 rounded-xl bg-white p-4 space-y-3">
+                    class="border-2 border-gray-100 dark:border-e-gray-700 dark:bg-gray-950 rounded-xl bg-white p-4 space-y-3">
                     <div class="flex items-start justify-between">
                         <USkeleton class="w-24 h-6" />
                         <USkeleton class="w-20 h-6" />
@@ -181,7 +181,7 @@
 
 <script setup lang="ts">
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 
 const store = useStudentStore()

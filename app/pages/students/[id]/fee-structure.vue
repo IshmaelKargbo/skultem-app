@@ -156,7 +156,7 @@ const { record } = storeToRefs(store)
 const router = useRouter()
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 
 const page = computed<number>({
