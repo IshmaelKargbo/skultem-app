@@ -14,9 +14,9 @@
         <!-- Body / Form -->
         <template #body>
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit.prevent="onSubmit">
-                <div class="rounded-md border border-primary-200 bg-primary-50 p-3">
-                    <p class="text-sm font-medium text-primary-800">Active Academic Year</p>
-                    <p v-if="activeAcademicYear" class="text-xs text-primary-700 mt-1">
+                <div class="rounded-xl border-2 border-primary-200 dark:border-primary-600 dark:bg-gray-950 bg-primary-50 p-3">
+                    <p class="text-sm font-medium text-primary-800 dark:text-white">Active Academic Year</p>
+                    <p v-if="activeAcademicYear" class="text-xs text-primary-700 dark:text-muted mt-1">
                         {{ activeAcademicYear.name }}: {{ formatDateString(activeAcademicYear.startDate) }} - {{
                             formatDateString(activeAcademicYear.endDate) }}
                     </p>

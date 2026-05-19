@@ -4,7 +4,7 @@ export const useStreamStore = defineStore('stream', {
   state: () => ({
     records: [] as Stream[],
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

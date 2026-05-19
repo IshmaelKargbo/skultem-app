@@ -1,5 +1,3 @@
-import type Login from "~/pages/login.vue"
-
 export const UserApi = () => {
   const { $api } = useNuxtApp()
 
@@ -20,6 +18,18 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    openNotifications: async () => {
+      try {
+        const res = await $api(`/user/notifications`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch user notifications')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     create: async (payload: CreateUserDto) => {
       try {
         return await $api('/user', {
@@ -33,6 +43,16 @@ export const UserApi = () => {
     resetPassword: async (payload: ResetPasswordDto) => {
       try {
         return await $api('/user/reset-password', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    assign: async (payload: AssignRoleDTO) => {
+      try {
+        return await $api('/user/assign', {
           method: 'POST',
           body: payload
         })

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
@@ -12,7 +11,6 @@ const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const parseStaus: Record<string, string> = {
   ACTIVE: 'Active',
@@ -26,24 +24,14 @@ const parseStatusColor: Record<string, string> = {
   DELETED: 'danger'
 }
 
-const parseStatusIcon: Record<string, string> = {
-  ACTIVE: 'i-lucide-check-circle',
-  INACTIVE: 'i-lucide-x-circle',
-  DELETED: 'i-lucide-trash'
-}
-
-const columns: TableColumn<Parent> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Guardian'
   },
   {
-    accessorKey: 'fatherName',
-    header: 'Father Name'
-  },
-  {
-    accessorKey: 'motherName',
-    header: 'Mother Name'
+    accessorKey: 'students',
+    header: 'Students'
   },
   {
     accessorKey: 'email',
@@ -124,12 +112,6 @@ const size = computed<number>({
 })
 
 watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
   router.replace({
     query: {
       page: page.value,
@@ -184,11 +166,12 @@ onMounted(async () => {
           <p class="text-gray-500">No parents found.</p>
         </div>
       </template>
-      <template #email-cell="{ row }">
-        {{ row.original.email }}
+      <template #students-cell="{ row }">
+        <UBadge :label="`${row.original.students} - `" variant="outline" :trailing-icon="STUDENT_ICON" />
       </template>
       <template #status-cell="{ row }">
-        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]" variant="outline" />
+        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
+          variant="outline" />
       </template>
     </UTable>
     <template #footer>

@@ -7,6 +7,6 @@
 const {can} = useAuth()
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.PARENT, Role.TEACHER, Role.ACCOUNTANT]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.PARENT, Role.TEACHER, Role.ACCOUNTANT, Role.OWNER]
 })
 </script>

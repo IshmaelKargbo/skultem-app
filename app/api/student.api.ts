@@ -18,6 +18,18 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    getStudent: async (id: string) => {
+      try {
+        const res = await $api(`/student/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch student')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getActiveCycle: async (sessionId: string) => {
       try {
         const res = await $api(`/student/cycle/${sessionId}`) as any
@@ -125,12 +137,13 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
-    create: async (payload: CreateStudentDto) => {
+    create: async (payload: FormData) => {
       try {
-        return await $api('/student', {
+        const res: { data: any } = await $api('/student', {
           method: 'POST',
           body: payload
         })
+        return res.data
       } catch (err: any) {
         useHandleError(err)
       }

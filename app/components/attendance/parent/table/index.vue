@@ -1,11 +1,9 @@
 <script lang="ts" setup>
-import type { TableColumn } from '@nuxt/ui';
-
 const store = useReportStore()
 const { attendances: data, loading, meta } = storeToRefs(store)
 const page = ref(1)
 
-const columns: TableColumn<Attendance> = [
+const columns = [
     {
         accessorKey: 'date',
         header: 'Date'
@@ -37,6 +35,9 @@ const parseStateColor: Record<string, string> = {
                     <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
                     <p class="text-gray-500">No behaviour found.</p>
                 </div>
+            </template>
+            <template>
+                <TableLoading :size="columns.length" />
             </template>
             <template #state-cell="{ row }">
                 <UBadge :label="row.original.state" :color="parseStateColor[row.original.state]" variant="outline" />

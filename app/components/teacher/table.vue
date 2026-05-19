@@ -53,10 +53,6 @@ const columns = [
     header: 'Street'
   },
   {
-    accessorKey: 'status',
-    header: 'Status'
-  },
-  {
     id: 'actions',
     meta: {
       class: {

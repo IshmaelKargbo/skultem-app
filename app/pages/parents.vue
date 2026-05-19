@@ -1,11 +1,11 @@
 <template>
     <ParentAccountant v-if="can([Role.ACCOUNTANT])" />
-    <ParentAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR])" />
+    <ParentAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
 </template>
 
 <script setup lang="ts">
 const { can } = useAuth()
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

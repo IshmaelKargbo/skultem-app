@@ -14,21 +14,24 @@
         </div>
 
         <!-- Assignments card (shown only when a class is selected) -->
-        <UCard v-if="state.classId">
-            <!-- Locked warning -->
-            <div v-if="lockedCount > 0"
-                class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                {{ lockedCount }} subject(s) are locked because student assessments already have grades.
-                Locked rows are view-only.
-            </div>
-
-            <!-- Section header -->
-            <div class="flex items-center border-b pb-3 border-gray-200 justify-between">
-                <h3 class="text-sm font-semibold text-gray-700">
-                    Subject Assignments ({{ state.assignments.length }})
-                </h3>
-                <UButton variant="subtle" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
-            </div>
+        <UCard v-if="state.classId" :ui="{
+            body: 'sm:p-0'
+        }">
+            <template #header>
+                <div>
+                    <div v-if="lockedCount > 0"
+                        class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        {{ lockedCount }} subject(s) are locked because student assessments already have grades.
+                        Locked rows are view-only.
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">
+                            Subject Assignments ({{ state.assignments.length }})
+                        </h3>
+                        <UButton variant="subtle" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
+                    </div>
+                </div>
+            </template>
 
             <!-- Table -->
             <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
@@ -36,7 +39,7 @@
                 <template #subjectId-cell="{ row }">
                     <UFormField :name="`assignments.${row.index}.subjectId`">
                         <USelectMenu value-key="value" :items="availableSubjects(row.index)"
-                            :loading="subjectStore.loading" placeholder="Select Subject"
+                            :loading="subjectStore.loading" placeholder="Select Subject" class="w-full"
                             v-model="row.original.subjectId" :disabled="Boolean(row.original.locked)" />
                     </UFormField>
                 </template>
@@ -76,16 +79,18 @@
                 </template>
             </UTable>
 
-            <div v-if="state.assignments.length" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+            <div v-if="state.assignments.length" class="p-4 bg-gray-50 dark:bg-gray-950 dark:border-gray-800 text-sm text-gray-600">
                 Total Subjects: <strong>{{ state.assignments.length }}</strong>
                 | Core: <strong>{{state.assignments.filter(a => a.mandatory).length}}</strong>
                 | Optional: <strong>{{state.assignments.filter(a => !a.mandatory).length}}</strong>
             </div>
 
-            <div class="flex gap-3 border-t border-gray-200 py-4 mt-3">
-                <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
-                <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
-            </div>
+            <template #footer>
+                <div class="flex gap-3">
+                    <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
+                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
+                </div>
+            </template>
         </UCard>
         <UCard v-else>
             <div class="h-56 flex flex-col items-center justify-center gap-3 text-center">
@@ -182,8 +187,6 @@ const availableSubjects = (index: number) => {
 
 const showDelete = () => state.assignments.length > 1
 
-// ─── Actions ─────────────────────────────────────────────────────────────────
-
 function add() {
     state.assignments.push({
         subjectId: '',
@@ -263,6 +266,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

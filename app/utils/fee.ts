@@ -16,6 +16,7 @@ export type Fee = {
     amount: number
     amountPaid: number
     fee: string
+    dueDate: string
     outstanding: number
     status: string
     createdAt: string

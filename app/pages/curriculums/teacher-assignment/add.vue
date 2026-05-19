@@ -2,47 +2,54 @@
     <UForm class="p-7 space-y-5 h-full overflow-y-auto" :state="state" :schema="schema" @submit="onSubmit">
         <Heading title="Assign Class Subjects to Teacher" subtitle="Define the curriculum structure for this class.">
             <UFormField class="w-1/3" label="Select Class" name="classId">
-                <USelect :loading="classStore.loading" v-model="state.classId" @change="fetchRecord" :items="classes"
-                    placeholder="Choose a class" />
+                <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
+                    @change="fetchRecord" :items="classes" placeholder="Choose a class" />
             </UFormField>
         </Heading>
-        <UCard v-if="state.classId">
-            <!-- Section Header -->
-            <div class="flex items-center border-b pb-3 border-gray-200 justify-between">
-                <h3 class="text-sm font-semibold text-gray-700">
-                    Subject Assignments ({{ state.assignments.length }})
-                </h3>
-            </div>
+        <UCard v-if="state.classId" :ui="{
+            body: 'sm:p-0'
+        }">
+            <template #header>
+                <div>
+                    <!-- Section Header -->
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">
+                            Subject Assignments ({{ state.assignments.length }})
+                        </h3>
+                    </div>
 
-            <!-- Empty State -->
-            <div v-if="!state.assignments.length"
-                class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
-                <p class="text-sm text-gray-500 mb-4">
-                    No subjects assigned yet.
-                </p>
-            </div>
-
+                    <!-- Empty State -->
+                    <div v-if="!state.assignments.length"
+                        class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
+                        <p class="text-sm text-gray-500 mb-4">
+                            No subjects assigned yet.
+                        </p>
+                    </div>
+                </div>
+            </template>
             <!-- Table -->
-            <UTable v-else :columns="columns" :loading="store.loading" :data="state.assignments">
+            <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
                 <!-- Subject -->
                 <template #subjectId-cell="{ row }">
                     <UFormField :name="`assignments.${row.index}.subjectId`">
-                        <USelect disabled :items="subjects" :loading="subjectStore.loading" placeholder="Select Subject"
-                            v-model="row.original.subjectId" />
+                        <USelectMenu value-key="value" disabled :items="subjects" :loading="subjectStore.loading"
+                            placeholder="Select Subject" v-model="row.original.subjectId" />
                     </UFormField>
                 </template>
                 <!-- Teacher -->
                 <template #teacherId-cell="{ row }">
                     <UFormField :name="`assignments.${row.index}.teacherId`">
-                        <USelect :loading="teacherStore.loading" :items="teachers" placeholder="Select Teacher"
-                            v-model="row.original.teacherId" />
+                        <USelectMenu value-key="value" :loading="teacherStore.loading" :items="teachers"
+                            placeholder="Select Teacher" v-model="row.original.teacherId" />
                     </UFormField>
                 </template>
             </UTable>
-            <div class="flex gap-3 py-4 border-t border-gray-200">
-                <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
-                <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
-            </div>
+            <template #footer>
+                <div class="flex gap-3">
+                    <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
+                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
+                </div>
+            </template>
         </UCard>
         <UCard v-else>
             <div class="h-56 flex flex-col items-center justify-center gap-3 text-center">
@@ -173,6 +180,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

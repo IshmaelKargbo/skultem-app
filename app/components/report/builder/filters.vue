@@ -1,6 +1,6 @@
 <template>
     <UForm ref="form" :schema="schema" :state="state" @submit="run">
-        <UCard variant="subtle">
+        <UCard class="bg-gray-50">
             <div class="flex justify-between items-center">
                 <div>
                     <p class="text-base">Filters ({{ state.filters.length }})</p>
@@ -13,7 +13,9 @@
             </div>
             <div class="mt-3 space-y-3">
                 <template v-if="state.filters.length > 0">
-                    <UCard v-for="(item, index) in state.filters" :key="index">
+                    <UCard :ui="{
+                        body: 'sm:p-4'
+                    }" v-for="(item, index) in state.filters" :key="index">
                         <div class="flex space-x-3">
 
                             <UFormField :name="`filters.${index}.field`" label="Field" class="flex-1" required>

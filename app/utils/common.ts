@@ -9,6 +9,211 @@ export type Meta = {
     totalPages: number;
 }
 
+export const ALT_IMAGE = '/avatar-placeholder.svg'
+export const nationalities = [
+    { label: 'Afghan', value: 'AFGHAN' },
+    { label: 'Albanian', value: 'ALBANIAN' },
+    { label: 'Algerian', value: 'ALGERIAN' },
+    { label: 'American', value: 'AMERICAN' },
+    { label: 'Andorran', value: 'ANDORRAN' },
+    { label: 'Angolan', value: 'ANGOLAN' },
+    { label: 'Antiguan and Barbudan', value: 'ANTIGUAN_AND_BARBUDAN' },
+    { label: 'Argentine', value: 'ARGENTINE' },
+    { label: 'Armenian', value: 'ARMENIAN' },
+    { label: 'Australian', value: 'AUSTRALIAN' },
+    { label: 'Austrian', value: 'AUSTRIAN' },
+    { label: 'Azerbaijani', value: 'AZERBAIJANI' },
+
+    { label: 'Bahamian', value: 'BAHAMIAN' },
+    { label: 'Bahraini', value: 'BAHRAINI' },
+    { label: 'Bangladeshi', value: 'BANGLADESHI' },
+    { label: 'Barbadian', value: 'BARBADIAN' },
+    { label: 'Belarusian', value: 'BELARUSIAN' },
+    { label: 'Belgian', value: 'BELGIAN' },
+    { label: 'Belizean', value: 'BELIZEAN' },
+    { label: 'Beninese', value: 'BENINESE' },
+    { label: 'Bhutanese', value: 'BHUTANESE' },
+    { label: 'Bolivian', value: 'BOLIVIAN' },
+    { label: 'Bosnian', value: 'BOSNIAN' },
+    { label: 'Botswanan', value: 'BOTSWANAN' },
+    { label: 'Brazilian', value: 'BRAZILIAN' },
+    { label: 'British', value: 'BRITISH' },
+    { label: 'Bruneian', value: 'BRUNEIAN' },
+    { label: 'Bulgarian', value: 'BULGARIAN' },
+    { label: 'Burkinabe', value: 'BURKINABE' },
+    { label: 'Burundian', value: 'BURUNDIAN' },
+
+    { label: 'Cambodian', value: 'CAMBODIAN' },
+    { label: 'Cameroonian', value: 'CAMEROONIAN' },
+    { label: 'Canadian', value: 'CANADIAN' },
+    { label: 'Cape Verdean', value: 'CAPE_VERDEAN' },
+    { label: 'Central African', value: 'CENTRAL_AFRICAN' },
+    { label: 'Chadian', value: 'CHADIAN' },
+    { label: 'Chilean', value: 'CHILEAN' },
+    { label: 'Chinese', value: 'CHINESE' },
+    { label: 'Colombian', value: 'COLOMBIAN' },
+    { label: 'Comoran', value: 'COMORAN' },
+    { label: 'Congolese', value: 'CONGOLESE' },
+    { label: 'Costa Rican', value: 'COSTA_RICAN' },
+    { label: 'Croatian', value: 'CROATIAN' },
+    { label: 'Cuban', value: 'CUBAN' },
+    { label: 'Cypriot', value: 'CYPRIOT' },
+    { label: 'Czech', value: 'CZECH' },
+
+    { label: 'Danish', value: 'DANISH' },
+    { label: 'Djiboutian', value: 'DJIBOUTIAN' },
+    { label: 'Dominican', value: 'DOMINICAN' },
+    { label: 'Dutch', value: 'DUTCH' },
+
+    { label: 'East Timorese', value: 'EAST_TIMORESE' },
+    { label: 'Ecuadorian', value: 'ECUADORIAN' },
+    { label: 'Egyptian', value: 'EGYPTIAN' },
+    { label: 'Emirati', value: 'EMIRATI' },
+    { label: 'Equatorial Guinean', value: 'EQUATORIAL_GUINEAN' },
+    { label: 'Eritrean', value: 'ERITREAN' },
+    { label: 'Estonian', value: 'ESTONIAN' },
+    { label: 'Eswatini', value: 'ESWATINI' },
+    { label: 'Ethiopian', value: 'ETHIOPIAN' },
+
+    { label: 'Fijian', value: 'FIJIAN' },
+    { label: 'Filipino', value: 'FILIPINO' },
+    { label: 'Finnish', value: 'FINNISH' },
+    { label: 'French', value: 'FRENCH' },
+
+    { label: 'Gabonese', value: 'GABONESE' },
+    { label: 'Gambian', value: 'GAMBIAN' },
+    { label: 'Georgian', value: 'GEORGIAN' },
+    { label: 'German', value: 'GERMAN' },
+    { label: 'Ghanaian', value: 'GHANAIAN' },
+    { label: 'Greek', value: 'GREEK' },
+    { label: 'Grenadian', value: 'GRENADIAN' },
+    { label: 'Guatemalan', value: 'GUATEMALAN' },
+    { label: 'Guinean', value: 'GUINEAN' },
+    { label: 'Guinea-Bissauan', value: 'GUINEA_BISSAUAN' },
+    { label: 'Guyanese', value: 'GUYANESE' },
+
+    { label: 'Haitian', value: 'HAITIAN' },
+    { label: 'Honduran', value: 'HONDURAN' },
+    { label: 'Hungarian', value: 'HUNGARIAN' },
+
+    { label: 'Icelandic', value: 'ICELANDIC' },
+    { label: 'Indian', value: 'INDIAN' },
+    { label: 'Indonesian', value: 'INDONESIAN' },
+    { label: 'Iranian', value: 'IRANIAN' },
+    { label: 'Iraqi', value: 'IRAQI' },
+    { label: 'Irish', value: 'IRISH' },
+    { label: 'Israeli', value: 'ISRAELI' },
+    { label: 'Italian', value: 'ITALIAN' },
+    { label: 'Ivorian', value: 'IVORIAN' },
+
+    { label: 'Jamaican', value: 'JAMAICAN' },
+    { label: 'Japanese', value: 'JAPANESE' },
+    { label: 'Jordanian', value: 'JORDANIAN' },
+
+    { label: 'Kazakh', value: 'KAZAKH' },
+    { label: 'Kenyan', value: 'KENYAN' },
+    { label: 'Kuwaiti', value: 'KUWAITI' },
+    { label: 'Kyrgyz', value: 'KYRGYZ' },
+
+    { label: 'Laotian', value: 'LAOTIAN' },
+    { label: 'Latvian', value: 'LATVIAN' },
+    { label: 'Lebanese', value: 'LEBANESE' },
+    { label: 'Liberian', value: 'LIBERIAN' },
+    { label: 'Libyan', value: 'LIBYAN' },
+    { label: 'Liechtensteiner', value: 'LIECHTENSTEINER' },
+    { label: 'Lithuanian', value: 'LITHUANIAN' },
+    { label: 'Luxembourgish', value: 'LUXEMBOURGISH' },
+
+    { label: 'Malagasy', value: 'MALAGASY' },
+    { label: 'Malawian', value: 'MALAWIAN' },
+    { label: 'Malaysian', value: 'MALAYSIAN' },
+    { label: 'Maldivian', value: 'MALDIVIAN' },
+    { label: 'Malian', value: 'MALIAN' },
+    { label: 'Maltese', value: 'MALTESE' },
+    { label: 'Mauritanian', value: 'MAURITANIAN' },
+    { label: 'Mauritian', value: 'MAURITIAN' },
+    { label: 'Mexican', value: 'MEXICAN' },
+    { label: 'Moldovan', value: 'MOLDOVAN' },
+    { label: 'Monacan', value: 'MONACAN' },
+    { label: 'Mongolian', value: 'MONGOLIAN' },
+    { label: 'Montenegrin', value: 'MONTENEGRIN' },
+    { label: 'Moroccan', value: 'MOROCCAN' },
+    { label: 'Mozambican', value: 'MOZAMBICAN' },
+    { label: 'Myanmar', value: 'MYANMAR' },
+
+    { label: 'Namibian', value: 'NAMIBIAN' },
+    { label: 'Nepalese', value: 'NEPALESE' },
+    { label: 'New Zealander', value: 'NEW_ZEALANDER' },
+    { label: 'Nicaraguan', value: 'NICARAGUAN' },
+    { label: 'Nigerian', value: 'NIGERIAN' },
+    { label: 'Nigerien', value: 'NIGERIEN' },
+    { label: 'North Korean', value: 'NORTH_KOREAN' },
+    { label: 'North Macedonian', value: 'NORTH_MACEDONIAN' },
+    { label: 'Norwegian', value: 'NORWEGIAN' },
+
+    { label: 'Omani', value: 'OMANI' },
+
+    { label: 'Pakistani', value: 'PAKISTANI' },
+    { label: 'Palestinian', value: 'PALESTINIAN' },
+    { label: 'Panamanian', value: 'PANAMANIAN' },
+    { label: 'Papua New Guinean', value: 'PAPUA_NEW_GUINEAN' },
+    { label: 'Paraguayan', value: 'PARAGUAYAN' },
+    { label: 'Peruvian', value: 'PERUVIAN' },
+    { label: 'Polish', value: 'POLISH' },
+    { label: 'Portuguese', value: 'PORTUGUESE' },
+
+    { label: 'Qatari', value: 'QATARI' },
+
+    { label: 'Romanian', value: 'ROMANIAN' },
+    { label: 'Russian', value: 'RUSSIAN' },
+    { label: 'Rwandan', value: 'RWANDAN' },
+
+    { label: 'Saint Lucian', value: 'SAINT_LUCIAN' },
+    { label: 'Salvadoran', value: 'SALVADORAN' },
+    { label: 'Samoan', value: 'SAMOAN' },
+    { label: 'Saudi', value: 'SAUDI' },
+    { label: 'Senegalese', value: 'SENEGALESE' },
+    { label: 'Serbian', value: 'SERBIAN' },
+    { label: 'Sierra Leonean', value: 'SIERRA_LEONEAN' },
+    { label: 'Singaporean', value: 'SINGAPOREAN' },
+    { label: 'Slovak', value: 'SLOVAK' },
+    { label: 'Slovenian', value: 'SLOVENIAN' },
+    { label: 'Somali', value: 'SOMALI' },
+    { label: 'South African', value: 'SOUTH_AFRICAN' },
+    { label: 'South Korean', value: 'SOUTH_KOREAN' },
+    { label: 'South Sudanese', value: 'SOUTH_SUDANESE' },
+    { label: 'Spanish', value: 'SPANISH' },
+    { label: 'Sri Lankan', value: 'SRI_LANKAN' },
+    { label: 'Sudanese', value: 'SUDANESE' },
+    { label: 'Surinamese', value: 'SURINAMESE' },
+    { label: 'Swedish', value: 'SWEDISH' },
+    { label: 'Swiss', value: 'SWISS' },
+    { label: 'Syrian', value: 'SYRIAN' },
+
+    { label: 'Taiwanese', value: 'TAIWANESE' },
+    { label: 'Tajik', value: 'TAJIK' },
+    { label: 'Tanzanian', value: 'TANZANIAN' },
+    { label: 'Thai', value: 'THAI' },
+    { label: 'Togolese', value: 'TOGOLESE' },
+    { label: 'Tongan', value: 'TONGAN' },
+    { label: 'Trinidadian and Tobagonian', value: 'TRINIDADIAN_AND_TOBAGONIAN' },
+    { label: 'Tunisian', value: 'TUNISIAN' },
+    { label: 'Turkish', value: 'TURKISH' },
+    { label: 'Turkmen', value: 'TURKMEN' },
+
+    { label: 'Ugandan', value: 'UGANDAN' },
+    { label: 'Ukrainian', value: 'UKRAINIAN' },
+    { label: 'Uruguayan', value: 'URUGUAYAN' },
+    { label: 'Uzbek', value: 'UZBEK' },
+
+    { label: 'Venezuelan', value: 'VENEZUELAN' },
+    { label: 'Vietnamese', value: 'VIETNAMESE' },
+
+    { label: 'Yemeni', value: 'YEMENI' },
+
+    { label: 'Zambian', value: 'ZAMBIAN' },
+    { label: 'Zimbabwean', value: 'ZIMBABWEAN' }
+]
 
 export const parseFeeStatusColor: Record<string, string> = {
     Paid: 'success',
@@ -50,6 +255,7 @@ export function generateColors(count: number) {
 }
 
 export enum Role {
+    OWNER = 'OWNER',
     PROPRIETOR = 'PROPRIETOR',
     ADMIN = 'ADMIN',
     TEACHER = 'TEACHER',
@@ -58,6 +264,10 @@ export enum Role {
 }
 
 export const roles = [
+    {
+        label: 'Proprietor',
+        value: Role.PROPRIETOR.toString()
+    },
     {
         label: 'Admin',
         value: Role.ADMIN.toString()
@@ -137,24 +347,25 @@ export const referenceTypeOptions = [
 ]
 
 export const paymentMethods = {
-  BANK: {
-    label: 'Bank',
-    color: 'success',
-    icon: 'mdi-bank'
-  },
-  MOBILE_MONEY: {
-    label: 'Mobile Money',
-    color: 'info',
-    icon: 'mdi-cellphone'
-  },
-  CASH: {
-    label: 'Cash',
-    color: 'neutral',
-    icon: 'mdi-cash'
-  },
+    BANK: {
+        label: 'Bank',
+        color: 'success',
+        icon: 'mdi-bank'
+    },
+    MOBILE_MONEY: {
+        label: 'Mobile Money',
+        color: 'info',
+        icon: 'mdi-cellphone'
+    },
+    CASH: {
+        label: 'Cash',
+        color: 'neutral',
+        icon: 'mdi-cash'
+    },
 }
 
 export const parseRole: Record<string, string> = {
+    OWNER: 'Owner',
     PROPRIETOR: 'Proprietor',
     ADMIN: 'Admin',
     TEACHER: 'Teacher',
@@ -163,7 +374,8 @@ export const parseRole: Record<string, string> = {
 }
 
 export const parseRoleColor: Record<string, string> = {
-    PROPRIETOR: 'success',
+    OWNER: 'success',
+    PROPRIETOR: 'primary',
     ADMIN: 'info',
     TEACHER: 'neutral',
     PARENT: 'primary',
@@ -172,6 +384,7 @@ export const parseRoleColor: Record<string, string> = {
 
 export const parseRoleIcon: Record<string, string> = {
     ADMIN: 'fluent:building-24-regular',
+    OWNER: 'fluent:crown-24-regular',
     PROPRIETOR: 'fluent:crown-24-regular',
     TEACHER: 'fluent:hat-graduation-24-regular',
     PARENT: 'fluent:people-24-regular',
@@ -295,6 +508,7 @@ export function parseClassSession(clazz: ClassSession) {
 }
 
 export function formatDate(dateStr: string): string {
+    if (dateStr == "" || dateStr == null) return ""
     const date = new Date(dateStr)
     return date.toLocaleDateString(undefined, {
         year: 'numeric',

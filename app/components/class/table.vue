@@ -46,47 +46,9 @@ const columns = [
       class: {
         td: 'text-right'
       }
-    },
-    cell: ({ row }) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
     }
   }
 ]
-
-function getRowItems(row: Row<ClassSession>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),

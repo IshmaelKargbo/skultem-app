@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 md:space-y-5 space-y-3">
+    <div class="md:px-5 md:space-y-5 p-4 py-2 md:py-4 space-y-3">
         <UCard>
             <div class="flex space-x-3">
                 <USelectMenu value-key="value" v-model="state.clazz" @change="change" :loading="loading"

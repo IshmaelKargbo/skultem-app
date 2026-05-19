@@ -70,6 +70,11 @@ export default defineNuxtConfig({
   imports: {
     dirs: ["composables/**", "types/**", "utils/**", "stores/**", "api/**"],
   },
+  router: {
+    options: {
+      scrollBehaviorType: 'smooth'
+    }
+  },
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,

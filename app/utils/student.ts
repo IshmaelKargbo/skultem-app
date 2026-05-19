@@ -5,9 +5,14 @@ export type Student = {
     enrollmentId: string
     admissionNumber: string
     dateOfBirth: string
-    guardianName: string
-    fatherName: string
-    motherName: string
+    photo: string
+    guardian: Parent
+    relationship: string
+    nationality: string
+    religion: string
+    city: string
+    family: Family
+    street: string
     gender: string
     className: string
     classId: string
@@ -24,6 +29,15 @@ export type Student = {
     status: string
     createdAt: string
     updatedAt: string
+}
+
+export type Family = {
+    fatherName: string
+    motherName: string
+    fatherOccupation: string
+    motherOccupation: string
+    fatherContact: string
+    motherContact: string
 }
 
 export type ActiveCycle = {
@@ -56,9 +70,28 @@ export type StudentSubject = {
 export type CreateStudentDto = {
     givenNames: string
     familyName: string
-    academicNumber: string
     dateOfBirth: string
     gender: string
-    classSessionId: string
-    selectedOptionIds?: string[]
+    nationality: string
+    religion: string
+    city: string
+    street: string
+    parent: {
+        fatherName: string
+        motherName: string
+        givenNames: string
+        familyName: string
+        relationship: string
+        phone: string
+        email: string
+        occupation: string
+        city: string
+        street: string
+    }
+    enrollmentType: string
+    admissionDate: string
+    classId: string
+    admissionNumber: string
+    previousSchool: string
+    lastGradeCompleted: string
 }

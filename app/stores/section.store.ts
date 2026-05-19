@@ -4,7 +4,7 @@ export const useSectionStore = defineStore('section', {
   state: () => ({
     records: [] as Section[],
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

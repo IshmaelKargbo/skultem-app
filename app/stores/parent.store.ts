@@ -6,7 +6,7 @@ export const useParentStore = defineStore('parent', {
     students: [] as Student[],
     notifications: [] as AppNotification[],
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

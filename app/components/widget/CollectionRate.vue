@@ -63,7 +63,7 @@ onMounted(async () => {
     const totalPaid = paid + partialPaid
     const total = Number(amountWidget.datasets.find((d: any) => d.label === "Total Amount")?.data?.[0] ?? 0)
     const rate = totalPaid / total * 100
-    totalOutstanding.value = `${Math.min(rate, 100).toFixed(1)}%`
+    totalOutstanding.value = `${Math.min(rate || 0, 100).toFixed(1)}%`
   }
 
   isReady.value = true

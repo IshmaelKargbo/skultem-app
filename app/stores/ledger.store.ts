@@ -5,7 +5,7 @@ export const useLedgerStore = defineStore('ledger', {
     records: [] as Ledger[],
     meta: {} as Meta,
     total: {} as LedgerReport,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

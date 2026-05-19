@@ -29,6 +29,9 @@ export const useUserStore = defineStore('user', {
     resetPassword(payload: ResetPasswordDto) {
       return UserApi().resetPassword(payload)
     },
+    assignRole(payload: AssignRoleDTO) {
+      return UserApi().assign(payload)
+    },
     async me() {
       try {
         this.meLoading = true

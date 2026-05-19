@@ -7,7 +7,7 @@ interface LoaderOptions {
 const MIN_VISIBLE_MS = 250
 
 export function useGlobalLoader() {
-    const visible = useState('loader-visible', () => false)
+    const visible = useState('loader-visible', () => true)
     const title = useState('loader-title', () => 'Loading...')
     const subtitle = useState('loader-subtitle', () => 'Please wait')
     const hint = useState('loader-hint', () => '')

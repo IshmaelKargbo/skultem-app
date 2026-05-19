@@ -22,7 +22,7 @@
       </template>
       <div>
         <!-- Actions -->
-        <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
+        <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 dark:bg-gray-950 dark:border-gray-800 bg-gray-50/40 px-3">
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 

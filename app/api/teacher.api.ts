@@ -10,6 +10,7 @@ export const TeacherApi = () => {
           throw new Error('Failed to fetch teachers')
 
         const data = res.data
+        
         const meta = useMeta(res.meta)
 
         return { ...res, data, meta }

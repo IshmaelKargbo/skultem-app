@@ -16,6 +16,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

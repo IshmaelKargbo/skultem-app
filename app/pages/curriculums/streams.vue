@@ -1,29 +1,19 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
         <Heading title="Streams Management" subtitle="Manage all streams">
             <CurriculumsStreamAdd />
         </Heading>
-        <UCard>
-            <CurriculumsStreamTable />
-            <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
-                <Showing :meta="meta" />
-                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                    :total="meta.total" show-edges />
-            </div>
-        </UCard>
+        <CurriculumsStreamTable />
     </div>
 </template>
 
 <script setup lang="ts">
-const page = ref(1);
-const { meta } = storeToRefs(useStreamStore())
-
 onMounted(() => {
     useAppStore().setTitle('Curriculums')
     document.title = 'Streams | Curriculums | Skultem'
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

@@ -1,45 +1,87 @@
 <template>
     <div class="revenue-card">
-        <div v-if="!isReady" class="skeleton-loader">Calculating Revenue...</div>
+        <div v-if="!isReady" class="skeleton-loader">
+            Calculating Revenue...
+        </div>
+
         <client-only v-else>
-            <ApexChart type="donut" height="380" :options="chartOptions" :series="chartSeries" />
+            <ApexChart
+                :key="isDark"
+                type="donut"
+                height="380"
+                :options="chartOptions"
+                :series="chartSeries"
+            />
         </client-only>
     </div>
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent, computed, ref, onMounted } from 'vue'
+
 const store = useDashboardStore()
 const { format } = useMoney()
-const ApexChart = defineAsyncComponent(() => import('vue3-apexcharts'))
+
+const ApexChart = defineAsyncComponent(() =>
+    import('vue3-apexcharts')
+)
+
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
 
 const isReady = ref(false)
 
-const revenueItems = ref<{
+type RevenueItem = {
     label: string
     value: number
     percent: number
-}[]>([])
+}
 
-const chartSeries = computed(() => revenueItems.value.map(item => item.value))
+const revenueItems = ref<RevenueItem[]>([])
+
+const chartSeries = computed(() =>
+    revenueItems.value.map(i => i.value)
+)
+
+const chartLabels = computed(() =>
+    revenueItems.value.map(i => clean(i.label))
+)
+
+const totalRevenue = computed(() =>
+    revenueItems.value.reduce((sum, i) => sum + i.value, 0)
+)
+
+/* -------------------------
+   Chart Config
+-------------------------- */
 const chartOptions = computed(() => ({
+    theme: {
+        mode: isDark.value ? 'dark' : 'light'
+    },
+
     chart: {
         id: 'revenue-breakdown',
         type: 'donut',
+        background: 'transparent',
+        foreColor: isDark.value ? '#E5E7EB' : '#374151'
     },
-    labels: revenueItems.value.map(item => clean(item.label)),
-    title: { text: 'Revenue Brake Down', align: 'left', style: { fontWeight: '600' } },
+
+    labels: chartLabels.value,
+
+    title: {
+        text: 'Revenue Breakdown',
+        align: 'left',
+        style: {
+            fontWeight: 600,
+            color: isDark.value ? '#F9FAFB' : '#111827'
+        }
+    },
 
     legend: {
-        show: true,
         position: 'bottom',
         horizontalAlign: 'center',
-        fontWeight: 400,
-        title: {
-            text: 'Revenue Sources',
-            style: {
-                fontWeight: 600,
-                color: '#374151'
-            }
+        labels: {
+            colors: isDark.value ? '#E5E7EB' : '#374151'
         },
         markers: { radius: 12 },
         itemMargin: {
@@ -47,67 +89,46 @@ const chartOptions = computed(() => ({
             vertical: 5
         }
     },
+
+    tooltip: {
+        theme: isDark.value ? 'dark' : 'light'
+    },
+
     plotOptions: {
         pie: {
             donut: {
                 size: '70%',
                 labels: {
                     show: true,
+
                     name: {
-                        show: true,
-                        formatter: (val: string) => val
+                        show: true
                     },
+
                     value: {
                         show: true,
                         fontSize: '17px',
-                        fontWeight: '600',
-                        formatter: (val: string) => format(Number(val))
+                        fontWeight: 600,
+                        formatter: (val: string) =>
+                            format(Number(val))
                     },
+
                     total: {
                         show: true,
-                        fontSize: '14px',
                         label: 'Total Revenue',
-                        formatter: (w: any) => {
-                            const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0)
-                            return format(total)
-                        }
+                        formatter: () => format(totalRevenue.value)
                     }
                 }
             }
         }
-    },
+    }
 }))
 
 onMounted(async () => {
     const res = await store.fetchAdminRevnue()
-    if (res == null) return
+    if (!res) return
+
     revenueItems.value = res
     isReady.value = true
 })
 </script>
-
-<style scoped>
-.skeleton-loader {
-    height: 380px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    font-weight: 500;
-    background: #f3f4f6;
-    border-radius: 0.5rem;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.4;
-    }
-}
-</style>

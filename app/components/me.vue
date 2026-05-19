@@ -10,11 +10,11 @@
                     v-if="user && user.email && !loading"
                     color="neutral"
                     variant="ghost"
-                    class="gap-2 px-2 py-1.5 rounded-md"
-                    :ui="{ base: 'border border-transparent hover:bg-app-50 hover:border-app-100' }"
+                    class="gap-2 p-2 rounded-xl"
+                    :ui="{ base: 'border border-transparent dark:border-gray-900 hover:bg-app-50 dark:hover:bg-gray-950 hover:border-app-100  hover:border-primary-500' }"
                 >
                     <div class="text-left">
-                        <p class="text-xs font-semibold text-neutral-800 leading-tight">{{ name }}</p>
+                        <p class="text-xs font-semibold  dark:text-gray-100 light:text-neutral-800 leading-tight">{{ name }}</p>
                         <p class="text-[10px] text-mute leading-tight capitalize">
                             Role: {{ parseRole[activeRole] || 'No Role' }}
                         </p>
@@ -56,7 +56,7 @@
 
                 <template #body>
                     <div v-if="user" class="space-y-4">
-                        <div class="flex items-center gap-2 px-1 py-2 rounded-lg bg-app-50/70 border border-app-100/70">
+                        <div class="flex items-center gap-2 p-2 dark:border-gray-800 px-3 rounded-lg dark:bg-gray-950 bg-app-50/70 border border-app-100/70">
                             <UIcon name="lucide:shield-check" class="text-green-500 text-xs" />
                             <span class="text-xs text-mute">
                                 Active as
@@ -68,24 +68,24 @@
                             <p class="text-xs font-semibold uppercase tracking-widest text-mute px-1 pb-1.5">
                                 Switch Role
                             </p>
-                            <div class="space-y-1 border-y py-2 border-app-100/70">
+                            <div class="space-y-1 border-y dark:border-gray-800 py-2 border-app-100/70">
                                 <button
                                     v-for="role in userRoles"
                                     :key="role.value"
-                                    class="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl border transition-all text-left"
+                                    class="flex items-center dark:hover:bg-gray-950 gap-2.5 w-full px-2.5 py-2 rounded-xl border transition-all text-left"
                                     :class="activeRole === role.value
-                                        ? 'bg-app-50 border-app-200'
+                                        ? 'bg-app-50 dark:bg-gray-950 dark:border-gray-800 border-primary-200'
                                         : 'border-transparent hover:bg-app-50/70'"
                                     @click="switchRole(role.value)"
                                 >
                                     <span
                                         class="w-7 h-7 flex items-center justify-center rounded-lg shrink-0"
-                                        :class="activeRole === role.value ? 'bg-app-100' : 'bg-app-50'"
+                                        :class="activeRole === role.value ? 'bg-app-100 dark:bg-gray-900' : 'bg-app-50 dark:bg-gray-950'"
                                     >
                                         <UIcon
                                             :name="role.icon"
                                             class="text-sm"
-                                            :class="activeRole === role.value ? 'text-app-700' : 'text-mute'"
+                                            :class="activeRole === role.value ? '' : 'text-mute'"
                                         />
                                     </span>
                                     <div class="flex-1 min-w-0">
@@ -103,7 +103,7 @@
                             </div>
                         </div>
 
-                        <div class="space-y-1 border-b border-app-100/70 pb-3">
+                        <div class="space-y-1 border-b border-app-100/70 dark:border-gray-800 pb-3">
                             <UButton
                                 icon="lucide:user"
                                 variant="ghost"
@@ -224,16 +224,9 @@ const name = computed(() =>
     user.value ? `${user.value.givenNames} ${user.value.familyName}` : ''
 )
 
-const parseRole: Record<string, string> = {
-    PROPRIETOR: 'Proprietor',
-    ADMIN: 'Admin',
-    TEACHER: 'Teacher',
-    PARENT: 'Parent',
-    ACCOUNTANT: 'Accountant'
-}
-
 const roleDesc: Record<string, string> = {
     PROPRIETOR: 'School owner & oversight',
+    OWNER: 'Organization owner & full control',
     ADMIN: 'Full system access',
     TEACHER: 'Classes & students',
     PARENT: 'Child progress',
@@ -242,6 +235,7 @@ const roleDesc: Record<string, string> = {
 
 const roleIcons: Record<string, string> = {
     PROPRIETOR: 'lucide:crown',
+    OWNER: 'lucide:award',
     ADMIN: 'lucide:shield',
     TEACHER: 'lucide:book-open',
     PARENT: 'lucide:users',

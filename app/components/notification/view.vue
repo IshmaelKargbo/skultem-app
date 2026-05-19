@@ -19,7 +19,20 @@ function formatMetaKey(key: string) {
     return key.replace(/_/g, ' ')
 }
 
-function markAsRead(notification: AppNotification) {
+function isAttendanceStatus(key: string) {
+    return record?.type === 'ATTENDANCE' && key === 'status'
+}
+
+function attendanceStatusColor(status: string) {
+    if (status === 'Present') return 'success'
+    if (status === 'Absent') return 'error'
+    if (status === 'Late') return 'warning'
+    if (status === 'Excused') return 'info'
+    return 'neutral'
+}
+
+async function markAsRead(notification: AppNotification) {
+    await useAppStore().markAsRead(notification.id)
     notification.read = true
 }
 
@@ -56,24 +69,26 @@ watch(() => record, () => {
 </script>
 
 <template>
-    <div v-if="state && record" class="w-96 shrink-0 bg-white border-l border-gray-200 overflow-y-auto">
-        <div class="p-6 space-y-5">
-            <div class="flex justify-between items-start gap-3 border-b mb-3 border-gray-200 pb-2">
+    <div v-if="state && record" class="w-full">
+        <div class="space-y-5">
+            <div class="flex justify-between items-start gap-3 dark:border-gray-800 border-b mb-3 border-gray-200 pb-2">
                 <div class="flex-1 min-w-0">
-                    <p class="text-lg font-semibold">{{ record.title }}</p>
+                    <p class="text-base font-semibold">{{ record.title }}</p>
                     <p class="text-sm text-gray-400 mt-0.5">{{ formatDate(record.createdAt) }}</p>
                 </div>
                 <UButton icon="i-heroicons-x-mark" @click="close" variant="ghost" size="sm" />
             </div>
 
             <p class="text-sm text-gray-600 leading-relaxed">{{ record.message }}</p>
-
-            <!-- Meta Details -->
-            <div v-if="record.meta" class="rounded-md border border-gray-100 divide-y divide-gray-100">
+            <div v-if="record.meta" class="rounded-xl dark:border-gray-800 border-2 border-gray-100 divide-y-2 divide-gray-100 dark:divide-gray-800">
                 <div v-for="(value, key) in filteredMeta" :key="key"
                     class="flex items-center justify-between px-4 py-2.5">
-                    <span class="text-xs text-gray-400 capitalize">{{ formatMetaKey(key) }}</span>
-                    <span class="text-xs font-medium text-gray-700">{{ value || '—' }}</span>
+                    <span class="text-xs text-muted capitalize">{{ formatMetaKey(key) }}</span>
+                    <UBadge v-if="isAttendanceStatus(key)" :color="attendanceStatusColor(value)" variant="soft"
+                        size="xs">
+                        {{ value || '—' }}
+                    </UBadge>
+                    <span v-else class="text-xs font-medium">{{ value || '—' }}</span>
                 </div>
             </div>
 
@@ -82,7 +97,7 @@ watch(() => record, () => {
                     @click="markAsRead(record)">
                     Mark as Read
                 </UButton>
-                <UBadge v-else color="success" variant="soft">Read</UBadge>
+                <UBadge v-else color="success" variant="soft" icon="lucide:check-check">Read</UBadge>
             </div>
         </div>
     </div>

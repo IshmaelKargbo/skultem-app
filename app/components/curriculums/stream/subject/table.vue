@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
@@ -13,7 +12,7 @@ const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
-const columns: TableColumn<StreamSubject> = [
+const columns = [
   {
     accessorKey: 'streamName',
     header: 'Stream'
@@ -37,7 +36,7 @@ const columns: TableColumn<StreamSubject> = [
         td: 'text-right'
       }
     },
-    cell: ({ row }) => {
+    cell: ({ row }: any) => {
       return h(
         UDropdownMenu,
         {
@@ -149,7 +148,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -163,11 +164,16 @@ onMounted(async () => {
           <UBadge v-if="row.original.locked" variant="outline" color="error" label="Locked" />
         </div>
       </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
     </UTable>
-    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
-  </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
+  </UCard>
 </template>

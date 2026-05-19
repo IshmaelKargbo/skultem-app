@@ -1,17 +1,8 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
 const { records: data, meta, loading } = storeToRefs(store)
-
-const editRcord = ref<Student | null>(null)
-const editState = ref(false)
-
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const parseStaus: Record<string, string> = {
   ACTIVE: 'Active',
@@ -25,13 +16,7 @@ const parseStatusColor: Record<string, string> = {
   DELETED: 'danger'
 }
 
-const parseStatusIcon: Record<string, string> = {
-  ACTIVE: 'i-lucide-check-circle',
-  INACTIVE: 'i-lucide-x-circle',
-  DELETED: 'i-lucide-trash'
-}
-
-const columns: TableColumn<Student> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -52,20 +37,8 @@ const columns: TableColumn<Student> = [
     header: 'Class'
   },
   {
-    accessorKey: 'guardianName',
+    accessorKey: 'parent',
     header: 'Guardian'
-  },
-  {
-    accessorKey: 'fatherName',
-    header: 'Father'
-  },
-  {
-    accessorKey: 'motherName',
-    header: 'Mother'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
   },
   {
     id: 'actions',
@@ -73,46 +46,12 @@ const columns: TableColumn<Student> = [
       class: {
         td: 'text-right'
       }
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
     }
   }
 ]
 
-function getRowItems(row: Row<Student>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
+function view(row: Student) {
+  router.push(`/students/${row.id}`)
 }
 
 const page = computed<number>({
@@ -136,6 +75,10 @@ function updateQuery(newQuery: Record<string, any>) {
   }
 
   router.replace({ query: merged })
+}
+
+function name(row: Student) {
+  return `${row.givenNames} ${row.familyName}`
 }
 
 const skeletonRows = Array(runtimeConf().limit).fill({})
@@ -171,47 +114,36 @@ onMounted(async () => {
 
 <template>
   <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
-    <UTable :columns="columns" :data="loading ? skeletonRows : data" :loading="loading">
+    <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No students found.</p>
         </div>
       </template>
-      <template #status-cell="{ row }">
-        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-          variant="outline" />
+      <template #parent-cell="{ row }">
+        <p>{{ row.original.guardian?.givenNames }} {{ row.original.guardian?.familyName }}</p>
       </template>
       <template #gender-cell="{ row }">
         <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
           variant="outline" />
       </template>
-      <template v-if="loading" #name-cell>
-        <USkeleton class="h-4 w-20" />
+      <template #name-cell="{ row }">
+        <div class="flex items-center space-x-4">
+          <UAvatar size="xl" :src="row.original.photo || ALT_IMAGE" :alt="name(row.original)" />
+          <div>
+            <p>{{ name(row.original) }}</p>
+            <p class="text-xs text-muted">{{ row.original.admissionNumber }}</p>
+          </div>
+        </div>
       </template>
-      <template v-if="loading" #dateOfBirth-cell>
-        <USkeleton class="h-4 w-20" />
+      <template #loading>
+        <TableLoading :size="columns.length" />
       </template>
-      <template v-if="loading" #className-cell>
-        <USkeleton class="h-4 w-20" />
-      </template>
-      <template v-if="loading" #guardianName-cell>
-        <USkeleton class="h-4 w-20" />
-      </template>
-      <template v-if="loading" #motherName-cell>
-        <USkeleton class="h-4 w-20" />
-      </template>
-      <template v-if="loading" #fatherName-cell>
-        <USkeleton class="h-4 w-20" />
-      </template>
-      <template v-if="loading" #actions-cell>
-        <USkeleton class="h-4 w-20" />
-      </template>
-      <template v-if="loading" #gender-cell>
-        <USkeleton class="h-4 w-20" />
-      </template>
-      <template v-if="loading" #status-cell>
-        <USkeleton class="h-4 w-20" />
+      <template #actions-cell="{ row }">
+        <div>
+          <UButton @click="view(row.original)" size="sm" variant="ghost" color="success" :icon="VIEW_ICON" />
+        </div>
       </template>
     </UTable>
     <template #footer>
@@ -222,7 +154,6 @@ onMounted(async () => {
       </div>
     </template>
   </UCard>
-  <!-- Mobile Skeleton Loader -->
   <div v-if="loading" class="md:hidden space-y-3">
     <UCard v-for="i in 5" :key="i">
       <template #header>
@@ -297,15 +228,15 @@ onMounted(async () => {
       </div>
       <div class="space-y-0.5">
         <p class="text-[10px] text-mute uppercase">Guardian</p>
-        <p>{{ item.guardianName }}</p>
+        <p>{{ item.guardian?.givenNames }} {{ item.guardian?.familyName }}</p>
       </div>
       <div class="space-y-0.5">
         <p class="text-[10px] text-mute uppercase">Father</p>
-        <p>{{ item.fatherName }}</p>
+        <p>{{ item.family?.fatherName }}</p>
       </div>
       <div class="space-y-0.5">
         <p class="text-[10px] text-mute uppercase">Mother</p>
-        <p>{{ item.motherName }}</p>
+        <p>{{ item.family?.motherName }}</p>
       </div>
     </div>
   </UCard>

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
@@ -8,7 +6,7 @@ const { format } = useMoney()
 const { payments: data, report, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const columns: TableColumn<Payment> = [
+const columns = [
   {
     accessorKey: 'student',
     header: 'Student'

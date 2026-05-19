@@ -4,7 +4,7 @@ export const useSubjectGroupStore = defineStore('subjectGroup', {
   state: () => ({
     records: [] as SubjectGroup[],
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

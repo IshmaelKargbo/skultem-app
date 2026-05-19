@@ -1,12 +1,13 @@
 <template>
-  <transition name="slide-over" appear>
-    <div v-if="open && selected" class="p-6 space-y-6 relative md:w-1/2 w-full bg-white overflow-y-auto border-l border-gray-300">
+  <div>
+    <div v-if="selected"
+      class="p-6 space-y-6 relative w-full bg-white overflow-y-auto border-2 rounded-xl border-gray-200">
       <!-- CLOSE BUTTON -->
       <UButton icon="prime:times" size="sm" variant="ghost" class="absolute top-3 right-3" @click="close" />
-
-      <!-- HEADER -->
       <div>
-        <p class="text-xs text-gray-500 uppercase"> {{ selected.subject }} · {{ selected.assessment }} · {{ selected.term }}</p>
+        <p class="text-xs text-gray-500 uppercase"> {{ selected.subject }} · {{ selected.assessment }} · {{
+          selected.term
+        }}</p>
         <p class="text-lg font-semibold"> {{ selected.teacher }} </p>
         <p class="text-sm text-gray-500"> {{ selected.class }} </p>
       </div>
@@ -83,12 +84,18 @@
         <div class="flex space-x-3 pt-3 border-t mt-3 border-gray-200" v-if="showAction">
           <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
             class="w-full flex justify-center" label="Return" @click="returnForm = true" />
-          <UButton :loading="isApproveLoading" @click="approve" icon="lucide:check-circle"
-            color="success" size="xl" class="w-full flex justify-center" label="Approve" />
+          <UButton :loading="isApproveLoading" @click="approve" icon="lucide:check-circle" color="success" size="xl"
+            class="w-full flex justify-center" label="Approve" />
         </div>
       </div>
     </div>
-  </transition>
+    <UCard v-else class="w-full h-full flex flex-col items-center justify-center">
+      <div class="flex flex-col items-center">
+        <UIcon name="lucide:inbox" class="text-4xl mb-3" />
+        <p class="text-xs">Select a grade submission to view details</p>
+      </div>
+    </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -101,7 +108,7 @@ const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 const isApproveLoading = ref(false)
 const isReturnLoading = ref(false)
 const store = useAssessmentStore()
-const {error: toastError, success: toastSuccess} = useNotify()
+const { error: toastError, success: toastSuccess } = useNotify()
 
 const state = reactive({
   note: ''
@@ -190,33 +197,3 @@ const close = () => {
   emit("close")
 }
 </script>
-
-<style scoped>
-.slide-over-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-.slide-over-enter-to {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.slide-over-enter-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.slide-over-leave-from {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.slide-over-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-.slide-over-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-</style>

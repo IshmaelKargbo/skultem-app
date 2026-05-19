@@ -78,6 +78,9 @@ export const AssessmentApi = () => {
       }
     },
     getClassAssessments: async (id: string) => {
+      if (!id)
+        return []
+      
       try {
         const res = await $api(`/assessment/list/${id}`) as any
 

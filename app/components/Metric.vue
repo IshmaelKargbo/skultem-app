@@ -15,11 +15,11 @@ const { record } = defineProps<{
 <template>
     <UCard>
         <div class="md:space-y-2 space-y-1">
-            <p class="md:text-xs text-[11px] text-mute">{{ record.label }}</p>
+            <p class="md:text-xs text-[11px] text-mute uppercase">{{ record.label }}</p>
 
             <div v-if="!record.isReady" class="animate-pulse space-y-2">
-                <div class="h-7 w-24 bg-gray-200 rounded" />
-                <div class="h-4 w-28 bg-gray-200 rounded" />
+                <USkeleton class="h-7 w-24" />
+                <USkeleton class="h-4 w-28" />
             </div>
 
             <template v-else>

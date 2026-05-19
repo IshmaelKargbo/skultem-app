@@ -7,8 +7,6 @@ export type Parent = {
     email: string
     street: string
     city: string
-    fatherName: string
-    motherName: string
     feeDetail?: {
         total: number
         balance: number

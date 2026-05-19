@@ -1,6 +1,6 @@
 <template>
     <UForm ref="form" :schema="schema" :state="state" @submit="run">
-        <UCard variant="subtle" class="bg-gray-50">
+        <UCard variant="subtle" class="bg-gray-50 dark:bg-gray-950">
             <div class="space-y-5">
                 <div class="flex justify-between items-center">
                     <div>

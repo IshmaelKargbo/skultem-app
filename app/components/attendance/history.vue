@@ -50,27 +50,40 @@ async function click(row: AttendanceHistory) {
 
 <template>
   <UCard :ui="{
-        body: 'p-0 sm:p-0'
-    }">
+    body: 'p-0 sm:p-0'
+  }">
     <div>
-      <div v-for="(item, index) in records" :key="index" :class="[
+      <div v-if="records.length > 0" v-for="(item, index) in records" :key="index" :class="[
         'flex p-3 justify-between cursor-pointer transition-colors',
-        index + 1 < records.length ? 'border-b border-gray-200' : '',
+        index + 1 < records.length ? 'border-b border-gray-200 dark:border-gray-800' : '',
         selected?.classId == item.classId && selected.date == item.date
-          ? 'bg-success-50/40 rounded-md'
-          : 'hover:bg-gray-50'
+          ? 'bg-success-50/40 dark:bg-gray-950 rounded-md'
+          : 'hover:bg-gray-50  dark:border-gray-800 dark:hover:bg-gray-950'
       ]" @click="click(item)">
         <div class="space-y-0.5">
           <p class="md:text-base font-medium">{{ formatDateString(item.date) }}</p>
           <p class="text-sm text-mute">{{ item.className }}</p>
         </div>
         <div class="flex flex-col items-end">
-          <p class="md:text-2xl text-xl text-success-500">{{ (item.presentCount / item.totalCount * 100).toFixed(0) }}%</p>
+          <p class="md:text-2xl text-xl text-success-500">{{ (item.presentCount / item.totalCount * 100).toFixed(0) }}%
+          </p>
           <div class="flex space-x-2">
             <p class="text-xs text-mute">{{ item.presentCount }}/{{ item.totalCount }} present</p>
             <p class="text-xs text-info">| {{ formatDateTime(item.createdAt) }}</p>
           </div>
         </div>
+      </div>
+      <div v-else
+        class="flex flex-col m-4 items-center justify-center rounded-xl border-2 border-dashed dark:border-gray-700 border-gray-200 py-10">
+        <UIcon name="i-lucide-calendar-x" class="mb-2 text-4xl text-muted" />
+
+        <p class="font-medium">
+          No attendance records
+        </p>
+
+        <p class="text-sm text-muted">
+          Attendance records will appear here.
+        </p>
       </div>
     </div>
   </UCard>

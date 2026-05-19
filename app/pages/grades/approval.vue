@@ -1,11 +1,11 @@
 <template>
-  <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN])" />
+  <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" />
   <GradesApprovalTeacher v-if="can([Role.TEACHER])" />
 </template>
 
 <script setup lang="ts">
 const { can } = useAuth()
 definePageMeta({
-  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

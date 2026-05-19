@@ -12,9 +12,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
+    <template #header>
+      <p>Recent Updates</p>
+    </template>
     <div>
-      <p class="text-mute">Recent Updates</p>
 
       <div class="mt-2 space-y-4">
         <!-- Loading -->
@@ -31,13 +35,8 @@ onMounted(async () => {
         </div>
 
         <!-- Notifications -->
-        <div
-          v-else
-          v-for="(item, index) in notifications"
-          :key="item.id"
-          class="flex space-x-2 border-b border-gray-100"
-          :class="{ 'border-b-0': index + 1 === notifications.length }"
-        >
+        <div v-else v-for="(item, index) in notifications" :key="item.id"
+          class="flex space-x-2 border-b items-start border-gray-100 last:border-0 px-4 pb-3 dark:border-gray-800">
           <div class="mt-1.5">
             <div class="w-2 h-2 rounded-full bg-success"></div>
           </div>

@@ -15,21 +15,21 @@
         </template>
         </MenuItem>
       </li>
-      <li v-if="can([Role.ADMIN, Role.PROPRIETOR])">
+      <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
         <MenuItem label="Students" exact to="/students">
         <template #icon>
           <UIcon class="text-xl" :name="STUDENT_ICON" />
         </template>
         </MenuItem>
       </li>
-      <li v-if="can([Role.ADMIN, Role.PROPRIETOR])">
+      <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
         <MenuItem label="Classes" exact to="/classes">
         <template #icon>
           <UIcon class="text-xl" :name="CLASS_ICON" />
         </template>
         </MenuItem>
       </li>
-      <li v-if="can([Role.ADMIN, Role.PROPRIETOR])">
+      <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
         <MenuItem label="Teachers" exact to="/teachers">
         <template #icon>
           <UIcon class="text-xl" :name="TEACHER_ICON" />

@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const store = useUserStore()
+
 const { records: data, meta, loading } = storeToRefs(store)
 
-const editRcord = ref<User | null>(null)
-const editState = ref(false)
+const showAssign = ref(false)
+const selectedUserId = ref('')
 
 const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const parseStatus: Record<string, string> = {
   ACTIVE: 'Active',
   INACTIVE: 'Inactive',
+  RESET_PASSWORD: 'Reset Password',
   DELETED: 'Deleted'
 }
 
 const parseStatusColor: Record<string, string> = {
   ACTIVE: 'success',
   INACTIVE: 'warning',
+  RESET_PASSWORD: 'neutral',
   DELETED: 'danger'
 }
 
@@ -45,52 +45,9 @@ const columns = [
     header: 'Status'
   },
   {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
-    }
+    id: 'actions'
   }
 ]
-
-function getRowItems(row: Row<User>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -115,22 +72,32 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
+function openAssignRole(userId: string) {
+  selectedUserId.value = userId
+  showAssign.value = true
+}
+
 async function fetchRecord() {
   loading.value = true
+
   await store.fetchAll(page.value, size.value)
+
   loading.value = false
 }
 
-watch(() => page.value, () => {
-  router.replace({
-    query: {
-      page: page.value,
-      size: size.value
-    }
-  })
+watch(
+  () => page.value,
+  () => {
+    router.replace({
+      query: {
+        page: page.value
+      }
+    })
 
-  fetchRecord()
-}, { immediate: true })
+    fetchRecord()
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
@@ -147,39 +114,102 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard :ui="{
-    body: 'p-0 sm:p-0'
-  }">
-    <UTable :ui="{
-      loading: 'py-0'
-    }" :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No users found.</p>
+  <div>
+    <UCard
+      :ui="{
+        body: 'p-0 sm:p-0'
+      }"
+    >
+      <UTable
+        :ui="{
+          loading: 'py-0'
+        }"
+        :columns="columns"
+        :data="data"
+        :loading="loading"
+      >
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon
+              name="ph:books-light"
+              class="text-4xl text-gray-400"
+            />
+
+            <p class="text-gray-500">
+              No users found.
+            </p>
+          </div>
+        </template>
+
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+
+        <template #status-cell="{ row }">
+          <UBadge
+            :label="parseStatus[row.original.status]"
+            variant="outline"
+            :color="parseStatusColor[row.original.status]"
+          />
+        </template>
+
+        <template #roles-cell="{ row }">
+          <UBadge
+            v-if="row.original.roles.length > 1"
+            :label="`${row.original.roles.length} Roles`"
+            color="neutral"
+            variant="outline"
+            trailing-icon="eos-icons:role-binding-outlined"
+          />
+
+          <UBadge
+            v-else
+            :label="`${parseRole[row.original.roles[0] || '']}`"
+            :color="parseRoleColor[row.original.roles[0] || '']"
+            variant="outline"
+            :trailing-icon="parseRoleIcon[row.original.roles[0] || '']"
+          />
+        </template>
+
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UTooltip
+              :delay-duration="0"
+              arrow
+              text="Assign Role"
+            >
+              <UButton
+                size="md"
+                variant="ghost"
+                color="info"
+                icon="eos-icons:cluster-role-binding"
+                @click="openAssignRole(row.original.id)"
+              />
+            </UTooltip>
+          </div>
+        </template>
+      </UTable>
+
+      <template #footer>
+        <div class="flex justify-between items-center">
+          <Showing :meta="meta" />
+
+          <UPagination
+            v-model:page="page"
+            size="sm"
+            :page-size="meta.size"
+            :items-per-page="meta.size"
+            :total="meta.total"
+            show-edges
+          />
         </div>
       </template>
-      <template #loading>
-        <TableLoading :size="columns.length" />
-      </template>
-      <template #status-cell="{ row }">
-        <UBadge :label="parseStatus[row.original.status]" variant="outline"
-          :color="parseStatusColor[row.original.status]" />
-      </template>
-      <template #roles-cell="{ row }">
-        <UBadge v-if="row.original.roles.length > 1" :label="`${row.original.roles.length} - `" color="neutral"
-          variant="outline" trailing-icon="eos-icons:role-binding-outlined" />
-        <UBadge v-else :label="`${parseRole[row.original.roles[0] || '']} - `"
-          :color="parseRoleColor[row.original.roles[0] || '']" variant="outline"
-          :trailing-icon="parseRoleIcon[row.original.roles[0] || '']" />
-      </template>
-    </UTable>
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
-    </template>
-  </UCard>
+    </UCard>
+
+    <AuthUsersAssign
+      v-model="showAssign"
+      :user-id="selectedUserId"
+      @success="fetchRecord"
+    />
+  </div>
 </template>

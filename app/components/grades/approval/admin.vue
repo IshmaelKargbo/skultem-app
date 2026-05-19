@@ -1,42 +1,62 @@
 <template>
-  <UForm :state="state" class="h-full flex flex-col bg-gray-50">
-    <div class="p-6 border-b border-gray-300 space-y-4">
-      <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
-        <div class="flex gap-3">
-          <UBadge color="warning" variant="outline" size="lg">{{ summary.pending }} Pending</UBadge>
-          <UBadge color="success" variant="outline" size="lg">{{ summary.approved }} Approved</UBadge>
-          <UBadge color="error" variant="outline" size="lg">{{ summary.returned }} Returned</UBadge>
-        </div>
-      </Heading>
-      <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-3">
-        <div class="flex gap-2 w-full">
-          <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">
-            All {{ requests.length }}
-          </UButton>
-
-          <UButton size="sm" :variant="filter === 'Pending Review' ? 'outline' : 'ghost'"
-            @click="filter = 'Pending Review'">
-            Pending {{ summary.pending }}
-          </UButton>
-
-          <UButton size="sm" :variant="filter === 'Approved' ? 'outline' : 'ghost'" @click="filter = 'Approved'">
-            Approved {{ summary.approved }}
-          </UButton>
-
-          <UButton size="sm" :variant="filter === 'Returned' ? 'outline' : 'ghost'" @click="filter = 'Returned'">
-            Returned {{ summary.returned }}
-          </UButton>
-        </div>
-        <div class="md:w-1/2 w-full flex space-x-3">
-          <USelectMenu @change="fetchRecords" value-key="value" v-model="state.teacherId" :items="teachers" :loading="loadingSession" placeholder="Search teacher" />
-        </div>
+  <UForm :state="state" class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+    <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
+      <div class="flex gap-3">
+        <UBadge color="warning" variant="outline" size="lg">{{ summary.pending }} Pending</UBadge>
+        <UBadge color="success" variant="outline" size="lg">{{ summary.approved }} Approved</UBadge>
+        <UBadge color="error" variant="outline" size="lg">{{ summary.returned }} Returned</UBadge>
       </div>
-    </div>
-    <div class="flex flex-1 overflow-hidden">
-      <div class="flex-1 bg-white overflow-y-auto">
-        <GradesRecordLoading v-if="isLoading" v-for="(item, index) in 8" :key="index" />
-        <GradesRecord v-else v-for="req in filteredRequests" :selected="selected" :key="req.id" @click="selected = req"
-          :record="req" />
+    </Heading>
+    <div class="grid md:grid-cols-2 gap-5">
+      <div>
+        <UCard class="sticky top-0">
+          <template #header>
+            <div class="flex flex-wrap md:flex-nowrap justify-between items-center">
+              <div class="flex gap-1 w-full">
+                <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">
+                  All {{ requests.length }}
+                </UButton>
+                <UButton size="sm" :variant="filter === 'Pending Review' ? 'outline' : 'ghost'"
+                  @click="filter = 'Pending Review'">
+                  Pending {{ summary.pending }}
+                </UButton>
+
+                <UButton size="sm" :variant="filter === 'Approved' ? 'outline' : 'ghost'" @click="filter = 'Approved'">
+                  Approved {{ summary.approved }}
+                </UButton>
+
+                <UButton size="sm" :variant="filter === 'Returned' ? 'outline' : 'ghost'" @click="filter = 'Returned'">
+                  Returned {{ summary.returned }}
+                </UButton>
+              </div>
+              <div class="md:w-72 w-full flex space-x-3">
+                <USelectMenu @change="fetchRecords" value-key="value" size="lg" v-model="state.teacherId"
+                  :items="teachers" :loading="loadingSession" placeholder="Search teacher" />
+              </div>
+            </div>
+          </template>
+          <div v-if="isLoading" class="p-4">
+            <p class="text-sm text-gray-500">Loading requests...</p>
+          </div>
+          <div v-if="!state.teacherId" class="p-4 flex items-center justify-center">
+            <p class="text-sm text-gray-500">Select a teacher to view details</p>
+          </div>
+          <div v-if="!isLoading && state.teacherId && filteredRequests.length === 0" class="p-4 flex items-center justify-center">
+            <p class="text-sm text-gray-500">No requests found</p>
+          </div>
+          <div v-else class="space-y-3">
+            <GradesRecordLoading v-if="isLoading" v-for="(item, index) in 8" :key="index" />
+            <GradesRecord v-else v-for="req in filteredRequests" :selected="selected" :key="req.id"
+              @click="selected = req" :record="req" />
+          </div>
+          <template #footer>
+            <div class="flex justify-between items-center">
+              <Showing :meta="meta" />
+              <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+                :total="meta.total" show-edges />
+            </div>
+          </template>
+        </UCard>
       </div>
       <GradesViewRequest @refresh="fetchRecordAndUpdate" @close="close" :record="selected" />
     </div>
@@ -59,11 +79,13 @@ const headerMessage = computed(() => {
 
 const sessionStore = useTeacherStore()
 const store = useAssessmentStore()
-const { records } = storeToRefs(sessionStore)
+const { records, meta } = storeToRefs(sessionStore)
 const isLoading = ref(false)
 const loadingSession = ref(true)
 const teachers = computed(() => records.value.map(e => ({ label: `${e.user.givenNames} ${e.user.familyName}`, value: e.id })))
 
+const router = useRouter()
+const route = useRoute()
 const search = ref('')
 const filter = ref<RequestFilter>('ALL')
 const requests = ref<AssessmentApprovalRequest[]>([])
@@ -123,6 +145,39 @@ async function loadRequests(keepSelection: boolean) {
 const state = reactive<ApprovalRequestForm>({
   teacherId: ""
 })
+
+const page = computed<number>({
+  get: () => Number(route.query.page ?? 1),
+  set: (val) => updateQuery({ page: val })
+})
+
+const size = computed<number>({
+  get: () => Number(route.query.size ?? runtimeConf().limit),
+  set: (val) => updateQuery({ size: val })
+})
+
+function updateQuery(newQuery: Record<string, any>) {
+  const merged = { ...route.query, ...newQuery }
+
+  if (
+    merged.page === route.query.page &&
+    merged.size === route.query.size
+  ) {
+    return
+  }
+
+  router.replace({ query: merged })
+}
+
+watch(() => page.value, () => {
+  router.replace({
+    query: {
+      page: page.value
+    }
+  })
+
+  fetchRecords()
+}, { immediate: true })
 
 onMounted(async () => {
   useAppStore().setTitle('Grade Approval Requests')

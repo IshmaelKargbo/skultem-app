@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-const selectedStudent = ref<Student | null>()
+const selectedStudent = ref<Student>()
 const { can } = useAuth()
 function select(row: Student) {
     if (row == null) return;
@@ -31,6 +31,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.ADMIN, Role.PROPRIETOR]
+    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

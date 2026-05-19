@@ -5,79 +5,101 @@ export default defineAppConfig({
       secondary: "emerald",
       neutral: "gray",
     },
+
     checkbox: {
       variants: {
         variant: {
           list: {
-            root: ''
+            root: '',
           },
           card: {
-            root: 'border border-muted rounded-lg inline-flex w-auto'
-          }
-        }
-      }
+            root: 'border border-muted rounded-lg inline-flex w-auto dark:border-gray-700 dark:bg-gray-800',
+          },
+        },
+      },
     },
+
     breadcrumb: {
       variants: {
         active: {
-          false: 'text-white hover:text-white'
-        }
-      }
+          false: 'text-white hover:text-gray-200 dark:text-gray-300 dark:hover:text-white',
+        },
+      },
     },
+
     table: {
       slots: {
-        th: 'font-display uppercase text-mute text-[12.5px]',
-        td: 'text-neutral-800 py-2.5',
-        loading: 'p-0'
-      }
+        th: 'font-display uppercase light:text-muted text-[12.5px] dark:text-gray-500',
+        td: 'py-2 text-gray-800 dark:text-gray-200',
+        loading: 'p-0',
+      },
     },
+
     card: {
       variants: {
         variant: {
           outline: {
-            root: 'bg-white/80 ring-2 shadow rounded-2xl shadown-md'
+            root:
+              'bg-white/80 dark:bg-gray-900 ring-2 ring-gray-100 dark:ring-gray-800 shadow rounded-2xl shadow',
+            base: 'text-gray-800 dark:text-gray-200',
           },
-        }
-      }
+        },
+      },
     },
+
     textarea: {
       slots: {
-        root: "w-full",
-        base: 'rounded-xl'
-      }
+        root: 'w-full',
+        base:
+          'rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
+      },
     },
+
     input: {
       defaultVariants: {
-        size: "lg",
+        size: 'xl',
       },
       slots: {
         root: 'w-full',
-        base: 'rounded-xl'
-      }
+        base:
+          'rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
+      },
     },
+
+    modal: {
+      slots: {
+        base: 'rounded-2xl bg-white dark:bg-gray-900',
+        overlay: 'bg-black/50',
+      },
+    },
+
     select: {
       defaultVariants: {
-        size: "lg",
+        size: 'xl',
       },
       slots: {
-        base: 'w-full rounded-xl',
-      }
+        base:
+          'w-full rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
+      },
     },
+
     selectMenu: {
       slots: {
-        base: 'w-full'
+        base:
+          'w-full rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700',
       },
       defaultVariants: {
-        size: "lg"
-      }
+        size: 'xl',
+      },
     },
+
     button: {
       defaultVariants: {
-        size: "lg",
+        size: 'lg',
       },
       slots: {
-        base: 'rounded-xl'
-      }
+        base: 'rounded-xl',
+      },
     },
   },
 });

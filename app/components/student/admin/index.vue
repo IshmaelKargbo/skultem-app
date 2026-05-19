@@ -3,11 +3,10 @@
         <Heading title="Students Management" subtitle="Organize academic classes">
             <div class="flex space-x-2">
                 <UInput placeholder="Search by name" />
-                <!-- <StudentAdd /> -->
                 <UButton to="/students/add" color="primary" label="Enrolled Student" :icon="ADD_ICON" />
             </div>
         </Heading>
-        <StudentAdminTable v-if="can([Role.ADMIN, Role.PROPRIETOR])" />
+        <StudentAdminTable />
     </div>
 </template>
 

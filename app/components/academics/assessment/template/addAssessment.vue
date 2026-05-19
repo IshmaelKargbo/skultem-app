@@ -12,7 +12,7 @@
 
         <template #body>
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4 w-full" @submit="onSubmit">
-                <div class="sticky top-0 z-10 rounded-lg border border-slate-200 p-3 bg-slate-50 shadow-sm">
+                <div class="sticky top-0 z-10 rounded-2xl border-2 dark:border-gray-700 border-gray-200 p-3 bg-gray-50 dark:bg-gray-900 shadow-sm">
                     <p class="text-sm text-slate-600">Total Weight</p>
                     <div class="flex items-center justify-between">
                         <p class="text-xl font-semibold"
@@ -29,7 +29,7 @@
 
                 <div class="space-y-3">
                     <div v-for="(assignment, index) in state.assignments" :key="index"
-                        class="p-3 border border-slate-200 rounded-lg bg-white">
+                        class="p-4 border-2 border-gray-200 rounded-xl bg-white dark:bg-gray-950 dark:border-gray-700">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-sm font-medium text-slate-700">Assessment {{ index + 1 }}</p>
                             <UButton v-if="state.assignments.length > 1" icon="i-lucide-trash-2" color="error"

@@ -1,5 +1,5 @@
 <template>
-  <GradesAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR])" />
+  <GradesAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
   <GradesTeacher v-if="can([Role.TEACHER])" />
   <GradesParent v-if="can([Role.PARENT])" />
 </template>

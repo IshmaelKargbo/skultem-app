@@ -44,7 +44,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-    get: () => Number(route.query.size ?? 5),
+    get: () => Number(route.query.size ?? runtimeConf().limit),
     set: (val) => updateQuery({ size: val })
 })
 
@@ -90,8 +90,7 @@ onMounted(loadData)
 watch(() => page.value, () => {
     router.replace({
         query: {
-            page: page.value,
-            size: size.value
+            page: page.value
         }
     })
 

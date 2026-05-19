@@ -1,12 +1,11 @@
 <template>
-    <div v-if="record" class="p-4 md:px-7 border-b border-gray-300 space-y-2 cursor-pointer hover:bg-gray-50"
-        :class="{ 'bg-app-50 border-app-500': selected?.id === record.id }">
+    <div v-if="record" class="p-4 border-2 border-gray-200 rounded-xl space-y-2 cursor-pointer hover:bg-primary-50 hover:border-primary-300"
+        :class="[ selected?.id === record.id ? 'bg-primary-50 border-primary-300' : 'bg-white border-gray-200' ]">
 
         <div class="flex items-center justify-between w-full">
-
-            <p class="font-medium">{{ record.subject }} · {{ record.assessment }} · {{ record.term }}</p>
-
-            <UBadge size="sm" variant="outline" :color="statusColor(record.status)"
+            <p class="font-medium text-base">{{ record.subject }} - <span class="text-info-400">{{ record.assessment
+            }}</span> - <span class="text-success-400">{{ record.term }}</span></p>
+            <UBadge size="md" variant="outline" :color="statusColor(record.status)"
                 :label="statusLabel(record.status)" />
 
         </div>
@@ -29,7 +28,7 @@
             <span>{{ record.passPercentage }}% pass</span>
 
         </div>
-        <GradeDistributionBar :height="1" :show-label="false" :average="record.avgPercentage"
+        <GradeDistributionBar :height="2" :show-label="false" :average="record.avgPercentage"
             :pass="record.passPercentage" :fail="record.failPercentage" />
     </div>
 </template>

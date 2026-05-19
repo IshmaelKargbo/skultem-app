@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
@@ -56,7 +55,7 @@ function statusLabel(total: number) {
   return 'Incomplete'
 }
 
-const columns: TableColumn<AssessmentTemplate>[] = [
+const columns = [
   {
     id: 'expand',
     cell: ({ row }) =>
@@ -81,10 +80,10 @@ const columns: TableColumn<AssessmentTemplate>[] = [
     header: 'Name',
     cell: ({ row }) =>
       h('div', { class: 'flex flex-col space-y-1' }, [
-        h('p', { class: 'text-slate-800' }, row.original.name),
+        h('p', { class: 'text-muted' }, row.original.name),
         h(
           'p',
-          { class: 'text-xs text-mute' },
+          { class: 'text-xs' },
           `${parseAssessmentCount(row.original.assessments)} item(s)`
         )
       ])
@@ -95,7 +94,7 @@ const columns: TableColumn<AssessmentTemplate>[] = [
     cell: ({ row }) =>
       h(
         'p',
-        { class: 'max-w-[320px] truncate text-sm text-slate-600' },
+        { class: 'max-w-[320px] truncate text-sm text-muted' },
         row.original.description || '-'
       )
   },
@@ -107,6 +106,16 @@ const columns: TableColumn<AssessmentTemplate>[] = [
       color: 'neutral',
       label: `${parseAssessmentCount(row.original.assessments)}`
     })
+  },
+  {
+    accessorKey: 'passMark',
+    header: 'Passing Mark',
+    cell: ({ row }) =>
+      h(
+        'p',
+        { class: 'max-w-[320px] truncate text-sm text-muted' },
+        `${row.original.passMark}%` || '-'
+      )
   },
   {
     id: 'totalWeight',
@@ -234,7 +243,9 @@ watch(
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading" expandable :ui="{
       td: 'align-top'
     }">
@@ -257,7 +268,7 @@ watch(
               <span :class="[
                 'px-3 py-1 text-xs font-semibold rounded-full',
                 calculateTotal(row.original.assessments) === 100
-                  ? 'bg-green-100 text-green-700 border border-green-200'
+                  ? 'bg-green-100 dark:bg-gray-950 dark:border-success-600 text-success-700 border border-success-300'
                   : 'bg-amber-100 text-amber-700 border border-amber-200'
               ]">
                 Total {{ calculateTotal(row.original.assessments) }}%
@@ -265,10 +276,11 @@ watch(
             </div>
           </div>
 
-          <UProgress :max="100" :model-value="Math.min(calculateTotal(row.original.assessments), 100)" :color="calculateTotal(row.original.assessments) === 100 ? 'success' : 'warning'" />
-          <div class="overflow-hidden bg-white mt-4">
+          <UProgress :max="100" :model-value="Math.min(calculateTotal(row.original.assessments), 100)"
+            :color="calculateTotal(row.original.assessments) === 100 ? 'success' : 'warning'" />
+          <div class="overflow-hidden bg-gray-50 dark:bg-gray-950 mt-4">
             <table class="min-w-full text-sm">
-              <thead class="bg-slate-50 text-slate-600">
+              <thead class="bg-gray-50 dark:bg-gray-800 text-slate-600">
                 <tr>
                   <th class="px-4 py-3 text-left font-medium">#</th>
                   <th class="px-4 py-3 text-left font-medium">Assessment</th>
@@ -278,12 +290,12 @@ watch(
 
               <tbody>
                 <tr v-for="item in [...row.original.assessments].sort((a, b) => a.position - b.position)" :key="item.id"
-                  class="border-t border-slate-200">
+                  class="border-t border-gray-200 dark:border-gray-700">
                   <td class="px-4 py-3 text-slate-500">
                     {{ item.position }}
                   </td>
 
-                  <td class="px-4 py-3 font-medium text-slate-800">
+                  <td class="px-4 py-3 font-medium text-gray-800 dark:text-muted">
                     {{ item.name }}
                   </td>
 
@@ -309,7 +321,9 @@ watch(
 
         </div>
       </template>
-
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
       <!-- Empty State -->
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -319,11 +333,13 @@ watch(
         </div>
       </template>
     </UTable>
-    <div v-if="!loading" class="flex justify-between border-t border-slate-200 pt-3 items-center mt-2">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
-    <SettingsAssessmentTemplateAddAssessment v-model:open="assignState" :template="assignRecord" @saved="fetchRecord" />
+    <AcademicsAssessmentTemplateAddAssessment v-model:open="assignState" :template="assignRecord" @saved="fetchRecord" />
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

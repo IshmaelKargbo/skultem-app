@@ -95,7 +95,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <p>{{ report.present }}%</p>
                 </div>
                 <div>
-                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.present" />
+                    <UProgress :loading="loading" color="primary" size="md" :max="100" v-model="report.present" />
                 </div>
             </div>
             <div class="space-y-1">
@@ -105,7 +105,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                 </div>
 
                 <div>
-                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.absent" />
+                    <UProgress :loading="loading" color="primary" size="md" :max="100" v-model="report.absent" />
                 </div>
             </div>
             <div class="space-y-1">
@@ -115,7 +115,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                 </div>
 
                 <div>
-                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.late" />
+                    <UProgress :loading="loading" color="primary" size="md" :max="100" v-model="report.late" />
                 </div>
             </div>
             <div class="space-y-1">
@@ -124,7 +124,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
                     <p>{{ report.excused }}%</p>
                 </div>
                 <div>
-                    <UProgress :loading="loading" color="neutral" size="md" :max="100" v-model="report.excused" />
+                    <UProgress :loading="loading" color="primary" size="md" :max="100" v-model="report.excused" />
                 </div>
             </div>
         </div>

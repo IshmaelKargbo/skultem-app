@@ -9,6 +9,6 @@
 
 <script setup lang="ts">
 defineProps<{
-    meta: Meta | null;
+    meta: Meta | undefined;
 }>()
 </script>

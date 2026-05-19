@@ -1,16 +1,9 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
         <Heading title="Sections Management" subtitle="Manage all sections">
             <CurriculumsSectionAdd />
         </Heading>
-        <UCard>
-            <CurriculumsSectionTable />
-            <div class="flex justify-between border-t border-gray-200 pt-3 items-center">
-                <Showing :meta="meta" />
-                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                    :total="meta.total" show-edges />
-            </div>
-        </UCard>
+        <CurriculumsSectionTable />
     </div>
 </template>
 
@@ -24,6 +17,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

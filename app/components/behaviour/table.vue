@@ -16,7 +16,7 @@ const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
-const columns: TableColumn<Behaviour> = [
+const columns = [
   {
     accessorKey: 'student',
     header: 'Student'
@@ -115,8 +115,7 @@ async function fetchRecords() {
 watch(() => page.value, () => {
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 

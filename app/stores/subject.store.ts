@@ -4,7 +4,7 @@ export const useSubjectStore = defineStore('subject', {
   state: () => ({
     records: [] as Subject[],
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

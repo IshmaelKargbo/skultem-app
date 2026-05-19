@@ -3,9 +3,10 @@ import { defineStore } from 'pinia'
 export const useStudentStore = defineStore('student', {
   state: () => ({
     records: [] as Student[],
+    record: undefined as Student | undefined,
     activeCycle: null as ActiveCycle | null,
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 
@@ -19,6 +20,29 @@ export const useStudentStore = defineStore('student', {
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch students'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchStudent(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        return await StudentApi().getStudent(id) as any
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch student'
+      } finally {
+        this.loading = false
+      }
+    },
+    async viewStudent(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const res = await StudentApi().getStudent(id) as any
+        this.record = res
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch student'
       } finally {
         this.loading = false
       }
@@ -107,14 +131,14 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    create(payload: CreateStudentDto) {
+    create(payload: FormData) {
       return StudentApi().create(payload)
     },
     findEnrollmentByStudent(id: string) {
       return StudentApi().getCurrentEnrollment(id)
     },
     sumFeesPaidByStudentAndFee(student: string, fee: string) {
-      return StudentApi().sumFeesPaidByStudentAndFee(student, fee) 
+      return StudentApi().sumFeesPaidByStudentAndFee(student, fee)
     }
   }
 })

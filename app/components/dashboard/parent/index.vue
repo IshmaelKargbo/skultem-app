@@ -18,23 +18,23 @@
             <DashboardParentGradeTrend :id="state.student" />
             <DashboardParentSubjectPerformance :term="state.term" :id="state.student" />
             <UCard>
+                <template #header>
+                    <p>Student Information</p>
+                </template>
                 <div v-if="selected">
-                    <p class="text-mute">Student Information</p>
-                    <div class="mt-2">
-                        <div class="justify-between flex border-b py-3.5 border-gray-200">
-                            <p class="text-muted">Class:</p>
-                            <p>{{ selected.className }}</p>
-                        </div>
-                        <div class="justify-between flex border-b py-3.5 border-gray-200">
-                            <p class="text-muted">Class Teacher:</p>
-                            <p>{{ selected.classTeacher }}</p>
-                        </div>
-                        <div class="justify-between flex border-b py-3.5 border-gray-200">
-                            <p class="text-muted">Total Students:</p>
-                            <p>{{ selected.classSize }}</p>
-                        </div>
-                        <DashboardParentRank :term="state.term" :student="selected" />
+                    <div class="justify-between flex border-b py-3.5 border-gray-200 dark:border-gray-800">
+                        <p class="text-muted">Class:</p>
+                        <p>{{ selected.className }}</p>
                     </div>
+                    <div class="justify-between flex border-b py-3.5 border-gray-200 dark:border-gray-800">
+                        <p class="text-muted">Class Teacher:</p>
+                        <p>{{ selected.classTeacher }}</p>
+                    </div>
+                    <div class="justify-between flex border-b py-3.5 border-gray-200 dark:border-gray-800">
+                        <p class="text-muted">Total Students:</p>
+                        <p>{{ selected.classSize }}</p>
+                    </div>
+                    <DashboardParentRank :term="state.term" :student="selected" />
                 </div>
             </UCard>
             <DashboardParentUpdate />

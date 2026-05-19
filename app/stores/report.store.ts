@@ -18,19 +18,20 @@ export const useReportStore = defineStore('report', {
     report: null as ReportSelectFilterPayload | null,
     loading: false,
     entity: "",
-    meta: null as Meta | null,
+    meta: undefined as Meta | undefined,
     error: null as string | null,
     run: false
   }),
   actions: {
     async runReport(query: ReportSelectFilterPayload, page: number = 1, size: number = 6) {
       this.loading = true
+      this.run = true
+
       this.error = null
       try {
         const response = await ReportApi().runReport(query, page, size)
         if (response == null) return
         this.meta = response.meta
-        this.run = true
         this.report = query
         this.entity = query.entity.toLowerCase()
 
@@ -40,6 +41,7 @@ export const useReportStore = defineStore('report', {
             break
           case "teachers":
             this.teachers = response.data
+            break
           case "breakdown":
             this.breakdown = response.data
             break
@@ -85,7 +87,7 @@ export const useReportStore = defineStore('report', {
       this.students = []
       this.classes = []
       this.report = null
-      this.meta = null
+      this.meta = undefined
     },
     async fetchAll(page: number = 1, size: number = 6) {
       this.loading = true

@@ -26,6 +26,16 @@
                         </p>
                     </template>
                 </UFormField>
+                <UFormField required label="Template Pass Mark" name="passMark">
+                    <UInput v-model.number="state.passMark" type="number" min="0" max="100"
+                        placeholder="Enter pass mark" :disabled="isLoading" />
+
+                    <template #help>
+                        <p class="text-xs text-muted">
+                            Set the minimum score required for students to pass this assessment template.
+                        </p>
+                    </template>
+                </UFormField>
 
                 <!-- Description -->
                 <UFormField required label="Template Description" name="description">
@@ -50,7 +60,6 @@
 
     </u-slideover>
 </template>
-
 <script setup lang="ts">
 import * as yup from 'yup'
 import { reactive, ref } from 'vue'
@@ -65,22 +74,34 @@ const formRef = ref<any>(null)
 
 type AssessmentTemplateForm = {
     name: string
+    passMark: number
     description: string
 }
 
 const state = reactive<AssessmentTemplateForm>({
     name: '',
+    passMark: 50,
     description: ''
 })
 
 const schema = yup.object({
     name: yup.string().required('Template name is required'),
-    description: yup.string().required('Template description is required')
+
+    passMark: yup
+        .number()
+        .required('Pass mark is required')
+        .min(0, 'Pass mark cannot be less than 0')
+        .max(100, 'Pass mark cannot be greater than 100'),
+
+    description: yup
+        .string()
+        .required('Template description is required')
 })
 
 const close = () => {
     open.value = false
     state.name = ''
+    state.passMark = 50
     state.description = ''
 }
 
@@ -92,6 +113,7 @@ const onSubmit = async (event: FormSubmitEvent<AssessmentTemplateForm>) => {
 
         await store.create({
             name: state.name,
+            passMark: state.passMark,
             description: state.description
         })
 

@@ -15,30 +15,12 @@
 </template>
 
 <script setup lang="ts">
-const exportingCsv = ref(false)
-const exportingPdf = ref(false)
-const toast = useToast()
-
-async function exportLedger(format: 'csv' | 'pdf') {
-    const loading = format === 'csv' ? exportingCsv : exportingPdf
-    loading.value = true
-    try {
-        const { blob, filename } = await ReportApi().exportLedger(format)
-        downloadBlob(blob, filename)
-        toast.add({ title: 'Ledger exported', color: 'success' })
-    } catch (err: any) {
-        toast.add({ title: err.message || 'Failed to export ledger', color: 'error' })
-    } finally {
-        loading.value = false
-    }
-}
-
 onMounted(() => {
-    useAppStore().setTitle('Ledger')
+    useAppStore().setTitle('Student Ledger')
     document.title = 'Ledger | Skultem'
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.PROPRIETOR]
+    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

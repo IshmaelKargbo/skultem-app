@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
@@ -8,7 +6,7 @@ const { transactions: data, meta, loading, report } = storeToRefs(store)
 const { format } = useMoney()
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const columns: TableColumn<Teacher> = [
+const columns = [
   {
     accessorKey: 'createdAt',
     header: 'Date',
@@ -143,6 +141,9 @@ onMounted(async () => {
             'text-success': row.original.direction == 'CREDIT',
             'text-error': row.original.direction == 'DEBIT',
           }">{{ format(row.original.amount) }}</p>
+        </template>
+        <template #loading>
+          <TableLoading :size="columns.length" />
         </template>
         <template #balance-cell="{ row }">
           <p class="text-info font-medium">{{ format(row.original.balance) }}</p>

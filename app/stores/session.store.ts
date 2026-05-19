@@ -4,7 +4,7 @@ export const useSessionStore = defineStore('userSession', {
   state: () => ({
     records: [] as UserSession[],
     meta: {} as Meta,
-    loading: false,
+    loading: true,
     error: null as string | null
   }),
 

@@ -1,6 +1,7 @@
 export type AssessmentTemplate = {
     id: string
     name: string
+    passMark: number
     description: string
     assessments: Assessment[],
     createdAt: string,

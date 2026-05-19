@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
@@ -19,17 +17,11 @@ const parseStatusColor: Record<string, string> = {
   DELETED: 'danger'
 }
 
-const parseStatusIcon: Record<string, string> = {
-  ACTIVE: 'i-lucide-check-circle',
-  INACTIVE: 'i-lucide-x-circle',
-  DELETED: 'i-lucide-trash'
-}
-
-const columns: TableColumn<Student> = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({row}: any) => {
+    cell: ({ row }: any) => {
       return `${row.original.givenNames} ${row.original.familyName}`
     }
   },
@@ -40,7 +32,7 @@ const columns: TableColumn<Student> = [
   {
     accessorKey: 'age',
     header: 'Age',
-    cell: ({row}:any) => `${row.original.age} Years`
+    cell: ({ row }: any) => `${row.original.age} Years`
   },
   {
     accessorKey: 'gender',
@@ -51,16 +43,47 @@ const columns: TableColumn<Student> = [
     header: 'Class'
   },
   {
-    accessorKey: 'guardianName',
-    header: 'Guardian'
+    accessorKey: 'guardian',
+    header: 'Guardian',
+    cell: ({ row }: any) => `${row.original.guardian.givenNames} ${row.original.guardian.familyName}`
   },
   {
-    accessorKey: 'fatherName',
-    header: 'Father'
+    accessorKey: 'guardian',
+    header: 'Guardian Phone',
+    cell: ({ row }: any) => row.original.guardian.phone
   },
   {
-    accessorKey: 'motherName',
-    header: 'Mother'
+    accessorKey: 'guardian',
+    header: 'Guardian Email',
+    cell: ({ row }: any) => row.original.guardian.email
+  },
+  {
+    accessorKey: 'guardian',
+    header: 'Father',
+    cell: ({ row }: any) => row.original.guardian.fatherName
+  },
+  {
+    accessorKey: 'guardian',
+    header: 'Mother',
+    cell: ({ row }: any) => row.original.guardian.motherName
+  },
+  {
+    accessorKey: 'nationality',
+    header: 'Nationality',
+    cell: ({ row }: any) => clean(row.original.nationality)
+  },
+  {
+    accessorKey: 'religion',
+    header: 'Religion',
+    cell: ({ row }: any) => clean(row.original.religion)
+  },
+  {
+    accessorKey: 'city',
+    header: 'City'
+  },
+  {
+    accessorKey: 'street',
+    header: 'Street'
   },
   {
     accessorKey: 'status',
@@ -106,8 +129,7 @@ watch(() => page.value, async () => {
   router.replace({
     query: {
       ...route.query,
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 
@@ -116,7 +138,9 @@ watch(() => page.value, async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -126,16 +150,19 @@ watch(() => page.value, async () => {
       </template>
       <template #status-cell="{ row }">
         <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-          :icon="parseStatusIcon[row.original.status]" variant="outline" />
+          variant="outline" />
       </template>
       <template #gender-cell="{ row }">
-        <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]" variant="outline" />
+        <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
+          variant="outline" />
       </template>
     </UTable>
-    <div v-if="!loading && meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta?.size" :items-per-page="meta?.size"
+          :total="meta?.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

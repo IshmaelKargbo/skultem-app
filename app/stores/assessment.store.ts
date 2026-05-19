@@ -73,6 +73,9 @@ export const useAssessmentStore = defineStore('assessment', {
       }
     },
     async fetchAllAssessmentApprovalRequest(teacherId: string) {
+      if (!teacherId)
+        return []
+
       this.loading = true
       this.error = null
       try {

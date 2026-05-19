@@ -3,7 +3,6 @@
         <Heading title="Parents Management" subtitle="Manage all parents">
             <div class="flex space-x-2">
                 <UInput placeholder="Search by name" />
-                <ParentAdd />
             </div>
         </Heading>
         <ParentTable />

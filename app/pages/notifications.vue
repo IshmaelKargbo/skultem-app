@@ -1,75 +1,130 @@
 <template>
-    <div class="space-y-5 h-full">
-        <div class="md:p-7 p-4 pb-0 space-y-3">
-            <Heading class="md:flex hidden" title="Notification Center" subtitle="Stay updated with your latest notifications">
+    <div class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+        <div ref="detailSection">
+            <Heading class="md:flex hidden" title="Notification Center"
+                subtitle="Stay updated with your latest notifications">
                 <div class="flex gap-3">
                     <UBadge color="error" variant="outline" size="lg">{{ summary.unread }} Unread</UBadge>
                     <UBadge color="success" variant="outline" size="lg">{{ summary.read }} Read</UBadge>
                 </div>
             </Heading>
-            <div class="flex flex-col md:flex-row justify-between md:items-center space-y-2">
-                <div class="flex gap-2">
-                    <UButton size="sm" :variant="filter === 'ALL' ? 'outline' : 'ghost'" @click="filter = 'ALL'">All {{
-                        notifications.length }}</UButton>
-                    <UButton size="sm" :variant="filter === 'READ' ? 'outline' : 'ghost'" @click="filter = 'READ'">Read
-                        {{ summary.read }}</UButton>
-                    <UButton size="sm" :variant="filter === 'UNREAD' ? 'outline' : 'ghost'" @click="filter = 'UNREAD'">
-                        Unread {{ summary.unread }}</UButton>
-                </div>
-                <div class="md:w-1/3 w-full">
-                    <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search notifications" />
-                </div>
-            </div>
         </div>
-        <div class="flex-1 flex h-full">
-            <!-- BODY — this row fills remaining height, no overflow -->
-            <div class="flex-1 h-full  overflow-y-auto bg-white pb-36">
-                <div v-if="isLoading" class="p-6 text-center text-gray-400">Loading notifications...</div>
-                <div v-else-if="filteredNotifications.length === 0" class="p-6 text-center text-gray-400">No
-                    notifications found</div>
-
-                <div v-for="(notification, index) in filteredNotifications" :key="notification.id"
-                    class="p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" :class="{
-                        'bg-blue-50 border-l-2 border-l-primary': selected?.id === notification.id,
-                        'border-b-0': index + 1 === filteredNotifications.length
-                    }" @click="selected = notification">
-                    <div class="flex justify-between items-start gap-3">
-                        <div class="flex-1 min-w-0">
-                            <p class="font-semibold truncate">{{ notification.title }}</p>
-                            <p class="text-sm text-gray-500 line-clamp-2">{{ notification.message }}</p>
-                            <p class="text-xs text-gray-400 mt-1">{{ formatDate(notification.createdAt) }}</p>
+        <div class="grid md:grid-cols-2 gap-5">
+            <div>
+                <UCard :ui="{
+                    body: 'sm:p-0'
+                }">
+                    <template #header>
+                        <div class="space-y-3">
+                            <UInput v-model="search" icon="i-heroicons-magnifying-glass"
+                                placeholder="Search notifications" />
+                            <div class="flex flex-wrap gap-2">
+                                <UButton v-for="item in filters" :key="item.value" size="xs"
+                                    :variant="filter === item.value ? 'solid' : 'outline'"
+                                    :color="filter === item.value ? item.color : 'neutral'"
+                                    @click="filter = item.value">
+                                    {{ item.label }}
+                                </UButton>
+                            </div>
                         </div>
-                        <UBadge v-if="!notification.read" color="primary" variant="soft" size="xs" class="shrink-0">New
-                        </UBadge>
+                    </template>
+                    <div>
+                        <div v-if="isLoading" class="p-6 text-center text-gray-400">Loading notifications...</div>
+                        <div v-else-if="filteredNotifications.length === 0" class="p-6 text-center text-gray-400">No
+                            notifications found</div>
+
+                        <div v-for="(notification, index) in filteredNotifications" :key="notification.id"
+                            class="p-4 border-b border-gray-200 dark:hover:bg-gray-950 dark:border-gray-800 cursor-pointer hover:bg-gray-50 transition-colors"
+                            :class="{
+                                'border-l-4': true,
+                                [stateBorderClass(notification)]: true,
+                                'bg-blue-50 dark:bg-gray-950': selected?.id === notification.id,
+                                'border-b-0': index + 1 === filteredNotifications.length
+                            }" @click="open(notification)">
+                            <div class="flex justify-between items-start gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <p class="font-semibold truncate">{{ notification.title }}</p>
+                                        <UBadge :color="typeColor(notification.type)" variant="soft" size="xs"
+                                            class="shrink-0">
+                                            {{ clean(notification.type) }}
+                                        </UBadge>
+                                    </div>
+                                    <p class="text-sm text-gray-500 line-clamp-2">{{ notification.message }}</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <UBadge :color="stateColor(notification)" variant="soft" size="xs"
+                                            class="shrink-0">
+                                            {{ notification.read ? 'Read' : 'Unread' }}
+                                        </UBadge>
+                                        <UBadge v-if="notification.priority"
+                                            :color="priorityColor(notification.priority)" variant="outline" size="xs"
+                                            class="shrink-0">
+                                            {{ clean(notification.priority) }}
+                                        </UBadge>
+                                        <p class="text-xs text-gray-400">{{ formatDate(notification.createdAt) }}</p>
+                                    </div>
+                                </div>
+                                <UIcon :name="notification.read ? 'lucide:check-check' : 'lucide:bell-ring'"
+                                    class="shrink-0" :class="notification.read ? 'text-success' : 'text-primary'" />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    <template #footer>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <Showing :meta="meta" />
+                            <UPagination v-if="meta.total > meta.size" size="sm" v-model:page="page"
+                                :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
+                        </div>
+                    </template>
+                </UCard>
             </div>
-            <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-x-4"
-                enter-to-class="opacity-100 translate-x-0" leave-active-class="transition duration-150 ease-in"
-                leave-from-class="opacity-100 translate-x-0" leave-to-class="opacity-0 translate-x-4">
-                <NotificationView @close="selected = undefined" :record="selected" />
-            </Transition>
+            <div>
+                <UCard class="sticky top-0">
+                    <NotificationView v-if="selected" @close="selected = undefined" :record="selected" />
+                    <div v-else class="flex flex-col items-center h-70 justify-center">
+                        <UIcon name="lucide:inbox" class="text-4xl mb-3" />
+                        <p class="text-xs">Select a notification to view details</p>
+                    </div>
+                </UCard>
+            </div>
         </div>
     </div>
 </template>
 <script setup lang="ts">
 type NotificationFilter = 'ALL' | 'READ' | 'UNREAD'
 
+const filters: { label: string; value: NotificationFilter; color: 'neutral' | 'success' | 'primary' }[] = [
+    { label: 'All', value: 'ALL', color: 'neutral' },
+    { label: 'Unread', value: 'UNREAD', color: 'primary' },
+    { label: 'Read', value: 'READ', color: 'success' }
+]
+
 const selected = ref<AppNotification | undefined>()
-const route = useRoute()
-const router = useRouter()
 const search = ref('')
 const filter = ref<NotificationFilter>('ALL')
-const store = useParentStore()
-const { notifications } = storeToRefs(store)
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-
 const isLoading = ref(false)
+const detailSection = ref<HTMLElement | null>(null)
+
+const route = useRoute()
+const router = useRouter()
+const store = useParentStore()
+
+const { notifications, meta } = storeToRefs(store)
 
 const summary = computed(() => ({
     read: notifications.value.filter(n => n.read).length,
     unread: notifications.value.filter(n => !n.read).length
 }))
+
+const page = computed<number>({
+    get: () => Number(route.query.page ?? 1),
+    set: (val) => updateQuery({ page: val })
+})
+
+const size = computed<number>({
+    get: () => Number(route.query.size ?? 5),
+    set: (val) => updateQuery({ size: val })
+})
 
 function updateQuery(newQuery: Record<string, any>) {
     const merged = { ...route.query, ...newQuery }
@@ -84,86 +139,76 @@ function updateQuery(newQuery: Record<string, any>) {
     router.replace({ query: merged })
 }
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
+const filteredNotifications = computed(() => {
+    let list = notifications.value
 
-const size = computed<number>({
-    get: () => Number(route.query.size ?? runtimeConf().limit),
-    set: (val) => updateQuery({ size: val })
+    if (filter.value === 'READ') list = list.filter(n => n.read)
+    if (filter.value === 'UNREAD') list = list.filter(n => !n.read)
+
+    if (search.value) {
+        const q = search.value.toLowerCase()
+        list = list.filter(n => `${n.title} ${n.message}`.toLowerCase().includes(q))
+    }
+
+    return list
 })
 
 watch(() => page.value, () => {
-    nextTick(() => {
-        scrollContainer?.value?.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        })
-    })
+    detailSection.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     router.replace({
         query: {
-            page: page.value,
-            size: size.value
+            page: page.value
         }
     })
 
     fetchNotifications()
 }, { immediate: true })
 
-const filteredNotifications = computed(() => {
 
-    let list = notifications.value
-
-    if (filter.value === 'READ') {
-        list = list.filter(n => n.read)
+async function open(payload: AppNotification) {
+    if (!payload) return
+    if (!payload.read) {
+        await useAppStore().markAsRead(payload.id)
+        payload.read = true
     }
-
-    if (filter.value === 'UNREAD') {
-        list = list.filter(n => !n.read)
-    }
-
-    if (search.value) {
-
-        const q = search.value.toLowerCase()
-
-        list = list.filter(n =>
-            `${n.title} ${n.message}`.toLowerCase().includes(q)
-        )
-
-    }
-
-    return list
-
-})
+    selected.value = payload
+    detailSection.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
 
 async function fetchNotifications() {
-
     isLoading.value = true
-
     try {
         await store.fetchAllNotifications(page.value, size.value)
     } finally {
         isLoading.value = false
     }
-
 }
 
-function formatDate(date: string) {
-    return new Date(date).toLocaleString()
+function priorityColor(priority?: string) {
+    const map: Record<string, string> = { URGENT: 'error', HIGH: 'warning', NORMAL: 'info' }
+    return map[priority ?? ''] ?? 'neutral'
+}
+
+function typeColor(type?: string) {
+    const map: Record<string, string> = { ATTENDANCE: 'warning', BEHAVIOUR: 'error', ASSESSMENT: 'primary', FEE: 'success' }
+    return map[type ?? ''] ?? 'neutral'
+}
+
+function stateColor(n: AppNotification) {
+    return n.read ? 'success' : 'primary'
+}
+
+function stateBorderClass(n: AppNotification) {
+    if (n.read) return 'border-l-success'
+    if (n.priority === 'URGENT') return 'border-l-error'
+    if (n.priority === 'HIGH') return 'border-l-warning'
+    return 'border-l-primary'
 }
 
 onMounted(() => {
-
     useAppStore().setTitle('Notifications')
     document.title = 'Notifications | Skultem'
-
-    fetchNotifications()
-
 })
 
-definePageMeta({
-    role: [Role.PARENT]
-})
-
+definePageMeta({ role: [Role.PARENT] })
 </script>

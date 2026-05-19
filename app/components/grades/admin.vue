@@ -1,5 +1,5 @@
 <template>
-  <div class="md:p-7 overflow-y-auto h-full md:space-y-5 space-y-3 p-3">
+  <div class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
     <Heading class="hidden md:flex" title="Grade Entry"
       subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
@@ -141,11 +141,11 @@ const state = reactive<GradeAssessmentForm>({
   termId: ''
 })
 
-const loadingTerm = ref(false)
-const loadingClass = ref(false)
-const loadingSubject = ref(false)
+const loadingTerm = ref(true)
+const loadingClass = ref(true)
+const loadingSubject = ref(true)
 
-const loading = ref(false)
+const loading = ref(true)
 const saving = ref(false)
 const completing = ref(false)
 const columns = ref<any[]>([])
@@ -469,7 +469,7 @@ function buildColumns() {
       const status = score.status as ScoreStatus
 
       if (!isEditableStatus(status))
-        return h("div", { class: "text-gray-500 font-medium" }, score.weightScore)
+        return h("div", { class: "text-gray-500 font-medium" }, `${score.score} (${score.weightScore})`)
 
       return h(UInput, {
         modelValue: score.score,

@@ -1,6 +1,6 @@
 <template>
-    <div class="p-4 border-2 border-gray-200 rounded-2xl" :class="{
-        'bg-primary-700 text-white': active
+    <div class="p-4 border-2 border-gray-100 rounded-2xl" :class="{
+        'bg-primary-50 border-primary-400': active
     }">
         <div class="flex justify-between items-center">
             <p class="font-semibold">
