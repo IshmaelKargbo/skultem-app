@@ -3,7 +3,7 @@
         <Heading title="Fee Structure Management" subtitle="Create and manage fee structures">
             <div class="space-x-3 w-1/3 flex">
                 <USelectMenu class="w-full" placeholder="Select Term" />
-                <FeeStructureAdd />
+                <UButton color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
             </div>
         </Heading>
         <FeeStructureTable />

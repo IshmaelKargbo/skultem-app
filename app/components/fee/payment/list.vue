@@ -1,121 +1,63 @@
 <template>
-    <UCard>
-        <div class="space-y-5">
-            <!-- Header + Search -->
-            <div class="space-y-3">
-                <p class="text-base font-medium">Recent Payments</p>
-                <UInput v-model="search" placeholder="Search payments" />
-            </div>
-
-            <!-- Payments List -->
-            <div class="space-y-4">
-                <!-- Loading -->
-                <div v-if="isLoading">
-                    <UCard v-for="n in 3" :key="n" class="mb-3">
-                        <div class="space-y-3">
-                            <!-- Top Row: Student + Status -->
-                            <div class="flex justify-between items-center">
-                                <div class="space-y-1">
-                                    <USkeleton class="w-56 h-3" />
-                                    <USkeleton class="w-24 h-3" />
-                                </div>
-                                <USkeleton class="w-20 h-5" />
-                            </div>
-
-                            <!-- Middle Row: Category & Amount -->
-                            <div class="grid grid-cols-2 gap-2">
-                                <div class="space-y-1">
-                                    <USkeleton class="w-16 h-3" />
-                                    <USkeleton class="w-20 h-4" />
-                                </div>
-                                <div class="space-y-1">
-                                    <USkeleton class="w-16 h-3" />
-                                    <USkeleton class="w-20 h-4" />
-                                </div>
-                            </div>
-
-                            <!-- Bottom Row: Method & Date -->
-                            <div class="grid grid-cols-2 gap-2">
-                                <div class="space-y-1">
-                                    <USkeleton class="w-16 h-3" />
-                                    <USkeleton class="w-20 h-4" />
-                                </div>
-                                <div class="space-y-1">
-                                    <USkeleton class="w-16 h-3" />
-                                    <USkeleton class="w-20 h-4" />
-                                </div>
-                            </div>
-                        </div>
-                    </UCard>
+    <UCard :ui="{
+        body: 'sm:p-0'
+    }">
+        <UTable :columns="columns" :data="records" :loading="isLoading" class="w-full">
+            <template #empty-state>
+                <div class="flex flex-col items-center gap-2 py-10">
+                    <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+                    <p class="text-gray-500">No students found.</p>
                 </div>
-                <!-- Empty -->
-                <p v-else-if="records.length === 0"
-                    class="text-mute border border-dashed border-gray-100 flex h-56 w-full justify-center items-center">
-                    No payments found</p>
-
-                <!-- Payment Cards -->
-                <UCard v-else v-for="item in records" :key="item.id"
-                    class="hover:bg-app-50/50 hover:ring-app-200/50 cursor-pointer">
-                    <div class="space-y-3">
-                        <!-- Top Row: Student + Status -->
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-base font-medium">{{ item.student}}</p>
-                                <StudentEnrollment :id="item.student.id">
-                                    <template #default="{ value }">
-                                        <p class="text-xs text-mute">
-                                            {{ parseClass(value) }}
-                                        </p>
-                                    </template>
-                                </StudentEnrollment>
-                            </div>
-                            <div>
-                                <UBadge variant="outline" color="success" label="Completed" />
-                            </div>
-                        </div>
-
-                        <!-- Middle Row: Category & Amount -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <p class="text-xs text-mute">Category</p>
-                                <p>{{ item.fee }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-mute">Amount</p>
-                                <p class="text-success font-semibold">{{ format(item.amount) }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Bottom Row: Method & Date -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <p class="text-xs text-mute">Method</p>
-                                <p>{{ parsePaymentMethod[item.paymentMethod] }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-mute">Date</p>
-                                <p>{{ formatDate(item.paidAt) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </UCard>
-                <div class="flex justify-center" v-if="records.length > 0 && !isLoading">
-                    <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
-                        :items-per-page="meta.size" :total="meta.total" show-edges />
-                </div>
+            </template>
+            <template #loading>
+                <TableLoading :size="columns.length" />
+            </template>
+        </UTable>
+        <template #footer>
+            <div class="flex justify-between items-center">
+                <Showing :meta="meta" />
+                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+                    :total="meta.total" show-edges />
             </div>
-        </div>
+        </template>
     </UCard>
 </template>
 
 <script setup lang="ts">
 const store = useFeePaymentStore()
-const { format } = useMoney()
 const router = useRouter()
 const { meta, records, loading: isLoading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const search = ref('')
+
+const columns = [
+    {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ row }: any) => `${row.original.givenNames} ${row.original.familyName}`
+    },
+    {
+        accessorKey: 'className',
+        header: 'Class'
+    },
+    {
+        accessorKey: 'total',
+        header: 'Total'
+    },
+    {
+        accessorKey: 'paid',
+        header: 'Paid'
+    },
+    {
+        accessorKey: 'balance',
+        header: 'Outstanding'
+    },
+    {
+        accessorKey: 'status',
+        header: 'Status'
+    }
+]
 
 const page = ref(1)
 const size = ref(3)

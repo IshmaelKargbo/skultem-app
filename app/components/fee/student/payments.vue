@@ -1,98 +1,81 @@
 <template>
-    <u-slideover :dismissible="false" title="Payment History" :open="open" @update:open="open = $event">
 
-        <!-- Trigger -->
-        <UButton
-            :disabled="!student"
-            label="Payment History"
-            variant="outline"
-            size="sm"
-            icon="fluent:payment-24-regular"
-            @click="open = true" />
-
-        <!-- Header -->
+    <UCard :ui="{
+        body: 'sm:p-0'
+    }">
         <template #header>
-            <div class="flex justify-between w-full items-center">
-                <div>
-                    <p class="text-lg font-semibold">Payment History</p>
-                    <p v-if="student" class="text-xs text-muted">
-                        {{ student.givenNames }} {{ student.familyName }}
-                    </p>
-                </div>
-                <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
+            <div class="flex justify-between items-center">
+                <p>Payment History</p>
+                <UBadge variant="outline" :label="`${meta?.total} Payment(s)`" />
             </div>
         </template>
-
-        <!-- Body -->
-        <template #body>
-            <div v-if="!student" class="border border-dashed rounded-lg p-4 text-sm text-muted">
-                Select a student to view payment history.
+        <div v-if="!student" class="border border-dashed rounded-lg p-4 text-sm text-muted">
+            Select a student to view payment history.
+        </div>
+        <div v-else class="space-y-4">
+            <div v-if="isLoading" class="space-y-3">
+                <UCard v-for="n in 3" :key="n">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <USkeleton class="w-40 h-3" />
+                            <USkeleton class="w-20 h-3" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <USkeleton class="w-32 h-3" />
+                            <USkeleton class="w-24 h-3" />
+                        </div>
+                    </div>
+                </UCard>
             </div>
-            <div v-else class="space-y-4">
-                <UInput v-model="search" placeholder="Search payments" :disabled="isLoading" />
 
-                <div v-if="isLoading" class="space-y-3">
-                    <UCard v-for="n in 3" :key="n">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <USkeleton class="w-40 h-3" />
-                                <USkeleton class="w-20 h-3" />
+            <div v-else-if="filtered.length === 0"
+                class="text-mute border border-dashed border-gray-100 flex h-40 w-full justify-center items-center">
+                No payments found
+            </div>
+
+            <div v-else>
+                <UTable :columns="columns" :data="records" :loading="isLoading">
+                    <template #empty-state>
+                        <div class="flex flex-col items-center gap-2 py-10">
+                            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+                            <p class="text-gray-500">No ledger record found.</p>
+                        </div>
+                    </template>
+                    <template #student-cell="{ row }">
+                        <div class="flex space-x-3 items-center">
+                            <div>
+                                <UAvatar :src="row.original.student.photo" :alt="row.original.student" />
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <USkeleton class="w-32 h-3" />
-                                <USkeleton class="w-24 h-3" />
+                            <div class="space-y-0.5">
+                                <p>{{ row.original.student }}</p>
+                                <p class="text-xs text-muted">{{ formatDateTime(row.original.createdAt) }}</p>
                             </div>
                         </div>
-                    </UCard>
-                </div>
+                    </template>
+                    <template #paymentMethod-cell="{ row }">
+                        <UBadge variant="outline" :color="paymentMethods[row.original.paymentMethod].color"
+                            :label="` - ${paymentMethods[row.original.paymentMethod].label}`"
+                            :icon="paymentMethods[row.original.paymentMethod].icon" />
+                    </template>
+                    <template #amount-cell="{ row }">
+                        <p class="font-semibold">{{ format(row.original.amount || 0) }}</p>
+                    </template>
+                    <template #referenceNo-cell="{ row }">
+                        <p class="font-medium">{{ row.original.referenceNo || '-' }}</p>
+                    </template>
+                </UTable>
+            </div>
 
-                <div v-else-if="filtered.length === 0"
-                    class="text-mute border border-dashed border-gray-100 flex h-40 w-full justify-center items-center">
-                    No payments found
-                </div>
 
-                <div v-else class="space-y-3">
-                    <UCard v-for="item in filtered" :key="item.id">
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-sm font-medium">{{ item.fee }}</p>
-                                    <p class="text-xs text-mute">{{ item.term }}</p>
-                                </div>
-                                <p class="text-sm font-semibold text-success">{{ format(item.amount) }}</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-xs text-mute">
-                                <div>
-                                    <p>Method</p>
-                                    <p class="text-gray-700">{{ parsePaymentMethod[item.paymentMethod] }}</p>
-                                </div>
-                                <div>
-                                    <p>Date</p>
-                                    <p class="text-gray-700">{{ formatDate(item.paidAt) }}</p>
-                                </div>
-                            </div>
-                            <div v-if="item.referenceNo" class="text-xs text-mute">
-                                Reference: <span class="text-gray-700">{{ item.referenceNo }}</span>
-                            </div>
-                            <div v-if="item.note" class="text-xs text-mute">
-                                Note: <span class="text-gray-700">{{ item.note }}</span>
-                            </div>
-                        </div>
-                    </UCard>
-                </div>
-
-                <UPagination
-                    v-if="meta && !isLoading"
-                    size="sm"
-                    v-model:page="page"
-                    :page-size="meta.size"
-                    :items-per-page="meta.size"
-                    :total="meta.total"
-                    show-edges />
+        </div>
+        <template #footer>
+            <div class="flex justify-between items-center">
+                <Showing :meta="meta" />
+                <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
+                    :items-per-page="meta.size" :total="meta.total" show-edges />
             </div>
         </template>
-
-    </u-slideover>
+    </UCard>
 </template>
 
 <script setup lang="ts">
@@ -103,12 +86,33 @@ const props = defineProps<{
 const store = useStudentStore()
 const { format } = useMoney()
 const search = ref('')
-const open = ref(false)
 const isLoading = ref(false)
+
+const page = ref(1)
+
+const columns = [
+    {
+        accessorKey: 'paidAt',
+        header: 'Date',
+        cell: ({ row }: any) => formatDateTime(row.original.paidAt) || '-'
+    },
+    {
+        accessorKey: 'amount',
+        header: 'Amount'
+    },
+    {
+        accessorKey: 'paymentMethod',
+        header: 'Method'
+    },
+    {
+        accessorKey: 'referenceNo',
+        header: 'Reference No',
+        cell: ({ row }: any) => row.original.referenceNo || '-'
+    }
+]
 
 const records = ref<FeePayment[]>([])
 const meta = ref<Meta>()
-const page = ref(1)
 const size = ref(6)
 
 const filtered = computed(() => {
@@ -121,16 +125,13 @@ const filtered = computed(() => {
     )
 })
 
-const close = () => {
-    open.value = false
-    search.value = ''
-}
-
 const fetchPayments = async () => {
     if (!props.student) return
     isLoading.value = true
     try {
         const res = await store.getPaymentHistoryByStudent(props.student.id, page.value, size.value)
+        console.log(res);
+
         records.value = res?.records || []
         meta.value = res?.meta
     } finally {
@@ -139,9 +140,9 @@ const fetchPayments = async () => {
 }
 
 watch(
-    () => [props.student?.id, page.value, open.value],
-    async ([studentId, currentPage, isOpen]) => {
-        if (!studentId || !isOpen) return
+    () => [props.student?.id, page.value],
+    async ([studentId, currentPage]) => {
+        if (!studentId) return
         await fetchPayments()
     },
     { immediate: false }

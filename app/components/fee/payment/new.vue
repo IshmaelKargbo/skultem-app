@@ -1,185 +1,284 @@
 <template>
-    <UCard>
-        <div class="space-y-2">
-            <p class="text-base font-medium">Record New Payment</p>
+    <UForm :state="state" @submit.prevent="onSubmit" :schema="schema" class="space-y-3">
 
-            <UForm :state="state" @submit.prevent="onSubmit" :schema="schema" class="space-y-3">
-                <!-- Student -->
-                <UFormField required label="Student" name="studentId">
-                    <USelectMenu value-key="value" :items="students" @change="fetchRecords" v-model="state.studentId"
-                        placeholder="Select Student" />
-                    <template #help>
-                        <p class="text-xs text-mute">
-                            Select the student you are recording this payment for.
-                        </p>
-                    </template>
-                </UFormField>
+        <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-4">
 
-                <!-- Fee Category -->
-                <UFormField required label="Fee" name="category">
-                    <USelectMenu value-key="value" :disabled="!state.studentId" v-model="state.category"
-                        @change="changeFee" :items="categories" placeholder="Select Fee">
-                        <template #item="{ item }: any">
-                            <div class="flex justify-between w-full">
-                                <span>
-                                    {{ item.term }}: {{ item.name }} ({{ format(item.total) }})
-                                </span>
-                                <span class="text-red-500 font-medium">
-                                    - {{ format(item.outstanding) }}
-                                </span>
+                <!-- LEFT: FORM -->
+                <div>
+                    <UCard class="sticky top-0">
+                        <div class="space-y-2">
+
+                            <!-- STUDENT -->
+                            <UFormField required label="Student" name="studentId">
+                                <USelectMenu value-key="value" :items="students" v-model="state.studentId"
+                                    @change="onStudentSelect" placeholder="Select Student" />
+                            </UFormField>
+
+                            <!-- METHOD -->
+                            <UFormField required label="Payment Method" name="method">
+                                <USelectMenu value-key="value" v-model="state.method" :items="methodOptions"
+                                    placeholder="Payment Method" />
+                            </UFormField>
+
+                            <!-- REFERENCE -->
+                            <UFormField label="Reference Id">
+                                <UInput v-model="state.reference" />
+                            </UFormField>
+
+                            <!-- NOTE -->
+                            <UFormField label="Note">
+                                <UTextarea v-model="state.note" />
+                            </UFormField>
+
+                        </div>
+                        <template #footer>
+                            <div class="flex space-x-3 items-center">
+                                <UButton variant="outline" color="neutral" to="/fees-payments">
+                                    Cancel
+                                </UButton>
+                                <UButton :icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading">
+                                    Record Payment
+                                </UButton>
                             </div>
                         </template>
-                    </USelectMenu>
-                    <template #help>
-                        <p class="text-xs text-mute">
-                            Choose the type of fee being paid (e.g., Tuition, Development).
-                        </p>
-                    </template>
-                </UFormField>
-                <div class="flex space-x-3">
-                    <!-- Fee Amount -->
-                    <UFormField class="w-full" label="Fee Amount" name="feeAmount">
-                        <UInput v-model="state.feeAmount" disabled type="number" placeholder="Total Fee Amount" />
-                        <template #help>
-                            <p class="text-xs text-mute">
-                                This is the total amount expected for this fee.
-                            </p>
-                        </template>
-                    </UFormField>
-
-                    <!-- Amount Paid -->
-                    <UFormField class="w-full" label="Amount Paid" required>
-                        <UInput @input="handleAmountInput" v-model="state.amountPaid" type="number"
-                            placeholder="Amount Paid" />
-                        <template #help>
-                            <p class="text-xs text-mute">
-                                Enter the amount the student is paying now.
-                            </p>
-                        </template>
-                    </UFormField>
+                    </UCard>
                 </div>
-                <div v-if="isRemaning()"
-                    class="border border-dashed bg-red-50/50 spacey-1 border-red-300 p-3 rounded-md">
-                    <p class="text-xs text-mute">Remaining Balance</p>
-                    <p class="text-lg font-semibold">{{ remainingBalance }}</p>
-                </div>
-                <!-- Payment Method -->
-                <UFormField label="Payment Method" name="method" required>
-                    <USelectMenu value-key="value" v-model="state.method" :items="methodOptions"
-                        placeholder="Select Payment Method" />
-                    <template #help>
-                        <p class="text-xs text-mute">
-                            Select how the payment was
-                            made (Cash, Bank, Mobile Money).
-                        </p>
+                <UCard>
+                    <template #header>
+                        <div class="flex justify-between items-center">
+                            <p class="font-medium">Fee Allocation</p>
+                            <UBadge>{{ allocations.length }}</UBadge>
+                        </div>
                     </template>
-                </UFormField>
 
-                <!-- Reference -->
-                <UFormField label="Reference Id" name="reference">
-                    <UInput v-model="state.reference" placeholder="Enter reference number" />
-                    <template #help>
-                        <p class="text-xs text-mute">
-                            Required for Bank or Mobile Money payments.
-                        </p>
-                    </template>
-                </UFormField>
+                    <!-- EMPTY -->
+                    <div v-if="!state.studentId" class="text-center py-10 text-sm text-mute">
+                        Select a student to start allocating fees
+                    </div>
 
-                <!-- Note -->
-                <UFormField label="Note">
-                    <UTextarea v-model="state.note" placeholder="Enter any additional notes" />
-                    <template #help>
-                        <p class="text-xs text-mute">
-                            Optional notes such as partial payment or special arrangement.
-                        </p>
-                    </template>
-                </UFormField>
+                    <!-- LOADING -->
+                    <div v-else-if="loadingFees" class="text-center py-10 text-sm text-mute">
+                        Loading fees...
+                    </div>
 
-                <!-- Submit -->
-                <UButton type="submit" label="Record Payment" icon="streamline-ultimate:cash-payment-sign-2" size="lg"
-                    class="w-full justify-center" :loading="isLoading" />
-            </UForm>
+                    <!-- CONTENT -->
+                    <div v-else class="space-y-3">
+
+                        <!-- FEES -->
+                        <div v-for="fee in fees" :key="fee.feeId"
+                            class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
+                            <div>
+                                <p class="font-medium">{{ fee.feeName }}</p>
+                                <p class="text-xs text-mute">
+                                    Outstanding: {{ format(fee.outstanding) }}
+                                </p>
+                            </div>
+
+                            <UButton size="xs" v-if="!isSelected(fee.feeId)" @click="addFee(fee)">
+                                Add
+                            </UButton>
+
+                            <UButton size="xs" v-else color="error" variant="ghost" @click="removeFee(fee.feeId)">
+                                Remove
+                            </UButton>
+                        </div>
+
+                        <UDivider />
+
+                        <!-- ALLOCATIONS -->
+                        <div v-if="allocations.length" class="space-y-3">
+
+                            <div v-for="a in allocations" :key="a.feeId"
+                                class="border-2 border-gray-200 rounded-xl p-3 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <p class="font-medium">{{ a.feeName }}</p>
+                                    <p class="text-mute">
+                                        Max {{ format(a.outstanding) }}
+                                    </p>
+                                </div>
+
+                                <!-- AUTO-CAPPED INPUT -->
+                                <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding"
+                                    @update:modelValue="val => {
+                                        a.amount = Number(val)
+                                        clampAmount(a)
+                                    }" />
+                            </div>
+
+                            <UDivider />
+
+                            <!-- TOTALS -->
+                            <div class="text-sm space-y-1.5">
+
+                                <div class="flex justify-between">
+                                    <span>Total Allocated</span>
+                                    <span :class="{ 'text-red-500': isOverAllocated }">
+                                        {{ format(totalAllocated) }}
+                                    </span>
+                                </div>
+
+                                <div class="flex justify-between">
+                                    <span>Total Outstanding</span>
+                                    <span>{{ format(totalOutstanding) }}</span>
+                                </div>
+
+                                <div class="flex justify-between font-semibold">
+                                    <span>Remaining</span>
+                                    <span>{{ format(remaining) }}</span>
+                                </div>
+
+                                <div v-if="isOverAllocated" class="text-xs text-red-500 font-medium">
+                                    ⚠ Allocation exceeds available balance
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div v-else class="text-sm text-mute text-center py-6">
+                            Select fees to allocate payment
+                        </div>
+
+                    </div>
+                </UCard>
+            </div>
         </div>
-    </UCard>
+    </UForm>
 </template>
 
 <script setup lang="ts">
-import type { FormSubmitEvent } from '@nuxt/ui'
 import * as yup from 'yup'
-const { format } = useMoney()
-const isLoading = ref(false)
-const studentStore = useStudentStore()
-const store = useFeePaymentStore()
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-const { error: toastError, success: toastSuccess } = useNotify()
 
-function isRemaning() {
-    if (state.feeAmount && state.amountPaid)
-        return state.feeAmount - state.amountPaid > 0
-    return false
-}
-
-type NewRecordPaymentDTO = {
-    studentId: string,
-    category: string,
-    feeAmount: number | null,
-    amountPaid: number | null,
-    method: string,
-    reference: string,
-    note: string
-}
-
-const state = reactive<NewRecordPaymentDTO>({
+const state = reactive({
     studentId: '',
-    category: '',
-    feeAmount: null,
-    amountPaid: null,
     method: '',
     reference: '',
-    note: ''
+    note: '',
 })
 
-const fee = ref<StudentFee>()
-const fees = ref<StudentFee[]>([])
+const fees = ref<any[]>([])
+const allocations = ref<any[]>([])
+const loadingFees = ref(false)
+const isLoading = ref(false)
+
+async function onStudentSelect() {
+    allocations.value = []
+    fees.value = []
+    loadingFees.value = true
+
+    try {
+        const result = await useStudentStore()
+            .getAllStudentOutstandingFeesById(state.studentId)
+
+        fees.value = result || []
+    } finally {
+        loadingFees.value = false
+    }
+}
+
+function addFee(fee: any) {
+    if (isSelected(fee.feeId)) return
+
+    allocations.value.push({
+        feeId: fee.feeId,
+        feeName: fee.feeName,
+        outstanding: Number(fee.outstanding),
+        amount: 0,
+    })
+}
+
+function removeFee(id: string) {
+    allocations.value = allocations.value.filter(a => a.feeId !== id)
+}
+
+function isSelected(id: string) {
+    return allocations.value.some(a => a.feeId === id)
+}
+
+function clampAmount(a: any) {
+    const max = Number(a.outstanding)
+    let v = Number(a.amount)
+
+    if (isNaN(v) || v < 0) v = 0
+    if (v > max) v = max
+
+    a.amount = v
+}
+
+watch(
+    allocations,
+    () => {
+        allocations.value.forEach(clampAmount)
+    },
+    { deep: true }
+)
+
+const totalAllocated = computed(() =>
+    allocations.value.reduce((s, a) => s + Number(a.amount || 0), 0)
+)
+
+const totalOutstanding = computed(() =>
+    fees.value.reduce((s, f) => s + Number(f.outstanding || 0), 0)
+)
+
+const remaining = computed(() =>
+    Math.max(0, totalOutstanding.value - totalAllocated.value)
+)
+
+const isOverAllocated = computed(() =>
+    totalAllocated.value > totalOutstanding.value
+)
 
 const schema = yup.object({
-    studentId: yup.string().required('Student is required'),
+    studentId: yup.string().required(),
+    method: yup.string().required(),
+})
 
-    category: yup.string().required('Fee is required'),
+const canSubmit = computed(() =>
+    state.studentId &&
+    state.method &&
+    allocations.value.length > 0 &&
+    totalAllocated.value > 0 &&
+    !isOverAllocated.value
+)
 
-    amountPaid: yup
-        .number()
-        .typeError('Amount must be a number')
-        .required('Amount is required')
-        .positive('Amount must be greater than 0')
-        .test(
-            'not-exceed',
-            'Amount cannot exceed outstanding balance',
-            function (value) {
-                if (!value || !fee.value) return false
-                return value <= Number(fee.value.outstanding)
-            }
-        ),
+async function onSubmit() {
+    isLoading.value = true
 
-    method: yup.string().required('Payment method is required'),
-
-    reference: yup
-        .string()
-        .transform((value) => value?.trim())
-        .when('method', {
-            is: (val: string) => ['BANK', 'MOBILE_MONEY'].includes(val),
-            then: (schema) =>
-                schema
-                    .required('Reference number is required for this payment method')
-                    .min(3, 'Reference number is too short'),
-            otherwise: (schema) => schema.optional().nullable()
+    try {
+        await useFeePaymentStore().recordPayment({
+            studentId: state.studentId,
+            method: state.method,
+            referenceNo: state.reference,
+            note: state.note,
+            allocations: allocations.value.map(a => ({
+                feeId: a.feeId,
+                amount: a.amount
+            }))
         })
-})
 
-const remainingBalance = computed(() => {
-    if (!fee.value) return 0
-    return format(Number(fee.value.outstanding) - Number(state.amountPaid || 0))
-})
+        reset()
+        useNotify().success("Payment recorded successfully")
+    } catch (error: any) {
+        useNotify().error(error.errors?.[0] || error.message)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+function reset() {
+    state.studentId = ''
+    state.method = ''
+    state.reference = ''
+    state.note = ''
+    fees.value = []
+    allocations.value = []
+}
+
+function format(v: number) {
+    return new Intl.NumberFormat().format(v || 0)
+}
 
 const methodOptions = [
     { label: 'Cash', value: 'CASH' },
@@ -187,103 +286,14 @@ const methodOptions = [
     { label: 'Mobile Money', value: 'MOBILE_MONEY' }
 ]
 
-function changeFee() {
-    const selected = fees.value.find(f => f.feeId === state.category)
-    if (!selected) return
-
-    fee.value = selected
-    state.feeAmount = Number(selected.total)
-}
-
-const categories = ref<{ label: string; value: string, outstanding: string, total: string, name: string }[]>([])
-
-async function fetchRecords() {
-    try {
-        if (!state.studentId) return
-        const result = await useStudentStore().getAllStudentOutstandingFeesById(state.studentId)
-        if (result == null) return
-        fees.value = result
-        categories.value = result.map((s: StudentFee) => ({
-            label: `${s.feeName} (${format(s.total)}) - ${format(s.outstanding)}`,
-            outstanding: s.outstanding,
-            total: s.total,
-            name: s.feeName,
-            term: s.term,
-            value: s.feeId
-        })) || []
-    } catch (err) {
-        categories.value = []
-    }
-}
+const studentStore = useStudentStore()
 
 const students = computed(() =>
     studentStore.records.map(s => ({
-        label: `${s.givenNames} ${s.familyName} (${s.className})`,
+        label: `${s.givenNames} ${s.familyName}`,
         value: s.id
     }))
 )
-
-function handleAmountInput(event: any) {
-    if (!fee.value) return
-
-    const max = Number(fee.value.outstanding)
-    let value = Number(event.target.value)
-
-    if (isNaN(value)) {
-        state.amountPaid = null
-        return
-    }
-
-    if (value > max) {
-        value = max
-    }
-
-    state.amountPaid = value
-
-    event.target.value = value
-}
-
-const onSubmit = async (_event: FormSubmitEvent<NewRecordPaymentDTO>) => {
-    isLoading.value = true
-
-    try {
-        await schema.validate(state, { abortEarly: false })
-
-        await store.recordPayment({
-            studentId: state.studentId,
-            feeId: state.category,
-            amount: state.amountPaid || 0,
-            method: state.method,
-            referenceNo: state.reference,
-            note: state.note
-        })
-
-        await store.fetchAll(1, 3)
-
-        toastSuccess('Payment rcoarded successfully')
-
-        nextTick(() => {
-            scrollContainer?.value?.scrollTo({
-                top: 0,
-                behavior: 'smooth',
-            })
-        })
-        reset()
-    } catch (err: any) {
-        toastError(err.errors?.[0] || err.message)
-    } finally {
-        isLoading.value = false
-    }
-}
-
-function reset() {
-    state.amountPaid = null
-    state.category = ""
-    state.feeAmount = null
-    state.studentId = ""
-    state.method = ""
-    state.reference = ""
-}
 
 onMounted(() => {
     studentStore.fetchAll(0, 0)

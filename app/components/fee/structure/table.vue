@@ -16,25 +16,12 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const columns = [
   {
-    accessorKey: 'clazz',
-    header: 'Class',
-    cell({ row }: any) {
-      return (row.original as FeeStructure).clazz?.name || "All Clases"
-    },
-  },
-  {
-    accessorKey: 'term',
-    header: 'Term',
-    cell({ row }: any) {
-      return (row.original as FeeStructure).term.name
-    },
+    accessorKey: 'type',
+    header: 'Type'
   },
   {
     accessorKey: 'category',
-    header: 'Category',
-    cell({ row }: any) {
-      return (row.original as FeeStructure).category.name
-    },
+    header: 'Category'
   },
   {
     accessorKey: 'amount',
@@ -46,6 +33,10 @@ const columns = [
   {
     accessorKey: 'students',
     header: 'Students'
+  },
+  {
+    accessorKey: 'hasSupply',
+    header: 'Supply'
   },
   {
     accessorKey: 'dueDate',
@@ -61,27 +52,6 @@ const columns = [
       class: {
         td: 'text-right'
       }
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
     }
   }
 ]
@@ -159,6 +129,23 @@ onMounted(async () => {
       <template #allowInstallment-cell="{ row }">
         <UBadge variant="outline" :label="row.original.allowInstallment ? 'Yes' : 'No'"
           :color="row.original.allowInstallment ? 'success' : 'neutral'" />
+      </template>
+      <template #type-cell="{ row }">
+        <div class="space-y-1">
+          <p>{{ clean(row.original.type) }}</p>
+          <p class="text-xs text-muted">{{ row.original.clazz?.name || '-' }}</p>
+        </div>
+      </template>
+      <template #category-cell="{ row }">
+        <div class="space-y-1">
+          <p>{{ clean(row.original.category.name) }}</p>
+          <p class="text-xs text-muted">{{ row.original.term.name || '-' }}</p>
+        </div>
+      </template>
+      <template #hasSupply-cell="{ row }">
+        <div class="space-y-1">
+          <p>{{ row.original.totalSupply || '0' }}</p>
+        </div>
       </template>
       <template #students-cell="{ row }">
         <FeeStructureCount :id="row.original.id">

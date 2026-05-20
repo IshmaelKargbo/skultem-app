@@ -9,11 +9,8 @@
                 </p>
             </div>
         </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <FeePaymentNew />
-            <FeePaymentList />
-        </div>
+        <FeePaymentNew />
+        <DashboardAccountantTable />
     </div>
 </template>
 

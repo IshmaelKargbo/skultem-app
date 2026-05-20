@@ -1,5 +1,5 @@
 <template>
-    <UCard>
+    <UCard class="sticky top-0">
         <div class="space-y-4">
             <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON" :disabled="isLoading" />
             <div v-if="isLoading" class="space-y-3">
