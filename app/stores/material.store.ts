@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-export const useMaterialStore = defineStore('fee', {
+export const useMaterialStore = defineStore('material', {
   state: () => ({
     categories: [] as MaterialCategory[],
     records: [] as Material[],
