@@ -29,7 +29,7 @@
             </div>
 
             <div v-else-if="filtered.length === 0"
-                class="text-mute border border-dashed border-gray-100 flex h-40 w-full justify-center items-center">
+                class="text-mute border-2 m-3 border-dashed border-gray-100 rounded-xl dark:border-gray-800  flex h-40 w-full justify-center items-center">
                 No payments found
             </div>
 
