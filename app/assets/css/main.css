@@ -175,3 +175,33 @@ h6 {
 
   --color-menu: #101727;
 }
+
+/* Widget dark-mode polish */
+.dark .skeleton-loader {
+  color: #9ca3af !important;
+  background: #040609 !important;
+}
+
+.dark .apexcharts-title-text,
+.dark .apexcharts-legend-text,
+.dark .apexcharts-xaxis text,
+.dark .apexcharts-yaxis text,
+.dark .apexcharts-text {
+  fill: #d1d5db !important;
+}
+
+.dark .apexcharts-legend-text {
+  color: #d1d5db !important;
+}
+
+.dark .apexcharts-gridline {
+  stroke: #1f2937 !important;
+}
+
+.dark .apexcharts-tooltip,
+.dark .apexcharts-xaxistooltip,
+.dark .apexcharts-yaxistooltip {
+  background: #0f172a !important;
+  border-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}

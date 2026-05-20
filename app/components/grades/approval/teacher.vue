@@ -1,7 +1,7 @@
 <template>
-  <UForm :state="state" class="h-full flex flex-col bg-gray-50">
+  <UForm :state="state" class="h-full flex flex-col bg-gray-50 dark:bg-gray-950">
     <!-- HEADER -->
-    <div class="md:p-7 p-4 border-b border-gray-300 space-y-4">
+    <div class="md:p-7 p-4 border-b border-gray-300 dark:border-gray-800 space-y-4">
       <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
         <div class="flex gap-3">
           <UBadge color="warning" variant="outline" size="lg">{{ summary.pending }} Pending</UBadge>
@@ -39,7 +39,7 @@
     <!-- BODY -->
     <div class="flex flex-1 overflow-hidden">
       <!-- LEFT REQUEST LIST -->
-      <div class="flex-1 bg-white overflow-y-auto">
+      <div class="flex-1 bg-white dark:bg-gray-900 overflow-y-auto">
         <GradesRecordLoading v-if="isLoading" v-for="(item, index) in 8" :key="index" />
         <GradesRecord v-else v-for="req in filteredRequests" :selected="selected" :key="req.id" @click="selected = req"
           :record="req" />

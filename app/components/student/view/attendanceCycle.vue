@@ -96,7 +96,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
 
 <template>
     <div class="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
-        <div class="rounded-xl border-2 border-indigo-300 bg-indigo-50  dark:border-indigo-800 dark:bg-gray-950 p-4">
+        <div class="rounded-xl border-2 border-indigo-300 bg-indigo-50  dark:border-indigo-800 dark:bg-indigo-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Total Days
             </p>
@@ -106,7 +106,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
             </h2>
         </div>
 
-        <div class="rounded-xl border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-gray-950 p-4">
+        <div class="rounded-xl border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Present
             </p>
@@ -117,7 +117,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
             </h2>
         </div>
 
-        <div class="rounded-xl border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-gray-950 p-4">
+        <div class="rounded-xl border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Absent
             </p>
@@ -128,7 +128,7 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
             </h2>
         </div>
 
-        <div class="rounded-xl border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-gray-950 p-4">
+        <div class="rounded-xl border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Late
             </p>

@@ -3,7 +3,7 @@
         <!-- Academic Information -->
         <UCard>
             <template #header>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h3 class="font-semibold text-lg">
                             Academic Information
@@ -14,7 +14,7 @@
                         </p>
                     </div>
 
-                    <div class="w-full md:w-2/5 flex space-x-2">
+                    <div class="w-full md:w-2/5 grid grid-cols-1 md:grid-cols-2 gap-2">
                         <USelectMenu v-model="state.term" :items="terms" value-key="value" size="lg"
                             placeholder="Select Term" />
                         <USelectMenu v-model="state.assessment" :items="assessmentItems" value-key="value" size="lg"
@@ -25,43 +25,43 @@
 
             <!-- Academic Summary -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="border-2 border-info-300 bg-primary-50  dark:border-primary-800 dark:bg-gray-950 rounded-xl p-4">
+                <div class="border-2 border-info-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Subjects
                     </p>
 
                     <h2 class="text-2xl font-bold mt-1">
-                        0
+                        {{ summary.subjects }}
                     </h2>
                 </div>
 
-                <div class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-gray-950 rounded-xl p-4">
+                <div class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Passed
                     </p>
 
                     <h2 class="text-2xl font-bold text-success-600 mt-1">
-                        0
+                        {{ summary.passed }}
                     </h2>
                 </div>
 
-                <div class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-gray-950 rounded-xl p-4">
+                <div class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Average Score
                     </p>
 
                     <h2 class="text-2xl font-bold text-warning-600 mt-1">
-                        0%
+                        {{ summary.average }}%
                     </h2>
                 </div>
 
-                <div class="border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-gray-950 rounded-xl p-4">
+                <div class="border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Failed
                     </p>
 
                     <h2 class="text-2xl font-bold text-error-600 mt-1">
-                        0
+                        {{ summary.failed }}
                     </h2>
                 </div>
             </div>
@@ -69,7 +69,7 @@
             <!-- Subject Results -->
             <div class="space-y-3">
                 <div v-if="loading" v-for="subject in runtimeConf().limit"
-                    class="border-2 border-gray-100 dark:border-e-gray-700 dark:bg-gray-950 rounded-xl bg-white p-4 space-y-3">
+                    class="border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-950 rounded-xl bg-white p-4 space-y-3">
                     <div class="flex items-start justify-between">
                         <USkeleton class="w-24 h-6" />
                         <USkeleton class="w-20 h-6" />
@@ -166,6 +166,12 @@
                         </div>
                     </div>
                 </div>
+                <div v-else
+                    class="rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-8 text-center">
+                    <UIcon name="lucide:book-x" class="mx-auto mb-2 text-3xl text-muted" />
+                    <p class="font-medium">No academic records found</p>
+                    <p class="text-sm text-muted mt-1">Try another term or assessment to view results.</p>
+                </div>
             </div>
 
             <template #footer>
@@ -206,6 +212,26 @@ const terms = computed(() =>
 const term = computed(() => activeCycle.value?.terms.find(e => e.id == state.term))
 
 const assessmentItems = computed(() => assessments.value?.map(e => ({ label: e.name, value: e.id })))
+const summary = computed(() => {
+    const list = grades.value || []
+    const total = list.length
+    const numericScores = list
+        .map((g: any) => Number(g.score ?? 0))
+        .filter((n: number) => !Number.isNaN(n))
+
+    const passed = list.filter((g: any) => Number(g.score ?? 0) >= 50).length
+    const failed = Math.max(total - passed, 0)
+    const average = numericScores.length
+        ? (numericScores.reduce((sum: number, n: number) => sum + n, 0) / numericScores.length).toFixed(1)
+        : '0.0'
+
+    return {
+        subjects: total,
+        passed,
+        failed,
+        average
+    }
+})
 
 
 async function fetchAssessment() {
@@ -330,6 +356,6 @@ onMounted(async () => {
     useAppStore().setTitle('View Student')
     useAppStore().setBack(true)
     await fetchCycle()
-    document.title = 'Attendance | View Student | Students | Skultem'
+    document.title = 'Academic Information | View Student | Students | Skultem'
 })
 </script>

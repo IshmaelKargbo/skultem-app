@@ -34,12 +34,12 @@ function buildOptions(labels: string[]) {
     title: {
       text: "Fee Collection by Category",
       align: "left",
-      style: { fontSize: "15px", fontWeight: "600", color: "#111827" }
+      style: { fontSize: "15px", fontWeight: "600", color: "var(--app-text-strong)" }
     },
     subtitle: {
       text: "Total amount paid per fee type",
       align: "left",
-      style: { fontSize: "12px", color: "#6b7280" }
+      style: { fontSize: "12px", color: "var(--app-text-soft)" }
     },
     labels,
     colors: ["#22C55E", "#6366f1", "#EAB308", "#EF4444", "#06B6D4", "#F97316"],
@@ -102,9 +102,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--app-text-soft);
   font-weight: 500;
-  background: #f3f4f6;
+  background: var(--app-border);
   border-radius: 0.5rem;
   animation: pulse 1.5s infinite;
 }

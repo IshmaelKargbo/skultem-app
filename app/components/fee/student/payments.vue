@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 const props = defineProps<{
-    student: Student | null
+  student: Student | null | undefined
 }>()
 
 const store = useStudentStore()
@@ -115,14 +115,15 @@ const records = ref<FeePayment[]>([])
 const meta = ref<Meta>()
 const size = ref(6)
 
+
 const filtered = computed(() => {
-    if (!search.value) return records.value
-    const term = search.value.toLowerCase()
-    return records.value.filter((item) =>
-        item.term.includes(term) ||
-        item.term.toLowerCase().includes(term) ||
-        item.referenceNo?.toLowerCase().includes(term)
-    )
+  if (!search.value) return records.value
+  const q = search.value.toLowerCase()
+  return records.value.filter((item) =>
+    item.term?.toLowerCase().includes(q) ||
+    item.fee?.toLowerCase().includes(q) ||
+    item.referenceNo?.toLowerCase().includes(q)
+  )
 })
 
 const fetchPayments = async () => {
@@ -149,11 +150,12 @@ watch(
 )
 
 watch(
-    () => props.student?.id,
-    () => {
-        page.value = 1
-        records.value = []
-        meta.value = undefined
-    }
+  () => props.student?.id,
+  () => {
+    page.value = 1
+    records.value = []
+    meta.value = undefined
+    search.value = ''
+  }
 )
 </script>

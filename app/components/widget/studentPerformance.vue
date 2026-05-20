@@ -33,12 +33,12 @@ function buildOptions(cats: string[]) {
     title: {
       text: "Student Assessment Risk",
       align: "left",
-      style: { fontSize: "15px", fontWeight: "600", color: "#111827" }
+      style: { fontSize: "15px", fontWeight: "600", color: "var(--app-text-strong)" }
     },
     subtitle: {
       text: `Students below ${THRESHOLD}% are flagged as at risk`,
       align: "left",
-      style: { fontSize: "12px", color: "#6b7280" }
+      style: { fontSize: "12px", color: "var(--app-text-soft)" }
     },
     colors: [({ value }: { value: number }) =>
       value < THRESHOLD ? "#E24B4A" : "#22C55E"
@@ -58,14 +58,14 @@ function buildOptions(cats: string[]) {
       tickAmount: 5,
       labels: {
         formatter: (val: number) => `${val.toFixed(0)}%`,
-        style: { fontSize: "11px", colors: "#6b7280" }
+        style: { fontSize: "11px", colors: "var(--app-text-soft)" }
       },
       axisBorder: { show: false },
       axisTicks:  { show: false }
     },
     yaxis: {
       labels: {
-        style: { fontSize: "12px", colors: "#374151" },
+        style: { fontSize: "12px", colors: "var(--app-text)" },
         maxWidth: 160
       }
     },
@@ -89,7 +89,7 @@ function buildOptions(cats: string[]) {
       }]
     },
     grid: {
-      borderColor: "#f1f5f9",
+      borderColor: "var(--app-border)",
       strokeDashArray: 4,
       xaxis: { lines: { show: true } },
       yaxis: { lines: { show: false } }
@@ -160,9 +160,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--app-text-soft);
   font-weight: 500;
-  background: #f3f4f6;
+  background: var(--app-border);
   border-radius: 0.5rem;
   animation: pulse 1.5s infinite;
 }

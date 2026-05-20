@@ -114,8 +114,8 @@ onMounted(() => {
         <UTable :column-pinning="columnPinning" :columns="columns" :data="data" :loading="loading" class="w-full">
           <template #empty-state>
             <div class="flex flex-col items-center gap-2 py-10">
-              <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-              <p class="text-gray-500">No students found.</p>
+              <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+              <p class="text-gray-500 dark:text-gray-400">No students found.</p>
             </div>
           </template>
           <template #status-cell="{ row }">
@@ -134,6 +134,14 @@ onMounted(() => {
               variant="outline"
             />
           </template>
+          <template #name-cell="{ row }">
+            <StudentIdentityCell
+              :given-names="row.original.givenNames"
+              :family-name="row.original.familyName"
+              :photo="row.original.photo"
+              :subtitle="row.original.className || 'No Class'"
+            />
+          </template>
           <template #total-cell="{ row }">
             <p class="text-error">{{ format(row.original.feeDetail?.total) }}</p>
           </template>
@@ -144,7 +152,7 @@ onMounted(() => {
             <p class="text-info">{{ format(row.original.feeDetail?.balance) }}</p>
           </template>
         </UTable>
-        <div class="flex justify-between items-center border-t border-gray-200 pt-3">
+        <div class="flex justify-between items-center border-t border-gray-200 dark:border-gray-800 pt-3">
           <Showing :meta="meta" />
           <UPagination
             size="sm"

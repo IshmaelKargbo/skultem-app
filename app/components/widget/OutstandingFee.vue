@@ -4,8 +4,8 @@
       <p class="text-xs text-mute">Outstanding Fees</p>
 
       <div v-if="!isReady" class="animate-pulse space-y-2">
-        <div class="h-7 w-32 bg-gray-200 rounded" />
-        <div class="h-4 w-24 bg-gray-200 rounded" />
+        <div class="h-7 w-32 bg-gray-200 dark:bg-gray-800 rounded" />
+        <div class="h-4 w-24 bg-gray-200 dark:bg-gray-800 rounded" />
       </div>
 
       <template v-else>

@@ -47,7 +47,7 @@ onUnmounted(() => {
 <template>
     <Transition name="fade">
         <UCarousel :autoplay="{ delay: 10000 }" v-slot="{ item }" :items="items" class="w-full">
-            <div class="w-full h-32 bg-primary-100 dark:bg-gray-950 dark:md:border-primary-800 md:border-primary-400 border-2 rounded-2xl space-y-3 flex p-3 pb-0 flex-col">
+            <div class="w-full h-32 bg-primary-100 dark:bg-primary-950 dark:md:border-primary-800 md:border-primary-400 border-2 rounded-2xl space-y-3 flex p-3 pb-0 flex-col">
                 <!-- header -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">

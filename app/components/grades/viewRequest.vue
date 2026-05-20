@@ -1,15 +1,15 @@
 <template>
   <div>
     <div v-if="selected"
-      class="p-6 space-y-6 relative w-full bg-white overflow-y-auto border-2 rounded-xl border-gray-200">
+      class="p-6 space-y-6 relative w-full bg-white dark:bg-gray-900 overflow-y-auto border-2 rounded-xl border-gray-200 dark:border-gray-800">
       <!-- CLOSE BUTTON -->
       <UButton icon="prime:times" size="sm" variant="ghost" class="absolute top-3 right-3" @click="close" />
       <div>
-        <p class="text-xs text-gray-500 uppercase"> {{ selected.subject }} · {{ selected.assessment }} · {{
+        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase"> {{ selected.subject }} · {{ selected.assessment }} · {{
           selected.term
         }}</p>
         <p class="text-lg font-semibold"> {{ selected.teacher }} </p>
-        <p class="text-sm text-gray-500"> {{ selected.class }} </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400"> {{ selected.class }} </p>
       </div>
 
       <!-- STATUS BADGE -->
@@ -21,15 +21,15 @@
       <div class="grid grid-cols-3 gap-3">
         <UCard>
           <p class="text-lg font-semibold">{{ selected.studentCount }}</p>
-          <p class="text-xs text-gray-500">Students</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Students</p>
         </UCard>
         <UCard>
           <p class="text-lg font-semibold">{{ selected.avergeScore }}</p>
-          <p class="text-xs text-gray-500">Avg Score</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Avg Score</p>
         </UCard>
         <UCard>
           <p class="text-lg font-semibold">{{ selected.passPercentage }}%</p>
-          <p class="text-xs text-gray-500">Pass Rate</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Pass Rate</p>
         </UCard>
       </div>
 
@@ -43,7 +43,7 @@
       <!-- TEACHER NOTE -->
       <div>
         <p class="text-sm font-medium mb-2">Teacher's Note</p>
-        <div class="bg-white border border-gray-300 rounded-lg p-3 text-sm">
+        <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm">
           {{ selected.note }}
         </div>
       </div>
@@ -51,9 +51,9 @@
       <!-- STUDENT SCORES -->
       <div>
         <p class="text-sm font-semibold mb-2">Student Scores</p>
-        <div class="bg-white border border-gray-300 rounded-md overflow-hidden">
+        <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-left">
+            <thead class="bg-gray-50 dark:bg-gray-800/70 text-left">
               <tr>
                 <th class="p-2">Student</th>
                 <th class="p-2">Score</th>
@@ -61,8 +61,18 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="student in sortedStudentScores" :key="student.id" class="border-t border-gray-300">
-                <td class="p-2">{{ student.student }}</td>
+              <tr v-for="student in sortedStudentScores" :key="student.id" class="border-t border-gray-200 dark:border-gray-700">
+                <td class="p-2">
+                  <div class="flex items-center gap-2">
+                    <UAvatar
+                      size="xs"
+                      :alt="student.student"
+                      :text="studentInitials(student.student)"
+                      class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
+                    />
+                    <span class="truncate">{{ student.student }}</span>
+                  </div>
+                </td>
                 <td class="p-2 font-medium"> {{ student.score }} </td>
                 <td class="p-2 text-right">
                   <UBadge size="sm" variant="outline" color="primary"> {{ student.grade }} </UBadge>
@@ -81,7 +91,7 @@
             <UButton @click="returnForm = false" label="Cancel" variant="outline" size="xl" />
           </div>
         </div>
-        <div class="flex space-x-3 pt-3 border-t mt-3 border-gray-200" v-if="showAction">
+        <div class="flex space-x-3 pt-3 border-t mt-3 border-gray-200 dark:border-gray-800" v-if="showAction">
           <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
             class="w-full flex justify-center" label="Return" @click="returnForm = true" />
           <UButton :loading="isApproveLoading" @click="approve" icon="lucide:check-circle" color="success" size="xl"
@@ -146,6 +156,13 @@ const statusColor = (status: string) => {
     case 'Returned': return 'error'
     default: return 'neutral'
   }
+}
+
+const studentInitials = (name: string) => {
+  if (!name) return "S"
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase()
 }
 
 async function approve() {

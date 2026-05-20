@@ -103,6 +103,7 @@ export type Grade = {
 export type StudentAssessment = {
     id: string
     name: string
+    photo?: string
     scores: AssessmentScore[]
     total?: number
     position?: any

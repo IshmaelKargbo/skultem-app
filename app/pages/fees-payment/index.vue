@@ -5,11 +5,12 @@
                 <FeeStructureAdd />
             </div>
         </Heading>
-        <div class="space-x-5 flex">
-            <div class="w-1/3">
+
+        <div class="grid gap-5 lg:grid-cols-12">
+            <div class="lg:col-span-4">
                 <FeeStudentList @select="select" />
             </div>
-            <div class="w-2/3">
+            <div class="lg:col-span-8">
                 <FeeStudentRecord :student="selectedStudent" />
             </div>
         </div>

@@ -1,8 +1,8 @@
 <template>
     <UForm class="p-6" :state="state" :schema="schema" @submit="onSubmit">
-        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
 
-            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                 <div class="space-y-1">
                     <h2 class="text-2xl font-semibold">
                         Assign Subjects to Stream
@@ -18,7 +18,7 @@
                 </div>
             </div>
 
-            <div class="px-6 py-4 bg-gray-50/20 border-b border-gray-100">
+            <div class="px-6 py-4 bg-gray-50/20 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
                 <div class="max-w-sm">
                     <UFormField label="Select Stream" name="streamId">
                         <USelectMenu value-key="value" :loading="streamStore.loading" v-model="state.streamId" @change="fetchRecord"
@@ -30,8 +30,8 @@
             <div v-if="state.streamId" class="px-6 py-3">
 
                 <!-- Section Header -->
-                <div class="flex items-center border-b pb-3 border-gray-200 justify-between">
-                    <h3 class="text-sm font-semibold text-gray-700">
+                <div class="flex items-center border-b pb-3 border-gray-200 dark:border-gray-800 justify-between">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
                         Subject Assignments ({{ state.assignments.length }})
                     </h3>
 
@@ -40,8 +40,8 @@
 
                 <!-- Empty State -->
                 <div v-if="!state.assignments.length"
-                    class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
-                    <p class="text-sm text-gray-500 mb-4">
+                    class="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-10 text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
                         No subjects assigned yet.
                     </p>
                     <UButton icon="prime:plus" label="Add First Subject" @click="add" />
@@ -83,7 +83,7 @@
                 </UTable>
 
                 <!-- Summary -->
-                <div v-if="state.assignments.length" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+                <div v-if="state.assignments.length" class="p-4 bg-gray-50 dark:bg-gray-950 rounded-lg text-sm text-gray-600 dark:text-gray-300">
                     Total Subjects:
                     <strong>{{ state.assignments.length }}</strong>
                     |

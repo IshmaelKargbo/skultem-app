@@ -40,7 +40,7 @@ const chartOptions = computed(() => ({
   yaxis: {
     labels: { style: { fontSize: "12px" } },
   },
-  grid: { borderColor: "#f1f5f9", strokeDashArray: 4 },
+  grid: { borderColor: "var(--app-border)", strokeDashArray: 4 },
   tooltip: {
     shared: true,
     intersect: false,
@@ -139,9 +139,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--app-text-soft);
   font-weight: 500;
-  background: #f3f4f6;
+  background: var(--app-border);
   border-radius: 0.5rem;
   animation: pulse 1.5s infinite;
 }

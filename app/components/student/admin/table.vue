@@ -117,8 +117,8 @@ onMounted(async () => {
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No students found.</p>
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+          <p class="text-gray-500 dark:text-gray-400">No students found.</p>
         </div>
       </template>
       <template #parent-cell="{ row }">
@@ -129,13 +129,12 @@ onMounted(async () => {
           variant="outline" />
       </template>
       <template #name-cell="{ row }">
-        <div class="flex items-center space-x-4">
-          <UAvatar size="xl" :src="row.original.photo || ALT_IMAGE" :alt="name(row.original)" />
-          <div>
-            <p>{{ name(row.original) }}</p>
-            <p class="text-xs text-muted">{{ row.original.admissionNumber }}</p>
-          </div>
-        </div>
+        <StudentIdentityCell
+          :given-names="row.original.givenNames"
+          :family-name="row.original.familyName"
+          :photo="row.original.photo"
+          :subtitle="`${row.original.admissionNumber || 'No Admission No'} · ${row.original.className || 'No Class'}`"
+        />
       </template>
       <template #loading>
         <TableLoading :size="columns.length" />
@@ -204,7 +203,12 @@ onMounted(async () => {
         <div class="flex justify-between items-center">
           <div class="flex space-x-2">
             <div>
-              <UAvatar size="lg" :alt="`${item.givenNames} ${item.familyName}`" />
+              <UAvatar
+                size="lg"
+                :src="item.photo || '/avatar-placeholder.svg'"
+                :alt="`${item.givenNames} ${item.familyName}`"
+                class="ring-1 ring-gray-200 dark:ring-gray-700"
+              />
             </div>
             <div>
               <p class="text-sm">{{ `${item.givenNames} ${item.familyName}` }}</p>
