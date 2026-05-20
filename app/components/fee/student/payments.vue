@@ -28,9 +28,11 @@
                 </UCard>
             </div>
 
-            <div v-else-if="filtered.length === 0"
-                class="text-mute border-2 m-3 border-dashed border-gray-100 rounded-xl dark:border-gray-800  flex h-40 w-full justify-center items-center">
-                No payments found
+            <div v-else-if="filtered.length === 0" class="p-3">
+                <div
+                    class="text-mute border-2 border-dashed border-gray-100 rounded-xl dark:border-gray-800  flex h-40 w-full justify-center items-center">
+                    No payments found
+                </div>
             </div>
 
             <div v-else>
@@ -80,7 +82,7 @@
 
 <script setup lang="ts">
 const props = defineProps<{
-  student: Student | null | undefined
+    student: Student | null | undefined
 }>()
 
 const store = useStudentStore()
@@ -117,13 +119,13 @@ const size = ref(6)
 
 
 const filtered = computed(() => {
-  if (!search.value) return records.value
-  const q = search.value.toLowerCase()
-  return records.value.filter((item) =>
-    item.term?.toLowerCase().includes(q) ||
-    item.fee?.toLowerCase().includes(q) ||
-    item.referenceNo?.toLowerCase().includes(q)
-  )
+    if (!search.value) return records.value
+    const q = search.value.toLowerCase()
+    return records.value.filter((item) =>
+        item.term?.toLowerCase().includes(q) ||
+        item.fee?.toLowerCase().includes(q) ||
+        item.referenceNo?.toLowerCase().includes(q)
+    )
 })
 
 const fetchPayments = async () => {
@@ -150,12 +152,12 @@ watch(
 )
 
 watch(
-  () => props.student?.id,
-  () => {
-    page.value = 1
-    records.value = []
-    meta.value = undefined
-    search.value = ''
-  }
+    () => props.student?.id,
+    () => {
+        page.value = 1
+        records.value = []
+        meta.value = undefined
+        search.value = ''
+    }
 )
 </script>

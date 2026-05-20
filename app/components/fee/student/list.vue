@@ -47,7 +47,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-    get: () => Number(route.query.size ?? 5),
+    get: () => Number(route.query.size ?? 6),
     set: (val) => updateQuery({ size: val })
 })
 
