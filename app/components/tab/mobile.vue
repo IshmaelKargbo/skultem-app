@@ -18,7 +18,7 @@ function setActive(key: string) {
 
 <template>
   <div class="space-y-3">
-    <div class="bg-white border border-gray-200 p-1 grid gap-1 rounded-lg"
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 grid gap-1 rounded-lg"
          :style="{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }">
 
       <div
@@ -27,7 +27,8 @@ function setActive(key: string) {
         @click="setActive(tab.key)"
         class="flex justify-center p-1 cursor-pointer transition-all"
         :class="{
-          'bg-primary-950 rounded-md text-white': tab.key === isActive
+          'bg-primary-950 rounded-md text-white': tab.key === isActive,
+          'text-gray-700 dark:text-gray-200': tab.key !== isActive
         }"
       >
         <p>{{ tab.label }}</p>

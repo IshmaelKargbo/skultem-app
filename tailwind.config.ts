@@ -5,7 +5,7 @@ const config: Config = {
     './index.html',
     './app/**/*.{vue,js,ts,jsx,tsx}',
   ],
-  darkMode: false,
+  darkMode: 'class',
   theme: {
     extend: {
       animation: {
@@ -21,7 +21,7 @@ const config: Config = {
           to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
-    },,
+    },
   },
   plugins: [],
 }

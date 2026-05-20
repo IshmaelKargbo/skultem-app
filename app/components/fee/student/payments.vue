@@ -1,109 +1,62 @@
 <template>
-    <u-slideover :dismissible="false" title="Payment History" :open="open" @update:open="open = $event">
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
+    <div class="p-5">
+      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-base font-semibold">Payment History</p>
+          <p v-if="student" class="text-xs text-muted">
+            {{ student.givenNames }} {{ student.familyName }}
+          </p>
+        </div>
+        <UInput v-model="search" placeholder="Search payments" :disabled="isLoading" class="md:w-72" />
+      </div>
 
-        <!-- Trigger -->
-        <UButton
-            :disabled="!student"
-            label="Payment History"
-            variant="outline"
-            size="sm"
-            icon="fluent:payment-24-regular"
-            @click="open = true" />
+      <div v-if="!student" class="border border-dashed rounded-lg p-4 text-sm text-muted">
+        Select a student to view payment history.
+      </div>
 
-        <!-- Header -->
-        <template #header>
-            <div class="flex justify-between w-full items-center">
-                <div>
-                    <p class="text-lg font-semibold">Payment History</p>
-                    <p v-if="student" class="text-xs text-muted">
-                        {{ student.givenNames }} {{ student.familyName }}
-                    </p>
-                </div>
-                <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
+      <div v-else class="space-y-4">
+        <UTable :columns="columns" :data="filtered" :loading="isLoading">
+          <template #empty-state>
+            <div
+              class="text-mute  border border-dashed border-gray-100 dark:border-gray-700 flex h-40 w-full justify-center items-center">
+              No payments found
             </div>
-        </template>
+          </template>
+          <template #amount-cell="{ row }">
+            <p class="font-semibold text-success">{{ format(row.original.amount) }}</p>
+          </template>
+          <template #paymentMethod-cell="{ row }">
+            <p>{{ parsePaymentMethod[row.original.paymentMethod] }}</p>
+          </template>
+          <template #paidAt-cell="{ row }">
+            <p>{{ formatDate(row.original.paidAt) }}</p>
+          </template>
+          <template #referenceNo-cell="{ row }">
+            <p class="text-gray-700 dark:text-gray-300">{{ row.original.referenceNo || '-' }}</p>
+          </template>
+        </UTable>
 
-        <!-- Body -->
-        <template #body>
-            <div v-if="!student" class="border border-dashed rounded-lg p-4 text-sm text-muted">
-                Select a student to view payment history.
-            </div>
-            <div v-else class="space-y-4">
-                <UInput v-model="search" placeholder="Search payments" :disabled="isLoading" />
-
-                <div v-if="isLoading" class="space-y-3">
-                    <UCard v-for="n in 3" :key="n">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <USkeleton class="w-40 h-3" />
-                                <USkeleton class="w-20 h-3" />
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <USkeleton class="w-32 h-3" />
-                                <USkeleton class="w-24 h-3" />
-                            </div>
-                        </div>
-                    </UCard>
-                </div>
-
-                <div v-else-if="filtered.length === 0"
-                    class="text-mute border border-dashed border-gray-100 flex h-40 w-full justify-center items-center">
-                    No payments found
-                </div>
-
-                <div v-else class="space-y-3">
-                    <UCard v-for="item in filtered" :key="item.id">
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-sm font-medium">{{ item.fee }}</p>
-                                    <p class="text-xs text-mute">{{ item.term }}</p>
-                                </div>
-                                <p class="text-sm font-semibold text-success">{{ format(item.amount) }}</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-xs text-mute">
-                                <div>
-                                    <p>Method</p>
-                                    <p class="text-gray-700">{{ parsePaymentMethod[item.paymentMethod] }}</p>
-                                </div>
-                                <div>
-                                    <p>Date</p>
-                                    <p class="text-gray-700">{{ formatDate(item.paidAt) }}</p>
-                                </div>
-                            </div>
-                            <div v-if="item.referenceNo" class="text-xs text-mute">
-                                Reference: <span class="text-gray-700">{{ item.referenceNo }}</span>
-                            </div>
-                            <div v-if="item.note" class="text-xs text-mute">
-                                Note: <span class="text-gray-700">{{ item.note }}</span>
-                            </div>
-                        </div>
-                    </UCard>
-                </div>
-
-                <UPagination
-                    v-if="meta && !isLoading"
-                    size="sm"
-                    v-model:page="page"
-                    :page-size="meta.size"
-                    :items-per-page="meta.size"
-                    :total="meta.total"
-                    show-edges />
-            </div>
-        </template>
-
-    </u-slideover>
+        <div class="flex justify-between items-center" v-if="meta && !isLoading">
+          <Showing :meta="meta" />
+          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
+        </div>
+      </div>
+    </div>
+  </UCard>
 </template>
 
 <script setup lang="ts">
 const props = defineProps<{
-    student: Student | null
+  student: Student | null | undefined
 }>()
 
 const store = useStudentStore()
 const { format } = useMoney()
 const search = ref('')
-const open = ref(false)
 const isLoading = ref(false)
 
 const records = ref<FeePayment[]>([])
@@ -111,48 +64,53 @@ const meta = ref<Meta>()
 const page = ref(1)
 const size = ref(6)
 
+const columns = [
+  { accessorKey: 'fee', header: 'Category' },
+  { accessorKey: 'term', header: 'Term' },
+  { accessorKey: 'amount', header: 'Amount' },
+  { accessorKey: 'paymentMethod', header: 'Method' },
+  { accessorKey: 'paidAt', header: 'Date' },
+  { accessorKey: 'referenceNo', header: 'Reference' }
+]
+
 const filtered = computed(() => {
-    if (!search.value) return records.value
-    const term = search.value.toLowerCase()
-    return records.value.filter((item) =>
-        item.term.includes(term) ||
-        item.term.toLowerCase().includes(term) ||
-        item.referenceNo?.toLowerCase().includes(term)
-    )
+  if (!search.value) return records.value
+  const q = search.value.toLowerCase()
+  return records.value.filter((item) =>
+    item.term?.toLowerCase().includes(q) ||
+    item.fee?.toLowerCase().includes(q) ||
+    item.referenceNo?.toLowerCase().includes(q)
+  )
 })
 
-const close = () => {
-    open.value = false
-    search.value = ''
-}
-
 const fetchPayments = async () => {
-    if (!props.student) return
-    isLoading.value = true
-    try {
-        const res = await store.getPaymentHistoryByStudent(props.student.id, page.value, size.value)
-        records.value = res?.records || []
-        meta.value = res?.meta
-    } finally {
-        isLoading.value = false
-    }
+  if (!props.student) return
+  isLoading.value = true
+  try {
+    const res = await store.getPaymentHistoryByStudent(props.student.id, page.value, size.value)
+    records.value = res?.records || []
+    meta.value = res?.meta
+  } finally {
+    isLoading.value = false
+  }
 }
 
 watch(
-    () => [props.student?.id, page.value, open.value],
-    async ([studentId, currentPage, isOpen]) => {
-        if (!studentId || !isOpen) return
-        await fetchPayments()
-    },
-    { immediate: false }
+  () => [props.student?.id, page.value],
+  async ([studentId]) => {
+    if (!studentId) return
+    await fetchPayments()
+  },
+  { immediate: true }
 )
 
 watch(
-    () => props.student?.id,
-    () => {
-        page.value = 1
-        records.value = []
-        meta.value = undefined
-    }
+  () => props.student?.id,
+  () => {
+    page.value = 1
+    records.value = []
+    meta.value = undefined
+    search.value = ''
+  }
 )
 </script>

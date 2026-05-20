@@ -59,34 +59,34 @@ watch(() => record.value, () => fetchRecord(), { immediate: true })
 
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="border-2 border-info-300 bg-indigo-50  dark:border-indigo-800 dark:bg-gray-950 rounded-xl p-4">
+        <div class="border-2 border-info-300 bg-indigo-50  dark:border-indigo-800 dark:bg-indigo-950 rounded-xl p-4">
             <p class="text-[11px] uppercase text-muted">
                 Total Fees
             </p>
 
-            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200" />
+            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200 dark:bg-success-800" />
             <h2 v-else class="text-2xl font-bold mt-1">
                 {{ format(report.total) }}
             </h2>
         </div>
 
-        <div class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-gray-950 rounded-xl p-4">
+        <div class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 rounded-xl p-4">
             <p class="text-[11px] uppercase text-muted">
                 Paid Amount
             </p>
 
-            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200" />
+            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200 dark:bg-success-800" />
             <h2 v-else class="text-2xl font-bold text-success-600 mt-1">
                 {{ format(report.paid) }}
             </h2>
         </div>
 
-        <div class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-gray-950 rounded-xl p-4">
+        <div class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 rounded-xl p-4">
             <p class="text-[11px] uppercase text-muted">
                 Outstanding Balance
             </p>
 
-            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-warning-200" />
+            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-warning-200 dark:bg-warning-800" />
             <h2 v-else class="text-2xl font-bold text-warning-600 mt-1">
                 {{ format(report.outstanding) }}
             </h2>

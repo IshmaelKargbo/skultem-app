@@ -59,8 +59,17 @@
                     <div class="space-y-3">
                         <!-- Top Row: Student + Status -->
                         <div class="flex justify-between">
-                            <div>
-                                <p class="text-base font-medium">{{ item.student}}</p>
+                            <div class="flex items-start gap-3 min-w-0">
+                                <UAvatar
+                                    size="md"
+                                    :src="item.student?.photo || '/avatar-placeholder.svg'"
+                                    :alt="`${item.student?.givenNames || ''} ${item.student?.familyName || ''}`.trim() || 'Student'"
+                                    class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
+                                />
+                                <div class="min-w-0">
+                                    <p class="text-base font-medium truncate">
+                                        {{ `${item.student?.givenNames || ''} ${item.student?.familyName || ''}`.trim() }}
+                                    </p>
                                 <StudentEnrollment :id="item.student.id">
                                     <template #default="{ value }">
                                         <p class="text-xs text-mute">
@@ -68,6 +77,7 @@
                                         </p>
                                     </template>
                                 </StudentEnrollment>
+                                </div>
                             </div>
                             <div>
                                 <UBadge variant="outline" color="success" label="Completed" />

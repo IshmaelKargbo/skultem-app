@@ -1,15 +1,17 @@
 <template>
     <div class="md:p-5 py-2 md:py-4 p-4 overflow-y-auto h-full space-y-5">
-        <Heading title="Student Fees Management" subtitle="Manage student-specific fees and balances">
+        <Heading title="Student Fees Management"
+            subtitle="Manage fee assignments, payments, discounts, and balances per student.">
             <div v-if="can([Role.ACCOUNTANT])">
                 <FeeStructureAdd />
             </div>
         </Heading>
-        <div class="space-x-5 flex">
-            <div class="w-1/3">
+
+        <div class="grid gap-5 lg:grid-cols-12">
+            <div class="lg:col-span-4">
                 <FeeStudentList @select="select" />
             </div>
-            <div class="w-2/3">
+            <div class="lg:col-span-8">
                 <FeeStudentRecord :student="selectedStudent" />
             </div>
         </div>

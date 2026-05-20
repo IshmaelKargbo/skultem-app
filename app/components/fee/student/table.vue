@@ -108,8 +108,8 @@ const columnPinning = ref({
   <UTable v-model:column-pinning="columnPinning" :columns="columns" :data="records" :loading="loading">
     <template #empty-state>
       <div class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No fee found.</p>
+        <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+        <p class="text-gray-500 dark:text-gray-400">No fee found.</p>
       </div>
     </template>
     <template #paid-cell="{ row }">

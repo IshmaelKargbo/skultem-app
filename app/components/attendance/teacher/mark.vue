@@ -37,6 +37,20 @@
         <!-- Desktop Table -->
         <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
+          <template #studentName-cell="{ row }">
+            <div class="flex items-center gap-3">
+              <UAvatar
+                size="md"
+                :src="row.original.studentPhoto || '/avatar-placeholder.svg'"
+                :alt="row.original.studentName"
+                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
+              />
+              <div class="min-w-0">
+                <p class="text-sm font-medium truncate">{{ row.original.studentName }}</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ row.original.admissionNumber }}</p>
+              </div>
+            </div>
+          </template>
           <template #present-cell="{ row }">
             <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
               :model-value="row.original.present" @change="stateChange(row.index, 'present')" />
@@ -98,10 +112,15 @@
           <template v-else>
             <div v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
               <div class="flex items-center space-x-2">
-                <UAvatar :alt="row.studentName" size="md" class="shrink-0" />
+                <UAvatar
+                  :src="row.studentPhoto || '/avatar-placeholder.svg'"
+                  :alt="row.studentName"
+                  size="md"
+                  class="shrink-0 ring-1 ring-gray-200 dark:ring-gray-700"
+                />
                 <div>
                   <p class="text-sm font-medium leading-tight">{{ row.studentName }}</p>
-                  <p class="text-[11px] text-gray-400">{{ row.admissionNumber }}</p>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ row.admissionNumber }}</p>
                 </div>
               </div>
 
@@ -162,6 +181,7 @@ type AttendanceRowRecord = {
   studentName: string
   studentId: string
   admissionNumber: string
+  studentPhoto?: string | null
   present: boolean
   late: boolean
   excused: boolean

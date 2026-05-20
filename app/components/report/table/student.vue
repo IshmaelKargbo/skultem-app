@@ -144,8 +144,8 @@ watch(() => page.value, async () => {
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No students found.</p>
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+          <p class="text-gray-500 dark:text-gray-400">No students found.</p>
         </div>
       </template>
       <template #status-cell="{ row }">
@@ -155,6 +155,14 @@ watch(() => page.value, async () => {
       <template #gender-cell="{ row }">
         <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
           variant="outline" />
+      </template>
+      <template #name-cell="{ row }">
+        <StudentIdentityCell
+          :given-names="row.original.givenNames"
+          :family-name="row.original.familyName"
+          :photo="row.original.photo"
+          :subtitle="`${row.original.className || 'No Class'} · ${row.original.admissionNumber || 'No Admission No'}`"
+        />
       </template>
     </UTable>
     <template #footer>

@@ -8,7 +8,7 @@
         class="px-2.5 py-1 text-[13px] rounded-full transition-all duration-200 whitespace-nowrap"
         :class="isActive(tab.to, tab.exact)
           ? 'bg-primary-50 dark:bg-gray-950 border border-primary-400 dark:border-primary-600 text-primary-600'
-          : 'text-gray-600 hover:text-gray-900'"
+          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
       >
         {{ tab.label }}
       </NuxtLink>

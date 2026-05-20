@@ -1,5 +1,5 @@
 <template>
-  <UForm :state="state" class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+  <UForm :state="state" class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3 bg-gray-50 dark:bg-gray-950">
     <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
       <div class="flex gap-3">
         <UBadge color="warning" variant="outline" size="lg">{{ summary.pending }} Pending</UBadge>
@@ -36,13 +36,13 @@
             </div>
           </template>
           <div v-if="isLoading" class="p-4">
-            <p class="text-sm text-gray-500">Loading requests...</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Loading requests...</p>
           </div>
           <div v-if="!state.teacherId" class="p-4 flex items-center justify-center">
-            <p class="text-sm text-gray-500">Select a teacher to view details</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Select a teacher to view details</p>
           </div>
           <div v-if="!isLoading && state.teacherId && filteredRequests.length === 0" class="p-4 flex items-center justify-center">
-            <p class="text-sm text-gray-500">No requests found</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">No requests found</p>
           </div>
           <div v-else class="space-y-3">
             <GradesRecordLoading v-if="isLoading" v-for="(item, index) in 8" :key="index" />

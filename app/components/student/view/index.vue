@@ -16,16 +16,16 @@
                         <!-- Avatar -->
                         <div class="border-b py-6 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
 
-                            <div v-if="loading" class="h-40 w-40 rounded-full bg-gray-200 animate-pulse" />
-                            <img v-else :src="photo" :alt="name" class="rounded-full h-40 border-2 bg-white border-gray-100 dark:border-gray-600 w-40 object-cover" />
+                            <div v-if="loading" class="h-40 w-40 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                            <img v-else :src="photo" :alt="name" class="rounded-full h-40 border-2 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-600 w-40 object-cover" />
 
                             <div class="text-center mt-3 space-y-2">
-                                <div v-if="loading" class="h-5 w-32 bg-gray-200 rounded animate-pulse mx-auto" />
+                                <div v-if="loading" class="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
                                 <h2 v-else class="text-xl font-semibold">
                                     {{ name }}
                                 </h2>
 
-                                <div v-if="loading" class="h-3 w-20 bg-gray-200 rounded animate-pulse mx-auto" />
+                                <div v-if="loading" class="h-3 w-20 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
                                 <p v-else class="text-xs text-muted">
                                     {{ record?.className }}
                                 </p>

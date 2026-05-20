@@ -3,12 +3,15 @@
         <div class="space-y-4">
             <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON" :disabled="isLoading" />
             <div v-if="isLoading" class="space-y-3">
-                <div v-for="n in 6" :key="n" class="border p-3 rounded-md border-gray-300 space-y-2">
+                <div v-for="n in 6" :key="n" class="border p-3 rounded-md border-gray-300 dark:border-gray-700 space-y-2">
                     <div class="flex justify-between items-center">
-                        <USkeleton class="h-4 w-40" />
+                        <div class="flex items-center gap-2">
+                            <USkeleton class="h-8 w-8 rounded-full" />
+                            <USkeleton class="h-4 w-40" />
+                        </div>
                         <USkeleton class="h-5 w-16 rounded-full" />
                     </div>
-                    <USkeleton class="h-3 w-28" />
+                    <USkeleton class="h-3 w-40" />
                 </div>
             </div>
             <div v-else class="space-y-2">

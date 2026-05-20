@@ -40,6 +40,14 @@
     </UCard>
     <UCard v-if="state.teacherSubjectId && rows.length > 0" class="hidden md:block">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
+        <template #student-cell="{ row }">
+          <StudentIdentityCell
+            :given-names="row.original.givenNames || row.original.name"
+            :family-name="row.original.familyName || ''"
+            :photo="row.original.photo || row.original.studentPhoto || row.original.student?.photo"
+            :subtitle="hasSubmittedAssessments ? `Position: ${rankingMap[row.original.id] || '-'}` : 'Position: N/A'"
+          />
+        </template>
         <template #loading>
           <TableLoading :size="7" />
         </template>
@@ -51,25 +59,33 @@
       }" v-for="student in rows" :key="student.id">
         <template #header>
           <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="text-sm font-semibold text-gray-900 truncate">{{ student.name }}</p>
-              <p class="text-xs text-gray-500">
-                Position: {{ hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A' }}
-              </p>
+            <div class="min-w-0 flex items-start gap-3">
+              <UAvatar
+                size="md"
+                :src="student.photo || student.studentPhoto || student.student?.photo || '/avatar-placeholder.svg'"
+                :alt="student.name"
+                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
+              />
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ student.name }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Position: {{ hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A' }}
+                </p>
+              </div>
             </div>
             <div class="text-right shrink-0">
-              <p class="text-xs text-gray-500">Total</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
               <p class="text-sm font-semibold">{{ calculateTotal(student) }}</p>
             </div>
           </div>
         </template>
         <div class="">
           <div class="grid">
-            <div v-for="assessment in assessments" :key="assessment.id" class="border-b border-gray-200 p-3 py-2">
+            <div v-for="assessment in assessments" :key="assessment.id" class="border-b border-gray-200 dark:border-gray-800 p-3 py-2">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 space-y-1">
-                  <p class="text-xs font-medium text-gray-900 truncate">{{ assessment.name }}</p>
-                  <p class="text-xs text-gray-500">Weight {{ assessment.weight }}</p>
+                  <p class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{{ assessment.name }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Weight {{ assessment.weight }}</p>
                 </div>
                 <div v-if="isEditableStatus(getStudentScore(student, assessment.id)?.status as ScoreStatus)">
                   <UInput :model-value="getStudentScore(student, assessment.id)?.score" type="number" min="0" max="100"
