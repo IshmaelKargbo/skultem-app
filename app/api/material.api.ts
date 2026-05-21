@@ -19,6 +19,23 @@ export const MaterialApi = () => {
         useHandleError(err)
       }
     },
+    getAllSupply: async (page: number, size: number) => {
+      try {
+        const res = await $api(`/materials/supply?page=${page}&size=${size}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch material supplies')
+
+        const data = res.data
+        
+        const meta = useMeta(res.meta)
+
+        return { ...res, data, meta }
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAll: async (page: number, size: number) => {
       try {
         const res = await $api(`/materials?page=${page}&size=${size}`) as any
@@ -59,6 +76,16 @@ export const MaterialApi = () => {
     restock: async (payload: RestockDto) => {
       try {
         return await $api('/materials/restock', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    supply: async (payload: SupplyDto) => {
+      try {
+        return await $api('/materials/supply', {
           method: 'POST',
           body: payload
         })

@@ -1,5 +1,5 @@
 <template>
-    <div class="p-7 overflow-y-auto h-full space-y-5">
+    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
         <Heading title="Class Subject Management" subtitle="Manage class subjects">
             <UButton to="/curriculums/class-subjects/add" color="primary" label="Assign Class Subject"
                 :icon="ASSIGN_ICON" />

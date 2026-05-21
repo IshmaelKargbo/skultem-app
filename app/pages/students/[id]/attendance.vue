@@ -128,7 +128,7 @@ async function fetchCycle() {
         term => term.status === 'ACTIVE'
     )
 
-    if (activeTerm) {
+    if (activeTerm && state.term == "") {
         state.term = activeTerm.id
     }
 }

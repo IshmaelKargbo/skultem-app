@@ -11,9 +11,6 @@ const { records: data, meta } = storeToRefs(store)
 const editRcord = ref<Teacher | null>(null)
 const editState = ref(false)
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
-
 const columns = [
   {
     accessorKey: 'type',
@@ -55,23 +52,6 @@ const columns = [
     }
   }
 ]
-
-function getRowItems(row: Row<Teacher>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -144,7 +124,7 @@ onMounted(async () => {
       </template>
       <template #hasSupply-cell="{ row }">
         <div class="space-y-1">
-          <p>{{ row.original.totalSupply || '0' }}</p>
+          <p><span>{{ row.original.material?.name }}</span><span>({{ row.original.totalSupply || '0' }})</span></p>
         </div>
       </template>
       <template #students-cell="{ row }">

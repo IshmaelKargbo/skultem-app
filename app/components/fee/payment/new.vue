@@ -44,104 +44,106 @@
                         </template>
                     </UCard>
                 </div>
-                <UCard>
-                    <template #header>
-                        <div class="flex justify-between items-center">
-                            <p class="font-medium">Fee Allocation</p>
-                            <UBadge>{{ allocations.length }}</UBadge>
-                        </div>
-                    </template>
-
-                    <!-- EMPTY -->
-                    <div v-if="!state.studentId" class="text-center py-10 text-sm text-mute">
-                        Select a student to start allocating fees
-                    </div>
-
-                    <!-- LOADING -->
-                    <div v-else-if="loadingFees" class="text-center py-10 text-sm text-mute">
-                        Loading fees...
-                    </div>
-
-                    <!-- CONTENT -->
-                    <div v-else class="space-y-3">
-
-                        <!-- FEES -->
-                        <div v-for="fee in fees" :key="fee.feeId"
-                            class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
-                            <div>
-                                <p class="font-medium">{{ fee.feeName }}</p>
-                                <p class="text-xs text-mute">
-                                    Outstanding: {{ format(fee.outstanding) }}
-                                </p>
+                <div>
+                    <UCard>
+                        <template #header>
+                            <div class="flex justify-between items-center">
+                                <p class="font-medium">Fee Allocation</p>
+                                <UBadge>{{ allocations.length }}</UBadge>
                             </div>
+                        </template>
 
-                            <UButton size="xs" v-if="!isSelected(fee.feeId)" @click="addFee(fee)">
-                                Add
-                            </UButton>
-
-                            <UButton size="xs" v-else color="error" variant="ghost" @click="removeFee(fee.feeId)">
-                                Remove
-                            </UButton>
+                        <!-- EMPTY -->
+                        <div v-if="!state.studentId" class="items-center space-y-3 justify-center py-10 rounded-xl border-dashed flex flex-col text-sm text-muted  h-56 border-2">
+                            <UIcon :name="EMPTY_ICON" class="w-12 h-12" />
+                            <p>Select a student to start allocating fees</p>
                         </div>
 
-                        <UDivider />
+                        <!-- LOADING -->
+                        <div v-else-if="loadingFees" class="text-center py-10 text-sm text-mute">
+                            Loading fees...
+                        </div>
 
-                        <!-- ALLOCATIONS -->
-                        <div v-if="allocations.length" class="space-y-3">
+                        <!-- CONTENT -->
+                        <div v-else class="space-y-3">
 
-                            <div v-for="a in allocations" :key="a.feeId"
-                                class="border-2 border-gray-200 rounded-xl p-3 space-y-2">
-                                <div class="flex justify-between text-sm">
-                                    <p class="font-medium">{{ a.feeName }}</p>
-                                    <p class="text-mute">
-                                        Max {{ format(a.outstanding) }}
+                            <!-- FEES -->
+                            <div v-for="fee in fees" :key="fee.feeId"
+                                class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium">{{ fee.feeName }}</p>
+                                    <p class="text-xs text-mute">
+                                        Outstanding: {{ format(fee.outstanding) }}
                                     </p>
                                 </div>
 
-                                <!-- AUTO-CAPPED INPUT -->
-                                <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding"
-                                    @update:modelValue="val => {
-                                        a.amount = Number(val)
-                                        clampAmount(a)
-                                    }" />
+                                <UButton size="xs" v-if="!isSelected(fee.feeId)" @click="addFee(fee)">
+                                    Add
+                                </UButton>
+
+                                <UButton size="xs" v-else color="error" variant="ghost" @click="removeFee(fee.feeId)">
+                                    Remove
+                                </UButton>
                             </div>
 
                             <UDivider />
 
-                            <!-- TOTALS -->
-                            <div class="text-sm space-y-1.5">
+                            <!-- ALLOCATIONS -->
+                            <div v-if="allocations.length" class="space-y-3">
+                                <div v-for="a in allocations" :key="a.feeId"
+                                    class="border-2 border-gray-200 rounded-xl p-3 space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <p class="font-medium">{{ a.feeName }}</p>
+                                        <p class="text-mute">
+                                            Max {{ format(a.outstanding) }}
+                                        </p>
+                                    </div>
 
-                                <div class="flex justify-between">
-                                    <span>Total Allocated</span>
-                                    <span :class="{ 'text-red-500': isOverAllocated }">
-                                        {{ format(totalAllocated) }}
-                                    </span>
+                                    <!-- AUTO-CAPPED INPUT -->
+                                    <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding"
+                                        @update:modelValue="val => {
+                                            a.amount = Number(val)
+                                            clampAmount(a)
+                                        }" />
                                 </div>
 
-                                <div class="flex justify-between">
-                                    <span>Total Outstanding</span>
-                                    <span>{{ format(totalOutstanding) }}</span>
-                                </div>
+                                <UDivider />
 
-                                <div class="flex justify-between font-semibold">
-                                    <span>Remaining</span>
-                                    <span>{{ format(remaining) }}</span>
-                                </div>
+                                <!-- TOTALS -->
+                                <div class="text-sm space-y-1.5">
 
-                                <div v-if="isOverAllocated" class="text-xs text-red-500 font-medium">
-                                    ⚠ Allocation exceeds available balance
+                                    <div class="flex justify-between">
+                                        <span>Total Allocated</span>
+                                        <span :class="{ 'text-red-500': isOverAllocated }">
+                                            {{ format(totalAllocated) }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span>Total Outstanding</span>
+                                        <span>{{ format(totalOutstanding) }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between font-semibold">
+                                        <span>Remaining</span>
+                                        <span>{{ format(remaining) }}</span>
+                                    </div>
+
+                                    <div v-if="isOverAllocated" class="text-xs text-red-500 font-medium">
+                                        ⚠ Allocation exceeds available balance
+                                    </div>
+
                                 </div>
 
                             </div>
 
-                        </div>
+                            <div v-else class="text-sm text-mute text-center py-6">
+                                Select fees to allocate payment
+                            </div>
 
-                        <div v-else class="text-sm text-mute text-center py-6">
-                            Select fees to allocate payment
                         </div>
-
-                    </div>
-                </UCard>
+                    </UCard>
+                </div>
             </div>
         </div>
     </UForm>
@@ -150,6 +152,7 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 
+const emit = defineEmits(['complete'])
 const state = reactive({
     studentId: '',
     method: '',
@@ -258,6 +261,7 @@ async function onSubmit() {
             }))
         })
 
+        emit('complete')
         reset()
         useNotify().success("Payment recorded successfully")
     } catch (error: any) {

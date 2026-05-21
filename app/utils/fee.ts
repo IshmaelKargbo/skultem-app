@@ -31,6 +31,7 @@ export type FeeStructure = {
     type: string
     hasSupply: boolean
     totalSupply: number
+    material?: Material
     category: FeeCategory
     allowInstallment: boolean
     amount: number

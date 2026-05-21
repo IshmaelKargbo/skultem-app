@@ -17,16 +17,14 @@ export type Material = {
     updatedAt: string
 }
 
-
 export type Supply = {
     id: string
-    term: Term
-    clazz?: Clazz
-    category: FeeCategory
-    allowInstallment: boolean
-    amount: number
-    dueDate: string
-    description: string
+    student: Student
+    material: Material
+    qty: number
+    status: string
+    collectedOn: string
+    collectedQty: number
     createdAt: string
     updatedAt: string
 }
@@ -46,5 +44,11 @@ export type RestockDto = {
     id: string
     note: string
     inStock: number
+}
+
+export type SupplyDto = {
+    id: string
+    note: string
+    qty: number
 }
 

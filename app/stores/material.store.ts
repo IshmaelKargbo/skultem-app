@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useMaterialStore = defineStore('material', {
   state: () => ({
     categories: [] as MaterialCategory[],
+    supplies: [] as Supply[],
     records: [] as Material[],
     meta: {} as Meta,
     loading: false,
@@ -19,6 +20,19 @@ export const useMaterialStore = defineStore('material', {
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch material categories'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchAllSupply(page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await MaterialApi().getAllSupply(page, size) as any
+        this.supplies = response.data || []
+        this.meta = response.meta || {} as Meta
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch material supplies'
       } finally {
         this.loading = false
       }
@@ -44,6 +58,9 @@ export const useMaterialStore = defineStore('material', {
     },
     restock(payload: RestockDto) {
       return MaterialApi().restock(payload)
+    },
+    supply(payload: SupplyDto) {
+      return MaterialApi().supply(payload)
     }
   }
 })

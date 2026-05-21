@@ -9,12 +9,18 @@
                 </p>
             </div>
         </div>
-        <FeePaymentNew />
-        <DashboardAccountantTable />
+        <FeePaymentNew @complete="refresh" />
+        <DashboardAccountantTable ref="paymentRef" />
     </div>
 </template>
 
 <script setup lang="ts">
+const paymentRef = ref()
+
+async function refresh() {
+    await paymentRef.value?.fetchRecord()
+}
+
 onMounted(() => {
     useAppStore().setTitle('Payments')
     document.title = 'Payments | Skultem'

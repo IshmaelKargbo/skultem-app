@@ -348,7 +348,6 @@ async function fetchReport() {
     state.entity = res.entity
     state.filters = res.filters
 
-    // update url query
     router.replace({
         query: {
             ...route.query,

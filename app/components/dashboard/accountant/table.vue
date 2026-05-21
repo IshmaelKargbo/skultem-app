@@ -40,6 +40,10 @@ async function fetchRecord() {
 onMounted(async () => {
   fetchRecord()
 })
+
+defineExpose({
+  fetchRecord
+})
 </script>
 
 <template>
