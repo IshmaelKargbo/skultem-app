@@ -37,15 +37,8 @@ html {
   scrollbar-color: #4f46e5 #111827;
 }
 
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
 ::-webkit-scrollbar-track {
   background: #f0f0f0;
-  border-radius: 5px;
-  margin: 2px 0;
 }
 
 .dark ::-webkit-scrollbar-track {
@@ -53,9 +46,7 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #384f85, #43A047);
-  border-radius: 5px;
-  border: 1px solid #f0f0f0;
+  background: linear-gradient(...);
 }
 
 .dark ::-webkit-scrollbar-thumb {
@@ -63,7 +54,7 @@ html {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #2E3A78, #2E7D32);
+  background: linear-gradient(...);
 }
 
 .text-title {
