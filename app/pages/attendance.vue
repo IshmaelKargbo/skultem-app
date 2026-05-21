@@ -1,5 +1,5 @@
 <template>
-    <AttendanceAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR])" />
+    <AttendanceAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
     <AttendanceTeacher v-if="can([Role.TEACHER])" />
     <AttendanceParent v-if="can([Role.PARENT])" />
 </template>

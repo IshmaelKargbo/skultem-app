@@ -1,5 +1,5 @@
 <template>
-    <UForm class="p-7 space-y-5 h-full overflow-y-auto" :state="state" :schema="schema" @submit="onSubmit">
+    <UForm class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3" :state="state" :schema="schema" @submit="onSubmit">
         <Heading title="Assign Class Subjects to Teacher" subtitle="Define the curriculum structure for this class.">
             <UFormField class="w-1/3" label="Select Class" name="classId">
                 <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"

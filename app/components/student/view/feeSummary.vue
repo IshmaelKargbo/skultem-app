@@ -30,9 +30,8 @@ async function fetchRecord() {
                 }
             ],
             metrics: [
-                { field: "amount", aggregation: "sum", name: "Paid", tags: { value: "Paid", field: "status" } },
-                { field: "amount", name: "Pending", aggregation: "sum", tags: { value: "Pending", field: "status" } },
-                { field: "amount", aggregation: "sum", name: "Partial", tags: { value: "Partial", field: "status" } },
+                { field: "amountPaid", aggregation: "sum", name: "Paid", tags: { value: "Paid", field: "status" } },
+                { field: "amountPaid", aggregation: "sum", name: "Partial", tags: { value: "Partial", field: "status" } },
                 { field: "amount", aggregation: "sum", name: "Total" }
             ],
             chartType: "stat"
@@ -43,13 +42,14 @@ async function fetchRecord() {
 
     const paid = datasets.find((e: any) => e.label === 'Paid')
     const partial = datasets.find((e: any) => e.label === 'Partial')
-    const pending = datasets.find((e: any) => e.label === 'Pending')
     const total = datasets.find((e: any) => e.label === 'Total')
 
+    const amountPaid = paid?.data?.[0] + partial?.data?.[0] || 0;
+    const outstanding = (total?.data?.[0] || 0) - amountPaid
     Object.assign(report, {
-        paid: paid?.data?.[0] + partial?.data?.[0] || 0,
+        paid: amountPaid,
         total: total?.data?.[0] || 0,
-        outstanding: pending?.data?.[0] || 0
+        outstanding: outstanding
     })
 
 }

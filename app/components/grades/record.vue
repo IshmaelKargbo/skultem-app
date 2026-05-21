@@ -3,7 +3,7 @@
         :class="[ selected?.id === record.id ? 'bg-primary-50/80 dark:bg-primary-950/35 border-primary-300 dark:border-primary-700' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800' ]">
 
         <div class="flex items-center justify-between w-full">
-            <p class="font-medium text-base">{{ record.subject }} -
+            <p class="font-medium">{{ record.subject }} -
                 <span class="text-primary-600 dark:text-primary-300">{{ record.assessment }}</span> -
                 <span class="text-emerald-600 dark:text-emerald-300">{{ record.term }}</span>
             </p>

@@ -9,6 +9,13 @@ export type Meta = {
     totalPages: number;
 }
 
+export const unitLabelMap: Record<string, string> = {
+    PCS: 'Pieces',
+    BOX: 'Box',
+    PACK: 'Pack',
+    LITRE: 'Litre'
+}
+
 export const ALT_IMAGE = '/avatar-placeholder.svg'
 export const nationalities = [
     { label: 'Afghan', value: 'AFGHAN' },
@@ -355,12 +362,12 @@ export const paymentMethods = {
     MOBILE_MONEY: {
         label: 'Mobile Money',
         color: 'info',
-        icon: 'mdi-cellphone'
+        icon: 'proicons:phone'
     },
     CASH: {
         label: 'Cash',
         color: 'neutral',
-        icon: 'mdi-cash'
+        icon: 'game-icons:cash'
     },
 }
 

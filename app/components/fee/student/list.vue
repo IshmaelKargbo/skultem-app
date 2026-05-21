@@ -1,5 +1,5 @@
 <template>
-    <UCard>
+    <UCard class="sticky top-0">
         <div class="space-y-4">
             <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON" :disabled="isLoading" />
             <div v-if="isLoading" class="space-y-3">
@@ -47,7 +47,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-    get: () => Number(route.query.size ?? runtimeConf().limit),
+    get: () => Number(route.query.size ?? 6),
     set: (val) => updateQuery({ size: val })
 })
 

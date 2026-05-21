@@ -14,12 +14,11 @@
                 <UCard class="sticky top-0">
                     <div class="flex flex-col items-center">
                         <!-- Avatar -->
-                        <div class="border-b py-6 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
-
+                        <div class="border-b pb-1 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
                             <div v-if="loading" class="h-40 w-40 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                            <img v-else :src="photo" :alt="name" class="rounded-full h-40 border-2 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-600 w-40 object-cover" />
+                            <img v-else :src="photo" :alt="name" class="rounded-xl h-60 border-2 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-600 w-full object-cover" />
 
-                            <div class="text-center mt-3 space-y-2">
+                            <div class="flex justify-between items-center mt-3 space-y-2 w-full">
                                 <div v-if="loading" class="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
                                 <h2 v-else class="text-xl font-semibold">
                                     {{ name }}
@@ -33,7 +32,7 @@
                         </div>
 
                         <!-- Info List -->
-                        <div class="w-full mt-3 space-y-3">
+                        <div class="w-full mt-4 space-y-3">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm text-muted">Admission No</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />

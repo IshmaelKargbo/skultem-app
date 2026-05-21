@@ -36,7 +36,7 @@
           :key="nav.to"
           :to="nav.to"
           class="flex items-center p-2 rounded-md hover:bg-primary-500 space-x-2"
-          :class="isActiveSub(nav) ? 'bg-primary-500 font-semibold text-white' : 'text-gray-800'"
+          :class="isActiveSub(nav) ? 'bg-primary-500 font-semibold text-white dark:text-primary-500' : 'text-gray-800'"
         >
           <span v-if="nav.icon" class="w-4 h-4 shrink-0">
             <component :is="nav.icon" />

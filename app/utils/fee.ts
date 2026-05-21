@@ -28,6 +28,10 @@ export type FeeStructure = {
     id: string
     term: Term
     clazz?: Clazz
+    type: string
+    hasSupply: boolean
+    totalSupply: number
+    material?: Material
     category: FeeCategory
     allowInstallment: boolean
     amount: number
@@ -51,10 +55,9 @@ export type FeeDiscount = {
 }
 
 export type RecordPaymentDto = {
-    feeId: string
     studentId: string
-    amount: number
     method: string
+    allocations: any
     referenceNo: string,
     note: string
 }
@@ -96,6 +99,10 @@ export type CreateFeeStructureDto = {
     classId?: string | null,
     feeCategory: string
     amount: number,
+    type: string
+    studentIds: string[]
+    hasSupply: boolean
+    totalSupply: number
     allowInstallment: boolean,
     description?: string
     dueDate: string
