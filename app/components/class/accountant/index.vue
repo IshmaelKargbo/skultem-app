@@ -1,5 +1,5 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto space-y-5">
+    <div class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
         <ClassAccountantReport />
         <ClassAccountantTable />
     </div>

@@ -1,5 +1,5 @@
 <template>
-    <UCard class="bg-gray-50">
+    <UCard class="bg-white dark:bg-gray-950">
         <p class="text-base">Data Source</p>
         <p class="text-xs text-mute">Select the data entity you want to explore</p>
 

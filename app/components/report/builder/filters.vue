@@ -1,6 +1,6 @@
 <template>
     <UForm ref="form" :schema="schema" :state="state" @submit="run">
-        <UCard class="bg-gray-50">
+        <UCard class="bg-white">
             <div class="flex justify-between items-center">
                 <div>
                     <p class="text-base">Filters ({{ state.filters.length }})</p>
@@ -13,7 +13,7 @@
             </div>
             <div class="mt-3 space-y-3">
                 <template v-if="state.filters.length > 0">
-                    <UCard :ui="{
+                    <UCard class="bg-gray-50 dark:bg-gray-950" :ui="{
                         body: 'sm:p-4'
                     }" v-for="(item, index) in state.filters" :key="index">
                         <div class="flex space-x-3">
@@ -89,7 +89,7 @@
                     </UCard>
                 </template>
 
-                <UCard v-else>
+                <UCard class="bg-gray-50 dark:bg-gray-950" v-else>
                     <div class="flex flex-col items-center space-y-2 p-4">
                         <UIcon :name="FILTER_ICON" class="text-4xl text-mute" />
                         <p class="text-muted">No filters added yet</p>
@@ -139,7 +139,7 @@ type ReportBuilder = {
 
 const saveLoading = ref(false)
 const { selected: entity } = defineProps<{
-    selected: ReportSelectPayload
+    selected: ReportSelectPayload | undefined
 }>()
 
 const store = useReportStore()
@@ -151,7 +151,7 @@ const state = reactive<ReportBuilder>({
     filters: []
 })
 
-const fields = computed(() => entity.filters.map(e => ({ label: e.label, value: e.field })))
+const fields = computed(() => entity?.filters.map(e => ({ label: e.label, value: e.field })))
 
 const schema = computed(() =>
     yup.object({
@@ -297,7 +297,7 @@ function fieldChange(index: number) {
 function operatorChange(index: number) {
     const selected = state.filters[index]
     if (selected == null) return
-    const found = entity.filters.find(e => e.field === selected.field)
+    const found = entity?.filters.find(e => e.field === selected.field)
     const operator = found?.operators.find(e => e.operator === selected.operator)
     selected.type = operator?.type ?? ""
 
@@ -314,17 +314,17 @@ const availableFields = (index: number) => {
     const selected = state.filters
         .map((a, i) => (i !== index ? a.field : null))
         .filter(Boolean)
-    return fields.value.filter(s => !selected.includes(s.value))
+    return fields.value?.filter(s => !selected.includes(s.value))
 }
 
 const availableOperators = (field: string) => {
-    const found = entity.filters.find(e => e.field === field)
+    const found = entity?.filters.find(e => e.field === field)
     if (!found) return []
     return found.operators.map(e => ({ label: e.name, value: e.operator }))
 }
 
 const operatorOptions = (field: string, opVal: string) => {
-    const found = entity.filters.find(e => e.field === field)
+    const found = entity?.filters.find(e => e.field === field)
     if (!found) return []
     const operator = found.operators.find(e => e.operator === opVal)
     return operator?.options ?? []
@@ -332,7 +332,7 @@ const operatorOptions = (field: string, opVal: string) => {
 
 function inputType(field: string, opVal: string): string | null {
     if (!field || !opVal) return null
-    const found = entity.filters.find(e => e.field === field)
+    const found = entity?.filters.find(e => e.field === field)
     if (!found) return null
     const operator = found.operators.find(e => e.operator === opVal)
     return operator?.input ?? null
@@ -376,7 +376,7 @@ function remove(index: number) {
 function initDefaultFilters() {
     state.filters = []
 
-    entity.filters.forEach((f) => {
+    entity?.filters.forEach((f) => {
         if (f.default == null) return
 
         const operator = f.operators[f.default]

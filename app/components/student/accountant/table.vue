@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
 
-const columns: TableColumn<Student>[] = [
+const columns = [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -22,15 +20,16 @@ const columns: TableColumn<Student>[] = [
     header: 'Class'
   },
   {
-    accessorKey: 'guardianName',
-    header: 'Guardian'
+    accessorKey: 'guardian.givenNames',
+    header: 'Guardian',
+    cell: ({ row }: any) => `${row.original.guardian.givenNames} ${row.original.guardian.familyName}`
   },
   {
-    accessorKey: 'fatherName',
+    accessorKey: 'family.fatherName',
     header: 'Father'
   },
   {
-    accessorKey: 'motherName',
+    accessorKey: 'family.motherName',
     header: 'Mother'
   },
   {
@@ -109,60 +108,47 @@ onMounted(() => {
 </script>
 
 <template>
-    <UCard>
-      <div class="flex flex-col gap-3">
-        <UTable :column-pinning="columnPinning" :columns="columns" :data="data" :loading="loading" class="w-full">
-          <template #empty-state>
-            <div class="flex flex-col items-center gap-2 py-10">
-              <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
-              <p class="text-gray-500 dark:text-gray-400">No students found.</p>
-            </div>
-          </template>
-          <template #status-cell="{ row }">
-            <UBadge
-              v-if="row.original.feeDetail"
-              :label="row.original.feeDetail.status"
-              :color="parseFeeStatusColor[row.original.feeDetail.status]"
-              :icon="parseFeeStatusIcon[row.original.feeDetail.status]"
-              variant="outline"
-            />
-          </template>
-          <template #gender-cell="{ row }">
-            <UBadge
-              :label="parseGender[row.original.gender]"
-              :color="parseGenderColor[row.original.gender]"
-              variant="outline"
-            />
-          </template>
-          <template #name-cell="{ row }">
-            <StudentIdentityCell
-              :given-names="row.original.givenNames"
-              :family-name="row.original.familyName"
-              :photo="row.original.photo"
-              :subtitle="row.original.className || 'No Class'"
-            />
-          </template>
-          <template #total-cell="{ row }">
-            <p class="text-error">{{ format(row.original.feeDetail?.total) }}</p>
-          </template>
-          <template #paid-cell="{ row }">
-            <p class="text-success">{{ format(row.original.feeDetail?.paid) }}</p>
-          </template>
-          <template #balance-cell="{ row }">
-            <p class="text-info">{{ format(row.original.feeDetail?.balance) }}</p>
-          </template>
-        </UTable>
-        <div class="flex justify-between items-center border-t border-gray-200 dark:border-gray-800 pt-3">
-          <Showing :meta="meta" />
-          <UPagination
-            size="sm"
-            v-model:page="page"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
-        </div>
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
+    <div class="flex flex-col gap-3">
+      <UTable :column-pinning="columnPinning" :columns="columns" :data="data" :loading="loading" class="w-full">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+            <p class="text-gray-500 dark:text-gray-400">No students found.</p>
+          </div>
+        </template>
+        <template #status-cell="{ row }">
+          <UBadge v-if="row.original.feeDetail" :label="row.original.feeDetail.status"
+            :color="parseFeeStatusColor[row.original.feeDetail.status]"
+            :icon="parseFeeStatusIcon[row.original.feeDetail.status]" variant="outline" />
+        </template>
+        <template #gender-cell="{ row }">
+          <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
+            variant="outline" />
+        </template>
+        <template #name-cell="{ row }">
+          <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
+            :photo="row.original.photo" :subtitle="row.original.className || 'No Class'" />
+        </template>
+        <template #total-cell="{ row }">
+          <p class="text-error">{{ format(row.original.feeDetail?.total) }}</p>
+        </template>
+        <template #paid-cell="{ row }">
+          <p class="text-success">{{ format(row.original.feeDetail?.paid) }}</p>
+        </template>
+        <template #balance-cell="{ row }">
+          <p class="text-info">{{ format(row.original.feeDetail?.balance) }}</p>
+        </template>
+      </UTable>
+    </div>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
-    </UCard>
+    </template>
+  </UCard>
 </template>
