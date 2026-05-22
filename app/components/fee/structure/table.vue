@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const { format } = useMoney()
 const store = useFeeStructureStore()
 const loading = ref(true)
 const { records: data, meta } = storeToRefs(store)
-
-const editRcord = ref<Teacher | null>(null)
-const editState = ref(false)
 
 const columns = [
   {
@@ -124,7 +119,9 @@ onMounted(async () => {
       </template>
       <template #hasSupply-cell="{ row }">
         <div class="space-y-1">
-          <p><span>{{ row.original.material?.name }}</span><span>({{ row.original.totalSupply || '0' }})</span></p>
+          <p v-if="row.original.hasSupply"><span>{{ row.original.material?.name }}</span><span>({{
+            row.original.totalSupply || '0' }})</span></p>
+          <p v-else class="text-muted">-</p>
         </div>
       </template>
       <template #students-cell="{ row }">

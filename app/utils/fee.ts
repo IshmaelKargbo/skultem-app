@@ -103,6 +103,7 @@ export type CreateFeeStructureDto = {
     studentIds: string[]
     hasSupply: boolean
     totalSupply: number
+    materialId: string
     allowInstallment: boolean,
     description?: string
     dueDate: string

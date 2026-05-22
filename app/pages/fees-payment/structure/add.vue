@@ -4,6 +4,7 @@ import * as yup from 'yup'
 const feeStructureStore = useFeeStructureStore()
 const feeCategoryStore = useFeeStore()
 const termStore = useTermStore()
+const materialStore = useMaterialStore()
 const clazzStore = useClassStore()
 
 const { error: toastError, success: toastSuccess } = useNotify()
@@ -12,6 +13,13 @@ const isLoading = ref(false)
 
 const categories = computed(() =>
     feeCategoryStore.records.map((e) => ({
+        label: e.name,
+        value: e.id
+    }))
+)
+
+const materials = computed(() =>
+    materialStore.records.map((e) => ({
         label: e.name,
         value: e.id
     }))
@@ -43,6 +51,7 @@ type FeeStructureForm = {
     allowInstallment: boolean
     hasSupply: boolean
     totalSupply: number
+    material: string
     description?: string
 }
 
@@ -56,6 +65,7 @@ const state = reactive<FeeStructureForm>({
     allowInstallment: false,
     hasSupply: false,
     totalSupply: 0,
+    material: '',
     description: ''
 })
 
@@ -129,6 +139,7 @@ async function onSubmit() {
             totalSupply: state.hasSupply
                 ? state.totalSupply
                 : 0,
+            materialId: state.material,
             description: state.description
         })
 
@@ -150,13 +161,16 @@ async function onSubmit() {
 
 onMounted(() => {
     useAppStore().setTitle('Add Fee Structure')
-
     document.title = 'Add | Fee Structure | Skultem'
-
     feeCategoryStore.fetchAll(0, 0)
     termStore.fetchAll(0, 0)
     clazzStore.fetchAll(0, 0)
+    materialStore.fetchAll(0, 0)
 })
+
+watch(() => state.hasSupply, (value) => {
+    if (!value) state.material = ""
+}, { immediate: true })
 
 definePageMeta({
     role: [
@@ -177,7 +191,7 @@ definePageMeta({
             <div class="grid lg:grid-cols-2 gap-4">
                 <!-- Fee Details -->
                 <UCard>
-                    <div class="space-y-4">
+                    <div class="space-y-2.5">
                         <!-- Term -->
                         <UFormField label="Term" name="termId" required>
                             <USelectMenu v-model="state.termId" value-key="value" :items="terms"
@@ -263,17 +277,32 @@ definePageMeta({
                             </div>
                         </UFormField>
 
-                        <!-- Total Supply -->
-                        <UFormField v-if="state.hasSupply" label="Total Supply" name="totalSupply" required>
-                            <UInput v-model.number="state.totalSupply" type="number" min="1"
-                                placeholder="Enter quantity" :disabled="isLoading" />
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Material -->
+                            <UFormField v-if="state.hasSupply" label="Material" name="material" required>
+                                <USelectMenu v-model="state.material" value-key="value" :items="materials"
+                                    placeholder="Select material" :disabled="isLoading" />
 
-                            <template #help>
-                                <p class="text-xs text-muted">
-                                    Number of supplies students receive.
-                                </p>
-                            </template>
-                        </UFormField>
+                                <template #help>
+                                    <p class="text-xs text-muted">
+                                        Select the type of material or supply item.
+                                    </p>
+                                </template>
+                            </UFormField>
+
+                            <!-- Total Supply -->
+                            <UFormField v-if="state.hasSupply" label="Total Supply" name="totalSupply" required>
+                                <UInput v-model.number="state.totalSupply" type="number" min="1"
+                                    placeholder="Enter quantity" :disabled="isLoading" />
+
+                                <template #help>
+                                    <p class="text-xs text-muted">
+                                        Number of items each student will receive.
+                                    </p>
+                                </template>
+                            </UFormField>
+
+                        </div>
 
                         <!-- Description -->
                         <UFormField label="Description" name="description">
@@ -328,21 +357,19 @@ definePageMeta({
                                 </p>
                             </div>
                         </div>
+                        <template #footer>
+                            <div class="flex justify-end gap-3">
+                                <UButton label="Cancel" color="neutral" variant="outline" :disabled="isLoading"
+                                    @click="navigateTo('/fees/structures')" />
+
+                                <UButton type="submit" icon="lucide:save" label="Create Fee Structure"
+                                    :loading="isLoading" />
+                            </div>
+
+                        </template>
                     </UCard>
                 </div>
-
             </div>
-
-            <!-- Footer -->
-            <div class="flex justify-end gap-3 border-t border-gray-200 pt-4">
-
-                <UButton label="Cancel" color="neutral" variant="outline" :disabled="isLoading"
-                    @click="navigateTo('/fees/structures')" />
-
-                <UButton type="submit" icon="lucide:save" label="Create Fee Structure" :loading="isLoading" />
-            </div>
-
         </UForm>
-
     </div>
 </template>
