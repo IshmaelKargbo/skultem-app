@@ -1,6 +1,5 @@
 <template>
   <div class="h-screen flex font-sans bg-white dark:bg-gray-950 overflow-hidden">
-
     <!-- LEFT PANEL -->
     <div class="hidden lg:flex h-full w-[48%] relative overflow-hidden border-r border-white/5">
 
@@ -39,12 +38,6 @@
                 class="inline-flex w-fit items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur text-[10px] font-semibold tracking-widest text-white/70 uppercase">
                 <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 {{ item.badge }}
-              </div>
-
-              <!-- Icon -->
-              <div
-                class="w-12 h-12 rounded-2xl bg-linear-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur flex items-center justify-center">
-                <UIcon :name="item.icon" class="w-6 h-6 text-primary" />
               </div>
 
               <!-- Title -->

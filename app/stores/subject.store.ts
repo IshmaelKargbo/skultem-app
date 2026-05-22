@@ -9,7 +9,7 @@ export const useSubjectStore = defineStore('subject', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 11) {
       this.loading = true
       this.error = null
       try {

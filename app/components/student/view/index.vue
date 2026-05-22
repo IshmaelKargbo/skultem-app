@@ -4,8 +4,8 @@
             subtitle="View detailed student information, including academic records, personal details, and enrollment data.">
             <div class="flex space-x-2 items-center">
                 <UButton to="/students" variant="outline" size="sm" color="primary" label="All Students" />
-                <UButton :to="`/students/${record?.id}/edit`" size="sm" variant="outline" color="secondary" :icon="EDIT_ICON"
-                    label="Edit" />
+                <UButton :to="`/students/${record?.id}/edit`" size="sm" variant="outline" color="secondary"
+                    :icon="EDIT_ICON" label="Edit" />
             </div>
         </Heading>
 
@@ -14,17 +14,24 @@
                 <UCard class="sticky top-0">
                     <div class="flex flex-col items-center">
                         <!-- Avatar -->
-                        <div class="border-b pb-1 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
-                            <div v-if="loading" class="h-40 w-40 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                            <img v-else :src="photo" :alt="name" class="rounded-xl h-60 border-2 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-600 w-full object-cover" />
+                        <div
+                            class="border-b pb-1 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
+                            <div v-if="loading"
+                                class="h-40 w-40 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                            <div v-else class="rounded-xl border-2 overflow-hidden p-0.5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600">
+                                <img :src="photo" :alt="name"
+                                    class="h-72 w-full object-cover rounded-lg" />
+                            </div>
 
-                            <div class="flex justify-between items-center mt-3 space-y-2 w-full">
-                                <div v-if="loading" class="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
-                                <h2 v-else class="text-xl font-semibold">
+                            <div class="flex justify-between items-center mt-2 w-full">
+                                <div v-if="loading"
+                                    class="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                                <h2 v-else class="text-lg font-semibold">
                                     {{ name }}
                                 </h2>
 
-                                <div v-if="loading" class="h-3 w-20 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                                <div v-if="loading"
+                                    class="h-3 w-20 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
                                 <p v-else class="text-xs text-muted">
                                     {{ record?.className }}
                                 </p>
@@ -32,7 +39,7 @@
                         </div>
 
                         <!-- Info List -->
-                        <div class="w-full mt-4 space-y-3">
+                        <div class="w-full mt-2 space-y-2">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm text-muted">Admission No</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />

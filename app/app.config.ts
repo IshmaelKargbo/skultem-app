@@ -18,7 +18,6 @@ export default defineAppConfig({
         },
       },
     },
-
     breadcrumb: {
       variants: {
         active: {
@@ -65,7 +64,6 @@ export default defineAppConfig({
           'rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
       },
     },
-
     modal: {
       slots: {
         base: 'rounded-2xl bg-white dark:bg-gray-900',
@@ -92,7 +90,13 @@ export default defineAppConfig({
         size: 'xl',
       },
     },
-
+    badge: {
+      variants: {
+        size: {
+          md: 'text-xs px-2 py-1 gap-1 rounded-xl'
+        }
+      }
+    },
     button: {
       defaultVariants: {
         size: 'lg',

@@ -91,6 +91,11 @@
             </template> </MenuItem>
         </li>
         <li v-if="can([Role.PARENT])">
+          <MenuItem to="/fees" label="Fees"> <template #icon>
+              <UIcon class="text-xl" :name="PAYMENT_ICON" />
+            </template> </MenuItem>
+        </li>
+        <li v-if="can([Role.PARENT])">
           <MenuItem to="/notifications" label="Notifications"> <template #icon>
               <UIcon class="text-xl" :name="BELL_ICON" />
             </template> </MenuItem>

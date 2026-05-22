@@ -173,7 +173,6 @@ function resetForm() {
     state.value = 0
 }
 
-
 const parent = reactive({
     fatherName: '',
     motherName: '',
@@ -199,7 +198,8 @@ const academic = reactive({
     classId: '',
     admissionNumber: '',
     previousSchool: '',
-    lastGradeCompleted: ''
+    lastGradeCompleted: '',
+    selectedOptionIds: {} as Record<string, string>
 })
 
 function moveToParent(param: any) {
@@ -230,7 +230,8 @@ function moveToProfile(param: any) {
         classId: param.classId,
         admissionNumber: param.admissionNumber,
         previousSchool: param.previousSchool,
-        lastGradeCompleted: param.lastGradeCompleted
+        lastGradeCompleted: param.lastGradeCompleted,
+        ...param
     })
 
     if (state.value === 3) return
@@ -261,6 +262,7 @@ async function submit(param: any) {
     try {
         loading.value = true
         const formData = new FormData()
+        const list = Object.values(academic.selectedOptionIds)
 
         const data = {
             ...personal,
@@ -282,6 +284,7 @@ async function submit(param: any) {
                 city: parent.guardianCity,
                 street: parent.guardianAddress
             },
+            selectedOptionIds: list,
             parentId: parent.existingGuardianId,
             classId: academic.classId,
             admissionNumber: academic.admissionNumber,
