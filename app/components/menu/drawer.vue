@@ -4,55 +4,93 @@
   }" @update:open="open = $event">
     <!-- Trigger -->
     <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
+    <template #header>
+      <div class="relative overflow-hidden w-full ">
+        <div class="flex justify-between items-center gap-3">
+          <div class="relative shrink-0">
+            <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900 shadow-lg" />
+
+            <span
+              class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <h3 class="truncate text-sm font-semibold text-neutral-900 dark:text-white">
+              {{ name }}
+            </h3>
+
+            <p class="truncate text-xs text-neutral-500 dark:text-neutral-400">
+              {{ user?.email }}
+            </p>
+          </div>
+
+          <UButton icon="lucide:x" variant="ghost" color="neutral" size="xs" class="rounded-xl"
+            @click="drawerOpen = false" />
+        </div>
+      </div>
+    </template>
 
     <!-- BODY -->
     <template #body>
       <div class="flex h-full flex-col">
 
         <!-- PROFILE -->
-        <div class="pt-5">
-          <div class="rounded-[28px] bg-neutral-100 dark:bg-neutral-900 px-4 py-4">
-            <div class="flex items-center justify-between gap-3">
+        <div class="pt-2">
+          <!-- roles -->
+          <div class="space-y-2 pb-5">
+            <div class="mb-3 flex items-center justify-between">
+              <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                Switch Role
+              </p>
 
-              <!-- user -->
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="relative shrink-0">
-                  <UAvatar :alt="name" :text="initials" size="lg" />
+              <div
+                class="rounded-full border border-neutral-200 dark:border-white/10 px-2 py-1 text-[10px] text-neutral-500">
+                {{ userRoles.length }} roles
+              </div>
+            </div>
 
-                  <span
-                    class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-neutral-900 bg-green-500" />
-                </div>
+            <button v-for="role in userRoles" :key="role.value"
+              class="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 transition-all duration-200"
+              :class="activeRole === role.value
+                  ? 'border-primary-500/20 bg-primary-500/[0.08]'
+                  : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02] hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/[0.05]'
+                " @click="switchRole(role.value)">
+              <!-- glow -->
+              <div v-if="activeRole === role.value" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-primary" />
 
-                <div class="min-w-0">
-                  <p class="truncate text-[17px] font-semibold">
-                    {{ name }}
-                  </p>
-
-                  <p class="text-xs text-muted capitalize mt-0.5">
-                    {{ clean(activeRole) }}
-                  </p>
-                </div>
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl transition-all" :class="activeRole === role.value
+                  ? 'bg-primary text-white shadow-lg shadow-primary-500/20'
+                  : 'bg-white dark:bg-white/[0.04] text-neutral-500 border border-neutral-200 dark:border-white/5'
+                ">
+                <UIcon :name="role.icon" class="text-base" />
               </div>
 
-              <!-- role dropdown -->
-              <UDropdownMenu :items="userRoles.map(role => ({
-                label: role.label,
-                icon: role.icon,
-                click: () => switchRole(role.value)
-              }))" :ui="{
-                  content: 'w-52'
-                }">
-                <UButton color="neutral" variant="soft" icon="lucide:chevron-down"
-                  class="rounded-full w-11 h-11 justify-center" />
-              </UDropdownMenu>
-            </div>
+              <div class="min-w-0 flex-1 text-left">
+                <p class="truncate text-sm font-semibold text-neutral-900 dark:text-white">
+                  {{ role.label }}
+                </p>
+
+                <p class="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                  {{ role.desc }}
+                </p>
+              </div>
+
+              <Transition enter-active-class="transition duration-200" enter-from-class="scale-75 opacity-0"
+                enter-to-class="scale-100 opacity-100">
+                <div v-if="activeRole === role.value"
+                  class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white">
+                  <UIcon name="lucide:check" class="size-3.5" />
+                </div>
+              </Transition>
+            </button>
           </div>
+
         </div>
 
         <!-- QUICK LINKS -->
-        <div class=" pt-5 space-y-3">
+        <div class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-2 space-y-3">
 
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN])" to="/attendance" @click="close"
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER])" to="/attendance" @click="close"
             class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
             <UIcon :name="ATTENDANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
@@ -85,6 +123,49 @@
 
             <span class="text-[16px] font-medium">
               Subjects
+            </span>
+          </NuxtLink>
+
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/teachers" @click="close"
+            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            <UIcon :name="TEACHER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Teachers
+            </span>
+          </NuxtLink>
+
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/classes" @click="close"
+            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            <UIcon :name="CLASS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Classes
+            </span>
+          </NuxtLink>
+
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/ledger" @click="close"
+            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            <UIcon :name="LEDGER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Ledger
+            </span>
+          </NuxtLink>
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/transactions" @click="close"
+            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            <UIcon :name="TRANSACTION_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Transactions
+            </span>
+          </NuxtLink>
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/analytics" @click="close"
+            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            <UIcon :name="ANALYTICS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Analytics
             </span>
           </NuxtLink>
 
@@ -150,6 +231,7 @@ const { canInstall, install } = usePwaInstall()
 
 const router = useRouter()
 const open = ref(false)
+const drawerOpen = ref(false)
 
 const expanded = ref<string[]>(['grades'])
 
@@ -217,18 +299,18 @@ const sections = computed(() => [
     ].filter(Boolean)
   },
 
-  // ONLY GRADES DROPDOWN
   {
     id: 'grades',
     title: 'Grades',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
     items: [
-      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]) && {
         label: 'Grade Approval',
         icon: GRADES_APPROVAL_ICON,
         to: '/grades/approval'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]) && {
         label: 'Grade Assignment',
         icon: 'lucide:clipboard-check',
         to: '/grades/assignment'
@@ -282,7 +364,7 @@ const sections = computed(() => [
         to: '/academics/assessment-cycle'
       },
 
-       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Grade Scale',
         icon: GRADE_ICON,
         to: '/academics/grade-scale'
@@ -290,7 +372,7 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
- {
+  {
     id: 'authorization',
     title: 'Authorization',
     items: [
@@ -314,55 +396,67 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
-
   {
-    id: 'finance',
-    title: 'Finance',
-    visible: can([Role.PROPRIETOR, Role.ADMIN]),
+    id: 'fees',
+    title: 'Fees & Payments',
     items: [
-      {
-        label: 'Fee Structures',
-        icon: FEE_STRUCTURE_ICON,
-        to: '/fees-structures'
-      },
-
-      {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Student Fees',
         icon: STUDENT_FEES_ICON,
-        to: '/student-fees'
+        to: '/fees-payment'
       },
 
-      {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+        label: 'Fee Structures',
+        icon: FEE_STRUCTURE_ICON,
+        to: '/fees-payment/structure'
+      },
+
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Discounts',
         icon: DISCOUNT_ICON,
-        to: '/discounts'
+        to: '/fees-payment/discounts'
       },
 
-      {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Expenses',
-        icon: EXPENSES_ICON,
+        icon: PAYMENT_ICON,
         to: '/expenses'
       },
-
-      {
-        label: 'Ledger',
-        icon: LEDGER_ICON,
-        to: '/ledger'
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+        label: 'Category',
+        icon: CATEGORY_ICON,
+        to: '/fees-payment/category'
       },
 
-      {
-        label: 'Transactions',
-        icon: TRANSACTION_ICON,
-        to: '/transactions'
-      },
-
-      {
-        label: 'Analytics',
-        icon: ANALYTICS_ICON,
-        to: '/analytics'
-      }
-    ]
+    ].filter(Boolean)
   },
+  {
+    id: 'materials',
+    title: 'Materials & Supplies',
+    items: [
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+        label: 'Materials',
+        icon: MATERIAL_ICON,
+        to: '/materials'
+      },
+
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+        label: 'Supplies',
+        icon: CURRICULUM_GROUP_ICON,
+        to: '/materials/supply'
+      },
+
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+        label: 'Category',
+        icon: CATEGORY_ICON,
+        to: '/material/category'
+      },
+
+    ].filter(Boolean)
+  },
+
+
 
   {
     id: 'curriculum',
