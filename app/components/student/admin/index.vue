@@ -3,7 +3,7 @@
         <Heading title="Students Management" subtitle="Organize academic classes">
             <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 w-full md:w-auto">
                 <UInput placeholder="Search by name or admission number" />
-                <UButton to="/students/add" color="primary" label="Enrolled Student" :icon="ADD_ICON" />
+                <UButton to="/students/add" class="items-center flex justify-center" color="primary" label="Enrolled Student" :icon="ADD_ICON" />
             </div>
         </Heading>
         <StudentAdminTable />

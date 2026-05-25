@@ -3,11 +3,44 @@
         <div class="space-y-4">
             <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON" :disabled="isLoading" />
             <div v-if="isLoading" class="space-y-3">
-                <div v-for="n in 6" :key="n" class="border p-3 rounded-md border-gray-300 dark:border-gray-700 space-y-2">
+                <div v-for="n in 6" :key="n"
+                    class="border p-3 rounded-md border-gray-300 dark:border-gray-700 space-y-2">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
                             <USkeleton class="h-8 w-8 rounded-full" />
-                            <USkeleton class="h-4 w-40" />
+                            <USkeleton class="h-4 w-40" /><template>
+                                <UCard class="sticky top-0">
+                                    <div class="space-y-4">
+                                        <UInput placeholder="Search students . . ." :leading-icon="SEARCH_ICON"
+                                            :disabled="isLoading" />
+                                        <div v-if="isLoading" class="space-y-3">
+                                            <div v-for="n in 6" :key="n"
+                                                class="border p-3 rounded-md border-gray-300 dark:border-gray-700 space-y-2">
+                                                <div class="flex justify-between items-center">
+                                                    <div class="flex items-center gap-2">
+                                                        <USkeleton class="h-8 w-8 rounded-full" />
+                                                        <USkeleton class="h-4 w-40" />
+                                                    </div>
+                                                    <USkeleton class="h-5 w-16 rounded-full" />
+                                                </div>
+                                                <USkeleton class="h-3 w-40" />
+                                            </div>
+                                        </div>
+                                        <div v-else class="space-y-2">
+                                            <div @click="select(item)" v-for="(item, index) in records" :key="index">
+                                                <FeeStudentCard @click="select" :active="item.id == selected?.id"
+                                                    :student="item" />
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-center">
+                                            <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page"
+                                                :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+                                                show-edges />
+                                        </div>
+                                    </div>
+                                </UCard>
+                            </template>
+
                         </div>
                         <USkeleton class="h-5 w-16 rounded-full" />
                     </div>

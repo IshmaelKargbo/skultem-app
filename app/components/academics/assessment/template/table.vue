@@ -243,59 +243,83 @@ watch(
 </script>
 
 <template>
-  <UCard :ui="{
-    body: 'sm:p-0'
-  }">
-    <UTable :columns="columns" :data="data" :loading="loading" expandable :ui="{
-      td: 'align-top'
-    }">
+  <!-- Desktop -->
+  <UCard
+    class="hidden md:block"
+    :ui="{
+      body: 'sm:p-0'
+    }"
+  >
+    <UTable
+      :columns="columns"
+      :data="data"
+      :loading="loading"
+      expandable
+      :ui="{
+        td: 'align-top'
+      }"
+    >
       <!-- Expanded Row -->
       <template #expanded="{ row }">
-        <div class="p-2">
-
-          <!-- Header -->
-          <div class="flex items-start justify-between gap-3 mb-4">
+        <div class="p-4">
+          <div class="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h3 class="text-base font-semibold text-slate-800">
+              <h3 class="text-base font-semibold text-slate-800 dark:text-white">
                 Assessment Structure
               </h3>
+
               <p class="text-sm text-slate-500">
                 Breakdown of assessment weights
               </p>
             </div>
 
-            <div>
-              <span :class="[
-                'px-3 py-1 text-xs font-semibold rounded-full',
+            <span
+              :class="[
+                'rounded-full border px-3 py-1 text-xs font-semibold',
                 calculateTotal(row.original.assessments) === 100
-                  ? 'bg-green-100 dark:bg-gray-950 dark:border-success-600 text-success-700 border border-success-300'
-                  : 'bg-amber-100 text-amber-700 border border-amber-200'
-              ]">
-                Total {{ calculateTotal(row.original.assessments) }}%
-              </span>
-            </div>
+                  ? 'border-success-300 bg-green-100 text-success-700 dark:border-success-700 dark:bg-success-500/10'
+                  : 'border-amber-200 bg-amber-100 text-amber-700'
+              ]"
+            >
+              Total {{ calculateTotal(row.original.assessments) }}%
+            </span>
           </div>
 
-          <UProgress :max="100" :model-value="Math.min(calculateTotal(row.original.assessments), 100)"
-            :color="calculateTotal(row.original.assessments) === 100 ? 'success' : 'warning'" />
-          <div class="overflow-hidden bg-gray-50 dark:bg-gray-950 mt-4">
+          <UProgress
+            :max="100"
+            :model-value="Math.min(calculateTotal(row.original.assessments), 100)"
+            :color="calculateTotal(row.original.assessments) === 100 ? 'success' : 'warning'"
+          />
+
+          <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
             <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 dark:bg-gray-800 text-slate-600">
+              <thead class="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th class="px-4 py-3 text-left font-medium">#</th>
-                  <th class="px-4 py-3 text-left font-medium">Assessment</th>
-                  <th class="px-4 py-3 text-right font-medium">Weight</th>
+                  <th class="px-4 py-3 text-left font-medium">
+                    #
+                  </th>
+
+                  <th class="px-4 py-3 text-left font-medium">
+                    Assessment
+                  </th>
+
+                  <th class="px-4 py-3 text-right font-medium">
+                    Weight
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr v-for="item in [...row.original.assessments].sort((a, b) => a.position - b.position)" :key="item.id"
-                  class="border-t border-gray-200 dark:border-gray-700">
+                <tr
+                  v-for="item in [...row.original.assessments].sort((a, b) => a.position - b.position)"
+                  :key="item.id"
+                  class="border-t border-gray-200 dark:border-gray-800"
+                >
                   <td class="px-4 py-3 text-slate-500">
                     {{ item.position }}
                   </td>
 
-                  <td class="px-4 py-3 font-medium text-gray-800 dark:text-muted">
+                  <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">
                     {{ item.name }}
                   </td>
 
@@ -303,43 +327,295 @@ watch(
                     {{ item.weight }}%
                   </td>
                 </tr>
+
                 <tr v-if="!row.original.assessments?.length">
-                  <td colspan="3" class="px-4 py-4 text-sm text-slate-500 text-center">
-                    No assessments assigned to this template yet.
+                  <td
+                    colspan="3"
+                    class="px-4 py-4 text-center text-sm text-slate-500"
+                  >
+                    No assessments assigned yet.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Progress Bar -->
-          <div class="mt-3">
-            <p v-if="calculateTotal(row.original.assessments) !== 100" class="text-amber-600 text-xs mt-2">
-              Total weight must equal 100%.
-            </p>
-          </div>
-
+          <p
+            v-if="calculateTotal(row.original.assessments) !== 100"
+            class="mt-3 text-xs text-amber-600"
+          >
+            Total weight must equal 100%.
+          </p>
         </div>
       </template>
+
       <template #loading>
         <TableLoading :size="columns.length" />
       </template>
-      <!-- Empty State -->
+
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-slate-400" />
-          <p class="text-slate-600 font-medium">No assessment template found.</p>
-          <p class="text-xs text-slate-500">Create a template to start defining your assessment structure.</p>
+          <UIcon
+            name="ph:books-light"
+            class="text-4xl text-slate-400"
+          />
+
+          <p class="font-medium text-slate-600">
+            No assessment template found.
+          </p>
+
+          <p class="text-xs text-slate-500">
+            Create a template to start defining assessments.
+          </p>
         </div>
       </template>
     </UTable>
-    <AcademicsAssessmentTemplateAddAssessment v-model:open="assignState" :template="assignRecord" @saved="fetchRecord" />
+
+    <AcademicsAssessmentTemplateAddAssessment
+      v-model:open="assignState"
+      :template="assignRecord"
+      @saved="fetchRecord"
+    />
+
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+
+        <UPagination
+          v-model:page="page"
+          size="sm"
+          :page-size="meta.size"
+          :items-per-page="meta.size"
+          :total="meta.total"
+          show-edges
+        />
       </div>
     </template>
   </UCard>
+
+  <!-- Mobile -->
+  <div class="space-y-4 md:hidden">
+    <!-- Loading -->
+    <template v-if="loading">
+      <UCard
+        v-for="i in 4"
+        :key="i"
+        class="overflow-hidden"
+      >
+        <div class="space-y-4 p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-12 rounded-2xl" />
+
+              <div class="space-y-2">
+                <USkeleton class="h-3 w-28" />
+                <USkeleton class="h-2 w-20" />
+              </div>
+            </div>
+
+            <USkeleton class="h-6 w-16 rounded-full" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-16 rounded-2xl" />
+          </div>
+
+          <USkeleton class="h-2 w-full rounded-full" />
+        </div>
+      </UCard>
+    </template>
+
+    <!-- Data -->
+    <template v-else-if="data?.length">
+      <UCard
+        v-for="item in data"
+        :key="item.id"
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900"
+        :ui="{
+          body: 'p-0'
+        }"
+      >
+        <!-- Header -->
+        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <div
+                class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400"
+              >
+                <UIcon
+                  name="i-lucide-clipboard-list"
+                  class="size-6"
+                />
+              </div>
+
+              <div class="min-w-0">
+                <h3
+                  class="truncate text-sm font-semibold text-gray-900 dark:text-white"
+                >
+                  {{ item.name }}
+                </h3>
+
+                <p class="truncate text-xs text-gray-500">
+                  {{ parseAssessmentCount(item.assessments) }} assessment(s)
+                </p>
+              </div>
+            </div>
+
+            <UDropdownMenu
+              :items="getRowItems({ original: item } as any)"
+              :content="{ align: 'end' }"
+            >
+              <UButton
+                icon="i-lucide-ellipsis-vertical"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                class="rounded-xl"
+              />
+            </UDropdownMenu>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div
+          v-if="item.description"
+          class="border-b border-gray-100 px-4 py-3 dark:border-gray-800"
+        >
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            {{ item.description }}
+          </p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3 p-4">
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] uppercase tracking-wide text-gray-500">
+              Pass Mark
+            </p>
+
+            <p class="text-sm font-semibold">
+              {{ item.passMark }}%
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] uppercase tracking-wide text-gray-500">
+              Total Weight
+            </p>
+
+            <p class="text-sm font-semibold">
+              {{ calculateTotal(item.assessments) }}%
+            </p>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="px-4 pb-4">
+          <div class="mb-2 flex items-center justify-between">
+            <p class="text-xs font-medium text-gray-500">
+              Template Status
+            </p>
+
+            <UBadge
+              :label="statusLabel(calculateTotal(item.assessments))"
+              :color="statusColor(calculateTotal(item.assessments))"
+              variant="soft"
+            />
+          </div>
+
+          <UProgress
+            :max="100"
+            :model-value="Math.min(calculateTotal(item.assessments), 100)"
+            :color="statusColor(calculateTotal(item.assessments))"
+          />
+
+          <p
+            v-if="calculateTotal(item.assessments) !== 100"
+            class="mt-2 text-xs text-amber-600"
+          >
+            Total assessment weight should equal 100%.
+          </p>
+        </div>
+
+        <!-- Assessment Items -->
+        <div
+          class="border-t border-gray-100 px-4 py-4 dark:border-gray-800"
+        >
+          <div class="mb-3 flex items-center justify-between">
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+              Assessments
+            </h4>
+
+            <UBadge
+              :label="`${parseAssessmentCount(item.assessments)} Items`"
+              variant="soft"
+              color="neutral"
+            />
+          </div>
+
+          <div
+            v-if="item.assessments?.length"
+            class="space-y-2"
+          >
+            <div
+              v-for="assessment in [...item.assessments].sort((a, b) => a.position - b.position)"
+              :key="assessment.id"
+              class="flex items-center justify-between rounded-2xl bg-gray-50 px-3 py-3 dark:bg-neutral-800"
+            >
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium">
+                  {{ assessment.name }}
+                </p>
+
+                <p class="text-xs text-gray-500">
+                  Position {{ assessment.position }}
+                </p>
+              </div>
+
+              <UBadge
+                :label="`${assessment.weight}%`"
+                variant="soft"
+                color="primary"
+              />
+            </div>
+          </div>
+
+          <div
+            v-else
+            class="rounded-2xl border border-dashed border-gray-300 px-4 py-6 text-center dark:border-gray-700"
+          >
+            <p class="text-sm text-gray-500">
+              No assessments assigned yet.
+            </p>
+          </div>
+        </div>
+      </UCard>
+    </template>
+
+    <!-- Empty -->
+    <template v-else>
+      <div class="flex flex-col items-center justify-center py-14">
+        <UIcon
+          name="ph:books-light"
+          class="mb-3 text-4xl text-slate-400"
+        />
+
+        <p class="font-medium text-slate-600">
+          No assessment template found.
+        </p>
+
+        <p class="text-xs text-slate-500">
+          Create a template to start defining assessments.
+        </p>
+      </div>
+    </template>
+
+    <!-- Pagination -->
+       <div class="flex justify-between items-center mt-3 md:hidden">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
+    </div>
+  </div>
 </template>

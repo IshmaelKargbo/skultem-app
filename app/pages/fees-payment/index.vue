@@ -6,7 +6,7 @@
             </div>
         </Heading>
 
-        <div class="grid gap-5 lg:grid-cols-12">
+        <div class="grid gap-5 lg:grid-cols-12 grid-cols-1">
             <div class="lg:col-span-4">
                 <FeeStudentList @select="select" />
             </div>

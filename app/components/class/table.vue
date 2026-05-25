@@ -3,14 +3,16 @@ import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
 const router = useRouter()
+
 const store = useClassSessionStore()
 const { records: data, meta, loading } = storeToRefs(store)
 
-const editRcord = ref<ClassSession | null>(null)
+const editRecord = ref<ClassSession | null>(null)
 const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
+
 const columns = [
   {
     accessorKey: 'clazz',
@@ -52,191 +54,227 @@ const columns = [
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
+  set: (value) => updateQuery({ page: value })
 })
 
 const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val })
+  set: (value) => updateQuery({ size: value })
 })
 
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
-}
-
-watch(() => page.value, () => {
+function updateQuery(query: Record<string, any>) {
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      ...route.query,
+      ...query
     }
   })
-
-  fetchRecords()
-}, { immediate: true })
-
-async function fetchRecords() {
-  loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
 }
 
-onMounted(async () => {
+async function fetchRecords() {
+  try {
+    loading.value = true
+
+    await store.fetchAll(page.value, size.value)
+  } finally {
+    loading.value = false
+  }
+}
+
+watch([page, size], fetchRecords, {
+  immediate: true
+})
+
+onMounted(() => {
   if (!route.query.page || !route.query.size) {
-    router.replace({
-      query: {
-        page: page.value,
-        size: size.value
-      }
+    updateQuery({
+      page: page.value,
+      size: size.value
     })
   }
-
-  fetchRecords()
 })
 </script>
 
 <template>
-  <UCard class="md:block hidden" :ui="{ body: 'p-0 sm:p-0' }">
+  <!-- Desktop -->
+  <UCard class="hidden overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800 md:block" :ui="{
+    body: 'p-0',
+    footer: 'border-t border-gray-200 dark:border-gray-800'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No classes found.</p>
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
+
+          <p class="text-sm text-gray-500">
+            No classes found
+          </p>
         </div>
       </template>
+
       <template #loading>
         <TableLoading :size="columns.length" />
       </template>
+
       <template #classLevel-cell="{ row }">
         <p>{{ parseLevel[row.original.classLevel] }}</p>
       </template>
+
       <template #totalStudent-cell="{ row }">
-        <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} -`" />
+        <UBadge variant="soft" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} Students`" />
       </template>
     </UTable>
+
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between px-4 py-3">
         <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
     </template>
   </UCard>
-  <!-- Mobile Skeleton Loader -->
-  <div v-if="loading" class="md:hidden space-y-3">
-    <UCard v-for="i in 5" :key="i">
-      <template #header>
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-2 items-center">
-            <USkeleton class="h-10 w-10 rounded-full" />
-            <div class="space-y-2">
-              <USkeleton class="h-3 w-28" />
-              <USkeleton class="h-2 w-20" />
+
+  <!-- Mobile -->
+  <div class="space-y-4 md:hidden">
+    <!-- Loading -->
+    <template v-if="loading">
+      <UCard v-for="i in 4" :key="i" class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+        <div class="space-y-5 p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-12 rounded-xl" />
+
+              <div class="space-y-2">
+                <USkeleton class="h-3 w-28" />
+                <USkeleton class="h-2 w-20" />
+              </div>
             </div>
+
+            <USkeleton class="h-6 w-16 rounded-full" />
           </div>
 
-          <USkeleton class="h-6 w-24 rounded-full" />
-        </div>
-      </template>
+          <div class="grid grid-cols-3 gap-2">
+            <USkeleton class="h-16 rounded-xl" />
+            <USkeleton class="h-16 rounded-xl" />
+            <USkeleton class="h-16 rounded-xl" />
+          </div>
 
-      <div class="flex">
-        <div class="space-y-2 p-3 w-1/3">
-          <USkeleton class="h-2 w-14" />
-          <USkeleton class="h-3 w-20" />
-        </div>
+          <div class="flex items-center gap-3">
+            <USkeleton class="size-9 rounded-full" />
 
-        <div class="space-y-2 border-x p-3 w-1/3 border-gray-100">
-          <USkeleton class="h-2 w-14" />
-          <USkeleton class="h-3 w-20" />
-        </div>
-
-        <div class="space-y-2 p-3 w-1/3">
-          <USkeleton class="h-2 w-14" />
-          <USkeleton class="h-3 w-20" />
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-2 items-center">
-            <USkeleton class="h-8 w-8 rounded-full" />
             <div class="space-y-2">
               <USkeleton class="h-3 w-24" />
               <USkeleton class="h-2 w-16" />
             </div>
           </div>
-
-          <USkeleton class="h-4 w-4" />
         </div>
-      </template>
-    </UCard>
-  </div>
-  <UCard :ui="{ body: 'p-0 sm:p-0' }" v-for="item in data" :key="item.id" class="md:hidden">
-    <template #header>
-      <div>
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-2 items-center">
-            <div>
-              <UAvatar size="lg" :alt="item.clazz" />
-            </div>
-            <div>
-              <p class="text-sm">{{ item.clazz }}</p>
-              <div class="flex space-x-1 items-center  text-mute">
-                <p class="text-[11px]">{{ item.grade }}</p>
-                <p>-</p>
-                <p class="text-[11px] text-mute">{{ clean(item.classLevel) }}</p>
+      </UCard>
+    </template>
+
+    <!-- Data -->
+    <template v-else-if="data?.length">
+      <UCard v-for="item in data" :key="item.id" class="overflow-hidden shadow-sm transition-all" :ui="{
+        body: 'p-0'
+      }">
+        <!-- Header -->
+        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <UAvatar size="lg" :alt="item.clazz" class="rounded-2xl" />
+
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ item.clazz }}
+                </h3>
+
+                <div class="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                  <span>{{ item.grade }}</span>
+
+                  <span>•</span>
+
+                  <span>
+                    {{ parseLevel[item.classLevel] }}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-          <div>
-            <UBadge variant="outline" :leading-icon="STUDENT_ICON" :label="` - ${item.totalStudent} Students`" />
+
+            <UBadge variant="soft" color="primary" :leading-icon="STUDENT_ICON" :label="`${item.totalStudent}`" />
+
           </div>
         </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-2 p-4">
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              Section
+            </p>
+
+            <p class="truncate text-sm font-medium">
+              {{ item.sectionName || 'N/A' }}
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              Stream
+            </p>
+
+            <p class="truncate text-sm font-medium">
+              {{ item.streamName || 'N/A' }}
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              Level
+            </p>
+
+            <p class="truncate text-sm font-medium">
+              {{ parseLevel[item.classLevel] }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+          <div class="flex min-w-0 items-center gap-3">
+            <UAvatar :alt="item.teacherName" size="sm" />
+
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                {{ item.teacherName }}
+              </p>
+
+              <p class="text-xs text-gray-500">
+                Class Teacher
+              </p>
+            </div>
+          </div>
+
+          <UButton icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
+        </div>
+      </UCard>
+    </template>
+
+    <!-- Empty -->
+    <template v-else>
+      <div class="flex flex-col items-center justify-center py-14">
+        <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
+
+        <p class="text-sm text-gray-500">
+          No classes found
+        </p>
       </div>
     </template>
-    <div class="flex">
-      <div class="space-y-0.5 p-3 w-1/3">
-        <p class="text-[10px] text-mute uppercase">Section</p>
-        <p>{{ item.sectionName }}</p>
-      </div>
-      <div class="space-y-0.5 border-x p-3 w-1/3 border-gray-100">
-        <p class="text-[10px] text-mute uppercase">Stream</p>
-        <p>{{ item.streamName }}</p>
-      </div>
-      <div class="space-y-0.5 w-1/3 p-3">
-        <p class="text-[10px] text-mute uppercase">Level</p>
-        <p>{{ item.classLevel }}</p>
-      </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-3 md:hidden">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
     </div>
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <div class="flex space-x-2 items-center">
-          <div>
-            <UAvatar :alt="item.teacherName" />
-          </div>
-          <div>
-            <p class="text-xs">{{ item.teacherName }}</p>
-            <p class="text-[9px] text-mute">Class Teacher</p>
-          </div>
-        </div>
-        <div>
-          <UIcon :name="CHEVRON_RIGHT_ICON" />
-        </div>
-      </div>
-    </template>
-  </UCard>
-  <div class="flex justify-between items-center mt-3 md:hidden">
-    <Showing :meta="meta" />
-    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-      show-edges />
   </div>
 </template>

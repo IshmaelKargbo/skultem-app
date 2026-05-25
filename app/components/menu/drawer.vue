@@ -24,8 +24,7 @@
             </p>
           </div>
 
-          <UButton icon="lucide:x" variant="ghost" color="neutral" size="xs" class="rounded-xl"
-            @click="drawerOpen = false" />
+          <UButton icon="lucide:x" variant="ghost" color="neutral" size="xs" class="rounded-xl" @click="open = false" />
         </div>
       </div>
     </template>
@@ -52,15 +51,15 @@
             <button v-for="role in userRoles" :key="role.value"
               class="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 transition-all duration-200"
               :class="activeRole === role.value
-                  ? 'border-primary-500/20 bg-primary-500/[0.08]'
-                  : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02] hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/[0.05]'
+                ? 'border-primary-500/20 bg-primary-500/[0.08]'
+                : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02] hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/[0.05]'
                 " @click="switchRole(role.value)">
               <!-- glow -->
               <div v-if="activeRole === role.value" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-primary" />
 
               <div class="flex h-11 w-11 items-center justify-center rounded-2xl transition-all" :class="activeRole === role.value
-                  ? 'bg-primary text-white shadow-lg shadow-primary-500/20'
-                  : 'bg-white dark:bg-white/[0.04] text-neutral-500 border border-neutral-200 dark:border-white/5'
+                ? 'bg-primary text-white shadow-lg shadow-primary-500/20'
+                : 'bg-white dark:bg-white/[0.04] text-neutral-500 border border-neutral-200 dark:border-white/5'
                 ">
                 <UIcon :name="role.icon" class="text-base" />
               </div>
@@ -231,7 +230,6 @@ const { canInstall, install } = usePwaInstall()
 
 const router = useRouter()
 const open = ref(false)
-const drawerOpen = ref(false)
 
 const expanded = ref<string[]>(['grades'])
 
@@ -321,16 +319,16 @@ const sections = computed(() => [
     id: 'expenses',
     title: 'Expenses',
     items: [
-      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER, Role.ADMIN]) && {
         label: 'Expenses',
         icon: EXPENSES_ICON,
         to: '/expenses'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
         label: 'Expense Category',
         icon: CATEGORY_ICON,
-        to: '/settings/expense-categories'
+        to: '/expenses/category'
       },
 
 
@@ -417,12 +415,6 @@ const sections = computed(() => [
         icon: DISCOUNT_ICON,
         to: '/fees-payment/discounts'
       },
-
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Expenses',
-        icon: PAYMENT_ICON,
-        to: '/expenses'
-      },
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Category',
         icon: CATEGORY_ICON,
@@ -438,13 +430,13 @@ const sections = computed(() => [
       can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Materials',
         icon: MATERIAL_ICON,
-        to: '/materials'
+        to: '/material'
       },
 
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Supplies',
         icon: CURRICULUM_GROUP_ICON,
-        to: '/materials/supply'
+        to: '/material/supply'
       },
 
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {

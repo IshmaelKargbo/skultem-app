@@ -7,7 +7,7 @@
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Academic Year</p>
-                <u-button icon="lucide:x" variant="ghost" color="neutral" @click="close" />
+                <u-button icon="lucide:x" variant="ghost"  color="neutral" @click="close" />
             </div>
         </template>
 
