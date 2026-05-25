@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useClassSessionStore()
 const { records: data, meta, loading } = storeToRefs(store)
 const { format } = useMoney()
 
-const columns: TableColumn<ClassSession> = [
+const columns = [
   {
     accessorKey: 'clazz',
     header: 'Name'
@@ -109,7 +107,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -123,8 +123,11 @@ onMounted(async () => {
       <template #totalStudent-cell="{ row }">
         <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} -`" />
       </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
       <template #status-cell="{ row }">
-        <UBadge v-if="row.original.feeDetail" :label="row.original.feeDetail.status"
+        <UBadge v-if="row.original.feeDetail" :label="row.original.feeDetail.status || 'N/A'"
           :color="parseFeeStatusColor[row.original.feeDetail.status]"
           :icon="parseFeeStatusIcon[row.original.feeDetail.status]" variant="outline" />
       </template>
@@ -138,10 +141,12 @@ onMounted(async () => {
         <p class="text-info">{{ format(row.original.feeDetail?.balance) }}</p>
       </template>
     </UTable>
-    <div v-if="!loading" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+    <template #footer>
+      <div v-if="!loading" class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
   </UCard>
 </template>

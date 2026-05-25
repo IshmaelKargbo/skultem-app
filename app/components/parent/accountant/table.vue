@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useParentStore()
@@ -9,57 +7,56 @@ const { records: data, meta, loading } = storeToRefs(store)
 
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const columns: TableColumn<Parent>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Guardian',
-    pin: 'left'
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email'
-  },
-  {
-    accessorKey: 'phone',
-    header: 'Phone'
-  },
-  {
-    accessorKey: 'students',
-    header: 'Children'
-  },
-  {
-    accessorKey: 'total',
-    header: 'Total'
-  },
-  {
-    accessorKey: 'paid',
-    header: 'Paid'
-  },
-  {
-    accessorKey: 'balance',
-    header: 'Outstanding'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
-  }
+const columns = [
+  { accessorKey: 'name', header: 'Guardian', pin: 'left' },
+  { accessorKey: 'email', header: 'Email' },
+  { accessorKey: 'phone', header: 'Phone' },
+  { accessorKey: 'students', header: 'Children' },
+  { accessorKey: 'total', header: 'Total' },
+  { accessorKey: 'paid', header: 'Paid' },
+  { accessorKey: 'balance', header: 'Outstanding' },
+  { accessorKey: 'status', header: 'Status' }
 ]
 
+// PAGE (URL synced)
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
+  set: (val) => {
+    router.replace({
+      query: {
+        ...route.query,
+        page: val,
+        size: size.value
+      }
+    })
+  }
 })
 
+// SIZE (URL synced)
 const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val })
+  set: (val) => {
+    router.replace({
+      query: {
+        ...route.query,
+        page: page.value,
+        size: val
+      }
+    })
+  }
 })
 
-watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
+// FETCH whenever query changes
+watch(
+  () => [page.value, size.value],
+  async () => {
+    await fetchRecord()
+
+    nextTick(() => {
+      scrollContainer?.value?.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
     })
   })
 
@@ -88,11 +85,15 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
+  try {
+    await store.fetchAll(page.value, size.value)
+  } finally {
+    loading.value = false
+  }
 }
 
-onMounted(async () => {
+// Ensure initial query exists
+onMounted(() => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
@@ -101,8 +102,6 @@ onMounted(async () => {
       }
     })
   }
-
-  fetchRecord()
 })
 </script>
 
@@ -480,7 +479,8 @@ onMounted(async () => {
           />
         </div>
       </div>
-    </div>
+    </template>
+
   </UCard>
   
 </template>

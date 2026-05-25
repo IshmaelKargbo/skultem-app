@@ -60,12 +60,12 @@ const columns = [
   {
     accessorKey: 'guardian',
     header: 'Father',
-    cell: ({ row }: any) => row.original.guardian.fatherName
+    cell: ({ row }: any) => row.original.family.fatherName
   },
   {
     accessorKey: 'guardian',
     header: 'Mother',
-    cell: ({ row }: any) => row.original.guardian.motherName
+    cell: ({ row }: any) => row.original.family.motherName
   },
   {
     accessorKey: 'nationality',

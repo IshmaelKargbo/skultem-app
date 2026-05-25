@@ -15,7 +15,7 @@
             ]" />
         </div>
         <ReportBuilderSource @select="selectEntity" />
-        <ReportBuilderFilters v-if="selected" :selected="selected" @change="filterChange" />
+        <ReportBuilderFilters :selected="selected" @change="filterChange" />
         <ReportBuilderRun />
     </div>
 </template>
