@@ -5,7 +5,7 @@ const { student, term } = defineProps<{
 }>()
 
 const widgetStore = useWidgetStore()
-const { loading } = storeToRefs(widgetStore)
+const loading = ref(true)
 
 const report = reactive<{
     present: number
@@ -22,6 +22,7 @@ const report = reactive<{
 })
 
 async function fetchRecord() {
+    loading.value = true
     if (!term || !student) return
 
     const [count] = await Promise.all([
@@ -89,6 +90,7 @@ async function fetchRecord() {
     report.absent = absent?.data?.[0] ?? 0
     report.excused = excused?.data?.[0] ?? 0
     report.total = total?.data?.[0] ?? 0
+    loading.value = false
 }
 
 watch(() => [term, student], () => fetchRecord(), { immediate: true })
@@ -106,7 +108,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
             </h2>
         </div>
 
-        <div class="rounded-xl border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 p-4">
+        <div
+            class="rounded-xl border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Present
             </p>
@@ -128,7 +131,8 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
             </h2>
         </div>
 
-        <div class="rounded-xl border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 p-4">
+        <div
+            class="rounded-xl border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Late
             </p>

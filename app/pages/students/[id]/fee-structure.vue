@@ -23,7 +23,8 @@
 
             <!-- Fee Items -->
             <div v-if="loading" class="space-y-3">
-                <div v-for="i in 5" :key="i" class="rounded-xl border-2  dark:border-gray-700 dark:bg-gray-950 border-gray-100 bg-white p-4">
+                <div v-for="i in 5" :key="i"
+                    class="rounded-xl border-2  dark:border-gray-700 dark:bg-gray-950 border-gray-100 bg-white p-4">
                     <div class="flex items-start justify-between">
                         <div class="space-y-2">
                             <USkeleton class="h-5 w-40" />
@@ -58,7 +59,8 @@
             </div>
 
             <div v-else-if="fees.length" class="space-y-3">
-                <div v-for="fee in fees" :key="fee.id" class="rounded-xl border-2 border-gray-100  dark:border-gray-800 dark:bg-gray-950 bg-white p-4">
+                <div v-for="fee in fees" :key="fee.id"
+                    class="rounded-xl border-2 border-gray-100  dark:border-gray-800 dark:bg-gray-950 bg-white p-4">
                     <div class="flex items-start justify-between">
                         <div>
                             <h4 class="font-semibold">
@@ -151,7 +153,8 @@ const route = useRoute()
 const { can } = useAuth()
 const store = useStudentStore()
 const reportStore = useReportStore()
-const { fees, meta, loading } = storeToRefs(reportStore)
+const { fees, meta } = storeToRefs(reportStore)
+const loading = ref(true)
 const { record } = storeToRefs(store)
 const router = useRouter()
 
@@ -183,6 +186,7 @@ function updateQuery(newQuery: Record<string, any>) {
 }
 
 async function fetchFeeStructure() {
+    loading.value = true
     if (!record.value?.id) return
 
     await reportStore.runReport(
@@ -200,6 +204,7 @@ async function fetchFeeStructure() {
         page.value,
         size.value
     )
+    loading.value = false
 }
 
 watch(() => page.value, async () => {

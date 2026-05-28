@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { nextTick } from 'vue'
-import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,12 +9,6 @@ const store = useTeacherSubjectStore()
 const { records: data, meta, loading } = storeToRefs(store)
 
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-
-const editRecord = ref<TeacherSubject | null>(null)
-const editState = ref(false)
-
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const columns = [
   {
@@ -37,52 +30,8 @@ const columns = [
   {
     accessorKey: 'teacherName',
     header: 'Teacher'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }: { row: Row<TeacherSubject> }) =>
-      h(
-        UDropdownMenu,
-        {
-          items: getRowItems(row),
-          content: {
-            align: 'end'
-          }
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            variant: 'ghost',
-            size: 'sm'
-          })
-      )
   }
 ]
-
-function getRowItems(row: Row<TeacherSubject>) {
-  return [
-    [
-      {
-        label: 'Edit Record',
-        icon: 'i-lucide-edit',
-        onSelect: () => {
-          editState.value = true
-          editRecord.value = row.original
-        }
-      },
-      {
-        label: 'Delete Record',
-        icon: 'i-lucide-trash'
-      }
-    ]
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -90,7 +39,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? runtimeConf().limit),
+  get: () => Number(route.query.size ?? 8),
   set: (value) => updateQuery({ size: value })
 })
 
@@ -133,8 +82,7 @@ watch(
 onMounted(() => {
   if (!route.query.page || !route.query.size) {
     updateQuery({
-      page: page.value,
-      size: size.value
+      page: page.value
     })
   }
 })
@@ -143,10 +91,9 @@ onMounted(() => {
 <template>
   <!-- Desktop -->
   <UCard
-    class="hidden overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 md:block"
+    class="hidden md:block"
     :ui="{
-      body: 'p-0',
-      footer: 'border-t border-gray-200 dark:border-gray-800'
+      body: 'md:p-0'
     }"
   >
     <UTable
@@ -173,7 +120,7 @@ onMounted(() => {
     </UTable>
 
     <template #footer>
-      <div class="flex items-center justify-between px-4 py-4">
+      <div class="flex items-center justify-between">
         <Showing :meta="meta" />
 
         <UPagination
@@ -251,19 +198,6 @@ onMounted(() => {
               </p>
             </div>
           </div>
-
-          <UDropdownMenu
-            :items="getRowItems({ original: item } as any)"
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              icon="i-lucide-ellipsis-vertical"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              class="rounded-xl"
-            />
-          </UDropdownMenu>
         </div>
 
         <!-- Body -->

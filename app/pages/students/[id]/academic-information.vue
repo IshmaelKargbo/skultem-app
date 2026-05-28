@@ -25,42 +25,49 @@
 
             <!-- Academic Summary -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="border-2 border-info-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 rounded-xl p-4">
+                <div
+                    class="border-2 border-info-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Subjects
                     </p>
 
-                    <h2 class="text-2xl font-bold mt-1">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-primary-200 dark:bg-primary-800" />
+                    <h2 v-else class="text-2xl font-bold mt-1">
                         {{ summary.subjects }}
                     </h2>
                 </div>
 
-                <div class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 rounded-xl p-4">
+                <div
+                    class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Passed
                     </p>
 
-                    <h2 class="text-2xl font-bold text-success-600 mt-1">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200 dark:bg-success-800" />
+                    <h2 v-else class="text-2xl font-bold text-success-600 mt-1">
                         {{ summary.passed }}
                     </h2>
                 </div>
 
-                <div class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 rounded-xl p-4">
+                <div
+                    class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Average Score
                     </p>
 
-                    <h2 class="text-2xl font-bold text-warning-600 mt-1">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-warning-200 dark:bg-warning-800" />
+                    <h2 v-else class="text-2xl font-bold text-warning-600 mt-1">
                         {{ summary.average }}%
                     </h2>
                 </div>
 
-                <div class="border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 rounded-xl p-4">
+                <div
+                    class="border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 rounded-xl p-4">
                     <p class="text-[11px] uppercase text-muted">
                         Failed
                     </p>
-
-                    <h2 class="text-2xl font-bold text-error-600 mt-1">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-error-200 dark:bg-error-800" />
+                    <h2 v-else class="text-2xl font-bold text-error-600 mt-1">
                         {{ summary.failed }}
                     </h2>
                 </div>
@@ -195,7 +202,8 @@ const reportStore = useReportStore()
 const assessmentStore = useAssessmentStore()
 const { assessments } = storeToRefs(assessmentStore)
 const { record, activeCycle } = storeToRefs(store)
-const { grades, meta, loading } = storeToRefs(reportStore)
+const { grades, meta } = storeToRefs(reportStore)
+const loading = ref(true)
 const route = useRoute()
 const router = useRouter()
 const state = reactive({
@@ -346,8 +354,10 @@ watch(
 watch(
     () => state.term,
     async () => {
+        loading.value = true
         await fetchAssessment()
         await fetchAcademicRecords()
+        loading.value = false
     },
     { immediate: true }
 )

@@ -29,7 +29,7 @@ export default defineAppConfig({
     table: {
       slots: {
         th: 'font-display uppercase light:text-muted text-[12.5px] dark:text-gray-500',
-        td: 'py-2 text-gray-800 dark:text-gray-200',
+        td: 'text-gray-800 dark:text-gray-200',
         loading: 'p-0',
       },
     },

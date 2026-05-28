@@ -51,8 +51,6 @@
 </template>
 
 <script setup lang="ts">
-const { format } = useMoney()
-
 onMounted(() => {
     useAppStore().setTitle('Dashboard')
     document.title = "Dashboard | Skultem"
