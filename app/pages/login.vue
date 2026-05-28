@@ -294,7 +294,7 @@ const handleLogin = async () => {
     setAuthResolved(false)
 
     const hostname = useRequestURL().hostname
-    const domain = hostname.includes('localhost') ? 'moriba' : hostname.split('.')[0]
+    const domain = hostname.includes('localhost') ? 'kings-way' : hostname.split('.')[0]
 
     await userStore.login({
       domain: domain || '',

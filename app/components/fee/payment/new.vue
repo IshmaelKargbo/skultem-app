@@ -221,12 +221,64 @@
             </div>
         </div>
     </UForm>
+
+    <UModal v-model:open="receiptModalOpen" :dismissible="false">
+        <template #content>
+            <div class="p-6 space-y-5">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-100">
+                        <UIcon name="i-lucide-check" class="text-xl text-green-600" />
+                    </div>
+                    <div class="space-y-1">
+                        <h2 class="text-lg font-semibold">Payment Recorded</h2>
+                        <p class="text-sm text-muted">
+                            Do you want to download a receipt for this payment?
+                        </p>
+                    </div>
+                </div>
+
+                <div v-if="receipt" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+                    <div class="flex justify-between gap-3">
+                        <span class="text-muted">Student</span>
+                        <strong class="text-right">{{ receipt.student }}</strong>
+                    </div>
+                    <div class="mt-1 flex justify-between gap-3">
+                        <span class="text-muted">Total Paid</span>
+                        <strong>{{ format(receipt.total) }} SLE</strong>
+                    </div>
+                    <div class="mt-1 flex justify-between gap-3">
+                        <span class="text-muted">Reference</span>
+                        <strong class="text-right">{{ receipt.referenceNo }}</strong>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <UButton color="neutral" variant="subtle" :disabled="isDownloadingReceipt" @click="skipReceipt">
+                        No, thanks
+                    </UButton>
+                    <UButton
+                        icon="i-lucide-download"
+                        :loading="isDownloadingReceipt"
+                        :disabled="!receipt"
+                        @click="downloadReceipt"
+                    >
+                        Download Receipt
+                    </UButton>
+                </div>
+            </div>
+        </template>
+    </UModal>
+
+    <ReceiptPayment v-if="receipt" id="payment-receipt" :receipt="receipt" />
 </template>
 
 <script setup lang="ts">
 import * as yup from 'yup'
 
 const emit = defineEmits(['complete'])
+const { $generatePdf } = useNuxtApp()
+const notify = useNotify()
+const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const state = reactive({
     studentId: '',
@@ -239,6 +291,9 @@ const fees = ref<any[]>([])
 const allocations = ref<any[]>([])
 const loadingFees = ref(false)
 const isLoading = ref(false)
+const receipt = ref<any | null>(null)
+const receiptModalOpen = ref(false)
+const isDownloadingReceipt = ref(false)
 
 async function onStudentSelect() {
     allocations.value = []
@@ -321,7 +376,7 @@ async function onSubmit() {
     isLoading.value = true
 
     try {
-        await useFeePaymentStore().recordPayment({
+        const response = await useFeePaymentStore().recordPayment({
             studentId: state.studentId,
             method: state.method,
             referenceNo: state.reference,
@@ -330,16 +385,46 @@ async function onSubmit() {
                 feeId: a.feeId,
                 amount: a.amount
             }))
-        })
+        }) as any
+
+        const payments = response?.data || []
+        if (payments.length) {
+            receipt.value = buildReceipt(payments)
+            receiptModalOpen.value = true
+        }
 
         emit('complete')
         reset()
-        useNotify().success('Payment recorded successfully')
+        scrollToTop()
+        notify.success('Payment recorded successfully')
     } catch (error: any) {
-        useNotify().error(error.errors?.[0] || error.message)
+        notify.error(error.errors?.[0] || error.message)
     } finally {
         isLoading.value = false
     }
+}
+
+async function downloadReceipt() {
+    if (!receipt.value) return
+
+    isDownloadingReceipt.value = true
+    await nextTick()
+
+    try {
+        await $generatePdf('#payment-receipt', `receipt-${sanitizeFilename(receipt.value.referenceNo)}`)
+        receiptModalOpen.value = false
+        receipt.value = null
+    } catch (error) {
+        console.error('Receipt download failed:', error)
+        notify.warning('Receipt download failed. Please try again.')
+    } finally {
+        isDownloadingReceipt.value = false
+    }
+}
+
+function skipReceipt() {
+    receiptModalOpen.value = false
+    receipt.value = null
 }
 
 function reset() {
@@ -355,6 +440,35 @@ function format(v: number) {
     return new Intl.NumberFormat().format(v || 0)
 }
 
+function buildReceipt(payments: any[]) {
+    const first = payments[0] || {}
+    const fallbackReference = first.id || Date.now().toString()
+    const referenceNo = first.referenceNo || fallbackReference
+
+    return {
+        referenceNo,
+        student: first.student || selectedStudentName.value || 'Student',
+        term: first.term || 'N/A',
+        paymentMethod: first.paymentMethod || state.method,
+        paidAt: first.paidAt,
+        payments,
+        total: payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0),
+    }
+}
+
+function sanitizeFilename(value: string) {
+    return String(value).replace(/[^a-z0-9-_]/gi, '-')
+}
+
+function scrollToTop() {
+    nextTick(() => {
+        scrollContainer?.value?.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
+    })
+}
+
 const methodOptions = [
     { label: 'Cash', value: 'CASH' },
     { label: 'Bank Transfer', value: 'BANK' },
@@ -368,6 +482,10 @@ const students = computed(() =>
         label: `${s.givenNames} ${s.familyName}`,
         value: s.id
     }))
+)
+
+const selectedStudentName = computed(() =>
+    students.value.find(s => s.value === state.studentId)?.label
 )
 
 onMounted(() => {

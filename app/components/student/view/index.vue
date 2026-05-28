@@ -4,7 +4,7 @@
             subtitle="View detailed student information, including academic records, personal details, and enrollment data.">
             <div class="flex space-x-2 items-center">
                 <UButton to="/students" variant="outline" size="sm" color="primary" label="All Students" />
-                <UButton :to="`/students/${record?.id}/edit`" size="sm" variant="outline" color="secondary"
+                <UButton v-if="record && !loading" :to="`/students/${record.id}/edit`" size="sm" variant="outline" color="secondary"
                     :icon="EDIT_ICON" label="Edit" />
             </div>
         </Heading>
@@ -16,24 +16,24 @@
                         <!-- Avatar -->
                         <div
                             class="border-b pb-1 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
-                            <div v-if="loading"
-                                class="h-40 w-40 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                            <div v-else class="rounded-xl border-2 overflow-hidden p-0.5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600">
+                            <USkeleton v-if="loading"
+                                class="h-72 w-full rounded-lg bg-gray-200 dark:bg-gray-800" />
+                            <div v-else class="w-full rounded-xl border-2 overflow-hidden p-0.5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600">
                                 <img :src="photo" :alt="name"
-                                    class="h-72 w-full object-cover rounded-lg" />
+                                    class="w-full rounded-lg object-cover h-72" />
                             </div>
 
-                            <div class="flex justify-between items-center mt-2 w-full">
-                                <div v-if="loading"
-                                    class="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
-                                <h2 v-else class="text-lg font-semibold">
+                            <div class="flex justify-between items-center gap-1 mt-3 w-full text-center">
+                                <USkeleton v-if="loading"
+                                    class="h-5 w-40 bg-gray-200 dark:bg-gray-800" />
+                                <h2 v-else class="text-base font-semibold">
                                     {{ name }}
                                 </h2>
 
-                                <div v-if="loading"
-                                    class="h-3 w-20 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                                <USkeleton v-if="loading"
+                                    class="h-3 w-24 bg-gray-200 dark:bg-gray-800" />
                                 <p v-else class="text-xs text-muted">
-                                    {{ record?.className }}
+                                    {{ record?.className || 'No class assigned' }}
                                 </p>
                             </div>
                         </div>
@@ -107,10 +107,10 @@ const feeStructureInfo = `/students/${route.params.id}/fee-structure`
 const academicInfo = `/students/${route.params.id}/academic-information`
 
 async function fetchStudent() {
-    store.viewStudent(route.params.id as string)
+    await store.viewStudent(route.params.id as string)
 }
 
-onMounted(() => {
+watch(() => route.params.id, () => {
     fetchStudent()
-})
+}, { immediate: true })
 </script>
