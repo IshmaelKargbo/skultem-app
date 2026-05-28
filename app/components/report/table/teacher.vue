@@ -104,10 +104,9 @@ watch(() => page.value, async () => {
 </script>
 
 <template>
-  <UCard :ui="{
-    body: 'sm:p-0'
-  }">
-    <UTable :columns="columns" :data="data" :loading="loading">
+  <div class="space-y-4">
+    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+      <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -125,13 +124,35 @@ watch(() => page.value, async () => {
         <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
           variant="outline" />
       </template>
-    </UTable>
-    <template #footer>
+      </UTable>
+      <template #footer>
+        <div class="flex justify-between items-center">
+          <Showing :meta="meta" />
+          <UPagination size="sm" v-model:page="page" :page-size="meta?.size" :items-per-page="meta?.size" :total="meta?.total" show-edges />
+        </div>
+      </template>
+    </UCard>
+
+    <div class="space-y-3 md:hidden">
+      <UCard v-for="item in data" :key="item.id" :ui="{ body: 'p-4' }">
+        <div class="space-y-2">
+          <p class="font-semibold text-sm">{{ parseTitle[item.title] }} {{ item.user?.givenNames }} {{ item.user?.familyName }}</p>
+          <p class="text-xs text-muted">{{ item.user?.email || 'No email' }}</p>
+          <p class="text-xs text-muted">{{ item.phone || 'No phone' }}</p>
+          <div class="flex gap-2">
+            <UBadge :label="parseGender[item.gender]" :color="parseGenderColor[item.gender]" variant="outline" size="sm" />
+            <UBadge :label="parseStaus[item.status]" :color="parseStatusColor[item.status]" variant="outline" size="sm" />
+          </div>
+        </div>
+      </UCard>
+      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
+        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        <p class="text-gray-500">No teachers found.</p>
+      </div>
       <div class="flex justify-between items-center">
         <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta?.size" :items-per-page="meta?.size"
-          :total="meta?.total" show-edges />
+        <UPagination size="sm" v-model:page="page" :page-size="meta?.size" :items-per-page="meta?.size" :total="meta?.total" show-edges />
       </div>
-    </template>
-  </UCard>
+    </div>
+  </div>
 </template>

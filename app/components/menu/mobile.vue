@@ -1,59 +1,119 @@
 <template>
-  <div class="border-primary-200 px-3 pb-3 pt-2">
-    <ul class="gap-2 grid grid-cols-4 border-2 border-gray-200 dark:border-gray-800 rounded-2xl p-2 py-3 bg-white dark:bg-gray-900 opacity-80">
-      <li>
-        <MenuItem label="Dashboard" exact to="/">
-        <template #icon>
-          <UIcon class="text-xl" :name="DASHBOARD_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-      <li v-if="can([Role.PARENT, Role.TEACHER])">
-        <MenuItem label="Grade" exact to="/grades">
-        <template #icon>
-          <UIcon class="text-xl" :name="GRADES_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-      <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-        <MenuItem label="Students" exact to="/students">
-        <template #icon>
-          <UIcon class="text-xl" :name="STUDENT_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-      <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-        <MenuItem label="Classes" exact to="/classes">
-        <template #icon>
-          <UIcon class="text-xl" :name="CLASS_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-      <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-        <MenuItem label="Teachers" exact to="/teachers">
-        <template #icon>
-          <UIcon class="text-xl" :name="TEACHER_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-      <li v-if="can([Role.PARENT, Role.TEACHER])">
-        <MenuItem label="Fees" exact to="/fees">
-        <template #icon>
-          <UIcon class="text-xl" :name="PAYMENT_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-      <li v-if="can([Role.PARENT, Role.TEACHER])">
-        <MenuItem label="Attendance" exact to="/attendance">
-        <template #icon>
-          <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
-        </template>
-        </MenuItem>
-      </li>
-    </ul>
+  <div class="px-3 pb-3 pt-2">
+    <div class="rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-sm dark:border-gray-800 dark:bg-gray-900/95">
+      <ul class="grid grid-cols-4 gap-1.5">
+        <li>
+          <NuxtLink to="/" class="menu-mobile-item" :class="isActive('/', true)">
+            <UIcon class="text-xl" :name="DASHBOARD_ICON" />
+            <span class="menu-mobile-label">Home</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.PARENT, Role.TEACHER])">
+          <NuxtLink to="/grades" class="menu-mobile-item" :class="isActive('/grades', true)">
+            <UIcon class="text-xl" :name="GRADES_ICON" />
+            <span class="menu-mobile-label">Grades</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+          <NuxtLink to="/students" class="menu-mobile-item" :class="isActive('/students')">
+            <UIcon class="text-xl" :name="STUDENT_ICON" />
+            <span class="menu-mobile-label">Students</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+          <NuxtLink to="/classes" class="menu-mobile-item" :class="isActive('/classes')">
+            <UIcon class="text-xl" :name="CLASS_ICON" />
+            <span class="menu-mobile-label">Classes</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+          <NuxtLink to="/teachers" class="menu-mobile-item" :class="isActive('/teachers')">
+            <UIcon class="text-xl" :name="TEACHER_ICON" />
+            <span class="menu-mobile-label">Teachers</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.PARENT, Role.TEACHER])">
+          <NuxtLink to="/fees" class="menu-mobile-item" :class="isActive('/fees')">
+            <UIcon class="text-xl" :name="PAYMENT_ICON" />
+            <span class="menu-mobile-label">Fees</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.PARENT, Role.TEACHER])">
+          <NuxtLink to="/attendance" class="menu-mobile-item" :class="isActive('/attendance')">
+            <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
+            <span class="menu-mobile-label">Attendance</span>
+          </NuxtLink>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 const { can } = useAuth()
+const route = useRoute()
+
+function isActive(to: string, exact = false) {
+  return exact
+    ? route.path === to
+      ? 'menu-mobile-item-active'
+      : ''
+    : route.path.startsWith(to)
+      ? 'menu-mobile-item-active'
+      : ''
+}
 </script>
+
+<style scoped>
+.menu-mobile-item {
+  display: flex;
+  min-height: 60px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 12px;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.menu-mobile-item:hover {
+  background: rgba(99, 102, 241, 0.08);
+  color: #4f46e5;
+}
+
+.menu-mobile-item-active {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.menu-mobile-label {
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .menu-mobile-item {
+  color: #d1d5db;
+}
+
+.dark .menu-mobile-item:hover {
+  background: rgba(99, 102, 241, 0.18);
+  color: #c7d2fe;
+}
+
+.dark .menu-mobile-item-active {
+  background: rgba(99, 102, 241, 0.24);
+  color: #c7d2fe;
+}
+</style>

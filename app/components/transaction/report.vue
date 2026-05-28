@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-5 grid-cols-3">
+  <div class="grid gap-3 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
     <Metric v-for="metric in metrics" :key="metric.label" :record="metric" />
   </div>
 </template>

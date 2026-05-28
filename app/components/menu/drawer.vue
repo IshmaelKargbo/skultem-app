@@ -1,11 +1,11 @@
 <template>
   <USlideover :open="open" side="left" :ui="{
-    content: 'w-full max-w-sm bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800'
+    content: 'w-full max-w-sm bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-950 border-r border-neutral-200 dark:border-neutral-800'
   }" @update:open="open = $event">
     <!-- Trigger -->
     <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
     <template #header>
-      <div class="relative overflow-hidden w-full ">
+      <div class="relative overflow-hidden w-full rounded-2xl border border-neutral-200/80 bg-white/90 p-3 shadow dark:border-white/10 dark:bg-white/[0.03]">
         <div class="flex justify-between items-center gap-3">
           <div class="relative shrink-0">
             <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900 shadow-lg" />
@@ -24,15 +24,14 @@
             </p>
           </div>
 
-          <UButton icon="lucide:x" variant="ghost" color="neutral" size="xs" class="rounded-xl"
-            @click="drawerOpen = false" />
+          <UButton icon="lucide:x" variant="ghost" color="neutral" size="xs" class="rounded-xl" @click="open = false" />
         </div>
       </div>
     </template>
 
     <!-- BODY -->
     <template #body>
-      <div class="flex h-full flex-col">
+      <div class="flex h-full flex-col overflow-y-auto pr-1">
 
         <!-- PROFILE -->
         <div class="pt-2">
@@ -52,15 +51,15 @@
             <button v-for="role in userRoles" :key="role.value"
               class="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 transition-all duration-200"
               :class="activeRole === role.value
-                  ? 'border-primary-500/20 bg-primary-500/[0.08]'
-                  : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02] hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/[0.05]'
+                ? 'border-primary-500/20 bg-primary-500/[0.08]'
+                : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02] hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/[0.05]'
                 " @click="switchRole(role.value)">
               <!-- glow -->
               <div v-if="activeRole === role.value" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-primary" />
 
               <div class="flex h-11 w-11 items-center justify-center rounded-2xl transition-all" :class="activeRole === role.value
-                  ? 'bg-primary text-white shadow-lg shadow-primary-500/20'
-                  : 'bg-white dark:bg-white/[0.04] text-neutral-500 border border-neutral-200 dark:border-white/5'
+                ? 'bg-primary text-white shadow-lg shadow-primary-500/20'
+                : 'bg-white dark:bg-white/[0.04] text-neutral-500 border border-neutral-200 dark:border-white/5'
                 ">
                 <UIcon :name="role.icon" class="text-base" />
               </div>
@@ -88,10 +87,11 @@
         </div>
 
         <!-- QUICK LINKS -->
-        <div class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-2 space-y-3">
+        <div class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.02]">
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER])" to="/attendance" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/attendance') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="ATTENDANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -100,7 +100,8 @@
           </NuxtLink>
 
           <NuxtLink v-if="can([Role.TEACHER, Role.PROPRIETOR])" to="/behaviours" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/behaviours') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="BEHAVIOUR_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -109,7 +110,8 @@
           </NuxtLink>
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN])" to="/parents" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/parents') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="PARENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -118,7 +120,8 @@
           </NuxtLink>
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN])" to="/subjects" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/subjects') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="SUBJECT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -127,7 +130,8 @@
           </NuxtLink>
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/teachers" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/teachers') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="TEACHER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -136,7 +140,8 @@
           </NuxtLink>
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/classes" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/classes') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="CLASS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -145,7 +150,8 @@
           </NuxtLink>
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/ledger" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/ledger') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="LEDGER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -153,7 +159,8 @@
             </span>
           </NuxtLink>
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/transactions" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/transactions') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="TRANSACTION_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -161,7 +168,8 @@
             </span>
           </NuxtLink>
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/analytics" @click="close"
-            class="flex items-center gap-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-4 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/analytics') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="ANALYTICS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
@@ -171,7 +179,7 @@
 
           <!-- SEE MORE -->
           <button
-            class="w-full rounded-2xl bg-neutral-200 dark:bg-neutral-800 py-4 text-center font-semibold transition hover:opacity-90">
+            class="w-full rounded-2xl border border-neutral-200 bg-neutral-100 py-4 text-center font-semibold text-neutral-700 transition hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700">
             See more
           </button>
         </div>
@@ -180,9 +188,9 @@
         <div class="mt-6">
 
           <div v-for="section in sections" :key="section.id"
-            class="border-t border-neutral-200 dark:border-neutral-800">
+            class="mt-3 rounded-3xl border border-neutral-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.02]">
             <!-- header -->
-            <button class="flex items-center justify-between w-full px-5 py-5" @click="toggleSection(section.id)">
+            <button class="flex items-center justify-between w-full px-5 py-[18px]" @click="toggleSection(section.id)">
               <div class="flex items-center gap-4">
                 <UIcon :name="section.icon" class="size-7" />
 
@@ -197,20 +205,29 @@
 
             <!-- items -->
             <div v-if="expanded.includes(section.id)" class="px-5 pb-5 space-y-2">
-              <NuxtLink v-for="item in section.items" :key="item.label" :to="item.to" @click="close"
-                class="flex items-center gap-3 rounded-2xl bg-neutral-100 dark:bg-neutral-900 px-4 py-3.5 transition hover:bg-neutral-200 dark:hover:bg-neutral-800">
+              <NuxtLink v-for="item in section.items.filter(x => !!x?.to)" :key="item.label" :to="item.to" @click="close"
+                class="flex items-center gap-3 rounded-2xl border border-transparent bg-neutral-100 px-4 py-3.5 transition hover:border-primary/20 hover:bg-primary-50 hover:text-primary-600 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20 dark:hover:text-primary-200"
+                :class="route.path.startsWith(item.to) ? 'border-primary/20 bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-neutral-700 dark:text-neutral-200'">
                 <UIcon :name="item.icon" class="size-5" />
 
                 <span class="font-medium">
                   {{ item.label }}
                 </span>
               </NuxtLink>
+              <button v-for="item in section.items.filter(x => !x?.to && !!x?.action)" :key="item.label"
+                class="flex w-full items-center gap-3 rounded-2xl border border-transparent bg-neutral-100 px-4 py-3.5 text-left transition hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+                @click="item.action?.()">
+                <UIcon :name="item.icon" class="size-5" />
+                <span class="font-medium">
+                  {{ item.label }}
+                </span>
+              </button>
             </div>
           </div>
         </div>
 
         <!-- FOOTER -->
-        <div class="mt-auto px-5 py-5">
+        <div class="sticky bottom-0 mt-auto border-t border-neutral-200/80 bg-white/95 px-5 py-5 backdrop-blur dark:border-white/10 dark:bg-neutral-950/95">
           <UButton to="/logout" color="neutral" variant="soft" block class="h-14 rounded-2xl text-base font-semibold">
             Log out
           </UButton>
@@ -230,8 +247,8 @@ const { activeRole, can, setActiveRole } = useAuth()
 const { canInstall, install } = usePwaInstall()
 
 const router = useRouter()
+const route = useRoute()
 const open = ref(false)
-const drawerOpen = ref(false)
 
 const expanded = ref<string[]>(['grades'])
 
@@ -239,14 +256,6 @@ const name = computed(() =>
   user.value
     ? `${user.value.givenNames} ${user.value.familyName}`
     : ''
-)
-
-const initials = computed(() =>
-  name.value
-    .split(' ')
-    .map(v => v[0])
-    .join('')
-    .slice(0, 2)
 )
 
 const roleDesc: Record<string, string> = {
@@ -313,7 +322,7 @@ const sections = computed(() => [
       can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]) && {
         label: 'Grade Assignment',
         icon: 'lucide:clipboard-check',
-        to: '/grades/assignment'
+        to: '/grades'
       }
     ].filter(Boolean)
   },
@@ -321,16 +330,16 @@ const sections = computed(() => [
     id: 'expenses',
     title: 'Expenses',
     items: [
-      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER, Role.ADMIN]) && {
         label: 'Expenses',
         icon: EXPENSES_ICON,
         to: '/expenses'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
         label: 'Expense Category',
         icon: CATEGORY_ICON,
-        to: '/settings/expense-categories'
+        to: '/expenses/category'
       },
 
 
@@ -389,7 +398,7 @@ const sections = computed(() => [
       },
 
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'sessions',
+        label: 'Sessions',
         icon: SESSIONS_ICON,
         to: '/auth/sessions'
       },
@@ -417,12 +426,6 @@ const sections = computed(() => [
         icon: DISCOUNT_ICON,
         to: '/fees-payment/discounts'
       },
-
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Expenses',
-        icon: PAYMENT_ICON,
-        to: '/expenses'
-      },
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Category',
         icon: CATEGORY_ICON,
@@ -438,13 +441,13 @@ const sections = computed(() => [
       can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Materials',
         icon: MATERIAL_ICON,
-        to: '/materials'
+        to: '/material'
       },
 
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Supplies',
         icon: CURRICULUM_GROUP_ICON,
-        to: '/materials/supply'
+        to: '/material/supply'
       },
 
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
@@ -500,7 +503,7 @@ const sections = computed(() => [
       }
     ]
   }
-])
+].filter((section: any) => section?.visible !== false))
 
 function toggleSection(id: string) {
   expanded.value.includes(id)

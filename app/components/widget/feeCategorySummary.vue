@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="chart-card">
     <div v-if="!isReady" class="skeleton-loader">Loading Fee Collection by Category...</div>
     <client-only v-else-if="chartSeries.length > 0">
       <ApexChart

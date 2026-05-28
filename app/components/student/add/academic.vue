@@ -210,14 +210,14 @@ onMounted(() => {
     <UCard :ui="{ body: 'sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-xl font-semibold">Academic Information</p>
+                <p class="text-lg font-semibold md:text-xl">Academic Information</p>
                 <p class="text-sm text-muted">Admission and enrollment details for the student.</p>
             </div>
         </template>
 
         <UForm :state="form" :schema="schema" @submit="submit">
             <!-- FORM FIELDS -->
-            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-5 md:p-5">
 
                 <UFormField name="enrollmentType" label="Enrollment Type" required>
                     <USelectMenu value-key="value" v-model="form.enrollmentType" :items="enrollmentTypes" />
@@ -278,7 +278,7 @@ onMounted(() => {
             <div v-if="form.classId" class="space-y-6 pb-6">
 
                 <!-- CORE SUBJECTS -->
-                <div class="px-5 space-y-3">
+                <div class="space-y-3 px-4 md:px-5">
                     <div class="flex justify-between items-center">
                         <div class="flex gap-2 items-center">
                             <UIcon :name="LOCK_ICON" />
@@ -288,7 +288,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Subjects list -->
-                    <div v-if="coreSubjects.length" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div v-if="coreSubjects.length" class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <div
                             v-for="subject in coreSubjects"
                             :key="subject.id"
@@ -311,7 +311,7 @@ onMounted(() => {
                 </div>
 
                 <!-- OPTIONAL SUBJECT GROUPS -->
-                <div v-for="group in optionalGroups" :key="group.id" class="px-5 space-y-3">
+                <div v-for="group in optionalGroups" :key="group.id" class="space-y-3 px-4 md:px-5">
                     <div class="flex justify-between items-center">
                         <div class="flex gap-2 items-center">
                             <UIcon :name="BOOK_ICON" />
@@ -333,7 +333,7 @@ onMounted(() => {
                             variant="card"
                             indicator="end"
                             :ui="{
-                                wrapper: 'grid md:grid-cols-2 gap-3',
+                                wrapper: 'grid grid-cols-1 gap-3 md:grid-cols-2',
                                 item: 'w-full'
                             }"
                         />
@@ -343,11 +343,11 @@ onMounted(() => {
             </div>
 
             <!-- FOOTER -->
-            <div class="flex px-5 py-4 justify-between items-center border-t border-default">
+            <div class="flex flex-col-reverse gap-3 border-t border-default px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
                 <p class="text-sm text-muted">Step 3 of 4</p>
-                <div class="flex gap-2">
-                    <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral" />
-                    <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON" />
+                <div class="flex flex-col gap-2 sm:flex-row">
+                    <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral" class="w-full justify-center sm:w-auto" />
+                    <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON" class="w-full justify-center sm:w-auto" />
                 </div>
             </div>
         </UForm>

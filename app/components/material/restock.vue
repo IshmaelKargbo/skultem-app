@@ -1,6 +1,6 @@
 <template>
   <USlideover :dismissible="false" :open="open" @update:open="open = $event">
-    <UButton color="info" label="Add Material" :icon="RESTOCK_ICON" @click="open = true" />
+    <UButton color="info" label="Restock Material" :icon="RESTOCK_ICON" @click="open = true" />
     <!-- Header -->
     <template #header>
       <div class="flex items-center justify-between w-full">

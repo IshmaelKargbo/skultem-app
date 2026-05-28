@@ -1,6 +1,6 @@
 <template>
     <UForm ref="form" :schema="schema" :state="state" @submit="run">
-        <UCard class="bg-white">
+        <UCard class="bg-white dark:bg-gray-800">
             <div class="flex justify-between items-center">
                 <div>
                     <p class="text-base">Filters ({{ state.filters.length }})</p>

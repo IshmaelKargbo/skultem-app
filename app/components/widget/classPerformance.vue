@@ -1,11 +1,13 @@
 <template>
-  <div v-if="!isReady" class="skeleton-loader">
-    Loading Class Performance...
-  </div>
+  <div class="chart-card">
+    <div v-if="!isReady" class="skeleton-loader">
+      Loading Class Performance...
+    </div>
 
-  <client-only v-else>
-    <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
-  </client-only>
+    <client-only v-else>
+      <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+    </client-only>
+  </div>
 </template>
 
 <script setup lang="ts">

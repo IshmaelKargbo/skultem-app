@@ -1,8 +1,44 @@
 <template>
-    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
+    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3 md:space-y-5">
         <Heading title="Enroll Student" subtitle="Add a new student to the system and assign their academic details." />
-        <div class="flex gap-5 items-start">
-            <div class="w-1/4 sticky top-5 self-start">
+        <div class="md:hidden">
+            <UCard :ui="{ body: 'p-4' }">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-muted">
+                            Step {{ state + 1 }} of {{ step.length }}
+                        </p>
+
+                        <p class="mt-1 text-base font-semibold text-highlighted">
+                            {{ step[state]?.title }}
+                        </p>
+
+                        <p class="mt-1 text-sm text-muted">
+                            {{ step[state]?.sub }}
+                        </p>
+                    </div>
+
+                    <div class="flex shrink-0 items-center gap-1 pt-1">
+                        <span
+                            v-for="(value, i) in step"
+                            :key="value.title"
+                            class="h-2.5 w-2.5 rounded-full transition-colors"
+                            :class="state >= i ? 'bg-primary-500' : 'bg-gray-200 dark:bg-gray-800'"
+                        />
+                    </div>
+                </div>
+
+                <div class="mt-4 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                        class="h-full rounded-full bg-primary-500 transition-all duration-300"
+                        :style="{ width: `${((state + 1) / step.length) * 100}%` }"
+                    />
+                </div>
+            </UCard>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-[280px_minmax(0,1fr)] md:gap-5">
+            <div class="hidden md:block sticky top-5 self-start">
                 <UCard>
                     <div class="space-y-4">
                         <div>
@@ -48,7 +84,7 @@
                     </div>
                 </UCard>
             </div>
-            <div class="flex-1">
+            <div class="min-w-0">
                 <StudentAddPersonal :state="personal" @next="moveToParent" v-if="state === 0" />
                 <StudentAddParent :state="parent" @next="moveToAcademic" @back="back" v-if="state === 1" />
                 <StudentAddAcademic :state="academic" @back="back" @next="moveToProfile" v-if="state === 2" />
@@ -59,7 +95,7 @@
     </div>
     <UModal v-model:open="successModal" :dismissible="false">
         <template #content>
-            <div class="p-6 space-y-5 text-center">
+            <div class="space-y-4 p-4 text-center sm:space-y-5 sm:p-6">
 
                 <div class="flex flex-col items-center space-y-2">
                     <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
@@ -72,16 +108,16 @@
                     </p>
                 </div>
 
-                <div class="flex gap-3 justify-center pt-2">
+                <div class="flex flex-col gap-3 justify-center pt-2 sm:flex-row">
 
-                    <UButton color="primary" :trailing-icon="VIEW_ICON" @click="() => {
+                    <UButton class="w-full justify-center sm:w-auto" color="primary" :trailing-icon="VIEW_ICON" @click="() => {
                         successModal = false
                         navigateTo(`/students/${createdStudentId}`)
                     }">
                         View Profile
                     </UButton>
 
-                    <UButton color="neutral" variant="subtle" :trailing-icon="ADD_ICON" @click="() => {
+                    <UButton class="w-full justify-center sm:w-auto" color="neutral" variant="subtle" :trailing-icon="ADD_ICON" @click="() => {
                         successModal = false
                         resetForm()
                     }">

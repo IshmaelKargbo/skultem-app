@@ -198,86 +198,157 @@ onMounted(async () => {
       </div>
     </template>
   </UCard>
-  <div v-if="loading" class="md:hidden space-y-3">
-    <UCard v-for="i in 5" :key="i">
-      <template #header>
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-2 items-center">
-            <USkeleton class="h-10 w-10 rounded-full" />
-            <div class="space-y-2">
-              <USkeleton class="h-3 w-28" />
-              <USkeleton class="h-2 w-36" />
+  <!-- Mobile -->
+  <div class="space-y-4 md:hidden">
+    <!-- Loading -->
+    <template v-if="loading">
+      <UCard v-for="i in 4" :key="i"
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900">
+        <div class="space-y-5 p-4">
+          <!-- Header -->
+          <div class="flex items-center justify-between">
+            <div class="flex min-w-0 items-center gap-3">
+              <USkeleton class="size-12 rounded-2xl" />
+
+              <div class="space-y-2">
+                <USkeleton class="h-3 w-28" />
+                <USkeleton class="h-2 w-36" />
+              </div>
+            </div>
+
+            <USkeleton class="h-6 w-16 rounded-full" />
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 gap-3">
+            <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-16 rounded-2xl" />
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <USkeleton class="h-9 w-9 rounded-full" />
+
+              <div class="space-y-2">
+                <USkeleton class="h-3 w-24" />
+                <USkeleton class="h-2 w-20" />
+              </div>
+            </div>
+
+            <USkeleton class="size-6 rounded-xl" />
+          </div>
+        </div>
+      </UCard>
+    </template>
+
+    <!-- Data -->
+    <template v-else-if="data?.length">
+      <UCard v-for="item in data" :key="item.id"
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md active:scale-[0.99] dark:border-gray-800 dark:bg-neutral-900"
+        :ui="{
+          body: 'p-0'
+        }">
+        <!-- Header -->
+        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <UAvatar size="lg" :alt="name(item)" class="rounded-2xl" />
+
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ name(item) }}
+                </h3>
+
+                <p class="truncate text-xs text-gray-500">
+                  {{ item.user.email }}
+                </p>
+              </div>
+            </div>
+
+            <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
+            </UDropdownMenu>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3 p-4">
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              Gender
+            </p>
+
+            <UBadge :label="parseGender[item.gender]" :color="parseGenderColor[item.gender]" size="sm" variant="soft" />
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              Status
+            </p>
+
+            <UBadge :label="parseStaus[item.status]" :color="parseStatusColor[item.status]" size="sm" variant="soft" />
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              Phone
+            </p>
+
+            <p class="truncate text-sm font-medium">
+              {{ item.phone || 'N/A' }}
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              City
+            </p>
+
+            <p class="truncate text-sm font-medium">
+              {{ item.city || 'N/A' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+          <div class="flex min-w-0 items-center gap-3">
+            <UAvatar size="sm" icon="i-lucide-map-pin" />
+
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                {{ item.city || 'Unknown City' }}
+              </p>
+
+              <p class="truncate text-xs text-gray-500">
+                {{ item.street || 'No address provided' }}
+              </p>
             </div>
           </div>
 
-          <USkeleton class="h-5 w-16 rounded-full" />
+          <UButton icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
         </div>
-      </template>
+      </UCard>
+    </template>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="space-y-2">
-          <USkeleton class="h-2 w-12" />
-          <USkeleton class="h-3 w-20" />
-        </div>
+    <!-- Empty -->
+    <template v-else>
+      <div class="flex flex-col items-center justify-center py-14">
+        <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
 
-        <div class="space-y-2">
-          <USkeleton class="h-2 w-12" />
-          <USkeleton class="h-3 w-20" />
-        </div>
-
-        <div class="space-y-2">
-          <USkeleton class="h-2 w-12" />
-          <USkeleton class="h-3 w-20" />
-        </div>
-
-        <div class="space-y-2">
-          <USkeleton class="h-2 w-12" />
-          <USkeleton class="h-3 w-20" />
-        </div>
-      </div>
-    </UCard>
-  </div>
-  <UCard v-for="item in data" :key="item.id" class="md:hidden">
-    <template #header>
-      <div>
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-2 items-center">
-            <div>
-              <UAvatar size="lg" :alt="name(item)" />
-            </div>
-            <div>
-              <p class="text-sm">{{ name(item) }}</p>
-              <p class="text-[11px] text-mute">{{ item.user.email }}</p>
-            </div>
-          </div>
-          <div>
-            <UBadge :label="parseStaus[item.status]" :color="parseStatusColor[item.status]" variant="outline" />
-          </div>
-        </div>
+        <p class="text-sm text-gray-500">
+          No teachers found.
+        </p>
       </div>
     </template>
-    <div class="grid grid-cols-2 md:gap-5 gap-3">
-      <div class="space-y-0.5">
-        <p class="text-[10px] text-mute uppercase">Phone</p>
-        <p>{{ item.phone }}</p>
-      </div>
-      <div class="space-y-0.5">
-        <p class="text-[10px] text-mute uppercase">Gender</p>
-        <UBadge :label="parseGender[item.gender]" :color="parseGenderColor[item.gender]" size="sm" variant="outline" />
-      </div>
-      <div class="space-y-0.5">
-        <p class="text-[10px] text-mute uppercase">City</p>
-        <p>{{ item.city }}</p>
-      </div>
-      <div class="space-y-0.5">
-        <p class="text-[10px] text-mute uppercase">Street</p>
-        <p>{{ item.street }}</p>
-      </div>
-    </div>
-  </UCard>
   <div class="flex justify-between items-center md:hidden">
     <Showing :meta="meta" />
     <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
       show-edges />
   </div>
+  </div>
+
 </template>

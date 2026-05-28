@@ -19,7 +19,7 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap">
                             <FeeStudentAssign v-if="can([Role.ACCOUNTANT])" :student="student"
                                 @assigned="refreshFees" />
                             <FeeDiscountAdd v-if="can([Role.ACCOUNTANT])" :student-id="student.id"
@@ -30,30 +30,30 @@
                 </div>
             </template>
             <div v-if="student">
-                <div class="p-5 border-b border-gray-200 dark:border-gray-800 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="pb-5 p-0 md:p-5 grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
                     <UCard class="bg-app-100/60 dark:bg-app-900/30 ring-app-300/70 dark:ring-app-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Fees</p>
-                            <p class="text-xl font-semibold">{{ format(feesState?.total || 0) }}</p>
+                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.total || 0) }}</p>
                         </div>
                     </UCard>
                     <UCard
                         class="bg-success-100/60 dark:bg-success-900/25 ring-success-300/80 dark:ring-success-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Paid</p>
-                            <p class="text-xl font-semibold">{{ format(feesState?.paid || 0) }}</p>
+                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.paid || 0) }}</p>
                         </div>
                     </UCard>
                     <UCard class="bg-red-100/60 dark:bg-red-900/25 ring-red-300/80 dark:ring-red-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
-                            <p class="text-xl font-semibold">{{ format(feesState?.outstanding || 0) }}</p>
+                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.outstanding || 0) }}</p>
                         </div>
                     </UCard>
                     <UCard class="bg-purple-100/60 dark:bg-purple-900/25 ring-purple-300/80 dark:ring-purple-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Discounts</p>
-                            <p class="text-xl font-semibold">{{ format(feesState?.discount || 0) }}</p>
+                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.discount || 0) }}</p>
                         </div>
                     </UCard>
                 </div>

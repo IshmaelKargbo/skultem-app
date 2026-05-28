@@ -40,8 +40,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -56,8 +56,8 @@
             </template> <!-- Subnav Slot --> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-blue-400 transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary-500' : 'text-gray-700'"> <!-- Subnav icon -->
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'"> <!-- Subnav icon -->
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -119,8 +119,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -135,8 +135,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -151,8 +151,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -167,8 +167,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -183,8 +183,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -199,8 +199,8 @@
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'">
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -237,8 +237,8 @@
             <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
-                  class="flex items-center space-x-2 p-1 rounded-md hover:text-primary transition"
-                  :class="isActiveSub(nav) ? 'font-semibold text-primary' : 'text-gray-800'"> <!-- Subnav icon -->
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'"> <!-- Subnav icon -->
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>

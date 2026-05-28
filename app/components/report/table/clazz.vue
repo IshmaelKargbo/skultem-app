@@ -87,8 +87,9 @@ watch(() => page.value, async () => {
 </script>
 
 <template>
-  <UCard>
-    <UTable :columns="columns" :data="data" :loading="loading">
+  <div class="space-y-4">
+    <UCard class="hidden md:block">
+      <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -101,11 +102,33 @@ watch(() => page.value, async () => {
       <template #totalStudent-cell="{ row }">
         <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} -`" />
       </template>
-    </UTable>
-    <div v-if="!loading && meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
+      </UTable>
+      <div v-if="!loading && meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
+      </div>
+    </UCard>
+
+    <div class="space-y-3 md:hidden">
+      <UCard v-for="item in data" :key="item.id" :ui="{ body: 'p-4' }">
+        <div class="space-y-2">
+          <p class="font-semibold text-sm">{{ item.clazz }}</p>
+          <p class="text-xs text-muted">{{ item.grade }} · {{ parseLevel[item.classLevel] }}</p>
+          <p class="text-xs text-muted">Section: {{ item.sectionName || 'N/A' }} · Stream: {{ item.streamName || 'N/A' }}</p>
+          <div class="flex items-center justify-between">
+            <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${item.totalStudent} Students`" />
+            <p class="text-xs">{{ item.teacherName || 'No Teacher' }}</p>
+          </div>
+        </div>
+      </UCard>
+      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
+        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        <p class="text-gray-500">No classes found.</p>
+      </div>
+      <div v-if="meta" class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
+      </div>
     </div>
-  </UCard>
+  </div>
 </template>

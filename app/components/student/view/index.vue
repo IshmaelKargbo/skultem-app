@@ -70,7 +70,13 @@
 
             <!-- Student Details -->
             <div class="flex-1 space-y-5">
-                <Tab :tabs="[
+                <TabMobile class="md:hidden" :tabs="[
+                    { label: 'Personal', to: personalInfo, exact: true },
+                    { label: 'Attendance', to: attendanceInfo, exact: true },
+                    { label: 'Fees', to: feeStructureInfo, exact: true },
+                    { label: 'Academics', to: academicInfo, exact: true }
+                ]" />
+                <Tab class="hidden md:block" :tabs="[
                     { label: 'Personal Information', to: personalInfo, exact: true },
                     { label: 'Attendance', to: attendanceInfo, exact: true },
                     { label: 'Fee Structure', to: feeStructureInfo, exact: true },

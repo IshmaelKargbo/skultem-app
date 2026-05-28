@@ -107,33 +107,123 @@ onMounted(async () => {
   loading.value = false
 })
 </script>
-
 <template>
   <UCard :ui="{
-    body: 'sm:p-0'
+    body: 'p-0'
   }">
-    <UTable :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No sections found.</p>
-        </div>
-      </template>
-      <template #loading>
-        <TableLoading :size="columns.length" />
-      </template>
-      <template #classId-cell="{ row }: any">
-        <ClassRecord :id="row.original.classId" #default="{ value }">
-          {{ value?.name || 'Unknown Class' }}
-        </ClassRecord>
-      </template>
-    </UTable>
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
-    </template>
+    <!-- Desktop Table -->
+    <div class="hidden md:block">
+      <UTable :columns="columns" :data="data" :loading="loading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+
+            <p class="text-gray-500">
+              No sections found.
+            </p>
+          </div>
+        </template>
+
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+      </UTable>
+    </div>
   </UCard>
+
+  <!-- Mobile -->
+  <div class="md:hidden bg-gray-50 dark:bg-neutral-950 min-h-[300px]">
+    <!-- Loading -->
+    <div v-if="loading">
+      <div class="space-y-3 p-4">
+        <div v-for="i in 4" :key="i"
+          class="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-900 p-4">
+          <USkeleton class="h-5 w-32 mb-3" />
+          <USkeleton class="h-4 w-full mb-2" />
+          <USkeleton class="h-4 w-2/3" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div v-else-if="!data?.length">
+      <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+        <div
+          class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-gray-800">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        </div>
+
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+          No sections found
+        </h3>
+
+        <p class="mt-1 text-sm text-gray-500 max-w-xs">
+          Create sections to organize your academic structure better.
+        </p>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <div v-else class="space-y-3 p-3">
+      <div v-for="item in data" :key="item.id"
+        class="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-900 p-4 shadow-sm active:scale-[0.99] transition-all">
+        <div class="flex items-start justify-between gap-3">
+          <!-- Left -->
+          <div class="flex gap-3 min-w-0 flex-1">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-900/20">
+              <UIcon name="lucide:layout-template" class="text-lg text-primary-600" />
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <!-- Title -->
+              <div class="flex items-center gap-2">
+                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ item.name }}
+                </h3>
+
+                <div class="h-2 w-2 rounded-full bg-emerald-500" />
+              </div>
+
+              <!-- Description -->
+              <p class="mt-1 line-clamp-2 text-xs leading-5 text-gray-500">
+                {{
+                  item.description ||
+                  'No description available for this section.'
+                }}
+              </p>
+
+              <!-- Bottom Meta -->
+              <div class="mt-4 flex flex-wrap items-center gap-2">
+                <span
+                  class="rounded-full bg-gray-100 dark:bg-neutral-800 px-3 py-1 text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                  Academic Section
+                </span>
+
+                <span
+                  class="rounded-full bg-primary-50 dark:bg-primary-900/20 px-3 py-1 text-[11px] font-medium text-primary-600">
+                  Active
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost" class="rounded-full" />
+          </UDropdownMenu>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <Showing :meta="meta" />
+
+    <div class="overflow-x-auto">
+      <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
+    </div>
+  </div>
 </template>

@@ -2,7 +2,7 @@
     <UCard :ui="{ body: 'sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-xl font-semibold">Parent / Guardian Information</p>
+                <p class="text-lg font-semibold md:text-xl">Parent / Guardian Information</p>
                 <p class="text-sm text-muted">Provide parent or legal guardian contact details.</p>
             </div>
         </template>
@@ -11,7 +11,7 @@
             <div>
 
                 <!-- Parent Information -->
-                <div class="p-5 border-b dark:border-gray-800 border-gray-200 grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
 
                     <UFormField name="fatherName" label="Father's Name" required>
                         <UInput placeholder="Enter father's full name" v-model="form.fatherName" />
@@ -58,7 +58,7 @@
                 </div>
 
                 <!-- Guardian Section -->
-                <div class="p-5 space-y-5">
+                <div class="space-y-5 p-4 md:p-5">
 
                     <div>
                         <p class="uppercase font-medium">Guardian Details</p>
@@ -68,15 +68,15 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex items-center space-x-3">
+                    <div class="flex flex-col gap-3 sm:flex-row">
                         <UButton @click="action = 0" :variant="action === 0 ? 'solid' : 'outline'"
-                            label="Find existing guardian" class="w-full flex items-center justify-center" size="xl" />
+                            label="Find existing guardian" class="w-full justify-center" size="xl" />
                         <UButton @click="action = 1" :variant="action === 1 ? 'solid' : 'outline'"
-                            label="Add new guardian" class="w-full flex items-center justify-center" size="xl" />
+                            label="Add new guardian" class="w-full justify-center" size="xl" />
                     </div>
 
                     <!-- Existing Guardian -->
-                    <div v-if="action === 0" class="grid grid-cols-2 gap-4">
+                    <div v-if="action === 0" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
 
                         <UFormField name="existingGuardianId" label="Select Guardian" required>
                             <USelectMenu :loading="loading" v-model="form.existingGuardianId" value-key="value"
@@ -97,7 +97,7 @@
                     </div>
 
                     <!-- New Guardian -->
-                    <div v-if="action === 1" class="grid grid-cols-2 gap-4">
+                    <div v-if="action === 1" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
 
                         <UFormField name="guardianGivenNames" label="Guardian Given Names" required>
                             <UInput placeholder="Enter given names" v-model="form.guardianGivenNames" />
@@ -142,7 +142,7 @@
                             </template>
                         </UFormField>
 
-                        <UFormField class="col-span-2" name="guardianAddress" label="Address" required>
+                        <UFormField class="md:col-span-2" name="guardianAddress" label="Address" required>
                             <UTextarea placeholder="Enter full address" v-model="form.guardianAddress" />
                             <template #help>
                                 Enter the guardian's full residential address including street name and house number.
@@ -154,11 +154,11 @@
                 </div>
 
                 <!-- Footer -->
-                <div class="flex px-5 py-4 justify-between items-center border-t dark:border-gray-800 border-gray-200">
+                <div class="flex flex-col-reverse gap-3 border-t border-gray-200 px-4 py-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between md:px-5">
                     <p class="text-sm text-muted">Step 2 of 4</p>
-                    <div class="space-x-2 flex items-center">
-                        <UButton @click="back" label="Back" :icon="BACK_ICON" variant="outline" color="neutral" />
-                        <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON" />
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <UButton @click="back" label="Back" :icon="BACK_ICON" variant="outline" color="neutral" class="w-full justify-center sm:w-auto" />
+                        <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON" class="w-full justify-center sm:w-auto" />
                     </div>
                 </div>
 

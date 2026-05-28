@@ -1,8 +1,10 @@
 <template>
-  <div v-if="!isReady" class="skeleton-loader">Loading Subject Performance...</div>
-  <client-only v-else>
-    <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
-  </client-only>
+  <div class="chart-card">
+    <div v-if="!isReady" class="skeleton-loader">Loading Subject Performance...</div>
+    <client-only v-else>
+      <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+    </client-only>
+  </div>
 </template>
 
 <script setup lang="ts">

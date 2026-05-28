@@ -1,16 +1,22 @@
 <template>
-    <div class="p-7 space-y-5 h-full overflow-y-auto">
+    <div class="p-4 md:p-7 space-y-5 h-full overflow-y-auto">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div class="space-y-1">
                 <p class="text-2xl font-semibold">Saved Reports</p>
                 <p class="text-mute">Access and manage your saved reports</p>
             </div>
-            <div class="flex flex-wrap gap-3">
+            <div class="grid w-full grid-cols-1 gap-2 md:flex md:w-auto md:flex-wrap md:gap-3">
                 <UButton :icon="ADD_ICON" label="Create New Report" to="/analytics/builder" />
             </div>
         </div>
-        <div class="mt-5 flex">
-            <Tab :tabs="[
+        <div class="mt-5">
+            <TabMobile class="md:hidden" :tabs="[
+                { label: 'Reports', to: '/analytics', exact: true },
+                { label: 'Builder', to: '/analytics/builder', exact: true },
+                { label: 'Saved', to: '/analytics/saved', exact: true },
+                { label: 'Widgets', to: '/analytics/dashboard', exact: true }
+            ]" />
+            <Tab class="hidden md:block" :tabs="[
                 { label: 'Reports', to: '/analytics', exact: true },
                 { label: 'Report Builder', to: '/analytics/builder', exact: true },
                 { label: 'Saved Reports', to: '/analytics/saved', exact: true },
