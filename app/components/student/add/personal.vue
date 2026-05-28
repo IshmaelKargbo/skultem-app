@@ -2,7 +2,7 @@
     <UCard :ui="{ body: 'sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-xl font-semibold">Personal Information</p>
+                <p class="text-lg font-semibold md:text-xl">Personal Information</p>
                 <p class="text-sm text-muted">
                     Enter the student's basic details and upload a photo.
                 </p>
@@ -10,7 +10,7 @@
         </template>
 
         <UForm :state="form" :schema="schema" @submit="next">
-            <div class="p-5 border-b dark:border-gray-800 border-gray-200 grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
                 <UFormField name="givenNames" label="Given Names" required>
                     <UInput placeholder="Enter given names" v-model="form.givenNames" />
                     <template #help>
@@ -71,9 +71,9 @@
                 </UFormField>
             </div>
 
-            <div class="flex px-5 py-4 justify-between items-center">
+            <div class="flex flex-col-reverse gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
                 <p class="text-sm text-muted">Step 1 of 4</p>
-                <UButton type="submit" :trailing-icon="NEXT_ICON" label="Next Step" />
+                <UButton type="submit" class="w-full justify-center sm:w-auto" :trailing-icon="NEXT_ICON" label="Next Step" />
             </div>
         </UForm>
     </UCard>

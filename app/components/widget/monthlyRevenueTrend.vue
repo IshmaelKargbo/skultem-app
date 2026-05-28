@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="chart-card">
     <div v-if="!isReady" class="skeleton-loader">
       Loading Monthly Revenue vs Expenses...
     </div>

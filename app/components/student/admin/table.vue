@@ -198,7 +198,7 @@ onMounted(async () => {
 
     <!-- Data -->
     <template v-else-if="data?.length">
-      <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl transition-all active:scale-[0.99] "
+      <UCard v-for="item in data" :key="item.id" class="overflow-hidden  transition-all active:scale-[0.99] "
         :ui="{
           body: 'p-0'
         }">
@@ -291,7 +291,7 @@ onMounted(async () => {
             </div>
           </div>
 
-          <UButton @click="view(item)" icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm"
+          <UButton @click="view(item)" label="View" trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm"
             class="rounded-xl" />
         </div>
       </UCard>

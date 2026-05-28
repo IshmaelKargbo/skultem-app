@@ -12,7 +12,7 @@
             <UCard>
                 <div>
                     <p>Export Report</p>
-                    <div class="mt-3 grid-cols-3 grid gap-3">
+                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         <UButton :icon="DOWNLOAD_ICON" label="Export CSV" size="lg" class="w-full flex justify-center"
                             color="neutral" variant="outline" />
                         <UButton :icon="DOWNLOAD_ICON" label="Export Excel" size="lg" class="w-full flex justify-center"

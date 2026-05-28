@@ -1,6 +1,6 @@
 <template>
 
-    <div class="grid gap-5 grid-cols-3">
+    <div class="grid gap-3 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         <Metric :record="{
             label: 'Total Debit',
             value: format(report?.totalDebit || 0),

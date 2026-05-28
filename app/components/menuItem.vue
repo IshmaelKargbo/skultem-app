@@ -3,18 +3,20 @@
     <div
       @click="handleClick"
       :class="[
-        'flex items-center justify-between text-sm border-2 md:p-2.5 py-1 md:px-3 dark:border-gray-900 rounded-xl dark:bg-gray-900 md:hover:bg-primary-100 dark:md:hover:bg-primary-950 md:hover:border-primary-600 hover:text-primary-600 dark:hover:text-primary-200 border-white cursor-pointer',
-        isActive || open ? 'md:bg-primary-100 md:border-primary-400 dark:md:border-primary-800 text-primary-600 dark:text-primary-200  dark:bg-primary-950' : '',
+        'flex min-h-11 items-center justify-between gap-2 text-sm border-2 md:p-2.5 py-2 px-2 md:px-3 dark:border-gray-900 rounded-xl dark:bg-gray-900 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-200 border-white cursor-pointer transition-colors',
+        isActive || open ? 'md:bg-primary-50 md:border-primary-300 dark:md:bg-primary-950 dark:md:border-primary-800 text-primary-600 dark:text-primary-200' : '',
         customClass
       ]"
     >
-      <div class="flex flex-col w-full md:w-auto md:flex-row items-center md:space-x-2.5 space-y-1 text-xs md:text-sm">
-        <slot name="icon" :active="isActive" />
-        <span><slot>{{ label }}</slot></span>
+      <div class="flex w-full min-w-0 items-center gap-2.5 text-xs md:text-sm">
+        <span class="shrink-0 inline-flex items-center justify-center">
+          <slot name="icon" :active="isActive" />
+        </span>
+        <span class="truncate"><slot>{{ label }}</slot></span>
       </div>
       <svg
         v-if="subNavs && subNavs.length"
-        class="w-4 h-4 transition-transform duration-200 hidden md:block"
+        class="w-4 h-4 shrink-0 transition-transform duration-200 hidden md:block"
         :class="open ? 'rotate-90' : ''"
         fill="none"
         stroke="currentColor"

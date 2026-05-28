@@ -121,9 +121,7 @@ onMounted(async () => {
 <template>
   <div class="space-y-5">
     <TransactionFilters :selected="selected" />
-    <UCard :ui="{
-      body: 'p-0 sm:p-0'
-    }">
+    <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -157,5 +155,41 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
+
+    <div class="space-y-3 md:hidden">
+      <UCard v-for="item in data" :key="`${item.createdAt}-${item.referenceType}-${item.amount}`" :ui="{ body: 'p-4' }">
+        <div class="space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold truncate">{{ clean(item.type) }}</p>
+              <p class="text-xs text-muted truncate">{{ formatDate(item.createdAt) }} · {{ clean(item.referenceType) }}</p>
+            </div>
+            <UBadge :icon="item.direction == 'CREDIT' ? CREDIT_ICON : DEBIT_ICON"
+              :color="item.direction == 'CREDIT' ? 'success' : 'error'" :label="clean(item.direction)" variant="outline" size="sm" />
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <p :class="item.direction == 'CREDIT' ? 'text-success' : 'text-error'">
+              Amount: {{ format(item.amount) }}
+            </p>
+            <p class="text-info text-right">Balance: {{ format(item.balance) }}</p>
+          </div>
+        </div>
+      </UCard>
+
+      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
+        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        <p class="text-gray-500">No transaction found.</p>
+      </div>
+
+      <div v-if="meta" class="flex flex-col items-center gap-2">
+        <Showing :meta="meta" />
+        <div class="w-full overflow-x-auto pb-1">
+          <div class="flex min-w-max justify-center px-1">
+            <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+              :total="meta.total" show-edges />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

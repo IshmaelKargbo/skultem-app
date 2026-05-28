@@ -58,30 +58,9 @@ watch(
         behavior: 'smooth'
       })
     })
-  })
-
-  router.replace({
-    query: {
-      page: page.value,
-      size: size.value
-    }
-  })
-
-  fetchRecord()
-}, { immediate: true })
-
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
-}
+  },
+  { immediate: true }
+)
 
 async function fetchRecord() {
   loading.value = true
@@ -107,192 +86,62 @@ onMounted(() => {
 
 <template>
   <UCard :ui="{ body: 'sm:p-0' }">
-    <div class="flex flex-col gap-4">
-      <!-- Desktop Table -->
-      <div class="hidden md:block overflow-x-auto">
-        <UTable
-          :columns="columns"
-          :data="data"
-          :loading="loading"
-          class="w-full min-w-[900px]"
-          :ui="{
-            td: 'whitespace-nowrap',
-            th: 'whitespace-nowrap bg-default/40'
-          }"
-        >
-          <template #empty-state>
-            <div class="flex flex-col items-center gap-2 py-10">
-              <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-              <p class="text-gray-500">No parents found.</p>
-            </div>
-          </template>
+    <div class="flex flex-col gap-3">
 
-          <template #email-cell="{ row }">
-            <span class="truncate max-w-[220px] block">
-              {{ row.original.email }}
-            </span>
-          </template>
-
-          <template #status-cell="{ row }">
-            <UBadge
-              v-if="row.original.feeDetail"
-              :label="row.original.feeDetail.status"
-              :color="parseFeeStatusColor[row.original.feeDetail.status]"
-              :icon="parseFeeStatusIcon[row.original.feeDetail.status]"
-              variant="soft"
-            />
-          </template>
-
-          <template #students-cell="{ row }">
-            <UBadge
-              variant="soft"
-              :trailing-icon="STUDENT_ICON"
-              :label="`${row.original.students}`"
-            />
-          </template>
-
-          <template #total-cell="{ row }">
-            <p
-              v-if="row.original.feeDetail"
-              class="text-error font-medium"
-            >
-              {{ format(row.original.feeDetail.total) }}
-            </p>
-          </template>
-
-          <template #paid-cell="{ row }">
-            <p
-              v-if="row.original.feeDetail"
-              class="text-success font-medium"
-            >
-              {{ format(row.original.feeDetail.paid) }}
-            </p>
-          </template>
-
-          <template #balance-cell="{ row }">
-            <p
-              v-if="row.original.feeDetail"
-              class="text-info font-medium"
-            >
-              {{ format(row.original.feeDetail.balance) }}
-            </p>
-          </template>
-        </UTable>
-      </div>
-
-      <!-- Mobile Cards -->
-      <div class="grid gap-3 md:hidden">
-        <template v-if="loading">
-          <USkeleton
-            v-for="i in 4"
-            :key="i"
-            class="h-40 rounded-2xl"
-          />
-        </template>
-
-        <template v-else-if="data?.length">
-          <UCard
-            v-for="parent in data"
-            :key="parent.id"
-            class="rounded-2xl border border-default"
-            :ui="{
-              body: 'p-4'
-            }"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <h3 class="font-semibold text-sm truncate">
-                  {{ parent.name }}
-                </h3>
-
-                <p class="text-xs text-muted truncate mt-1">
-                  {{ parent.email }}
-                </p>
-
-                <p class="text-xs text-muted mt-1">
-                  {{ parent.phone }}
-                </p>
-              </div>
-
-              <UBadge
-                v-if="parent.feeDetail"
-                :label="parent.feeDetail.status"
-                :color="parseFeeStatusColor[parent.feeDetail.status]"
-                variant="soft"
-                size="sm"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mt-4">
-              <div class="rounded-xl bg-default/50 p-3">
-                <p class="text-xs text-muted">Children</p>
-                <p class="font-semibold mt-1">
-                  {{ parent.students }}
-                </p>
-              </div>
-
-              <div class="rounded-xl bg-default/50 p-3">
-                <p class="text-xs text-muted">Outstanding</p>
-                <p class="font-semibold text-info mt-1">
-                  {{
-                    parent.feeDetail
-                      ? format(parent.feeDetail.balance)
-                      : '-'
-                  }}
-                </p>
-              </div>
-
-              <div class="rounded-xl bg-default/50 p-3">
-                <p class="text-xs text-muted">Total</p>
-                <p class="font-semibold text-error mt-1">
-                  {{
-                    parent.feeDetail
-                      ? format(parent.feeDetail.total)
-                      : '-'
-                  }}
-                </p>
-              </div>
-
-              <div class="rounded-xl bg-default/50 p-3">
-                <p class="text-xs text-muted">Paid</p>
-                <p class="font-semibold text-success mt-1">
-                  {{
-                    parent.feeDetail
-                      ? format(parent.feeDetail.paid)
-                      : '-'
-                  }}
-                </p>
-              </div>
-            </div>
-          </UCard>
-        </template>
-
-        <template v-else>
+      <UTable :columns="columns" :data="data" :loading="loading" class="w-full">
+        <!-- Empty state -->
+        <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No parents found.</p>
           </div>
         </template>
-      </div>
 
-      <!-- Pagination -->
-      <div
-        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-default pt-4"
-      >
+        <!-- Status -->
+        <template #status-cell="{ row }">
+          <UBadge v-if="row.original.feeDetail" :label="row.original.feeDetail.status"
+            :color="parseFeeStatusColor[row.original.feeDetail.status]"
+            :icon="parseFeeStatusIcon[row.original.feeDetail.status]" variant="outline" />
+        </template>
+
+        <!-- Students -->
+        <template #students-cell="{ row }">
+          <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.students} - `"  />
+        </template>
+
+        <!-- Total -->
+        <template #total-cell="{ row }">
+          <p v-if="row.original.feeDetail" class="text-error">
+            {{ format(row.original.feeDetail.total) }}
+          </p>
+        </template>
+
+        <!-- Paid -->
+        <template #paid-cell="{ row }">
+          <p v-if="row.original.feeDetail" class="text-success">
+            {{ format(row.original.feeDetail.paid) }}
+          </p>
+        </template>
+
+        <!-- Balance -->
+        <template #balance-cell="{ row }">
+          <p v-if="row.original.feeDetail" class="text-info">
+            {{ format(row.original.feeDetail.balance) }}
+          </p>
+        </template>
+      </UTable>
+    </div>
+
+    <!-- Footer -->
+    <template #footer>
+      <div class="flex justify-between items-center">
         <Showing :meta="meta" />
 
-        <div class="overflow-x-auto">
-          <UPagination
-            size="sm"
-            v-model:page="page"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
-        </div>
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
-    </div>
+    </template>
+
   </UCard>
     <UCard :ui="{ body: 'p-3 sm:p-4' }">
     <div class="space-y-3">
@@ -479,8 +328,6 @@ onMounted(() => {
           />
         </div>
       </div>
-    </template>
-
+    </div>
   </UCard>
-  
 </template>

@@ -30,11 +30,11 @@
 
 html {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-indigo-500) #f0f0f0;
+  scrollbar-color: var(--color-indigo-500) #fdfbfb;
 }
 
-.dark html {
-  scrollbar-color: #4f46e5 #111827;
+html.dark {
+  scrollbar-color: #4f46e5 #05070d;
 }
 
 ::-webkit-scrollbar-track {
@@ -168,6 +168,32 @@ h6 {
 }
 
 /* Widget dark-mode polish */
+.chart-card {
+  border: 1px solid var(--app-border);
+  border-radius: 0.75rem;
+  background: var(--app-card);
+  padding: 0.75rem;
+  min-height: 366px;
+}
+
+.skeleton-loader {
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--app-text-soft);
+  font-weight: 500;
+  background: color-mix(in oklab, var(--app-border) 84%, transparent);
+  border-radius: 0.5rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .dark .skeleton-loader {
   color: #9ca3af !important;
   background: #040609 !important;
@@ -189,10 +215,45 @@ h6 {
   stroke: #1f2937 !important;
 }
 
+.dark .apexcharts-xaxis line,
+.dark .apexcharts-yaxis line,
+.dark .apexcharts-xcrosshairs,
+.dark .apexcharts-ycrosshairs {
+  stroke: #334155 !important;
+}
+
 .dark .apexcharts-tooltip,
 .dark .apexcharts-xaxistooltip,
 .dark .apexcharts-yaxistooltip {
   background: #0f172a !important;
   border-color: #1f2937 !important;
   color: #e5e7eb !important;
+}
+
+.dark .apexcharts-tooltip-title {
+  background: #111827 !important;
+  border-bottom: 1px solid #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .apexcharts-tooltip-text,
+.dark .apexcharts-tooltip-text-y-label,
+.dark .apexcharts-tooltip-text-y-value,
+.dark .apexcharts-tooltip-text-z-label,
+.dark .apexcharts-tooltip-text-z-value,
+.dark .apexcharts-tooltip-text-x-label {
+  color: #e5e7eb !important;
+}
+
+.dark .apexcharts-menu {
+  background: #111827 !important;
+  border: 1px solid #1f2937 !important;
+}
+
+.dark .apexcharts-menu-item {
+  color: #e5e7eb !important;
+}
+
+.dark .apexcharts-menu-item:hover {
+  background: #1f2937 !important;
 }

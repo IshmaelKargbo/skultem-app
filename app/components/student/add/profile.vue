@@ -2,7 +2,7 @@
     <UCard :ui="{ body: 'sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-xl font-semibold">
+                <p class="text-lg font-semibold md:text-xl">
                     Student Photo Upload
                 </p>
 
@@ -14,16 +14,16 @@
 
         <UForm :state="form" :schema="schema" @submit="next">
             <div>
-                <div class="border-b p-5 dark:border-gray-800 border-gray-200 grid grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
                     <div>
                         <UFileUpload v-model="form.photo" :ui="{
                             base: 'object-contain'
                         }" label="Drop student photo here" description="PNG, JPG or JPEG (max. 2MB)"
-                            class="w-full min-h-64" />
+                            class="w-full min-h-52 md:min-h-64" />
                     </div>
 
-                    <div class="space-y-3 py-5">
-                        <p class="text-xl font-semibold">
+                    <div class="space-y-3 py-0 md:py-5">
+                        <p class="text-lg font-semibold md:text-xl">
                             Photo Guidelines
                         </p>
 
@@ -37,13 +37,13 @@
                     </div>
                 </div>
 
-                <div class="flex px-5 py-4 justify-between items-center">
+                <div class="flex flex-col-reverse gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
                     <p class="text-sm text-muted">
                         Step 4 of 4
                     </p>
-                    <div class="flex gap-3">
-                        <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral" />
-                        <UButton type="submit" :loading="loading" :trailing-icon="NEXT_ICON" label="Enrolled Student" />
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral" class="w-full justify-center sm:w-auto" />
+                        <UButton type="submit" :loading="loading" :trailing-icon="NEXT_ICON" label="Enrolled Student" class="w-full justify-center sm:w-auto" />
                     </div>
                 </div>
             </div>

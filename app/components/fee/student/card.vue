@@ -41,17 +41,10 @@ const { student } = defineProps<{
 const store = useStudentStore()
 const { format } = useMoney()
 const outstanding = ref(0)
-const emit = defineEmits(['click'])
-const records = ref<StudentFee[]>([])
-
-function click() {
-    emit('click', student)
-}
 
 async function fetchData() {
     if (!student?.id) return
 
-    records.value = []
     outstanding.value = 0
 
     const res = await store.getAllStudentFeesById(

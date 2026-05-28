@@ -78,19 +78,38 @@ watch(() => page.value, async () => {
 </script>
 
 <template>
-  <UCard>
-    <UTable :columns="columns" :data="data" :loading="loading">
+  <div class="space-y-4">
+    <UCard class="hidden md:block">
+      <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No subjects found.</p>
         </div>
       </template>
-    </UTable>
-    <div v-if="meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
+      </UTable>
+      <div v-if="meta" class="flex justify-between border-t border-gray-200 pt-3 items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
+      </div>
+    </UCard>
+
+    <div class="space-y-3 md:hidden">
+      <UCard v-for="item in data" :key="item.id" :ui="{ body: 'p-4' }">
+        <div class="space-y-1">
+          <p class="font-semibold text-sm">{{ item.subjectName }}</p>
+          <p class="text-xs text-muted">{{ item.className || 'No class' }} · {{ item.sectionName || 'No section' }}</p>
+          <p class="text-xs text-muted">{{ item.streamName || 'No stream' }} · {{ item.teacherName || 'No teacher' }}</p>
+        </div>
+      </UCard>
+      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
+        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        <p class="text-gray-500">No subjects found.</p>
+      </div>
+      <div v-if="meta" class="flex justify-between items-center">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
+      </div>
     </div>
-  </UCard>
+  </div>
 </template>

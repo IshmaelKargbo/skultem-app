@@ -136,29 +136,74 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard :ui="{
-    body: 'sm:p-0'
-  }">
-    <UTable :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No sections found.</p>
+  <div class="space-y-4">
+    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+      <UTable :columns="columns" :data="data" :loading="loading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+            <p class="text-gray-500">No sections found.</p>
+          </div>
+        </template>
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+        <template #totalSelection-cell="{ row }">
+          <UBadge :label="row.original.totalSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
+        </template>
+      </UTable>
+      <template #footer>
+        <div v-if="!loading" class="flex justify-between items-center">
+          <Showing :meta="meta" />
+          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </template>
-      <template #loading>
-        <TableLoading :size="columns.length" />
+    </UCard>
+
+    <div class="space-y-3 md:hidden">
+      <template v-if="loading">
+        <UCard v-for="i in 4" :key="i" class="rounded-3xl border border-gray-200 dark:border-gray-800">
+          <div class="space-y-3 p-4">
+            <USkeleton class="h-4 w-28" />
+            <USkeleton class="h-3 w-24" />
+            <USkeleton class="h-10 w-full rounded-xl" />
+          </div>
+        </UCard>
       </template>
-      <template #totalSelection-cell="{ row }">
-        <UBadge :label="row.original.totalSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
+
+      <template v-else-if="data?.length">
+        <UCard v-for="item in data" :key="item.id" class="rounded-3xl border border-gray-200 dark:border-gray-800" :ui="{ body: 'p-4' }">
+          <div class="space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">{{ item.name }}</h3>
+                <p class="mt-1 text-xs text-gray-500">{{ item.className || 'No class' }} • {{ item.streamName || 'No stream' }}</p>
+              </div>
+              <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost" class="rounded-full" />
+              </UDropdownMenu>
+            </div>
+            <div class="rounded-xl bg-gray-50 p-3 dark:bg-neutral-800">
+              <p class="text-[11px] uppercase tracking-wide text-gray-500">Selections</p>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ item.totalSelection || 0 }}</p>
+            </div>
+          </div>
+        </UCard>
       </template>
-    </UTable>
-    <template #footer>
-      <div v-if="!loading" class="flex justify-between items-center">
+
+      <template v-else>
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
+          <p class="text-sm text-gray-500">No subject groups found.</p>
+        </div>
+      </template>
+
+      <div v-if="!loading" class="flex flex-col items-center justify-center gap-2">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
-    </template>
-  </UCard>
+    </div>
+  </div>
 </template>

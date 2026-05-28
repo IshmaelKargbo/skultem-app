@@ -1,12 +1,11 @@
 <template>
-
     <UCard :ui="{
         body: 'sm:p-0'
     }">
         <template #header>
             <div class="flex justify-between items-center">
                 <p>Payment History</p>
-                <UBadge variant="outline" :label="`${meta?.total} Payment(s)`" />
+                <UBadge variant="outline" :label="`${meta?.total || 0} Payment(s)`" />
             </div>
         </template>
         <div v-if="!student" class="border border-dashed rounded-lg p-4 text-sm text-muted">
@@ -14,21 +13,25 @@
         </div>
         <div v-else class="space-y-4">
             <div v-if="isLoading" class="space-y-3">
-                <UCard v-for="n in 3" :key="n">
+                <UCard v-for="n in 3" :key="n" class="md:hidden rounded-2xl" :ui="{ body: 'p-4' }">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
-                            <USkeleton class="w-40 h-3" />
-                            <USkeleton class="w-20 h-3" />
+                            <USkeleton class="h-4 w-28" />
+                            <USkeleton class="h-6 w-16 rounded-full" />
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <USkeleton class="w-32 h-3" />
-                            <USkeleton class="w-24 h-3" />
+                            <USkeleton class="h-8 w-full rounded-lg" />
+                            <USkeleton class="h-8 w-full rounded-lg" />
+                            <USkeleton class="h-8 w-full rounded-lg col-span-2" />
                         </div>
                     </div>
                 </UCard>
+                <div class="hidden md:block">
+                    <UTable :columns="columns" :data="[]" :loading="true" />
+                </div>
             </div>
 
-            <div v-else-if="filtered.length === 0" class="p-3">
+            <div v-else-if="records.length === 0" class="p-3">
                 <div
                     class="text-mute border-2 border-dashed border-gray-100 rounded-xl dark:border-gray-800  flex h-40 w-full justify-center items-center">
                     No payments found
@@ -36,7 +39,37 @@
             </div>
 
             <div v-else>
-                <UTable :columns="columns" :data="records" :loading="isLoading">
+                <div class="space-y-2 md:hidden">
+                    <UCard v-for="item in records" :key="item.id" class="rounded-2xl border border-gray-200 dark:border-gray-800"
+                        :ui="{ body: 'p-4' }">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {{ format(item.amount || 0) }}
+                                </p>
+                                <UBadge variant="soft" :color="paymentMethods[item.paymentMethod]?.color || 'neutral'"
+                                    :label="paymentMethods[item.paymentMethod]?.label || item.paymentMethod" />
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
+                                    <p class="text-gray-500">Date</p>
+                                    <p class="mt-0.5 font-medium text-gray-800 dark:text-gray-200">
+                                        {{ formatDateTime(item.paidAt) || '-' }}
+                                    </p>
+                                </div>
+                                <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
+                                    <p class="text-gray-500">Reference</p>
+                                    <p class="mt-0.5 truncate font-medium text-gray-800 dark:text-gray-200">
+                                        {{ item.referenceNo || '-' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </UCard>
+                </div>
+
+                <UTable class="hidden md:block" :columns="columns" :data="records" :loading="isLoading">
                     <template #empty-state>
                         <div class="flex flex-col items-center gap-2 py-10">
                             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -87,7 +120,6 @@ const props = defineProps<{
 
 const store = useStudentStore()
 const { format } = useMoney()
-const search = ref('')
 const isLoading = ref(false)
 
 const page = ref(1)
@@ -117,23 +149,11 @@ const records = ref<FeePayment[]>([])
 const meta = ref<Meta>()
 const size = ref(6)
 
-
-const filtered = computed(() => {
-    if (!search.value) return records.value
-    const q = search.value.toLowerCase()
-    return records.value.filter((item) =>
-        item.term?.toLowerCase().includes(q) ||
-        item.fee?.toLowerCase().includes(q) ||
-        item.referenceNo?.toLowerCase().includes(q)
-    )
-})
-
 const fetchPayments = async () => {
     if (!props.student) return
     isLoading.value = true
     try {
         const res = await store.getPaymentHistoryByStudent(props.student.id, page.value, size.value)
-        console.log(res);
 
         records.value = res?.records || []
         meta.value = res?.meta
@@ -157,7 +177,6 @@ watch(
         page.value = 1
         records.value = []
         meta.value = undefined
-        search.value = ''
     }
 )
 </script>

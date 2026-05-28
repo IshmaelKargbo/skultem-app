@@ -17,12 +17,11 @@
                         <div
                             class="border-b pb-1 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center">
                             <div v-if="loading"
-                                class="h-40 w-40 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                            <div v-else class="rounded-xl border-2 overflow-hidden p-0.5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600">
-                                <img :src="photo" :alt="name"
-                                    class="h-72 w-full object-cover rounded-lg" />
+                                class="h-72 w-full rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                            <div v-else
+                                class="rounded-xl border-2 overflow-hidden p-0.5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600">
+                                <img :src="photo" :alt="name" class="h-72 w-full object-cover rounded-lg" />
                             </div>
-
                             <div class="flex justify-between items-center mt-2 w-full">
                                 <div v-if="loading"
                                     class="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
@@ -70,7 +69,13 @@
 
             <!-- Student Details -->
             <div class="flex-1 space-y-5">
-                <Tab :tabs="[
+                <TabMobile class="md:hidden" :tabs="[
+                    { label: 'Personal', to: personalInfo, exact: true },
+                    { label: 'Attendance', to: attendanceInfo, exact: true },
+                    { label: 'Fees', to: feeStructureInfo, exact: true },
+                    { label: 'Academics', to: academicInfo, exact: true }
+                ]" />
+                <Tab class="hidden md:block" :tabs="[
                     { label: 'Personal Information', to: personalInfo, exact: true },
                     { label: 'Attendance', to: attendanceInfo, exact: true },
                     { label: 'Fee Structure', to: feeStructureInfo, exact: true },

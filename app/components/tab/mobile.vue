@@ -1,7 +1,11 @@
 <script lang="ts" setup>
+import { useRoute } from 'vue-router'
+
 interface Tab {
-  key: string
+  key?: string
   label: string
+  to?: string
+  exact?: boolean
 }
 
 const props = defineProps<{
@@ -9,10 +13,23 @@ const props = defineProps<{
   defaultActive?: string
 }>()
 
-const isActive = ref(props.defaultActive || props.tabs[0]?.key)
+const route = useRoute()
+const isActive = ref(props.defaultActive || props.tabs[0]?.key || '')
+
+const hasRouteTabs = computed(() => props.tabs.some(tab => !!tab.to))
+
+function isRouteActive(tab: Tab) {
+  if (!tab.to) return false
+
+  if (tab.exact) {
+    return route.path === tab.to
+  }
+
+  return route.path.startsWith(tab.to)
+}
 
 function setActive(key: string) {
-  if (key) isActive.value = key
+  if (key && !hasRouteTabs.value) isActive.value = key
 }
 </script>
 
@@ -21,22 +38,36 @@ function setActive(key: string) {
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 grid gap-1 rounded-lg"
          :style="{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }">
 
-      <div
-        v-for="tab in tabs"
-        :key="tab.key"
-        @click="setActive(tab.key)"
-        class="flex justify-center p-1 cursor-pointer transition-all"
-        :class="{
-          'bg-primary-950 rounded-md text-white': tab.key === isActive,
-          'text-gray-700 dark:text-gray-200': tab.key !== isActive
-        }"
-      >
-        <p>{{ tab.label }}</p>
-      </div>
+      <template v-for="tab in tabs" :key="tab.key || tab.to || tab.label">
+        <NuxtLink
+          v-if="tab.to"
+          :to="tab.to"
+          class="flex justify-center p-1 cursor-pointer transition-all"
+          :class="{
+            'bg-primary-950 rounded-md text-white': isRouteActive(tab),
+            'text-gray-700 dark:text-gray-200': !isRouteActive(tab)
+          }"
+        >
+          <p>{{ tab.label }}</p>
+        </NuxtLink>
+
+        <button
+          v-else
+          type="button"
+          class="flex justify-center p-1 cursor-pointer transition-all"
+          :class="{
+            'bg-primary-950 rounded-md text-white': tab.key === isActive,
+            'text-gray-700 dark:text-gray-200': tab.key !== isActive
+          }"
+          @click="setActive(tab.key || '')"
+        >
+          <p>{{ tab.label }}</p>
+        </button>
+      </template>
 
     </div>
 
     <!-- Active Slot -->
-    <slot :name="`${isActive}-data`" />
+    <slot v-if="!hasRouteTabs" :name="`${isActive}-data`" />
   </div>
 </template>
