@@ -1,5 +1,5 @@
 <template>
-  <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+  <div class="md:p-7 p-4 md:space-y-5 space-y-3">
     <Heading class="hidden md:flex" title="Grade Entry"
       subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex w-full space-x-3 md:w-auto md:justify-end">
@@ -38,7 +38,9 @@
         <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
       </div>
     </UCard>
-    <UCard v-if="state.teacherSubjectId && rows.length > 0" class="hidden md:block">
+    <UCard :ui="{
+      body: 'sm:p-0'
+    }" class="hidden md:block">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
         <template #student-cell="{ row }">
           <StudentIdentityCell
@@ -152,7 +154,7 @@ const state = reactive<GradeAssessmentForm>({
   termId: ''
 })
 
-const loading = ref(false)
+const loading = ref(true)
 const saving = ref(false)
 const completing = ref(false)
 const columns = ref<any[]>([])

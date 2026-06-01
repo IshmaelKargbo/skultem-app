@@ -350,7 +350,7 @@ async function loadRequests(keepSelection: boolean) {
   isLoading.value = true
 
   try {
-    const res = await store.fetchAllAssessmentApprovalRequest(state.teacherId)
+    const res = await store.fetchAllAssessmentApprovalRequest(state.teacherId, page.value, size.value)
 
     requests.value = res || []
 
