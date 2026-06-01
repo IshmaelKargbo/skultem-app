@@ -355,9 +355,7 @@ watch(
 
 onMounted(async () => {
   useAppStore().setTitle('Grade Approval Requests')
-
   document.title = 'Grade Approval Requests | Grades | Skultem'
-
   fetchRecords()
 })
 
