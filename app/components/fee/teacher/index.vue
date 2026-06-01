@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
+const route = useRoute()
+const router = useRouter()
 const store = useReportStore()
 const classStore = useClassSessionStore()
 const studentStore = useStudentStore()
@@ -18,6 +18,26 @@ const state = reactive({
 
 const records = ref<ClassSession[]>([])
 
+const page = computed<number>({
+    get: () => Number(route.query.page ?? 1),
+    set: (val) => updateQuery({ page: val })
+})
+
+const size = computed<number>({
+    get: () => Number(route.query.size ?? runtimeConf().limit),
+    set: (val) => updateQuery({ size: val })
+})
+
+function updateQuery(newQuery: Record<string, any>) {
+    const merged = { ...route.query, ...newQuery }
+
+    if (merged.page === route.query.page) {
+        return
+    }
+
+    router.replace({ query: merged })
+}
+
 const terms = computed(() =>
     activeCycle.value?.terms.map(e => ({
         label: e.name,
@@ -31,6 +51,16 @@ const classes = computed(() =>
         value: e.clazzId
     }))
 )
+
+watch(() => page.value, () => {
+    router.replace({
+        query: {
+            page: page.value
+        }
+    })
+
+    fetchRecord()
+}, { immediate: true })
 
 function change() {
     const select = records.value.find(e => e.id === state.classId)
@@ -81,41 +111,6 @@ onMounted(async () => {
     await fetchRecord()
 })
 
-const columns: TableColumn<any>[] = [
-    {
-        accessorKey: 'name',
-        header: 'Assessment'
-    },
-    {
-        accessorKey: 'score',
-        header: 'Score'
-    },
-    {
-        accessorKey: 'weight',
-        header: 'Weighted'
-    },
-    {
-        accessorKey: 'weightScore',
-        header: 'Weight Score'
-    },
-    {
-        accessorKey: 'grade',
-        header: 'Grade'
-    },
-    {
-        accessorKey: 'level',
-        header: 'Level'
-    },
-    {
-        accessorKey: 'status',
-        header: 'Status'
-    },
-    {
-        accessorKey: 'trend',
-        header: ''
-    }
-]
-
 async function loadAvarageData() {
     try {
 
@@ -142,7 +137,7 @@ async function loadAvarageData() {
             ]
         }
 
-        await store.runReport(payload, 1, 200)
+        await store.runReport(payload, page.value, size.value)
     } catch (err) {
         console.error("Failed to load class performance", err)
     } finally {
