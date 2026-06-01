@@ -164,8 +164,8 @@ async function fetchRecord() {
 watch(() => student, fetchRecord, { immediate: true })
 </script>
 <template>
-    <div class="grid gap-3 md:grid-cols-3">
-        <Metric class="hidden md:block" :record="{
+    <div class="grid gap-3 md:grid-cols-3 grid-cols-1">
+        <Metric  :record="{
             label: 'Total Paid',
             icon: PAYMENT_ICON,
             value: report?.paid,
@@ -173,7 +173,7 @@ watch(() => student, fetchRecord, { immediate: true })
             color: 'success',
             subtle: 'This academic year'
         }" />
-        <Metric class="hidden md:block" :record="{
+        <Metric  :record="{
             label: 'Pending',
             icon: PENDING_ICON,
             value: report?.pending,
@@ -190,24 +190,5 @@ watch(() => student, fetchRecord, { immediate: true })
             subtle: 'Requires attention'
         }" />
     </div>
-    <div class="grid grid-cols-3 gap-2 md:hidden">
-        <UCard>
-            <div class="space-y-0.5">
-                <p class="text-[10px] text-mute">Total billed</p>
-                <p class="text-info font-medium">{{ report.total }}</p>
-            </div>
-        </UCard>
-        <UCard>
-            <div class="space-y-0.5">
-                <p class="text-[10px] text-mute">Total Paid</p>
-                <p class="text-success font-medium">{{ report.paid }}</p>
-            </div>
-        </UCard>
-        <UCard>
-            <div class="space-y-0.5">
-                <p class="text-[10px] text-mute">Total Balance</p>
-                <p class="text-error font-medium">{{ report.balance }}</p>
-            </div>
-        </UCard>
-    </div>
+
 </template>

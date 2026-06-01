@@ -69,35 +69,76 @@ watch(() => record, () => {
 </script>
 
 <template>
-    <div v-if="state && record" class="w-full">
-        <div class="space-y-5">
-            <div class="flex justify-between items-start gap-3 dark:border-gray-800 border-b mb-3 border-gray-200 pb-2">
-                <div class="flex-1 min-w-0">
-                    <p class="text-base font-semibold">{{ record.title }}</p>
-                    <p class="text-sm text-gray-400 mt-0.5">{{ formatDate(record.createdAt) }}</p>
-                </div>
-                <UButton icon="i-heroicons-x-mark" @click="close" variant="ghost" size="sm" />
-            </div>
+    <div v-if="state && record" class="h-full flex flex-col">
+        <!-- Header -->
+        <div class="sticky top-0 z-10 bg-default border-b border-default px-4 py-4">
+            <div class="flex items-start gap-3">
+                <div class="flex-1 min-w-10">
+                    <h2 class="font-semibold text-base leading-tight">
+                        {{ record.title }}
+                    </h2>
 
-            <p class="text-sm text-gray-600 leading-relaxed">{{ record.message }}</p>
-            <div v-if="record.meta" class="rounded-xl dark:border-gray-800 border-2 border-gray-100 divide-y-2 divide-gray-100 dark:divide-gray-800">
-                <div v-for="(value, key) in filteredMeta" :key="key"
-                    class="flex items-center justify-between px-4 py-2.5">
-                    <span class="text-xs text-muted capitalize">{{ formatMetaKey(key) }}</span>
-                    <UBadge v-if="isAttendanceStatus(key)" :color="attendanceStatusColor(value)" variant="soft"
-                        size="xs">
-                        {{ value || '—' }}
-                    </UBadge>
-                    <span v-else class="text-xs font-medium">{{ value || '—' }}</span>
+                    <div class="mt-1">
+                        <span class="text-xs text-muted">
+                            {{ formatDate(record.createdAt) }}
+                        </span>
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <UButton size="sm" v-if="!record.read" color="primary" variant="outline" icon="lucide:check"
-                    @click="markAsRead(record)">
-                    Mark as Read
-                </UButton>
-                <UBadge v-else color="success" variant="soft" icon="lucide:check-check">Read</UBadge>
+              <div>
+                  <UButton icon="i-heroicons-x-mark" variant="ghost" color="neutral" size="md" square @click="close" />
+              </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-5">
+            <!-- Message -->
+            <UCard>
+                <template #header>
+                    <div class="font-medium">Message</div>
+                </template>
+
+                <p class="text-sm leading-6 text-toned whitespace-pre-wrap">
+                    {{ record.message }}
+                </p>
+            </UCard>
+
+            <!-- Metadata -->
+            <UCard v-if="Object.keys(filteredMeta).length">
+                <template #header>
+                    <div class="font-medium">Details</div>
+                </template>
+
+                <div class="space-y-3">
+                    <div v-for="(value, key) in filteredMeta" :key="key" class="flex items-start justify-between gap-4">
+                        <span class="text-xs uppercase tracking-wide text-muted shrink-0">
+                            {{ formatMetaKey(key) }}
+                        </span>
+
+                        <UBadge v-if="isAttendanceStatus(key)" :color="attendanceStatusColor(value)" variant="soft"
+                            size="sm">
+                            {{ value || '—' }}
+                        </UBadge>
+
+                        <span v-else class="text-sm text-right font-medium break-words">
+                            {{ value || '—' }}
+                        </span>
+                    </div>
+                </div>
+            </UCard>
+        </div>
+
+        <!-- Footer -->
+        <div class="sticky bottom-0 border-t border-default bg-default p-4">
+            <UButton v-if="!record.read" block color="primary" icon="lucide:check" @click="markAsRead(record)">
+                Mark as Read
+            </UButton>
+
+            <div v-else class="flex justify-center">
+                <UBadge color="success" variant="soft" size="lg" icon="lucide:check-check">
+                    Read
+                </UBadge>
             </div>
         </div>
     </div>
