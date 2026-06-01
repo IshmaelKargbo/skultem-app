@@ -15,14 +15,10 @@
         </div>
       </template>
     </UTable>
-    <!-- <template #footer>
-      
-    </template> -->
   </UCard>
 </template>
 
 <script lang="ts" setup>
-import type { TableColumn } from '@nuxt/ui';
 const { format } = useMoney()
 const studentStore = useStudentStore()
 const { student } = defineProps<{
@@ -32,7 +28,7 @@ const loading = ref(true)
 
 const data = ref<any>([])
 
-const columns: TableColumn<any> = [
+const columns = [
   {
     accessorKey: 'fee',
     header: 'Name'

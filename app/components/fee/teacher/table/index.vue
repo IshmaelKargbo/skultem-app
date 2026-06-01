@@ -5,7 +5,6 @@ const store = useReportStore()
 const { format } = useMoney()
 
 const { fees: data, report, meta, loading } = storeToRefs(store)
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
   {
@@ -66,11 +65,10 @@ async function fetchReport() {
 }
 
 watch(page, async () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    })
+  nextTick()
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
   })
 
   await fetchReport()
@@ -81,8 +79,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
@@ -103,7 +100,9 @@ onMounted(async () => {
           <p class="text-gray-500">No fee records found.</p>
         </div>
       </template>
-
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
       <!-- Amount -->
       <template #amount-cell="{ row }">
         <span class="text-info font-medium">
@@ -138,8 +137,8 @@ onMounted(async () => {
     <template v-if="meta" #footer>
       <div class="flex justify-between items-center">
         <Showing :meta="meta" />
-        <UPagination v-model:page="page" class="hidden md:flex" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+        <UPagination v-model:page="page" class="hidden md:flex" size="sm" :page-size="meta.size"
+          :items-per-page="meta.size" :total="meta.total" show-edges />
 
         <UPagination v-model:page="page" size="xs" class="md:hidden" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />

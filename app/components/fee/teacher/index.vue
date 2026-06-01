@@ -6,6 +6,7 @@ const classStore = useClassSessionStore()
 const studentStore = useStudentStore()
 
 const { activeCycle, loading: cycleLoading } = storeToRefs(studentStore)
+const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const assessmentLoading = ref(false)
 
@@ -57,6 +58,13 @@ watch(() => page.value, () => {
         query: {
             page: page.value
         }
+    })
+
+    nextTick(() => {
+        scrollContainer?.value?.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
     })
 
     fetchRecord()
@@ -152,7 +160,7 @@ definePageMeta({
 </script>
 
 <template>
-    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+    <div id="attendance-scroll" class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Fees Collected" subtitle="Create custom reports and explore your school data">
             <div class="flex w-full space-x-3 md:w-1/3">
                 <USelectMenu @change="change" :loading="classStore.loading" :items="classes" value-key="value"
