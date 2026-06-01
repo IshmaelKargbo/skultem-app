@@ -283,10 +283,6 @@
 </template>
 
 <script setup lang="ts">
-import { vi } from '@nuxt/ui/runtime/locale/index.js'
-import { computed, ref, watch } from 'vue'
-import { v } from 'vue-router/dist/router-CWoNjPRp.mjs'
-
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 
