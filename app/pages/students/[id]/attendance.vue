@@ -81,7 +81,7 @@ definePageMeta({
 const store = useStudentStore()
 const reportStore = useReportStore()
 const { record, activeCycle } = storeToRefs(store)
-const { attendances, meta, loading } = storeToRefs(reportStore)
+const { attendances, meta } = storeToRefs(reportStore)
 const route = useRoute()
 const router = useRouter()
 const state = reactive({
@@ -99,11 +99,6 @@ const term = computed(() => activeCycle.value?.terms.find(e => e.id == state.ter
 const page = computed<number>({
     get: () => Number(route.query.page ?? 1),
     set: (val) => updateQuery({ page: val })
-})
-
-const size = computed<number>({
-    get: () => Number(route.query.size ?? 6),
-    set: (val) => updateQuery({ size: val })
 })
 
 function updateQuery(newQuery: Record<string, any>) {

@@ -13,14 +13,14 @@ watch(() => route.fullPath, () => {
 </script>
 
 <template>
-  <div v-if="layoutReady" class="flex h-dvh overflow-hidden" ref="scrollContainer">
+  <div v-if="layoutReady" class="flex h-dvh overflow-hidden">
     <div class="w-72 hidden md:block p-4 pr-0.5">
       <Menu />
     </div>
     <div class="flex flex-1 flex-col min-w-0">
       <Header />
       <div class="flex-1 min-h-0 mt-1">
-        <div class="max-w-screen-2xl mx-auto h-full overflow-y-auto overflow-x-hidden">
+        <div ref="scrollContainer" class="max-w-screen-2xl mx-auto h-full overflow-y-auto overflow-x-hidden">
           <slot />
         </div>
       </div>

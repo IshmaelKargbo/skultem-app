@@ -420,7 +420,7 @@ export type AssignmentTeacherSubject = {
 }
 
 export const runtimeConf = () => {
-    return { limit: Number.parseInt(useRuntimeConfig().public.limit) }
+    return { limit: Number.parseInt(useRuntimeConfig().public.limit), domain: useRuntimeConfig().public.domain }
 }
 
 export const parseGenderColor: Record<string, string> = {

@@ -1,26 +1,16 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 
 const store = useClassSessionStore()
 const { records: data, meta, loading } = storeToRefs(store)
 
-const editRecord = ref<ClassSession | null>(null)
-const editState = ref(false)
-
 const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const columns = [
   {
     accessorKey: 'clazz',
     header: 'Name'
-  },
-  {
-    accessorKey: 'grade',
-    header: 'Grade'
   },
   {
     accessorKey: 'classLevel',
@@ -41,14 +31,6 @@ const columns = [
   {
     accessorKey: 'teacherName',
     header: 'Class Teacher'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    }
   }
 ]
 
@@ -98,7 +80,7 @@ onMounted(() => {
 <template>
   <!-- Desktop -->
   <UCard class="hidden overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800 md:block" :ui="{
-    body: 'p-0',
+    body: 'sm:p-0',
     footer: 'border-t border-gray-200 dark:border-gray-800'
   }">
     <UTable :columns="columns" :data="data" :loading="loading">
@@ -116,6 +98,13 @@ onMounted(() => {
         <TableLoading :size="columns.length" />
       </template>
 
+      <template #clazz-cell="{ row }">
+        <div>
+          <p>{{ row.original.clazz }}</p>
+          <p class="text-xs text-muted">{{ row.original.grade }}</p>
+        </div>
+      </template>
+
       <template #classLevel-cell="{ row }">
         <p>{{ parseLevel[row.original.classLevel] }}</p>
       </template>
@@ -126,7 +115,7 @@ onMounted(() => {
     </UTable>
 
     <template #footer>
-      <div class="flex items-center justify-between px-4 py-3">
+      <div class="flex items-center justify-between">
         <Showing :meta="meta" />
 
         <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"

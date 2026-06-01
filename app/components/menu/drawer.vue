@@ -322,7 +322,7 @@ const sections = computed(() => [
       can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]) && {
         label: 'Grade Assignment',
         icon: 'lucide:clipboard-check',
-        to: '/grades/assignment'
+        to: '/grades'
       }
     ].filter(Boolean)
   },

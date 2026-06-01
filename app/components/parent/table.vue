@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
-import type { Row } from '@tanstack/vue-table'
 
 const route = useRoute()
 const router = useRouter()
 
 const store = useParentStore()
 const { records: data, meta, loading } = storeToRefs(store)
-
-const editRecord = ref<Parent | null>(null)
-const editState = ref(false)
-
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: 'Active',
@@ -36,71 +29,18 @@ const columns = [
     header: 'Students'
   },
   {
-    accessorKey: 'email',
-    header: 'Email'
-  },
-  {
     accessorKey: 'phone',
     header: 'Phone'
-  },
-  {
-    accessorKey: 'city',
-    header: 'City'
   },
   {
     accessorKey: 'street',
     header: 'Street'
   },
   {
-    accessorKey: 'status',
-    header: 'Status'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }: { row: Row<Parent> }) =>
-      h(
-        UDropdownMenu,
-        {
-          items: getRowItems(row),
-          content: {
-            align: 'end'
-          },
-          'aria-label': 'Actions'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            variant: 'ghost',
-            size: 'sm'
-          })
-      )
+    accessorKey: 'city',
+    header: 'City'
   }
 ]
-
-function getRowItems(row: Row<Parent>) {
-  return [
-    [
-      {
-        label: 'Edit Record',
-        icon: 'i-lucide-edit',
-        onSelect: () => {
-          editRecord.value = row.original
-          editState.value = true
-        }
-      },
-      {
-        label: 'Delete Record',
-        icon: 'i-lucide-trash'
-      }
-    ]
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page || 1),
@@ -154,19 +94,16 @@ watch(
 onMounted(() => {
   if (!route.query.page || !route.query.size) {
     updateQuery({
-      page: page.value,
-      size: size.value
+      page: page.value
     })
   }
 })
 </script>
 <template>
-  <!-- Desktop -->
   <UCard
     class="hidden overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 md:block"
     :ui="{
-      body: 'p-0',
-      footer: 'p-0'
+      body: 'sm:p-0'
     }"
   >
     <UTable
@@ -187,27 +124,27 @@ onMounted(() => {
           </p>
         </div>
       </template>
-
+      <template #name-cell="{ row }">
+        <div>
+          <p>{{ row.original.name }}</p>
+          <p class="text-xs text-muted">{{ row.original.email }}</p>
+        </div>
+      </template>
       <template #students-cell="{ row }">
         <UBadge
           :label="`${row.original.students} Students`"
-          variant="soft"
+          variant="outline"
         />
       </template>
-
-      <template #status-cell="{ row }">
-        <UBadge
-          :label="STATUS_LABELS[row.original.status]"
-          :color="STATUS_COLORS[row.original.status]"
-          variant="soft"
-        />
+      <template #loading>
+        <TableLoading :size="columns.length" />
       </template>
     </UTable>
 
     <!-- Footer -->
     <template #footer>
       <div
-        class="flex items-center justify-between border-t border-gray-200 px-4 py-4 dark:border-gray-800"
+        class="flex items-center justify-between"
       >
         <Showing :meta="meta" />
 

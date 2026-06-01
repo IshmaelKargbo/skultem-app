@@ -78,7 +78,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
-      limit: process.env.NUXT_PUBLIC_LIMIT
+      limit: process.env.NUXT_PUBLIC_LIMIT,
+      domain: process.env.NUXT_PUBLIC_DOMAIN
     }
   },
   pwa: {

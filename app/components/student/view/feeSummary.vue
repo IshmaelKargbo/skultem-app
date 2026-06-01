@@ -3,7 +3,7 @@
 const widgetStore = useWidgetStore()
 const { record } = storeToRefs(useStudentStore())
 const { format } = useMoney()
-const { loading } = storeToRefs(widgetStore)
+const loading = ref(true)
 
 const report = reactive<{
     paid: number
@@ -16,6 +16,7 @@ const report = reactive<{
 })
 
 async function fetchRecord() {
+    loading.value = true
     if (record.value == null) return
 
     const [count] = await Promise.all([
@@ -51,7 +52,7 @@ async function fetchRecord() {
         total: total?.data?.[0] || 0,
         outstanding: outstanding
     })
-
+    loading.value = false
 }
 
 watch(() => record.value, () => fetchRecord(), { immediate: true })
@@ -64,7 +65,7 @@ watch(() => record.value, () => fetchRecord(), { immediate: true })
                 Total Fees
             </p>
 
-            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200 dark:bg-success-800" />
+            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200 dark:bg-info-800" />
             <h2 v-else class="text-2xl font-bold mt-1">
                 {{ format(report.total) }}
             </h2>

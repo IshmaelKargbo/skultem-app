@@ -1,14 +1,8 @@
 <template>
-  <div class="chart-card">
-    <!-- Show loader while fetching/processing data -->
-    <div v-if="!isReady" class="skeleton-loader">
-      Loading Attendance Stats...
-    </div>
-    <client-only v-else>
-      <!-- Show chart when ready -->
-      <ApexChart type="area" height="350" :options="chartOptions" :series="chartSeries" />
-    </client-only>
+  <div v-if="!isReady" class="skeleton-loader">
+    Loading Attendance Stats...
   </div>
+  <ApexChart v-else type="area" height="350" :options="chartOptions" :series="chartSeries" />
 </template>
 
 <script setup lang="ts">
@@ -72,6 +66,7 @@ onMounted(async () => {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;

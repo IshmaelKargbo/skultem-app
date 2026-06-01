@@ -38,6 +38,7 @@ export const useStudentStore = defineStore('student', {
     async viewStudent(id: string) {
       this.loading = true
       this.error = null
+      this.record = undefined
       try {
         const res = await StudentApi().getStudent(id) as any
         this.record = res

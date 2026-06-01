@@ -44,7 +44,7 @@ async function checkTenant() {
 
         const domain =
             hostname.includes('localhost')
-                ? 'moriba'
+                ? runtimeConf().domain
                 : hostname.split('.')[0]
 
         await store.checkTenant(domain || '')

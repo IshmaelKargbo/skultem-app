@@ -9,28 +9,22 @@
       <!-- Ambient glows -->
       <div class="absolute -top-20 -right-20 w-105 h-105 rounded-full bg-cyan-400/10 blur-[80px]" />
       <div class="absolute -bottom-20 -left-20 w-85 h-85 rounded-full bg-primary/10 blur-[80px]" />
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-75 rounded-full bg-indigo-500/5 blur-[60px]" />
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-75 rounded-full bg-indigo-500/5 blur-[60px]" />
 
       <div class="absolute inset-0 opacity-[0.035] bg-grid" />
       <div class="absolute inset-0 opacity-[0.15] bg-noise" />
       <div class="relative z-10 flex-1 flex flex-col px-10 py-8 gap-6 overflow-hidden">
 
         <div class="flex-1 min-h-0 flex flex-col justify-center">
-          <UCarousel
-            v-slot="{ item }"
-            :items="slides"
-            :ui="{
-              item: 'basis-full',
-              indicators: {
-                wrapper: 'absolute bottom-0 left-0 right-0 flex justify-start gap-2',
-                inactive: 'w-2 h-2 bg-white/20 hover:bg-white/40 rounded-full transition-all duration-300',
-                active: 'w-8 h-2 bg-primary rounded-full'
-              }
-            }"
-            indicators
-            :autoplay="{ interval: 5000 }"
-            class="w-full"
-          >
+          <UCarousel v-slot="{ item }" :items="slides" :ui="{
+            item: 'basis-full',
+            indicators: {
+              wrapper: 'absolute bottom-0 left-0 right-0 flex justify-start gap-2',
+              inactive: 'w-2 h-2 bg-white/20 hover:bg-white/40 rounded-full transition-all duration-300',
+              active: 'w-8 h-2 bg-primary rounded-full'
+            }
+          }" indicators :autoplay="{ interval: 5000 }" class="w-full">
             <div class="flex flex-col justify-center h-full max-w-lg pb-10 space-y-5">
 
               <!-- Badge -->
@@ -45,7 +39,8 @@
                 <h1 class="text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight text-white">
                   {{ item.title }}
                 </h1>
-                <span class="block text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight bg-linear-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent mt-1">
+                <span
+                  class="block text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight bg-linear-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent mt-1">
                   {{ item.highlight }}
                 </span>
               </div>
@@ -57,12 +52,11 @@
 
               <!-- Features -->
               <div class="space-y-2.5">
-                <div
-                  v-for="feature in item.features"
-                  :key="feature.title"
+                <div v-for="feature in item.features" :key="feature.title"
                   class="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3 backdrop-blur hover:bg-white/[0.07] transition-colors duration-200">
 
-                  <div class="w-8 h-8 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0">
+                  <div
+                    class="w-8 h-8 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0">
                     <UIcon :name="feature.icon" class="w-3.5 h-3.5 text-primary" />
                   </div>
 
@@ -86,10 +80,12 @@
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="flex h-full flex-1 items-center justify-center px-6 py-6 bg-gray-50 dark:bg-[#060f20] relative overflow-hidden">
+    <div
+      class="flex h-full flex-1 items-center justify-center px-6 py-6 bg-gray-50 dark:bg-[#060f20] relative overflow-hidden">
 
       <!-- Radial glow -->
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
 
       <div class="relative z-10 w-full max-w-md">
 
@@ -126,38 +122,20 @@
             <UFormField name="email" label="Email Address" :ui="{
               label: 'text-[10px] font-bold tracking-[0.12em] uppercase text-gray-400 dark:text-white/30 mb-1.5'
             }">
-              <UInput
-                v-model="state.email"
-                type="email"
-                size="lg"
-                placeholder="you@school.edu"
-                icon="lucide:mail"
-                class="w-full"
-                :ui="{ base: 'w-full rounded-xl' }"
-              />
+              <UInput v-model="state.email" type="email" size="lg" placeholder="you@school.edu" icon="lucide:mail"
+                class="w-full" :ui="{ base: 'w-full rounded-xl' }" />
             </UFormField>
 
             <!-- Password -->
             <UFormField name="password" label="Password" :ui="{
               label: 'text-[10px] font-bold tracking-[0.12em] uppercase text-gray-400 dark:text-white/30 mb-1.5'
             }">
-              <UInput
-                v-model="state.password"
-                :type="showPassword ? 'text' : 'password'"
-                size="lg"
-                placeholder="••••••••"
-                icon="lucide:lock"
-                class="w-full"
-                :ui="{ base: 'w-full rounded-xl' }"
-              >
+              <UInput v-model="state.password" :type="showPassword ? 'text' : 'password'" size="lg"
+                placeholder="••••••••" icon="lucide:lock" class="w-full" :ui="{ base: 'w-full rounded-xl' }">
                 <template #trailing>
-                  <UButton
-                    variant="ghost"
-                    size="xs"
-                    tabindex="-1"
+                  <UButton variant="ghost" size="xs" tabindex="-1"
                     :icon="showPassword ? 'iconamoon:eye-off-light' : 'iconamoon:eye-light'"
-                    @click="showPassword = !showPassword"
-                  />
+                    @click="showPassword = !showPassword" />
                 </template>
               </UInput>
             </UFormField>
@@ -173,13 +151,8 @@
             </div>
 
             <!-- Submit -->
-            <UButton
-              type="submit"
-              size="lg"
-              :loading="loading"
-              block
-              class="rounded-xl font-semibold shadow-lg shadow-primary/20 tracking-wide mt-1"
-            >
+            <UButton type="submit" size="lg" :loading="loading" block
+              class="rounded-xl font-semibold shadow-lg shadow-primary/20 tracking-wide mt-1">
               Sign in to Skultem
             </UButton>
 
@@ -294,7 +267,7 @@ const handleLogin = async () => {
     setAuthResolved(false)
 
     const hostname = useRequestURL().hostname
-    const domain = hostname.includes('localhost') ? 'moriba' : hostname.split('.')[0]
+    const domain = hostname.includes('localhost') ? runtimeConf().domain : hostname.split('.')[0]
 
     await userStore.login({
       domain: domain || '',
