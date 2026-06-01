@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 
@@ -33,54 +30,8 @@ const columns = [
   {
     accessorKey: 'note',
     header: 'Note'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
-    }
   }
 ]
-
-function getRowItems(row: Row<Behaviour>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -128,8 +79,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }

@@ -279,7 +279,6 @@ async function handleReset() {
         useNotify().success('Password reset successfully')
 
         window.location.href = '/'
-
     } catch (err: any) {
         error.value =
             err?.data?.message ||

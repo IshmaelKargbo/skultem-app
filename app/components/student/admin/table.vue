@@ -77,12 +77,6 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
-function name(row: Student) {
-  return `${row.givenNames} ${row.familyName}`
-}
-
-const skeletonRows = Array(runtimeConf().limit).fill({})
-
 async function fetchRecord() {
   await store.fetchAll(page.value, size.value)
 }
@@ -90,8 +84,7 @@ async function fetchRecord() {
 watch(() => page.value, () => {
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 

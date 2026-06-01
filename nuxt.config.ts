@@ -18,43 +18,47 @@ const appleSplashScreens = [
 
 export default defineNuxtConfig({
   ssr: false,
+
   compatibilityDate: '2025-07-15',
+
   devtools: { enabled: true },
+
   modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt'],
+
   ui: {
-    fonts: false,
+    fonts: false
   },
+
   app: {
     head: {
       meta: [
         { name: 'theme-color', content: '#0f172a' },
+
+        // ✅ iOS/PWA improvements
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
-        { name: 'apple-mobile-web-app-title', content: 'Skultem' }
+        { name: 'apple-mobile-web-app-title', content: 'Skultem' },
+
+        // ✅ FIX: safe viewport handling (notch + layout stability)
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        { name: 'format-detection', content: 'telephone=no' }
       ],
+
       link: [
-        {
-          rel: 'manifest',
-          href: '/manifest.webmanifest'
-        },
-        {
-          rel: 'apple-touch-icon',
-          href: '/apple-touch-icon.png'
-        },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+
         ...appleSplashScreens.map(({ width, height, media }) => ({
           rel: 'apple-touch-startup-image',
           href: `/splash/apple-splash-${width}x${height}.png`,
           media
         })),
-        {
-          rel: 'preconnect',
-          href: 'https://fonts.googleapis.com'
-        },
-        {
-          rel: 'preconnect',
-          href: 'https://api.fontshare.com'
-        },
+
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://api.fontshare.com' },
+
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap'
@@ -66,15 +70,19 @@ export default defineNuxtConfig({
       ]
     }
   },
-  css: ["~/assets/css/main.css"],
+
+  css: ['~/assets/css/main.css'],
+
   imports: {
-    dirs: ["composables/**", "types/**", "utils/**", "stores/**", "api/**"],
+    dirs: ['composables/**', 'types/**', 'utils/**', 'stores/**', 'api/**']
   },
+
   router: {
     options: {
       scrollBehaviorType: 'smooth'
     }
   },
+
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
@@ -82,20 +90,29 @@ export default defineNuxtConfig({
       domain: process.env.NUXT_PUBLIC_DOMAIN
     }
   },
+
   pwa: {
     registerType: 'autoUpdate',
+
     includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+
     devOptions: {
       enabled: false
     },
+
     workbox: {
-      navigateFallback: null,
+      // ✅ FIX: proper SPA fallback for offline routing
+      navigateFallback: '/',
+
       globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
+
       globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
+
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       skipWaiting: true
     },
+
     manifest: {
       id: '/',
       name: 'Skultem',
@@ -108,35 +125,25 @@ export default defineNuxtConfig({
       display: 'standalone',
       display_override: ['standalone', 'minimal-ui'],
       orientation: 'portrait',
+
       icons: [
         {
           src: '/pwa-192x192.png',
           sizes: '192x192',
           type: 'image/png',
-          purpose: 'any'
+          purpose: 'any maskable'
         },
         {
           src: '/pwa-512x512.png',
           sizes: '512x512',
           type: 'image/png',
-          purpose: 'any'
-        },
-        {
-          src: '/pwa-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-          purpose: 'maskable'
-        },
-        {
-          src: '/pwa-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'maskable'
+          purpose: 'any maskable'
         }
       ]
     }
   },
+
   pinia: {
-    storesDirs: ["./stores"],
-  },
+    storesDirs: ['./stores']
+  }
 })

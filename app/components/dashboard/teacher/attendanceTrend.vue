@@ -1,6 +1,6 @@
 <template>
   <UCard>
-    <div class="chart-card">
+    <div>
       <div v-if="!isReady" class="skeleton-loader">
         Loading Attendance Trend...
       </div>
@@ -13,8 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent } from "vue"
-
 const store = useWidgetStore()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
@@ -46,10 +44,6 @@ const chartOptions = computed(() => ({
 
   colors: ["#22C55E", "#EF4444", "#F59E0B", "#3B82F6"],
 
-  markers: {
-    size: 5
-  },
-
   xaxis: {
     categories: labels.value
   },
@@ -61,10 +55,6 @@ const chartOptions = computed(() => ({
   legend: {
     position: "bottom"
   },
-
-  tooltip: {
-    shared: true
-  }
 }))
 
 async function fetchRecord() {
@@ -82,7 +72,7 @@ async function fetchRecord() {
     metrics: [
       {
         name: "Present",
-        aggregation: "percentage",
+        aggregation: "count",
         tags: {
           field: "state",
           value: "Present",
@@ -92,7 +82,7 @@ async function fetchRecord() {
       },
       {
         name: "Absent",
-        aggregation: "percentage",
+        aggregation: "count",
         tags: {
           field: "state",
           value: "Absent",
@@ -102,7 +92,7 @@ async function fetchRecord() {
       },
       {
         name: "Late",
-        aggregation: "percentage",
+        aggregation: "count",
         tags: {
           field: "state",
           value: "Late",
@@ -112,7 +102,7 @@ async function fetchRecord() {
       },
       {
         name: "Excused",
-        aggregation: "percentage",
+        aggregation: "count",
         tags: {
           field: "state",
           value: "Excused",
@@ -159,7 +149,6 @@ watch(() => classId, async () => {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1
