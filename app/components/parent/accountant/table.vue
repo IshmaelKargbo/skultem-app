@@ -87,7 +87,6 @@ onMounted(() => {
 <template>
   <UCard :ui="{ body: 'sm:p-0' }">
     <div class="flex flex-col gap-3">
-
       <UTable :columns="columns" :data="data" :loading="loading" class="w-full">
         <!-- Empty state -->
         <template #empty-state>
@@ -143,7 +142,7 @@ onMounted(() => {
     </template>
 
   </UCard>
-    <UCard :ui="{ body: 'p-3 sm:p-4' }">
+    <UCard class="md:hidden" :ui="{ body: 'p-3 sm:p-4' }">
     <div class="space-y-3">
       <!-- Mobile List -->
       <template v-if="loading">

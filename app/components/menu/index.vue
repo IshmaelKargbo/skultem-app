@@ -32,7 +32,13 @@
               <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
             </template> </MenuItem>
         </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+        <li v-if="can([Role.TEACHER])">
+          <MenuItem label="Behaviours" to="/behaviours"> <template #icon>
+              <UIcon class="text-xl" :name="BEHAVIOUR_ICON" />
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Behaviours"
             :subNavs="[{ label: 'Behaviours', to: '/behaviours', icon: BEHAVIOUR_ICON, exact: true }, { label: 'Category', to: '/behaviours/category', icon: CATEGORY_ICON }]">
             <template #icon>
@@ -101,7 +107,7 @@
               <UIcon class="text-xl" :name="SUBJECT_ICON" />
             </template> </MenuItem>
         </li>
-        <li v-if="can([Role.PARENT])">
+        <li v-if="can([Role.PARENT, Role.TEACHER])">
           <MenuItem to="/fees" label="Fees"> <template #icon>
               <UIcon class="text-xl" :name="PAYMENT_ICON" />
             </template> </MenuItem>
