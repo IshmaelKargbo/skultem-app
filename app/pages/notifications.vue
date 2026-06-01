@@ -9,7 +9,59 @@
                 </div>
             </Heading>
         </div>
-        <div class="grid md:grid-cols-2 gap-5">
+        <div class="md:hidden space-y-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold">
+                        Notifications
+                    </h1>
+
+                    <p class="text-xs text-gray-500">
+                        Stay updated with recent activity
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <UCard>
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500">
+                            Unread
+                        </p>
+
+                        <p class="text-lg font-bold text-primary">
+                            {{ summary.unread }}
+                        </p>
+                    </div>
+                </UCard>
+
+                <UCard>
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500">
+                            Read
+                        </p>
+
+                        <p class="text-lg font-bold text-success">
+                            {{ summary.read }}
+                        </p>
+                    </div>
+                </UCard>
+            </div>
+            <USlideover v-model:open="mobileOpen" side="right" :ui="{
+                content: 'bg-white dark:bg-gray-950'
+            }">
+                <template #content>
+                    <div class="flex h-screen flex-col">
+
+                        <div class="flex-1 overflow-y-auto">
+                            <NotificationView v-if="selected" :record="selected" @close="close" />
+                        </div>
+                    </div>
+                </template>
+            </USlideover>
+        </div>
+        <div class="grid gap-5 md:grid-cols-2 grid-cols-1">
             <div>
                 <UCard :ui="{
                     body: 'sm:p-0'
@@ -78,7 +130,7 @@
                     </template>
                 </UCard>
             </div>
-            <div>
+            <div class="hidden md:block">
                 <UCard class="sticky top-0">
                     <NotificationView v-if="selected" @close="selected = undefined" :record="selected" />
                     <div v-else class="flex flex-col items-center h-70 justify-center">
@@ -88,6 +140,8 @@
                 </UCard>
             </div>
         </div>
+
+
     </div>
 </template>
 <script setup lang="ts">
@@ -115,7 +169,18 @@ const summary = computed(() => ({
     read: notifications.value.filter(n => n.read).length,
     unread: notifications.value.filter(n => !n.read).length
 }))
+const mobileOpen = ref(false)
 
+watch(selected, (val) => {
+    if (import.meta.client && window.innerWidth < 768) {
+        mobileOpen.value = !!val
+    }
+})
+
+function close() {
+    selected.value = undefined
+    mobileOpen.value = false
+}
 const page = computed<number>({
     get: () => Number(route.query.page ?? 1),
     set: (val) => updateQuery({ page: val })
@@ -167,12 +232,23 @@ watch(() => page.value, () => {
 
 async function open(payload: AppNotification) {
     if (!payload) return
+
     if (!payload.read) {
         await useAppStore().markAsRead(payload.id)
         payload.read = true
     }
+
     selected.value = payload
-    detailSection.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+
+    if (import.meta.client && window.innerWidth < 768) {
+        mobileOpen.value = true
+        return
+    }
+
+    detailSection.value?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+    })
 }
 
 async function fetchNotifications() {

@@ -5,7 +5,8 @@
     <!-- Trigger -->
     <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
     <template #header>
-      <div class="relative overflow-hidden w-full rounded-2xl border border-neutral-200/80 bg-white/90 p-3 shadow dark:border-white/10 dark:bg-white/[0.03]">
+      <div
+        class="relative overflow-hidden w-full rounded-2xl border border-neutral-200/80 bg-white/90 p-3 shadow dark:border-white/10 dark:bg-white/[0.03]">
         <div class="flex justify-between items-center gap-3">
           <div class="relative shrink-0">
             <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900 shadow-lg" />
@@ -87,9 +88,11 @@
         </div>
 
         <!-- QUICK LINKS -->
-        <div class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.02]">
+        <div
+          class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.02]">
 
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER])" to="/attendance" @click="close"
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT])" to="/attendance"
+            @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/attendance') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="ATTENDANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
@@ -149,6 +152,46 @@
             </span>
           </NuxtLink>
 
+          <NuxtLink v-if="can([Role.PARENT])" to="/grades" @click="close"
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/grades') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
+            <UIcon :name="GRADES_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Grades
+            </span>
+          </NuxtLink>
+          <NuxtLink v-if="can([Role.PARENT])" to="/notifications" @click="close"
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/notifications') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
+            <UIcon :name="BELL_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Notifications
+            </span>
+          </NuxtLink>
+
+
+          <NuxtLink v-if="can([Role.PARENT])" to="/fees" @click="close"
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/fees') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
+            <UIcon :name="PAYMENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Fees
+            </span>
+          </NuxtLink>
+
+          <NuxtLink v-if="can([Role.PARENT])" to="/performance" @click="close"
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/performance') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
+            <UIcon :name="PERFORMANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Performance
+            </span>
+          </NuxtLink>
+
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/ledger" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/ledger') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
@@ -167,7 +210,7 @@
               Transactions
             </span>
           </NuxtLink>
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/analytics" @click="close"
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.OWNER])" to="/analytics" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/analytics') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="ANALYTICS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
@@ -185,7 +228,7 @@
         </div>
 
         <!-- ACCORDIONS -->
-        <div class="mt-6">
+        <div class="my-6">
 
           <div v-for="section in sections" :key="section.id"
             class="mt-3 rounded-3xl border border-neutral-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.02]">
@@ -205,7 +248,8 @@
 
             <!-- items -->
             <div v-if="expanded.includes(section.id)" class="px-5 pb-5 space-y-2">
-              <NuxtLink v-for="item in section.items.filter(x => !!x?.to)" :key="item.label" :to="item.to" @click="close"
+              <NuxtLink v-for="item in section.items.filter(x => !!x?.to)" :key="item.label" :to="item.to"
+                @click="close"
                 class="flex items-center gap-3 rounded-2xl border border-transparent bg-neutral-100 px-4 py-3.5 transition hover:border-primary/20 hover:bg-primary-50 hover:text-primary-600 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20 dark:hover:text-primary-200"
                 :class="route.path.startsWith(item.to) ? 'border-primary/20 bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-neutral-700 dark:text-neutral-200'">
                 <UIcon :name="item.icon" class="size-5" />
@@ -227,8 +271,9 @@
         </div>
 
         <!-- FOOTER -->
-        <div class="sticky bottom-0 mt-auto border-t border-neutral-200/80 bg-white/95 px-5 py-5 backdrop-blur dark:border-white/10 dark:bg-neutral-950/95">
-          <UButton to="/logout" color="neutral" variant="soft" block class="h-14 rounded-2xl text-base font-semibold">
+        <div
+          class="sticky bottom-0 mt-auto border-t border-neutral-200/80 bg-white/95 px-5 py-5 backdrop-blur dark:border-white/10 dark:bg-neutral-950/95">
+          <UButton to="/logout" color="neutral" variant="soft" block class="rounded-2xl text-base font-semibold">
             Log out
           </UButton>
         </div>
@@ -238,7 +283,9 @@
 </template>
 
 <script setup lang="ts">
+import { vi } from '@nuxt/ui/runtime/locale/index.js'
 import { computed, ref, watch } from 'vue'
+import { v } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
@@ -319,7 +366,7 @@ const sections = computed(() => [
         to: '/grades/approval'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER,]) && {
         label: 'Grade Assignment',
         icon: 'lucide:clipboard-check',
         to: '/grades'
@@ -329,14 +376,15 @@ const sections = computed(() => [
   {
     id: 'expenses',
     title: 'Expenses',
+    visible: can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]),
     items: [
-      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER, Role.ADMIN]) && {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Expenses',
         icon: EXPENSES_ICON,
         to: '/expenses'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
+      can([Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT]) && {
         label: 'Expense Category',
         icon: CATEGORY_ICON,
         to: '/expenses/category'
@@ -348,8 +396,9 @@ const sections = computed(() => [
   {
     id: 'academics',
     title: 'Academics',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]),
     items: [
-      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: 'Academics',
         icon: CALANDA_ICON,
         to: '/academics'
@@ -384,8 +433,9 @@ const sections = computed(() => [
   {
     id: 'authorization',
     title: 'Authorization',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]),
     items: [
-      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.OWNER]) && {
         label: 'Users',
         icon: USERS_ICON,
         to: '/auth'
@@ -408,25 +458,26 @@ const sections = computed(() => [
   {
     id: 'fees',
     title: 'Fees & Payments',
+    visible: can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]),
     items: [
-      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+      can([Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Student Fees',
         icon: STUDENT_FEES_ICON,
         to: '/fees-payment'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Fee Structures',
         icon: FEE_STRUCTURE_ICON,
         to: '/fees-payment/structure'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Discounts',
         icon: DISCOUNT_ICON,
         to: '/fees-payment/discounts'
       },
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Category',
         icon: CATEGORY_ICON,
         to: '/fees-payment/category'
@@ -437,6 +488,7 @@ const sections = computed(() => [
   {
     id: 'materials',
     title: 'Materials & Supplies',
+    visible: can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]),
     items: [
       can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
         label: 'Materials',

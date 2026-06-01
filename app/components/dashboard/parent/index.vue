@@ -8,8 +8,8 @@
                     placeholder="Select Term" />
             </div>
         </UCard>
-        <div class="grid md:grid-cols-3 grid-cols-2 md:gap-5 gap-3">
-            <DashboardParentAvarage class="col-span-2 md:col-span-1" :term="term"
+        <div class="grid md:grid-cols-3 grid-cols-1 md:gap-5 gap-3">
+            <DashboardParentAvarage class="md:col-span-1" :term="term"
                 :session-id="selected?.sessionId || ''" :id="state.student" />
             <DashboardParentAttendance :id="state.student" />
             <DashboardParentFees :id="state.student" />
