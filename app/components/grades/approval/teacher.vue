@@ -123,7 +123,7 @@
 
           <!-- EMPTY REQUEST -->
           <div v-else-if="filteredRequests.length === 0"
-            class="flex flex-col items-center justify-center py-14  text-center">
+            class="flex flex-col items-center justify-center py-14  sticky top-0  text-center">
             <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-gray-800">
               <UIcon name="lucide:inbox" class="size-7 text-gray-500" />
             </div>
@@ -139,8 +139,10 @@
 
           <!-- DESKTOP -->
           <div class="hidden space-y-3 md:block">
-            <GradesRecord v-for="req in filteredRequests" :key="req.id" :selected="selected" :record="req"
-              @click="selected = req" />
+            <div class="sticky top-5">
+              <GradesRecord v-for="req in filteredRequests" :key="req.id" :selected="selected" :record="req"
+                @click="selected = req" />
+            </div>
           </div>
 
           <!-- MOBILE -->
