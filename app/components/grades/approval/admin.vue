@@ -79,10 +79,10 @@
     <div class="grid gap-5 md:grid-cols-2">
       <!-- LEFT -->
       <div>
-        <UCard class="overflow-hidden rounded-[28px] border-0 bg-white/95 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900/80 dark:ring-gray-800" :ui="{
+        <UCard class="overflow-hidden sticky top-2" :ui="{
           body: 'p-3 md:p-4',
-          header: 'p-3 md:p-4 border-b border-gray-100 dark:border-gray-800',
-          footer: 'p-3 md:p-4 border-t border-gray-100 dark:border-gray-800'
+          header: 'p-3 md:p-4',
+          footer: 'p-3 md:p-4'
         }">
           <!-- HEADER -->
           <template #header>
@@ -373,7 +373,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
+  get: () => Number(route.query.size ?? 5),
   set: val => updateQuery({ size: val })
 })
 

@@ -79,7 +79,7 @@
     <div class="grid gap-5 md:grid-cols-2">
       <!-- LEFT -->
       <div>
-        <UCard class="overflow-hidden sticky top-0" :ui="{
+        <UCard class="overflow-hidden sticky top-2" :ui="{
           body: 'p-3 md:p-4',
           header: 'p-3 md:p-4',
           footer: 'p-3 md:p-4'
@@ -123,7 +123,7 @@
 
           <!-- EMPTY REQUEST -->
           <div v-else-if="filteredRequests.length === 0"
-            class="flex flex-col items-center justify-center py-14  sticky top-0  text-center">
+            class="flex flex-col items-center justify-center py-14  text-center">
             <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-gray-800">
               <UIcon name="lucide:inbox" class="size-7 text-gray-500" />
             </div>
@@ -138,11 +138,9 @@
           </div>
 
           <!-- DESKTOP -->
-          <div class="hidden space-y-3 md:block">
-            <div class="sticky top-5">
+          <div class="hidden md:block space-y-3">
               <GradesRecord v-for="req in filteredRequests" :key="req.id" :selected="selected" :record="req"
                 @click="selected = req" />
-            </div>
           </div>
 
           <!-- MOBILE -->
@@ -324,7 +322,7 @@ const page = computed<number>({
 })
 
 const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
+  get: () => Number(route.query.size ?? 5),
   set: val => updateQuery({ size: val })
 })
 
