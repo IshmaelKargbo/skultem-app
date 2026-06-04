@@ -70,8 +70,7 @@ watch([page, size], fetchRecords, {
 onMounted(() => {
   if (!route.query.page || !route.query.size) {
     updateQuery({
-      page: page.value,
-      size: size.value
+      page: page.value
     })
   }
 })
@@ -79,9 +78,8 @@ onMounted(() => {
 
 <template>
   <!-- Desktop -->
-  <UCard class="hidden overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800 md:block" :ui="{
-    body: 'sm:p-0',
-    footer: 'border-t border-gray-200 dark:border-gray-800'
+  <UCard class="hidden md:block" :ui="{
+    body: 'sm:p-0'
   }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>

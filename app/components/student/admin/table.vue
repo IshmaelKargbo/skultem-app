@@ -95,8 +95,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }

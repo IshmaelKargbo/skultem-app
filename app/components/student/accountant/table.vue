@@ -87,8 +87,7 @@ async function fetchRecord() {
 watch(() => page.value, () => {
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 
@@ -99,8 +98,7 @@ onMounted(() => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
