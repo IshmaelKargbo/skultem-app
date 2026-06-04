@@ -13,7 +13,7 @@
 <script setup lang="ts">
 onMounted(() => {
     useAppStore().setTitle('Fees Structures');
-    document.title = 'Fees Structures | Skultem'
+    document.title = 'Fees Structures | Fees Payment | Skultem'
 })
 
 definePageMeta({

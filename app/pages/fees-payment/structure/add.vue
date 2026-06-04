@@ -161,7 +161,7 @@ async function onSubmit() {
 
 onMounted(() => {
     useAppStore().setTitle('Add Fee Structure')
-    document.title = 'Add | Fee Structure | Skultem'
+    document.title = 'Add | Fee Structure | Fees Payment | Skultem'
     feeCategoryStore.fetchAll(0, 0)
     termStore.fetchAll(0, 0)
     clazzStore.fetchAll(0, 0)

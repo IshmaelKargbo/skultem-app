@@ -13,7 +13,7 @@ const { meta } = storeToRefs(useFeeStore());
 
 onMounted(() => {
     useAppStore().setTitle('Settings');
-    document.title = 'Fee Categories | Settings | Skultem';
+    document.title = 'Fee Categories | Fees Payment | Skultem';
 })
 
 definePageMeta({

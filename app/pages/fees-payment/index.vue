@@ -71,7 +71,7 @@ function select(row: Student) {
 onMounted(() => {
     useAppStore().setTitle('Student Fees')
 
-    document.title = 'Student Fees | Skultem'
+    document.title = 'Student Fees | Fees Payment | Skultem'
 })
 
 definePageMeta({

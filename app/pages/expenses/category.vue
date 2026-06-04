@@ -10,7 +10,7 @@
 <script setup lang="ts">
 onMounted(() => {
     useAppStore().setTitle('Settings');
-    document.title = 'Expense Categories | Settings | Skultem';
+    document.title = 'Expense Categories | Expenses | Skultem';
 })
 
 definePageMeta({

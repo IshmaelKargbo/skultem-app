@@ -22,7 +22,7 @@ function refreshReport() {
 
 onMounted(() => {
     useAppStore().setTitle('Expenses')
-    document.title = 'Expenses | Skultem'
+    document.title = 'Expenses | Expenses | Skultem'
 })
 
 definePageMeta({
