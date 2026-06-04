@@ -1,5 +1,5 @@
 <template>
-    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3 md:space-y-5">
+    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5 pb-0">
         <Heading title="Enroll Student" subtitle="Add a new student to the system and assign their academic details." />
         <div class="md:hidden">
             <UCard :ui="{ body: 'p-4' }">

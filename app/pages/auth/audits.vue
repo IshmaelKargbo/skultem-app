@@ -1,6 +1,6 @@
 <template>
     <div class="h-full overflow-y-auto bg-gray-50/60 dark:bg-neutral-950">
-        <div class="space-y-4 p-4 md:space-y-6 md:p-7">
+    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
             <!-- Header -->
             <div
                 class="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow dark:border-gray-800 dark:bg-neutral-900 md:flex-row md:items-center md:justify-between">

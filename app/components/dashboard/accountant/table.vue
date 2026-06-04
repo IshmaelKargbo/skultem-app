@@ -47,46 +47,163 @@ defineExpose({
 </script>
 
 <template>
-  <UCard :ui="{
-    body: 'sm:p-0'
-  }">
-    <UTable :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No ledger record found.</p>
-        </div>
-      </template>
-      <template #student-cell="{ row }">
-        <div class="flex space-x-3 items-center">
-          <div>
-            <UAvatar :src="row.original.student.photo"
-              :alt="row.original.student" />
+  <UCard class="overflow-hidden" :ui="{ body: 'sm:p-0' }">
+    <!-- Desktop Table -->
+    <div class="hidden md:block">
+      <UTable :columns="columns" :data="data" :loading="loading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+            <p class="text-gray-500">No ledger record found.</p>
           </div>
-          <div class="space-y-0.5">
-            <p>{{ row.original.student }}</p>
-            <p class="text-xs text-muted">{{ formatDateTime(row.original.createdAt) }}</p>
+        </template>
+
+        <template #student-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <UAvatar
+              :src="row.original.student.photo"
+              :alt="row.original.student"
+            />
+            <div>
+              <p class="font-medium">{{ row.original.student }}</p>
+              <p class="text-xs text-muted">
+                {{ formatDateTime(row.original.createdAt) }}
+              </p>
+            </div>
           </div>
-        </div>
-      </template>
-      <template #paymentMethod-cell="{ row }">
-        <UBadge variant="outline" :color="paymentMethods[row.original.paymentMethod].color"
-          :label="` - ${paymentMethods[row.original.paymentMethod].label}`"
-          :icon="paymentMethods[row.original.paymentMethod].icon" />
-      </template>
-      <template #amount-cell="{ row }">
-        <p class="font-semibold">{{ format(row.original.amount || 0) }}</p>
-      </template>
-      <template #referenceNo-cell="{ row }">
-        <p class="font-medium">{{ row.original.referenceNo || '-' }}</p>
-      </template>
-    </UTable>
+        </template>
+
+        <template #paymentMethod-cell="{ row }">
+          <UBadge
+            variant="outline"
+            :color="paymentMethods[row.original.paymentMethod].color"
+            :label="paymentMethods[row.original.paymentMethod].label"
+            :icon="paymentMethods[row.original.paymentMethod].icon"
+          />
+        </template>
+
+        <template #amount-cell="{ row }">
+          <p class="font-semibold">
+            {{ format(row.original.amount || 0) }}
+          </p>
+        </template>
+
+        <template #referenceNo-cell="{ row }">
+          <p class="font-medium">
+            {{ row.original.referenceNo || '-' }}
+          </p>
+        </template>
+      </UTable>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="md:hidden">
+      <div v-if="loading" class="space-y-3 p-4 sm:p-5">
+        <USkeleton class="h-28 w-full rounded-xl" />
+        <USkeleton class="h-28 w-full rounded-xl" />
+        <USkeleton class="h-28 w-full rounded-xl" />
+      </div>
+
+      <div
+        v-else-if="data?.length"
+        class="space-y-3 "
+      >
+        <UCard
+          v-for="record in data"
+          :key="record.id"
+          class="overflow-hidden border border-gray-200/80 dark:border-gray-800"
+          :ui="{ body: 'p-4 sm:p-5' }"
+        >
+          <div class="space-y-4">
+            <!-- Header -->
+            <div class="flex items-start gap-3">
+              <UAvatar
+                :src="record.student.photo"
+                :alt="record.student"
+                size="lg"
+              />
+
+              <div class="min-w-0 flex-1 space-y-1">
+                <p class="font-semibold truncate">
+                  {{ record.student }}
+                </p>
+
+                <p class="text-xs text-muted">
+                  {{ formatDateTime(record.createdAt) }}
+                </p>
+              </div>
+
+              <UBadge
+                variant="soft"
+                color="success"
+                class="shrink-0"
+              >
+                {{ format(record.amount || 0) }}
+              </UBadge>
+            </div>
+
+            <!-- Details -->
+            <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                <p class="text-muted text-xs">Fee</p>
+                <p class="font-medium break-words">
+                  {{ record.fee }}
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                <p class="text-muted text-xs">Reference</p>
+                <p class="font-medium truncate">
+                  {{ record.referenceNo || '-' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
+              <UBadge
+                variant="outline"
+                :color="paymentMethods[record.paymentMethod].color"
+                :icon="paymentMethods[record.paymentMethod].icon"
+                :label="paymentMethods[record.paymentMethod].label"
+                class="w-fit"
+              />
+            </div>
+          </div>
+        </UCard>
+      </div>
+
+      <div
+        v-else
+        class="flex flex-col items-center gap-2 py-10 px-4"
+      >
+        <UIcon
+          name="ph:books-light"
+          class="text-4xl text-gray-400"
+        />
+        <p class="text-gray-500">
+          No ledger record found.
+        </p>
+      </div>
+    </div>
+
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div
+        class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+      >
         <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+
+        <UPagination
+          v-model:page="page"
+          size="sm"
+          :page-size="meta.size"
+          :items-per-page="meta.size"
+          :total="meta.total"
+          show-edges
+          class="justify-center md:justify-end"
+        />
       </div>
     </template>
+
   </UCard>
 </template>

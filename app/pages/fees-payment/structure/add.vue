@@ -182,7 +182,7 @@ definePageMeta({
 </script>
 
 <template>
-    <div class="md:p-5 p-4 py-3 md:py-4 overflow-y-auto h-full space-y-5">
+    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
 
         <Heading title="Fee Structure" subtitle="Create and assign fee structures to students or classes" />
 

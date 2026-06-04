@@ -13,18 +13,21 @@ watch(() => route.fullPath, () => {
 </script>
 
 <template>
-  <div v-if="layoutReady" class="flex h-dvh overflow-hidden">
+  <div v-if="layoutReady" class="flex h-dvh overflow-hidden bg-[var(--app-bg)]">
     <div class="w-72 hidden md:block p-4 pr-0.5">
       <Menu />
     </div>
     <div class="flex flex-1 flex-col min-w-0">
       <Header />
       <div class="flex-1 min-h-0 mt-1">
-        <div ref="scrollContainer" class="max-w-screen-2xl mx-auto h-full overflow-y-auto overflow-x-hidden">
+        <div
+          ref="scrollContainer"
+          class="max-w-screen-2xl mx-auto h-full w-full overflow-y-auto overflow-x-hidden px-2 pb-2 sm:px-3 sm:pb-3 lg:px-4 lg:pb-4"
+        >
           <slot />
         </div>
       </div>
-      <MenuMobile class="md:hidden block" />
+      <MenuMobile class="md:hidden block sticky bottom-0 z-20" />
     </div>
   </div>
   <AuthSplash v-else />

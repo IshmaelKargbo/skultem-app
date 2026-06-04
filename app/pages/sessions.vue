@@ -1,5 +1,5 @@
 <template>
-    <div class="p-7 h-full overflow-y-auto space-y-5">
+    <div class="p-4 sm:p-6 lg:p-7 h-full overflow-y-auto space-y-4 sm:space-y-5">
         <div class="flex py-2 justify-between items-center border-gray-200">
             <div class="space-y-1">
                 <p class="text-2xl font-semibold">Class Sessions</p>

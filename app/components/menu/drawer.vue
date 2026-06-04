@@ -6,10 +6,10 @@
     <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
     <template #header>
       <div
-        class="relative overflow-hidden w-full rounded-2xl border border-neutral-200/80 bg-white/90 p-3 shadow dark:border-white/10 dark:bg-white/[0.03]">
+        class="relative overflow-hidden w-full rounded-2xl border border-neutral-200/80 bg-white/90 p-3  dark:border-white/10 dark:bg-white/[0.03]">
         <div class="flex justify-between items-center gap-3">
           <div class="relative shrink-0">
-            <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900 shadow-lg" />
+            <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900" />
 
             <span
               class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
@@ -112,7 +112,7 @@
             </span>
           </NuxtLink>
 
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN])" to="/parents" @click="close"
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT])" to="/parents" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/parents') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="PARENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
@@ -142,7 +142,17 @@
             </span>
           </NuxtLink>
 
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/classes" @click="close"
+          <NuxtLink v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])" to="/students" @click="close"
+            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
+            :class="route.path.startsWith('/students') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
+            <UIcon :name="STUDENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+
+            <span class="text-[16px] font-medium">
+              Students
+            </span>
+          </NuxtLink>
+
+          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.ADMIN, Role.OWNER])" to="/classes" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/classes') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="CLASS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
@@ -285,7 +295,6 @@
 <script setup lang="ts">
 import { vi } from '@nuxt/ui/runtime/locale/index.js'
 import { computed, ref, watch } from 'vue'
-import { v } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
@@ -464,6 +473,11 @@ const sections = computed(() => [
         label: 'Student Fees',
         icon: STUDENT_FEES_ICON,
         to: '/fees-payment'
+      },
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+        label: 'Payments',
+        icon: PAYMENT_ICON,
+        to: '/fees-payment/pay'
       },
 
       can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {

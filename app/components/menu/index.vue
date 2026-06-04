@@ -119,7 +119,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT])">
           <MenuItem label="Fees & Payments"
-            :subNavs="[{ label: 'Fees', to: '/fees-payment', icon: STUDENT_FEES_ICON, exact: true }, { label: 'Pay', to: '/fees-payment/pay', icon: PAYMENT_ICON }, { label: 'Discounts', to: '/fees-payment/discounts', icon: DISCOUNT_ICON }, { label: 'Structures', to: '/fees-payment/structure', icon: FEE_STRUCTURE_ICON }, { label: 'Category', to: '/fees-payment/category', icon: CATEGORY_ICON }]">
+            :subNavs="[{ label: 'Fees', to: '/fees-payment', icon: STUDENT_FEES_ICON, exact: true }, { label: 'Payments', to: '/fees-payment/pay', icon: PAYMENT_ICON }, { label: 'Discounts', to: '/fees-payment/discounts', icon: DISCOUNT_ICON }, { label: 'Structures', to: '/fees-payment/structure', icon: FEE_STRUCTURE_ICON }, { label: 'Category', to: '/fees-payment/category', icon: CATEGORY_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="PAYMENT_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">

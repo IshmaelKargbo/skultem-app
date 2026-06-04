@@ -1,5 +1,5 @@
 <template>
-  <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+  <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
     <Heading title="Performance Breakdown" subtitle="Create custom reports and explore your school data">
       <div class="flex md:space-x-3 space-x-2 md:w-1/3 w-full">
         <USelectMenu @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"

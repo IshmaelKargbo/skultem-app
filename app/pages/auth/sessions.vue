@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-3 p-4 md:space-y-5 md:p-7 h-full overflow-y-auto">
+    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7 h-full overflow-y-auto">
         <Heading title="Users Sessions" subtitle="Monitor active logins and session activity" />
 
         <!-- Desktop -->

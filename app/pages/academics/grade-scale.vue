@@ -1,5 +1,5 @@
 <template>
-  <div class="md:p-7 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+  <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
     <Heading title="Grading scale" subtitle="Configure grade bands used for student grade and ranking calculation.">
       <UButton label="Add Band" icon="i-lucide-plus" @click="addGradeBand" />
     </Heading>

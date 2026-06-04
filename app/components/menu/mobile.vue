@@ -50,6 +50,30 @@
             <span class="menu-mobile-label">Attendance</span>
           </NuxtLink>
         </li>
+
+        <li v-if="can([Role.ACCOUNTANT])">
+          <NuxtLink to="/fees-payment/pay" class="menu-mobile-item" :class="isActive('/fees-payment/pay')">
+            <UIcon name="i-lucide-wallet" class="text-xl" />
+            <span class="menu-mobile-label">Payments</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([Role.ACCOUNTANT])">
+          <NuxtLink to="/ledger" class="menu-mobile-item" :class="isActive('/ledger')">
+            <UIcon name="i-lucide-book-open" class="text-xl" />
+            <span class="menu-mobile-label">Ledger</span>
+          </NuxtLink>
+        </li>
+
+        <li v-if="can([ Role.ACCOUNTANT])">
+          <NuxtLink to="/reports" class="menu-mobile-item" :class="isActive('/reports')">
+            <UIcon name="i-lucide-bar-chart-3" class="text-xl" />
+            <span class="menu-mobile-label">Reports</span>
+          </NuxtLink>
+        </li>
+
+ 
+
       </ul>
     </div>
   </div>

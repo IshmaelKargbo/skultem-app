@@ -1,5 +1,5 @@
 <template>
-    <div class="grid gap-5 grid-cols-3">
+    <div class="grid gap-5 md:grid-cols-3 grid-cols-1">
         <Metric :record="{
             label: 'Total Revenue (This Term)',
             value: totalRevenue,

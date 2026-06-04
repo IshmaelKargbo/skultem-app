@@ -1,8 +1,8 @@
 <template>
-    <div class="grid gap-5 grid-cols-4">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         <Metric :record="{
             label: 'Total Parents',
-            value: report.students,
+            value: report.parents,
             icon: PARENT_ICON,
             isReady: !loading,
             subtle: 'Parents linked to students',
@@ -18,7 +18,7 @@
         }" />
         <Metric :record="{
             label: 'Total Expected',
-            value: report.outstanding,
+            value: report.expected,
             icon: COLLETED_ICON,
             isReady: !loading,
             color: 'error',
@@ -133,7 +133,7 @@ async function fetchRecord() {
 
     const paid = paidDatasets.find((e: any) => e.label === "Paid")
     const totalStudentRow = studentsDatasets.find((e: any) => e.label === "Total")
-    const totalParentRow = studentsDatasets.find((e: any) => e.label === "Total")
+    const totalParentRow = parentDatasets.find((e: any) => e.label === "Total")
     const partial = paidDatasets.find((e: any) => e.label === "Partial")
 
     const pendingPartial = pendingDatasets.find((e: any) => e.label === "Partial")

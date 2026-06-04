@@ -1,7 +1,7 @@
 <template>
     <UForm :state="state" @submit.prevent="onSubmit" :schema="schema" class="space-y-3">
         <div class="space-y-3">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-2 grid-cols-1 gap-4">
 
                 <!-- LEFT: Payment Details -->
                 <div>
@@ -10,13 +10,8 @@
 
                             <!-- STUDENT -->
                             <UFormField required label="Student" name="studentId">
-                                <USelectMenu
-                                    value-key="value"
-                                    :items="students"
-                                    v-model="state.studentId"
-                                    @change="onStudentSelect"
-                                    placeholder="Select student"
-                                />
+                                <USelectMenu value-key="value" :items="students" v-model="state.studentId"
+                                    @change="onStudentSelect" placeholder="Select student" />
                                 <template #help>
                                     Select the student you are recording this payment for.
                                 </template>
@@ -24,12 +19,8 @@
 
                             <!-- METHOD -->
                             <UFormField required label="Payment Method" name="method">
-                                <USelectMenu
-                                    value-key="value"
-                                    v-model="state.method"
-                                    :items="methodOptions"
-                                    placeholder="Select payment method"
-                                />
+                                <USelectMenu value-key="value" v-model="state.method" :items="methodOptions"
+                                    placeholder="Select payment method" />
                                 <template #help>
                                     Select how the payment was made — cash, bank transfer, or mobile money.
                                 </template>
@@ -52,17 +43,6 @@
                             </UFormField>
 
                         </div>
-
-                        <template #footer>
-                            <div class="flex space-x-3 items-center">
-                                <UButton variant="outline" color="neutral" to="/fees-payment/pay">
-                                    Cancel
-                                </UButton>
-                                <UButton :icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading">
-                                    Record Payment
-                                </UButton>
-                            </div>
-                        </template>
                     </UCard>
                 </div>
 
@@ -82,10 +62,8 @@
                         </template>
 
                         <!-- EMPTY: no student selected -->
-                        <div
-                            v-if="!state.studentId"
-                            class="items-center space-y-3 justify-center h-110 py-10 rounded-xl border-dashed flex flex-col text-sm text-muted border-2"
-                        >
+                        <div v-if="!state.studentId"
+                            class="items-center space-y-3 justify-center h-110 py-10 rounded-xl border-dashed flex flex-col text-sm text-muted border-2">
                             <UIcon :name="EMPTY_ICON" class="w-12 h-12" />
                             <p>Select a student to view their outstanding fees</p>
                         </div>
@@ -99,10 +77,8 @@
                         </div>
 
                         <!-- NO FEES -->
-                        <div
-                            v-else-if="!fees.length"
-                            class="items-center space-y-3 justify-center py-10 rounded-xl border-dashed flex flex-col text-sm text-muted h-56 border-2"
-                        >
+                        <div v-else-if="!fees.length"
+                            class="items-center space-y-3 justify-center py-10 rounded-xl border-dashed flex flex-col text-sm text-muted h-56 border-2">
                             <UIcon name="i-lucide-circle-check-big" class="w-12 h-12 text-green-500" />
                             <p>This student has no outstanding fees</p>
                         </div>
@@ -115,11 +91,8 @@
                                 Outstanding Fees
                             </p>
 
-                            <div
-                                v-for="fee in fees"
-                                :key="fee.feeId"
-                                class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center"
-                            >
+                            <div v-for="fee in fees" :key="fee.feeId"
+                                class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
                                 <div>
                                     <p class="font-medium">{{ fee.feeName }}</p>
                                     <p class="text-xs text-muted">
@@ -143,30 +116,22 @@
                                     Payment Allocations
                                 </p>
 
-                                <div
-                                    v-for="a in allocations"
-                                    :key="a.feeId"
-                                    class="border-2 border-gray-200 rounded-xl p-3 space-y-2"
-                                >
+                                <div v-for="a in allocations" :key="a.feeId"
+                                    class="border-2 border-gray-200 rounded-xl p-3 space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <p class="font-medium">{{ a.feeName }}</p>
                                         <p class="text-muted">Max {{ format(a.outstanding) }}</p>
                                     </div>
 
-                                    <UInput
-                                        type="number"
-                                        v-model.number="a.amount"
-                                        min="0"
-                                        :max="a.outstanding"
-                                        :placeholder="`0 – ${format(a.outstanding)}`"
-                                        @update:modelValue="val => {
+                                    <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding"
+                                        :placeholder="`0 – ${format(a.outstanding)}`" @update:modelValue="val => {
                                             a.amount = Number(val)
                                             clampAmount(a)
-                                        }"
-                                    />
+                                        }" />
 
                                     <p class="text-xs text-muted">
-                                        Enter the amount being paid toward this fee. Cannot exceed the outstanding balance.
+                                        Enter the amount being paid toward this fee. Cannot exceed the outstanding
+                                        balance.
                                     </p>
                                 </div>
 
@@ -194,18 +159,14 @@
                                     </div>
                                 </div>
 
-                                <div
-                                    v-if="isOverAllocated"
-                                    class="flex items-start gap-2 text-xs text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-3"
-                                >
+                                <div v-if="isOverAllocated"
+                                    class="flex items-start gap-2 text-xs text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
                                     <UIcon name="i-lucide-triangle-alert" class="shrink-0 mt-0.5" />
-                                    One or more allocations exceed the outstanding balance. Please correct the amounts before submitting.
+                                    One or more allocations exceed the outstanding balance. Please correct the amounts
+                                    before submitting.
                                 </div>
 
-                                <div
-                                    v-else-if="totalAllocated === 0"
-                                    class="text-xs text-muted text-center"
-                                >
+                                <div v-else-if="totalAllocated === 0" class="text-xs text-muted text-center">
                                     Enter an amount for at least one fee to proceed.
                                 </div>
 
@@ -216,6 +177,16 @@
                             </div>
 
                         </div>
+                        <template #footer>
+                            <div class="flex space-x-3 items-center">
+                                <UButton variant="outline" color="neutral" to="/fees-payment/pay">
+                                    Cancel
+                                </UButton>
+                                <UButton :icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading">
+                                    Record Payment
+                                </UButton>
+                            </div>
+                        </template>
                     </UCard>
                 </div>
             </div>
@@ -256,12 +227,8 @@
                     <UButton color="neutral" variant="subtle" :disabled="isDownloadingReceipt" @click="skipReceipt">
                         No, thanks
                     </UButton>
-                    <UButton
-                        icon="i-lucide-download"
-                        :loading="isDownloadingReceipt"
-                        :disabled="!receipt"
-                        @click="downloadReceipt"
-                    >
+                    <UButton icon="i-lucide-download" :loading="isDownloadingReceipt" :disabled="!receipt"
+                        @click="downloadReceipt">
                         Download Receipt
                     </UButton>
                 </div>
