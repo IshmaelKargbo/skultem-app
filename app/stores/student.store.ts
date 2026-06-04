@@ -11,11 +11,11 @@ export const useStudentStore = defineStore('student', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 6, search: string = "") {
       this.loading = true
       this.error = null
       try {
-        const response = await StudentApi().getAll(page, size) as any
+        const response = await StudentApi().getAll(search, page, size) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
@@ -72,11 +72,11 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async fetchAllAndReturn(page: number = 1, size: number = 6) {
+    async fetchAllAndReturn(page: number = 1, size: number = 6, search: string = "") {
       this.loading = true
       this.error = null
       try {
-        const response = await StudentApi().getAll(page, size) as any
+        const response = await StudentApi().getAll(search, page, size) as any
         return { records: response.data, meta: response.meta }
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch students'

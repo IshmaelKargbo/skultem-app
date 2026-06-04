@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const store = useTeacherStore()
 const { records: data, meta, loading } = storeToRefs(store)
-
-const editRcord = ref<Teacher | null>(null)
-const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -51,54 +46,8 @@ const columns = [
   {
     accessorKey: 'street',
     header: 'Street'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
-    }
   }
 ]
-
-function getRowItems(row: Row<Teacher>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -123,8 +72,7 @@ watch(() => page.value, () => {
   })
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 
@@ -154,8 +102,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
@@ -185,10 +132,6 @@ onMounted(async () => {
         <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
           variant="outline" />
       </template>
-      <template #status-cell="{ row }">
-        <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]"
-          variant="outline" />
-      </template>
     </UTable>
     <template #footer>
       <div class="flex justify-between items-center">
@@ -200,7 +143,6 @@ onMounted(async () => {
   </UCard>
   <!-- Mobile -->
   <div class="space-y-4 md:hidden">
-    <!-- Loading -->
     <template v-if="loading">
       <UCard v-for="i in 4" :key="i"
         class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900">
@@ -267,10 +209,6 @@ onMounted(async () => {
                 </p>
               </div>
             </div>
-
-            <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
-            </UDropdownMenu>
           </div>
         </div>
 
@@ -344,11 +282,10 @@ onMounted(async () => {
         </p>
       </div>
     </template>
-  <div class="flex justify-between items-center md:hidden">
-    <Showing :meta="meta" />
-    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-      show-edges />
+    <div class="flex justify-between items-center md:hidden">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
+    </div>
   </div>
-  </div>
-
 </template>

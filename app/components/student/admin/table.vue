@@ -59,6 +59,11 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val })
 })
 
+const search = computed<string>({
+  get: () => String(route.query.search ?? ''),
+  set: (val) => updateQuery({ search: val })
+})
+
 const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
   set: (val) => updateQuery({ size: val })
@@ -78,7 +83,7 @@ function updateQuery(newQuery: Record<string, any>) {
 }
 
 async function fetchRecord() {
-  await store.fetchAll(page.value, size.value)
+  await store.fetchAll(page.value, size.value, search.value)
 }
 
 watch(() => page.value, () => {
@@ -91,11 +96,22 @@ watch(() => page.value, () => {
   fetchRecord()
 }, { immediate: true })
 
+watch(() => search.value, () => {
+  router.replace({
+    query: {
+      search: search.value || undefined
+    }
+  })
+
+  fetchRecord()
+})
+
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value
+        page: page.value,
+        search: search.value || undefined,
       }
     })
   }
