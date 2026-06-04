@@ -73,7 +73,7 @@ onMounted(async () => {
   <div class="space-y-4">
     <!-- Desktop -->
     <UCard class="hidden md:block" :ui="{
-      body: 'p-0'
+      body: 'sm:p-0'
     }">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>

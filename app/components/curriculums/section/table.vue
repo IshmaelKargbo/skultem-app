@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const store = useSectionStore()
@@ -20,54 +18,8 @@ const columns = [
   {
     accessorKey: 'description',
     header: 'Description'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
-    }
   }
 ]
-
-function getRowItems(row: Row<Section>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -96,8 +48,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
@@ -108,11 +59,11 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <UCard :ui="{
-    body: 'p-0'
+  <UCard class="hidden md:block" :ui="{
+    body: 'sm:p-0'
   }">
     <!-- Desktop Table -->
-    <div class="hidden md:block">
+    <div >
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -129,10 +80,21 @@ onMounted(async () => {
         </template>
       </UTable>
     </div>
+    <template #footer>
+      <!-- Footer -->
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Showing :meta="meta" />
+
+        <div class="overflow-x-auto">
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
+        </div>
+      </div>
+    </template>
   </UCard>
 
   <!-- Mobile -->
-  <div class="md:hidden bg-gray-50 dark:bg-neutral-950 min-h-[300px]">
+  <div class="md:hidden bg-gray-50 dark:bg-neutral-950">
     <!-- Loading -->
     <div v-if="loading">
       <div class="space-y-3 p-4">
@@ -164,7 +126,7 @@ onMounted(async () => {
     </div>
 
     <!-- Cards -->
-    <div v-else class="space-y-3 p-3">
+    <div v-else class="space-y-3">
       <div v-for="item in data" :key="item.id"
         class="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-900 p-4 shadow-sm active:scale-[0.99] transition-all">
         <div class="flex items-start justify-between gap-3">
@@ -207,23 +169,13 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-
-          <!-- Actions -->
-          <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost" class="rounded-full" />
-          </UDropdownMenu>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Footer -->
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <Showing :meta="meta" />
-
-    <div class="overflow-x-auto">
+  <div class="flex md:hidden justify-center mt-5">
       <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />
-    </div>
   </div>
 </template>

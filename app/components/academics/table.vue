@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const store = useAcademicYearStore()
@@ -52,54 +50,8 @@ const columns = [
   {
     accessorKey: 'status',
     header: 'Status'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
-    }
   }
 ]
-
-function getRowItems(row: Row<AcademicYear>) {
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -128,8 +80,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
@@ -142,24 +93,13 @@ onMounted(async () => {
 
 <template>
   <!-- Desktop -->
-  <UCard
-    class="hidden overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 md:block"
-    :ui="{
-      body: 'p-0',
-      footer: 'border-t border-gray-200 dark:border-gray-800'
-    }"
-  >
-    <UTable
-      :columns="columns"
-      :data="data"
-      :loading="loading"
-    >
+  <UCard :ui="{
+    body: 'sm:p-0'
+  }">
+    <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center justify-center py-14">
-          <UIcon
-            name="i-lucide-calendar-range"
-            class="mb-3 size-10 text-gray-400"
-          />
+          <UIcon name="i-lucide-calendar-range" class="mb-3 size-10 text-gray-400" />
 
           <p class="text-sm text-gray-500">
             No academic years found
@@ -172,40 +112,24 @@ onMounted(async () => {
       </template>
 
       <template #active-cell="{ row }">
-        <UBadge
-          :label="row.original.active ? 'Active' : 'Inactive'"
-          :color="row.original.active ? 'success' : 'neutral'"
-          variant="soft"
-        />
+        <UBadge :label="row.original.active ? 'Active' : 'Inactive'"
+          :color="row.original.active ? 'success' : 'neutral'" variant="soft" />
       </template>
 
       <template #status-cell="{ row }">
-        <UBadge
-          variant="soft"
-          :color="parseStatusColor[row.original.status]"
-        >
-          <UIcon
-            :name="parseStatusIcon[row.original.status]"
-            class="mr-1"
-          />
-
+        <UBadge variant="soft" :color="parseStatusColor[row.original.status]">
+          <UIcon :name="parseStatusIcon[row.original.status]" class="mr-1" />
           {{ parseStaus[row.original.status] }}
         </UBadge>
       </template>
     </UTable>
 
     <template #footer>
-      <div class="flex items-center justify-between px-4 py-4">
+      <div class="flex items-center justify-between">
         <Showing :meta="meta" />
 
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </template>
   </UCard>
@@ -214,11 +138,7 @@ onMounted(async () => {
   <div class="space-y-4 md:hidden">
     <!-- Loading -->
     <template v-if="loading">
-      <UCard
-        v-for="i in 4"
-        :key="i"
-        class="overflow-hidden"
-      >
+      <UCard v-for="i in 4" :key="i" class="overflow-hidden">
         <div class="space-y-4 p-4">
           <div class="flex items-center gap-3">
             <USkeleton class="size-12 rounded-2xl" />
@@ -241,30 +161,21 @@ onMounted(async () => {
 
     <!-- Data -->
     <template v-else-if="data?.length">
-      <UCard
-        v-for="item in data"
-        :key="item.id"
+      <UCard v-for="item in data" :key="item.id"
         class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900"
         :ui="{
           body: 'p-0'
-        }"
-      >
+        }">
         <!-- Header -->
         <div class="flex items-start justify-between gap-3 p-4">
           <div class="flex min-w-0 items-center gap-3">
             <div
-              class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400"
-            >
-              <UIcon
-                name="i-lucide-calendar-range"
-                class="size-5"
-              />
+              class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
+              <UIcon name="i-lucide-calendar-range" class="size-5" />
             </div>
 
             <div class="min-w-0">
-              <h3
-                class="truncate text-sm font-semibold text-gray-900 dark:text-white"
-              >
+              <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
                 {{ item.name }}
               </h3>
 
@@ -276,17 +187,8 @@ onMounted(async () => {
             </div>
           </div>
 
-          <UDropdownMenu
-            :items="getRowItems({ original: item } as any)"
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              icon="i-lucide-ellipsis-vertical"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              class="rounded-xl"
-            />
+          <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
           </UDropdownMenu>
         </div>
 
@@ -317,12 +219,8 @@ onMounted(async () => {
               Active
             </p>
 
-            <UBadge
-              :label="item.active ? 'Yes' : 'No'"
-              :color="item.active ? 'success' : 'neutral'"
-              variant="soft"
-              size="sm"
-            />
+            <UBadge :label="item.active ? 'Yes' : 'No'" :color="item.active ? 'success' : 'neutral'" variant="soft"
+              size="sm" />
           </div>
 
           <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
@@ -330,15 +228,8 @@ onMounted(async () => {
               Status
             </p>
 
-            <UBadge
-              :color="parseStatusColor[item.status]"
-              variant="soft"
-              size="sm"
-            >
-              <UIcon
-                :name="parseStatusIcon[item.status]"
-                class="mr-1"
-              />
+            <UBadge :color="parseStatusColor[item.status]" variant="soft" size="sm">
+              <UIcon :name="parseStatusIcon[item.status]" class="mr-1" />
 
               {{ parseStaus[item.status] }}
             </UBadge>
@@ -346,9 +237,7 @@ onMounted(async () => {
         </div>
 
         <!-- Footer -->
-        <div
-          class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800"
-        >
+        <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
           <div class="min-w-0">
             <p class="truncate text-sm font-medium">
               Academic Year
@@ -359,10 +248,7 @@ onMounted(async () => {
             </p>
           </div>
 
-          <UIcon
-            name="i-lucide-chevron-right"
-            class="size-4 text-gray-400"
-          />
+          <UIcon name="i-lucide-chevron-right" class="size-4 text-gray-400" />
         </div>
       </UCard>
     </template>
@@ -370,10 +256,7 @@ onMounted(async () => {
     <!-- Empty -->
     <template v-else>
       <div class="flex flex-col items-center justify-center py-14">
-        <UIcon
-          name="i-lucide-calendar-range"
-          class="mb-3 size-10 text-gray-400"
-        />
+        <UIcon name="i-lucide-calendar-range" class="mb-3 size-10 text-gray-400" />
 
         <p class="text-sm text-gray-500">
           No academic years found

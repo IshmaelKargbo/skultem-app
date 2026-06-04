@@ -76,7 +76,7 @@ onMounted(async () => {
     <UCard
       class="hidden md:block"
       :ui="{
-        body: 'p-0'
+        body: 'md:p-0'
       }"
     >
       <UTable
