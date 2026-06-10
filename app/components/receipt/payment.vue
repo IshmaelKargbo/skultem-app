@@ -128,7 +128,7 @@ function formatDate(value?: string) {
     z-index: -1;
     width: 794px;
     min-height: 1123px;
-    padding: 60px;
+    padding: 30px;
     box-sizing: border-box;
     background: #ffffff;
     color: #111827;

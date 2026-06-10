@@ -1,9 +1,6 @@
 <template>
     <u-slideover :dismissible="false" title="Add Teacher" :open="open" @update:open="open = $event">
-        <!-- Trigger button -->
         <UButton color="primary" label="Add Teacher" icon="prime:plus" @click="open = true" />
-
-        <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Teacher</p>
@@ -210,10 +207,16 @@ watch(open, async (val) => {
     if (val) {
         const res = await classStore.fetchAllUnassign(0, 0)
         if (res == null) return
-        classes.value = res.map((c: ClassSession) => ({
-            label: c.clazz,
-            value: c.id
-        }))
+        classes.value = res.map((c: ClassSession) => {
+            let name = c.clazz;
+
+            if (c.streamName) name = `${name} (${c.streamName})`;
+
+            return {
+                label: name,
+                value: c.id
+            }
+        })
     }
 })
 </script>

@@ -131,7 +131,7 @@ async function fetchRecords() {
 
     const resultStreams = await store.findAllStreams(state.classId)
     streams.value = resultStreams?.map((s: ClassStream) => ({
-      label: s.stream.name,
+      label: `${s.stream.name} `,
       value: s.stream.id
     })) || []
   } catch (err) {
@@ -184,7 +184,7 @@ watch(open, async (val) => {
       label: c.clazz,
       value: c.clazzId
     }))
-    await teacherStore.fetchAll()
+    await teacherStore.fetchAll(0, 0)
   }
 })
 

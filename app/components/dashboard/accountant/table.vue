@@ -60,8 +60,7 @@ defineExpose({
       <template #student-cell="{ row }">
         <div class="flex space-x-3 items-center">
           <div>
-            <UAvatar :src="row.original.student.photo"
-              :alt="row.original.student" />
+            <UAvatar :src="row.original.student.photo" :alt="row.original.student" />
           </div>
           <div class="space-y-0.5">
             <p>{{ row.original.student }}</p>
@@ -89,4 +88,5 @@ defineExpose({
       </div>
     </template>
   </UCard>
+  <!-- <ReceiptPayment v-if="receipt" id="payment-receipt" :receipt="receipt" /> -->
 </template>

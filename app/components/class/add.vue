@@ -2,8 +2,6 @@
     <USlideover :dismissible="false" :open="open" @update:open="open = $event">
         <!-- Trigger -->
         <UButton color="primary" class="flex justify-center" label="Add Class" :icon="ADD_ICON" @click="open = true" />
-
-        <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">Add Class</p>

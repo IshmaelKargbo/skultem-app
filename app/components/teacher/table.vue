@@ -5,7 +5,6 @@ const store = useTeacherStore()
 const { records: data, meta, loading } = storeToRefs(store)
 
 const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const parseStaus: Record<string, string> = {
