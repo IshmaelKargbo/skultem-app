@@ -76,7 +76,7 @@ onMounted(async () => {
     <UCard
       class="hidden md:block"
       :ui="{
-        body: 'p-0'
+        body: 'md:p-0'
       }"
     >
       <UTable
@@ -231,138 +231,102 @@ onMounted(async () => {
         </UButton>
       </div>
 
-      <!-- Cards -->
-      <div
-        v-else
-        class="space-y-4"
-      >
-        <div
-          v-for="item in data"
-          :key="item.id"
-          class="overflow-hidden rounded-[30px] border border-gray-200 bg-white shadow-sm transition-all duration-200 active:scale-[0.99] dark:border-neutral-800 dark:bg-neutral-900"
-        >
+    <!-- Cards -->
+<div
+  v-else
+  class="space-y-3"
+>
+  <UCard
+    v-for="item in data"
+    :key="item.id"
+    class="rounded-2xl border border-default shadow-sm"
+    :ui="{ body: 'p-4' }"
+  >
+    <div class="space-y-4">
 
-          <div class="p-4">
-            <!-- Header -->
-            <div class="flex gap-3">
-              <!-- Icon -->
-              <div
-                class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10"
-              >
-                <UIcon
-                  name="lucide:package"
-                  class="text-xl text-primary-500"
-                />
-              </div>
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-3">
 
-              <!-- Content -->
-              <div class="min-w-0 flex-1">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <h3
-                      class="truncate text-sm font-semibold text-gray-900 dark:text-white"
-                    >
-                      {{ item.name }}
-                    </h3>
+        <div class="flex gap-3 min-w-0 flex-1">
 
-                    <p class="mt-1 text-xs text-gray-400">
-                      {{ item.category.name }}
-                    </p>
-                  </div>
-
-                  <UBadge
-                    :color="item.inStock > 0 ? 'success' : 'error'"
-                    variant="soft"
-                    size="sm"
-                  >
-                    {{ item.inStock > 0 ? 'In Stock' : 'Out' }}
-                  </UBadge>
-                </div>
-
-                <!-- Description -->
-                <div
-                  class="mt-4 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-                >
-                  <div class="flex items-center justify-between gap-3">
-                    <div>
-                      <p class="text-xs text-gray-500">
-                        Unit Type
-                      </p>
-
-                      <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
-                        {{ unitLabelMap[item.unit] }}
-                      </p>
-                    </div>
-
-                    <div
-                      class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10"
-                    >
-                      <UIcon
-                        name="lucide:boxes"
-                        class="text-primary-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Stats -->
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                  <div
-                    class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-                  >
-                    <p class="text-[11px] text-gray-500">
-                      Available Stock
-                    </p>
-
-                    <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ item.inStock }}
-                    </p>
-                  </div>
-
-                  <div
-                    class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-                  >
-                    <p class="text-[11px] text-gray-500">
-                      Last Restocked
-                    </p>
-
-                    <p class="mt-1 text-xs font-medium leading-5 text-gray-900 dark:text-white">
-                      {{ formatDateTime(item.lastRestockedAt) }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="mt-5 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span
-                      class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-gray-300"
-                    >
-                      Inventory
-                    </span>
-
-                    <span
-                      class="rounded-full bg-primary-50 px-3 py-1 text-[11px] font-medium text-primary-600 dark:bg-primary-500/10"
-                    >
-                      Material
-                    </span>
-                  </div>
-
-                  <UButton
-                    size="xs"
-                    color="primary"
-                    variant="soft"
-                    icon="i-lucide-pencil"
-                    class="rounded-full"
-                  >
-                    Edit
-                  </UButton>
-                </div>
-              </div>
-            </div>
+          <div
+            class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10"
+          >
+            <UIcon
+              name="i-lucide-package"
+              class="size-5 text-primary"
+            />
           </div>
+
+          <div class="min-w-0 flex-1">
+            <h3 class="truncate text-sm font-semibold text-highlighted">
+              {{ item.name }}
+            </h3>
+
+            <p class="mt-1 text-xs text-muted">
+              {{ item.category.name }}
+            </p>
+          </div>
+
         </div>
+
+        <UBadge
+          :color="item.inStock > 0 ? 'success' : 'error'"
+          variant="soft"
+        >
+          {{ item.inStock > 0 ? 'Available' : 'Out of stock' }}
+        </UBadge>
+
       </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 gap-3">
+
+        <div class="rounded-xl bg-muted p-3">
+          <p class="text-[11px] text-muted">
+            Stock
+          </p>
+
+          <p class="mt-2 text-lg font-semibold text-highlighted">
+            {{ item.inStock }}
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-muted p-3">
+          <p class="text-[11px] text-muted">
+            Unit
+          </p>
+
+          <p class="mt-2 text-sm font-medium text-highlighted">
+            {{ unitLabelMap[item.unit] }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Restocked -->
+      <div
+        class="flex items-center justify-between border-t border-default pt-3"
+      >
+        <div>
+          <p class="text-[11px] text-muted">
+            Last Restocked
+          </p>
+
+          <p class="mt-1 text-sm text-highlighted">
+            {{ formatDateTime(item.lastRestockedAt) }}
+          </p>
+        </div>
+
+        <UIcon
+          name="i-lucide-clock-3"
+          class="size-5 text-muted"
+        />
+      </div>
+
+    </div>
+  </UCard>
+</div>
     </div>
   </div>
 </template>

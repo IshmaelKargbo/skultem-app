@@ -2,7 +2,7 @@
     <div class="px-4 pt-4">
         <UCard
             :ui="{
-                body: 'sm:px-5 sm:py-2',
+                body: 'sm:px-5 sm:py-0.5 md:py-2',
                 base: isDark ? 'bg-gray-900 ring-gray-800' : 'bg-white ring-gray-200'
             }"
         >

@@ -5,6 +5,9 @@
     </Heading>
     <UCard>
       <div class="space-y-2">
+        <div v-if="isLoading" class="grid gap-3 grid-cols-3">
+          <USkeleton class="h-10 w-full rounded-2xl" v-for="i in 15" :key="i" />
+        </div>
         <div v-for="(band, index) in gradingBands" :key="`band-${index}`" class="flex space-x-2">
           <div class="grid grid-cols-3 gap-2 flex-1">
             <UInput type="number" v-model.number="band.maxScore" placeholder="Max" />
@@ -28,7 +31,7 @@ const appStore = useAppStore()
 const assessmentStore = useAssessmentStore()
 const { error: toastError, success: toastSuccess } = useNotify()
 
-const isRefreshing = ref(false)
+const isLoading = ref(false)
 const isSavingGradingScale = ref(false)
 
 const gradingBands = ref<GradeBand[]>([])
@@ -74,11 +77,11 @@ async function saveGradingScale() {
 }
 
 async function refreshAll() {
-  isRefreshing.value = true
+  isLoading.value = true
   try {
     await loadGradingScale()
   } finally {
-    isRefreshing.value = false
+    isLoading.value = false
   }
 }
 

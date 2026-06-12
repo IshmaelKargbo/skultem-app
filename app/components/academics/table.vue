@@ -1,31 +1,31 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
-const store = useTermStore()
+const store = useAcademicYearStore()
 const loading = ref(true)
 const { records: data, meta } = storeToRefs(store)
 
-const editRcord = ref<Term | null>(null)
+const editRcord = ref<AcademicYear | null>(null)
 const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 const parseStaus: Record<string, string> = {
-  UPCOMING: 'Upcoming',
-  ACTIVE: 'Active',
-  CLOSED: 'Closed',
+  OPENED: 'Opened',
+  LOCKED: 'Closed',
+  DELETED: 'Deleted'
 }
 
 const parseStatusColor: Record<string, string> = {
-  UPCOMING: 'warning',
-  ACTIVE: 'success',
-  CLOSED: 'danger'
+  OPENED: 'success',
+  LOCKED: 'warning',
+  DELETED: 'danger'
 }
 
 const parseStatusIcon: Record<string, string> = {
-  UPCOMING: 'i-lucide-clock',
-  ACTIVE: 'i-lucide-check-circle',
-  CLOSED: 'i-lucide-lock'
+  OPENED: 'i-lucide-lock-open',
+  LOCKED: 'i-lucide-lock',
+  DELETED: 'i-lucide-x'
 }
 
 const columns = [
@@ -42,6 +42,10 @@ const columns = [
     accessorKey: 'endDate',
     header: 'End Date',
     cell: ({ row }: any) => formatDate(row.original.endDate)
+  },
+  {
+    accessorKey: 'active',
+    header: 'Active',
   },
   {
     accessorKey: 'status',
@@ -90,15 +94,15 @@ onMounted(async () => {
 <template>
   <!-- Desktop -->
   <UCard class="hidden md:block" :ui="{
-    body: 'p-0 sm:p-0'
+    body: 'sm:p-0'
   }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="i-lucide-calendar-range" class="mb-3 size-10 text-gray-400" />
 
-          <p class="text-gray-500">
-            No terms found.
+          <p class="text-sm text-gray-500">
+            No academic years found
           </p>
         </div>
       </template>
@@ -107,14 +111,14 @@ onMounted(async () => {
         <TableLoading :size="columns.length" />
       </template>
 
-      <template #academicYearId-cell="{ row }">
-        <p>{{ row.original.academicYear.name }}</p>
+      <template #active-cell="{ row }">
+        <UBadge :label="row.original.active ? 'Active' : 'Inactive'"
+          :color="row.original.active ? 'success' : 'neutral'" variant="soft" />
       </template>
 
       <template #status-cell="{ row }">
-        <UBadge variant="subtle" :color="parseStatusColor[row.original.status]">
+        <UBadge variant="soft" :color="parseStatusColor[row.original.status]">
           <UIcon :name="parseStatusIcon[row.original.status]" class="mr-1" />
-
           {{ parseStaus[row.original.status] }}
         </UBadge>
       </template>
@@ -136,102 +140,119 @@ onMounted(async () => {
     <template v-if="loading">
       <UCard v-for="i in 4" :key="i" class="overflow-hidden">
         <div class="space-y-4 p-4">
-          <div class="flex items-center justify-between">
-            <div class="space-y-2">
-              <USkeleton class="h-4 w-32" />
-              <USkeleton class="h-3 w-24" />
-            </div>
+          <div class="flex items-center gap-3">
+            <USkeleton class="size-12 rounded-2xl" />
 
-            <USkeleton class="h-6 w-20 rounded-full" />
+            <div class="space-y-2">
+              <USkeleton class="h-3 w-32" />
+              <USkeleton class="h-2 w-24" />
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <USkeleton class="h-16 rounded-2xl" />
             <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-16 rounded-2xl" />
           </div>
-
-          <USkeleton class="h-12 rounded-2xl" />
         </div>
       </UCard>
     </template>
 
-    <!-- Data -->
+
+    <!-- Cards -->
     <template v-else-if="data?.length">
-      <UCard v-for="item in data" :key="item.id"
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all dark:border-gray-800 dark:bg-neutral-900"
-        :ui="{
-          body: 'p-0'
-        }">
-        <!-- Header -->
-        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+      <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl shadow-sm" :ui="{ body: 'p-0' }">
+        <div class="space-y-4 p-4">
+
+          <!-- Header -->
           <div class="flex items-start justify-between gap-3">
-            <div class="flex min-w-0 items-center gap-3">
+
+            <div class="flex items-center gap-3 min-w-0">
+
               <div
-                class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
-                <UIcon name="i-lucide-calendar-days" class="size-6" />
+                class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+                <UIcon name="i-lucide-calendar-range" class="size-5 text-primary" />
               </div>
 
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                <h3 class="truncate text-sm font-semibold text-highlighted">
                   {{ item.name }}
                 </h3>
 
-                <p class="truncate text-xs text-gray-500">
-                  {{ item.academicYear?.name }}
+                <p class="mt-1 text-xs text-muted">
+                  Academic Year
                 </p>
               </div>
+
             </div>
           </div>
-        </div>
 
-        <!-- Content -->
-        <div class="grid grid-cols-2 gap-3 p-4">
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-              Start Date
-            </p>
+          <!-- Date Range -->
+          <div class="rounded-2xl bg-muted p-4">
 
-            <p class="text-sm font-medium">
-              {{ formatDate(item.startDate) }}
-            </p>
+            <div class="flex items-start gap-3">
+
+              <div class="mt-1 flex flex-col items-center">
+                <div class="size-2 rounded-full bg-primary" />
+                <div class="h-8 w-px bg-default" />
+                <div class="size-2 rounded-full bg-primary" />
+              </div>
+
+              <div class="flex-1 space-y-4">
+
+                <div>
+                  <p class="text-[11px] text-muted">
+                    Start Date
+                  </p>
+
+                  <p class="text-sm font-medium text-highlighted">
+                    {{ formatDate(item.startDate) }}
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-[11px] text-muted">
+                    End Date
+                  </p>
+
+                  <p class="text-sm font-medium text-highlighted">
+                    {{ formatDate(item.endDate) }}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-              End Date
-            </p>
+          <!-- Status -->
+          <div class="grid grid-cols-2 gap-3">
 
-            <p class="text-sm font-medium">
-              {{ formatDate(item.endDate) }}
-            </p>
+            <div class="rounded-2xl border border-default p-3">
+              <p class="mb-2 text-[11px] text-muted">
+                Active
+              </p>
+
+              <UBadge :label="item.active ? 'Active' : 'Inactive'" :color="item.active ? 'success' : 'neutral'"
+                variant="soft" />
+            </div>
+
+            <div class="rounded-2xl border border-default p-3">
+              <p class="mb-2 text-[11px] text-muted">
+                Status
+              </p>
+
+              <UBadge :color="parseStatusColor[item.status]" variant="soft">
+                <UIcon :name="parseStatusIcon[item.status]" class="mr-1" />
+
+                {{ parseStaus[item.status] }}
+              </UBadge>
+            </div>
+
           </div>
 
-          <div class="col-span-2 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="mb-2 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-              Status
-            </p>
-
-            <UBadge variant="soft" :color="parseStatusColor[item.status]">
-              <UIcon :name="parseStatusIcon[item.status]" class="mr-1" />
-
-              {{ parseStaus[item.status] }}
-            </UBadge>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
-          <div class="min-w-0">
-            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-              Academic Year
-            </p>
-
-            <p class="truncate text-xs text-gray-500">
-              {{ item.academicYear?.name || 'N/A' }}
-            </p>
-          </div>
-
-          <UButton icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
         </div>
       </UCard>
     </template>
@@ -249,7 +270,7 @@ onMounted(async () => {
       </UCard>
     </template>
 
-    <!-- Pagination -->
+  <!-- Pagination -->
       <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
         <Showing :meta="meta" />
 

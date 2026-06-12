@@ -182,7 +182,7 @@ onMounted(() => {
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
                 <div class="flex items-start gap-3">
-                  <UAvatar :alt="parent.name" size="sm" />
+                  <UAvatar :alt="parent.name" size="lg" />
 
                   <div class="min-w-0">
                     <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
@@ -191,10 +191,6 @@ onMounted(() => {
                     <p class="truncate text-xs text-gray-500 dark:text-gray-400">
                       {{ parent.email }}
                     </p>
-                    <div class="mt-2 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                      <UIcon name="i-lucide-phone" class="size-3.5" />
-                      <span class="truncate">{{ parent.phone }}</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -253,8 +249,8 @@ onMounted(() => {
         </div>
       </template>
 
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <div class="space-y-3">
+
+        <div class="space-y-3 flex flex-col justify-center items-center mt-2">
           <Showing :meta="meta" />
           <UPagination
             v-model:page="page"
@@ -266,7 +262,6 @@ onMounted(() => {
             class="justify-center"
           />
         </div>
-      </UCard>
     </div>
   </div>
 </template>

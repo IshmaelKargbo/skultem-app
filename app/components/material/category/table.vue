@@ -59,7 +59,7 @@ onMounted(async () => {
     <UCard
       class="hidden md:block"
       :ui="{
-        body: 'p-0'
+        body: 'sm:p-0'
       }"
     >
       <UTable
@@ -263,22 +263,13 @@ onMounted(async () => {
                       Category
                     </span>
                   </div>
-
-                  <!-- <UButton
-                    size="xs"
-                    color="primary"
-                    variant="soft"
-                    icon="i-lucide-pencil"
-                    class="rounded-full"
-                  >
-                    Edit
-                  </UButton> -->
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
     </div>
   </div>
 </template>

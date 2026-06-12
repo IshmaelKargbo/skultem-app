@@ -238,95 +238,123 @@ onMounted(async () => {
     </div>
 
     <!-- Cards -->
-    <div v-else class="space-y-4">
-      <div v-for="item in data" :key="item.id"
-        class="overflow-hidden rounded-[30px] border border-gray-200 bg-white shadow-sm transition-all duration-200 active:scale-[0.99] dark:border-neutral-800 dark:bg-neutral-900">
-        <div class="p-4">
-          <div class="flex gap-3">
-            <!-- Icon -->
-            <div
-              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-              <UIcon name="lucide:badge-percent" class="text-xl text-primary-500" />
+    <!-- Cards -->
+    <div v-else class="space-y-3">
+      <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl" :ui="{ body: 'p-0' }">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+              <UIcon name="lucide:badge-percent" class="text-primary text-lg" />
             </div>
 
-            <!-- Content -->
-            <div class="min-w-0 flex-1">
-              <!-- Header -->
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                    {{ item.name }}
-                  </h3>
+            <div class="min-w-0">
+              <h3 class="truncate text-sm font-semibold">
+                {{ item.name }}
+              </h3>
 
-                  <p class="mt-1 text-xs text-gray-400">
-                    {{ item.student }}
-                  </p>
-                </div>
-
-                <UBadge color="success" variant="soft" size="sm">
-                  Applied
-                </UBadge>
-              </div>
-
-              <!-- Reason -->
-              <div class="mt-4 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60">
-                <p class="line-clamp-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                  {{
-                    item.reason ||
-                    'No reason available for this discount.'
-                  }}
-                </p>
-              </div>
-
-              <!-- Stats -->
-              <div class="mt-4 grid grid-cols-2 gap-3">
-                <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60">
-                  <p class="text-[11px] text-gray-500">
-                    Discount Type
-                  </p>
-
-                  <div class="mt-2">
-                    <UBadge color="neutral" variant="soft">
-                      {{ parseKind[item.type] }}
-                    </UBadge>
-                  </div>
-                </div>
-
-                <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60">
-                  <p class="text-[11px] text-gray-500">
-                    Discount Value
-                  </p>
-
-                  <p class="mt-1 text-lg font-semibold text-primary-600">
-                    {{
-                      item.type === 'PERCENTAGE'
-                        ? `${item.value}%`
-                        : format(item.value)
-                    }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Bottom -->
-              <div class="mt-4 flex items-center justify-between">
-                <div>
-                  <p class="text-[11px] text-gray-500">
-                    Total Saved
-                  </p>
-
-                  <p class="mt-1 text-sm font-semibold text-emerald-600">
-                    {{ item.totalSaved }}
-                  </p>
-                </div>
-
-                <span
-                  class="rounded-full bg-primary-50 px-3 py-1 text-[11px] font-medium text-primary-600 dark:bg-primary-500/10">
-                  {{ item.clazz }}
-                </span>
-              </div>
+              <p class="text-xs text-gray-500">
+                {{ item.student }}
+              </p>
             </div>
           </div>
+
+          <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" />
+          </UDropdownMenu>
         </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-2 px-4 pb-4">
+          <!-- Type -->
+          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <p class="text-[10px] uppercase text-gray-500">
+              Type
+            </p>
+
+            <p class="mt-1 text-xs font-medium">
+              {{ parseKind[item.type] }}
+            </p>
+          </div>
+
+          <!-- Value -->
+          <div class="rounded-2xl bg-primary-50 p-3 dark:bg-primary-500/10">
+            <p class="text-[10px] uppercase text-gray-500">
+              Value
+            </p>
+
+            <p class="mt-1 text-sm font-bold text-primary">
+              {{
+                item.type === 'PERCENTAGE'
+                  ? `${item.value}%`
+                  : format(item.value)
+              }}
+            </p>
+          </div>
+
+          <!-- Saved -->
+          <div class="rounded-2xl bg-emerald-50 p-3 dark:bg-emerald-500/10">
+            <p class="text-[10px] uppercase text-gray-500">
+              Saved
+            </p>
+
+            <p class="mt-1 text-sm font-bold text-emerald-600">
+              {{ (item.totalSaved) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Information -->
+        <div
+          class="mx-4 my-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-500">
+              Class
+            </span>
+
+            <span class="font-medium text-sm">
+              {{ item.clazz }}
+            </span>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-xs text-gray-500">
+              Status
+            </span>
+
+            <UBadge color="success" variant="soft" size="xs">
+              Applied
+            </UBadge>
+          </div>
+
+          <div v-if="item.expires" class="mt-3 flex items-center justify-between">
+            <span class="text-xs text-gray-500">
+              Expiry
+            </span>
+
+            <span class="text-sm font-medium">
+              {{ formatDate(item.expires) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div v-if="item.reason" class="border-t border-gray-100 px-4 py-3 dark:border-neutral-800">
+          <p class="text-[11px] uppercase text-gray-500 mb-1">
+            Reason
+          </p>
+
+          <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+            {{ item.reason }}
+          </p>
+        </div>
+      </UCard>
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+        <Showing :meta="meta" />
+
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </div>
   </div>

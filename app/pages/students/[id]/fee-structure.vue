@@ -82,7 +82,7 @@
                     </div>
 
                     <div class="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <div>
+                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Amount
                             </p>
@@ -92,7 +92,7 @@
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Paid
                             </p>
@@ -102,7 +102,7 @@
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Balance
                             </p>
@@ -112,7 +112,7 @@
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Term
                             </p>

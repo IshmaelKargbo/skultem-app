@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
-
 const route = useRoute()
 const router = useRouter()
 const store = useClassSubjectStore()
 const { records: data, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-
-const editRcord = ref<ClassSubject | null>(null)
-const editState = ref(false)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -28,64 +23,8 @@ const columns = [
   {
     accessorKey: 'groupName',
     header: 'Group'
-  },
-  {
-    id: 'actions',
-    meta: {
-      class: {
-        td: 'text-right'
-      }
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: 'end'
-          },
-          size: 'sm',
-          items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
-        },
-        () =>
-          h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
-          })
-      )
-    }
   }
 ]
-
-function getRowItems(row: Row<ClassSubject>) {
-  if (row.original.locked) {
-    return [
-      {
-        label: 'Locked',
-        icon: 'i-lucide-lock',
-        disabled: true
-      }
-    ]
-  }
-
-  return [
-    {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      }
-    },
-    {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
-}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -125,8 +64,7 @@ watch(() => page.value, () => {
   })
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 
@@ -137,8 +75,7 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
@@ -149,23 +86,13 @@ onMounted(async () => {
 <template>
   <div>
     <!-- Desktop -->
-    <UCard
-      class="hidden md:block"
-      :ui="{
-        body: 'sm:p-0'
-      }"
-    >
-      <UTable
-        :columns="columns"
-        :data="data"
-        :loading="loading"
-      >
+    <UCard class="hidden md:block" :ui="{
+      body: 'sm:p-0'
+    }">
+      <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon
-              name="ph:books-light"
-              class="text-4xl text-gray-400"
-            />
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
 
             <p class="text-gray-500">
               No class subject found.
@@ -175,18 +102,10 @@ onMounted(async () => {
 
         <template #mandatory-cell="{ row }">
           <div class="flex items-center gap-2">
-            <UBadge
-              variant="soft"
-              :color="row.original.mandatory ? 'success' : 'info'"
-              :label="row.original.mandatory ? 'Core' : 'Optional'"
-            />
+            <UBadge variant="soft" :color="row.original.mandatory ? 'success' : 'info'"
+              :label="row.original.mandatory ? 'Core' : 'Optional'" />
 
-            <UBadge
-              v-if="row.original.locked"
-              variant="soft"
-              color="error"
-              label="Locked"
-            />
+            <UBadge v-if="row.original.locked" variant="soft" color="error" label="Locked" />
           </div>
         </template>
 
@@ -199,203 +118,119 @@ onMounted(async () => {
         <div class="flex items-center justify-between">
           <Showing :meta="meta" />
 
-          <UPagination
-            v-model:page="page"
-            size="sm"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </template>
     </UCard>
-
+    
     <!-- Mobile -->
-    <div class="space-y-4 md:hidden">
-      <!-- Loading -->
+    <div class="space-y-3 md:hidden">
       <template v-if="loading">
-        <UCard
-          v-for="i in 4"
-          :key="i"
-          class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm"
-        >
+        <UCard v-for="i in 4" :key="i" class="rounded-2xl border border-default">
           <div class="space-y-4 p-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <USkeleton class="size-12 rounded-2xl" />
-
-                <div class="space-y-2">
-                  <USkeleton class="h-3 w-28" />
-                  <USkeleton class="h-2 w-20" />
-                </div>
-              </div>
-
-              <USkeleton class="size-8 rounded-xl" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <USkeleton class="h-16 rounded-2xl" />
-              <USkeleton class="h-16 rounded-2xl" />
-              <USkeleton class="h-16 rounded-2xl" />
-              <USkeleton class="h-16 rounded-2xl" />
-            </div>
+            <USkeleton class="h-4 w-32" />
+            <USkeleton class="h-3 w-20" />
+            <USkeleton class="h-20 rounded-2xl" />
           </div>
         </UCard>
       </template>
 
-      <!-- Data -->
       <template v-else-if="data?.length">
-        <UCard
-          v-for="item in data"
-          :key="item.id"
-          class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm transition-all active:scale-[0.99]"
-          :ui="{
-            body: 'p-0'
-          }"
-        >
-          <!-- Header -->
-          <div class="border-b border-default p-4">
+        <UCard v-for="item in data" :key="item.id" class="rounded-2xl border border-default shadow-sm"
+          :ui="{ body: 'p-4' }">
+          <div class="space-y-4">
+
+            <!-- Header -->
             <div class="flex items-start justify-between gap-3">
-              <div class="flex min-w-0 items-center gap-3">
-                <div
-                  class="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"
-                >
-                  <UIcon
-                    name="i-lucide-book-open"
-                    class="size-6"
-                  />
+              <div class="flex gap-3 min-w-0">
+
+                <div class="flex size-11 items-center justify-center rounded-xl bg-primary/10">
+                  <UIcon name="i-lucide-book-open" class="size-5 text-primary" />
                 </div>
 
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-highlighted">
+                  <h3 class="truncate text-sm font-semibold text-highlighted">
                     {{ item.subjectName }}
-                  </p>
+                  </h3>
 
-                  <p class="truncate text-xs text-muted">
+                  <p class="mt-1 text-xs text-muted">
                     {{ item.className }}
                   </p>
                 </div>
               </div>
-
-              <UDropdownMenu
-                :items="getRowItems({ original: item } as any)"
-                :content="{ align: 'end' }"
-              >
-                <UButton
-                  icon="i-lucide-ellipsis-vertical"
-                  color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-xl"
-                />
-              </UDropdownMenu>
-            </div>
-          </div>
-
-          <!-- Body -->
-          <div class="grid grid-cols-2 gap-3 p-4">
-            <div class="rounded-2xl bg-muted p-3">
-              <p class="mb-1 text-[10px] uppercase tracking-wide text-muted">
-                Subject Type
-              </p>
-
-              <UBadge
-                variant="soft"
-                size="sm"
-                :color="item.mandatory ? 'success' : 'info'"
-                :label="item.mandatory ? 'Core' : 'Optional'"
-              />
             </div>
 
-            <div class="rounded-2xl bg-muted p-3">
-              <p class="mb-1 text-[10px] uppercase tracking-wide text-muted">
-                Group
-              </p>
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3">
 
-              <p class="truncate text-sm font-medium text-highlighted">
-                {{ item.groupName || 'N/A' }}
-              </p>
-            </div>
-
-            <div class="rounded-2xl bg-muted p-3 col-span-2">
-              <div class="flex items-center justify-between gap-2">
-                <div>
-                  <p class="mb-1 text-[10px] uppercase tracking-wide text-muted">
-                    Status
-                  </p>
-
-                  <div class="flex items-center gap-2">
-                    <UBadge
-                      variant="soft"
-                      :color="item.locked ? 'error' : 'success'"
-                      :label="item.locked ? 'Locked' : 'Active'"
-                    />
-
-                    <UBadge
-                      v-if="item.mandatory"
-                      variant="outline"
-                      color="success"
-                      label="Required"
-                    />
-                  </div>
-                </div>
-
-                <UIcon
-                  :name="item.locked ? 'i-lucide-lock' : 'i-lucide-lock-open'"
-                  :class="[
-                    'size-5',
-                    item.locked ? 'text-error' : 'text-success'
-                  ]"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="border-t border-default px-4 py-3">
-            <div class="flex items-center justify-between">
-              <div class="min-w-0">
-                <p class="text-xs text-muted">
-                  Assigned Class
+              <div class="rounded-xl bg-muted p-3">
+                <p class="text-[11px] text-muted">
+                  Type
                 </p>
 
-                <p class="truncate text-sm font-medium text-highlighted">
-                  {{ item.className }}
+                <UBadge class="mt-2" variant="soft" size="sm" :color="item.mandatory ? 'success' : 'info'"
+                  :label="item.mandatory ? 'Core' : 'Optional'" />
+              </div>
+
+              <div class="rounded-xl bg-muted p-3">
+                <p class="text-[11px] text-muted">
+                  Group
+                </p>
+
+                <p class="mt-2 text-sm font-medium text-highlighted truncate">
+                  {{ item.groupName || 'N/A' }}
                 </p>
               </div>
 
-              <UButton
-                icon="i-lucide-chevron-right"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                class="rounded-xl"
-              />
             </div>
+
+            <!-- Status Row -->
+            <div class="flex items-center justify-between rounded-xl border border-default px-3 py-2">
+              <div class="flex items-center gap-2">
+
+                <div class="size-2 rounded-full" :class="item.locked ? 'bg-error' : 'bg-success'" />
+
+                <span class="text-sm">
+                  {{ item.locked ? 'Locked' : 'Active' }}
+                </span>
+
+              </div>
+
+              <UBadge v-if="item.mandatory" variant="outline" color="success" label="Required" />
+            </div>
+
           </div>
         </UCard>
       </template>
 
       <!-- Empty -->
       <template v-else>
-        <div class="flex flex-col items-center justify-center py-14">
-          <UIcon
-            name="ph:books-light"
-            class="mb-3 text-4xl text-gray-400"
-          />
+        <UCard class="rounded-2xl">
+          <div class="flex flex-col items-center py-14">
+            <UIcon name="ph:books-light" class="mb-3 text-5xl text-gray-300" />
 
-          <p class="text-sm text-gray-500">
-            No class subject found.
-          </p>
-        </div>
+            <h3 class="text-sm font-medium">
+              No subjects found
+            </h3>
+
+            <p class="mt-1 text-xs text-gray-500">
+              It seems you haven't added any subjects yet.
+            </p>
+          </div>
+        </UCard>
       </template>
 
       <!-- Pagination -->
-       <div class="flex  justify-between items-center mt-3 md:hidden">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+      <div v-if="!loading && data?.length && meta.total > meta.size" class="space-y-3 pt-2">
+        <div class="flex justify-center">
+          <Showing :meta="meta" />
+        </div>
+
+        <div class="flex justify-center">
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
+        </div>
       </div>
     </div>
   </div>

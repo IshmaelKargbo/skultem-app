@@ -10,7 +10,7 @@
 <script setup lang="ts">
 onMounted(() => {
     useAppStore().setTitle('Settings')
-    document.title = 'Assessment Templates | Settings | Skultem'
+    document.title = 'Assessment Templates | Academics | Skultem'
 })
 
 definePageMeta({

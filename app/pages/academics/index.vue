@@ -3,7 +3,7 @@
         <Heading title="Academic Year" subtitle="Configured academic sessions">
             <AcademicsAdd />
         </Heading>
-        <SettingsTable />
+        <AcademicsTable />
     </div>
 </template>
 

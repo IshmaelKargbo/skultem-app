@@ -595,27 +595,23 @@ watch(
 
     <!-- Empty -->
     <template v-else>
-      <div class="flex flex-col items-center justify-center py-14">
-        <UIcon
-          name="ph:books-light"
-          class="mb-3 text-4xl text-slate-400"
-        />
+    <UCard class="overflow-hidden">
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="i-lucide-clipboard-list" class="mb-3 size-10 text-gray-400" />
 
-        <p class="font-medium text-slate-600">
-          No assessment template found.
-        </p>
-
-        <p class="text-xs text-slate-500">
-          Create a template to start defining assessments.
-        </p>
-      </div>
+          <p class="text-sm text-gray-500">
+            No assessment templates found
+          </p>
+        </div>
+      </UCard>
     </template>
 
-    <!-- Pagination -->
-       <div class="flex justify-between items-center mt-3 md:hidden">
-      <Showing :meta="meta" />
-      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-        show-edges />
-    </div>
+     <!-- Pagination -->
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+        <Showing :meta="meta" />
+
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
   </div>
 </template>

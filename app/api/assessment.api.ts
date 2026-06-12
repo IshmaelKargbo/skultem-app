@@ -29,26 +29,32 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllAssessmentApprovalRequest: async (teacherId: string) => {
+    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number) => {
       try {
-        const res = await $api(`/assessment/approval/${teacherId}`) as any
+        const res = await $api(`/assessment/approval/${teacherId}?page=${page}&size=${size}`) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment approval requests')
 
-        return res.data
+        const data = res.data
+        const meta = useMeta(res.meta)
+
+        return { data, meta }
       } catch (err: any) {
         useHandleError(err)
       }
     },
-    getAllMeAssessmentApprovalRequest: async () => {
+    getAllMeAssessmentApprovalRequest: async (page: number, size: number) => {
       try {
-        const res = await $api('/assessment/approval/me') as any
+        const res = await $api(`/assessment/approval/me?page=${page}&size=${size}`) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment approval requests')
 
-        return res.data
+        const data = res.data
+        const meta = useMeta(res.meta)
+        return { data, meta }
+
       } catch (err: any) {
         useHandleError(err)
       }
@@ -59,7 +65,7 @@ export const AssessmentApi = () => {
 
         if (!res)
           throw new Error('Failed to fetch template assessments')
-  
+
         return res.data
       } catch (err: any) {
         useHandleError(err)
@@ -71,7 +77,7 @@ export const AssessmentApi = () => {
 
         if (!res)
           throw new Error('Failed to fetch assessments list')
-  
+
         return res.data
       } catch (err: any) {
         useHandleError(err)
@@ -80,13 +86,13 @@ export const AssessmentApi = () => {
     getClassAssessments: async (id: string) => {
       if (!id)
         return []
-      
+
       try {
         const res = await $api(`/assessment/list/${id}`) as any
 
         if (!res)
           throw new Error('Failed to fetch class assessments list')
-  
+
         return res.data
       } catch (err: any) {
         useHandleError(err)

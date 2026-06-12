@@ -72,14 +72,14 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchAllAssessmentApprovalRequest(teacherId: string) {
+    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number) {
       if (!teacherId)
         return []
 
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId) as any
+        const response = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size) as any
         return response || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch approval requests'
@@ -87,11 +87,11 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchAllMeAssessmentApprovalRequest() {
+    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12) {
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest() as any
+        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size) as any
         return response || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch approval requests'

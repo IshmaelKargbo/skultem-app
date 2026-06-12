@@ -40,25 +40,25 @@
 
                         <!-- Info List -->
                         <div class="w-full mt-2 space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm text-muted">Admission No</p>
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                                <p class="text-sm text-muted">Admission</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ record?.admissionNumber }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Gender</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ clean(record?.gender || '') }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Nationality</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ clean(record?.nationality || '') }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Religion</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ clean(record?.religion || '') }}</p>

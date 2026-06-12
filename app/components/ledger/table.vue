@@ -177,48 +177,186 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
-
     <div class="space-y-3 md:hidden">
-      <UCard v-for="item in data" :key="`${item.date}-${item.student}-${item.type}`" :ui="{ body: 'p-4' }">
-        <div class="space-y-2">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <p class="text-sm font-semibold truncate">{{ item.student || 'No student' }}</p>
-              <p class="text-xs text-muted truncate">{{ item.clazz || 'No class' }} · {{ item.date || 'No date' }}</p>
+
+      <!-- Empty -->
+      <div v-if="!loading && !data?.length" class="flex flex-col items-center justify-center py-16">
+        <div class="flex size-20 items-center justify-center rounded-3xl bg-muted">
+          <UIcon name="ph:books-light" class="text-4xl text-muted" />
+        </div>
+
+        <p class="mt-4 text-sm text-muted">
+          No ledger records found
+        </p>
+      </div>
+
+      <!-- Transactions -->
+      <template v-else>
+
+        <UCard v-for="item in data" :key="`${item.date}-${item.student}-${item.type}`"
+          class="overflow-hidden rounded-3xl border border-default shadow-sm" :ui="{ body: 'p-0' }">
+          <div class="p-4 space-y-4">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3">
+
+              <div class="min-w-0 flex-1">
+
+                <div class="flex items-center gap-2">
+
+                  <div class="flex size-10 items-center justify-center rounded-2xl" :class="{
+                    'bg-success/10': item.credit,
+                    'bg-error/10': item.debit
+                  }">
+                    <UIcon :name="item.credit
+                      ? 'i-lucide-arrow-down-left'
+                      : 'i-lucide-arrow-up-right'" :class="item.credit ? 'text-success' : 'text-error'" />
+                  </div>
+
+                  <div class="min-w-0">
+                    <h3 class="truncate text-sm font-semibold text-highlighted">
+                      {{ item.student || 'No Student' }}
+                    </h3>
+
+                    <p class="text-xs text-muted">
+                      {{ item.clazz }}
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <UBadge size="sm" variant="soft" :label="parseType[item.type]" :color="parseTypeColor[item.type]" />
             </div>
-            <UBadge variant="subtle" size="sm" :color="parseTypeColor[item.type]" :label="parseType[item.type]" />
+
+            <!-- Amount -->
+            <div class="rounded-2xl bg-muted p-4">
+
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-muted">
+                  Transaction Amount
+                </span>
+
+                <p class="text-lg font-bold" :class="item.credit ? 'text-success' : 'text-error'">
+                  {{
+                    item.credit
+                      ? format(item.credit)
+                      : format(item.debit)
+                  }}
+                </p>
+              </div>
+
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3">
+
+              <div class="rounded-2xl bg-muted p-3">
+                <p class="text-[11px] text-muted">
+                  Credit
+                </p>
+
+                <p class="mt-1 font-semibold text-success">
+                  {{ item.credit ? format(item.credit) : '-' }}
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-muted p-3">
+                <p class="text-[11px] text-muted">
+                  Debit
+                </p>
+
+                <p class="mt-1 font-semibold text-error">
+                  {{ item.debit ? format(item.debit) : '-' }}
+                </p>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between border-t border-default pt-3">
+
+              <div>
+                <p class="text-[11px] text-muted">
+                  Running Balance
+                </p>
+
+                <p class="mt-1 text-sm font-semibold text-info">
+                  {{ format(item.balance || 0) }}
+                </p>
+              </div>
+
+              <div class="text-right">
+                <p class="text-[11px] text-muted">
+                  Date
+                </p>
+
+                <p class="mt-1 text-xs text-highlighted">
+                  {{ item.date }}
+                </p>
+              </div>
+
+            </div>
+
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <p class="text-error">Debit: {{ item.debit ? format(item.debit) : '-' }}</p>
-            <p class="text-success">Credit: {{ item.credit ? format(item.credit) : '-' }}</p>
-            <p class="text-info col-span-2 font-medium">Balance: {{ format(item.balance || 0) }}</p>
+        </UCard>
+
+        <!-- Summary Card -->
+        <UCard class="rounded-3xl border border-primary/20 bg-primary/5">
+          <div class="space-y-4">
+
+            <h3 class="font-semibold text-highlighted">
+              Ledger Summary
+            </h3>
+
+            <div class="grid grid-cols-3 gap-3">
+
+              <div>
+                <p class="text-[11px] text-muted">
+                  Debit
+                </p>
+
+                <p class="mt-1 font-bold text-error">
+                  {{ format(total.totalDebit || 0) }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-[11px] text-muted">
+                  Credit
+                </p>
+
+                <p class="mt-1 font-bold text-success">
+                  {{ format(total.totalCredit || 0) }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-[11px] text-muted">
+                  Balance
+                </p>
+
+                <p class="mt-1 font-bold text-info">
+                  {{ format(total.finalBalance || 0) }}
+                </p>
+              </div>
+
+            </div>
+
           </div>
-        </div>
-      </UCard>
+        </UCard>
 
-      <UCard :ui="{ body: 'p-4' }">
-        <div class="grid grid-cols-1 gap-1 text-xs">
-          <p class="font-semibold">Totals</p>
-          <p class="text-error">Debit: {{ format(total.totalDebit || 0) }}</p>
-          <p class="text-success">Credit: {{ format(total.totalCredit || 0) }}</p>
-          <p class="text-info font-medium">Final Balance: {{ format(total.finalBalance || 0) }}</p>
-        </div>
-      </UCard>
+      </template>
 
-      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No ledger record found.</p>
-      </div>
-
-      <div class="flex flex-col items-center gap-2">
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
         <Showing :meta="meta" />
-        <div class="w-full overflow-x-auto pb-1">
-          <div class="flex min-w-max justify-center px-1">
-            <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-              :total="meta.total" show-edges />
-          </div>
-        </div>
+
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
+
     </div>
   </div>
 </template>

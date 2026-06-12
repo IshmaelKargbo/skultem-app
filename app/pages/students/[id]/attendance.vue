@@ -33,7 +33,7 @@
 
             <div v-else-if="attendances.length" class="space-y-3">
                 <div v-for="(attendance, i) in attendances" :key="i"
-                    class="flex items-center justify-between rounded-xl border-2 border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-950 p-4">
+                    class="flex items-center justify-between rounded-xl border-2 border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-neutral-800 p-4">
                     <div>
                         <p class="font-medium">
                             {{ formatDateString(attendance.date) }}

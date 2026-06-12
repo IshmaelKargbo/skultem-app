@@ -1,190 +1,196 @@
 <template>
     <StudentView>
-        <!-- Academic Information -->
-        <UCard>
+        <UCard class="rounded-3xl">
             <template #header>
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h3 class="font-semibold text-lg">
-                            Academic Information
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold">
+                            Academic Performance
                         </h3>
 
                         <p class="text-sm text-muted">
-                            Student academic performance, subjects, and overall progress.
+                            Subject results, grades and overall performance summary.
                         </p>
                     </div>
 
-                    <div class="w-full md:w-2/5 grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <USelectMenu v-model="state.term" :items="terms" value-key="value" size="lg"
+                    <div class="grid w-full gap-3 md:w-[420px] md:grid-cols-2">
+                        <USelectMenu v-model="state.term" :items="terms" value-key="value" size="xl"
                             placeholder="Select Term" />
-                        <USelectMenu v-model="state.assessment" :items="assessmentItems" value-key="value" size="lg"
+
+                        <USelectMenu v-model="state.assessment" :items="assessmentItems" value-key="value" size="xl"
                             placeholder="Select Assessment" />
                     </div>
                 </div>
             </template>
 
-            <!-- Academic Summary -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div
-                    class="border-2 border-info-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 rounded-xl p-4">
-                    <p class="text-[11px] uppercase text-muted">
+            <!-- Summary -->
+            <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+                <div class="rounded-xl border border-default p-5">
+                    <p class="text-xs uppercase text-muted">
                         Subjects
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-primary-200 dark:bg-primary-800" />
-                    <h2 v-else class="text-2xl font-bold mt-1">
+                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+
+                    <h2 v-else class="mt-3 text-3xl font-bold">
                         {{ summary.subjects }}
                     </h2>
                 </div>
 
-                <div
-                    class="border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 rounded-xl p-4">
-                    <p class="text-[11px] uppercase text-muted">
+                <div class="rounded-xl border border-success/20 bg-success/5 p-5">
+                    <p class="text-xs uppercase text-muted">
                         Passed
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-success-200 dark:bg-success-800" />
-                    <h2 v-else class="text-2xl font-bold text-success-600 mt-1">
+                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+
+                    <h2 v-else class="mt-3 text-3xl font-bold text-success">
                         {{ summary.passed }}
                     </h2>
                 </div>
 
-                <div
-                    class="border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 rounded-xl p-4">
-                    <p class="text-[11px] uppercase text-muted">
-                        Average Score
+                <div class="rounded-xl border border-warning/20 bg-warning/5 p-5">
+                    <p class="text-xs uppercase text-muted">
+                        Average
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-warning-200 dark:bg-warning-800" />
-                    <h2 v-else class="text-2xl font-bold text-warning-600 mt-1">
+                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+
+                    <h2 v-else class="mt-3 text-3xl font-bold text-warning">
                         {{ summary.average }}%
                     </h2>
                 </div>
 
-                <div
-                    class="border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 rounded-xl p-4">
-                    <p class="text-[11px] uppercase text-muted">
+                <div class="rounded-xl border border-error/20 bg-error/5 p-5">
+                    <p class="text-xs uppercase text-muted">
                         Failed
                     </p>
-                    <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-error-200 dark:bg-error-800" />
-                    <h2 v-else class="text-2xl font-bold text-error-600 mt-1">
+
+                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+
+                    <h2 v-else class="mt-3 text-3xl font-bold text-error">
                         {{ summary.failed }}
                     </h2>
                 </div>
             </div>
 
-            <!-- Subject Results -->
-            <div class="space-y-3">
-                <div v-if="loading" v-for="subject in runtimeConf().limit"
-                    class="border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-950 rounded-xl bg-white p-4 space-y-3">
-                    <div class="flex items-start justify-between">
-                        <USkeleton class="w-24 h-6" />
-                        <USkeleton class="w-20 h-6" />
+            <!-- Results -->
+            <div class="space-y-4">
+
+                <!-- Loading -->
+                <div v-if="loading" v-for="i in runtimeConf().limit" :key="i"
+                    class="rounded-xl border border-default p-6 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <USkeleton class="h-6 w-32" />
+                        <USkeleton class="h-7 w-24" />
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="space-y-1">
-                            <p class="text-xs uppercase text-muted">
-                                Score
-                            </p>
-                            <USkeleton class="w-20 h-4" />
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-xs uppercase text-muted">
-                                Weight <span>(0)</span>
-                            </p>
-                            <USkeleton class="w-20 h-4" />
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-xs uppercase text-muted">
-                                Term
-                            </p>
-                            <USkeleton class="w-20 h-4" />
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-xs uppercase text-muted">
-                                Teacher
-                            </p>
-                            <USkeleton class="w-20 h-4" />
-                        </div>
+                    <USkeleton class="h-2 w-full" />
+
+                    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                        <USkeleton class="h-12" />
+                        <USkeleton class="h-12" />
+                        <USkeleton class="h-12" />
+                        <USkeleton class="h-12" />
                     </div>
                 </div>
-                <div v-else-if="grades.length > 0" v-for="subject in grades"
-                    class="border-2 border-gray-100 rounded-xl  dark:border-gray-700 dark:bg-gray-950 bg-white p-4 space-y-3">
-                    <div class="flex items-start justify-between">
+
+                <!-- Results -->
+                <div v-else-if="grades.length > 0" v-for="subject in grades" :key="subject.id"
+                    class="rounded-xl border border-default p-6 transition hover:border-primary/40">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="font-medium text-base">
+                            <h4 class="text-lg font-semibold">
                                 {{ subject.subject }}
                             </h4>
+
+                            <p class="mt-1 text-sm text-muted">
+                                {{ subject.teacher }}
+                            </p>
                         </div>
 
-                        <UBadge :color="subject.grade === 'A'
-                            ? 'success'
-                            : subject.grade === 'B'
-                                ? 'primary'
-                                : subject.grade === 'C'
-                                    ? 'warning'
-                                    : subject.grade === null
-                                        ? 'neutral'
-                                        : 'error'" variant="outline">
+                        <UBadge size="lg" variant="soft" :color="subject.grade === 'A'
+                                ? 'success'
+                                : subject.grade === 'B'
+                                    ? 'primary'
+                                    : subject.grade === 'C'
+                                        ? 'warning'
+                                        : subject.grade === null
+                                            ? 'neutral'
+                                            : 'error'
+                            ">
                             Grade {{ subject.grade || 'N/A' }}
                         </UBadge>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
+                    <UProgress class="mt-5" size="xs" :model-value="subject.score" />
+
+                    <div class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+
+                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Score
                             </p>
 
-                            <p class="font-semibold">
+                            <p class="text-lg font-semibold">
                                 {{ subject.score }}%
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
-                                Weight <span>({{ subject.weight }})</span>
+                                Weight ({{ subject.weight }})
                             </p>
 
-                            <p class="font-semibold">
+                            <p class="text-lg font-semibold">
                                 {{ subject.weightScore }}%
                             </p>
                         </div>
-                        <div>
+
+                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Term
                             </p>
 
-                            <p class="font-semibold">
+                            <p class="text-lg font-semibold">
                                 {{ subject.term }}
                             </p>
                         </div>
 
-
-                        <div>
+                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Teacher
                             </p>
 
-                            <p class="font-semibold">
+                            <p class="text-lg font-semibold">
                                 {{ subject.teacher }}
                             </p>
                         </div>
+
                     </div>
                 </div>
-                <div v-else
-                    class="rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-8 text-center">
-                    <UIcon name="lucide:book-x" class="mx-auto mb-2 text-3xl text-muted" />
-                    <p class="font-medium">No academic records found</p>
-                    <p class="text-sm text-muted mt-1">Try another term or assessment to view results.</p>
+
+                <!-- Empty -->
+                <div v-else class="rounded-xl border border-dashed border-default p-16 text-center">
+                    <UIcon name="i-lucide-book-x" class="mx-auto size-14 text-muted" />
+
+                    <h3 class="mt-4 text-lg font-semibold">
+                        No Academic Records Found
+                    </h3>
+
+                    <p class="mt-2 text-sm text-muted">
+                        Try selecting another term or assessment.
+                    </p>
                 </div>
+
             </div>
 
             <template #footer>
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <Showing :meta="meta" />
-                    <UPagination size="sm" v-model:page="page" :page-size="meta?.size" :items-per-page="meta?.size"
+
+                    <UPagination v-model:page="page" size="md" :page-size="meta?.size" :items-per-page="meta?.size"
                         :total="meta?.total" show-edges />
                 </div>
             </template>

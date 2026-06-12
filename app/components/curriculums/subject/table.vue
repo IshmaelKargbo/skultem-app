@@ -179,7 +179,6 @@ watch(
                     <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
                       {{ item.name }}
                     </h3>
-
                     <p class="mt-1 text-xs text-gray-500">
                       {{ item.code || 'No code assigned' }}
                     </p>
@@ -202,7 +201,7 @@ watch(
             <div class="rounded-2xl bg-gray-50 p-4 dark:bg-neutral-800">
               <div class="mb-2 flex items-center gap-2">
                 <UIcon
-                  name="i-lucide-file-text"
+                  name="material-symbols:description-rounded"
                   class="size-4 text-gray-400"
                 />
 
@@ -242,7 +241,7 @@ watch(
       </template>
 
       <!-- Pagination -->
-       <div class="flex justify-center flex-col items-center mt-3 md:hidden">
+       <div class="flex justify-center flex-col items-center mt-5 md:hidden space-y-3">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />

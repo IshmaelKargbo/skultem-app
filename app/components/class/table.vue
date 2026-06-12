@@ -70,8 +70,7 @@ watch([page, size], fetchRecords, {
 onMounted(() => {
   if (!route.query.page || !route.query.size) {
     updateQuery({
-      page: page.value,
-      size: size.value
+      page: page.value
     })
   }
 })
@@ -79,9 +78,8 @@ onMounted(() => {
 
 <template>
   <!-- Desktop -->
-  <UCard class="hidden overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800 md:block" :ui="{
-    body: 'sm:p-0',
-    footer: 'border-t border-gray-200 dark:border-gray-800'
+  <UCard class="hidden md:block" :ui="{
+    body: 'sm:p-0'
   }">
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
@@ -260,7 +258,7 @@ onMounted(() => {
     </template>
 
     <!-- Pagination -->
-    <div class="flex justify-between items-center mt-3 md:hidden">
+    <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
       <Showing :meta="meta" />
       <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />

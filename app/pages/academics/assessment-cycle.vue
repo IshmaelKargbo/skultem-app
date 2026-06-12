@@ -345,7 +345,7 @@ async function refreshAll() {
 
 onMounted(async () => {
   appStore.setTitle('Assessment Cycle')
-  document.title = 'Assessment Cycle | Settings | Skultem'
+  document.title = 'Assessment Cycle | Academics | Skultem'
   loading.value = true
   await refreshAll()
   loading.value = false

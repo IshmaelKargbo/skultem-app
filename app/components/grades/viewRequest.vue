@@ -99,7 +99,7 @@
         </div>
       </div>
     </div>
-    <UCard v-else class="w-full h-full flex flex-col items-center justify-center">
+    <UCard v-else class="w-full h-64 flex flex-col items-center justify-center">
       <div class="flex flex-col items-center">
         <UIcon name="lucide:inbox" class="text-4xl mb-3" />
         <p class="text-xs">Select a grade submission to view details</p>
@@ -109,8 +109,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
-
 const { record } = defineProps({
   record: { type: Object as () => AssessmentApprovalRequest | null }
 })

@@ -155,40 +155,131 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
+    <!-- Mobile -->
+    <div class="space-y-4 md:hidden">
 
-    <div class="space-y-3 md:hidden">
-      <UCard v-for="item in data" :key="`${item.createdAt}-${item.referenceType}-${item.amount}`" :ui="{ body: 'p-4' }">
-        <div class="space-y-2">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <p class="text-sm font-semibold truncate">{{ clean(item.type) }}</p>
-              <p class="text-xs text-muted truncate">{{ formatDate(item.createdAt) }} · {{ clean(item.referenceType) }}</p>
+      <!-- Loading -->
+      <template v-if="loading">
+        <UCard v-for="i in 5" :key="i" :ui="{ body: 'p-4' }">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="space-y-2">
+                <USkeleton class="h-4 w-32" />
+                <USkeleton class="h-3 w-24" />
+              </div>
+
+              <USkeleton class="h-7 w-20 rounded-full" />
             </div>
-            <UBadge :icon="item.direction == 'CREDIT' ? CREDIT_ICON : DEBIT_ICON"
-              :color="item.direction == 'CREDIT' ? 'success' : 'error'" :label="clean(item.direction)" variant="outline" size="sm" />
+
+            <div class="grid grid-cols-2 gap-3">
+              <USkeleton class="h-20 rounded-2xl" />
+              <USkeleton class="h-20 rounded-2xl" />
+            </div>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <p :class="item.direction == 'CREDIT' ? 'text-success' : 'text-error'">
-              Amount: {{ format(item.amount) }}
-            </p>
-            <p class="text-info text-right">Balance: {{ format(item.balance) }}</p>
+        </UCard>
+      </template>
+
+      <!-- Records -->
+      <template v-else-if="data?.length">
+        <UCard v-for="item in data" :key="`${item.createdAt}-${item.referenceType}-${item.amount}`"
+          class="overflow-hidden" :ui="{ body: 'p-0' }">
+          <div class="p-4 space-y-4">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3">
+
+              <div class="flex gap-3">
+
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl" :class="item.direction === 'CREDIT'
+                  ? 'bg-success-50 dark:bg-success-500/10'
+                  : 'bg-error-50 dark:bg-error-500/10'">
+                  <UIcon :name="item.direction === 'CREDIT'
+                    ? CREDIT_ICON
+                    : DEBIT_ICON" class="text-lg" :class="item.direction === 'CREDIT'
+                      ? 'text-success'
+                      : 'text-error'" />
+                </div>
+
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="truncate text-sm font-semibold">
+                      {{ clean(item.type) }}
+                    </h3>
+
+                    <p class="text-xs text-muted">
+                      ( {{ clean(item.referenceType) }} )
+                    </p>
+
+                  </div>
+                  <p class="mt-1 text-xs text-muted">
+                    {{ formatDate(item.createdAt) }}
+                  </p>
+                </div>
+
+              </div>
+
+              <UBadge size="sm" variant="soft" :icon="item.direction === 'CREDIT'
+                ? CREDIT_ICON
+                : DEBIT_ICON" :color="item.direction === 'CREDIT'
+                  ? 'success'
+                  : 'error'" :label="clean(item.direction)" />
+            </div>
+
+            <!-- Amount Cards -->
+            <div class="grid grid-cols-2 gap-3">
+
+              <div class="rounded-2xl p-3" :class="item.direction === 'CREDIT'
+                ? 'bg-success-50 dark:bg-success-950/20'
+                : 'bg-error-50 dark:bg-error-950/20'">
+                <p class="text-[11px] text-muted">
+                  Amount
+                </p>
+
+                <p class="mt-1 text-sm font-bold" :class="item.direction === 'CREDIT'
+                  ? 'text-success'
+                  : 'text-error'">
+                  {{ format(item.amount) }}
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-info-50 p-3 dark:bg-info-950/20">
+                <p class="text-[11px] text-muted">
+                  Balance
+                </p>
+
+                <p class="mt-1 text-sm font-bold text-info">
+                  {{ format(item.balance) }}
+                </p>
+              </div>
+
+            </div>
+
           </div>
+        </UCard>
+      </template>
+
+      <!-- Empty -->
+      <template v-else>
+        <div class="flex flex-col items-center py-16">
+          <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+            <UIcon name="i-lucide-receipt" class="size-10 text-muted" />
+          </div>
+
+          <h3 class="mt-4 text-sm font-semibold">
+            No transactions found
+          </h3>
+
+          <p class="mt-1 text-sm text-muted">
+            Transaction records will appear here.
+          </p>
         </div>
-      </UCard>
+      </template>
 
-      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No transaction found.</p>
-      </div>
-
-      <div v-if="meta" class="flex flex-col items-center gap-2">
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
         <Showing :meta="meta" />
-        <div class="w-full overflow-x-auto pb-1">
-          <div class="flex min-w-max justify-center px-1">
-            <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-              :total="meta.total" show-edges />
-          </div>
-        </div>
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </div>
   </div>

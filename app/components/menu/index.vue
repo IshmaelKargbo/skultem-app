@@ -253,9 +253,9 @@
         </li>
       </ul>
     </div>
-    <template #footer>
+    <!-- <template #footer>
       <Board />
-    </template>
+    </template> -->
   </UCard>
 </template>
 <script setup lang="ts">

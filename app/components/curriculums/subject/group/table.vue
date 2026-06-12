@@ -160,48 +160,95 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
-
     <div class="space-y-3 md:hidden">
+      <!-- Loading -->
       <template v-if="loading">
-        <UCard v-for="i in 4" :key="i" class="rounded-3xl border border-gray-200 dark:border-gray-800">
-          <div class="space-y-3 p-4">
-            <USkeleton class="h-4 w-28" />
+        <UCard v-for="i in 5" :key="i" class="rounded-2xl border border-gray-200 dark:border-gray-800"
+          :ui="{ body: 'p-4' }">
+          <div class="space-y-3">
+            <USkeleton class="h-4 w-36" />
             <USkeleton class="h-3 w-24" />
-            <USkeleton class="h-10 w-full rounded-xl" />
+            <USkeleton class="h-8 w-full rounded-xl" />
           </div>
         </UCard>
       </template>
 
+      <!-- Data -->
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id" class="rounded-3xl border border-gray-200 dark:border-gray-800" :ui="{ body: 'p-4' }">
-          <div class="space-y-3">
+        <UCard v-for="item in data" :key="item.id"
+          class="overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800"
+          :ui="{ body: 'p-0' }">
+          <div class="p-4 space-y-4">
+
+            <!-- Header -->
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">{{ item.name }}</h3>
-                <p class="mt-1 text-xs text-gray-500">{{ item.className || 'No class' }} • {{ item.streamName || 'No stream' }}</p>
+                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ item.name }}
+                </h3>
+
+                <div class="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                  <UIcon name="i-lucide-school" class="size-3.5" />
+                  <span>{{ item.className || 'No class' }}</span>
+                </div>
               </div>
+
               <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost" class="rounded-full" />
+                <UButton icon="i-lucide-more-vertical" color="neutral" variant="ghost" size="sm" class="rounded-full" />
               </UDropdownMenu>
             </div>
-            <div class="rounded-xl bg-gray-50 p-3 dark:bg-neutral-800">
-              <p class="text-[11px] uppercase tracking-wide text-gray-500">Selections</p>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ item.totalSelection || 0 }}</p>
+
+            <!-- Stream + Selection -->
+            <div class="grid grid-cols-2 gap-3">
+
+              <div class="rounded-xl bg-gray-50 px-3 py-3 dark:bg-gray-900">
+                <p class="text-[11px] text-gray-500">
+                  Stream
+                </p>
+
+                <p class="mt-1 text-sm font-medium">
+                  {{ item.streamName || 'None' }}
+                </p>
+              </div>
+
+              <div class="rounded-xl bg-primary-50 px-3 py-3 dark:bg-primary-950/30">
+                <p class="text-[11px] text-gray-500">
+                  Selections
+                </p>
+
+                <div class="mt-1">
+                  <UBadge color="primary" variant="soft" :label="item.totalSelection || 0" icon="mdi:select-multiple" />
+                </div>
+              </div>
+
             </div>
+
           </div>
         </UCard>
       </template>
 
+      <!-- Empty -->
       <template v-else>
-        <div class="flex flex-col items-center justify-center py-14">
-          <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
-          <p class="text-sm text-gray-500">No subject groups found.</p>
-        </div>
+        <UCard class="flex flex-col items-center justify-center py-14">
+          <div class="flex flex-col items-center py-16">
+            <UIcon name="ph:books-light" class="mb-3 text-5xl text-gray-300" />
+
+            <h3 class="text-sm font-medium">
+              No subject groups found
+            </h3>
+
+            <p class="mt-1 text-xs text-gray-500">
+              Subject groups will appear here.
+            </p>
+          </div>
+        </UCard>
       </template>
 
-      <div v-if="!loading" class="flex flex-col items-center justify-center gap-2">
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length" class="flex flex-col items-center justify-center mt-5 space-y-3 md:hidden">
         <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
     </div>

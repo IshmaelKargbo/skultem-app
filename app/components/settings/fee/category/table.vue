@@ -111,26 +111,14 @@ onMounted(async () => {
 <template>
   <div class="space-y-4">
     <!-- Desktop -->
-    <UCard
-      class="hidden md:block"
-      :ui="{
-        body: 'p-0'
-      }"
-    >
-      <UTable
-        :columns="columns"
-        :data="data"
-        :loading="loading"
-      >
+    <UCard class="hidden md:block" :ui="{
+      body: 'p-0'
+    }">
+      <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-3 py-16">
-            <div
-              class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10"
-            >
-              <UIcon
-                name="lucide:wallet-cards"
-                class="text-4xl text-primary-500"
-              />
+            <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
+              <UIcon name="lucide:wallet-cards" class="text-4xl text-primary-500" />
             </div>
 
             <div class="text-center">
@@ -147,13 +135,8 @@ onMounted(async () => {
 
         <template #name-cell="{ row }">
           <div class="flex items-center gap-3">
-            <div
-              class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10"
-            >
-              <UIcon
-                name="lucide:receipt-text"
-                class="text-primary-500"
-              />
+            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+              <UIcon name="lucide:receipt-text" class="text-primary-500" />
             </div>
 
             <div>
@@ -186,171 +169,135 @@ onMounted(async () => {
         <div class="flex items-center justify-between">
           <Showing :meta="meta" />
 
-          <UPagination
-            v-model:page="page"
-            size="sm"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </template>
     </UCard>
 
     <!-- Mobile -->
-    <div class="space-y-4 md:hidden">
+    <div class="space-y-3 md:hidden">
       <!-- Loading -->
-      <div
-        v-if="loading"
-        class="space-y-4"
-      >
-        <div
-          v-for="i in 5"
-          :key="i"
-          class="overflow-hidden rounded-[30px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-        >
-          <div class="flex gap-3">
-            <USkeleton class="h-14 w-14 rounded-2xl" />
-
-            <div class="flex-1 space-y-3">
-              <USkeleton class="h-4 w-36" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-2/3" />
-
-              <div class="flex gap-2 pt-2">
-                <USkeleton class="h-6 w-20 rounded-full" />
-                <USkeleton class="h-6 w-16 rounded-full" />
-              </div>
-            </div>
+      <template v-if="loading">
+        <div v-for="i in 5" :key="i"
+          class="rounded-[32px] border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div class="flex justify-center">
+            <USkeleton class="size-16 rounded-3xl" />
           </div>
+
+          <div class="mt-5 flex flex-col items-center space-y-3">
+            <USkeleton class="h-4 w-40" />
+            <USkeleton class="h-3 w-20" />
+            <USkeleton class="h-3 w-full" />
+            <USkeleton class="h-3 w-5/6" />
+          </div>
+
+          <div class="mt-6 grid grid-cols-2 gap-3">
+            <USkeleton class="h-20 rounded-2xl" />
+            <USkeleton class="h-20 rounded-2xl" />
+          </div>
+
+          <USkeleton class="mt-5 h-14 rounded-2xl" />
         </div>
-      </div>
+      </template>
 
       <!-- Empty -->
-      <div
-        v-else-if="!data?.length"
-        class="flex min-h-[60vh] flex-col items-center justify-center rounded-[32px] border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        <div
-          class="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10"
-        >
-          <UIcon
-            name="lucide:wallet-cards"
-            class="text-5xl text-primary-500"
-          />
+      <div v-else-if="!data?.length" class="flex flex-col items-center justify-center py-20">
+        <div class="mb-4 flex size-20 items-center justify-center rounded-3xl bg-primary-50 dark:bg-primary-500/10">
+          <UIcon name="lucide:wallet-cards" class="text-4xl text-primary-500" />
         </div>
 
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+        <h3 class="font-semibold">
           No fee categories found
         </h3>
 
-        <p class="mt-2 max-w-xs text-sm leading-6 text-gray-500">
-          Organize school payments and billing using structured fee categories.
+        <p class="mt-2 text-center text-sm text-gray-500">
+          Organize school fees into categories.
         </p>
-
-        <UButton
-          class="mt-6 rounded-full px-5"
-          icon="i-lucide-plus"
-          size="sm"
-        >
-          Add Category
-        </UButton>
       </div>
 
+
       <!-- Cards -->
-      <div
-        v-else
-        class="space-y-4"
-      >
-        <div
-          v-for="item in data"
-          :key="item.id"
-          class="overflow-hidden rounded-[30px] border border-gray-200 bg-white shadow-sm transition-all duration-200 active:scale-[0.99] dark:border-neutral-800 dark:bg-neutral-900"
-        >
-          <div class="p-4">
-            <div class="flex gap-3">
-              <!-- Icon -->
+      <template v-else>
+        <div class="space-y-4">
+          <div v-for="item in data" :key="item.id"
+            class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <!-- Top -->
+            <div class="px-5 pt-6 text-center">
               <div
-                class="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10"
-              >
-                <UIcon
-                  name="lucide:receipt-text"
-                  class="text-xl text-primary-500"
-                />
-
-                <div
-                  class="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-neutral-900"
-                />
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary-50 text-primary-500 dark:bg-primary-500/10">
+                <UIcon name="lucide:receipt-text" class="size-7" />
               </div>
 
-              <!-- Content -->
-              <div class="min-w-0 flex-1">
-                <!-- Header -->
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <h3
-                      class="truncate text-sm font-semibold text-gray-900 dark:text-white"
-                    >
-                      {{ item.name }}
-                    </h3>
+              <h3 class="mt-4 text-base font-semibold text-gray-900 dark:text-white">
+                {{ item.name }}
+              </h3>
 
-                    <p class="mt-1 text-xs text-gray-400">
-                      Fee Category
-                    </p>
-                  </div>
+              <p class="mt-1 text-xs text-gray-500">
+                Fee Category
+              </p>
 
-                  <!-- Actions -->
-                  <UDropdownMenu
-                    :items="getRowItems({ original: item } as any)"
-                    :content="{ align: 'end' }"
-                  >
-                    <UButton
-                      icon="i-lucide-ellipsis-vertical"
-                      color="neutral"
-                      size="sm"
-                      variant="ghost"
-                      class="rounded-full"
-                    />
-                  </UDropdownMenu>
-                </div>
+              <p class="mt-4 line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                {{
+                  item.description ||
+                  'No description available for this category.'
+                }}
+              </p>
+            </div>
 
-                <!-- Description -->
-                <div
-                  class="mt-4 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-                >
-                  <p
-                    class="line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-300"
-                  >
-                    {{
-                      item.description ||
-                      'No description available for this fee category.'
-                    }}
-                  </p>
-                </div>
+            <!-- Divider -->
+            <div class="my-5 border-t border-dashed border-gray-200 dark:border-neutral-800" />
 
-                <!-- Footer -->
-                <div class="mt-5 flex items-center justify-between">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span
-                      class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-gray-300"
-                    >
-                      Finance
-                    </span>
+            <!-- Details -->
+            <div class="grid grid-cols-2 gap-3 px-5">
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+                <p class="text-[11px] text-gray-500">
+                  Department
+                </p>
 
-                    <span
-                      class="rounded-full bg-primary-50 px-3 py-1 text-[11px] font-medium text-primary-600 dark:bg-primary-500/10"
-                    >
-                      Active
-                    </span>
-                  </div>
-                </div>
+                <p class="mt-1 font-medium">
+                  Finance
+                </p>
               </div>
+
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+                <p class="text-[11px] text-gray-500">
+                  Status
+                </p>
+
+                <UBadge color="success" variant="soft" size="sm" class="mt-1">
+                  Active
+                </UBadge>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div
+              class="mt-5 flex items-center justify-between border-t border-gray-100 px-5 py-4 dark:border-neutral-800">
+              <div>
+                <p class="text-xs text-gray-500">
+                  Category
+                </p>
+
+                <p class="text-sm font-medium">
+                  School Fees
+                </p>
+              </div>
+              <!-- 
+              <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+                <UButton icon="i-lucide-more-horizontal" size="sm" variant="soft" color="neutral" class="rounded-xl" />
+              </UDropdownMenu> -->
             </div>
           </div>
         </div>
+      </template>
 
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+        <Showing :meta="meta" />
 
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </div>
   </div>

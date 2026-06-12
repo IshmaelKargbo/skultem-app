@@ -208,7 +208,7 @@
             <UIcon :name="LEDGER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
 
             <span class="text-[16px] font-medium">
-              Ledger
+              Student Ledger
             </span>
           </NuxtLink>
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/transactions" @click="close"
@@ -293,9 +293,6 @@
 </template>
 
 <script setup lang="ts">
-import { vi } from '@nuxt/ui/runtime/locale/index.js'
-import { computed, ref, watch } from 'vue'
-
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 

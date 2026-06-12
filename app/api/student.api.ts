@@ -2,9 +2,9 @@ export const StudentApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (page: number, size: number) => {
+    getAll: async (search: string, page: number, size: number) => {
       try {
-        const res = await $api(`/student?page=${page}&size=${size}`) as any
+        const res = await $api(`/student?page=${page}&size=${size}&search=${search}`) as any
 
         if (!res)
           throw new Error('Failed to fetch students')

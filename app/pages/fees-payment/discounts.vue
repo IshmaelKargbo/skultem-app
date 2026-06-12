@@ -17,7 +17,7 @@ function refreshReport() {
 
 onMounted(() => {
     useAppStore().setTitle('Discounts')
-    document.title = 'Discounts | Skultem'
+    document.title = 'Discounts | Fees Payment | Skultem'
 })
 
 definePageMeta({

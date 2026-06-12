@@ -133,40 +133,94 @@ onMounted(async () => {
 
     <div class="space-y-3 md:hidden">
       <template v-if="loading">
-        <UCard v-for="i in 4" :key="i" class="rounded-3xl border border-gray-200 dark:border-gray-800">
-          <div class="space-y-3 p-4">
-            <USkeleton class="h-4 w-32" />
-            <USkeleton class="h-3 w-full" />
-            <USkeleton class="h-3 w-2/3" />
+        <UCard v-for="i in 4" :key="i" class="rounded-2xl border border-default" :ui="{ body: 'p-4' }">
+          <div class="space-y-3">
+            <div class="flex gap-3">
+              <USkeleton class="size-11 rounded-xl" />
+
+              <div class="flex-1 space-y-2">
+                <USkeleton class="h-4 w-28" />
+                <USkeleton class="h-3 w-20" />
+              </div>
+            </div>
+
+            <USkeleton class="h-20 rounded-xl" />
           </div>
         </UCard>
       </template>
 
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id" class="rounded-3xl border border-gray-200 dark:border-gray-800"
+        <UCard v-for="item in data" :key="item.id" class="rounded-2xl border border-default shadow-sm"
           :ui="{ body: 'p-4' }">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">{{ item.name }}</h3>
-              <p class="mt-1 text-xs text-gray-500">{{ item.description || 'No description provided.' }}</p>
+          <div class="space-y-4">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3">
+
+              <div class="flex gap-3 min-w-0 flex-1">
+
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <UIcon name="i-lucide-git-branch" class="size-5 text-primary" />
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <h3 class="truncate text-sm font-semibold text-highlighted">
+                    {{ item.name }}
+                  </h3>
+
+                  <p class="mt-1 text-xs text-muted">
+                    Academic Stream
+                  </p>
+                </div>
+
+              </div>
+
+              <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost"
+                  class="rounded-xl" />
+              </UDropdownMenu>
+
             </div>
-            <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost" class="rounded-full" />
-            </UDropdownMenu>
+
+            <!-- Description -->
+            <div class="rounded-xl bg-muted p-3">
+              <p class="text-[11px] text-muted">
+                Description
+              </p>
+
+              <p class="mt-2 text-sm text-highlighted line-clamp-2">
+                {{
+                  item.description ||
+                  'No description available.'
+                }}
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between border-t border-default pt-3">
+              <UBadge label="Active" color="success" variant="soft" />
+
+              <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
+            </div>
+
           </div>
         </UCard>
       </template>
 
       <template v-else>
-        <div class="flex flex-col items-center justify-center py-14">
-          <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
-          <p class="text-sm text-gray-500">No streams found.</p>
-        </div>
+        <UCard class="rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-4' }">
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+            <p class="text-gray-500">No streams found.</p>
+          </div>
+        </UCard>
       </template>
 
-      <div v-if="!loading" class="flex flex-col items-center justify-center gap-2">
+      <div v-if="!loading && data?.length && store.meta.total > store.meta.size"
+        class="flex flex-col items-center gap-3 pt-2">
         <Showing :meta="store.meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="store.meta.size" :items-per-page="store.meta.size"
+
+        <UPagination v-model:page="page" size="sm" :page-size="store.meta.size" :items-per-page="store.meta.size"
           :total="store.meta.total" show-edges />
       </div>
     </div>
