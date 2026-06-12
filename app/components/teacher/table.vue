@@ -22,8 +22,7 @@ const parseStatusColor: Record<string, string> = {
 const columns = [
   {
     accessorKey: 'name',
-    header: 'Name',
-    cell: ({ row }: any) => `${parseTitle[row.original.title]} ${row.original.user.givenNames} ${row.original.user.familyName}`
+    header: 'Name'
   },
   {
     accessorKey: 'gender',
@@ -33,10 +32,6 @@ const columns = [
   {
     accessorKey: 'email',
     header: 'Email'
-  },
-  {
-    accessorKey: 'phone',
-    header: 'Phone'
   },
   {
     accessorKey: 'city',
@@ -53,13 +48,22 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val })
 })
 
+const search = computed<string>({
+  get: () => String(route.query.search ?? ''),
+  set: (val) => updateQuery({ search: val })
+})
+
 const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
   set: (val) => updateQuery({ size: val })
 })
 
 function name(param: Teacher) {
-  return `${param.title} ${param.user.givenNames} ${param.user.familyName}`
+  return `${clean(param.title)} ${param.user.givenNames} ${param.user.familyName}`
+}
+
+function justName(param: Teacher) {
+  return `${param.user.givenNames} ${param.user.familyName}`
 }
 
 watch(() => page.value, () => {
@@ -71,12 +75,23 @@ watch(() => page.value, () => {
   })
   router.replace({
     query: {
-      page: page.value
+      page: page.value,
+      search: search.value || undefined,
     }
   })
 
   fetchRecord()
 }, { immediate: true })
+
+watch(() => search.value, () => {
+  router.replace({
+    query: {
+      search: search.value || undefined
+    }
+  })
+
+  fetchRecord()
+})
 
 function updateQuery(newQuery: Record<string, any>) {
   const merged = { ...route.query, ...newQuery }
@@ -93,7 +108,7 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   loading.value = true
-  await store.fetchAll(page.value, size.value)
+  await store.fetchAll(page.value, size.value, search.value)
   loading.value = false
 }
 
@@ -101,7 +116,8 @@ onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
-        page: page.value
+        page: page.value,
+        search: search.value || undefined,
       }
     })
   }
@@ -125,7 +141,19 @@ onMounted(async () => {
         <TableLoading :size="columns.length" />
       </template>
       <template #email-cell="{ row }">
-        {{ row.original.user.email }}
+        <div>
+          <p>{{ row.original.user.email }}</p>
+          <p class="text-xs text-muted">{{ row.original.phone }}</p>
+        </div>
+      </template>
+      <template #name-cell="{ row }">
+        <div class="flex space-x-5 items-center">
+          <UAvatar :alt="justName(row.original)" />
+          <div>
+            <p>{{ name(row.original) }}</p>
+            <p class="text-xs text-muted">{{ row.original.staffId }}</p>
+          </div>
+        </div>
       </template>
       <template #gender-cell="{ row }">
         <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
