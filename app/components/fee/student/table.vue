@@ -7,7 +7,7 @@ const props = defineProps<{
 const { format } = useMoney()
 const store = useStudentStore()
 
-const loading = ref(false)
+const loading = ref(true)
 const records = ref<StudentFee[]>([])
 
 let requestId = 0

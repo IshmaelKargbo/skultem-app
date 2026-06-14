@@ -12,7 +12,7 @@ const { id } = defineProps<{
 }>()
 const store = useStudentStore()
 const record = ref<Enrollment | null>(null)
-const isLoading = ref(false)
+const isLoading = ref(true)
 
 watch(
     () => id,

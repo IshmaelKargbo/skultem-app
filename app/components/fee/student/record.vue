@@ -63,11 +63,13 @@
                 </div>
                 <FeeStudentTable :student="student" :refresh-key="refreshKey" />
             </div>
-            <div v-else
+           <div v-else class="p-5">
+             <div
                 class="border border-dashed flex justify-center flex-col items-center rounded-2xl space-y-5 p-10 h-56 w-full border-blue-300 dark:border-gray-700">
                 <UIcon class="text-5xl text-gray-300 dark:text-gray-500" name="hugeicons:folder-details" />
                 <p class="text-gray-500 dark:text-gray-400">Select a student to view their fee details</p>
             </div>
+           </div>
         </UCard>
         <FeeStudentPayments :student="student" />
     </div>
