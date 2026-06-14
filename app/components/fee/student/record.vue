@@ -31,29 +31,33 @@
             </template>
             <div v-if="student">
                 <div class="pb-5 p-0 md:p-5 grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-                    <UCard class="bg-app-100/60 dark:bg-app-900/30 ring-app-300/70 dark:ring-app-800/70">
+                    <UCard class="bg-info-100/60 dark:bg-info-900/30 ring-info-300/70 dark:ring-info-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Fees</p>
-                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.total || 0) }}</p>
+                            <USkeleton class="w-32 h-10 bg-info-300" v-if="loading" />
+                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.total || 0) }}</p>
                         </div>
                     </UCard>
                     <UCard
                         class="bg-success-100/60 dark:bg-success-900/25 ring-success-300/80 dark:ring-success-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Paid</p>
-                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.paid || 0) }}</p>
+                            <USkeleton class="w-32 h-10 bg-gray-300" v-if="loading" />
+                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.paid || 0) }}</p>
                         </div>
                     </UCard>
-                    <UCard class="bg-red-100/60 dark:bg-red-900/25 ring-red-300/80 dark:ring-red-800/70">
+                    <UCard class="bg-red-100/60 dark:bg-error-900/25 ring-error-300/80 dark:error-red-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
-                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.outstanding || 0) }}</p>
+                            <USkeleton class="w-32 h-10 bg-error-300" v-if="loading" />
+                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.outstanding || 0) }}</p>
                         </div>
                     </UCard>
                     <UCard class="bg-purple-100/60 dark:bg-purple-900/25 ring-purple-300/80 dark:ring-purple-800/70">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Discounts</p>
-                            <p class="text-lg md:text-xl font-semibold">{{ format(feesState?.discount || 0) }}</p>
+                            <USkeleton class="w-32 h-10 bg-purple-300" v-if="loading" />
+                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.discount || 0) }}</p>
                         </div>
                     </UCard>
                 </div>
@@ -75,6 +79,7 @@ const { student } = defineProps<{
 }>()
 const { can } = useAuth()
 const store = useStudentStore()
+const { loading } = storeToRefs(store)
 const feesState = ref<{
     paid: number,
     outstanding: number,

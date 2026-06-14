@@ -40,8 +40,8 @@
 
             <div v-else>
                 <div class="space-y-2 md:hidden">
-                    <UCard v-for="item in records" :key="item.id" class="rounded-2xl border border-gray-200 dark:border-gray-800"
-                        :ui="{ body: 'p-4' }">
+                    <UCard v-for="item in records" :key="item.id"
+                        class="rounded-2xl border border-gray-200 dark:border-gray-800" :ui="{ body: 'p-4' }">
                         <div class="space-y-3">
                             <div class="flex items-center justify-between gap-2">
                                 <p class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -98,10 +98,11 @@
                     <template #referenceNo-cell="{ row }">
                         <p class="font-medium">{{ row.original.referenceNo || '-' }}</p>
                     </template>
+                    <template #loading>
+                        <TableLoading :size="columns.length" />
+                    </template>
                 </UTable>
             </div>
-
-
         </div>
         <template #footer>
             <div class="flex justify-between items-center">

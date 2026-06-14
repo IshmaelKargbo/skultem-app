@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const props = defineProps<{
   student: Student
   refreshKey?: number
@@ -54,13 +52,10 @@ watch(
   }
 )
 
-const columns: TableColumn<StudentFee>[] = [
+const columns = [
   {
     accessorKey: 'feeName',
-    header: 'Category',
-    cell: ({ row }) => {
-      return `${row.original.feeName} (${row.original.term})`
-    }
+    header: 'Category'
   },
   {
     accessorKey: 'total',
@@ -84,24 +79,22 @@ const columns: TableColumn<StudentFee>[] = [
   {
     accessorKey: 'dueDate',
     header: 'Due Date'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
   }
 ]
 
 const parseStatusColor: Record<string, string> = {
+  "Paid": "text-success",
+  "Partial": "text-warning",
+  "Overdue": "text-error",
+  "Unpaid": "text-muted"
+}
+
+const parseBatchStatusColor: Record<string, string> = {
   "Paid": "success",
   "Partial": "warning",
   "Overdue": "error",
   "Unpaid": "neutral"
 }
-
-const columnPinning = ref({
-  left: ['feeName'],
-  right: ['status']
-})
 </script>
 
 <template>
@@ -123,7 +116,8 @@ const columnPinning = ref({
       </UCard>
     </div>
 
-    <div v-else-if="records.length === 0" class="rounded-2xl border border-dashed border-gray-200 p-10 text-center dark:border-gray-800">
+    <div v-else-if="records.length === 0"
+      class="rounded-2xl border border-dashed border-gray-200 p-10 text-center dark:border-gray-800">
       <div class="flex flex-col items-center gap-2">
         <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
         <p class="text-gray-500 dark:text-gray-400">
@@ -133,12 +127,8 @@ const columnPinning = ref({
     </div>
 
     <div v-else class="space-y-2 md:hidden">
-      <UCard
-        v-for="item in records"
-        :key="item.id"
-        class="rounded-2xl border border-gray-200 dark:border-gray-800"
-        :ui="{ body: 'p-4' }"
-      >
+      <UCard v-for="item in records" :key="item.id" class="rounded-2xl border border-gray-200 dark:border-gray-800"
+        :ui="{ body: 'p-4' }">
         <div class="space-y-3">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
@@ -149,7 +139,7 @@ const columnPinning = ref({
                 {{ item.term }}
               </p>
             </div>
-            <UBadge variant="soft" :color="parseStatusColor[item.status]" :label="item.status" />
+            <UBadge variant="soft" :color="parseBatchStatusColor[item.status]" :label="item.status" />
           </div>
 
           <div class="grid grid-cols-2 gap-2 text-xs">
@@ -171,7 +161,8 @@ const columnPinning = ref({
             </div>
           </div>
 
-          <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500 dark:border-gray-800">
+          <div
+            class="flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500 dark:border-gray-800">
             <span>Due Date</span>
             <span class="font-medium text-gray-700 dark:text-gray-300">{{ item.dueDate || '-' }}</span>
           </div>
@@ -179,11 +170,26 @@ const columnPinning = ref({
       </UCard>
     </div>
 
-    <UTable v-model:column-pinning="columnPinning" :columns="columns" :data="records" :loading="loading" class="hidden md:block">
+    <UTable :columns="columns" :data="records" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
           <p class="text-gray-500 dark:text-gray-400">No fee found.</p>
+        </div>
+      </template>
+      <template #feeName-cell="{ row }">
+        <div>
+          <p>{{ row.original.feeName }}</p>
+          <p class="text-muted text-xs">{{ row.original.term }}</p>
+        </div>
+      </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
+      <template #dueDate-cell="{ row }">
+        <div>
+          <p class="text-right">{{ formatDate(row.original.dueDate) }}</p>
+          <p class="text-xs text-right" :class="[parseStatusColor[row.original.status]]">{{ row.original.status }}</p>
         </div>
       </template>
       <template #paid-cell="{ row }">
@@ -194,9 +200,6 @@ const columnPinning = ref({
       </template>
       <template #discount-cell="{ row }">
         <p class="text-purple-400">{{ format(row.original.discount || 0) }}</p>
-      </template>
-      <template #status-cell="{ row }">
-        <UBadge variant="outline" :color="parseStatusColor[row.original.status]" :label="row.original.status" />
       </template>
     </UTable>
   </div>
