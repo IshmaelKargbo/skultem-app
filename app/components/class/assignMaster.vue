@@ -71,7 +71,7 @@ import type { FormSubmitEvent } from '#ui/types'
 const store = useClassStore()
 const sessionStore = useClassSessionStore()
 const teacherStore = useTeacherStore()
-const toast = useToast()
+const toast = useNotify()
 
 const isLoading = ref(false)
 const open = ref(false)
@@ -87,16 +87,10 @@ const state = reactive({
 const schema = yup.object({
   classId: yup.string().required('Class is required'),
   sectionId: yup.string().required('Section is required'),
-  streamId: yup.string().when('classId', {
-    is: (val: string) =>
-      sessionStore.records.find(c => c.clazzId === val)?.classLevel === 'SSS',
-    then: schema => schema.required('Stream is required'),
-    otherwise: schema => schema.notRequired()
-  }),
   teacherId: yup.string().required('Teacher is required')
 })
 
-const classes = ref<{ label: string; value: string }[]>([])
+const classes = ref<{ label: string; value: string, stream: string }[]>([])
 const sections = ref<{ label: string; value: string }[]>([])
 const streams = ref<{ label: string; value: string }[]>([])
 
@@ -131,7 +125,7 @@ async function fetchRecords() {
 
     const resultStreams = await store.findAllStreams(state.classId)
     streams.value = resultStreams?.map((s: ClassStream) => ({
-      label: s.stream.name,
+      label: `${s.stream.name} `,
       value: s.stream.id
     })) || []
   } catch (err) {
@@ -153,24 +147,22 @@ const close = () => {
 const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
   isLoading.value = true
   try {
-    await store.assignClassMaster(state.classId, {
-      sectionId: state.sectionId,
-      streamId: state.streamId,
-      teacherId: state.teacherId
-    })
+    const clazz = classes.value.find(e => (e.value == state.classId))
 
-    toast.add({
-      description: 'The class master has been assigned successfully.',
-      color: 'success'
-    })
+    if (clazz) {
+      await store.assignClassMaster(state.classId, {
+        sectionId: state.sectionId,
+        streamId: clazz.stream || '',
+        teacherId: state.teacherId
+      })
 
-    close()
-    sessionStore.fetchAll()
+      toast.success('The class master has been assigned successfully.')
+      close()
+      sessionStore.fetchAll()
+    }
+
   } catch (err: any) {
-    toast.add({
-      description: err.message || 'Something went wrong',
-      color: 'error'
-    })
+    toast.error(err.message || 'Something went wrong')
   } finally {
     isLoading.value = false
   }
@@ -180,11 +172,19 @@ watch(open, async (val) => {
   if (val) {
     const res = await sessionStore.fetchAllUnassign(0, 0)
     if (res == null) return
-    classes.value = res.map((c: ClassSession) => ({
-      label: c.clazz,
-      value: c.clazzId
-    }))
-    await teacherStore.fetchAll()
+    classes.value = res.map((c: ClassSession) => {
+      let name = c.clazz;
+
+      if (c.streamName) {
+        name = `${c.clazz} (${c.streamName})`
+      }
+      return {
+        label: name,
+        value: c.clazzId,
+        stream: c.streamId
+      }
+    })
+    await teacherStore.fetchAll(0, 0)
   }
 })
 

@@ -90,6 +90,7 @@
 
 <script setup lang="ts">
 const store = useStudentStore()
+
 const { record, loading } = storeToRefs(store)
 const route = useRoute()
 

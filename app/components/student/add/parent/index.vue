@@ -11,45 +11,60 @@
             <div>
 
                 <!-- Parent Information -->
-                <div class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
+                <div
+                    class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
 
                     <UFormField name="fatherName" label="Father's Name" required>
-                        <UInput placeholder="Enter father's full name" v-model="form.fatherName" />
+                        <UInput v-model="form.fatherName" placeholder="Enter father's full name"
+                            :leading-icon="USER_ICON" />
+
                         <template #help>
-                            Enter the father's full legal name. Write "Deceased" or "Unknown" if not applicable.
+                           <p class="text-sm text-muted">
+                                Enter the father's full legal name. 
+                            </p>
                         </template>
                     </UFormField>
 
                     <UFormField name="motherName" label="Mother's Name" required>
-                        <UInput placeholder="Enter mother's full name" v-model="form.motherName" />
+                        <UInput v-model="form.motherName" placeholder="Enter mother's full name"
+                            :leading-icon="USER_ICON" />
                         <template #help>
-                            Enter the mother's full legal name. Write "Deceased" or "Unknown" if not applicable.
+                            <p class="text-sm text-muted">
+                                Enter the mother's full legal name.
+                            </p>
                         </template>
                     </UFormField>
 
                     <UFormField name="fatherOccupation" label="Father's Occupation" required>
-                        <UInput placeholder="e.g. Teacher, Engineer, Trader" v-model="form.fatherOccupation" />
+                        <UInput v-model="form.fatherOccupation" placeholder="e.g. Teacher, Engineer, Trader"
+                            :leading-icon="BRIEFCASE_ICON" />
                         <template #help>
-                            Enter the father's current occupation or write "Retired" / "Unemployed" if applicable.
+                            <p class="text-sm text-muted">
+                                Enter the father's current occupation or write "Retired" / "Unemployed" if applicable.
+                            </p>
                         </template>
                     </UFormField>
 
                     <UFormField name="motherOccupation" label="Mother's Occupation" required>
-                        <UInput placeholder="e.g. Nurse, Accountant, Trader" v-model="form.motherOccupation" />
+                        <UInput v-model="form.motherOccupation" placeholder="e.g. Nurse, Accountant, Trader"
+                            :leading-icon="BRIEFCASE_ICON" />
                         <template #help>
                             Enter the mother's current occupation or write "Homemaker" / "Unemployed" if applicable.
                         </template>
                     </UFormField>
 
                     <UFormField name="fatherContact" label="Father's Contact" required>
-                        <UInput placeholder="e.g. +23276000000" v-model="form.fatherContact" />
+                        <UInput v-model="form.fatherContact" placeholder="e.g. +23276000000"
+                            :leading-icon="PHONE_ICON" />
+
                         <template #help>
                             Enter a valid phone number including the country code, e.g. +232 for Sierra Leone.
                         </template>
                     </UFormField>
 
                     <UFormField name="motherContact" label="Mother's Contact" required>
-                        <UInput placeholder="e.g. +23276000000" v-model="form.motherContact" />
+                        <UInput v-model="form.motherContact" placeholder="e.g. +23276000000"
+                            :leading-icon="PHONE_ICON" />
                         <template #help>
                             Enter a valid phone number including the country code, e.g. +232 for Sierra Leone.
                         </template>
@@ -79,16 +94,17 @@
                     <div v-if="action === 0" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
 
                         <UFormField name="existingGuardianId" label="Select Guardian" required>
-                            <USelectMenu :loading="loading" v-model="form.existingGuardianId" value-key="value"
-                                option-attribute="label" placeholder="Select guardian" :items="existingGuardians" />
+                            <USelectMenu :loading="loading" v-model="form.existingGuardianId" :items="existingGuardians"
+                                value-key="value" option-attribute="label" placeholder="Select guardian"
+                                :leading-icon="SEARCH_ICON" />
                             <template #help>
                                 Search for a guardian already registered in the system by name or phone number.
                             </template>
                         </UFormField>
 
                         <UFormField name="relationship" label="Relationship" required>
-                            <USelectMenu placeholder="Select relationship" value-key="value" v-model="form.relationship"
-                                :items="relationships" />
+                            <USelectMenu v-model="form.relationship" :items="relationships" value-key="value"
+                                placeholder="Select relationship" :leading-icon="RELATIONSHIP_ICON" />
                             <template #help>
                                 Select how this guardian is related to the student.
                             </template>
@@ -100,52 +116,59 @@
                     <div v-if="action === 1" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
 
                         <UFormField name="guardianGivenNames" label="Guardian Given Names" required>
-                            <UInput placeholder="Enter given names" v-model="form.guardianGivenNames" />
+                            <UInput v-model="form.guardianGivenNames" placeholder="Enter given names"
+                                :leading-icon="USER_ICON" />
                             <template #help>
                                 Enter all first and middle names of the guardian.
                             </template>
                         </UFormField>
 
                         <UFormField name="guardianFamilyName" label="Guardian Family Name" required>
-                            <UInput placeholder="Enter family name" v-model="form.guardianFamilyName" />
+                            <UInput v-model="form.guardianFamilyName" placeholder="Enter family name"
+                                :leading-icon="USER_ICON" />
                             <template #help>
                                 Enter the guardian's surname or last name.
                             </template>
                         </UFormField>
 
                         <UFormField name="relationship" label="Relationship" required>
-                            <USelectMenu placeholder="Select relationship" value-key="value" v-model="form.relationship"
-                                :items="relationships" />
+                            <USelectMenu v-model="form.relationship" :items="relationships" value-key="value"
+                                placeholder="Select relationship" :leading-icon="RELATIONSHIP_ICON" />
                             <template #help>
                                 Select how this guardian is related to the student.
                             </template>
                         </UFormField>
 
                         <UFormField name="guardianPhone" label="Phone Number" required>
-                            <UInput placeholder="e.g. +23276000000" v-model="form.guardianPhone" />
+                            <UInput v-model="form.guardianPhone" placeholder="e.g. +23276000000"
+                                :leading-icon="PHONE_ICON" />
                             <template #help>
                                 Enter a valid phone number including the country code, e.g. +232 for Sierra Leone.
                             </template>
                         </UFormField>
 
                         <UFormField name="guardianEmail" label="Email Address">
-                            <UInput placeholder="Enter email address" v-model="form.guardianEmail" />
+                            <UInput v-model="form.guardianEmail" placeholder="Enter email address"
+                                :leading-icon="EMAIL_ICON" />
                             <template #help>
                                 Optional. Used for school communications and portal access.
                             </template>
                         </UFormField>
 
                         <UFormField name="guardianCity" label="City" required>
-                            <UInput placeholder="Enter city" v-model="form.guardianCity" />
+                            <UInput v-model="form.guardianCity" placeholder="Enter city" :leading-icon="CITY_ICON" />
                             <template #help>
                                 Enter the city or town where the guardian currently resides.
                             </template>
                         </UFormField>
 
                         <UFormField class="md:col-span-2" name="guardianAddress" label="Address" required>
-                            <UTextarea placeholder="Enter full address" v-model="form.guardianAddress" />
+                            <UTextarea v-model="form.guardianAddress" placeholder="Enter full address"
+                                :leading-icon="ADDRESS_ICON" />
                             <template #help>
+                             <p class="text-sm text-muted">
                                 Enter the guardian's full residential address including street name and house number.
+                             </p>
                             </template>
                         </UFormField>
 
@@ -154,11 +177,14 @@
                 </div>
 
                 <!-- Footer -->
-                <div class="flex flex-col-reverse gap-3 border-t border-gray-200 px-4 py-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between md:px-5">
+                <div
+                    class="flex flex-col-reverse gap-3 border-t border-gray-200 px-4 py-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between md:px-5">
                     <p class="text-sm text-muted">Step 2 of 4</p>
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <UButton @click="back" label="Back" :icon="BACK_ICON" variant="outline" color="neutral" class="w-full justify-center sm:w-auto" />
-                        <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON" class="w-full justify-center sm:w-auto" />
+                        <UButton @click="back" label="Back" :icon="BACK_ICON" variant="outline" color="neutral"
+                            class="w-full justify-center sm:w-auto" />
+                        <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON"
+                            class="w-full justify-center sm:w-auto" />
                     </div>
                 </div>
 
@@ -247,7 +273,7 @@ const schema = yup.object({
         is: () => action.value === 1,
         then: (s) =>
             s.required('Guardian phone number is required')
-             .matches(phoneRegex, 'Enter a valid phone number'),
+                .matches(phoneRegex, 'Enter a valid phone number'),
         otherwise: (s) => s.optional()
     }),
 

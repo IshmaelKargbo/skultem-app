@@ -10,70 +10,89 @@
         </template>
 
         <UForm :state="form" :schema="schema" @submit="next">
-            <div class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
+            <div
+                class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
                 <UFormField name="givenNames" label="Given Names" required>
-                    <UInput placeholder="Enter given names" v-model="form.givenNames" />
+                    <UInput v-model="form.givenNames" placeholder="Enter given names" :leading-icon="USER_ICON" />
                     <template #help>
-                        Enter all first and middle names exactly as they appear on official documents.
+                        <p class="text-sm text-muted">
+                            You can enter multiple given names separated by spaces.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="familyName" label="Family Name" required>
-                    <UInput placeholder="Enter family name" v-model="form.familyName" />
+                    <UInput v-model="form.familyName" placeholder="Enter family name" :leading-icon="USER_ICON" />
                     <template #help>
-                        Enter the surname or last name as it appears on official documents.
+                        <p class="text-sm text-muted">
+                            Enter the student's surname or last name.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="dob" label="Date of Birth" required>
-                    <UInput placeholder="Select date of birth" v-model="form.dob" type="date" />
+                    <UInput v-model="form.dob" type="date" :leading-icon="CALENDAR_ICON" />
                     <template #help>
-                        The student's date of birth is used to verify age and determine grade eligibility.
+                        <p class="text-sm text-muted">
+                            Select the student's date of birth. Must be a past date.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="gender" label="Gender" required>
-                    <USelectMenu placeholder="Select Gender" value-key="value" v-model="form.gender" :items="genders" />
+                    <USelectMenu v-model="form.gender" :items="genders" value-key="value" placeholder="Select gender"
+                        :leading-icon="GENDER_ICON" />
                     <template #help>
-                        Select the gender recorded on the student's official identification.
+                        <p class="text-sm text-muted">
+                            Select the student's gender.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="nationality" label="Nationality" required>
-                    <USelectMenu placeholder="Select nationality" value-key="value" v-model="form.nationality"
-                        :items="nationalities" />
+                    <USelectMenu v-model="form.nationality" :items="nationalities" value-key="value"
+                        placeholder="Select nationality" :leading-icon="FLAG_ICON" />
                     <template #help>
-                        Select the country of which the student is a citizen. This may differ from their country of
-                        residence.
+                        <p class="text-sm text-muted">
+                            Select the student's nationality.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="religion" label="Religion" required>
-                    <USelectMenu placeholder="Select Religion" value-key="value" v-model="form.religion"
-                        :items="religions" />
+                    <USelectMenu v-model="form.religion" :items="religions" value-key="value"
+                        placeholder="Select religion" :leading-icon="BOOK_ICON" />
                     <template #help>
-                        This information may be used to accommodate religious observances and dietary requirements.
+                        <p class="text-sm text-muted">
+                            Select the student's religion.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="city" label="City" required>
-                    <UInput placeholder="Enter city" v-model="form.city" />
+                    <UInput v-model="form.city" placeholder="Enter city" :leading-icon="CITY_ICON" />
                     <template #help>
-                        Enter the city or town where the student currently resides.
+                        <p class="text-sm text-muted">
+                            Enter the city or town where the student currently resides.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="street" label="Address" required>
-                    <UInput placeholder="Enter address" v-model="form.street" />
+                    <UInput v-model="form.street" placeholder="Enter address" :leading-icon="ADDRESS_ICON" />
                     <template #help>
-                        Enter the student's current home address including street name and number.
+                        <p class="text-sm text-muted">
+                            Enter the student's full residential address including street name and house number.
+                        </p>
                     </template>
+                
                 </UFormField>
             </div>
 
             <div class="flex flex-col-reverse gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
                 <p class="text-sm text-muted">Step 1 of 4</p>
-                <UButton type="submit" class="w-full justify-center sm:w-auto" :trailing-icon="NEXT_ICON" label="Next Step" />
+                <UButton type="submit" class="w-full justify-center sm:w-auto" :trailing-icon="NEXT_ICON"
+                    label="Next Step" />
             </div>
         </UForm>
     </UCard>

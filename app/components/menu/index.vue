@@ -55,6 +55,38 @@
           </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+          <MenuItem label="Scheme of Work"
+            :subNavs="[{ label: 'Scheme of Work', to: '/scheme-of-work', icon: SCHEME_ICON, exact: true },{label: ' Lesson Plans', to: '/scheme-of-work/lesson-plans', icon: BOOK_OPEN_ICON } ,{ label: 'Weeks', to: '/scheme-of-work/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/scheme-of-work/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/scheme-of-work/student-progress', icon: STUDENT_ICON },{ label: 'Teacher Progress', to: '/scheme-of-work/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/scheme-of-work/class-progress', icon: CLASS_ICON }]">
+            <template #icon>
+              <UIcon class="text-xl" :name="SCHEME_ICON" />
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+          <MenuItem label="Timetable"
+            :subNavs="[{ label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true }, { label: 'Settings', to: '/timetable/Setting', icon: TIMETABLE_SETTINGS_ICON }]">
+            <template #icon>
+              <UIcon class="text-xl" :name="TIMETABLE_ICON" />
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
           <MenuItem label="Grades"
             :subNavs="[{ label: 'Grade Assignment', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true }, { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON }]">
             <template #icon>
@@ -63,7 +95,8 @@
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                   class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
-                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'"> <!-- Subnav icon -->
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <!-- Subnav icon -->
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -244,7 +277,8 @@
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                   class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
-                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'"> <!-- Subnav icon -->
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <!-- Subnav icon -->
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>

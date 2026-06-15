@@ -206,4 +206,5 @@ defineExpose({
     </template>
 
   </UCard>
+  <!-- <ReceiptPayment v-if="receipt" id="payment-receipt" :receipt="receipt" /> -->
 </template>

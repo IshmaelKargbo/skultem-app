@@ -220,52 +220,55 @@ onMounted(() => {
             <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-5 md:p-5">
 
                 <UFormField name="enrollmentType" label="Enrollment Type" required>
-                    <USelectMenu value-key="value" v-model="form.enrollmentType" :items="enrollmentTypes" />
+                    <USelectMenu v-model="form.enrollmentType" value-key="value" :items="enrollmentTypes"
+                        :leading-icon="ENROLLMENT_ICON" />
                     <template #help>
-                        Select "New" for first-time students, "Transfer" for those coming from another school,
-                        or "Re-enrolled" for students returning after a break.
+                        <p class="text-sm text-muted">
+                            Select the type of enrollment for the student. This determines required fields and subject
+                            options.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="admissionDate" label="Admission Date" required>
-                    <UInput type="date" v-model="form.admissionDate" />
+                    <UInput type="date" v-model="form.admissionDate" :leading-icon="CALENDAR_ICON" />
                     <template #help>
                         The date the student is officially admitted. Cannot be a future date.
                     </template>
                 </UFormField>
 
                 <UFormField name="classId" label="Grade / Class" required>
-                    <USelectMenu value-key="value" v-model="form.classId" :items="classes" />
+                    <USelectMenu v-model="form.classId" value-key="value" :items="classes" :leading-icon="CLASS_ICON" />
                     <template #help>
-                        Select the class session the student will be enrolled in. Subject options will load after selection.
+                        <p class="text-sm text-muted">
+                            Select the grade or class the student will be enrolled in. Subject options will be based on
+                            this selection.
+                        </p>
                     </template>
                 </UFormField>
 
                 <UFormField name="admissionNumber" label="Student ID" required>
-                    <UInput v-model="form.admissionNumber" placeholder="e.g. STU-2025-0042" />
+                    <UInput v-model="form.admissionNumber" placeholder="e.g. STU-2025-0042" :leading-icon="ID_ICON" />
                     <template #help>
-                        Enter the unique student ID assigned by the school. This will be used across all records.
+                        <p class="text-sm text-muted">
+                            Enter a unique student ID or admission number. This is used for record-keeping and should
+                            follow your school's existing format if applicable.
+                        </p>
                     </template>
                 </UFormField>
 
-                <UFormField
-                    name="previousSchool"
-                    label="Previous School"
-                    :required="isTransfer"
-                >
-                    <UInput v-model="form.previousSchool" placeholder="Enter name of previous school" />
+                <UFormField name="previousSchool" label="Previous School" :required="isTransfer">
+                    <UInput v-model="form.previousSchool" placeholder="Enter name of previous school"
+                        :leading-icon="SCHOOL_ICON" />
                     <template #help>
                         <span v-if="isTransfer">Required for transfer and re-enrolled students.</span>
                         <span v-else>Optional. Only required if the student is transferring or re-enrolling.</span>
                     </template>
                 </UFormField>
 
-                <UFormField
-                    name="lastGradeCompleted"
-                    label="Last Grade Completed"
-                    :required="isTransfer"
-                >
-                    <UInput v-model="form.lastGradeCompleted" placeholder="e.g. Grade 5, JSS 2" />
+                <UFormField name="lastGradeCompleted" label="Last Grade Completed" :required="isTransfer">
+                    <UInput v-model="form.lastGradeCompleted" placeholder="e.g. Grade 5, JSS 2"
+                        :leading-icon="BOOK_ICON" />
                     <template #help>
                         <span v-if="isTransfer">Required for transfer and re-enrolled students.</span>
                         <span v-else>Optional. Enter the highest grade the student successfully completed.</span>
@@ -289,21 +292,35 @@ onMounted(() => {
 
                     <!-- Subjects list -->
                     <div v-if="coreSubjects.length" class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <div
-                            v-for="subject in coreSubjects"
-                            :key="subject.id"
-                            class="border rounded-xl p-4 bg-primary/5 border-primary"
-                        >
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="font-medium">{{ subject.subjectName }}</p>
-                                    <p class="text-sm text-muted">{{ subject.teacherName }}</p>
+                        <div v-for="subject in coreSubjects" :key="subject.id"
+                            class="group rounded-2xl border border-default bg-default p-4 transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm">
+                            <div class="flex items-start gap-3">
+                                <!-- Subject Icon -->
+                                <div
+                                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <UIcon :name="BOOK_ICON" class="text-xl" />
                                 </div>
-                                <UIcon :name="CHECK_ICON" />
+
+                                <!-- Subject Details -->
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <h4 class="font-semibold">
+                                                {{ subject.subjectName }}
+                                            </h4>
+
+                                            <div class="mt-1 flex items-center gap-1 text-sm text-muted">
+                                                <UIcon :name="TEACHER_ICON" class="text-xs" />
+                                                <span>{{ subject.teacherName }}</span>
+                                            </div>
+                                        </div>
+
+                                        <UBadge color="success" variant="soft" label="Required" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
                     <!-- Empty state -->
                     <p v-else class="text-sm text-muted">
                         No core subjects are assigned to this class yet.
@@ -314,40 +331,33 @@ onMounted(() => {
                 <div v-for="group in optionalGroups" :key="group.id" class="space-y-3 px-4 md:px-5">
                     <div class="flex justify-between items-center">
                         <div class="flex gap-2 items-center">
-                            <UIcon :name="BOOK_ICON" />
+                            <UIcon :name="OPTIONAL_SUBJECT_ICON" class="text-primary text-lg" />
                             <p class="font-medium">{{ group.name }}</p>
                         </div>
-                        <UBadge
-                            variant="soft"
-                            color="neutral"
-                            :label="group.select > 1 ? `Select ${group.select}` : 'Select One'"
-                        />
+                        <UBadge variant="soft" color="neutral"
+                            :label="group.select > 1 ? `Select ${group.select}` : 'Select One'" />
                     </div>
 
                     <UFormField :name="`optionalSubjects.${group.id}`">
-                        <URadioGroup
-                            v-model="selectedOptional[group.id]"
-                            :items="group.subjects"
-                            value-key="value"
-                            orientation="vertical"
-                            variant="card"
-                            indicator="end"
-                            :ui="{
+                        <URadioGroup v-model="selectedOptional[group.id]" :items="group.subjects" value-key="value"
+                            orientation="vertical" variant="card" indicator="end" :ui="{
                                 wrapper: 'grid grid-cols-1 gap-3 md:grid-cols-2',
                                 item: 'w-full'
-                            }"
-                        />
+                            }" />
                     </UFormField>
                 </div>
 
             </div>
 
             <!-- FOOTER -->
-            <div class="flex flex-col-reverse gap-3 border-t border-default px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
+            <div
+                class="flex flex-col-reverse gap-3 border-t border-default px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
                 <p class="text-sm text-muted">Step 3 of 4</p>
                 <div class="flex flex-col gap-2 sm:flex-row">
-                    <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral" class="w-full justify-center sm:w-auto" />
-                    <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON" class="w-full justify-center sm:w-auto" />
+                    <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral"
+                        class="w-full justify-center sm:w-auto" />
+                    <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON"
+                        class="w-full justify-center sm:w-auto" />
                 </div>
             </div>
         </UForm>

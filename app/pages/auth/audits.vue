@@ -1,6 +1,6 @@
 <template>
     <div class="h-full overflow-y-auto bg-gray-50/60 dark:bg-neutral-950">
-    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
+        <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
             <!-- Header -->
             <div
                 class="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow dark:border-gray-800 dark:bg-neutral-900 md:flex-row md:items-center md:justify-between">
@@ -95,7 +95,7 @@
             </UCard>
 
             <!-- Mobile -->
-            <div class="space-y-4 md:hidden">
+            <div class="space-y-4 md:hidden overflow-x-hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <UCard v-for="i in 5" :key="i"
@@ -124,11 +124,8 @@
 
                 <!-- Data -->
                 <template v-else-if="filtered?.length">
-                    <UCard v-for="item in filtered" :key="item.id"
-                        class="overflow-hidden  transition-all "
-                        :ui="{
-                            body: 'p-0'
-                        }">
+                    <UCard v-for="item in filtered" :key="item.id" class="w-full overflow-hidden transition-all"
+                        :ui="{ body: 'p-0 overflow-hidden' }">
                         <!-- Header -->
                         <div class="border-b border-gray-100 p-4 dark:border-gray-800">
                             <div class="flex items-start justify-between gap-3">
