@@ -63,7 +63,8 @@
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                   class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
-                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'"> <!-- Subnav icon -->
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <!-- Subnav icon -->
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
@@ -165,6 +166,22 @@
             </template>
           </MenuItem>
         </li>
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT])">
+          <MenuItem label="Athletic House"
+            :subNavs="[{ label: 'Athletic House', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true }, { label: 'Category', to: '/athletic-house/category', icon: CATEGORY_ICON }]">
+            <template #icon>
+              <UIcon class="text-xl" :name="ATHLETIC_ICON" />
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
+            </template>
+          </MenuItem>
+        </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Materials & Supplies"
             :subNavs="[{ label: 'Materials', to: '/material', icon: MATERIAL_ICON, exact: true }, { label: 'Supplies', to: '/material/supply', icon: CURRICULUM_GROUP_ICON }, { label: 'Category', to: '/material/category', icon: CATEGORY_ICON }]">
@@ -244,7 +261,8 @@
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
                   class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
-                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'"> <!-- Subnav icon -->
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <!-- Subnav icon -->
                   <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
                 </NuxtLink>
               </div>
