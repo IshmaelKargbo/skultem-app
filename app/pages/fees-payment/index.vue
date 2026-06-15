@@ -1,8 +1,8 @@
 <template>
     <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
         <Heading class="hidden md:flex" title="Student Fees Management" subtitle="Manage student-specific fees and balances">
-            <div v-if="can([Role.ACCOUNTANT, Role.OWNER])">
-                <FeeStructureAdd />
+            <div>
+                <FeeStructureAdd  v-if="can([Role.ACCOUNTANT, Role.OWNER])"/>
             </div>
         </Heading>
 
