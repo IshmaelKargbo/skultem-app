@@ -56,7 +56,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
           <MenuItem label="Scheme of Work"
-            :subNavs="[{ label: 'Scheme of Work', to: '/scheme-of-work', icon: SCHEME_ICON, exact: true },{label: ' Lesson Plans', to: '/scheme-of-work/lesson-plans', icon: BOOK_OPEN_ICON } ,{ label: 'Weeks', to: '/scheme-of-work/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/scheme-of-work/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/scheme-of-work/student-progress', icon: STUDENT_ICON },{ label: 'Teacher Progress', to: '/scheme-of-work/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/scheme-of-work/class-progress', icon: CLASS_ICON }]">
+            :subNavs="[{ label: 'Scheme of Work', to: '/scheme-of-work', icon: SCHEME_ICON, exact: true }, { label: ' Lesson Plans', to: '/scheme-of-work/lesson-plans', icon: BOOK_OPEN_ICON }, { label: 'Weeks', to: '/scheme-of-work/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/scheme-of-work/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/scheme-of-work/student-progress', icon: STUDENT_ICON }, { label: 'Teacher Progress', to: '/scheme-of-work/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/scheme-of-work/class-progress', icon: CLASS_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="SCHEME_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">
@@ -200,7 +200,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT])">
           <MenuItem label="Athletic House"
-            :subNavs="[{ label: 'Athletic House', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true }, { label: 'Category', to: '/athletic-house/category', icon: CATEGORY_ICON }]">
+            :subNavs="[{ label: 'Management', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true }, { label: 'House', to: '/athletic-house/house', icon: CATEGORY_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="ATHLETIC_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">

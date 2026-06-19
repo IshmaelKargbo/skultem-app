@@ -10,11 +10,23 @@ export const TeacherApi = () => {
           throw new Error('Failed to fetch teachers')
 
         const data = res.data
-        
+
         const meta = useMeta(res.meta)
 
         return { ...res, data, meta }
 
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getOne: async (id: string) => {
+      try {
+        const res = await $api(`/teacher/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch teacher')
+
+        return res.data
       } catch (err: any) {
         useHandleError(err)
       }
@@ -35,6 +47,16 @@ export const TeacherApi = () => {
       try {
         return await $api('/teacher', {
           method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    edit: async (id: string, payload: EditTeacherDTO) => {
+      try {
+        return await $api(`/teacher/edit/${id}`, {
+          method: 'PATCH',
           body: payload
         })
       } catch (err: any) {

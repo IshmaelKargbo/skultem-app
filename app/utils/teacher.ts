@@ -7,6 +7,7 @@ export type Teacher = {
     street: string
     city: string
     phone: string
+    classes: string[]
     status: string
     createdAt: string
     updatedAt: string
@@ -49,4 +50,15 @@ export type CreateTeacherDto = {
     street: string
     phone: string
     email: string
+}
+
+export type EditTeacherDTO = {
+    givenNames: string
+    familyName: string
+    staffId: string
+    gender: string
+    title: string
+    city: string
+    street: string
+    phone: string
 }

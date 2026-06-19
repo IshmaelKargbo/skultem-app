@@ -1,6 +1,6 @@
 <template>
     <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
-        <Heading title="Athletic Categories" subtitle="School spending categories">
+        <Heading title="Athletic House" subtitle="Create and manage athletic houses for student assignment">
             <AthleticCategoryAdd />
         </Heading>
         <AthleticCategoryTable />    
@@ -9,8 +9,8 @@
 
 <script setup lang="ts">
 onMounted(() => {
-    useAppStore().setTitle('Settings');
-    document.title = 'Athletic Categories | Athletic | Skultem';
+    useAppStore().setTitle('Athletic Management');
+    document.title = 'Athletic Categories | Athletic Management | Skultem';
 })
 
 definePageMeta({

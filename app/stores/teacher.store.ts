@@ -22,8 +22,22 @@ export const useTeacherStore = defineStore('teacher', {
         this.loading = false
       }
     },
+    async getOne(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        return await TeacherApi().getOne(id) as Teacher
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch teacher'
+      } finally {
+        this.loading = false
+      }
+    },
     create(payload: CreateTeacherDto) {
       return TeacherApi().create(payload)
+    },
+    update(id: string, payload: EditTeacherDTO) {
+      return TeacherApi().edit(id, payload)
     },
     fetchSubjects(id: string) {
       return TeacherApi().getAllSubjects(id)
