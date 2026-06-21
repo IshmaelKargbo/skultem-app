@@ -31,15 +31,15 @@ const columns = [
   },
   {
     accessorKey: 'email',
-    header: 'Email'
+    header: 'Contact'
   },
   {
-    accessorKey: 'city',
-    header: 'City'
+    accessorKey: 'address',
+    header: 'Address'
   },
   {
-    accessorKey: 'street',
-    header: 'Street'
+    accessorKey: 'action',
+    header: ''
   }
 ]
 
@@ -158,6 +158,18 @@ onMounted(async () => {
       <template #gender-cell="{ row }">
         <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
           variant="outline" />
+      </template>
+      <template #address-cell="{ row }">
+        <div>
+          <p>{{ row.original.city }}</p>
+          <p class="text-xs text-muted">{{ row.original.street }}</p>
+        </div>
+      </template>
+      <template #action-cell="{ row }">
+        <div class="flex justify-end">
+          <UButton :to="`/teachers/edit/${row.original.id}`" variant="ghost" color="warning" :icon="EDIT_ICON"
+            size="sm" />
+        </div>
       </template>
     </UTable>
     <template #footer>

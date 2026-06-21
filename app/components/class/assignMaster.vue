@@ -175,9 +175,10 @@ watch(open, async (val) => {
     classes.value = res.map((c: ClassSession) => {
       let name = c.clazz;
 
-      if (c.streamName) {
+      if (c.streamName != 'N/A') {
         name = `${c.clazz} (${c.streamName})`
       }
+      
       return {
         label: name,
         value: c.clazzId,

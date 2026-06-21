@@ -18,7 +18,6 @@
           icon="i-lucide-user-round-plus"
           label="Add Teacher"
         />
-
       </div>
     </Heading>
 

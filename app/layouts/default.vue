@@ -13,7 +13,7 @@ watch(() => route.fullPath, () => {
 </script>
 
 <template>
-  <div v-if="layoutReady" class="flex h-dvh overflow-hidden bg-[var(--app-bg)]">
+  <div v-if="layoutReady" class="flex h-dvh overflow-hidden bg-[--app-bg]">
     <div class="w-72 hidden md:block p-4 pr-0.5">
       <Menu />
     </div>
