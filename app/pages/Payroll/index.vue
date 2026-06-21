@@ -17,7 +17,7 @@
       <div class="flex flex-wrap gap-2">
 
         <UButton
-          icon="i-lucide-play"
+          icon="i-lucide-play" to="/payroll/run"
         >
           Run Payroll
         </UButton>
