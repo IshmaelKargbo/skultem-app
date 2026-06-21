@@ -236,7 +236,9 @@
         </template>
     </UModal>
 
-    <ReceiptPayment v-if="receipt" id="payment-receipt" :receipt="receipt" />
+    <div v-if="receipt" class="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
+        <ReceiptPayment id="payment-receipt" :receipt="receipt" :parse-payment-method="parsePaymentMethod" />
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -261,6 +263,11 @@ const isLoading = ref(false)
 const receipt = ref<any | null>(null)
 const receiptModalOpen = ref(false)
 const isDownloadingReceipt = ref(false)
+const parsePaymentMethod = {
+    CASH: 'Cash',
+    BANK: 'Bank',
+    MOBILE_MONEY: 'Mobile Money'
+}
 
 async function onStudentSelect() {
     allocations.value = []

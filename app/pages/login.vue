@@ -36,7 +36,7 @@
 
               <!-- Title -->
               <div>
-                <h1 class="text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight text-white">
+                <h1 class="text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight !text-white">
                   {{ item.title }}
                 </h1>
                 <span

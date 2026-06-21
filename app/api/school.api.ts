@@ -1,3 +1,5 @@
+import Id from "~/pages/scheme-of-work/lesson-plans/[id].vue"
+
 export const SchoolApi = () => {
   const { $api } = useNuxtApp()
 
@@ -8,6 +10,18 @@ export const SchoolApi = () => {
 
         if (!res)
           throw new Error('Failed to fetch auth')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    get: async (id: string) => {
+      try {
+        const res = await $api(`/school/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch school')
 
         return res.data
       } catch (err: any) {

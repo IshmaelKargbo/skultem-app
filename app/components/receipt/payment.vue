@@ -1,43 +1,40 @@
 <template>
-    <div :id="id" class="payment-receipt" aria-hidden="true">
+    <div :id="id" class="receipt">
+        <!-- HEADER -->
         <div class="receipt-header">
-            <div class="receipt-logo">S</div>
-            <div>
-                <h1>SKULTEM SCHOOL</h1>
-                <p>Official School Fees Receipt</p>
+            <div class="left">
+                <div class="school-name">{{ receipt.name }}</div>
+                <div class="subtitle">Official School Fees Receipt</div>
+            </div>
+
+            <div class="right">
+                <div><strong>Receipt:</strong> {{ receipt.referenceNo }}</div>
+                <div><strong>Date:</strong> {{ formatDate(receipt.paidAt) }}</div>
             </div>
         </div>
 
-        <div class="receipt-meta-grid">
-            <div>
-                <span>Receipt No</span>
-                <strong>{{ receipt.referenceNo }}</strong>
-            </div>
-            <div>
-                <span>Date</span>
-                <strong>{{ formatDate(receipt.paidAt) }}</strong>
-            </div>
-            <div>
-                <span>Status</span>
-                <strong>PAID</strong>
-            </div>
-        </div>
+        <!-- STUDENT INFO -->
+        <div class="section">
+            <div class="section-title">Student Information</div>
 
-        <div class="receipt-section">
-            <h2>Student Information</h2>
-            <div class="receipt-info-grid">
+            <div class="grid">
                 <div>
                     <span>Student Name</span>
                     <strong>{{ receipt.student }}</strong>
                 </div>
-                <div>
-                    <span>Payment Method</span>
-                    <strong>{{ parsePaymentMethod[receipt.paymentMethod] || receipt.paymentMethod }}</strong>
-                </div>
+
                 <div>
                     <span>Academic Term</span>
                     <strong>{{ receipt.term }}</strong>
                 </div>
+
+                <div>
+                    <span>Payment Method</span>
+                    <strong>
+                        {{ parsePaymentMethod?.[receipt.paymentMethod] || receipt.paymentMethod }}
+                    </strong>
+                </div>
+
                 <div>
                     <span>Recorded By</span>
                     <strong>Accounts Office</strong>
@@ -45,8 +42,10 @@
             </div>
         </div>
 
-        <div class="receipt-section">
-            <h2>Payment Breakdown</h2>
+        <!-- PAYMENT TABLE -->
+        <div class="section">
+            <div class="section-title">Payment Breakdown</div>
+
             <table>
                 <thead>
                     <tr>
@@ -55,48 +54,39 @@
                         <th>Amount (SLE)</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <tr v-for="(payment, index) in receipt.payments" :key="payment.id || index">
-                        <td>{{ index + 1 }}</td>
-                        <td>{{ payment.fee }}</td>
-                        <td>{{ format(payment.amount) }}</td>
+                    <tr v-for="(p, i) in receipt.payments" :key="p.id || i">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ p.fee }}</td>
+                        <td>{{ format(p.amount) }}</td>
                     </tr>
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="2">TOTAL PAID</th>
-                        <th>{{ format(receipt.total) }} SLE</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
 
-        <div class="receipt-summary">
+        <!-- TOTAL -->
+        <div class="total">
             <div>
-                <span>Total Paid</span>
-                <strong>{{ format(receipt.total) }} SLE</strong>
+                <span>Total Paid:</span>
+                <strong class="total-amount">{{ format(receipt.total) }}</strong>
             </div>
+        </div>
+        <!-- OUTSTANDING BALANCE -->
+        <div class="balance">
             <div>
-                <span>Reference</span>
-                <strong>{{ receipt.referenceNo }}</strong>
+                <span>Outstanding Balance:</span>
+                <strong :class="{ danger: receipt.outstandingBalance > 0 }">
+                    {{ format(receipt.outstandingBalance) }}
+                </strong>
             </div>
         </div>
 
-        <div class="receipt-signatures">
-            <div>
-                <span></span>
-                <p>Bursar Signature</p>
-            </div>
-            <div>
-                <span></span>
-                <p>Principal Signature</p>
-            </div>
+        <!-- FOOTER -->
+        <div class="footer">
+            This is an official receipt issued by {{ receipt.name }} via skultem.com
         </div>
 
-        <div class="receipt-footer">
-            <p>This is an official computer-generated receipt from SKULTEM SCHOOL.</p>
-            <small>Powered by Skultem School Management System</small>
-        </div>
     </div>
 </template>
 
@@ -104,186 +94,218 @@
 defineProps<{
     id: string
     receipt: any
+    parsePaymentMethod?: Record<string, string>
 }>()
-
-function format(v: number) {
-    return new Intl.NumberFormat().format(v || 0)
-}
+const { format } = useMoney()
 
 function formatDate(value?: string) {
     if (!value) return new Date().toLocaleDateString()
-    return new Date(value).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+
+    return new Date(value).toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit"
     })
 }
 </script>
 
 <style scoped>
-.payment-receipt {
-    position: fixed;
-    left: -10000px;
-    top: 0;
-    z-index: -1;
+/* =======================
+   PAGE BASE (A4 SIZE)
+======================= */
+.receipt {
     width: 794px;
     min-height: 1123px;
-    padding: 30px;
+    padding: 48px;
     box-sizing: border-box;
     background: #ffffff;
     color: #111827;
     font-family: Arial, sans-serif;
 }
 
+/* =======================
+   HEADER
+======================= */
 .receipt-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 2px solid #111827;
+    padding-bottom: 18px;
+    margin-bottom: 28px;
 }
 
-.receipt-logo {
-    display: flex;
-    width: 70px;
-    height: 70px;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    border-radius: 16px;
-    background: #111827;
-    color: #ffffff;
-    font-size: 30px;
-    font-weight: 700;
+.school-name {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
 }
 
-.receipt-header h1 {
-    margin: 0;
-    font-size: 30px;
-    line-height: 1.2;
-}
-
-.receipt-header p {
-    margin: 6px 0 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.receipt-meta-grid,
-.receipt-info-grid,
-.receipt-summary {
-    display: grid;
-    gap: 16px;
-}
-
-.receipt-meta-grid {
-    grid-template-columns: repeat(3, 1fr);
-    margin-top: 28px;
-}
-
-.receipt-info-grid,
-.receipt-summary {
-    grid-template-columns: repeat(2, 1fr);
-}
-
-.receipt-meta-grid > div,
-.receipt-info-grid > div {
-    padding: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #f9fafb;
-}
-
-.payment-receipt span {
-    display: block;
-    margin-bottom: 6px;
+.subtitle {
+    font-size: 13px;
     color: #6b7280;
-    font-size: 12px;
+    margin-top: 4px;
 }
 
-.payment-receipt strong {
-    font-size: 15px;
+.right {
+    text-align: right;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
-.receipt-section {
-    margin-top: 35px;
+/* =======================
+   SECTIONS
+======================= */
+.section {
+    margin-bottom: 26px;
 }
 
-.receipt-section h2 {
-    margin: 0 0 16px;
-    font-size: 17px;
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 12px;
 }
 
-.payment-receipt table {
-    width: 100%;
-    margin-top: 10px;
-    border-collapse: collapse;
+/* =======================
+   GRID
+======================= */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 30px;
 }
 
-.payment-receipt thead {
-    background: #111827;
-    color: #ffffff;
+.grid span {
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 4px;
 }
 
-.payment-receipt th,
-.payment-receipt td {
-    padding: 14px;
-    border-bottom: 1px solid #e5e7eb;
-    text-align: left;
+.grid strong {
     font-size: 14px;
 }
 
-.payment-receipt tfoot th {
-    background: #f3f4f6;
-    font-size: 15px;
+/* =======================
+   TABLE
+======================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.receipt-summary {
-    margin-top: 35px;
+thead {
+    border-bottom: 2px solid #111827;
 }
 
-.receipt-summary > div {
-    padding: 22px;
-    border-radius: 16px;
-    background: #111827;
-    color: #ffffff;
+th {
+    text-align: left;
+    font-size: 12px;
+    padding: 10px 0;
 }
 
-.receipt-summary span {
-    color: #d1d5db;
+td {
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
 }
 
-.receipt-summary strong {
-    font-size: 24px;
+/* =======================
+   TOTAL
+======================= */
+.total {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 25px;
 }
 
-.receipt-signatures {
+.total div {
+    text-align: right;
+}
+
+.total span {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.total strong {
+    padding-left: 10px;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+
+.balance {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.balance div {
+    text-align: right;
+}
+
+.balance span {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.balance strong {
+    padding-left: 10px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.balance strong.danger {
+    color: #b91c1c;
+    /* red tone for unpaid balance */
+}
+/* =======================
+   SIGNATURES
+======================= */
+.signatures {
     display: flex;
     justify-content: space-between;
-    margin-top: 70px;
+    margin-top: 90px;
+    padding: 0 40px;
 }
 
-.receipt-signatures > div {
-    width: 240px;
+.line {
+    width: 220px;
+    border-top: 1px solid #111827;
+    margin-bottom: 6px;
+}
+
+.signatures p {
+    font-size: 12px;
     text-align: center;
 }
 
-.receipt-signatures span {
-    height: 1px;
-    margin-bottom: 8px;
-    border-top: 1px solid #111827;
-}
-
-.receipt-signatures p,
-.receipt-footer p {
-    margin: 0;
-    font-size: 13px;
-}
-
-.receipt-footer {
+/* =======================
+   FOOTER
+======================= */
+.footer {
     margin-top: 60px;
     text-align: center;
+    font-size: 12px;
     color: #6b7280;
-    font-size: 13px;
+}
+
+/* =======================
+   PRINT OPTIMIZATION
+======================= */
+@media print {
+    .receipt {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+    }
+
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 }
 </style>

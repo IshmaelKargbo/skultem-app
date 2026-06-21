@@ -22,7 +22,7 @@ const columns = [
     header: 'Unit'
   },
   {
-    accessorKey: 'lastRestockedAt',
+    accessorKey: 'updatedAt',
     header: 'Last Restocked At'
   },
   {
@@ -143,9 +143,9 @@ onMounted(async () => {
           </UBadge>
         </template>
 
-        <template #lastRestockedAt-cell="{ row }">
+        <template #updatedAt-cell="{ row }">
           <p class="text-sm text-gray-500">
-            {{ formatDateTime(row.original.lastRestockedAt) }}
+            {{ formatDateTime(row.original.updatedAt) }}
           </p>
         </template>
 
