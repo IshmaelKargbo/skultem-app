@@ -102,16 +102,6 @@
             </span>
           </NuxtLink>
 
-          <NuxtLink v-if="can([Role.TEACHER, Role.PROPRIETOR])" to="/behaviours" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/behaviours') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="BEHAVIOUR_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Behaviours
-            </span>
-          </NuxtLink>
-
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT])" to="/parents" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/parents') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
@@ -122,15 +112,6 @@
             </span>
           </NuxtLink>
 
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN])" to="/subjects" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/subjects') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="SUBJECT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Subjects
-            </span>
-          </NuxtLink>
 
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/teachers" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
@@ -152,16 +133,6 @@
             </span>
           </NuxtLink>
 
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.ADMIN, Role.OWNER])" to="/classes" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/classes') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="CLASS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Classes
-            </span>
-          </NuxtLink>
-
           <NuxtLink v-if="can([Role.PARENT])" to="/grades" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/grades') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
@@ -171,6 +142,7 @@
               Grades
             </span>
           </NuxtLink>
+
           <NuxtLink v-if="can([Role.PARENT])" to="/notifications" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/notifications') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
@@ -360,7 +332,7 @@ const sections = computed(() => [
       }
     ].filter(Boolean)
   },
-
+  // grades
   {
     id: 'grades',
     title: 'Grades',
@@ -378,7 +350,168 @@ const sections = computed(() => [
         to: '/grades'
       }
     ].filter(Boolean)
+  },  // subjects
+  {
+    id: 'subjects',
+    title: 'Subjects',
+    visible: can([Role.PROPRIETOR, Role.ADMIN]),
+    items: [
+      {
+        label: 'Subjects',
+        icon: SUBJECT_ICON,
+        to: '/subjects'
+      },
+
+      {
+        label: 'Subject Groups',
+        icon: CURRICULUM_GROUP_ICON,
+        to: '/curriculums/subject-groups'
+      },
+
+      {
+        label: 'Class Subjects',
+        icon: BOOK_OPEN_ICON,
+        to: '/curriculums/class-subjects'
+      },
+
+      {
+        label: 'Teacher Assignment',
+        icon: CLIPBOARD_ADD_ICON,
+        to: '/curriculums/teacher-assignment'
+      },
+
+      {
+        label: 'Sections',
+        icon: LAYERS_ICON,
+        to: '/curriculums/sections'
+      },
+
+      {
+        label: 'Streams Subjects',
+        icon: CURRICULUM_STREAM_ICON,
+        to: '/curriculums/streams'
+      }
+    ]
   },
+  // classes
+  {
+    id: 'classes',
+    title: 'Classes',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT, Role.OWNER]),
+    items: [
+      {
+        label: 'Classes',
+        icon: CLASS_ICON,
+        to: '/classes'
+      },
+
+      {
+        label: 'Teacher Assignment',
+        icon: CLIPBOARD_ADD_ICON,
+        to: '/classes/teacher-assignment'
+      },
+
+      {
+        label: 'Sections',
+        icon: LAYERS_ICON,
+        to: '/classes/sections'
+      },
+
+      {
+        label: 'Streams',
+        icon: CURRICULUM_STREAM_ICON,
+        to: '/classes/streams'
+      }
+    ]
+  },
+  // curriculum
+  {
+    id: 'curriculum',
+    title: 'Curriculum',
+    visible: can([Role.PROPRIETOR, Role.ADMIN]),
+    items: [
+      {
+        label: 'Scheme of Work',
+        icon: SCHEME_ICON,
+        to: '/curriculums/scheme-of-work'
+      },
+
+      {
+        label: ' Lesson Plans ',
+        icon: BOOK_OPEN_ICON,
+        to: '/curriculums/lesson-plans'
+      },
+
+      {
+        label: 'Weeks',
+        icon: WEEKS_ICON,
+        to: '/curriculums/weeks'
+      },
+
+      {
+        label: 'Progress',
+        icon: PROGRESS_ICON,
+        to: '/curriculums/progress'
+      },
+
+      {
+        label: 'Student Progress',
+        icon: STUDENT_ICON,
+        to: '/curriculums/student-progress'
+      },
+
+      {
+        label: 'Teacher Progress',
+        icon: TEACHER_ICON,
+        to: '/curriculums/teacher-progress'
+      },
+
+      {
+        label: 'Class Progress',
+        icon: CLASS_ICON,
+        to: '/curriculums/class-progress'
+      }
+    ]
+  },
+  // classes
+  {
+    id: 'behaviours',
+    title: 'Behaviours',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+    items: [
+      {
+        label: 'Behaviours',
+        icon: BEHAVIOUR_ICON,
+        to: '/behaviours'
+      },
+
+      {
+        label: 'Category',
+        icon: CATEGORY_ICON,
+        to: '/behaviours/category'
+      },
+    ]
+  },
+    // Timetable
+  {
+    id: 'timetable',
+    title: 'Timetable',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+    items: [
+      {
+        label: 'Timetable',
+        icon: TIMETABLE_ICON,
+        to: '/timetable'
+      },
+
+      {
+        label: 'Settings',
+        icon: TIMETABLE_SETTINGS_ICON ,
+        to: '/timetable/Setting'
+      },
+    ]
+  },
+  // expenses
   {
     id: 'expenses',
     title: 'Expenses',
@@ -399,6 +532,7 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
+  // academics
   {
     id: 'academics',
     title: 'Academics',
@@ -436,6 +570,7 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
+  // authorization
   {
     id: 'authorization',
     title: 'Authorization',
@@ -461,6 +596,7 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
+  // fees
   {
     id: 'fees',
     title: 'Fees & Payments',
@@ -496,6 +632,7 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
+  // materials
   {
     id: 'materials',
     title: 'Materials & Supplies',
@@ -521,51 +658,57 @@ const sections = computed(() => [
 
     ].filter(Boolean)
   },
-
-
-
+    // id-cards
   {
-    id: 'curriculum',
-    title: 'Curriculum',
-    visible: can([Role.PROPRIETOR, Role.ADMIN]),
+    id: 'id-cards',
+    title: 'ID Cards',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
     items: [
       {
-        label: 'Curriculums',
-        icon: CURRICULUM_ICON,
-        to: '/curriculums'
+        label: 'ID Cards',
+        icon: ID_CARD_ICON,
+        to: '/id-cards'
       },
 
       {
-        label: 'Subject Groups',
-        icon: CURRICULUM_GROUP_ICON,
-        to: '/curriculums/subject-groups'
+        label: 'Generate',
+        icon: GENERATE_ID_CARD_ICON ,
+        to: '/id-cards/generate'
       },
 
-      {
-        label: 'Class Subjects',
-        icon: BOOK_OPEN_ICON,
-        to: '/curriculums/class-subjects'
+       {
+        label: 'Templates',
+        icon: SETTINGS_ICON ,
+        to: '/id-cards/templates'
       },
-
-      {
-        label: 'Teacher Assignment',
-        icon: CLIPBOARD_ADD_ICON,
-        to: '/curriculums/teacher-assignment'
-      },
-
-      {
-        label: 'Sections',
-        icon: LAYERS_ICON,
-        to: '/curriculums/sections'
-      },
-
-      {
-        label: 'Streams',
-        icon: CURRICULUM_STREAM_ICON,
-        to: '/curriculums/streams'
-      }
     ]
-  }
+  },
+ // id-cards
+  {
+    id: 'report-cards',
+    title: 'Report Cards',
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+    items: [
+      {
+        label: 'Report Cards',
+        icon: REPORT_ICON,
+        to: '/report-cards'
+      },
+
+      {
+        label: 'Generate',
+        icon: GENERATE_ICON,
+        to: '/report-cards/generate'
+      },
+
+       {
+        label: 'Templates',
+        icon: SETTINGS_ICON ,
+        to: '/id-cards/templates'
+      },
+    ]
+  },
+
 ].filter((section: any) => section?.visible !== false))
 
 function toggleSection(id: string) {

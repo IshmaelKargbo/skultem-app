@@ -39,6 +39,22 @@
           </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+          <MenuItem label="Grades"
+            :subNavs="[{ label: 'Grades', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true }, { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON }]">
+            <template #icon>
+              <UIcon class="text-xl" :name="GRADES_ASSIGN_ICON" />
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Behaviours"
             :subNavs="[{ label: 'Behaviours', to: '/behaviours', icon: BEHAVIOUR_ICON, exact: true }, { label: 'Category', to: '/behaviours/category', icon: CATEGORY_ICON }]">
             <template #icon>
@@ -55,8 +71,8 @@
           </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
-          <MenuItem label="Scheme of Work"
-            :subNavs="[{ label: 'Scheme of Work', to: '/scheme-of-work', icon: SCHEME_ICON, exact: true }, { label: ' Lesson Plans', to: '/scheme-of-work/lesson-plans', icon: BOOK_OPEN_ICON }, { label: 'Weeks', to: '/scheme-of-work/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/scheme-of-work/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/scheme-of-work/student-progress', icon: STUDENT_ICON }, { label: 'Teacher Progress', to: '/scheme-of-work/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/scheme-of-work/class-progress', icon: CLASS_ICON }]">
+          <MenuItem label="Curriculums"
+            :subNavs="[{ label: 'Scheme of Work', to: '/curriculums/scheme-of-work', icon: SCHEME_ICON, exact: true }, { label: ' Lesson Plans', to: '/curriculums/lesson-plans', icon: BOOK_OPEN_ICON }, { label: 'Weeks', to: '/curriculums/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/curriculums/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/curriculums/student-progress', icon: STUDENT_ICON }, { label: 'Teacher Progress', to: '/curriculums/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/curriculums/class-progress', icon: CLASS_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="SCHEME_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">
@@ -87,10 +103,27 @@
           </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
-          <MenuItem label="Grades"
-            :subNavs="[{ label: 'Grade Assignment', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true }, { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON }]">
+          <MenuItem label="ID Cards"
+            :subNavs="[{ label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true }, { label: 'Generate', to: '/id-cards/generate', icon: GENERATE_ID_CARD_ICON }, { label: 'Templates', to: '/id-cards/templates', icon: SETTINGS_ICON }]">
             <template #icon>
-              <UIcon class="text-xl" :name="GRADES_ICON" />
+              <UIcon class="text-xl" :name="ID_CARD_ICON" />
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
+            </template>
+          </MenuItem>
+        </li>
+
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+          <MenuItem label="Report Cards"
+            :subNavs="[{ label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true }, { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON }, { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON }]">
+            <template #icon>
+              <UIcon class="text-xl" :name="REPORT_ICON" />
             </template> <!-- Subnav Slot --> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
@@ -130,16 +163,38 @@
             </template> </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
-          <MenuItem label="Classes" to="/classes"> <template #icon>
+          <MenuItem label="Classes"
+            :subNavs="[{ label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true }, { label: 'Teacher Assignment', to: '/classes/teacher-assignment', icon: CLIPBOARD_ADD_ICON }, { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON }, { label: 'Streams', to: '/classes/streams', icon: CURRICULUM_STREAM_ICON }]">
+            <template #icon>
               <UIcon class="text-xl" :name="CLASS_ICON" />
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
             </template>
           </MenuItem>
         </li>
         <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
-          <MenuItem label="Subjects" to="/subjects"> <template #icon>
+          <MenuItem label="Subjects"
+            :subNavs="[{ label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Assignment', to: '/subjects/assignment', icon: SUBJECT_ICON, exact: true }, { label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON }]">
+            <template #icon>
               <UIcon class="text-xl" :name="SUBJECT_ICON" />
-            </template> </MenuItem>
+            </template> <template #subNav="{ subNavs, isActiveSub }">
+              <div class="flex flex-col space-y-1">
+                <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
+                  class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10"
+                  :class="isActiveSub(nav) ? 'bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-gray-700 dark:text-gray-300'">
+                  <UIcon v-if="nav.icon" :name="nav.icon" class="w-4 h-4 shrink-0" /> <span>{{ nav.label }}</span>
+                </NuxtLink>
+              </div>
+            </template>
+          </MenuItem>
         </li>
+
         <li v-if="can([Role.PARENT, Role.TEACHER])">
           <MenuItem to="/fees" label="Fees"> <template #icon>
               <UIcon class="text-xl" :name="PAYMENT_ICON" />
@@ -182,11 +237,11 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-          <MenuItem label="Curriculums"
-            :subNavs="[{ label: 'Subjects', to: '/curriculums', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Subject Groups', to: '/curriculums/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/curriculums/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/curriculums/stream-subjects', icon: BOOK_OPEN_ICON }, { label: 'Teacher Assignment', to: '/curriculums/teacher-assignment', icon: CLIPBOARD_ADD_ICON }, { label: 'Sections', to: '/curriculums/sections', icon: LAYERS_ICON }, { label: 'Streams', to: '/curriculums/streams', icon: CURRICULUM_STREAM_ICON },]">
+        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
+          <MenuItem label="Human Resources"
+            :subNavs="[{ label: 'Human Resources', to: '/hr', icon: CLASS_ICON, exact: true }, { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON }, { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON }, { label: 'Payroll', to: '/hr/payroll', icon: CURRICULUM_STREAM_ICON },{ label: 'Employees', to: '/hr/payroll/employees', icon: CURRICULUM_STREAM_ICON } ]">
             <template #icon>
-              <UIcon class="text-xl" :name="CURRICULUM_ICON" />
+              <UIcon class="text-xl" :name="CLASS_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">
               <div class="flex flex-col space-y-1">
                 <NuxtLink v-for="nav in subNavs" :key="nav.to" :to="nav.to" :exact="nav.exact"
@@ -303,9 +358,9 @@
         </li>
       </ul>
     </div>
-    <!-- <template #footer>
-      <Board />
-    </template> -->
+    <template #footer>
+      <Me />
+    </template>
   </UCard>
 </template>
 <script setup lang="ts">

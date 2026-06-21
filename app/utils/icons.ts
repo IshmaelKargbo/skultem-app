@@ -1,3 +1,5 @@
+import card from "#build/ui/card"
+
 export const STUDENT_ICON = "ph:student-duotone"
 export const ATTENDANCE_ICON = "hugeicons:date-time"
 export const TEACHER_ICON = "hugeicons:teaching"
@@ -126,3 +128,11 @@ export const SCHEME_EDIT_ICON = 'i-lucide-pencil'
 export const WEEKS_ICON = 'i-lucide-calendar-days'
 export const LESSON_PLAN_ICON = 'i-lucide-clipboard-list'
 export const PROGRESS_ICON = 'i-lucide-chart-column'
+export const REPORT_CARD_ICON = 'i-lucide-file-text'
+export const GENERATE_ICON = 'i-lucide-file-plus'
+export const REPORT_CARD_VIEW_ICON = 'i-lucide-printer'
+export const ID_CARD_ICON = 'i-lucide-id-card'
+export const GENERATE_ID_CARD_ICON = 'i-lucide-id-card'
+export const NAME_ICON = 'i-lucide-book-open-text'
+export const DESCRIPTION_ICON = 'i-lucide-file-text'
+export const EXAMPLE_ICON = 'i-lucide-lightbulb'

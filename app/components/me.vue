@@ -1,30 +1,35 @@
 <template>
     <div class="flex items-center">
         <ClientOnly>
-            <USlideover v-model:open="drawerOpen" :dismissible="true" :ui="{
+            <USlideover side="left" v-model:open="drawerOpen" :dismissible="true" :ui="{
                 content:
                     'w-full max-w-sm bg-white/95 dark:bg-neutral-950/95 backdrop-blur-2xl border-l border-gray-200/70 dark:border-white/10'
             }">
-                <!-- Trigger -->
-                <UButton v-if="user && user.email && !loading" color="neutral" variant="ghost"
-                    class="group rounded-2xl px-3 py-2.5 transition-all duration-200 hover:bg-primary-100 dark:hover:bg-white/5 border border-transparent hover:border-primary-200 dark:hover:border-primary-800">
-                    <div class="text-right pr-0.5">
-                        <p class="text-xs font-semibold text-neutral-900 dark:text-white">
-                            {{ name }}
-                        </p>
+                <div v-if="user && user.email && !loading" color="neutral"
+                    class="group w-full rounded-xl border border-default  px-4 py-2 hover:border-primary-300 cursor-pointer transition-all duration-300">
+                    <div class="flex items-center gap-3 w-full">
 
-                        <p class="text-[10px] text-neutral-500 dark:text-neutral-400">
-                            {{ parseRole[activeRole] || 'No Role' }}
-                        </p>
+                        <div class="relative">
+                            <UAvatar :alt="name" size="xl" />
+
+                            <div
+                                class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
+                        </div>
+
+                        <div class="flex-1 text-left">
+                            <h4 class="font-semibold text-sm text-highlighted truncate">
+                                {{ name }}
+                            </h4>
+
+                            <p class="text-xs text-muted mt-0.5">
+                                {{ parseRole[activeRole] || 'No Role' }}
+                            </p>
+                        </div>
+
+                        <UIcon name="i-lucide-settings-2"
+                            class="text-muted text-lg opacity-0 group-hover:opacity-100 transition" />
                     </div>
-
-                    <div class="relative shrink-0">
-                        <UAvatar :alt="name" size="md"  />
-
-                        <span
-                            class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
-                    </div>
-                </UButton>
+                </div>
 
                 <!-- Loading -->
                 <template #fallback>
@@ -40,8 +45,7 @@
 
                 <!-- Header -->
                 <template #header>
-                    <div
-                        class="relative overflow-hidden w-full ">
+                    <div class="relative overflow-hidden w-full ">
                         <div class="flex justify-between items-center gap-3">
                             <div class="relative shrink-0">
                                 <UAvatar :alt="name" size="lg"
@@ -100,13 +104,13 @@
                                 <button v-for="role in userRoles" :key="role.value"
                                     class="group relative overflow-hidden flex items-center gap-3 w-full rounded-2xl p-3 transition-all duration-200"
                                     :class="activeRole === role.value
-                                            ? 'bg-primary-500/10 border border-primary-500/20 text-primary-600 dark:text-primary-400'
-                                            : 'hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'
+                                        ? 'bg-primary-500/10 border border-primary-500/20 text-primary-600 dark:text-primary-400'
+                                        : 'hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'
                                         " @click="switchRole(role.value)">
                                     <div class="flex h-10 w-10 items-center justify-center rounded-xl transition-all"
                                         :class="activeRole === role.value
-                                                ? 'bg-primary-500 text-white'
-                                                : 'bg-gray-100 dark:bg-white/5 text-neutral-500'
+                                            ? 'bg-primary-500 text-white'
+                                            : 'bg-gray-100 dark:bg-white/5 text-neutral-500'
                                             ">
                                         <UIcon :name="role.icon" class="text-base" />
                                     </div>

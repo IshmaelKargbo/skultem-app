@@ -1,6 +1,6 @@
 <template>
   <UForm :state="state"
-    class="min-h-screen space-y-4 bg-gradient-to-b from-gray-50 to-white p-3 md:space-y-5 md:bg-transparent md:p-5 dark:from-gray-950 dark:to-gray-950">
+    class="min-h-screen space-y-4 p-3 md:space-y-5  md:p-5 ">
     <!-- Desktop Heading -->
     <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
       <div class="flex flex-wrap gap-2">

@@ -88,173 +88,199 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Desktop -->
-  <UCard class="hidden md:block" :ui="{
-    body: 'p-0 sm:p-0'
-  }">
-    <UTable :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+<div class="space-y-4">
+  <!-- Loading -->
+  <template v-if="loading">
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <UCard
+        v-for="i in 6"
+        :key="i"
+        class="overflow-hidden rounded-3xl"
+      >
+        <div class="space-y-4 p-5">
+          <div class="flex items-center gap-3">
+            <USkeleton class="size-14 rounded-2xl" />
 
-          <p class="text-gray-500">
-            No terms found.
-          </p>
-        </div>
-      </template>
-
-      <template #loading>
-        <TableLoading :size="columns.length" />
-      </template>
-
-      <template #academicYearId-cell="{ row }">
-        <p>{{ row.original.academicYear.name }}</p>
-      </template>
-
-      <template #status-cell="{ row }">
-        <UBadge variant="subtle" :color="parseStatusColor[row.original.status]">
-          <UIcon :name="parseStatusIcon[row.original.status]" class="mr-1" />
-
-          {{ parseStaus[row.original.status] }}
-        </UBadge>
-      </template>
-    </UTable>
-
-    <template #footer>
-      <div class="flex items-center justify-between">
-        <Showing :meta="meta" />
-
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
-    </template>
-  </UCard>
-
-  <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
-    <!-- Loading -->
-    <template v-if="loading">
-      <UCard v-for="i in 4" :key="i" class="overflow-hidden">
-        <div class="space-y-4 p-4">
-          <div class="flex items-center justify-between">
             <div class="space-y-2">
               <USkeleton class="h-4 w-32" />
               <USkeleton class="h-3 w-24" />
             </div>
-
-            <USkeleton class="h-6 w-20 rounded-full" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <USkeleton class="h-16 rounded-2xl" />
-            <USkeleton class="h-16 rounded-2xl" />
+            <USkeleton class="h-20 rounded-2xl" />
+            <USkeleton class="h-20 rounded-2xl" />
           </div>
-
-          <USkeleton class="h-12 rounded-2xl" />
         </div>
       </UCard>
-    </template>
+    </div>
+  </template>
 
-    <!-- Data -->
-    <template v-else-if="data?.length">
-      <UCard v-for="item in data" :key="item.id"
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all dark:border-gray-800 dark:bg-neutral-900"
-        :ui="{
-          body: 'p-0'
-        }">
+  <!-- Data -->
+  <template v-else-if="data?.length">
+    <div class="grid gap-5 md:grid-cols-1 ">
+
+      <UCard
+        v-for="item in data"
+        :key="item.id"
+        class="overflow-hidden rounded-3xl border border-default hover:ring-primary-300  transition-all duration-300 hover:-translate-y-1 hover:shadow-sm"
+        :ui="{ body: 'p-0' }"
+      >
         <!-- Header -->
-        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex min-w-0 items-center gap-3">
+        <div class="bg-primary-50/50 dark:bg-primary-500 rounded-2xl p-5">
+          <div class="flex items-start justify-between">
+
+            <div class="flex items-center gap-4">
               <div
-                class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
-                <UIcon name="i-lucide-calendar-days" class="size-6" />
+                class="flex size-14 items-center justify-center rounded-2xl bg-primary/10"
+              >
+                <UIcon
+                  name="i-lucide-calendar-days"
+                  class="size-7 text-primary"
+                />
               </div>
 
-              <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+              <div>
+                <h3 class="text-lg font-bold">
                   {{ item.name }}
                 </h3>
 
-                <p class="truncate text-xs text-gray-500">
+                <p class="text-sm text-muted">
                   {{ item.academicYear?.name }}
                 </p>
               </div>
             </div>
+
+            <UBadge
+              variant="soft"
+              :color="parseStatusColor[item.status]"
+            >
+              <UIcon
+                :name="parseStatusIcon[item.status]"
+                class="mr-1"
+              />
+
+              {{ parseStaus[item.status] }}
+            </UBadge>
+
           </div>
         </div>
 
-        <!-- Content -->
-        <div class="grid grid-cols-2 gap-3 p-4">
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-              Start Date
-            </p>
+        <!-- Body -->
+        <div class="grid grid-cols-2 gap-4 p-5">
 
-            <p class="text-sm font-medium">
+          <div class="rounded-2xl bg-gray-100 dark:bg-green-500/10 p-4">
+            <div class="mb-3 flex items-center gap-2">
+              <UIcon
+                name="i-lucide-calendar-check"
+                class="text-green-600"
+              />
+
+              <span class="text-xs text-muted">
+                Start Date
+              </span>
+            </div>
+
+            <p class="font-semibold">
               {{ formatDate(item.startDate) }}
             </p>
           </div>
 
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-              End Date
-            </p>
+          <div class="rounded-2xl bg-orange-50 dark:bg-orange-500/10 p-4">
+            <div class="mb-3 flex items-center gap-2">
+              <UIcon
+                name="i-lucide-calendar-x"
+                class="text-orange-500"
+              />
 
-            <p class="text-sm font-medium">
+              <span class="text-xs text-muted">
+                End Date
+              </span>
+            </div>
+
+            <p class="font-semibold">
               {{ formatDate(item.endDate) }}
             </p>
           </div>
 
-          <div class="col-span-2 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="mb-2 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-              Status
-            </p>
-
-            <UBadge variant="soft" :color="parseStatusColor[item.status]">
-              <UIcon :name="parseStatusIcon[item.status]" class="mr-1" />
-
-              {{ parseStaus[item.status] }}
-            </UBadge>
-          </div>
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
-          <div class="min-w-0">
-            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+        <div
+          class="flex items-center justify-between border-t border-default px-5 py-4"
+        >
+          <div>
+            <p class="text-sm font-medium">
               Academic Year
             </p>
 
-            <p class="truncate text-xs text-gray-500">
-              {{ item.academicYear?.name || 'N/A' }}
+            <p class="text-xs text-muted">
+              {{ item.academicYear?.name }}
             </p>
           </div>
 
-          <UButton icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
+          <div class="flex gap-2">
+
+            <UButton
+              icon="i-lucide-eye"
+              size="sm"
+              variant="soft"
+            >
+              View
+            </UButton>
+
+            <UButton
+              icon="i-lucide-pencil"
+              size="sm"
+              color="neutral"
+              variant="soft"
+            >
+              Edit
+            </UButton>
+
+          </div>
         </div>
+
       </UCard>
-    </template>
 
-    <!-- Empty -->
-    <template v-else>
-      <UCard class="overflow-hidden">
-        <div class="flex flex-col items-center justify-center py-14">
-          <UIcon name="i-lucide-calendar-range" class="mb-3 size-10 text-gray-400" />
+    </div>
+  </template>
 
-          <p class="text-sm text-gray-500">
-            No academic years found
-          </p>
-        </div>
-      </UCard>
-    </template>
+  <!-- Empty -->
+  <template v-else>
+    <UCard>
+      <div class="flex flex-col items-center justify-center py-16">
+        <UIcon
+          name="i-lucide-calendar-range"
+          class="mb-4 size-12 text-muted"
+        />
 
-    <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
-        <Showing :meta="meta" />
+        <h3 class="font-semibold">
+          No Terms Found
+        </h3>
 
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+        <p class="text-sm text-muted">
+          There are no terms available.
+        </p>
       </div>
+    </UCard>
+  </template>
+
+  <!-- Pagination -->
+  <div
+    v-if="!loading && data?.length"
+    class="flex flex-col gap-3 pt-3 md:flex-row md:items-center md:justify-between"
+  >
+    <Showing :meta="meta" />
+
+    <UPagination
+      v-model:page="page"
+      size="sm"
+      :page-size="meta.size"
+      :items-per-page="meta.size"
+      :total="meta.total"
+      show-edges
+    />
   </div>
+</div>
 </template>
