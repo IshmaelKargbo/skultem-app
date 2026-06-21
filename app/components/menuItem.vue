@@ -3,7 +3,7 @@
     <div
       @click="handleClick"
       :class="[
-        'flex min-h-11 items-center justify-between gap-2 text-sm border-2 md:p-2.5 py-2 px-2 md:px-3 dark:border-gray-900 rounded-xl dark:bg-gray-900 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-200 border-white cursor-pointer transition-colors',
+        'flex min-h-11 items-center justify-between gap-2 text-sm border-2 md:p-2.5 py-2 px-2 md:px-3 dark:border-gray-900 rounded-xl dark:bg-gray-900 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-200 border-transparent cursor-pointer transition-colors',
         isActive || open ? 'md:bg-primary-50 md:border-primary-300 dark:md:bg-primary-950 dark:md:border-primary-800 text-primary-600 dark:text-primary-200' : '',
         customClass
       ]"

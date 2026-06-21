@@ -18,14 +18,9 @@ watch(() => route.fullPath, () => {
       <Menu />
     </div>
     <div class="flex flex-1 flex-col min-w-0">
-      <Header />
-      <div class="flex-1 min-h-0 mt-1">
-        <div
-          ref="scrollContainer"
-          class="max-w-screen-2xl mx-auto h-full w-full overflow-y-auto overflow-x-hidden px-2 pb-2 sm:px-3 sm:pb-3 lg:px-4 lg:pb-4"
-        >
-          <slot />
-        </div>
+      <div ref="scrollContainer"
+        class="max-w-screen-2xl mx-auto h-full w-full overflow-y-auto overflow-x-hidden p-2 sm:p-3 lg:p-4">
+        <slot />
       </div>
       <MenuMobile class="md:hidden block sticky bottom-0 z-20" />
     </div>

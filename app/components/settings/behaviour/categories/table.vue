@@ -189,41 +189,37 @@ onMounted(async () => {
     </div>
 
     <!-- Cards -->
-    <div v-else class="space-y-3 p-3">
-      <UCard v-for="item in data" :key="item.id"
-        class="overflow-hidden rounded-3xl border border-gray-200 shadow-sm transition-all active:scale-[0.99] dark:border-neutral-800"
-        :ui="{
-          body: 'p-4'
-        }">
-        <div class="flex items-start gap-3">
-          <!-- Icon -->
-          <div
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-900/20">
-            <UIcon name="hugeicons:task-daily-01" class="text-lg text-primary-600" />
-          </div>
+    <UCard v-else>
+      <div class="space-y-3 p-3">
+        <UCard v-for="item in data" :key="item.id"
+          class="overflow-hidden rounded-3xl bg-gray-50 shadow-sm transition-all active:scale-[0.99]"
+          :ui="{
+            body: 'p-4'
+          }">
+          <div class="flex items-start gap-3">
+            <!-- Content -->
+            <div class="min-w-0 flex-1">
+              <!-- Header -->
+              <div class="flex items-center gap-2">
+                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ item.name }}
+                </h3>
 
-          <!-- Content -->
-          <div class="min-w-0 flex-1">
-            <!-- Header -->
-            <div class="flex items-center gap-2">
-              <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                {{ item.name }}
-              </h3>
+                <div class="h-2 w-2 rounded-full bg-emerald-500" />
+              </div>
 
-              <div class="h-2 w-2 rounded-full bg-emerald-500" />
+              <!-- Description -->
+              <p class="mt-1 line-clamp-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                {{
+                  item.description ||
+                  'No description available.'
+                }}
+              </p>
             </div>
-
-            <!-- Description -->
-            <p class="mt-1 line-clamp-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
-              {{
-                item.description ||
-                'No description available.'
-              }}
-            </p>
           </div>
-        </div>
-      </UCard>
-    </div>
+        </UCard>
+      </div>
+    </UCard>
   </div>
 
 </template>
