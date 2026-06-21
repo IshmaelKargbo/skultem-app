@@ -3,13 +3,13 @@
         <!-- HEADER -->
         <div class="receipt-header">
             <div class="left">
-                <div class="school-name">{{ receipt.name }}</div>
+                <div class="school-name">{{ tenant?.name }}</div>
                 <div class="subtitle">Official School Fees Receipt</div>
             </div>
 
             <div class="right">
-                <div><strong>Receipt:</strong> {{ receipt.referenceNo }}</div>
-                <div><strong>Date:</strong> {{ formatDate(receipt.paidAt) }}</div>
+                <div>{{ receipt.referenceNo }}</div>
+                <div>{{ formatDate(receipt.paidAt) }}</div>
             </div>
         </div>
 
@@ -72,19 +72,10 @@
                 <strong class="total-amount">{{ format(receipt.total) }}</strong>
             </div>
         </div>
-        <!-- OUTSTANDING BALANCE -->
-        <div class="balance">
-            <div>
-                <span>Outstanding Balance:</span>
-                <strong :class="{ danger: receipt.outstandingBalance > 0 }">
-                    {{ format(receipt.outstandingBalance) }}
-                </strong>
-            </div>
-        </div>
 
         <!-- FOOTER -->
         <div class="footer">
-            This is an official receipt issued by {{ receipt.name }} via skultem.com
+            This is an official receipt issued by {{ tenant?.name }} via skultem.com
         </div>
 
     </div>
@@ -97,6 +88,7 @@ defineProps<{
     parsePaymentMethod?: Record<string, string>
 }>()
 const { format } = useMoney()
+const { tenant } = storeToRefs(useAppStore())
 
 function formatDate(value?: string) {
     if (!value) return new Date().toLocaleDateString()
@@ -110,187 +102,106 @@ function formatDate(value?: string) {
 </script>
 
 <style scoped>
+@reference "../../assets/css/main.css";
+
 /* =======================
    PAGE BASE (A4 SIZE)
 ======================= */
 .receipt {
+    @apply box-border bg-white p-12 font-sans text-gray-900;
     width: 794px;
     min-height: 1123px;
-    padding: 48px;
-    box-sizing: border-box;
-    background: #ffffff;
-    color: #111827;
-    font-family: Arial, sans-serif;
+    overflow: hidden;
 }
 
 /* =======================
    HEADER
 ======================= */
 .receipt-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #111827;
-    padding-bottom: 18px;
-    margin-bottom: 28px;
+    @apply mb-7 flex items-center justify-between border-b-2 border-gray-900 pb-[18px];
 }
 
 .school-name {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+    @apply text-2xl font-extrabold tracking-wide;
 }
 
 .subtitle {
-    font-size: 13px;
-    color: #6b7280;
-    margin-top: 4px;
+    @apply mt-1 text-base text-muted;
 }
 
 .right {
-    text-align: right;
-    font-size: 13px;
-    line-height: 1.6;
+    @apply text-right text-sm text-muted leading-relaxed;
 }
 
 /* =======================
    SECTIONS
 ======================= */
 .section {
-    margin-bottom: 26px;
+    @apply mb-[26px];
 }
 
 .section-title {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 12px;
+    @apply mb-3 text-xs uppercase tracking-wider;
 }
 
 /* =======================
    GRID
 ======================= */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px 30px;
+    @apply grid grid-cols-2 gap-x-[30px] gap-y-3.5;
 }
 
 .grid span {
-    display: block;
-    font-size: 11px;
-    color: #6b7280;
-    margin-bottom: 4px;
+    @apply block text-[11px] text-gray-500;
 }
 
 .grid strong {
-    font-size: 14px;
+    @apply text-lg;
 }
 
 /* =======================
    TABLE
 ======================= */
 table {
-    width: 100%;
-    border-collapse: collapse;
+    @apply w-full border-collapse;
 }
 
 thead {
-    border-bottom: 2px solid #111827;
+    @apply border-b-2 border-gray-900;
 }
 
 th {
-    text-align: left;
-    font-size: 12px;
-    padding: 10px 0;
+    @apply py-2.5 text-left text-sm;
 }
 
 td {
-    padding: 10px 0;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 13px;
+    @apply m-0 border-b border-gray-200 pb-[18px] text-base;
 }
 
 /* =======================
    TOTAL
 ======================= */
 .total {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 25px;
+    @apply mt-[25px] flex justify-end;
 }
 
 .total div {
-    text-align: right;
+    @apply text-right;
 }
 
 .total span {
-    font-size: 12px;
-    color: #6b7280;
+    @apply text-sm text-gray-500;
 }
 
 .total strong {
-    padding-left: 10px;
-    font-size: 26px;
-    font-weight: 800;
-}
-
-
-.balance {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
-}
-
-.balance div {
-    text-align: right;
-}
-
-.balance span {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.balance strong {
-    padding-left: 10px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.balance strong.danger {
-    color: #b91c1c;
-    /* red tone for unpaid balance */
-}
-/* =======================
-   SIGNATURES
-======================= */
-.signatures {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 90px;
-    padding: 0 40px;
-}
-
-.line {
-    width: 220px;
-    border-top: 1px solid #111827;
-    margin-bottom: 6px;
-}
-
-.signatures p {
-    font-size: 12px;
-    text-align: center;
+    @apply pl-2.5 text-[26px] font-extrabold;
 }
 
 /* =======================
    FOOTER
 ======================= */
 .footer {
-    margin-top: 60px;
-    text-align: center;
-    font-size: 12px;
-    color: #6b7280;
+    @apply mt-[60px] text-center text-[10px] text-gray-500;
 }
 
 /* =======================

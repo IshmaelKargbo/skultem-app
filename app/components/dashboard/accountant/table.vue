@@ -162,7 +162,8 @@ defineExpose({
         </template>
 
         <template #actions-cell="{ row }">
-          <UButton
+          <div class="justify-end flex">
+            <UButton
             icon="i-lucide-download"
             size="xs"
             color="neutral"
@@ -170,6 +171,7 @@ defineExpose({
             :loading="downloadingReceiptId === row.original.id"
             @click="downloadReceipt(row.original)"
           />
+          </div>
         </template>
       </UTable>
     </div>
@@ -295,7 +297,7 @@ defineExpose({
     </template>
 
   </UCard>
-  <div v-if="receipt" class="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
+  <div v-if="receipt" class="pointer-events-none fixed left-0 top-0 -z-10 h-[1123px] w-[794px] overflow-hidden opacity-0">
     <ReceiptPayment
       id="existing-payment-receipt"
       :receipt="receipt"

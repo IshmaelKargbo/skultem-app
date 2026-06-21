@@ -7,7 +7,6 @@
                 <div>
                     <UCard class="sticky top-0">
                         <div class="space-y-3">
-
                             <!-- STUDENT -->
                             <UFormField required label="Student" name="studentId">
                                 <USelectMenu value-key="value" :items="students" v-model="state.studentId"
@@ -236,7 +235,7 @@
         </template>
     </UModal>
 
-    <div v-if="receipt" class="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
+    <div v-if="receipt" class="pointer-events-none fixed left-0 top-0 -z-10 h-[1123px] w-[794px] overflow-hidden opacity-0">
         <ReceiptPayment id="payment-receipt" :receipt="receipt" :parse-payment-method="parsePaymentMethod" />
     </div>
 </template>

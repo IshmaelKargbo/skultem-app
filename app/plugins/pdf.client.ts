@@ -95,8 +95,19 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
 
   clonedDocument.documentElement.style.background = "#ffffff";
   clonedDocument.documentElement.style.color = "#111827";
+  clonedDocument.documentElement.style.margin = "0";
+  clonedDocument.documentElement.style.padding = "0";
+  clonedDocument.documentElement.style.width = "794px";
+  clonedDocument.documentElement.style.minWidth = "794px";
+  clonedDocument.documentElement.style.height = "1123px";
+  clonedDocument.documentElement.style.overflow = "hidden";
   clonedDocument.body.innerHTML = "";
   clonedDocument.body.style.margin = "0";
+  clonedDocument.body.style.padding = "0";
+  clonedDocument.body.style.width = "794px";
+  clonedDocument.body.style.minWidth = "794px";
+  clonedDocument.body.style.height = "1123px";
+  clonedDocument.body.style.overflow = "hidden";
   clonedDocument.body.style.background = "#ffffff";
   clonedDocument.body.style.color = "#111827";
 
@@ -107,6 +118,8 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
   clonedElement.style.opacity = "1";
   clonedElement.style.transform = "none";
   clonedElement.style.width = "794px";
+  clonedElement.style.minHeight = "1123px";
+  clonedElement.style.overflow = "hidden";
   clonedElement.style.background = "#ffffff";
   clonedElement.style.color = "#111827";
   clonedElement.style.pointerEvents = "none";
@@ -115,6 +128,7 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
   forceInlineStyles(clonedElement, clonedDocument.defaultView || window);
   clonedElement.style.opacity = "1";
   clonedElement.style.transform = "none";
+  clonedElement.style.overflow = "hidden";
 }
 
 export default defineNuxtPlugin(() => {
@@ -126,17 +140,24 @@ export default defineNuxtPlugin(() => {
 
         await document.fonts.ready;
 
+        const originalHtmlOverflow = document.documentElement.style.overflow;
+        const originalBodyOverflow = document.body.style.overflow;
+
         // Clone
         const cloned = element.cloneNode(true) as HTMLElement;
-        cloned.style.position = "absolute";
+        cloned.style.position = "fixed";
         cloned.style.left = "0";
         cloned.style.top = "0";
         cloned.style.zIndex = "-1";
         cloned.style.opacity = "0";
         cloned.style.width = "794px";
+        cloned.style.minHeight = "1123px";
+        cloned.style.overflow = "hidden";
         cloned.style.background = "#ffffff";
         cloned.style.color = "#111827";
         cloned.style.pointerEvents = "none";
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
         document.body.appendChild(cloned);
 
         // Force all computed styles inline — resolves oklch before html2canvas sees it
@@ -150,11 +171,19 @@ export default defineNuxtPlugin(() => {
             allowTaint: true,
             backgroundColor: "#ffffff",
             logging: false,
+            width: 794,
+            height: 1123,
+            windowWidth: 794,
+            windowHeight: 1123,
+            scrollX: 0,
+            scrollY: 0,
             onclone: isolateClonedDocument,
             ignoreElements: (el) => el.tagName === "STYLE" && el.parentElement === cloned,
           });
         } finally {
           document.body.removeChild(cloned);
+          document.documentElement.style.overflow = originalHtmlOverflow;
+          document.body.style.overflow = originalBodyOverflow;
         }
 
         const imgData = canvas.toDataURL("image/jpeg", 1);

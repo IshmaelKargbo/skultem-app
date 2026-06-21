@@ -1,5 +1,3 @@
-import Id from "~/pages/scheme-of-work/lesson-plans/[id].vue"
-
 export const SchoolApi = () => {
   const { $api } = useNuxtApp()
 
