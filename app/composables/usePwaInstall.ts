@@ -3,6 +3,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed', platform: string }>
 }
 
+type PwaInstallResult = 'prompted' | 'instructions' | 'unavailable'
+
 export function usePwaInstall() {
   const deferredPrompt = useState<BeforeInstallPromptEvent | null>('pwa-deferred-prompt', () => null)
   const listenersReady = useState<boolean>('pwa-install-listeners-ready', () => false)
@@ -23,16 +25,16 @@ export function usePwaInstall() {
     isStandalone.value = window.matchMedia('(display-mode: standalone)').matches || navigatorWithStandalone.standalone === true
   }
 
-  async function install() {
+  async function install(): Promise<PwaInstallResult> {
     refreshInstallState()
 
     if (!deferredPrompt.value) {
       if (isIos.value && !isStandalone.value) {
-        window.alert('To install Skultem, tap Share, then Add to Home Screen.')
-        return true
+        window.alert('On iPhone, open this page in Safari, tap Share, then tap Add to Home Screen.')
+        return 'instructions'
       }
 
-      return false
+      return 'unavailable'
     }
 
     const promptEvent = deferredPrompt.value
@@ -40,7 +42,7 @@ export function usePwaInstall() {
     await promptEvent.userChoice
     deferredPrompt.value = null
 
-    return true
+    return 'prompted'
   }
 
   if (import.meta.client && !listenersReady.value) {

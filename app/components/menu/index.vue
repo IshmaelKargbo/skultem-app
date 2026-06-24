@@ -88,7 +88,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
           <MenuItem label="Timetable"
-            :subNavs="[{ label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true }, { label: 'Settings', to: '/timetable/Setting', icon: TIMETABLE_SETTINGS_ICON }]">
+            :subNavs="[{ label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true }, { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="TIMETABLE_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">

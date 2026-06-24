@@ -325,7 +325,7 @@ const sections = computed(() => [
         to: '/notifications'
       },
 
-      canInstall && {
+      canInstall.value && {
         label: 'Install App',
         icon: 'lucide:download',
         action: installApp
@@ -727,9 +727,9 @@ function switchRole(role: string) {
 }
 
 async function installApp() {
-  const installed = await install()
+  const installResult = await install()
 
-  if (installed) {
+  if (installResult !== 'unavailable') {
     close()
   }
 }

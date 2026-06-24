@@ -1,38 +1,18 @@
 <template>
-    <div class="space-y-6">
+    <div class="space-y-6 p-4">
         <!-- Header -->
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mt-8">
-
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">
-                    Class Timetables
-                </h1>
-                <p class="mt-1 text-sm text-muted">
-                    Manage weekly schedules by grade and section
-                </p>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3">
-
-                <USelectMenu v-model="grade" :items="grades" icon="i-lucide-graduation-cap" class="w-36" />
-
-                <USelectMenu v-model="section" :items="sections" icon="i-lucide-users" class="w-36" />
-
-                <UButtonGroup>
-                    <UButton icon="i-lucide-copy" color="neutral" variant="outline">
-                        Copy
-                    </UButton>
-                    <UButton icon="i-lucide-download" color="neutral" variant="outline">
-                        Export
-                    </UButton>
-                </UButtonGroup>
-
-            </div>
-
-        </div>
+        <UCard>
+            <Heading title="Class Timetables"
+                subtitle="Configure and manage weekly timetables for classes and sections">
+                <div class="flex items-center gap-3 w-72">
+                    <USelectMenu placeholder="Select Class" v-model="grade" value-key="value" :items="list"
+                        :loading="classLoading" />
+                </div>
+            </Heading>
+        </UCard>
 
         <!-- Timetable -->
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard v-if="session" :ui="{ body: 'p-0 sm:p-0' }">
 
             <template #header>
                 <div class="flex items-center justify-between">
@@ -44,7 +24,7 @@
 
                         <div>
                             <h2 class="font-semibold text-base">
-                                {{ grade }} · {{ section }}
+                                {{ session?.clazz }} · {{ session?.sectionName }}
                             </h2>
 
                             <p class="text-sm text-muted">
@@ -54,15 +34,17 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <UBadge color="primary" variant="subtle" icon="i-lucide-clock">
-                            {{ week }}
-                        </UBadge>
-
-                        <UButton icon="i-lucide-coffee" color="neutral" variant="outline" @click="addBreak">
-                            Add Lunch/Break
+                        <UButton :loading="breakLoading" icon="i-lucide-coffee" color="neutral" variant="outline"
+                            @click="addBreak">
+                            Add Break
                         </UButton>
 
-                        <UButton icon="i-lucide-plus" @click="addPeriod">
+                        <UButton :loading="lunchLoading" icon="i-lucide-coffee" color="neutral" variant="outline"
+                            @click="addLunch">
+                            Add Lunch
+                        </UButton>
+
+                        <UButton :loading="addLoading" icon="i-lucide-plus" @click="addPeriod">
                             Add Period
                         </UButton>
 
@@ -98,20 +80,18 @@
                             <td class="p-3 align-top">
 
                                 <div class="flex h-full flex-col justify-center rounded-xl p-4"
-                                    :class="period.isBreak ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-muted/30'">
+                                    :class="(period.isBreak || period.isLunch) ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-muted/30'">
 
                                     <div class="flex items-center justify-between gap-2">
                                         <h4 class="font-semibold">
                                             {{ period.name }}
                                         </h4>
-
-                                        <UButton icon="i-lucide-x" color="neutral" variant="ghost" size="xs"
-                                            class="-mr-1" @click="removePeriod(pIndex)" />
                                     </div>
 
                                     <p class="mt-1 flex items-center gap-1 text-xs text-muted">
                                         <UIcon name="i-lucide-clock" class="size-3" />
-                                        {{ period.time }}
+                                        <span>{{ period.startTime }}</span>
+                                        <span>{{ period.endTime }}</span>
                                     </p>
 
                                 </div>
@@ -123,7 +103,16 @@
                                 <div
                                     class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/60 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400">
                                     <UIcon name="i-lucide-coffee" class="size-4" />
-                                    <span class="text-sm font-medium">Lunch / Break — no classes scheduled</span>
+                                    <span class="text-sm font-medium">Break — no classes scheduled</span>
+                                </div>
+                            </td>
+
+                            <!-- Lunch row spans all days -->
+                            <td v-if="period.isLunch" :colspan="days.length" class="p-3">
+                                <div
+                                    class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/60 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400">
+                                    <UIcon name="i-lucide-coffee" class="size-4" />
+                                    <span class="text-sm font-medium">Lunch — no classes scheduled</span>
                                 </div>
                             </td>
 
@@ -194,84 +183,23 @@
         </UCard>
 
         <!-- Subject Modal -->
-        <UModal v-model:open="subjectModal" :ui="{ footer: 'justify-end' }">
-            <template #header>
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold">
-                        {{ isEditing ? 'Edit Subject' : 'Add Subject' }}
-                    </h3>
-
-                    <UButton v-if="isEditing" color="error" variant="ghost" icon="i-lucide-trash" size="sm"
-                        @click="deleteSubject" />
-                </div>
-            </template>
-
-            <template #body>
-                <div class="space-y-4">
-
-                    <UFormField label="Subject">
-                        <USelectMenu v-model="selectedSubject.subject" :items="subjects"
-                            placeholder="Select a subject" class="w-full" />
-                    </UFormField>
-
-                    <UFormField label="Teacher">
-                        <UInput v-model="selectedSubject.teacher" placeholder="Teacher name"
-                            icon="i-lucide-user-round" class="w-full" />
-                    </UFormField>
-
-                    <UFormField label="Room">
-                        <UInput v-model="selectedSubject.room" placeholder="Room" icon="i-lucide-map-pin"
-                            class="w-full" />
-                    </UFormField>
-
-                    <UFormField label="Color">
-                        <div class="flex flex-wrap gap-2">
-                            <button v-for="(opt, i) in colorOptions" :key="i" type="button"
-                                class="size-8 rounded-full border-2 transition-transform" :class="[
-                                    opt.swatch,
-                                    selectedSubject.color === opt.value ? 'border-primary scale-110' : 'border-transparent'
-                                ]" @click="selectedSubject.color = opt.value" />
-                        </div>
-                    </UFormField>
-
-                </div>
-            </template>
-
-            <template #footer="{ close }">
-                <UButton label="Cancel" color="neutral" variant="outline" @click="close" />
-                <UButton label="Save Changes" :disabled="!selectedSubject.subject" @click="saveSubject" />
-            </template>
-        </UModal>
+        <TimetableAddTimetable v-model:open="subjectModal" />
     </div>
 </template>
 
 <script setup lang="ts">
-const grade = ref('Grade 10')
-const section = ref('Section A')
-const week = ref('Current Week')
+const store = useTimetableStore()
+const classStore = useClassSessionStore()
+const { periods, days } = storeToRefs(store)
+const { list, loading: classLoading } = storeToRefs(classStore)
+const grade = ref()
 
-const grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10']
-const sections = ['Section A', 'Section B', 'Section C']
-const weeks = ['Current Week']
 
-const days = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday'
-]
+const addLoading = ref(false)
+const breakLoading = ref(false)
+const lunchLoading = ref(false)
 
-const subjects = [
-    'Mathematics',
-    'English',
-    'Chemistry',
-    'Physics',
-    'Biology',
-    'History',
-    'Geography',
-    'Computer Science'
-]
+const session = computed(() => classStore.get(grade.value))
 
 const colorOptions = [
     { value: 'bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-900', swatch: 'bg-blue-200 dark:bg-blue-900' },
@@ -283,46 +211,6 @@ const colorOptions = [
     { value: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/40 dark:border-yellow-900', swatch: 'bg-yellow-200 dark:bg-yellow-900' },
     { value: 'bg-primary/5 border-primary/20', swatch: 'bg-primary/30' }
 ]
-
-const periods = ref<any[]>([
-    {
-        name: 'Period 1',
-        time: '09:00 - 09:45',
-        isBreak: false,
-        subjects: [
-            {
-                subject: 'Mathematics',
-                teacher: 'Dr Wilson',
-                room: 'Room 101',
-                color: colorOptions[0].value
-            },
-            {
-                subject: 'Chemistry',
-                teacher: 'Ms Rodriguez',
-                room: 'Lab 1',
-                color: colorOptions[1].value
-            },
-            {
-                subject: 'English',
-                teacher: 'Mr Anderson',
-                room: 'Room 201',
-                color: colorOptions[2].value
-            },
-            {
-                subject: 'History',
-                teacher: 'Mr Chen',
-                room: 'Room 301',
-                color: colorOptions[3].value
-            },
-            {
-                subject: 'Computer Science',
-                teacher: 'Mr Thompson',
-                room: 'Computer Lab',
-                color: colorOptions[4].value
-            }
-        ]
-    }
-])
 
 const subjectModal = ref(false)
 const isEditing = ref(false)
@@ -374,25 +262,43 @@ function deleteSubject() {
     subjectModal.value = false
 }
 
-function addPeriod() {
-    periods.value.push({
-        name: `Period ${periods.value.length + 1}`,
-        time: '00:00 - 00:00',
-        isBreak: false,
-        subjects: Array.from({ length: days.length }, () => null)
-    })
+async function addPeriod() {
+    addLoading.value = true
+    await store.createPeriod({ session: session.value?.id || '' })
+    addLoading.value = false
 }
 
-function addBreak() {
-    periods.value.push({
-        name: 'Lunch Break',
-        time: '12:00 - 12:45',
-        isBreak: true,
-        subjects: []
-    })
+async function addBreak() {
+    breakLoading.value = true
+    await store.createBreak({ session: session.value?.id || '' })
+    breakLoading.value = false
+}
+
+async function addLunch() {
+    lunchLoading.value = true
+    await store.createLunch({ session: session.value?.id || '' })
+    lunchLoading.value = false
 }
 
 function removePeriod(index: number) {
     periods.value.splice(index, 1)
 }
+
+watch(() => grade.value, async (value: string) => {
+    if (value) {
+        await store.getTimetable(value)
+    }
+}, { immediate: true })
+
+watch(() => session.value, async (value: ClassSession) => {
+    if (value) {
+        await useClassSubjectStore().allByClass(value.clazzId, 0, 0)
+    }
+}, { immediate: true })
+
+onMounted(async () => {
+    await classStore.fetchAll(0, 0)
+    await store.getWorkingDays()
+    await store.searchRoom(0, 0)
+})
 </script>
