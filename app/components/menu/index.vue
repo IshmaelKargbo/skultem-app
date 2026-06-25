@@ -38,6 +38,55 @@
             </template>
           </MenuItem>
         </li>
+           <li v-if="can([Role.PARENT])">
+          <MenuItem label="Grades" to="/grades"> <template #icon>
+              <UIcon class="text-xl" :name="GRADES_ICON" />
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.PARENT])">
+          <MenuItem to="/performance" label="Performance"> <template #icon>
+              <UIcon class="text-xl" :name="PERFORMANCE_ICON" />
+            </template> </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
+          <MenuItem label="Students" to="/students"> <template #icon>
+              <UIcon class="text-xl" :name="STUDENT_ICON" />
+            </template> </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
+          <MenuItem label="Teachers" to="/teachers"> <template #icon>
+              <UIcon class="text-xl" :name="TEACHER_ICON" />
+            </template> </MenuItem>
+        </li>
+        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
+          <MenuItem label="Parents" to="/parents"> <template #icon>
+              <UIcon class="text-xl" :name="PARENT_ICON" />
+            </template> </MenuItem>
+        </li>
+                <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])">
+          <MenuItem to="/ledger" label="Student Ledger"> <template #icon>
+              <UIcon class="text-xl" :name="LEDGER_ICON" />
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])">
+          <MenuItem to="/transactions" label="Transactions"> <template #icon>
+              <UIcon class="text-xl" :name="TRANSACTION_ICON" />
+            </template> </MenuItem>
+        </li>
+        <li v-if="can([Role.PROPRIETOR, Role.OWNER])">
+          <MenuItem to="/analytics" label="Analytics"> <template #icon>
+              <UIcon class="text-xl" :name="ANALYTICS_ICON" />
+            </template> </MenuItem>
+        </li>
+        <li v-if="can([Role.ACCOUNTANT, Role.OWNER])">
+          <MenuItem to="/reports" label="Reports"> <template #icon>
+              <UIcon class="text-xl" :name="REPORT_ICON" />
+            </template> </MenuItem>
+        </li>
+  
+
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Grades"
             :subNavs="[{ label: 'Grades', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true }, { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON }]">
@@ -119,7 +168,7 @@
           </MenuItem>
         </li>
 
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, ])">
           <MenuItem label="Report Cards"
             :subNavs="[{ label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true }, { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON }, { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON }]">
             <template #icon>
@@ -136,33 +185,8 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.PARENT])">
-          <MenuItem label="Grades" to="/grades"> <template #icon>
-              <UIcon class="text-xl" :name="GRADES_ICON" />
-            </template>
-          </MenuItem>
-        </li>
-        <li v-if="can([Role.PARENT])">
-          <MenuItem to="/performance" label="Performance"> <template #icon>
-              <UIcon class="text-xl" :name="PERFORMANCE_ICON" />
-            </template> </MenuItem>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
-          <MenuItem label="Students" to="/students"> <template #icon>
-              <UIcon class="text-xl" :name="STUDENT_ICON" />
-            </template> </MenuItem>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
-          <MenuItem label="Teachers" to="/teachers"> <template #icon>
-              <UIcon class="text-xl" :name="TEACHER_ICON" />
-            </template> </MenuItem>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
-          <MenuItem label="Parents" to="/parents"> <template #icon>
-              <UIcon class="text-xl" :name="PARENT_ICON" />
-            </template> </MenuItem>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
+     
+        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT,])">
           <MenuItem label="Classes"
             :subNavs="[{ label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true }, { label: 'Teacher Assignment', to: '/classes/teacher-assignment', icon: CLIPBOARD_ADD_ICON }, { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON }, { label: 'Streams', to: '/classes/streams', icon: CURRICULUM_STREAM_ICON }]">
             <template #icon>
@@ -333,27 +357,7 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])">
-          <MenuItem to="/ledger" label="Student Ledger"> <template #icon>
-              <UIcon class="text-xl" :name="LEDGER_ICON" />
-            </template>
-          </MenuItem>
-        </li>
-        <li v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])">
-          <MenuItem to="/transactions" label="Transactions"> <template #icon>
-              <UIcon class="text-xl" :name="TRANSACTION_ICON" />
-            </template> </MenuItem>
-        </li>
-        <li v-if="can([Role.PROPRIETOR, Role.OWNER])">
-          <MenuItem to="/analytics" label="Analytics"> <template #icon>
-              <UIcon class="text-xl" :name="ANALYTICS_ICON" />
-            </template> </MenuItem>
-        </li>
-        <li v-if="can([Role.ACCOUNTANT, Role.OWNER])">
-          <MenuItem to="/reports" label="Reports"> <template #icon>
-              <UIcon class="text-xl" :name="REPORT_ICON" />
-            </template> </MenuItem>
-        </li>
+
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Auth"
             :subNavs="[{ label: 'Users', to: '/auth', icon: USERS_ICON, exact: true }, { label: 'Audits', to: '/auth/audits', icon: AUDIT_ICON }, { label: 'Sessions', to: '/auth/sessions', icon: SESSIONS_ICON },]">

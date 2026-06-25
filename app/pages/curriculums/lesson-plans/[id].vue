@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-6 space-y-6">
+  <div class="mt-6 space-y-6 md:px-5">
 
     <!-- Header -->
     <UCard>
