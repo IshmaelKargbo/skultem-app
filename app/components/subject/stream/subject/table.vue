@@ -113,7 +113,6 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
-
     <div class="space-y-4 md:hidden">
       <template v-if="loading">
         <UCard v-for="i in 4" :key="i" class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm">
