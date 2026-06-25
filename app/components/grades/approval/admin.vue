@@ -352,7 +352,7 @@ async function loadRequests(keepSelection: boolean) {
   try {
     const res = await store.fetchAllAssessmentApprovalRequest(state.teacherId, page.value, size.value)
 
-    requests.value = res || []
+    requests.value = res.data || []
 
     if (!keepSelection) return
 

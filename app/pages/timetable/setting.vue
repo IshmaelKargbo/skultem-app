@@ -18,4 +18,7 @@
 </template>
 
 <script setup lang="ts">
+onMounted(() => {
+    document.title = 'Setting| Timetable | Skultem'
+})
 </script>

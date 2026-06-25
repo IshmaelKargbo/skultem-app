@@ -14,8 +14,8 @@
         <div v-if="!loading">
           <UButton v-if="state != 'created'" size="sm" :loading="isLoading" label="Save" @click="save"
             :trailing-icon="SAVE_ICON" />
-          <UButton v-if="state == 'created'" size="sm" @click="state = 'edit'" label="Edit" variant="subtle" color="warning"
-            :trailing-icon="EDIT_ICON" />
+          <UButton v-if="state == 'created'" size="sm" @click="state = 'edit'" label="Edit" variant="outline"
+            color="warning" :trailing-icon="EDIT_ICON" />
         </div>
       </div>
     </template>
@@ -69,9 +69,16 @@ watch(() => settings.value, (val) => {
   if (val.id) state.value = 'created'
 }, { immediate: true })
 
+async function fetchRecord() {
+  try {
+    loading.value = true
+    await store.getTiming()
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(async () => {
-  loading.value = true
-  await store.getTiming()
-  loading.value = false
+  await fetchRecord()
 })
 </script>

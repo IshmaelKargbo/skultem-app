@@ -13,6 +13,13 @@ export type CreateRoomDTO = {
     description: string
 }
 
+export type UpdateRoomDTO = {
+    id: string
+    name: string
+    no: string
+    description: string
+}
+
 export type Timing = {
     id: string
     startTime: string
@@ -51,7 +58,11 @@ export type SetWorkingDTO = {
 export type Timetable = {
     id: string
     subject: string
+    subjectId: string
     room: string
+    roomId: string
+    color: string
+    teacher: string
     createdAt: string
     updatedAt: string
 }
@@ -70,4 +81,12 @@ export type Period = {
 
 export type CreatePeriodDTO = {
     session: string
+}
+
+export type CreateTimetableDTO = {
+    subject: string
+    period: string
+    room: string
+    day: string
+    color: string
 }

@@ -33,6 +33,18 @@
             </template> </MenuItem>
         </li>
         <li v-if="can([Role.TEACHER])">
+          <MenuItem label="Grade" to="/grades"> <template #icon>
+              <UIcon class="text-xl" :name="GRADES_ICON" />
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.TEACHER])">
+          <MenuItem label="Timetable" to="/timetable"> <template #icon>
+              <UIcon class="text-xl" :name="TIMETABLE_ICON" />
+            </template>
+          </MenuItem>
+        </li>
+        <li v-if="can([Role.TEACHER])">
           <MenuItem label="Behaviours" to="/behaviours"> <template #icon>
               <UIcon class="text-xl" :name="BEHAVIOUR_ICON" />
             </template>
@@ -70,7 +82,7 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Curriculums"
             :subNavs="[{ label: 'Scheme of Work', to: '/curriculums/scheme-of-work', icon: SCHEME_ICON, exact: true }, { label: ' Lesson Plans', to: '/curriculums/lesson-plans', icon: BOOK_OPEN_ICON }, { label: 'Weeks', to: '/curriculums/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/curriculums/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/curriculums/student-progress', icon: STUDENT_ICON }, { label: 'Teacher Progress', to: '/curriculums/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/curriculums/class-progress', icon: CLASS_ICON }]">
             <template #icon>
@@ -86,7 +98,7 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Timetable"
             :subNavs="[{ label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true }, { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON }]">
             <template #icon>
@@ -102,7 +114,7 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="ID Cards"
             :subNavs="[{ label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true }, { label: 'Generate', to: '/id-cards/generate', icon: GENERATE_ID_CARD_ICON }, { label: 'Templates', to: '/id-cards/templates', icon: SETTINGS_ICON }]">
             <template #icon>
@@ -119,7 +131,7 @@
           </MenuItem>
         </li>
 
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Report Cards"
             :subNavs="[{ label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true }, { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON }, { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON }]">
             <template #icon>

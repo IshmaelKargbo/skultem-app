@@ -159,7 +159,7 @@ async function onSubmit() {
             color: 'success'
         })
 
-        navigateTo('/curriculums/teacher-assignment')
+        navigateTo('/classes/teacher-assignment')
 
     } catch (err: any) {
         toast.add({

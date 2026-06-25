@@ -21,6 +21,8 @@
     <div class="space-y-3">
       <TimetableRoomAdd v-for="(room, index) in rooms" :index="index" :record="room" :key="room.id"
         @remove-room="removeRoom" />
+      <TimetableRoomDeletePrompt :index="selectIndex" v-model:open="deleteModal" :room-id="selectRoom?.id || ''"
+        :room-name="selectRoom?.name || ''" />
 
       <div v-if="rooms.length === 0"
         class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-default py-10 text-center">
@@ -37,17 +39,23 @@
 <script lang="ts" setup>
 const store = useTimetableStore()
 const { rooms } = storeToRefs(store)
+const deleteModal = ref(false)
+
+const selectIndex = ref()
+const selectRoom = ref<Room>()
 
 function addRoom() {
   store.addRoom()
 }
 
-function removeRoom(index: number) {
-  store.removeRoom(index)
+function removeRoom(param: Room, index: string) {
+  selectRoom.value = param
+  selectIndex.value = index
+  deleteModal.value = true
 }
 
 async function fetchRecord() {
- await store.searchRoom(1, 10, "")
+  await store.searchRoom(0, 0, "")
 }
 
 onMounted(async () => {

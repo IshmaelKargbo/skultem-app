@@ -64,6 +64,16 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
+    updateRoom: async (payload: UpdateRoomDTO) => {
+      try {
+        return await $api('/timetable/room', {
+          method: 'PATCH',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     createPeriod: async (payload: CreatePeriodDTO) => {
       try {
         return await $api('/timetable/period', {
@@ -77,6 +87,16 @@ export const TimetableApi = () => {
     createBreak: async (payload: CreatePeriodDTO) => {
       try {
         return await $api('/timetable/break', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    createTimetable: async (payload: CreateTimetableDTO) => {
+      try {
+        return await $api('/timetable', {
           method: 'POST',
           body: payload
         })
@@ -99,6 +119,24 @@ export const TimetableApi = () => {
         return await $api('/timetable/timing', {
           method: 'POST',
           body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    deletePeriod: async (id: string) => {
+      try {
+        return await $api(`/timetable/period/${id}`, {
+          method: 'DELETE'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    deleteRoom: async (id: string) => {
+      try {
+        return await $api(`/timetable/room/${id}`, {
+          method: 'DELETE'
         })
       } catch (err: any) {
         useHandleError(err)
