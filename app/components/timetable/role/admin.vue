@@ -1,6 +1,5 @@
 <template>
-    <div class="space-y-6 p-4">
-        <!-- Header -->
+    <div class="space-y-4 p-4">
         <UCard>
             <Heading title="Class Timetables"
                 subtitle="Configure and manage weekly timetables for classes and sections">

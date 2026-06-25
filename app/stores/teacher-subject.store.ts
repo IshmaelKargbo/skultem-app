@@ -51,7 +51,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
       this.loading = true
       this.error = null
       try {
-        const response = await TeacherSubjectApi().getAllByTeacher(page, size) as any        
+        const response = await TeacherSubjectApi().getAllByTeacher(page, size) as any
         return response || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch teacher subjects'
@@ -63,7 +63,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
       this.loading = true
       this.error = null
       try {
-        const res = await TeacherSubjectApi().getAllByTeacher(0, 0) as any 
+        const res = await TeacherSubjectApi().getAllByTeacher(0, 0) as any
         this.records = res;
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch teacher subjects'
@@ -77,7 +77,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
   },
   getters: {
     list(state): { label: string, value: string }[] {
-      return state.records.map(e => ({ label: `${e.subjectName} (${e.teacherName})`, value: e.id }))
+      return state.records.filter(e => e.teacherId != null).map(e => ({ label: `${e.subjectName} (${e.teacherName})`, value: e.id }))
     },
     classes: (state) => {
       const seen = new Set<string>()
