@@ -1,6 +1,6 @@
 <template>
   <div class="px-3 pb-3 pt-2">
-    <div class="rounded-2xl border border-gray-200 bg-white/95 p-1 shadow-sm dark:border-gray-800 dark:bg-gray-900/95">
+    <div class="rounded-2xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
       <ul class="grid grid-cols-4 gap-1.5">
         <li>
           <NuxtLink to="/" class="menu-mobile-item" :class="isActive('/', true)">

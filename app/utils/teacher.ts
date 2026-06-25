@@ -27,6 +27,7 @@ export type TeacherSubject = {
     subjectName: string
     className: string
     classId: string
+    sessionId: string
     sectionName: string
     sectionId: string
     streamName: string

@@ -2,8 +2,12 @@
 const store = useFeePaymentStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
+const { $generatePdf } = useNuxtApp()
+const notify = useNotify()
 
 const page = ref(1)
+const receipt = ref<any | null>(null)
+const downloadingReceiptId = ref<string | null>(null)
 
 const columns = [
   {
@@ -26,6 +30,10 @@ const columns = [
     accessorKey: 'referenceNo',
     header: 'Reference No',
     cell: ({ row }: any) => row.original.referenceNo || '-'
+  },
+  {
+    accessorKey: 'actions',
+    header: ''
   }
 ]
 
@@ -36,6 +44,65 @@ watch(() => page.value, () => {
 async function fetchRecord() {
   await store.fetchAll(page.value, 6)
 }
+
+async function downloadReceipt(record: any) {
+  receipt.value = buildReceipt(record)
+  downloadingReceiptId.value = record.id
+  await nextTick()
+
+  try {
+    await $generatePdf('#existing-payment-receipt', `receipt-${sanitizeFilename(receipt.value.referenceNo)}`)
+  } catch (error) {
+    console.error('Receipt download failed:', error)
+    notify.warning('Receipt download failed. Please try again.')
+  } finally {
+    receipt.value = null
+    downloadingReceiptId.value = null
+  }
+}
+
+function buildReceipt(record: any) {
+  const payments = relatedPayments(record)
+  const first = payments[0] || record
+  const referenceNo = first.referenceNo || first.id || Date.now().toString()
+
+  return {
+    referenceNo,
+    student: displayStudent(first.student),
+    term: first.term || 'N/A',
+    paymentMethod: first.paymentMethod,
+    paidAt: first.paidAt || first.createdAt,
+    payments,
+    total: payments.reduce((sum: number, payment: any) => sum + Number(payment.amount || 0), 0),
+  }
+}
+
+function relatedPayments(record: any) {
+  if (!record.referenceNo) return [record]
+
+  return data.value.filter((payment: any) =>
+    payment.referenceNo === record.referenceNo &&
+    displayStudent(payment.student) === displayStudent(record.student) &&
+    payment.paymentMethod === record.paymentMethod
+  )
+}
+
+function displayStudent(student: any) {
+  if (!student) return 'Student'
+  if (typeof student === 'string') return student
+
+  return [student.givenNames, student.familyName].filter(Boolean).join(' ') || student.name || 'Student'
+}
+
+function sanitizeFilename(value: string) {
+  return String(value).replace(/[^a-z0-9-_]/gi, '-')
+}
+
+const parsePaymentMethod = computed(() =>
+  Object.fromEntries(
+    Object.entries(paymentMethods).map(([key, value]: any) => [key, value.label])
+  )
+)
 
 onMounted(async () => {
   fetchRecord()
@@ -92,6 +159,19 @@ defineExpose({
           <p class="font-medium">
             {{ row.original.referenceNo || '-' }}
           </p>
+        </template>
+
+        <template #actions-cell="{ row }">
+          <div class="justify-end flex">
+            <UButton
+            icon="i-lucide-download"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            :loading="downloadingReceiptId === row.original.id"
+            @click="downloadReceipt(row.original)"
+          />
+          </div>
         </template>
       </UTable>
     </div>
@@ -161,13 +241,24 @@ defineExpose({
 
             <!-- Payment Method -->
             <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
-              <UBadge
-                variant="outline"
-                :color="paymentMethods[record.paymentMethod].color"
-                :icon="paymentMethods[record.paymentMethod].icon"
-                :label="paymentMethods[record.paymentMethod].label"
-                class="w-fit"
-              />
+              <div class="flex items-center justify-between gap-3">
+                <UBadge
+                  variant="outline"
+                  :color="paymentMethods[record.paymentMethod].color"
+                  :icon="paymentMethods[record.paymentMethod].icon"
+                  :label="paymentMethods[record.paymentMethod].label"
+                  class="w-fit"
+                />
+
+                <UButton
+                  icon="i-lucide-download"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  :loading="downloadingReceiptId === record.id"
+                  @click="downloadReceipt(record)"
+                />
+              </div>
             </div>
           </div>
         </UCard>
@@ -206,5 +297,11 @@ defineExpose({
     </template>
 
   </UCard>
-  <!-- <ReceiptPayment v-if="receipt" id="payment-receipt" :receipt="receipt" /> -->
+  <div v-if="receipt" class="pointer-events-none fixed left-0 top-0 -z-10 h-[1123px] w-[794px] overflow-hidden opacity-0">
+    <ReceiptPayment
+      id="existing-payment-receipt"
+      :receipt="receipt"
+      :parse-payment-method="parsePaymentMethod"
+    />
+  </div>
 </template>

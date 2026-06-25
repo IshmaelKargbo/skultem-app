@@ -101,7 +101,6 @@ export default defineNuxtConfig({
     },
 
     workbox: {
-      // ✅ FIX: proper SPA fallback for offline routing
       navigateFallback: '/',
 
       globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],

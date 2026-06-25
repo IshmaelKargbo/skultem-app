@@ -270,9 +270,9 @@ async function switchRole(role: string) {
 }
 
 async function installApp() {
-    const installed = await install()
+    const installResult = await install()
 
-    if (installed) {
+    if (installResult !== 'unavailable') {
         drawerOpen.value = false
     }
 }

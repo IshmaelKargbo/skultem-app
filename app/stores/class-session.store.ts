@@ -42,5 +42,22 @@ export const useClassSessionStore = defineStore('classSession', {
         this.error = err.data?.message || 'Failed to fetch class sessions'
       }
     },
+  },
+  getters: {
+    list(state): { label: string, value: string }[] {
+      return state.records.map(e => {
+        let name = `${e.clazz} (${e.sectionName})`
+
+        if (e.streamName != 'N/A') {
+          name = `${e.clazz} (${e.sectionName}) - ${e.streamName}`
+        }
+        return { label: name, value: e.id }
+      })
+    },
+    get: (state) => {
+      return (id: string): ClassSession | undefined => {
+        return state.records.find(e => e.id === id)
+      }
+    }
   }
 })

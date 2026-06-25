@@ -13,6 +13,18 @@ export const SchoolApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    get: async (id: string) => {
+      try {
+        const res = await $api(`/school/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch school')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

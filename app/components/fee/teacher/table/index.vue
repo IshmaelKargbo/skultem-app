@@ -11,9 +11,6 @@ const columns = [
   { accessorKey: 'student',     header: 'Student'     },
   { accessorKey: 'fee',         header: 'Fee'         },
   { accessorKey: 'term',        header: 'Term'        },
-  { accessorKey: 'amount',      header: 'Amount'      },
-  { accessorKey: 'amountPaid',  header: 'Amount Paid' },
-  { accessorKey: 'outstanding', header: 'Outstanding' },
   { accessorKey: 'status',      header: ''            },
 ]
 
@@ -86,27 +83,6 @@ watch(
       <!-- Loading -->
       <template #loading>
         <TableLoading :size="columns.length" />
-      </template>
-
-      <!-- Amount -->
-      <template #amount-cell="{ row }">
-        <span class="text-info font-medium">
-          {{ format(row.original.amount) }}
-        </span>
-      </template>
-
-      <!-- Amount Paid -->
-      <template #amountPaid-cell="{ row }">
-        <span class="text-success font-medium">
-          {{ format(row.original.amountPaid) }}
-        </span>
-      </template>
-
-      <!-- Outstanding -->
-      <template #outstanding-cell="{ row }">
-        <span class="text-error font-medium">
-          {{ format(row.original.outstanding) }}
-        </span>
       </template>
 
       <!-- Status -->

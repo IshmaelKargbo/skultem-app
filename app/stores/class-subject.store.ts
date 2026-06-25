@@ -34,8 +34,26 @@ export const useClassSubjectStore = defineStore('classSubject', {
         this.loading = false
       }
     },
+    async allByClass(id: string, page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await ClassSubjectApi().getAllByClass(id, page, size) as any
+        this.records = response.data || []
+        this.meta = response.meta || {} as Meta
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class subjects by class'
+      } finally {
+        this.loading = false
+      }
+    },
     create(id: string, payload: CreateClassSubjectDto) {
       return ClassSubjectApi().create(id, payload)
+    }
+  },
+  getters: {
+    list(state): { label: string, value: string }[] {
+      return state.records.map(e => ({ label: e.subjectName, value: e.id }))
     }
   }
 })

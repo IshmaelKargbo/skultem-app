@@ -1,43 +1,40 @@
 <template>
-    <div :id="id" class="payment-receipt" aria-hidden="true">
+    <div :id="id" class="receipt">
+        <!-- HEADER -->
         <div class="receipt-header">
-            <div class="receipt-logo">S</div>
-            <div>
-                <h1>SKULTEM SCHOOL</h1>
-                <p>Official School Fees Receipt</p>
+            <div class="left">
+                <div class="school-name">{{ tenant?.name }}</div>
+                <div class="subtitle">Official School Fees Receipt</div>
+            </div>
+
+            <div class="right">
+                <div>{{ receipt.referenceNo }}</div>
+                <div>{{ formatDate(receipt.paidAt) }}</div>
             </div>
         </div>
 
-        <div class="receipt-meta-grid">
-            <div>
-                <span>Receipt No</span>
-                <strong>{{ receipt.referenceNo }}</strong>
-            </div>
-            <div>
-                <span>Date</span>
-                <strong>{{ formatDate(receipt.paidAt) }}</strong>
-            </div>
-            <div>
-                <span>Status</span>
-                <strong>PAID</strong>
-            </div>
-        </div>
+        <!-- STUDENT INFO -->
+        <div class="section">
+            <div class="section-title">Student Information</div>
 
-        <div class="receipt-section">
-            <h2>Student Information</h2>
-            <div class="receipt-info-grid">
+            <div class="grid">
                 <div>
                     <span>Student Name</span>
                     <strong>{{ receipt.student }}</strong>
                 </div>
-                <div>
-                    <span>Payment Method</span>
-                    <strong>{{ parsePaymentMethod[receipt.paymentMethod] || receipt.paymentMethod }}</strong>
-                </div>
+
                 <div>
                     <span>Academic Term</span>
                     <strong>{{ receipt.term }}</strong>
                 </div>
+
+                <div>
+                    <span>Payment Method</span>
+                    <strong>
+                        {{ parsePaymentMethod?.[receipt.paymentMethod] || receipt.paymentMethod }}
+                    </strong>
+                </div>
+
                 <div>
                     <span>Recorded By</span>
                     <strong>Accounts Office</strong>
@@ -45,8 +42,10 @@
             </div>
         </div>
 
-        <div class="receipt-section">
-            <h2>Payment Breakdown</h2>
+        <!-- PAYMENT TABLE -->
+        <div class="section">
+            <div class="section-title">Payment Breakdown</div>
+
             <table>
                 <thead>
                     <tr>
@@ -55,48 +54,30 @@
                         <th>Amount (SLE)</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <tr v-for="(payment, index) in receipt.payments" :key="payment.id || index">
-                        <td>{{ index + 1 }}</td>
-                        <td>{{ payment.fee }}</td>
-                        <td>{{ format(payment.amount) }}</td>
+                    <tr v-for="(p, i) in receipt.payments" :key="p.id || i">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ p.fee }}</td>
+                        <td>{{ format(p.amount) }}</td>
                     </tr>
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="2">TOTAL PAID</th>
-                        <th>{{ format(receipt.total) }} SLE</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
 
-        <div class="receipt-summary">
+        <!-- TOTAL -->
+        <div class="total">
             <div>
-                <span>Total Paid</span>
-                <strong>{{ format(receipt.total) }} SLE</strong>
-            </div>
-            <div>
-                <span>Reference</span>
-                <strong>{{ receipt.referenceNo }}</strong>
+                <span>Total Paid:</span>
+                <strong class="total-amount">{{ format(receipt.total) }}</strong>
             </div>
         </div>
 
-        <div class="receipt-signatures">
-            <div>
-                <span></span>
-                <p>Bursar Signature</p>
-            </div>
-            <div>
-                <span></span>
-                <p>Principal Signature</p>
-            </div>
+        <!-- FOOTER -->
+        <div class="footer">
+            This is an official receipt issued by {{ tenant?.name }} via skultem.com
         </div>
 
-        <div class="receipt-footer">
-            <p>This is an official computer-generated receipt from SKULTEM SCHOOL.</p>
-            <small>Powered by Skultem School Management System</small>
-        </div>
     </div>
 </template>
 
@@ -104,186 +85,138 @@
 defineProps<{
     id: string
     receipt: any
+    parsePaymentMethod?: Record<string, string>
 }>()
-
-function format(v: number) {
-    return new Intl.NumberFormat().format(v || 0)
-}
+const { format } = useMoney()
+const { tenant } = storeToRefs(useAppStore())
 
 function formatDate(value?: string) {
     if (!value) return new Date().toLocaleDateString()
-    return new Date(value).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+
+    return new Date(value).toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit"
     })
 }
 </script>
 
 <style scoped>
-.payment-receipt {
-    position: fixed;
-    left: -10000px;
-    top: 0;
-    z-index: -1;
+@reference "../../assets/css/main.css";
+
+/* =======================
+   PAGE BASE (A4 SIZE)
+======================= */
+.receipt {
+    @apply box-border bg-white p-12 font-sans text-gray-900;
     width: 794px;
     min-height: 1123px;
-    padding: 30px;
-    box-sizing: border-box;
-    background: #ffffff;
-    color: #111827;
-    font-family: Arial, sans-serif;
+    overflow: hidden;
 }
 
+/* =======================
+   HEADER
+======================= */
 .receipt-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e5e7eb;
+    @apply mb-7 flex items-center justify-between border-b-2 border-gray-900 pb-[18px];
 }
 
-.receipt-logo {
-    display: flex;
-    width: 70px;
-    height: 70px;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    border-radius: 16px;
-    background: #111827;
-    color: #ffffff;
-    font-size: 30px;
-    font-weight: 700;
+.school-name {
+    @apply text-2xl font-extrabold tracking-wide;
 }
 
-.receipt-header h1 {
-    margin: 0;
-    font-size: 30px;
-    line-height: 1.2;
+.subtitle {
+    @apply mt-1 text-base text-muted;
 }
 
-.receipt-header p {
-    margin: 6px 0 0;
-    font-size: 16px;
-    font-weight: 600;
+.right {
+    @apply text-right text-sm text-muted leading-relaxed;
 }
 
-.receipt-meta-grid,
-.receipt-info-grid,
-.receipt-summary {
-    display: grid;
-    gap: 16px;
+/* =======================
+   SECTIONS
+======================= */
+.section {
+    @apply mb-[26px];
 }
 
-.receipt-meta-grid {
-    grid-template-columns: repeat(3, 1fr);
-    margin-top: 28px;
+.section-title {
+    @apply mb-3 text-xs uppercase tracking-wider;
 }
 
-.receipt-info-grid,
-.receipt-summary {
-    grid-template-columns: repeat(2, 1fr);
+/* =======================
+   GRID
+======================= */
+.grid {
+    @apply grid grid-cols-2 gap-x-[30px] gap-y-3.5;
 }
 
-.receipt-meta-grid > div,
-.receipt-info-grid > div {
-    padding: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #f9fafb;
+.grid span {
+    @apply block text-[11px] text-gray-500;
 }
 
-.payment-receipt span {
-    display: block;
-    margin-bottom: 6px;
-    color: #6b7280;
-    font-size: 12px;
+.grid strong {
+    @apply text-lg;
 }
 
-.payment-receipt strong {
-    font-size: 15px;
+/* =======================
+   TABLE
+======================= */
+table {
+    @apply w-full border-collapse;
 }
 
-.receipt-section {
-    margin-top: 35px;
+thead {
+    @apply border-b-2 border-gray-900;
 }
 
-.receipt-section h2 {
-    margin: 0 0 16px;
-    font-size: 17px;
+th {
+    @apply py-2.5 text-left text-sm;
 }
 
-.payment-receipt table {
-    width: 100%;
-    margin-top: 10px;
-    border-collapse: collapse;
+td {
+    @apply m-0 border-b border-gray-200 pb-[18px] text-base;
 }
 
-.payment-receipt thead {
-    background: #111827;
-    color: #ffffff;
+/* =======================
+   TOTAL
+======================= */
+.total {
+    @apply mt-[25px] flex justify-end;
 }
 
-.payment-receipt th,
-.payment-receipt td {
-    padding: 14px;
-    border-bottom: 1px solid #e5e7eb;
-    text-align: left;
-    font-size: 14px;
+.total div {
+    @apply text-right;
 }
 
-.payment-receipt tfoot th {
-    background: #f3f4f6;
-    font-size: 15px;
+.total span {
+    @apply text-sm text-gray-500;
 }
 
-.receipt-summary {
-    margin-top: 35px;
+.total strong {
+    @apply pl-2.5 text-[26px] font-extrabold;
 }
 
-.receipt-summary > div {
-    padding: 22px;
-    border-radius: 16px;
-    background: #111827;
-    color: #ffffff;
+/* =======================
+   FOOTER
+======================= */
+.footer {
+    @apply mt-[60px] text-center text-[10px] text-gray-500;
 }
 
-.receipt-summary span {
-    color: #d1d5db;
-}
+/* =======================
+   PRINT OPTIMIZATION
+======================= */
+@media print {
+    .receipt {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+    }
 
-.receipt-summary strong {
-    font-size: 24px;
-}
-
-.receipt-signatures {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 70px;
-}
-
-.receipt-signatures > div {
-    width: 240px;
-    text-align: center;
-}
-
-.receipt-signatures span {
-    height: 1px;
-    margin-bottom: 8px;
-    border-top: 1px solid #111827;
-}
-
-.receipt-signatures p,
-.receipt-footer p {
-    margin: 0;
-    font-size: 13px;
-}
-
-.receipt-footer {
-    margin-top: 60px;
-    text-align: center;
-    color: #6b7280;
-    font-size: 13px;
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 }
 </style>
