@@ -94,7 +94,7 @@
         <UCard v-else>
             <div class="h-56 flex flex-col items-center justify-center gap-3 text-center">
                 <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100">
-                    <UIcon name="lucide:layout-list" class="w-6 h-6 text-gray-400" />
+                    <UIcon :name="EMPTY_ICON" class="w-6 h-6 text-gray-400" />
                 </div>
                 <div class="space-y-1">
                     <p class="text-sm font-medium text-gray-600">No Class Selected</p>
