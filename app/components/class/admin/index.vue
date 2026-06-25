@@ -1,6 +1,7 @@
 <template>
-    <div class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
-        <Heading title="Class Management" subtitle="Organize academic classes">
+    <div class="overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
+        <UCard>
+            <Heading title="Class Management" subtitle="Organize academic classes">
             <div class="flex md:space-x-3 flex-wrap space-y-2 md:space-y-0 w-full md:w-1/3">
                 <div class="grid grid-cols-2 w-full gap-3">
                     <ClassAssignMaster />
@@ -9,6 +10,7 @@
                 <UInput class="md:hidden" placeholder="Search by name" />
             </div>
         </Heading>
+        </UCard>
         <ClassTable />
     </div>
 </template>

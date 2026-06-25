@@ -176,7 +176,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])">
           <MenuItem label="Classes"
-            :subNavs="[{ label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true }, { label: 'Teacher Assignment', to: '/classes/teacher-assignment', icon: CLIPBOARD_ADD_ICON }, { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON }, { label: 'Streams', to: '/classes/streams', icon: CURRICULUM_STREAM_ICON }]">
+            :subNavs="[{ label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true }, { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON }, { label: 'Streams', to: '/classes/streams', icon: CURRICULUM_STREAM_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="CLASS_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">
@@ -192,7 +192,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
           <MenuItem label="Subjects"
-            :subNavs="[{ label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Assignment', to: '/subjects/assignment', icon: SUBJECT_ICON, exact: true }, { label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON }]">
+            :subNavs="[{ label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Assignment', to: '/subjects/assignment', icon: SUBJECT_ICON, exact: true }, { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON },{ label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="SUBJECT_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">

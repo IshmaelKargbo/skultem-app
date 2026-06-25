@@ -1,18 +1,16 @@
 <template>
-    <UForm class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3" :state="state" :schema="schema" @submit="onSubmit">
+    <UForm class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3" :state="state"
+        :schema="schema" @submit="onSubmit">
         <!-- Header -->
-        <div class="flex items-center justify-between">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-semibold">Assign Subjects to Class</h2>
-                <p class="text-xs text-muted">Define the curriculum structure for this class.</p>
-            </div>
-
-            <UFormField class="min-w-sm" label="Select Class" name="classId">
-                <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
-                    @change="fetchRecord" :items="classes" placeholder="Choose a class" />
-            </UFormField>
-        </div>
-
+        <UCard>
+            <Heading class="hidden md:flex" title="Assign Subjects to Class"
+                subtitle="Define the curriculum structure for this class.">
+                <UFormField class="min-w-sm" name="classId">
+                    <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
+                        @change="fetchRecord" :items="classes" placeholder="Choose a class" />
+                </UFormField>
+            </Heading>
+        </UCard>
         <!-- Assignments card (shown only when a class is selected) -->
         <UCard v-if="state.classId" :ui="{
             body: 'sm:p-0'
@@ -79,7 +77,8 @@
                 </template>
             </UTable>
 
-            <div v-if="state.assignments.length" class="p-4 bg-gray-50 dark:bg-gray-950 dark:border-gray-800 text-sm text-gray-600">
+            <div v-if="state.assignments.length"
+                class="p-4 bg-gray-50 dark:bg-gray-950 dark:border-gray-800 text-sm text-gray-600">
                 Total Subjects: <strong>{{ state.assignments.length }}</strong>
                 | Core: <strong>{{state.assignments.filter(a => a.mandatory).length}}</strong>
                 | Optional: <strong>{{state.assignments.filter(a => !a.mandatory).length}}</strong>
@@ -250,7 +249,7 @@ async function onSubmit() {
         })
 
         toastSuccess('Class subjects assigned successfully')
-        navigateTo('/curriculums/class-subjects')
+        navigateTo('/subjects/class-subjects')
     } catch (err: any) {
         toastError(err.message)
     } finally {

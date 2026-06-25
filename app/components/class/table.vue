@@ -53,11 +53,7 @@ onMounted(() => {
     <!-- Loading -->
     <template v-if="loading">
       <div class="grid gap-4 sm:grid-cols-2">
-        <UCard
-          v-for="i in 6"
-          :key="i"
-          class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800"
-        >
+        <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
           <div class="space-y-5 p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -95,12 +91,8 @@ onMounted(() => {
     <template v-else-if="data?.length">
       <div class="grid gap-4 sm:grid-cols-2 ">
 
-        <UCard
-          v-for="item in data"
-          :key="item.id"
-          class="overflow-hidden shadow-sm transition-all hover:shadow-md"
-          :ui="{ body: 'p-0' }"
-        >
+        <UCard v-for="item in data" :key="item.id" class="overflow-hidden shadow-sm transition-all hover:shadow-md"
+          :ui="{ body: 'p-0' }">
           <!-- Header -->
           <div class="border-b border-gray-100 p-4 dark:border-gray-800">
             <div class="flex items-start justify-between gap-3">
@@ -124,7 +116,8 @@ onMounted(() => {
                 </div>
               </div>
 
-              <UBadge variant="soft" size="lg" color="primary" :leading-icon="STUDENT_ICON" :label="`${item.totalStudent}`" />
+              <UBadge variant="soft" size="lg" color="primary" :leading-icon="STUDENT_ICON"
+                :label="`${item.totalStudent}`" />
 
             </div>
           </div>
@@ -199,17 +192,13 @@ onMounted(() => {
     </template>
 
     <!-- Pagination -->
-    <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-between">
-      <Showing :meta="meta" />
-      <UPagination
-        v-model:page="page"
-        size="sm"
-        :page-size="meta.size"
-        :items-per-page="meta.size"
-        :total="meta.total"
-        show-edges
-      />
-    </div>
+    <UCard>
+      <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+        <Showing :meta="meta" />
+        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </UCard>
 
   </div>
 </template>
