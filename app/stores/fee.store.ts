@@ -3,6 +3,14 @@ import { defineStore } from 'pinia'
 export const useFeeStore = defineStore('fee', {
   state: () => ({
     records: [] as FeeCategory[],
+    feeDetails: {
+      records: [],
+      summery: {
+        paid: 0,
+        partial: 0,
+        pending: 0
+      }
+    } as ClassFeeDetails,
     meta: {} as Meta,
     loading: false,
     error: null as string | null
@@ -18,6 +26,19 @@ export const useFeeStore = defineStore('fee', {
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch fee categories'
+      } finally {
+        this.loading = false
+      }
+    },
+    async getClassFeeDetails(session: string, term: string, page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await FeeApi().getClassFeeDetails(session, term, page, size) as any
+        this.feeDetails = response
+        this.feeDetails.meta = useMeta(response.meta)
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class fee details'
       } finally {
         this.loading = false
       }

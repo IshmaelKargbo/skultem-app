@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 const { records, loading, seed } = defineProps<{
-    records: Fee[]
+    records: {id: string, name: string, admissionNo: string, status: string}[]
     seed?: number
     loading?: boolean
 }>()
@@ -11,25 +11,19 @@ const seedCount = ref(seed || 0)
     <UCard :ui="{
         body: 'p-0 sm:p-0'
     }" class="md:hidden" v-if="!loading" v-for="(item, i) in records">
-        <div :key="item.id" class="flex justify-between p-3">
-            <div class="flex space-x-2">
-                <UAvatar :alt="item.student" />
+        <div :key="item.id" class="flex justify-between items-center p-3">
+            <div class="flex space-x-2 items-center">
+                <UAvatar :alt="item.name" />
                 <div>
-                    <p class="text-sm">{{ item.student }}</p>
+                    <p class="text-sm">{{ item.name }}</p>
                     <div class="flex space-x-1 text-[11px] text-mute">
-                        <p>{{ item.fee }}</p>
-                        <p>-</p>
-                        <p>{{ item.term }}</p>
+                        <p>{{ item.admissionNo }}</p>
                     </div>
                 </div>
             </div>
-            <div class="flex flex-col items-end space-y-0.5">
-                <p class="text-info text-xs font-medium">{{ format(item.amount) }}</p>
-                <div class="flex space-x-2">
-                    <p class="text-error text-sm font-medium" v-if="item.outstanding">{{ format(item.outstanding) }}</p>
-                    <UBadge size="xs" :label="item.status" variant="outline"
+            <div>
+                    <UBadge :label="item.status" variant="outline"
                         :color="parseFeeStatusColor[item.status]" />
-                </div>
             </div>
         </div>
         <div v-if="records.length == 0" class="flex h-16 items-center justify-center">

@@ -18,6 +18,19 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
+    getClassFeeDetails: async (session: string, term: string, page: number, size: number) => {
+      try {
+        const res = await $api(`/fee/details?session=${session}&term=${term}&page=${page}&size=${size}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class fee details')
+
+        return res.data
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getLedger: async (page: number, size: number) => {
       try {
         const res = await $api(`/fee/ledger?page=${page}&size=${size}`) as any
