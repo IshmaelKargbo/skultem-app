@@ -109,8 +109,11 @@ watch(() => grade.value, async (value: string) => {
     }
 }, { immediate: true })
 
-onMounted(async () => {
+watch(() => list.value, () => {
+    grade.value = list.value[0]?.value || ''
+})
 
+onMounted(async () => {
     document.title = 'Timetable | Skultem'
     await classStore.fetchAll(0, 0)
     await store.getWorkingDays()

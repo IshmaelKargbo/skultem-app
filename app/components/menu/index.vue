@@ -38,7 +38,7 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.TEACHER])">
+        <li v-if="can([Role.TEACHER, Role.PARENT])">
           <MenuItem label="Timetable" to="/timetable"> <template #icon>
               <UIcon class="text-xl" :name="TIMETABLE_ICON" />
             </template>
@@ -131,7 +131,7 @@
             </template>
           </MenuItem>
         </li>
-        <!-- <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Curriculums"
             :subNavs="[{ label: 'Scheme of Work', to: '/curriculums/scheme-of-work', icon: SCHEME_ICON, exact: true }, { label: ' Lesson Plans', to: '/curriculums/lesson-plans', icon: BOOK_OPEN_ICON }, { label: 'Weeks', to: '/curriculums/weeks', icon: WEEKS_ICON }, { label: 'Progress', to: '/curriculums/progress', icon: PROGRESS_ICON }, { label: 'Student Progress', to: '/curriculums/student-progress', icon: STUDENT_ICON }, { label: 'Teacher Progress', to: '/curriculums/teacher-progress', icon: TEACHER_ICON }, { label: 'Class Progress', to: '/curriculums/class-progress', icon: CLASS_ICON }]">
             <template #icon>
@@ -146,7 +146,7 @@
               </div>
             </template>
           </MenuItem>
-        </li> -->
+        </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Timetable"
             :subNavs="[{ label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true }, { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON }]">
@@ -178,9 +178,9 @@
               </div>
             </template>
           </MenuItem>
-        </li> -->
+        </li>
 
-        <!-- <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Report Cards"
             :subNavs="[{ label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true }, { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON }, { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON }]">
             <template #icon>
@@ -241,7 +241,7 @@
         </li>
         <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
           <MenuItem label="Subjects"
-            :subNavs="[{ label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Assignment', to: '/subjects/assignment', icon: SUBJECT_ICON, exact: true }, { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON },{ label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON }]">
+            :subNavs="[{ label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON },{ label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON }]">
             <template #icon>
               <UIcon class="text-xl" :name="SUBJECT_ICON" />
             </template> <template #subNav="{ subNavs, isActiveSub }">
@@ -255,7 +255,6 @@
             </template>
           </MenuItem>
         </li>
-
         <li v-if="can([Role.PARENT, Role.TEACHER])">
           <MenuItem to="/fees" label="Fees"> <template #icon>
               <UIcon class="text-xl" :name="PAYMENT_ICON" />
@@ -313,8 +312,8 @@
               </div>
             </template>
           </MenuItem>
-        </li> -->
-             <!-- <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
+        </li>
+             <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
           <MenuItem label="Payroll"
             :subNavs="[{ label: 'Payroll Dashboard', to: '/payroll', icon: CURRICULUM_STREAM_ICON ,  exact: true  },{ label: 'Employees', to: '/payroll/employees', icon: CURRICULUM_STREAM_ICON }, { label: 'Payroll Run', to: '/payroll/run', icon: CURRICULUM_STREAM_ICON } ]">
             <template #icon>
@@ -330,7 +329,7 @@
             </template>
           </MenuItem>
         </li> -->
-        <!-- <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT])">
           <MenuItem label="Athletic House"
             :subNavs="[{ label: 'Management', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true }, { label: 'House', to: '/athletic-house/house', icon: CATEGORY_ICON }]">
             <template #icon>
@@ -345,7 +344,7 @@
               </div>
             </template>
           </MenuItem>
-        </li> -->
+        </li>
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="Materials & Supplies"
             :subNavs="[{ label: 'Materials', to: '/material', icon: MATERIAL_ICON, exact: true }, { label: 'Supplies', to: '/material/supply', icon: CURRICULUM_GROUP_ICON }, { label: 'Category', to: '/material/category', icon: CATEGORY_ICON }]">

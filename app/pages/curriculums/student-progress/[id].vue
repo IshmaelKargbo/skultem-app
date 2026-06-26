@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 mt-6 md:px-5">
+  <div class="space-y-4 p-4">
 
     <!-- Header -->
     <UCard class="overflow-hidden">

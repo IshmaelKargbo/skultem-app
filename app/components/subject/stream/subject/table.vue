@@ -5,7 +5,7 @@ const store = useStreamSubjectStore()
 const { records: data, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-  const columns = [
+const columns = [
   {
     accessorKey: 'streamName',
     header: 'Stream'
@@ -138,9 +138,10 @@ onMounted(async () => {
       </template>
 
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm" :ui="{
-          body: 'p-0'
-        }">
+        <UCard v-for="item in data" :key="item.id"
+          class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm" :ui="{
+            body: 'p-0'
+          }">
           <div class="border-b border-default p-4">
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">

@@ -5,7 +5,7 @@
             <Heading title="Class Timetables"
                 subtitle="Manage weekly timetables for classes and sections">
                 <div class="flex items-center gap-3 w-72">
-                    <USelectMenu placeholder="Select Class" v-model="grade" value-key="value" :items="classes"
+                    <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
                         :loading="classLoading" />
                 </div>
             </Heading>
@@ -57,9 +57,11 @@
 <script setup lang="ts">
 const store = useTimetableStore()
 
+const parentStore = useParentStore()
 const teacherStore = useTeacherSubjectStore()
 const { periods } = storeToRefs(store)
-const { classes, loading: classLoading } = storeToRefs(teacherStore)
+
+const { list, loading: classLoading } = storeToRefs(parentStore)
 const grade = ref()
 
 const session = computed(() => teacherStore.getClass(grade.value))
@@ -72,13 +74,14 @@ watch(() => grade.value, async (value: string) => {
 }, { immediate: true })
 
 
-watch(() => classes.value, () => {
-    grade.value = classes.value[0]?.value || ''
+watch(() => list.value, () => {
+    grade.value = list.value[0]?.value || ''
 })
 
 onMounted(async () => {
     document.title = 'Timetable | Skultem'
     await teacherStore.allByTeacher()
+    await parentStore.fetchAllStudents(0, 0)
     await store.getWorkingDays()
     await store.searchRoom(0, 0)
 })

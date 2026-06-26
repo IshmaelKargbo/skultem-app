@@ -1,6 +1,6 @@
 ```vue
 <template>
-    <div class="space-y-6 mt-6">
+    <div class="space-y-6 mt-6 p-4">
 
         <!-- Hero -->
         <UCard class="overflow-hidden rounded-3xl">
