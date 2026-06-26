@@ -67,7 +67,7 @@ watch(
 </script>
 
 <template>
-  <UCard :ui="{ body: 'p-0 sm:p-0' }" class="hidden md:flex">
+  <UCard :ui="{ body: 'p-0 sm:p-0' }" class="block">
     <UTable class="hidden md:block" :columns="columns" :data="feeDetails.records" :loading="loading">
 
       <!-- Empty State -->
