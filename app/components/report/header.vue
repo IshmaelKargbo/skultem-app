@@ -56,18 +56,18 @@
         </div>
         <div>
             <TabMobile class="md:hidden" :tabs="[
-                  { label: 'Revenue Analysis', to: '/reports', exact: true },
-                { label: 'Outstanding Fees', to: '/reports/outstanding' },
-                { label: 'Expense Report', to: '/reports/expense' },
-                { label: 'Payment History', to: '/reports/history' },
-                { label: 'Profit & Loss', to: '/reports/profit-loss' }
+                  { label: 'Revenue Analysis', to: '/analytics/financial-reports', exact: true },
+                { label: 'Outstanding Fees', to: '/analytics/financial-reports/outstanding' },
+                { label: 'Expense Report', to: '/analytics/financial-reports/expense' },
+                { label: 'Payment History', to: '/analytics/financial-reports/history' },
+                { label: 'Profit & Loss', to: '/analytics/financial-reports/profit-loss' }
             ]" />
             <Tab class="hidden md:flex" :tabs="[
-                { label: 'Revenue Analysis', to: '/reports', exact: true },
-                { label: 'Outstanding Fees', to: '/reports/outstanding' },
-                { label: 'Expense Report', to: '/reports/expense' },
-                { label: 'Payment History', to: '/reports/history' },
-                { label: 'Profit & Loss', to: '/reports/profit-loss' }
+                { label: 'Revenue Analysis', to: '/analytics/financial-reports', exact: true },
+                { label: 'Outstanding Fees', to: '/analytics/financial-reports/outstanding' },
+                { label: 'Expense Report', to: '/analytics/financial-reports/expense' },
+                { label: 'Payment History', to: '/analytics/financial-reports/history' },
+                { label: 'Profit & Loss', to: '/analytics/financial-reports/profit-loss' }
             ]" />
         </div>
 

@@ -1,7 +1,7 @@
 <template>
     <UForm class="p-4 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
         <UCard>
-            <Heading class="hidden md:flex" title="Assign Subjects to Stream"
+            <Heading title="Assign Subjects to Stream"
                 subtitle="Define the curriculum structure for this stream.">
                <div class="w-72">
                  <UFormField name="streamId">

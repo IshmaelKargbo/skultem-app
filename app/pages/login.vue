@@ -280,9 +280,7 @@ const handleLogin = async () => {
       subtitle: 'Preparing your dashboard',
       hint: 'Loading your workspace'
     })
-
-    useNotify().success('Welcome to Skultem')
-
+    
     await userStore.me()
     initializeActiveRole()
     setAuthResolved(true)

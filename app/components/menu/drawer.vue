@@ -1,16 +1,16 @@
 <template>
   <USlideover :open="open" side="left" :ui="{
+    body: 'p-0',
     content: 'w-full max-w-sm bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-950 border-r border-neutral-200 dark:border-neutral-800'
   }" @update:open="open = $event">
     <!-- Trigger -->
     <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
     <template #header>
       <div
-        class="relative overflow-hidden w-full rounded-2xl border border-neutral-200/80 bg-white/90 p-3  dark:border-white/10 dark:bg-white/[0.03]">
+        class="w-full">
         <div class="flex justify-between items-center gap-3">
           <div class="relative shrink-0">
             <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900" />
-
             <span
               class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
           </div>
@@ -19,7 +19,6 @@
             <h3 class="truncate text-sm font-semibold text-neutral-900 dark:text-white">
               {{ name }}
             </h3>
-
             <p class="truncate text-xs text-neutral-500 dark:text-neutral-400">
               {{ user?.email }}
             </p>
@@ -32,8 +31,7 @@
 
     <!-- BODY -->
     <template #body>
-      <div class="flex h-full flex-col overflow-y-auto pr-1">
-
+      <div class="flex h-full flex-col overflow-y-auto p-4">
         <!-- PROFILE -->
         <div class="pt-2">
           <!-- roles -->
@@ -42,7 +40,6 @@
               <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                 Switch Role
               </p>
-
               <div
                 class="rounded-full border border-neutral-200 dark:border-white/10 px-2 py-1 text-[10px] text-neutral-500">
                 {{ userRoles.length }} roles
@@ -52,15 +49,15 @@
             <button v-for="role in userRoles" :key="role.value"
               class="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 transition-all duration-200"
               :class="activeRole === role.value
-                ? 'border-primary-500/20 bg-primary-500/[0.08]'
-                : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/[0.02] hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/[0.05]'
+                ? 'border-primary-500/20 bg-primary-500/8'
+                : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/2 hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/5'
                 " @click="switchRole(role.value)">
               <!-- glow -->
               <div v-if="activeRole === role.value" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-primary" />
 
               <div class="flex h-11 w-11 items-center justify-center rounded-2xl transition-all" :class="activeRole === role.value
                 ? 'bg-primary text-white shadow-lg shadow-primary-500/20'
-                : 'bg-white dark:bg-white/[0.04] text-neutral-500 border border-neutral-200 dark:border-white/5'
+                : 'bg-white dark:bg-white/4 text-neutral-500 border border-neutral-200 dark:border-white/5'
                 ">
                 <UIcon :name="role.icon" class="text-base" />
               </div>
@@ -84,50 +81,40 @@
               </Transition>
             </button>
           </div>
-
         </div>
 
         <!-- QUICK LINKS -->
         <div
-          class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.02]">
-
+          class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/2">
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT])" to="/attendance"
             @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/attendance') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="ATTENDANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Attendance
             </span>
           </NuxtLink>
-
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT])" to="/parents" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/parents') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="PARENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Parents
             </span>
           </NuxtLink>
-
-
           <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/teachers" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/teachers') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="TEACHER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Teachers
             </span>
           </NuxtLink>
-
           <NuxtLink v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])" to="/students" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/students') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="STUDENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Students
             </span>
@@ -137,7 +124,6 @@
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/grades') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="GRADES_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Grades
             </span>
@@ -147,75 +133,27 @@
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/notifications') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="BELL_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Notifications
             </span>
           </NuxtLink>
 
-
           <NuxtLink v-if="can([Role.PARENT])" to="/fees" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
             :class="route.path.startsWith('/fees') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
             <UIcon :name="PAYMENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
             <span class="text-[16px] font-medium">
               Fees
             </span>
           </NuxtLink>
-
-          <NuxtLink v-if="can([Role.PARENT])" to="/performance" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/performance') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="PERFORMANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Performance
-            </span>
-          </NuxtLink>
-
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/ledger" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/ledger') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="LEDGER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Student Ledger
-            </span>
-          </NuxtLink>
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER])" to="/transactions" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/transactions') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="TRANSACTION_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Transactions
-            </span>
-          </NuxtLink>
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.OWNER])" to="/analytics" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/analytics') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="ANALYTICS_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-
-            <span class="text-[16px] font-medium">
-              Analytics
-            </span>
-          </NuxtLink>
-
-          <!-- SEE MORE -->
-          <button
-            class="w-full rounded-2xl border border-neutral-200 bg-neutral-100 py-4 text-center font-semibold text-neutral-700 transition hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700">
-            See more
-          </button>
         </div>
 
         <!-- ACCORDIONS -->
-        <div class="my-6">
-
+        <div class="my-2">
           <div v-for="section in sections" :key="section.id"
-            class="mt-3 rounded-3xl border border-neutral-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.02]">
+            class="mt-3 rounded-3xl border border-neutral-200/80 bg-white/80 dark:border-white/10 dark:bg-white/2">
             <!-- header -->
-            <button class="flex items-center justify-between w-full px-5 py-[18px]" @click="toggleSection(section.id)">
+            <button class="flex items-center justify-between w-full px-5 py-4.5" @click="toggleSection(section.id)">
               <div class="flex items-center gap-4">
                 <UIcon :name="section.icon" class="size-7" />
 
@@ -251,14 +189,11 @@
             </div>
           </div>
         </div>
-
-        <!-- FOOTER -->
-        <div
-          class="sticky bottom-0 mt-auto border-t border-neutral-200/80 bg-white/95 px-5 py-5 backdrop-blur dark:border-white/10 dark:bg-neutral-950/95">
-          <UButton to="/logout" color="neutral" variant="soft" block class="rounded-2xl text-base font-semibold">
-            Log out
-          </UButton>
-        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <UButton to="/logout" color="error" class="w-full flex justify-center">Log out</UButton>
       </div>
     </template>
   </USlideover>
@@ -332,7 +267,6 @@ const sections = computed(() => [
       }
     ].filter(Boolean)
   },
-  // grades
   {
     id: 'grades',
     title: 'Grades',
@@ -344,52 +278,48 @@ const sections = computed(() => [
         to: '/grades/approval'
       },
 
-      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER,]) && {
+      can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]) && {
         label: 'Grade Assignment',
         icon: 'lucide:clipboard-check',
         to: '/grades'
       }
     ].filter(Boolean)
-  },  // subjects
+  },
+  // subjects
   {
     id: 'subjects',
     title: 'Subjects',
-    visible: can([Role.PROPRIETOR, Role.ADMIN]),
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]),
     items: [
       {
         label: 'Subjects',
         icon: SUBJECT_ICON,
         to: '/subjects'
       },
-
       {
         label: 'Subject Groups',
         icon: CURRICULUM_GROUP_ICON,
-        to: '/curriculums/subject-groups'
+        to: '/subjects/subject-groups'
       },
-
       {
         label: 'Class Subjects',
         icon: BOOK_OPEN_ICON,
-        to: '/curriculums/class-subjects'
+        to: '/subjects/class-subjects'
       },
-
       {
         label: 'Teacher Assignment',
         icon: CLIPBOARD_ADD_ICON,
-        to: '/curriculums/teacher-assignment'
+        to: '/subjects/teacher-assignment'
       },
-
       {
         label: 'Sections',
         icon: LAYERS_ICON,
-        to: '/curriculums/sections'
+        to: '/subjects/sections'
       },
-
       {
         label: 'Streams Subjects',
         icon: CURRICULUM_STREAM_ICON,
-        to: '/curriculums/streams'
+        to: '/subjects/streams'
       }
     ]
   },
@@ -404,19 +334,11 @@ const sections = computed(() => [
         icon: CLASS_ICON,
         to: '/classes'
       },
-
-      {
-        label: 'Teacher Assignment',
-        icon: CLIPBOARD_ADD_ICON,
-        to: '/classes/teacher-assignment'
-      },
-
       {
         label: 'Sections',
         icon: LAYERS_ICON,
         to: '/classes/sections'
       },
-
       {
         label: 'Streams',
         icon: CURRICULUM_STREAM_ICON,
@@ -425,54 +347,54 @@ const sections = computed(() => [
     ]
   },
   // curriculum
-  {
-    id: 'curriculum',
-    title: 'Curriculum',
-    visible: can([Role.PROPRIETOR, Role.ADMIN]),
-    items: [
-      {
-        label: 'Scheme of Work',
-        icon: SCHEME_ICON,
-        to: '/curriculums/scheme-of-work'
-      },
+  // {
+  //   id: 'curriculum',
+  //   title: 'Curriculum',
+  //   visible: can([Role.PROPRIETOR, Role.ADMIN]),
+  //   items: [
+  //     {
+  //       label: 'Scheme of Work',
+  //       icon: SCHEME_ICON,
+  //       to: '/curriculums/scheme-of-work'
+  //     },
 
-      {
-        label: ' Lesson Plans ',
-        icon: BOOK_OPEN_ICON,
-        to: '/curriculums/lesson-plans'
-      },
+  //     {
+  //       label: ' Lesson Plans ',
+  //       icon: BOOK_OPEN_ICON,
+  //       to: '/curriculums/lesson-plans'
+  //     },
 
-      {
-        label: 'Weeks',
-        icon: WEEKS_ICON,
-        to: '/curriculums/weeks'
-      },
+  //     {
+  //       label: 'Weeks',
+  //       icon: WEEKS_ICON,
+  //       to: '/curriculums/weeks'
+  //     },
 
-      {
-        label: 'Progress',
-        icon: PROGRESS_ICON,
-        to: '/curriculums/progress'
-      },
+  //     {
+  //       label: 'Progress',
+  //       icon: PROGRESS_ICON,
+  //       to: '/curriculums/progress'
+  //     },
 
-      {
-        label: 'Student Progress',
-        icon: STUDENT_ICON,
-        to: '/curriculums/student-progress'
-      },
+  //     {
+  //       label: 'Student Progress',
+  //       icon: STUDENT_ICON,
+  //       to: '/curriculums/student-progress'
+  //     },
 
-      {
-        label: 'Teacher Progress',
-        icon: TEACHER_ICON,
-        to: '/curriculums/teacher-progress'
-      },
+  //     {
+  //       label: 'Teacher Progress',
+  //       icon: TEACHER_ICON,
+  //       to: '/curriculums/teacher-progress'
+  //     },
 
-      {
-        label: 'Class Progress',
-        icon: CLASS_ICON,
-        to: '/curriculums/class-progress'
-      }
-    ]
-  },
+  //     {
+  //       label: 'Class Progress',
+  //       icon: CLASS_ICON,
+  //       to: '/curriculums/class-progress'
+  //     }
+  //   ]
+  // },
   // classes
   {
     id: 'behaviours',
@@ -492,7 +414,7 @@ const sections = computed(() => [
       },
     ]
   },
-    // Timetable
+  // Timetable
   {
     id: 'timetable',
     title: 'Timetable',
@@ -506,7 +428,7 @@ const sections = computed(() => [
 
       {
         label: 'Settings',
-        icon: TIMETABLE_SETTINGS_ICON ,
+        icon: TIMETABLE_SETTINGS_ICON,
         to: '/timetable/Setting'
       },
     ]
@@ -530,6 +452,44 @@ const sections = computed(() => [
       },
 
 
+    ].filter(Boolean)
+  },
+  // transactions
+  {
+    id: 'transactions',
+    title: 'Transactions',
+    visible: can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]),
+    items: [
+      can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]) && {
+        label: 'Transactions',
+        icon: TRANSACTION_ICON,
+        to: '/transactions'
+      },
+
+      can([Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT]) && {
+        label: 'Student Ledger',
+        icon: TRANSACTION_ICON,
+        to: '/transactions/student-ledger'
+      },
+    ].filter(Boolean)
+  },
+  // analytics
+  {
+    id: 'analytics',
+    title: 'Analytics',
+    visible: can([Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER]),
+    items: [
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+        label: 'Reports',
+        icon: REPORT_ICON,
+        to: '/analytics'
+      },
+
+      can([Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT]) && {
+        label: 'Financial Reports',
+        icon: SCHEME_ICON,
+        to: '/analytics/financial-reports'
+      },
     ].filter(Boolean)
   },
   // academics
@@ -655,59 +615,58 @@ const sections = computed(() => [
         icon: CATEGORY_ICON,
         to: '/material/category'
       },
-
     ].filter(Boolean)
   },
-    // id-cards
-  {
-    id: 'id-cards',
-    title: 'ID Cards',
-    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
-    items: [
-      {
-        label: 'ID Cards',
-        icon: ID_CARD_ICON,
-        to: '/id-cards'
-      },
+  // id-cards
+  //   {
+  //     id: 'id-cards',
+  //     title: 'ID Cards',
+  //     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+  //     items: [
+  //       {
+  //         label: 'ID Cards',
+  //         icon: ID_CARD_ICON,
+  //         to: '/id-cards'
+  //       },
 
-      {
-        label: 'Generate',
-        icon: GENERATE_ID_CARD_ICON ,
-        to: '/id-cards/generate'
-      },
+  //       {
+  //         label: 'Generate',
+  //         icon: GENERATE_ID_CARD_ICON ,
+  //         to: '/id-cards/generate'
+  //       },
 
-       {
-        label: 'Templates',
-        icon: SETTINGS_ICON ,
-        to: '/id-cards/templates'
-      },
-    ]
-  },
- // id-cards
-  {
-    id: 'report-cards',
-    title: 'Report Cards',
-    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
-    items: [
-      {
-        label: 'Report Cards',
-        icon: REPORT_ICON,
-        to: '/report-cards'
-      },
+  //        {
+  //         label: 'Templates',
+  //         icon: SETTINGS_ICON ,
+  //         to: '/id-cards/templates'
+  //       },
+  //     ]
+  //   },
+  //  // id-cards
+  //   {
+  //     id: 'report-cards',
+  //     title: 'Report Cards',
+  //     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+  //     items: [
+  //       {
+  //         label: 'Report Cards',
+  //         icon: REPORT_ICON,
+  //         to: '/report-cards'
+  //       },
 
-      {
-        label: 'Generate',
-        icon: GENERATE_ICON,
-        to: '/report-cards/generate'
-      },
+  //       {
+  //         label: 'Generate',
+  //         icon: GENERATE_ICON,
+  //         to: '/report-cards/generate'
+  //       },
 
-       {
-        label: 'Templates',
-        icon: SETTINGS_ICON ,
-        to: '/id-cards/templates'
-      },
-    ]
-  },
+  //        {
+  //         label: 'Templates',
+  //         icon: SETTINGS_ICON ,
+  //         to: '/id-cards/templates'
+  //       },
+  //     ]
+  //   },
 
 ].filter((section: any) => section?.visible !== false))
 

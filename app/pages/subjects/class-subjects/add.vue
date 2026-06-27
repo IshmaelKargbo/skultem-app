@@ -3,7 +3,7 @@
         :schema="schema" @submit="onSubmit">
         <!-- Header -->
         <UCard>
-            <Heading class="hidden md:flex" title="Assign Subjects to Class"
+            <Heading title="Assign Subjects to Class"
                 subtitle="Define the curriculum structure for this class.">
                 <UFormField class="min-w-sm" name="classId">
                     <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"

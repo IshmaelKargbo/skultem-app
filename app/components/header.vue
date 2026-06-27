@@ -1,6 +1,8 @@
 <template>
     <div class="px-4 pt-4">
-        <UCard>
+        <UCard :ui="{
+            root: 'rounded-4xl'
+        }">
             <div class="container mx-auto flex items-center justify-between">
 
                 <!-- LEFT -->
