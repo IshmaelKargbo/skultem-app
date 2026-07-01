@@ -601,7 +601,7 @@
                                 {{
                                   template.student[
                                   field.key as keyof typeof template.student
-                                ] ?? "—"
+                                  ] ?? "—"
                                 }}
                               </p>
 
@@ -677,28 +677,6 @@
 
                 </div>
 
-                <!-- QR -->
-                <!-- <div class="px-6 pt-6">
-
-                  <div class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
-
-                    <div class="flex justify-center">
-
-                      <div class="rounded-3xl border bg-gray-50 p-5 shadow-inner">
-
-                        <UIcon name="i-lucide-qr-code" class="text-[90px] text-gray-700" />
-
-                      </div>
-
-                    </div>
-
-                    <p class="mt-4 text-center text-xs text-gray-500">
-                      Scan to verify student information.
-                    </p>
-
-                  </div>
-
-                </div> -->
 
                 <!-- Contacts -->
                 <div class="mt-6 grid grid-cols-2 gap-4 px-6">
@@ -822,6 +800,19 @@
 
                 </div>
 
+                <!-- QR -->
+                <div class="px-6 pt-6">
+                  <div class="flex justify-center">
+
+                    <div class="rounded-3xl border bg-gray-50 p-5 shadow-inner">
+
+                      <UIcon name="i-lucide-qr-code" class="text-[90px] text-gray-700" />
+
+                    </div>
+
+                  </div>
+                </div>
+
                 <!-- Footer -->
                 <div class="mt-6 px-6 py-5 text-center" :style="{
                   backgroundColor: settings.footerColor,
@@ -833,7 +824,7 @@
                   </p>
                 </div>
 
-              </div>
+              </div>g
 
             </div>
           </div>
