@@ -1,42 +1,31 @@
 <template>
-    <UForm class="p-6" :state="state" :schema="schema" @submit="onSubmit">
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-
-            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                <div class="space-y-1">
-                    <h2 class="text-2xl font-semibold">
-                        Assign Subjects to Stream
-                    </h2>
-                    <p class="text-xs text-mute">
-                        Define the curriculum structure for this stream.
-                    </p>
-                </div>
-
-                <div v-if="state.streamId" class="flex gap-3">
-                    <UButton type="submit" color="primary" :icon="SAVE_ICON" label="Save Changes" :loading="saving" />
-                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
-                </div>
-            </div>
-
-            <div class="px-6 py-4 bg-gray-50/20 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
-                <div class="max-w-sm">
-                    <UFormField label="Select Stream" name="streamId">
-                        <USelectMenu value-key="value" :loading="streamStore.loading" v-model="state.streamId" @change="fetchRecord"
-                            :items="streams" placeholder="Choose a stream" />
-                    </UFormField>
-                </div>
-            </div>
-
-            <div v-if="state.streamId" class="px-6 py-3">
-
-                <!-- Section Header -->
-                <div class="flex items-center border-b pb-3 border-gray-200 dark:border-gray-800 justify-between">
+    <UForm class="p-4 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
+        <UCard>
+            <Heading title="Assign Subjects to Stream"
+                subtitle="Define the curriculum structure for this stream.">
+               <div class="w-72">
+                 <UFormField name="streamId">
+                    <USelectMenu value-key="value" :loading="streamStore.loading" v-model="state.streamId"
+                        @change="fetchRecord" :items="streams" placeholder="Choose a stream" />
+                </UFormField>
+               </div>
+            </Heading>
+        </UCard>
+        <UCard v-if="state.streamId" :ui="{
+            body: 'sm:p-0'
+        }">
+            <template #header>
+                <div class="flex items-center justify-between">
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
                         Subject Assignments ({{ state.assignments.length }})
                     </h3>
 
                     <UButton variant="soft" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
                 </div>
+
+            </template>
+            <div>
+                <!-- Section Header -->
 
                 <!-- Empty State -->
                 <div v-if="!state.assignments.length"
@@ -53,16 +42,17 @@
                     <!-- Subject -->
                     <template #subjectId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.subjectId`">
-                            <USelectMenu value-key="value" :items="availableSubjects(row.index)" :loading="subjectStore.loading"
-                                placeholder="Select Subject" v-model="row.original.subjectId" />
+                            <USelectMenu value-key="value" :items="availableSubjects(row.index)"
+                                :loading="subjectStore.loading" placeholder="Select Subject"
+                                v-model="row.original.subjectId" />
                         </UFormField>
                     </template>
 
                     <!-- Group -->
                     <template #groupId-cell="{ row }">
                         <UFormField :name="`assignments.${row.index}.groupId`">
-                            <USelectMenu value-key="value" :loading="subjectGroupStore.loading" :items="groups" placeholder="Select Group"
-                                v-model="row.original.groupId" />
+                            <USelectMenu value-key="value" :loading="subjectGroupStore.loading" :items="groups"
+                                placeholder="Select Group" v-model="row.original.groupId" />
                         </UFormField>
                     </template>
 
@@ -83,7 +73,8 @@
                 </UTable>
 
                 <!-- Summary -->
-                <div v-if="state.assignments.length" class="p-4 bg-gray-50 dark:bg-gray-950 rounded-lg text-sm text-gray-600 dark:text-gray-300">
+                <div v-if="state.assignments.length"
+                    class="p-4 bg-gray-50 dark:bg-gray-950 rounded-lg text-sm text-gray-600 dark:text-gray-300">
                     Total Subjects:
                     <strong>{{ state.assignments.length }}</strong>
                     |
@@ -99,7 +90,26 @@
                 </div>
 
             </div>
-        </div>
+            <template #footer>
+                <div class="flex gap-3">
+                    <UButton type="submit" color="primary" :icon="SAVE_ICON" label="Save Changes" :loading="saving" />
+                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
+                </div>
+            </template>
+        </UCard>
+         <UCard v-else>
+            <div class="h-56 flex flex-col items-center justify-center gap-3 text-center">
+                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100">
+                    <UIcon :name="EMPTY_ICON" class="w-6 h-6 text-gray-400" />
+                </div>
+                <div class="space-y-1">
+                    <p class="text-sm font-medium text-gray-600">No Stream Selected</p>
+                    <p class="text-xs text-gray-400">
+                        Choose a stream from the dropdown above to manage its subject assignments.
+                    </p>
+                </div>
+            </div>
+        </UCard>
     </UForm>
 </template>
 
@@ -223,7 +233,7 @@ async function onSubmit() {
             color: 'success'
         })
 
-        navigateTo('/curriculums/stream-subjects')
+        navigateTo('/subjects/stream-subjects')
 
     } catch (err: any) {
         toast.add({

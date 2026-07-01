@@ -2,20 +2,19 @@
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
-const { format } = useMoney()
-
-const { fees: data, report, meta, loading } = storeToRefs(store)
+const feeStore = useFeeStore()
+const { feeDetails, loading } = storeToRefs(feeStore)
+const { } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
-  { accessorKey: 'student',     header: 'Student'     },
-  { accessorKey: 'fee',         header: 'Fee'         },
-  { accessorKey: 'term',        header: 'Term'        },
-  { accessorKey: 'status',      header: ''            },
+  { accessorKey: 'name', header: 'Student' },
+  { accessorKey: 'admissionNo', header: 'Admission No' },
+  { accessorKey: 'status', header: '' },
 ]
 
 const parseStateColor: Record<string, string> = {
-  Paid:    'success',
+  Paid: 'success',
   Partial: 'warning',
   Pending: 'error',
 }
@@ -44,8 +43,7 @@ function scrollToTop() {
 }
 
 async function fetchReport() {
-  if (!report.value) return
-  await store.runReport(report.value, page.value, size.value)
+  feeStore.getClassFeeDetails(feeDetails.value.sessionId || '', feeDetails.value.termId || '', page.value, size.value)
 }
 
 onBeforeMount(() => {
@@ -69,8 +67,8 @@ watch(
 </script>
 
 <template>
-  <UCard :ui="{ body: 'p-0 sm:p-0' }">
-    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+  <UCard :ui="{ body: 'p-0 sm:p-0' }" class="block">
+    <UTable class="hidden md:block" :columns="columns" :data="feeDetails.records" :loading="loading">
 
       <!-- Empty State -->
       <template #empty-state>
@@ -88,46 +86,33 @@ watch(
       <!-- Status -->
       <template #status-cell="{ row }">
         <div class="flex justify-end">
-          <UBadge
-            :label="row.original.status"
-            variant="outline"
-            :color="parseStateColor[row.original.status]"
-          />
+          <UBadge :label="row.original.status" variant="outline" :color="parseStateColor[row.original.status]" />
         </div>
       </template>
 
     </UTable>
 
-    <!-- Mobile Table -->
-    <FeeTeacherTableMobile :records="data" :seed="6" :loading="loading" />
 
     <!-- Pagination -->
-    <template v-if="meta" #footer>
+    <template v-if="feeDetails.meta" #footer>
       <div class="flex justify-between items-center">
-        <Showing :meta="meta" />
+        <Showing :meta="feeDetails.meta" />
 
         <!-- Desktop -->
-        <UPagination
-          v-model:page="page"
-          class="hidden md:flex"
-          size="sm"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
+        <UPagination v-model:page="page" size="sm" :page-size="feeDetails.meta?.size"
+          :items-per-page="feeDetails.meta?.size" :total="feeDetails.meta?.total" show-edges />
 
-        <!-- Mobile -->
-        <UPagination
-          v-model:page="page"
-          class="md:hidden"
-          size="xs"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
       </div>
     </template>
   </UCard>
+  <div class="space-y-4 md:hidden">
+    <!-- Mobile Table -->
+    <FeeTeacherTableMobile v-if="feeDetails" :records="feeDetails.records" :seed="6" :loading="loading" />
+
+    <div class="flex justify-center">
+      <!-- Mobile -->
+      <UPagination v-model:page="page" :page-size="feeDetails.meta?.size" :items-per-page="feeDetails.meta?.size"
+        :total="feeDetails.meta?.total" show-edges />
+    </div>
+  </div>
 </template>

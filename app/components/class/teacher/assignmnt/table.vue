@@ -5,8 +5,6 @@ const store = useTeacherSubjectStore()
 const { records: data, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 const columns = [
   {
     accessorKey: 'className',
@@ -97,23 +95,13 @@ onMounted(async () => {
 <template>
   <div class="space-y-4">
     <!-- Desktop -->
-    <UCard
-      class="hidden md:block"
-      :ui="{
-        body: 'sm:p-0'
-      }"
-    >
-      <UTable
-        :columns="columns"
-        :data="data"
-        :loading="loading"
-      >
+    <UCard class="hidden md:block" :ui="{
+      body: 'sm:p-0'
+    }">
+      <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon
-              name="ph:books-light"
-              class="text-4xl text-gray-400"
-            />
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
 
             <p class="text-gray-500">
               No teacher assignments found.
@@ -130,14 +118,8 @@ onMounted(async () => {
         <div class="flex items-center justify-between">
           <Showing :meta="meta" />
 
-          <UPagination
-            v-model:page="page"
-            size="sm"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </template>
     </UCard>
@@ -146,11 +128,7 @@ onMounted(async () => {
     <div class="space-y-4 md:hidden">
       <!-- Loading -->
       <template v-if="loading">
-        <UCard
-          v-for="i in 4"
-          :key="i"
-          class="overflow-hidden "
-        >
+        <UCard v-for="i in 4" :key="i" class="overflow-hidden ">
           <div class="space-y-4 p-4">
             <div class="flex items-center gap-3">
               <USkeleton class="size-12 rounded-2xl" />
@@ -175,26 +153,13 @@ onMounted(async () => {
 
       <!-- Mobile Cards -->
       <template v-else-if="data?.length">
-        <UCard
-          v-for="item in data"
-          :key="item.id"
-          class="overflow-hidden "
-          :ui="{
-            body: 'p-0'
-          }"
-        >
-          <!-- Header -->
-          <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+        <UCard v-for="item in data" :key="item.id" class="overflow-hidden " :ui="{
+          body: 'p-0'
+        }">
+          <template #header>
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <div
-                  class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400"
-                >
-                  <UIcon
-                    name="i-lucide-book-open"
-                    class="size-6"
-                  />
-                </div>
+                <UAvatar size="xl" :icon="SCHEME_ICON" />
 
                 <div class="min-w-0">
                   <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
@@ -207,8 +172,7 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
-          </div>
-
+          </template>
           <!-- Content -->
           <div class="grid grid-cols-2 gap-3 p-4">
             <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
@@ -253,47 +217,35 @@ onMounted(async () => {
           </div>
 
           <!-- Footer -->
-          <div
-            class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800"
-          >
-            <div class="flex min-w-0 items-center gap-3">
-              <UAvatar
-                size="sm"
-                icon="i-lucide-graduation-cap"
-              />
+          <template #footer>
+            <div class="flex items-center justify-between border-gray-100 dark:border-gray-800">
+              <div class="flex min-w-0 items-center gap-3">
+                <UAvatar size="xl" :icon="TEACHER_ICON" />
 
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  {{ item.teacherName }}
-                </p>
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                    {{ item.teacherName }}
+                  </p>
 
-                <p class="truncate text-xs text-gray-500">
-                  {{ item.subjectName }}
-                </p>
+                  <p class="truncate text-xs text-gray-500">
+                    {{ item.subjectName }}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <UBadge
-              color="primary"
-              variant="soft"
-              size="sm"
-            >
-              {{ item.className }}
-            </UBadge>
-          </div>
+              <UBadge color="primary" variant="soft" size="sm">
+                {{ item.className }}
+              </UBadge>
+            </div>
+          </template>
         </UCard>
       </template>
 
       <!-- Empty -->
       <template v-else>
         <div class="flex flex-col items-center justify-center py-14">
-          <div
-            class="mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800"
-          >
-            <UIcon
-              name="ph:books-light"
-              class="text-3xl text-gray-400"
-            />
+          <div class="mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800">
+            <UIcon name="ph:books-light" class="text-3xl text-gray-400" />
           </div>
 
           <p class="text-sm font-medium text-gray-900 dark:text-white">
@@ -307,20 +259,12 @@ onMounted(async () => {
       </template>
 
       <!-- Mobile Pagination -->
-        <div class="space-y-4 p-4 flex items-center justify-center flex-col md:hidden">
-          <div class=" pt-4">
-            <Showing :meta="meta" />
-          </div>
-
-          <UPagination
-            v-model:page="page"
-            size="sm"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
+      <UCard class="md:hidden">
+        <div class="flex items-center justify-center flex-col">
+          <UPagination v-model:page="page" size="md" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" />
         </div>
+      </UCard>
     </div>
   </div>
 </template>

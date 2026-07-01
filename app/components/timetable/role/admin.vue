@@ -1,6 +1,5 @@
 <template>
-    <div class="space-y-6 p-4">
-        <!-- Header -->
+    <div class="space-y-4 p-4">
         <UCard>
             <Heading title="Class Timetables"
                 subtitle="Configure and manage weekly timetables for classes and sections">
@@ -110,8 +109,11 @@ watch(() => grade.value, async (value: string) => {
     }
 }, { immediate: true })
 
-onMounted(async () => {
+watch(() => list.value, () => {
+    grade.value = list.value[0]?.value || ''
+})
 
+onMounted(async () => {
     document.title = 'Timetable | Skultem'
     await classStore.fetchAll(0, 0)
     await store.getWorkingDays()

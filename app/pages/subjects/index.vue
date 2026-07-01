@@ -1,16 +1,12 @@
 <template>
-    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-4 pb-0 space-y-3">
+    <div class="p-4 overflow-y-auto h-full space-y-4">
         <UCard>
-            <Heading class="hidden md:flex" title="Subjects Management" subtitle="Manage all subjects">
+            <Heading title="Subjects Management" subtitle="Manage all subjects">
+                <div class="flex md:space-x-3 space-y-3 md:space-y-0 flex-col md:flex-row">
+                    <UInput placeholder="Search by name or code" />
                 <SubjectAdd />
-            </Heading>
-            <div class="md:hidden flex items-center justify-between gap-3">
-                <div>
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">Subjects</h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Manage all subjects</p>
                 </div>
-                <SubjectAdd />
-            </div>
+            </Heading>
         </UCard>
         <SubjectTable />
     </div>

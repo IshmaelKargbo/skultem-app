@@ -32,6 +32,7 @@ export type TeacherSubject = {
     sectionId: string
     streamName: string
     streamId: string
+    assignedAt: string
     createdAt: string
     updatedAt: string
 }

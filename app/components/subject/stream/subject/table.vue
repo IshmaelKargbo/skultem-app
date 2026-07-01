@@ -5,11 +5,6 @@ const store = useStreamSubjectStore()
 const { records: data, meta, loading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const editRcord = ref<StreamSubject | null>(null)
-const editState = ref(false)
-
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
 const columns = [
   {
     accessorKey: 'streamName',
@@ -102,7 +97,7 @@ onMounted(async () => {
         </template>
         <template #mandatory-cell="{ row }">
           <div class="flex items-center gap-2">
-            <USwitch v-model="row.original.mandatory" :disabled="row.original.locked" />
+            <USwitch v-model="row.original.mandatory" disabled />
             <UBadge v-if="row.original.locked" variant="outline" color="error" label="Locked" />
           </div>
         </template>
@@ -118,7 +113,6 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
-
     <div class="space-y-4 md:hidden">
       <template v-if="loading">
         <UCard v-for="i in 4" :key="i" class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm">
@@ -144,9 +138,10 @@ onMounted(async () => {
       </template>
 
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm" :ui="{
-          body: 'p-0'
-        }">
+        <UCard v-for="item in data" :key="item.id"
+          class="overflow-hidden rounded-3xl border border-default bg-default shadow-sm" :ui="{
+            body: 'p-0'
+          }">
           <div class="border-b border-default p-4">
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
@@ -164,10 +159,6 @@ onMounted(async () => {
                   </p>
                 </div>
               </div>
-
-              <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" class="rounded-xl" />
-              </UDropdownMenu>
             </div>
           </div>
 
@@ -209,7 +200,7 @@ onMounted(async () => {
         </div>
       </template>
 
-      <div v-if="!loading" class="flex flex-col items-center justify-center gap-2">
+      <div class="flex flex-col items-center justify-center gap-2">
         <Showing :meta="meta" />
         <div class="w-full overflow-x-auto pb-1">
           <div class="flex min-w-max justify-center px-1">

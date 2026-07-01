@@ -1,4 +1,20 @@
-import { number, string } from "yup"
+export type ClassFeeDetails = {
+    sessionId?: string
+    termId?: string
+    summery: {
+        paid: number
+        partial: number
+        pending: number
+    }
+    meta?: Meta
+    records: {
+        id: string
+        name: string
+        admission: string
+        status: string
+    }[]
+}
+
 
 export type FeeCategory = {
     id: string

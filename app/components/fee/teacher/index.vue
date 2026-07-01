@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
-const store = useReportStore()
 const classStore = useClassSessionStore()
 const studentStore = useStudentStore()
 
@@ -15,22 +14,6 @@ const state = reactive({
   classId: '',
   term: ''
 })
-
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
-
-const size = computed<number>({
-  get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val })
-})
-
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-  if (merged.page === route.query.page) return
-  router.replace({ query: merged })
-}
 
 const terms = computed(() =>
   activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })) ?? []
@@ -61,17 +44,7 @@ async function loadData() {
   if (!state.term || !state.classId) return
   try {
     assessmentLoading.value = true
-    await store.runReport(
-      {
-        entity: 'fees',
-        filters: [
-          { field: 'fee.term.id', value: state.term, operator: 'EQUALS', type: 'select' },
-          { field: 'enrollment.clazz.id', value: state.classId, operator: 'EQUALS', type: 'select' },
-        ]
-      },
-      page.value,
-      size.value
-    )
+    await useFeeStore().getClassFeeDetails(state.classId, state.term, 1, runtimeConf().limit)
   } catch (err) {
     console.error('Failed to load fees report', err)
   } finally {

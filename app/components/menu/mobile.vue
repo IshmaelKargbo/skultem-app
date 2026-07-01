@@ -1,6 +1,6 @@
 <template>
   <div class="px-3 pb-3 pt-2">
-    <div class="rounded-2xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
+    <div class="rounded-4xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
       <ul class="grid grid-cols-4 gap-1.5">
         <li>
           <NuxtLink to="/" class="menu-mobile-item" :class="isActive('/', true)">
@@ -8,72 +8,61 @@
             <span class="menu-mobile-label">Home</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.PARENT, Role.TEACHER])">
           <NuxtLink to="/grades" class="menu-mobile-item" :class="isActive('/grades', true)">
             <UIcon class="text-xl" :name="GRADES_ICON" />
             <span class="menu-mobile-label">Grades</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <NuxtLink to="/students" class="menu-mobile-item" :class="isActive('/students')">
             <UIcon class="text-xl" :name="STUDENT_ICON" />
             <span class="menu-mobile-label">Students</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <NuxtLink to="/classes" class="menu-mobile-item" :class="isActive('/classes')">
             <UIcon class="text-xl" :name="CLASS_ICON" />
             <span class="menu-mobile-label">Classes</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <NuxtLink to="/teachers" class="menu-mobile-item" :class="isActive('/teachers')">
             <UIcon class="text-xl" :name="TEACHER_ICON" />
             <span class="menu-mobile-label">Teachers</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.PARENT, Role.TEACHER])">
           <NuxtLink to="/fees" class="menu-mobile-item" :class="isActive('/fees')">
             <UIcon class="text-xl" :name="PAYMENT_ICON" />
             <span class="menu-mobile-label">Fees</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.PARENT, Role.TEACHER])">
           <NuxtLink to="/attendance" class="menu-mobile-item" :class="isActive('/attendance')">
             <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
             <span class="menu-mobile-label">Attendance</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.ACCOUNTANT])">
           <NuxtLink to="/fees-payment/pay" class="menu-mobile-item" :class="isActive('/fees-payment/pay')">
             <UIcon name="i-lucide-wallet" class="text-xl" />
             <span class="menu-mobile-label">Payments</span>
           </NuxtLink>
         </li>
-
         <li v-if="can([Role.ACCOUNTANT])">
-          <NuxtLink to="/ledger" class="menu-mobile-item" :class="isActive('/ledger')">
+          <NuxtLink to="/transactions" class="menu-mobile-item" :class="isActive('/transactions')">
             <UIcon name="i-lucide-book-open" class="text-xl" />
-            <span class="menu-mobile-label">Ledger</span>
+            <span class="menu-mobile-label">Transactions</span>
           </NuxtLink>
         </li>
 
         <li v-if="can([ Role.ACCOUNTANT])">
-          <NuxtLink to="/reports" class="menu-mobile-item" :class="isActive('/reports')">
+          <NuxtLink to="/analytics/financial-reports" class="menu-mobile-item" :class="isActive('/analytics/financial-reports')">
             <UIcon name="i-lucide-bar-chart-3" class="text-xl" />
             <span class="menu-mobile-label">Reports</span>
           </NuxtLink>
         </li>
-
- 
-
       </ul>
     </div>
   </div>
@@ -102,7 +91,7 @@ function isActive(to: string, exact = false) {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border-radius: 12px;
+  border-radius:  40px;
   color: #4b5563;
   transition: all 0.2s ease;
 }

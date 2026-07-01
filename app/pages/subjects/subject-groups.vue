@@ -1,9 +1,9 @@
 <template>
     <div class="p-4 overflow-y-auto h-full space-y-4 sm:space-y-5">
         <UCard>
-            <Heading class="hidden md:flex" title="Subject Groups Management" subtitle="Manage all subject groups">
-            <SubjectGroupAdd />
-        </Heading>
+            <Heading title="Subject Groups Management" subtitle="Manage all subject groups">
+                <SubjectGroupAdd />
+            </Heading>
         </UCard>
         <div class="md:hidden flex items-center justify-between gap-3">
             <div>

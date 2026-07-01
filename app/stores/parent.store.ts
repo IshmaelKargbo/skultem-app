@@ -53,5 +53,10 @@ export const useParentStore = defineStore('parent', {
     create(payload: CreateParentDto) {
       return ParentApi().create(payload)
     }
+  },
+  getters: {
+    list(state): { label: string, value: string }[] {
+      return state.students.map(e => ({ label: `${e.givenNames} ${e.familyName} (${e.className})`, value: e.sessionId }))
+    },
   }
 })
