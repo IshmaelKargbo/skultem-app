@@ -354,30 +354,34 @@ const sections = computed(() => [
   {
     id: 'subjects',
     title: 'Subjects',
-    visible: can([Role.PROPRIETOR, Role.ADMIN]),
+    visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER]),
     items: [
       {
         label: 'Subjects',
-        icon: SUBJECT_ICON,
+        icon: CURRICULUM_SUBJECT_ICON,
         to: '/subjects'
       },
-
+       {
+        label: 'Assignment',
+        icon: SUBJECT_ICON,
+        to: '/subjects/assignment'
+      },
       {
         label: 'Subject Groups',
         icon: CURRICULUM_GROUP_ICON,
-        to: '/curriculums/subject-groups'
+        to: '/subjects/subject-groups'
       },
 
       {
         label: 'Class Subjects',
         icon: BOOK_OPEN_ICON,
-        to: '/curriculums/class-subjects'
+        to: '/subjects/class-subjects'
       },
 
       {
         label: 'Teacher Assignment',
         icon: CLIPBOARD_ADD_ICON,
-        to: '/curriculums/teacher-assignment'
+        to: '/subjects/teacher-assignment'
       },
 
       {
@@ -389,7 +393,7 @@ const sections = computed(() => [
       {
         label: 'Streams Subjects',
         icon: CURRICULUM_STREAM_ICON,
-        to: '/curriculums/streams'
+        to: '/subjects/streams'
       }
     ]
   },
@@ -473,7 +477,7 @@ const sections = computed(() => [
       }
     ]
   },
-  // classes
+  // behaviours
   {
     id: 'behaviours',
     title: 'Behaviours',

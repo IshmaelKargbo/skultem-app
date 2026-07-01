@@ -91,7 +91,7 @@ onMounted(async () => {
 <div class="space-y-4">
   <!-- Loading -->
   <template v-if="loading">
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-4 md:grid-cols-1">
       <UCard
         v-for="i in 6"
         :key="i"

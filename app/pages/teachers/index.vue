@@ -1,25 +1,16 @@
 <template>
   <div class="space-y-6 p-4 sm:p-6 lg:p-7 ">
-    <Heading
-      title="Teachers"
-      subtitle="Manage teacher accounts, assignments, and contact information."
-    >
-      <div class="flex flex-col gap-3 sm:flex-row">
+    <UCard>
+      <Heading title="Teachers" subtitle="Manage teacher accounts, assignments, and contact information.">
+        <div class="flex flex-col gap-3 sm:flex-row">
 
-        <UInput
-          v-model="value"
-          icon="i-lucide-search"
-          class="w-full sm:w-96"
-          placeholder="Search by name, staff ID, email or phone"
-        />
+          <UInput v-model="value" icon="i-lucide-search" class="w-full sm:w-96"
+            placeholder="Search by name, staff ID, email or phone" />
 
-        <UButton
-          to="/teachers/add"
-          icon="i-lucide-user-round-plus"
-          label="Add Teacher"
-        />
-      </div>
-    </Heading>
+          <UButton to="/teachers/add" icon="i-lucide-user-round-plus" label="Add Teacher" />
+        </div>
+      </Heading>
+    </UCard>
 
     <!-- Table -->
     <TeacherTable />

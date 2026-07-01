@@ -20,11 +20,11 @@
 
 <script setup lang="ts">
 onMounted(() => {
-    useAppStore().setTitle('Curriculums')
-    document.title = 'Teacher Assignment | Curriculums | Skultem'
+    useAppStore().setTitle('Subjects')
+    document.title = 'Teacher Assignment | Subjects | Skultem'
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 </script>

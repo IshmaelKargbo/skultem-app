@@ -190,17 +190,6 @@
                                     </p>
                                 </div>
                             </div>
-
-                            <div v-if="item.details"
-                                class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-neutral-800">
-                                <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                                    Details
-                                </p>
-
-                                <p class="text-sm text-gray-600 dark:text-gray-300">
-                                    {{ item.details }}
-                                </p>
-                            </div>
                         </div>
 
                         <!-- Footer -->

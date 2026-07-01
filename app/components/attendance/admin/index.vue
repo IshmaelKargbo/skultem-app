@@ -1,6 +1,8 @@
 <template>
-    <div id="attendance-scroll" class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
-        <Heading title="Attendance" subtitle="Track class attendance and export reports" />
+    <div id="attendance-scroll" class="p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+       <UCard>
+         <Heading title="Attendance" subtitle="Track class attendance and export reports" />
+       </UCard>
         <AttendanceReport />
         <AttendanceAdminMark />
         <AttendanceHistory />

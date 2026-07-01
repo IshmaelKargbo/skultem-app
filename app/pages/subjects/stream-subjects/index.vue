@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
+    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-4 pb-0 space-y-3">
         <UCard>
             <Heading class="hidden md:flex" title="Stream Subject Management" subtitle="Manage stream subjects">
                 <UButton to="/subjects/stream-subjects/add" color="primary" label="Assign Stream Subject"
@@ -24,6 +24,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 </script>
