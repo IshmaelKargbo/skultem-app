@@ -88,23 +88,23 @@
 
             <div class="space-y-1.5">
               <label class="text-sm font-medium">Header colour</label>
-              <ColorPicker v-model="settings.headerColor" @update:model-value="emitUpdate" />
+              <ColorPicker :model-value="settings.headerColor" @update:model-value="(val) => updateSetting('headerColor', val)" />
             </div>
 
             <div class="space-y-1.5">
               <label class="text-sm font-medium">Footer colour</label>
-              <ColorPicker v-model="settings.footerColor" @update:model-value="emitUpdate" />
+              <ColorPicker :model-value="settings.footerColor" @update:model-value="(val) => updateSetting('footerColor', val)" />
             </div>
 
             <div class="space-y-1.5">
               <label class="text-sm font-medium">Header / footer text</label>
-              <ColorPicker v-model="settings.headerTextColor" @update:model-value="emitUpdate" />
+              <ColorPicker :model-value="settings.headerTextColor" @update:model-value="(val) => updateSetting('headerTextColor', val)" />
             </div>
 
             <div class="space-y-1.5 sm:col-span-3">
               <label class="text-sm font-medium">Primary text colour</label>
               <div class="flex items-center gap-2 sm:w-1/3">
-                <ColorPicker v-model="settings.primaryTextColor" @update:model-value="emitUpdate" />
+                <ColorPicker :model-value="settings.primaryTextColor" @update:model-value="(val) => updateSetting('primaryTextColor', val)" />
               </div>
             </div>
 
@@ -119,8 +119,8 @@
           <div class="flex items-center gap-4 sm:w-2/3">
             <div class="flex-1 space-y-1.5">
               <label class="text-sm font-medium">Width</label>
-              <UInput v-model.number="settings.widthMm" type="number" min="50" max="200" placeholder="85"
-                @update:model-value="emitUpdate">
+              <UInput :model-value="settings.widthMm" type="number" min="50" max="200" placeholder="85"
+                @update:model-value="(val) => updateSetting('widthMm', val)">
                 <template #trailing>
                   <span class="text-xs text-muted">mm</span>
                 </template>
@@ -129,8 +129,8 @@
             <div class="mt-6 text-muted">×</div>
             <div class="flex-1 space-y-1.5">
               <label class="text-sm font-medium">Height</label>
-              <UInput v-model.number="settings.heightMm" type="number" min="50" max="200" placeholder="54"
-                @update:model-value="emitUpdate">
+              <UInput :model-value="settings.heightMm" type="number" min="50" max="200" placeholder="54"
+                @update:model-value="(val) => updateSetting('heightMm', val)">
                 <template #trailing>
                   <span class="text-xs text-muted">mm</span>
                 </template>
@@ -193,8 +193,8 @@
                   <div class="absolute inset-y-0 left-0 rounded-full bg-primary transition-all"
                     :style="{ width: settings.bgOpacity + '%' }" />
                 </div>
-                <input type="range" v-model.number="settings.bgOpacity" min="0" max="100" step="5"
-                  @input="emitUpdate"
+                <input type="range" :value="settings.bgOpacity" min="0" max="100" step="5"
+                  @input="(e) => updateSetting('bgOpacity', Number((e.target as HTMLInputElement).value))"
                   class="relative w-full appearance-none bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer" />
               </div>
               <div class="flex justify-between text-[10px] text-muted">
@@ -250,7 +250,7 @@
             Reset to defaults
           </UButton>
           <div class="flex gap-2">
-            <UButton variant="outline" color="neutral" size="sm" @click="$emit('close')">
+            <UButton variant="outline" color="neutral" size="sm" @click="() => { emit('update:modelValue', false); emit('close') }">
               Cancel
             </UButton>
             <UButton color="primary" size="sm" icon="i-lucide-save" @click="saveSettings">
@@ -298,6 +298,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  'update:modelValue': [boolean]
   'update:settings': [Settings]
   'update:activeFields': [FieldDef[]]
   'close': []
@@ -322,31 +323,32 @@ const profileShapeOptions = [
   { value: 'square', label: 'Square' },
 ]
 
-const settings = ref<Settings>({ ...props.settings })
-const activeFields = ref<FieldDef[]>([...props.activeFields])
+// Create local copies that are synced with props
+const settings = computed({
+  get: () => props.settings,
+  set: (newSettings) => {
+    emit('update:settings', newSettings)
+  }
+})
 
-watch(() => props.settings, (newSettings) => {
-  settings.value = { ...newSettings }
-}, { deep: true })
-
-watch(() => props.activeFields, (newFields) => {
-  activeFields.value = [...newFields]
-}, { deep: true })
+const activeFields = computed({
+  get: () => props.activeFields,
+  set: (newFields) => {
+    emit('update:activeFields', newFields)
+  }
+})
 
 function updateSetting(key: keyof Settings, value: any) {
-  settings.value[key] = value
-  emitUpdate()
-}
-
-function emitUpdate() {
-  emit('update:settings', { ...settings.value })
+  const updated = { ...settings.value, [key]: value }
+  emit('update:settings', updated)
 }
 
 function toggleField(field: FieldDef) {
   const idx = activeFields.value.findIndex(f => f.key === field.key)
   if (idx !== -1) {
-    activeFields.value[idx].enabled = !activeFields.value[idx].enabled
-    emit('update:activeFields', [...activeFields.value])
+    const updated = [...activeFields.value]
+    updated[idx] = { ...updated[idx], enabled: !updated[idx].enabled }
+    emit('update:activeFields', updated)
   }
 }
 
@@ -363,25 +365,25 @@ function onBgDrop(e: DragEvent) {
 function loadBgFile(file: File) {
   const reader = new FileReader()
   reader.onload = (ev) => {
-    settings.value.bgImageUrl = ev.target?.result as string
-    emitUpdate()
+    const updated = { ...settings.value, bgImageUrl: ev.target?.result as string }
+    emit('update:settings', updated)
   }
   reader.readAsDataURL(file)
 }
 
 function clearBgImage() {
-  settings.value.bgImageUrl = ''
-  emitUpdate()
+  const updated = { ...settings.value, bgImageUrl: '' }
+  emit('update:settings', updated)
   if (bgImageInput.value) bgImageInput.value.value = ''
 }
 
 function resetSettings() {
-  settings.value = { ...props.defaultSettings }
-  activeFields.value.forEach(f => {
-    if (!f.required) f.enabled = true
-  })
-  emit('update:settings', { ...settings.value })
-  emit('update:activeFields', [...activeFields.value])
+  emit('update:settings', { ...props.defaultSettings })
+  const defaultFields = props.activeFields.map(f => ({
+    ...f,
+    enabled: f.required ? true : true
+  }))
+  emit('update:activeFields', defaultFields)
 }
 
 function saveSettings() {
