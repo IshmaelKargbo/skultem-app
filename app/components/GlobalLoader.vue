@@ -21,12 +21,12 @@
                     </div>
 
                     <!-- Pencil writing -->
-                    <div class="writing-wrap">
+                    <!-- <div class="writing-wrap">
                         <span class="pencil">✏️</span>
                         <div class="writing-line">
                             <div class="writing-fill" />
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Role chips -->
                     <div class="role-chips">
