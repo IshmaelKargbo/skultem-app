@@ -54,6 +54,16 @@ export const useClassSessionStore = defineStore('classSession', {
         return { label: name, value: e.id }
       })
     },
+    listByClass(state): { label: string, value: string }[] {
+      return state.records.map(e => {
+        let name = `${e.clazz} (${e.sectionName})`
+
+        if (e.streamName != 'N/A') {
+          name = `${e.clazz} (${e.sectionName}) - ${e.streamName}`
+        }
+        return { label: name, value: e.clazzId }
+      })
+    },
     get: (state) => {
       return (id: string): ClassSession | undefined => {
         return state.records.find(e => e.id === id)

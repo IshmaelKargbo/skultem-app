@@ -14,21 +14,15 @@
       </div>
 
       <div class="flex gap-3">
-        <UButton
-          icon="i-lucide-book-plus"
-          label="Create Scheme"
-          to="/curriculums/scheme-of-work/add"
-        />
+        <UButton icon="i-lucide-book-plus" label="Create Scheme" to="/curriculums/add" />
       </div>
     </div>
 
     <!-- Statistics -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
       <UCard v-for="stat in stats" :key="stat.label">
         <div class="flex items-center gap-4">
-          <div class="flex size-12 items-center justify-center rounded-2xl"
-            :class="stat.bg">
+          <div class="flex size-12 items-center justify-center rounded-2xl" :class="stat.bg">
             <UIcon :name="stat.icon" class="size-6" :class="stat.color" />
           </div>
 
@@ -65,22 +59,13 @@
                 </p>
               </div>
 
-              <UButton
-                variant="ghost"
-                color="neutral"
-                label="View All"
-                trailing-icon="i-lucide-arrow-right"
-                to="/scheme-of-work/list"
-              />
+              <UButton variant="ghost" color="neutral" label="View All" trailing-icon="i-lucide-arrow-right"
+                to="/scheme-of-work/list" />
             </div>
           </template>
 
-          <NuxtLink
-            v-for="scheme in recentSchemes"
-            :key="scheme.title"
-            :to="scheme.to"
-            class="flex items-center justify-between gap-4 rounded-xl border border-default p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
-          >
+          <NuxtLink v-for="scheme in recentSchemes" :key="scheme.title" :to="scheme.to"
+            class="flex items-center justify-between gap-4 rounded-xl border border-default p-4 transition-colors hover:border-primary/40 hover:bg-muted/40">
             <div class="flex items-center gap-3">
               <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted">
                 <UIcon name="i-lucide-book-open" class="size-5" />
@@ -97,10 +82,7 @@
               </div>
             </div>
 
-            <UBadge
-              :color="scheme.status === 'Active' ? 'success' : 'warning'"
-              variant="subtle"
-            >
+            <UBadge :color="scheme.status === 'Active' ? 'success' : 'warning'" variant="subtle">
               {{ scheme.status }}
             </UBadge>
           </NuxtLink>
@@ -140,17 +122,8 @@
             </div>
           </template>
 
-          <UButton
-            v-for="action in quickActions"
-            :key="action.label"
-            block
-            variant="soft"
-            :color="action.color"
-            :icon="action.icon"
-            :label="action.label"
-            :to="action.to"
-            class="justify-start"
-          />
+          <UButton v-for="action in quickActions" :key="action.label" block variant="soft" :color="action.color"
+            :icon="action.icon" :label="action.label" :to="action.to" class="justify-start" />
 
         </UCard>
       </div>
@@ -187,9 +160,8 @@
 </template>
 
 <script setup lang="ts">
-onMounted(() => {
-  useAppStore().setTitle('Scheme of Work')
 
+onMounted(async () => {
   document.title = 'Scheme of Work | Skultem'
 })
 
