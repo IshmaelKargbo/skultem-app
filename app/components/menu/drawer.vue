@@ -293,7 +293,7 @@ const sections = computed(() => [
     items: [
       {
         label: 'Subjects',
-        icon: SUBJECT_ICON,
+        icon: CURRICULUM_SUBJECT_ICON,
         to: '/subjects'
       },
       {

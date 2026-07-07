@@ -18,8 +18,8 @@
 
 <script setup lang="ts">
 onMounted(() => {
-    useAppStore().setTitle('Curriculums')
-    document.title = 'Sections | Curriculums | Skultem'
+    useAppStore().setTitle('Sections')
+    document.title = 'Sections | Classes | Skultem'
 })
 
 definePageMeta({

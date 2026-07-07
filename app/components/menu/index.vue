@@ -141,7 +141,7 @@
             </template>
           </MenuItem>
         </li>
-        <!-- <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
+        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
           <MenuItem label="ID Cards"
             :subNavs="[{ label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true }, { label: 'Generate', to: '/id-cards/generate', icon: GENERATE_ID_CARD_ICON }, { label: 'Templates', to: '/id-cards/templates', icon: SETTINGS_ICON }]">
             <template #icon>
@@ -174,7 +174,7 @@
               </div>
             </template>
           </MenuItem>
-        </li> -->
+        </li> 
         <li v-if="can([Role.PARENT])">
           <MenuItem label="Grades" to="/grades"> <template #icon>
               <UIcon class="text-xl" :name="GRADES_ICON" />
@@ -202,7 +202,7 @@
             </template>
           </MenuItem>
         </li>
-        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])">
+        <li v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER])">
           <MenuItem label="Subjects"
             :subNavs="[{ label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true }, { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON }, { label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON }, { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }, { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON }]">
             <template #icon>

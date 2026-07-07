@@ -1,16 +1,18 @@
 <template>
     <div class="p-4 sm:p-6 lg:p-7 space-y-4 sm:space-y-5 h-full overflow-y-auto">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div class="space-y-1">
-                <p class="text-2xl font-semibold">Reports</p>
-                <p class="text-mute">Create custom reports and explore your school data</p>
+        <UCard>
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="space-y-1">
+                    <p class="text-2xl font-semibold">Reports</p>
+                    <p class="text-mute">Create custom reports and explore your school data</p>
+                </div>
+                <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap md:gap-3">
+                    <UButton variant="outline" color="neutral" :icon="SAVED_ICON" label="Saved Reports"
+                        to="/analytics/saved" />
+                    <UButton :icon="ADD_ICON" label="New Report" to="/analytics/builder" />
+                </div>
             </div>
-            <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap md:gap-3">
-                <UButton variant="outline" color="neutral" :icon="SAVED_ICON" label="Saved Reports"
-                    to="/analytics/saved" />
-                <UButton :icon="ADD_ICON" label="New Report" to="/analytics/builder" />
-            </div>
-        </div>
+        </UCard>
         <div class="mt-5">
             <TabMobile class="md:hidden" :tabs="[
                 { label: 'Reports', to: '/analytics', exact: true },
@@ -36,7 +38,8 @@
                         <p class="text-xs text-mute">{{ card.label }}</p>
                         <p class="text-2xl font-semibold">{{ card.value }}</p>
                     </div>
-                    <UBadge v-if="!isLoadingReports" :icon="card.icon" class="p-2" size="xl" variant="subtle" :color="card.color" />
+                    <UBadge v-if="!isLoadingReports" :icon="card.icon" class="p-2" size="xl" variant="subtle"
+                        :color="card.color" />
                 </div>
             </UCard>
         </div>
@@ -83,9 +86,9 @@ const reportStats = computed(() => {
     }).length
 
     return [
-        { label: 'Total Reports',     value: total,    icon: 'lucide:bar-chart-3', color: 'success' },
+        { label: 'Total Reports', value: total, icon: 'lucide:bar-chart-3', color: 'success' },
         { label: 'Reports This Week', value: thisWeek, icon: 'lucide:trending-up', color: 'warning' },
-        { label: 'Saved Reports',     value: total,    icon: 'lucide:bookmark',    color: 'info'    },
+        { label: 'Saved Reports', value: total, icon: 'lucide:bookmark', color: 'info' },
     ]
 })
 

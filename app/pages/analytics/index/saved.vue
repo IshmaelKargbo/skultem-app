@@ -1,14 +1,16 @@
 <template>
     <div class="p-4 sm:p-6 lg:p-7 space-y-4 sm:space-y-5 h-full overflow-y-auto">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div class="space-y-1">
-                <p class="text-2xl font-semibold">Saved Reports</p>
-                <p class="text-mute">Access and manage your saved reports</p>
+        <UCard>
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="space-y-1">
+                    <p class="text-2xl font-semibold">Saved Reports</p>
+                    <p class="text-mute">Access and manage your saved reports</p>
+                </div>
+                <div class="grid w-full grid-cols-1 gap-2 md:flex md:w-auto md:flex-wrap md:gap-3">
+                    <UButton :icon="ADD_ICON" label="Create New Report" to="/analytics/builder" />
+                </div>
             </div>
-            <div class="grid w-full grid-cols-1 gap-2 md:flex md:w-auto md:flex-wrap md:gap-3">
-                <UButton :icon="ADD_ICON" label="Create New Report" to="/analytics/builder" />
-            </div>
-        </div>
+        </UCard>
         <div class="mt-5">
             <TabMobile class="md:hidden" :tabs="[
                 { label: 'Reports', to: '/analytics', exact: true },

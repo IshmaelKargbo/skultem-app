@@ -206,10 +206,9 @@ onMounted(async () => {
 
     <!-- Data -->
     <template v-else-if="data?.length">
-      <UCard v-for="item in data" :key="item.id" class="overflow-hidden  transition-all active:scale-[0.99] "
-        :ui="{
-          body: 'p-0'
-        }">
+      <UCard v-for="item in data" :key="item.id" class="overflow-hidden  transition-all active:scale-[0.99] " :ui="{
+        body: 'p-0'
+      }">
         <!-- Header -->
         <div class="border-b border-gray-100 p-4 dark:border-gray-800">
           <div class="flex items-start justify-between gap-3">
@@ -299,28 +298,30 @@ onMounted(async () => {
             </div>
           </div>
 
-          <UButton @click="view(item)" label="View" trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm"
-            class="rounded-xl" />
+          <UButton @click="view(item)" label="View" trailing-icon="i-lucide-chevron-right" color="neutral"
+            variant="ghost" size="sm" class="rounded-xl" />
         </div>
       </UCard>
     </template>
 
     <!-- Empty -->
     <template v-else>
-      <div class="flex flex-col items-center justify-center py-14">
-        <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
+      <UCard>
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
 
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          No students found.
-        </p>
-      </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            No students found.
+          </p>
+        </div>
+      </UCard>
     </template>
 
-      <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
+    <!-- Pagination -->
+    <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
+    </div>
   </div>
 </template>

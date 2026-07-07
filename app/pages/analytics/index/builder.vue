@@ -1,11 +1,13 @@
 <template>
     <div class="p-4 sm:p-6 lg:p-7 space-y-4 sm:space-y-5 h-full overflow-y-auto">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div class="space-y-1">
-                <p class="text-2xl font-semibold">Report Builder</p>
-                <p class="text-mute">Create custom reports and explore your school data</p>
+        <UCard>
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="space-y-1">
+                    <p class="text-2xl font-semibold">Report Builder</p>
+                    <p class="text-mute">Create custom reports and explore your school data</p>
+                </div>
             </div>
-        </div>
+        </UCard>
         <div class="mt-5">
             <TabMobile class="md:hidden" :tabs="[
                 { label: 'Reports', to: '/analytics', exact: true },
