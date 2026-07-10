@@ -68,6 +68,11 @@ export const useClassSessionStore = defineStore('classSession', {
       return (id: string): ClassSession | undefined => {
         return state.records.find(e => e.id === id)
       }
+    },
+    getByClazz: (state) => {
+      return (id: string): ClassSession | undefined => {
+        return state.records.find(e => e.clazzId === id)
+      }
     }
   }
 })

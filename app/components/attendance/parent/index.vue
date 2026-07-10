@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 md:space-y-5 space-y-3 h-full overflow-y-auto">
+    <div class="p-4 space-y-5">
         <Heading title="Attendance" subtitle="Track class attendance and export reports">
             <div class="grid grid-cols-2 w-full md:w-auto gap-3">
                 <USelectMenu @change="change" :loading="loading" :items="children" value-key="value"

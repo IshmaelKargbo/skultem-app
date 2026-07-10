@@ -1,7 +1,6 @@
 <template>
-  <div class="md:px-5 py-2 md:py-4 overflow-y-auto p-4 h-full md:space-y-5 space-y-3">
-    <Heading class="hidden md:flex" title="Grade Entry"
-      subtitle="Enter scores for the active test. Locked assessments are read-only">
+  <div class="p-4 space-y-4">
+    <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
         <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
@@ -18,41 +17,59 @@
         <USelectMenu value-key="value" :items="teachers" :loading="loadingSubject" placeholder="Select Subject"
           v-model="state.teacherSubjectId" @change="fetchStudents" />
       </div>
-    </UCard>
-    <div class="grid gap-3 grid-cols-2 md:hidden">
-      <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
-        @change="fetchStudents" />
-      <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
-        @change="fetchRecord" />
-      <USelectMenu class="col-span-2" value-key="value" :items="teachers" placeholder="Select Subject"
-        v-model="state.teacherSubjectId" @change="fetchStudents" />
-    </div>
-    <UCard v-if="assessments.length && state.teacherSubjectId">
-      <div class="space-y-3">
-        <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
-          <div class="flex space-x-2">
-            <p class="text-sm text-gray-500">State:</p>
-            <p class="text-sm font-semibold text-gray-800">
-              {{ workflowLabel }}
-            </p>
+      <template v-if="assessments.length && state.teacherSubjectId" #footer>
+        <div class="space-y-3">
+          <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
+            <div class="flex space-x-2">
+              <p class="text-sm text-gray-500">State:</p>
+              <p class="text-sm font-semibold text-gray-800">
+                {{ workflowLabel }}
+              </p>
+            </div>
+            <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
+              variant="outline" icon="mdi:chart-timeline-variant" />
           </div>
-          <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
-            variant="outline" icon="mdi:chart-timeline-variant" />
+          <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
         </div>
-        <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
-      </div>
+      </template>
+    </UCard>
+
+    <UCard class="md:hidden">
+      <template #header>
+        <div class="grid gap-3 grid-cols-2">
+          <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
+            @change="fetchStudents" />
+          <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
+            @change="fetchRecord" />
+          <USelectMenu class="col-span-2" value-key="value" :items="teachers" placeholder="Select Subject"
+            v-model="state.teacherSubjectId" @change="fetchStudents" />
+        </div>
+      </template>
+      <template v-if="assessments.length && state.teacherSubjectId" #default>
+        <div class="space-y-3">
+          <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
+            <div class="flex space-x-2">
+              <p class="text-sm text-gray-500">State:</p>
+              <p class="text-sm font-semibold text-gray-800">
+                {{ workflowLabel }}
+              </p>
+            </div>
+            <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
+              variant="outline" icon="mdi:chart-timeline-variant" />
+          </div>
+          <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
+        </div>
+      </template>
     </UCard>
     <UCard class="hidden md:block" :ui="{
       body: 'sm:p-0'
     }">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
         <template #student-cell="{ row }">
-          <StudentIdentityCell
-            :given-names="row.original.givenNames || row.original.name"
+          <StudentIdentityCell :given-names="row.original.givenNames || row.original.name"
             :family-name="row.original.familyName || ''"
             :photo="row.original.photo || row.original.studentPhoto || row.original.student?.photo"
-            :subtitle="hasSubmittedAssessments ? `Position: ${rankingMap[row.original.id] || '-'}` : 'Position: N/A'"
-          />
+            :subtitle="hasSubmittedAssessments ? `Position: ${rankingMap[row.original.id] || '-'}` : 'Position: N/A'" />
         </template>
         <template #loading>
           <TableLoading :size="7" />
@@ -66,12 +83,8 @@
         <template #header>
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 flex items-start gap-3">
-              <UAvatar
-                size="md"
-                :src="student.photo || '/avatar-placeholder.svg'"
-                :alt="student.name"
-                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
-              />
+              <UAvatar size="md" :src="student.photo || '/avatar-placeholder.svg'" :alt="student.name"
+                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
               <div>
                 <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ student.name }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -87,7 +100,8 @@
         </template>
         <div class="">
           <div class="grid">
-            <div v-for="assessment in assessments" :key="assessment.id" class="border-b border-gray-200 dark:border-gray-800 p-3 py-2">
+            <div v-for="assessment in assessments" :key="assessment.id"
+              class="border-b border-gray-200 dark:border-gray-800 p-3 py-2">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 space-y-1">
                   <p class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{{ assessment.name }}</p>

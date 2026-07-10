@@ -41,7 +41,7 @@ export const useClassSubjectStore = defineStore('classSubject', {
         const response = await ClassSubjectApi().getAllByClass(id, page, size) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
-        
+
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch class subjects by class'
         throw this.error
@@ -54,8 +54,11 @@ export const useClassSubjectStore = defineStore('classSubject', {
     }
   },
   getters: {
-    list(state): { label: string, value: string }[] {
+    list(state): Option[] {
       return state.records.map(e => ({ label: e.subjectName, value: e.id }))
+    },
+    listBySubject(state): Option[] {
+      return state.records.map(e => ({ label: e.subjectName, value: e.subjectId }))
     }
   }
 })

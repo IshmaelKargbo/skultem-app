@@ -1,15 +1,11 @@
 <template>
-    <div class="space-y-6 p-4">
-        <!-- Header -->
-        <UCard>
-            <Heading title="Class Timetables"
-                subtitle="Manage weekly timetables for classes and sections">
-                <div class="flex items-center gap-3 w-72">
-                    <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
-                        :loading="classLoading" />
-                </div>
-            </Heading>
-        </UCard>
+    <div class="space-y-5 p-4">
+        <Heading title="Class Timetables" subtitle="Manage weekly timetables for classes and sections">
+            <div class="flex items-center gap-3 w-72">
+                <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
+                    :loading="classLoading" />
+            </div>
+        </Heading>
 
         <!-- Timetable -->
         <UCard v-if="session" :ui="{ body: 'p-0 sm:p-0' }">

@@ -1,22 +1,16 @@
 <template>
-  <div class="space-y-6 p-4">
-    <UCard>
-      <Heading title="Create Scheme of Work" subtitle="Plan topics, objectives and weekly teaching activities.">
-        <div class="flex gap-3">
-          <UButton variant="outline" color="neutral" :icon="BACK_ICON" to="/curriculums" label="Back" />
-        </div>
-      </Heading>
-    </UCard>
+  <div class="space-y-5 p-4">
+    <Heading title="Create Scheme of Work" subtitle="Plan topics, objectives and weekly teaching activities.">
+      <div class="flex gap-3">
+        <UButton variant="outline" color="neutral" :icon="BACK_ICON" to="/curriculums" label="Back" />
+      </div>
+    </Heading>
     <UForm ref="formRef" :state="state" :schema="schema" class="space-y-6" @submit="onSubmit">
-
       <div class="grid gap-6 xl:grid-cols-3">
-
         <!-- Left -->
         <div class="space-y-4 xl:col-span-2">
-
           <!-- Basic Information -->
           <UCard>
-
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-book-open" class="text-primary" />
@@ -41,11 +35,10 @@
                   leading-icon="i-lucide-calendar-range" placeholder="Select term" class="w-full" />
               </UFormField>
               <UFormField label="Weeks" name="weeks">
-                <UInput v-model.number="state.weeks" type="number" min="1" leading-icon="i-lucide-hash"
+                <UInput disabled v-model.number="state.weeks" type="number" min="1" leading-icon="i-lucide-hash"
                   class="w-full" />
               </UFormField>
             </div>
-
           </UCard>
 
           <!-- Schedule -->
@@ -62,11 +55,11 @@
 
             <div class="grid gap-5 lg:grid-cols-2">
               <UFormField label="Start Date" name="startDate">
-                <UInput v-model="state.startDate" type="date" class="w-full" />
+                <UInput disabled v-model="state.startDate" type="date" class="w-full" />
               </UFormField>
 
               <UFormField label="End Date" name="endDate">
-                <UInput v-model="state.endDate" type="date" class="w-full" />
+                <UInput disabled v-model="state.endDate" type="date" class="w-full" />
               </UFormField>
 
             </div>
@@ -164,7 +157,7 @@
                   </p>
 
                   <p class="font-medium">
-                    {{ selectedTermLabel }}
+                    {{ selectedTerm?.name || 'Not Selected' }}
                   </p>
                 </div>
               </div>
@@ -191,25 +184,6 @@
                   </p>
                 </div>
               </div>
-
-              <div v-if="state.document" class="flex items-center gap-4 rounded-2xl bg-red-500/5 p-4">
-                <div class="rounded-xl bg-red-500/10 p-2">
-                  <UIcon name="i-lucide-file-text" class="text-red-500" />
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <p class="text-xs text-muted uppercase">
-                    Attachment
-                  </p>
-
-                  <button type="button" class="truncate font-medium text-left hover:underline" @click="previewFile">
-                    {{ state.document.name }}
-                  </button>
-                </div>
-
-                <UButton icon="i-lucide-external-link" color="neutral" variant="ghost" size="sm" @click="previewFile" />
-              </div>
-
             </div>
 
             <!-- Footer -->
@@ -246,11 +220,13 @@ import type { FormSubmitEvent } from '#ui/types'
 
 const classSubjectStore = useClassSubjectStore()
 const classStore = useClassSessionStore()
-const appStore = useAppStore()
+const academicYearStore = useAcademicYearStore()
+const store = useSchemeOfWorkStore()
 
 const { listByClass: classes } = storeToRefs(classStore)
-const { list: subjects, error: subjectError } = storeToRefs(classSubjectStore)
-const { success, error } = useNotify()
+const { listBySubject: subjects } = storeToRefs(classSubjectStore)
+const { termList: terms } = storeToRefs(academicYearStore)
+const { error } = useNotify()
 
 const formRef = ref()
 const isLoading = ref(false)
@@ -260,34 +236,21 @@ const loadingClasses = ref(false)
 type SchemeForm = {
   subjectId: string
   classId: string
-  academicYear: string
   term: string
   weeks: number
   startDate: string
   endDate: string
-  resources: string
-  remarks: string
-  document: File | null
 }
 
 const state = reactive<SchemeForm>({
   subjectId: '',
   classId: '',
-  academicYear: '',
   term: '',
-  weeks: 12,
+  weeks: 0,
   startDate: '',
-  endDate: '',
-  resources: '',
-  remarks: '',
-  document: null
+  endDate: ''
 })
 
-const terms = [
-  { label: 'Term 1', value: 'TERM_1' },
-  { label: 'Term 2', value: 'TERM_2' },
-  { label: 'Term 3', value: 'TERM_3' }
-]
 
 const selectedSubjectLabel = computed(
   () => subjects.value.find(s => s.value === state.subjectId)?.label || 'Not selected'
@@ -297,8 +260,12 @@ const selectedClassLabel = computed(
   () => classes.value.find(c => c.value === state.classId)?.label || 'Not selected'
 )
 
-const selectedTermLabel = computed(
-  () => terms.find(t => t.value === state.term)?.label || 'Not selected'
+const selectedClass = computed(
+  () => classStore.getByClazz(state.classId)
+)
+
+const selectedTerm = computed(
+  () => academicYearStore.getTerm(state.term)
 )
 
 const dateRangeInvalid = computed(() => {
@@ -309,61 +276,36 @@ const dateRangeInvalid = computed(() => {
 const schema = yup.object({
   subjectId: yup.string().required('Subject is required'),
   classId: yup.string().required('Class is required'),
-  academicYear: yup.string().required('Academic year is required'),
   term: yup.string().required('Term is required'),
-  weeks: yup.number().required('Weeks is required').min(1, 'Weeks must be greater than 0'),
-  startDate: yup.string().required('Start date is required'),
-  endDate: yup
-    .string()
-    .required('End date is required')
-    .test('after-start', 'End date must be after start date', function (value) {
-      const { startDate } = this.parent
-      if (!value || !startDate) return true
-      return new Date(value) >= new Date(startDate)
-    }),
-  resources: yup.string(),
-  remarks: yup.string(),
-  document: yup.mixed().nullable()
 })
 
 async function onSubmit(event: FormSubmitEvent<SchemeForm>) {
   isLoading.value = true
 
   try {
-    const payload = new FormData()
+    const res = await store.create({
+      session: selectedClass.value?.id || '',
+      subject: state.subjectId,
+      term: state.term,
+    })
 
-    payload.append('subjectId', state.subjectId)
-    payload.append('classId', state.classId)
-    payload.append('academicYear', state.academicYear)
-    payload.append('term', state.term)
-    payload.append('weeks', String(state.weeks))
-    payload.append('startDate', state.startDate)
-    payload.append('endDate', state.endDate)
-    payload.append('resources', state.resources)
-    payload.append('remarks', state.remarks)
-
-    if (state.document) {
-      payload.append('document', state.document)
-    }
-
-    await schemeStore.create(payload)
-
-    success('Scheme of Work created successfully')
-
-    await navigateTo('/scheme-of-work')
+    navigateTo(`/curriculums/${res.id}`)
   }
   catch (err: any) {
     error(err?.message || 'Failed to create Scheme of Work')
-  }
-  finally {
     isLoading.value = false
   }
 }
-onMounted(async () => {
-  classStore.fetchAll(0, 0);
-  const res = await appStore.fetchCycleOverview()
-  console.log(res);
 
+function prepareWeek(term: Term) {
+  state.startDate = term.startDate
+  state.endDate = term.endDate
+  state.weeks = getTotalWeeks(term.startDate, term.endDate)
+}
+
+onMounted(async () => {
+  classStore.fetchAll(0, 0)
+  academicYearStore.getTerms()
 })
 
 definePageMeta({
@@ -375,8 +317,12 @@ definePageMeta({
   ]
 })
 
+watch(() => selectedTerm.value, (value) => {
+  if (value) prepareWeek(value)
+})
+
 watch(() => state.classId, async (value) => {
   if (value == "") return
   await classSubjectStore.allByClass(value, 0, 0)
-}, { immediate: true })
+})
 </script>

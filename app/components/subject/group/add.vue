@@ -1,7 +1,8 @@
 <template>
     <u-slideover title="Add Subject Group" :open="open" @update:open="open = $event">
 
-        <UButton color="primary" label="Add Subject Group" :icon="ADD_ICON" @click="open = true" />
+        <UButton color="primary" class="hidden md:flex" label="Add Subject Group" :icon="ADD_ICON" @click="open = true" />
+        <UButton color="primary" class="md:hidden" :icon="ADD_ICON" @click="open = true" />
 
         <template #header>
             <div class="flex justify-between w-full items-center">

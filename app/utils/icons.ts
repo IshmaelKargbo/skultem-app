@@ -1,5 +1,3 @@
-import card from "#build/ui/card"
-
 export const STUDENT_ICON = "ph:student-duotone"
 export const ATTENDANCE_ICON = "hugeicons:date-time"
 export const TEACHER_ICON = "hugeicons:teaching"
@@ -13,7 +11,7 @@ export const RATE_ICON = 'streamline:discount-percent-coupon'
 export const NET_ICON = 'i-fluent-calculator-24-regular'
 export const ASSIGN_ICON = "streamline-plump:class-lesson"
 export const NEXT_ICON = "grommet-icons:form-next-link"
-export const BACK_ICON = "mingcute:back-line"
+export const BACK_ICON = "i-lucide-arrow-left"
 export const SUN_ICON = 'i-heroicons-sun'
 export const MOON_ICON = 'i-heroicons-moon'
 
@@ -63,6 +61,7 @@ export const FREE_ICON = "material-symbols:crop-free"
 export const LOADER_ICON = "lucide:loader-2"
 export const CHEVRON_DOWN_ICON = "lucide:chevron-down"
 export const CHEVRON_RIGHT_ICON = "lucide:chevron-right"
+export const COVERAGE_ICON = "i-lucide-chart-column"
 
 export const DASHBOARD_ICON = "si:dashboard-customize-line"
 export const GRADES_ICON = "icon-park-outline:ranking-list"

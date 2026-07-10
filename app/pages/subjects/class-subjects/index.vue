@@ -1,11 +1,13 @@
 <template>
-    <div class="p-4 overflow-y-auto h-full space-y-4 sm:space-y-5">
-        <UCard>
-            <Heading title="Class Subject Management" subtitle="Manage class subjects">
-                <UButton to="/subjects/class-subjects/add" color="primary" label="Assign Class Subject"
-                    :icon="ASSIGN_ICON" />
-            </Heading>
-        </UCard>
+    <div class="p-4 space-y-4">
+        <Heading title="Class Subject Management" subtitle="Manage class subjects">
+            <div class="flex space-x-2">
+                <UInput placeholder="Search by class" />
+                <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden"
+                    label="Assign Class Subject" :icon="ASSIGN_ICON" />
+                <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
+            </div>
+        </Heading>
         <SubjectClassSubjectTable />
     </div>
 </template>

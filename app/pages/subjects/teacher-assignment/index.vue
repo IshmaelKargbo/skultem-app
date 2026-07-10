@@ -1,11 +1,14 @@
 <template>
-    <div class="p-4 overflow-y-auto h-full space-y-4 sm:space-y-5">
-        <UCard>
-            <Heading title="Teacher Assignment" subtitle="Manage teacher assignment">
-                <UButton to="/subjects/teacher-assignment/add" class="flex justify-center" color="primary" label="Assign Teacher Subject"
-                    :icon="ASSIGN_ICON" />
-            </Heading>
-        </UCard>
+    <div class="p-4 space-y-4">
+        <Heading title="Teacher Assignment" subtitle="Manage teacher assignment">
+            <div class="flex items-center space-x-2">
+                <UInput placeholder="Search by teacher name" />
+                <UButton to="/subjects/teacher-assignment/add" class="md:flex hidden justify-center" color="primary"
+                    label="Assign Teacher Subject" :icon="ASSIGN_ICON" />
+                <UButton to="/subjects/teacher-assignment/add" class="md:hidden" color="primary"
+                     :icon="ASSIGN_ICON" />
+            </div>
+        </Heading>
         <ClassTeacherAssignmntTable />
     </div>
 </template>

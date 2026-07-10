@@ -2,7 +2,7 @@
   <UForm
     class="min-h-screen space-y-4 bg-linear-to-b from-gray-50 to-white p-3 md:space-y-5 md:bg-transparent md:p-5 dark:from-gray-950 dark:to-gray-950">
     <!-- Desktop Heading -->
-    <Heading class="hidden md:flex" title="Approval Requests" subtitle="Review grade submissions">
+    <Heading class="hidden md:block" title="Approval Requests" subtitle="Review grade submissions">
       <div class="flex flex-wrap gap-2">
         <UBadge color="warning" variant="soft" size="lg" class="rounded-full px-3 py-1">
           {{ summary.pending }} Pending

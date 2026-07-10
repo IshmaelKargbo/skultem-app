@@ -1,14 +1,12 @@
 <template>
-    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-4 pb-0 space-y-3">
-        <UCard>
-            <Heading title="Students Management" subtitle="Organize academic classes">
-                <div class="flex space-x-2">
-                    <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80" />
-                    <UButton to="/students/add" class="items-center flex justify-center" color="primary"
-                        label="Enrolled Student" :icon="ADD_ICON" />
-                </div>
-            </Heading>
-        </UCard>
+    <div class="p-4 space-y-5">
+        <Heading title="Students Management" subtitle="Organize academic classes">
+            <div class="flex space-x-2">
+                <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80" />
+                <UButton to="/students/add" class="items-center flex justify-center" color="primary"
+                    label="Enrolled Student" :icon="ADD_ICON" />
+            </div>
+        </Heading>
         <StudentAdminTable />
     </div>
 </template>

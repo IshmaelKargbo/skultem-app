@@ -1,7 +1,6 @@
 <template>
-  <div class="md:p-7 p-4 md:space-y-5 space-y-3">
-    <Heading class="hidden md:flex" title="Grade Entry"
-      subtitle="Enter scores for the active test. Locked assessments are read-only">
+  <div class="p-4 space-y-4">
+    <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex w-full space-x-3 md:w-auto md:justify-end">
         <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
@@ -43,12 +42,10 @@
     }" class="hidden md:block">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
         <template #student-cell="{ row }">
-          <StudentIdentityCell
-            :given-names="row.original.givenNames || row.original.name"
+          <StudentIdentityCell :given-names="row.original.givenNames || row.original.name"
             :family-name="row.original.familyName || ''"
             :photo="row.original.photo || row.original.studentPhoto || row.original.student?.photo"
-            :subtitle="hasSubmittedAssessments ? `Position: ${rankingMap[row.original.id] || '-'}` : 'Position: N/A'"
-          />
+            :subtitle="hasSubmittedAssessments ? `Position: ${rankingMap[row.original.id] || '-'}` : 'Position: N/A'" />
         </template>
         <template #loading>
           <TableLoading :size="7" />
@@ -62,12 +59,9 @@
         <template #header>
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 flex items-start gap-3">
-              <UAvatar
-                size="md"
+              <UAvatar size="md"
                 :src="student.photo || student.studentPhoto || student.student?.photo || '/avatar-placeholder.svg'"
-                :alt="student.name"
-                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
-              />
+                :alt="student.name" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
               <div>
                 <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ student.name }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -83,7 +77,8 @@
         </template>
         <div class="">
           <div class="grid">
-            <div v-for="assessment in assessments" :key="assessment.id" class="border-b border-gray-200 dark:border-gray-800 p-3 py-2">
+            <div v-for="assessment in assessments" :key="assessment.id"
+              class="border-b border-gray-200 dark:border-gray-800 p-3 py-2">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 space-y-1">
                   <p class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{{ assessment.name }}</p>

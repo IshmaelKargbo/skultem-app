@@ -2,7 +2,7 @@
   <UForm :state="state"
     class="min-h-screen space-y-4 p-3 md:space-y-5  md:p-5 ">
     <!-- Desktop Heading -->
-    <Heading class="hidden md:flex" title="Approval Requests" :subtitle="headerMessage">
+    <Heading class="hidden md:block" title="Approval Requests" :subtitle="headerMessage">
       <div class="flex flex-wrap gap-2">
         <UBadge color="warning" variant="soft" size="lg" class="rounded-full px-3 py-1">
           {{ summary.pending }} Pending

@@ -1,7 +1,8 @@
 <template>
     <u-slideover :dismissible="false" title="Add Academic Year" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
-        <UButton color="primary" label="Add Academic Year" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Add Academic Year" class="hidden md:flex" :icon="ADD_ICON" @click="open = true" />
+        <UButton color="primary" class="md:hidden" :icon="ADD_ICON" @click="open = true" />
 
         <!-- Header -->
         <template #header>

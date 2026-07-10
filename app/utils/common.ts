@@ -440,6 +440,16 @@ export const levels = [
     { label: 'SSS', value: Level.SSS },
 ]
 
+export function getTotalWeeks(startDate: string, endDate: string): number {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const days =
+    Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  return Math.ceil(days / 7);
+}
+
 export function handleScroll(event: Event) {
     const target = event.target as HTMLElement
     const scrollTop = target.scrollTop

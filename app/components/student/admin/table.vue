@@ -139,7 +139,7 @@ onMounted(async () => {
       <template #name-cell="{ row }">
         <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
           :photo="row.original.photo"
-          :subtitle="`${row.original.admissionNumber || 'No Admission No'} · ${row.original.className || 'No Class'}`" />
+          :subtitle="`${row.original.admissionNumber || 'No Admission No'}`" />
       </template>
       <template #loading>
         <TableLoading :size="columns.length" />
