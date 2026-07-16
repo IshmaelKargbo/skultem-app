@@ -9,10 +9,12 @@
   --app-text-soft: #60748f;
   --app-text-faint: #7c90aa;
 
-  --app-bg: var(--color-neutral-50);
+  --app-bg: var(--color-neutral-100);
   --app-card: #ffffff;
   --app-border: #e5e7eb;
 }
+
+
 
 /* DARK MODE */
 .dark {
@@ -23,18 +25,18 @@
   --app-text-soft: #9ca3af;
   --app-text-faint: #6b7280;
 
-  --app-bg: #030712;
+  --app-bg: #060a18;
   --app-card: #111827;
   --app-border: #1f2937;
 }
 
 html {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-indigo-500) #fdfbfb;
+  scrollbar-color: var(--color-primary-500) #fdfbfb;
 }
 
 html.dark {
-  scrollbar-color: #4f46e5 #05070d;
+  scrollbar-color: #1878c5 #05070d;
 }
 
 ::-webkit-scrollbar-track {
@@ -140,31 +142,30 @@ h6 {
 }
 
 @theme static {
-  --color-app-50: #f0f2f8;
-  --color-app-100: #d9dde9;
-  --color-app-200: #b3b9d5;
-  --color-app-300: #8c95c2;
-  --color-app-400: #6670ae;
-  --color-app-500: #415c9b;
-  --color-app-600: #384f85;
-  --color-app-700: #2f406e;
-  --color-app-800: #263257;
-  --color-app-900: #1d2340;
-  --color-app-950: #0f1220;
+  /* Brand color scales — generated from primary #1878c5 / secondary #40c7ba */
+  --color-primary-50: #f1f8fd;
+  --color-primary-100: #dfeffb;
+  --color-primary-200: #bbdcf7;
+  --color-primary-300: #89c2f1;
+  --color-primary-400: #52a6ea;
+  --color-primary-500: #1878c5;
+  --color-primary-600: #125c98;
+  --color-primary-700: #0d416a;
+  --color-primary-800: #092c49;
+  --color-primary-900: #061c2d;
+  --color-primary-950: #03111b;
 
-  --color-sec-50: #e9f5ff;
-  --color-sec-100: #d7edff;
-  --color-sec-200: #b6dbff;
-  --color-sec-300: #8ac2ff;
-  --color-sec-400: #5d99ff;
-  --color-sec-500: #3871ff;
-  --color-sec-600: #1645ff;
-  --color-sec-700: #0b37f7;
-  --color-sec-800: #0d33c6;
-  --color-sec-900: #15339a;
-  --color-sec-950: #04091d;
-
-  --color-menu: #101727;
+  --color-secondary-50: #f3fcfb;
+  --color-secondary-100: #e3f7f5;
+  --color-secondary-200: #c4eeea;
+  --color-secondary-300: #98e1da;
+  --color-secondary-400: #69d3c9;
+  --color-secondary-500: #40c7ba;
+  --color-secondary-600: #30a499;
+  --color-secondary-700: #257c74;
+  --color-secondary-800: #19554f;
+  --color-secondary-900: #103632;
+  --color-secondary-950: #081a18;
 }
 
 /* Widget dark-mode polish */

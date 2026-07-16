@@ -146,7 +146,7 @@ onMounted(async () => {
       </template>
       <template #actions-cell="{ row }">
         <div>
-          <UButton @click="view(row.original)" size="sm" variant="ghost" color="success" :icon="VIEW_ICON" />
+          <UButton @click="view(row.original)" size="sm" variant="ghost" color="success" class="cursor-pointer" :icon="VIEW_ICON" />
         </div>
       </template>
     </UTable>
@@ -242,7 +242,7 @@ onMounted(async () => {
 
         <!-- Stats -->
         <div class="grid grid-cols-2 gap-3 p-4">
-          <div class="min-w-0 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
             <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
               Gender
             </p>
@@ -250,7 +250,7 @@ onMounted(async () => {
             <UBadge :label="parseGender[item.gender]" :color="parseGenderColor[item.gender]" size="sm" variant="soft" />
           </div>
 
-          <div class="min-w-0 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
             <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
               Date of Birth
             </p>
@@ -260,7 +260,7 @@ onMounted(async () => {
             </p>
           </div>
 
-          <div class="min-w-0 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
             <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
               Guardian
             </p>
@@ -271,7 +271,7 @@ onMounted(async () => {
             </p>
           </div>
 
-          <div class="min-w-0 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
             <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
               Class
             </p>

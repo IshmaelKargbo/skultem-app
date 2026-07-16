@@ -83,67 +83,53 @@
           </div>
         </div>
 
+           <div class="border-t border-gray-200/60 dark:border-white/10 pt-4 mt-3">
+                <div class="mb-3 px-1">
+                  <p
+                    class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400"
+                  >
+                    Appearance
+                  </p>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-2xl border border-gray-200/70 dark:border-white/10 bg-gray-100 dark:bg-white/5 px-4 py-3"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/10"
+                    >
+                      <UIcon
+                        :name="colorMode.value === 'dark' ? 'lucide:moon' : 'lucide:sun'"
+                        class="text-primary text-lg"
+                      />
+                    </div>
+
+                    <div>
+                      <p class="text-sm font-semibold">Theme</p>
+
+                      <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                        {{ colorMode.value === "dark" ? "Dark mode" : "Light mode" }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <USwitch
+                    :model-value="colorMode.value === 'dark'"
+                    @update:model-value="colorMode.preference = $event ? 'dark' : 'light'"
+                  />
+                </div>
+              </div>
+
         <!-- QUICK LINKS -->
         <div
           class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/2">
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT])" to="/attendance"
-            @click="close"
+          <NuxtLink v-for="link in quickLinks" :key="link.to" :to="link.to" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/attendance') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="ATTENDANCE_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
+            :class="route.path.startsWith(link.to) ? 'border-primary/20 bg-primary-50 dark:bg-primary-800' : ''">
+            <UIcon :name="link.icon" class="size-7 text-neutral-700 dark:text-neutral-200" />
             <span class="text-[16px] font-medium">
-              Attendance
-            </span>
-          </NuxtLink>
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT])" to="/parents" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/parents') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="PARENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-            <span class="text-[16px] font-medium">
-              Parents
-            </span>
-          </NuxtLink>
-          <NuxtLink v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" to="/teachers" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/teachers') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="TEACHER_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-            <span class="text-[16px] font-medium">
-              Teachers
-            </span>
-          </NuxtLink>
-          <NuxtLink v-if="can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT])" to="/students" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/students') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="STUDENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-            <span class="text-[16px] font-medium">
-              Students
-            </span>
-          </NuxtLink>
-
-          <NuxtLink v-if="can([Role.PARENT])" to="/grades" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/grades') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="GRADES_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-            <span class="text-[16px] font-medium">
-              Grades
-            </span>
-          </NuxtLink>
-
-          <NuxtLink v-if="can([Role.PARENT])" to="/notifications" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/notifications') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="BELL_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-            <span class="text-[16px] font-medium">
-              Notifications
-            </span>
-          </NuxtLink>
-
-          <NuxtLink v-if="can([Role.PARENT])" to="/fees" @click="close"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith('/fees') ? 'border-primary/20 bg-primary-50 dark:bg-primary-500/10' : ''">
-            <UIcon :name="PAYMENT_ICON" class="size-7 text-neutral-700 dark:text-neutral-200" />
-            <span class="text-[16px] font-medium">
-              Fees
+              {{ link.label }}
             </span>
           </NuxtLink>
         </div>
@@ -171,7 +157,7 @@
               <NuxtLink v-for="item in section.items.filter(x => !!x?.to)" :key="item.label" :to="item.to"
                 @click="close"
                 class="flex items-center gap-3 rounded-2xl border border-transparent bg-neutral-100 px-4 py-3.5 transition hover:border-primary/20 hover:bg-primary-50 hover:text-primary-600 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20 dark:hover:text-primary-200"
-                :class="route.path.startsWith(item.to) ? 'border-primary/20 bg-primary-50 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-neutral-700 dark:text-neutral-200'">
+                :class="route.path.startsWith(item.to) ? 'border-primary-500 bg-primary-200 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-neutral-700 dark:text-neutral-200'">
                 <UIcon :name="item.icon" class="size-5" />
 
                 <span class="font-medium">
@@ -200,6 +186,27 @@
 </template>
 
 <script setup lang="ts">
+interface QuickLink {
+  label: string
+  to: string
+  icon: string
+  roles: Role[]
+}
+
+interface SectionItem {
+  label: string
+  icon: string
+  to?: string
+  action?: () => void
+}
+
+interface Section {
+  id: string
+  title: string
+  visible: boolean
+  items: SectionItem[]
+}
+
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 
@@ -211,6 +218,9 @@ const route = useRoute()
 const open = ref(false)
 
 const expanded = ref<string[]>(['grades'])
+
+const colorMode = useColorMode();
+
 
 const name = computed(() =>
   user.value
@@ -243,10 +253,29 @@ const userRoles = computed(() =>
   }))
 )
 
-const sections = computed(() => [
+// Quick-access row above the accordions. Each is gated by its own roles
+// so it can be reordered/added to without touching the template.
+const allQuickLinks: QuickLink[] = [
+  { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON,
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT] },
+  { label: 'Parents', to: '/parents', icon: PARENT_ICON,
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT] },
+  { label: 'Teachers', to: '/teachers', icon: TEACHER_ICON,
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER] },
+  { label: 'Students', to: '/students', icon: STUDENT_ICON,
+    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT] },
+  { label: 'Grades', to: '/grades', icon: GRADES_ICON, roles: [Role.PARENT] },
+  { label: 'Notifications', to: '/notifications', icon: BELL_ICON, roles: [Role.PARENT] },
+  { label: 'Fees', to: '/fees', icon: PAYMENT_ICON, roles: [Role.PARENT] },
+]
+
+const quickLinks = computed(() => allQuickLinks.filter((link) => can(link.roles)))
+
+const sections = computed<Section[]>(() => [
   {
     id: 'general',
     title: 'General',
+    visible: true,
     items: [
       can(['admin', 'proprietor']) && {
         label: 'Settings',
@@ -285,155 +314,63 @@ const sections = computed(() => [
       }
     ].filter(Boolean)
   },
-  // subjects
   {
     id: 'subjects',
     title: 'Subjects',
     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]),
     items: [
-      {
-        label: 'Subjects',
-        icon: CURRICULUM_SUBJECT_ICON,
-        to: '/subjects'
-      },
-      {
-        label: 'Subject Groups',
-        icon: CURRICULUM_GROUP_ICON,
-        to: '/subjects/subject-groups'
-      },
-      {
-        label: 'Class Subjects',
-        icon: BOOK_OPEN_ICON,
-        to: '/subjects/class-subjects'
-      },
-      {
-        label: 'Teacher Assignment',
-        icon: CLIPBOARD_ADD_ICON,
-        to: '/subjects/teacher-assignment'
-      },
-      {
-        label: 'Sections',
-        icon: LAYERS_ICON,
-        to: '/subjects/sections'
-      },
-      {
-        label: 'Streams Subjects',
-        icon: CURRICULUM_STREAM_ICON,
-        to: '/subjects/streams'
-      }
+      { label: 'Subjects', icon: CURRICULUM_SUBJECT_ICON, to: '/subjects' },
+      { label: 'Subject Groups', icon: CURRICULUM_GROUP_ICON, to: '/subjects/subject-groups' },
+      { label: 'Class Subjects', icon: BOOK_OPEN_ICON, to: '/subjects/class-subjects' },
+      { label: 'Teacher Assignment', icon: CLIPBOARD_ADD_ICON, to: '/subjects/teacher-assignment' },
+      { label: 'Sections', icon: LAYERS_ICON, to: '/subjects/sections' },
+      { label: 'Streams Subjects', icon: CURRICULUM_STREAM_ICON, to: '/subjects/streams' }
     ]
   },
-  // classes
   {
     id: 'classes',
     title: 'Classes',
     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT, Role.OWNER]),
     items: [
-      {
-        label: 'Classes',
-        icon: CLASS_ICON,
-        to: '/classes'
-      },
-      {
-        label: 'Sections',
-        icon: LAYERS_ICON,
-        to: '/classes/sections'
-      },
-      {
-        label: 'Streams',
-        icon: CURRICULUM_STREAM_ICON,
-        to: '/classes/streams'
-      }
+      { label: 'Classes', icon: CLASS_ICON, to: '/classes' },
+      { label: 'Sections', icon: LAYERS_ICON, to: '/classes/sections' },
+      { label: 'Streams', icon: CURRICULUM_STREAM_ICON, to: '/classes/streams' }
     ]
   },
-  // curriculum
+  // Disabled — restore by uncommenting and it will be picked up automatically.
   // {
   //   id: 'curriculum',
   //   title: 'Curriculum',
+  //   icon: SCHEME_ICON,
   //   visible: can([Role.PROPRIETOR, Role.ADMIN]),
   //   items: [
-  //     {
-  //       label: 'Scheme of Work',
-  //       icon: SCHEME_ICON,
-  //       to: '/curriculums/scheme-of-work'
-  //     },
-
-  //     {
-  //       label: ' Lesson Plans ',
-  //       icon: BOOK_OPEN_ICON,
-  //       to: '/curriculums/lesson-plans'
-  //     },
-
-  //     {
-  //       label: 'Weeks',
-  //       icon: WEEKS_ICON,
-  //       to: '/curriculums/weeks'
-  //     },
-
-  //     {
-  //       label: 'Progress',
-  //       icon: PROGRESS_ICON,
-  //       to: '/curriculums/progress'
-  //     },
-
-  //     {
-  //       label: 'Student Progress',
-  //       icon: STUDENT_ICON,
-  //       to: '/curriculums/student-progress'
-  //     },
-
-  //     {
-  //       label: 'Teacher Progress',
-  //       icon: TEACHER_ICON,
-  //       to: '/curriculums/teacher-progress'
-  //     },
-
-  //     {
-  //       label: 'Class Progress',
-  //       icon: CLASS_ICON,
-  //       to: '/curriculums/class-progress'
-  //     }
+  //     { label: 'Scheme of Work', icon: SCHEME_ICON, to: '/curriculums/scheme-of-work' },
+  //     { label: 'Lesson Plans', icon: BOOK_OPEN_ICON, to: '/curriculums/lesson-plans' },
+  //     { label: 'Weeks', icon: WEEKS_ICON, to: '/curriculums/weeks' },
+  //     { label: 'Progress', icon: PROGRESS_ICON, to: '/curriculums/progress' },
+  //     { label: 'Student Progress', icon: STUDENT_ICON, to: '/curriculums/student-progress' },
+  //     { label: 'Teacher Progress', icon: TEACHER_ICON, to: '/curriculums/teacher-progress' },
+  //     { label: 'Class Progress', icon: CLASS_ICON, to: '/curriculums/class-progress' }
   //   ]
   // },
-  // classes
   {
     id: 'behaviours',
     title: 'Behaviours',
     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
     items: [
-      {
-        label: 'Behaviours',
-        icon: BEHAVIOUR_ICON,
-        to: '/behaviours'
-      },
-
-      {
-        label: 'Category',
-        icon: CATEGORY_ICON,
-        to: '/behaviours/category'
-      },
+      { label: 'Behaviours', icon: BEHAVIOUR_ICON, to: '/behaviours' },
+      { label: 'Category', icon: CATEGORY_ICON, to: '/behaviours/category' },
     ]
   },
-  // Timetable
   {
     id: 'timetable',
     title: 'Timetable',
     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
     items: [
-      {
-        label: 'Timetable',
-        icon: TIMETABLE_ICON,
-        to: '/timetable'
-      },
-
-      {
-        label: 'Settings',
-        icon: TIMETABLE_SETTINGS_ICON,
-        to: '/timetable/Setting'
-      },
+      { label: 'Timetable', icon: TIMETABLE_ICON, to: '/timetable' },
+      { label: 'Settings', icon: TIMETABLE_SETTINGS_ICON, to: '/timetable/Setting' },
     ]
   },
-  // expenses
   {
     id: 'expenses',
     title: 'Expenses',
@@ -450,11 +387,8 @@ const sections = computed(() => [
         icon: CATEGORY_ICON,
         to: '/expenses/category'
       },
-
-
     ].filter(Boolean)
   },
-  // transactions
   {
     id: 'transactions',
     title: 'Transactions',
@@ -473,7 +407,6 @@ const sections = computed(() => [
       },
     ].filter(Boolean)
   },
-  // analytics
   {
     id: 'analytics',
     title: 'Analytics',
@@ -492,45 +425,18 @@ const sections = computed(() => [
       },
     ].filter(Boolean)
   },
-  // academics
   {
     id: 'academics',
     title: 'Academics',
     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]),
     items: [
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Academics',
-        icon: CALANDA_ICON,
-        to: '/academics'
-      },
-
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Term Settings',
-        icon: TERM_ICON,
-        to: '/academics/terms'
-      },
-
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Template',
-        icon: TEMPLATE_ICON,
-        to: '/academics/assessment-templates'
-      },
-
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Academic Cycle',
-        icon: CYCLE_ICON,
-        to: '/academics/assessment-cycle'
-      },
-
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: 'Grade Scale',
-        icon: GRADE_ICON,
-        to: '/academics/grade-scale'
-      },
-
-    ].filter(Boolean)
+      { label: 'Academics', icon: CALANDA_ICON, to: '/academics' },
+      { label: 'Term Settings', icon: TERM_ICON, to: '/academics/terms' },
+      { label: 'Template', icon: TEMPLATE_ICON, to: '/academics/assessment-templates' },
+      { label: 'Academic Cycle', icon: CYCLE_ICON, to: '/academics/assessment-cycle' },
+      { label: 'Grade Scale', icon: GRADE_ICON, to: '/academics/grade-scale' },
+    ]
   },
-  // authorization
   {
     id: 'authorization',
     title: 'Authorization',
@@ -553,10 +459,8 @@ const sections = computed(() => [
         icon: SESSIONS_ICON,
         to: '/auth/sessions'
       },
-
     ].filter(Boolean)
   },
-  // fees
   {
     id: 'fees',
     title: 'Fees & Payments',
@@ -589,10 +493,8 @@ const sections = computed(() => [
         icon: CATEGORY_ICON,
         to: '/fees-payment/category'
       },
-
     ].filter(Boolean)
   },
-  // materials
   {
     id: 'materials',
     title: 'Materials & Supplies',
@@ -617,58 +519,30 @@ const sections = computed(() => [
       },
     ].filter(Boolean)
   },
-  // id-cards
-  //   {
-  //     id: 'id-cards',
-  //     title: 'ID Cards',
-  //     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
-  //     items: [
-  //       {
-  //         label: 'ID Cards',
-  //         icon: ID_CARD_ICON,
-  //         to: '/id-cards'
-  //       },
-
-  //       {
-  //         label: 'Generate',
-  //         icon: GENERATE_ID_CARD_ICON ,
-  //         to: '/id-cards/generate'
-  //       },
-
-  //        {
-  //         label: 'Templates',
-  //         icon: SETTINGS_ICON ,
-  //         to: '/id-cards/templates'
-  //       },
-  //     ]
-  //   },
-  //  // id-cards
-  //   {
-  //     id: 'report-cards',
-  //     title: 'Report Cards',
-  //     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
-  //     items: [
-  //       {
-  //         label: 'Report Cards',
-  //         icon: REPORT_ICON,
-  //         to: '/report-cards'
-  //       },
-
-  //       {
-  //         label: 'Generate',
-  //         icon: GENERATE_ICON,
-  //         to: '/report-cards/generate'
-  //       },
-
-  //        {
-  //         label: 'Templates',
-  //         icon: SETTINGS_ICON ,
-  //         to: '/id-cards/templates'
-  //       },
-  //     ]
-  //   },
-
-].filter((section: any) => section?.visible !== false))
+  // Disabled — restore by uncommenting and it will be picked up automatically.
+  // {
+  //   id: 'id-cards',
+  //   title: 'ID Cards',
+  //   icon: ID_CARD_ICON,
+  //   visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+  //   items: [
+  //     { label: 'ID Cards', icon: ID_CARD_ICON, to: '/id-cards' },
+  //     { label: 'Generate', icon: GENERATE_ID_CARD_ICON, to: '/id-cards/generate' },
+  //     { label: 'Templates', icon: SETTINGS_ICON, to: '/id-cards/templates' },
+  //   ]
+  // },
+  // {
+  //   id: 'report-cards',
+  //   title: 'Report Cards',
+  //   icon: REPORT_ICON,
+  //   visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
+  //   items: [
+  //     { label: 'Report Cards', icon: REPORT_ICON, to: '/report-cards' },
+  //     { label: 'Generate', icon: GENERATE_ICON, to: '/report-cards/generate' },
+  //     { label: 'Templates', icon: SETTINGS_ICON, to: '/id-cards/templates' },
+  //   ]
+  // },
+].filter((section) => section.visible !== false))
 
 function toggleSection(id: string) {
   expanded.value.includes(id)

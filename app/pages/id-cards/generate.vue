@@ -228,13 +228,23 @@
       <UButton
         icon="i-lucide-eye"
         variant="outline"
+        @click="previewOpen = !previewOpen"
       >
         Preview
       </UButton>
 
       <UButton
+        icon="i-lucide-settings-2"
+        variant="outline"
+        @click="settingsOpen = !settingsOpen"
+      >
+        Settings
+      </UButton>
+
+      <UButton
         icon="i-lucide-download"
         variant="outline"
+        @click="downloadPdf"
       >
         Download PDF
       </UButton>
@@ -242,10 +252,18 @@
       <UButton
         icon="i-lucide-printer"
         variant="outline"
+        @click="printCards"
       >
         Print
       </UButton>
 
+    </div>
+
+    <!-- Settings panel and preview -->
+    <IDCardSettings v-model="settingsOpen" :settings="settings" :active-fields="activeFields" :default-settings="defaultSettings" @update:settings="updateSettings" @update:active-fields="updateFields" @save="saveSettings" @close="settingsOpen = false" />
+
+    <div v-if="previewOpen" class="mt-4">
+      <IDCardPreview :template="sampleTemplate" :settings="settings" :active-fields="activeFields" />
     </div>
 
   </div>

@@ -18,14 +18,23 @@
         </p>
       </div>
 
-      <div class="flex flex-wrap gap-3">
+      <div class="flex flex-wrap gap-3 items-center">
         <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/id-cards/templates">
           Back
         </UButton>
-        <UButton icon="i-lucide-settings-2" :variant="settingsOpen ? 'solid' : 'outline'" color="neutral"
-          @click="settingsOpen = !settingsOpen">
+
+        <!-- <div class="flex items-center gap-2">
+          <USelect :items="templateOptions" v-model="settings.preset" class="w-48" />
+          <UButton size="sm" :variant="settings.layout === 'vertical' ? 'solid' : 'outline'" @click="settings.layout = 'vertical'">Vertical</UButton>
+          <UButton size="sm" :variant="settings.layout === 'horizontal' ? 'solid' : 'outline'" @click="settings.layout = 'horizontal'">Horizontal</UButton>
+          <UButton size="sm" :variant="settings.profileShape === 'round' ? 'solid' : 'outline'" @click="settings.profileShape = 'round'">Round</UButton>
+          <UButton size="sm" :variant="settings.profileShape === 'square' ? 'solid' : 'outline'" @click="settings.profileShape = 'square'">Square</UButton>
+        </div> -->
+
+        <UButton icon="i-lucide-settings-2" variant="outline" color="neutral" to="/id-cards/settings">
           Settings
         </UButton>
+
         <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading" @click="downloadPdf">
           Download PDF
         </UButton>
@@ -68,7 +77,7 @@
           <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10">
             <UIcon name="i-lucide-calendar-clock" class="size-6 text-orange-500" />
           </div>
-          <div>
+          <div>/id-cards/templates
             <p class="text-2xl font-bold leading-tight">{{ template.validityYears }}yr</p>
             <p class="text-sm text-muted">Validity period</p>
           </div>
@@ -141,12 +150,6 @@
 
       <!-- Settings + Preview Section -->
       <div class="lg:col-span-2 space-y-4">
-
-        <!-- Settings Panel (Separate Component) -->
-        <IDCardSettings v-model="settingsOpen" :settings="settings" :active-fields="activeFields"
-          :default-settings="defaultSettings" @update:settings="updateSettings" @update:active-fields="updateFields"
-          @save="saveSettings" @close="settingsOpen = false" />
-
         <!-- Card Preview (Separate Component) -->
         <IDCardPreview :template="template" :settings="settings" :active-fields="activeFields" />
 
@@ -158,13 +161,14 @@
 </template>
 
 <script setup lang="ts">
+import IDCardPreview from '../../components/id-cards/IDCardPreview.vue'
+
 const route = useRoute()
 const appStore = useAppStore()
 const { success } = useNotify()
 
 const templateId = computed(() => route.params.id)
 const downloading = ref(false)
-const settingsOpen = ref(false)
 
 // Template data
 const template = ref({
@@ -201,6 +205,7 @@ const defaultSettings = {
   audience: 'student' as 'student' | 'staff',
   layout: 'vertical' as 'vertical' | 'horizontal',
   profileShape: 'square' as 'round' | 'square',
+  preset: 'modern',
   headerColor: '#2563eb',
   footerColor: '#2563eb',
   headerTextColor: '#ffffff',
@@ -212,6 +217,47 @@ const defaultSettings = {
 }
 
 const settings = reactive({ ...defaultSettings })
+
+// Template presets
+const presets: Record<string, any> = {
+  modern: {
+    name: 'Modern Blue Template',
+    accentColor: '#2563eb',
+    accentColorDark: '#1e3a8a',
+    headerColor: '#2563eb',
+    footerColor: '#2563eb',
+    headerTextColor: '#ffffff',
+    primaryTextColor: '#111827',
+    school: {
+      name: "KING'S WAY INTERNATIONAL SCHOOL",
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg',
+      principal: 'Dr. A. Conteh',
+      address: '12 Wilkinson Road, Freetown, Sierra Leone'
+    }
+  },
+  classic: {
+    name: 'Classic Green Template',
+    accentColor: '#10b981',
+    accentColorDark: '#065f46',
+    headerColor: '#10b981',
+    footerColor: '#10b981',
+    headerTextColor: '#ffffff',
+    primaryTextColor: '#0f172a',
+    school: {
+      name: "KING'S WAY CLASSIC SCHOOL",
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png',
+      principal: 'Mrs. J. Doe',
+      address: '88 Classic Ave, Freetown'
+    }
+  }
+}
+
+// options for select
+const templateOptions = [
+  { label: 'Modern Blue', value: 'modern' },
+  { label: 'Classic Green', value: 'classic' }
+]
+
 
 // Field definitions
 interface FieldDef {
@@ -284,6 +330,36 @@ async function downloadPdf() {
 
 onMounted(() => {
   appStore.setTitle(`${template.value.name} Preview`)
+  try {
+    const saved = localStorage.getItem('idcard:settings')
+    if (saved) {
+      const s = JSON.parse(saved)
+      Object.assign(settings, s)
+      if (s.preset && presets[s.preset]) {
+        const p = presets[s.preset]
+        template.value.name = p.name
+        template.value.accentColor = p.accentColor
+        template.value.accentColorDark = p.accentColorDark
+        template.value.school = { ...template.value.school, ...p.school }
+        template.value.headerColor = p.headerColor
+        template.value.footerColor = p.footerColor
+        template.value.headerTextColor = p.headerTextColor
+        template.value.primaryTextColor = p.primaryTextColor
+      }
+    } else {
+      const p = presets[settings.preset] || presets.modern
+      template.value.name = p.name
+      template.value.accentColor = p.accentColor
+      template.value.accentColorDark = p.accentColorDark
+      template.value.school = { ...template.value.school, ...p.school }
+      template.value.headerColor = p.headerColor
+      template.value.footerColor = p.footerColor
+      template.value.headerTextColor = p.headerTextColor
+      template.value.primaryTextColor = p.primaryTextColor
+    }
+  } catch (e) {
+    // ignore
+  }
 })
 
 definePageMeta({

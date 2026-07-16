@@ -26,6 +26,7 @@ watch(
   <AuthSplash v-if="!layoutReady" />
 
   <div v-else class="flex h-dvh overflow-hidden bg-[--app-bg]">
+  
     <!-- Desktop Sidebar -->
     <aside class="hidden w-72 p-4 pr-0.5 md:block">
       <Menu />

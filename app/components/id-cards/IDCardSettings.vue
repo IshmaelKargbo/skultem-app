@@ -17,6 +17,15 @@
 
       <div class="space-y-7">
 
+        <!-- ── Template Preset ── -->
+        <section>
+          <p class="mb-2.5 text-xs font-semibold uppercase tracking-widest text-muted">Template</p>
+          <div class="flex gap-2">
+            <UButton :variant="settings.preset === 'modern' ? 'solid' : 'outline'" :color="settings.preset === 'modern' ? 'primary' : 'neutral'" size="sm" @click="updateSetting('preset', 'modern')">Modern Blue</UButton>
+            <UButton :variant="settings.preset === 'classic' ? 'solid' : 'outline'" :color="settings.preset === 'classic' ? 'primary' : 'neutral'" size="sm" @click="updateSetting('preset', 'classic')">Classic Green</UButton>
+          </div>
+        </section>
+
         <!-- ── Target Audience ── -->
         <section>
           <p class="mb-2.5 text-xs font-semibold uppercase tracking-widest text-muted">Target Audience</p>
@@ -280,6 +289,7 @@ interface Settings {
   audience: 'student' | 'staff'
   layout: 'vertical' | 'horizontal'
   profileShape: 'round' | 'square'
+  preset: string
   headerColor: string
   footerColor: string
   headerTextColor: string

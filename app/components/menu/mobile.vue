@@ -2,65 +2,10 @@
   <div class="px-3 pb-3 pt-2">
     <div class="rounded-4xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
       <ul class="grid grid-cols-4 gap-1.5">
-        <li>
-          <NuxtLink to="/" class="menu-mobile-item" :class="isActive('/', true)">
-            <UIcon class="text-xl" :name="DASHBOARD_ICON" />
-            <span class="menu-mobile-label">Home</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.PARENT, Role.TEACHER])">
-          <NuxtLink to="/grades" class="menu-mobile-item" :class="isActive('/grades', true)">
-            <UIcon class="text-xl" :name="GRADES_ICON" />
-            <span class="menu-mobile-label">Grades</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-          <NuxtLink to="/students" class="menu-mobile-item" :class="isActive('/students')">
-            <UIcon class="text-xl" :name="STUDENT_ICON" />
-            <span class="menu-mobile-label">Students</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-          <NuxtLink to="/classes" class="menu-mobile-item" :class="isActive('/classes')">
-            <UIcon class="text-xl" :name="CLASS_ICON" />
-            <span class="menu-mobile-label">Classes</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])">
-          <NuxtLink to="/teachers" class="menu-mobile-item" :class="isActive('/teachers')">
-            <UIcon class="text-xl" :name="TEACHER_ICON" />
-            <span class="menu-mobile-label">Teachers</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.PARENT, Role.TEACHER])">
-          <NuxtLink to="/fees" class="menu-mobile-item" :class="isActive('/fees')">
-            <UIcon class="text-xl" :name="PAYMENT_ICON" />
-            <span class="menu-mobile-label">Fees</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.PARENT, Role.TEACHER])">
-          <NuxtLink to="/attendance" class="menu-mobile-item" :class="isActive('/attendance')">
-            <UIcon class="text-xl" :name="ATTENDANCE_ICON" />
-            <span class="menu-mobile-label">Attendance</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.ACCOUNTANT])">
-          <NuxtLink to="/fees-payment/pay" class="menu-mobile-item" :class="isActive('/fees-payment/pay')">
-            <UIcon name="i-lucide-wallet" class="text-xl" />
-            <span class="menu-mobile-label">Payments</span>
-          </NuxtLink>
-        </li>
-        <li v-if="can([Role.ACCOUNTANT])">
-          <NuxtLink to="/transactions" class="menu-mobile-item" :class="isActive('/transactions')">
-            <UIcon name="i-lucide-book-open" class="text-xl" />
-            <span class="menu-mobile-label">Transactions</span>
-          </NuxtLink>
-        </li>
-
-        <li v-if="can([ Role.ACCOUNTANT])">
-          <NuxtLink to="/analytics/financial-reports" class="menu-mobile-item" :class="isActive('/analytics/financial-reports')">
-            <UIcon name="i-lucide-bar-chart-3" class="text-xl" />
-            <span class="menu-mobile-label">Reports</span>
+        <li v-for="item in visibleItems" :key="item.to">
+          <NuxtLink :to="item.to" class="menu-mobile-item" :class="isActive(item.to, item.exact)">
+            <UIcon class="text-xl" :name="item.icon" />
+            <span class="menu-mobile-label">{{ item.label }}</span>
           </NuxtLink>
         </li>
       </ul>
@@ -69,17 +14,56 @@
 </template>
 
 <script setup lang="ts">
+interface NavItem {
+  label: string
+  to: string
+  icon: string
+  exact?: boolean
+  roles?: Role[]
+}
+
 const { can } = useAuth()
 const route = useRoute()
 
+// One entry per bottom-nav icon. Omit `roles` for items visible to everyone.
+const navItems: NavItem[] = [
+  { label: 'Home', to: '/', icon: DASHBOARD_ICON, exact: true },
+
+  { label: 'Grades', to: '/grades', icon: GRADES_ICON, exact: true,
+    roles: [Role.PARENT, Role.TEACHER] },
+
+  { label: 'Students', to: '/students', icon: STUDENT_ICON,
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+
+  { label: 'Classes', to: '/classes', icon: CLASS_ICON,
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+
+  { label: 'Teachers', to: '/teachers', icon: TEACHER_ICON,
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+
+  { label: 'Fees', to: '/fees', icon: PAYMENT_ICON,
+    roles: [Role.PARENT, Role.TEACHER] },
+
+  { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON,
+    roles: [Role.PARENT, Role.TEACHER] },
+
+  { label: 'Payments', to: '/fees-payment/pay', icon: 'i-lucide-wallet',
+    roles: [Role.ACCOUNTANT] },
+
+  { label: 'Transactions', to: '/transactions', icon: 'i-lucide-book-open',
+    roles: [Role.ACCOUNTANT] },
+
+  { label: 'Reports', to: '/analytics/financial-reports', icon: 'i-lucide-bar-chart-3',
+    roles: [Role.ACCOUNTANT] },
+]
+
+const visibleItems = computed(() =>
+  navItems.filter((item) => !item.roles || can(item.roles))
+)
+
 function isActive(to: string, exact = false) {
-  return exact
-    ? route.path === to
-      ? 'menu-mobile-item-active'
-      : ''
-    : route.path.startsWith(to)
-      ? 'menu-mobile-item-active'
-      : ''
+  const active = exact ? route.path === to : route.path.startsWith(to)
+  return active ? 'menu-mobile-item-active' : ''
 }
 </script>
 
@@ -91,19 +75,19 @@ function isActive(to: string, exact = false) {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border-radius:  40px;
+  border-radius: 40px;
   color: #4b5563;
   transition: all 0.2s ease;
 }
 
 .menu-mobile-item:hover {
   background: rgba(99, 102, 241, 0.08);
-  color: #4f46e5;
+  color: #1878c5;
 }
 
 .menu-mobile-item-active {
   background: rgba(99, 102, 241, 0.12);
-  color: #4f46e5;
+  color: #1878c5;
   font-weight: 600;
 }
 
