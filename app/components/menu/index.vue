@@ -84,8 +84,6 @@ const navItems: NavItem[] = [
 
   { label: 'Behaviours', to: '/behaviours', icon: BEHAVIOUR_ICON, roles: [Role.TEACHER] },
 
-  { label: 'Grades', to: '/grades', icon: GRADES_ICON, roles: [Role.PARENT] },
-
   { label: 'Performance', to: '/performance', icon: PERFORMANCE_ICON, roles: [Role.PARENT] },
 
   { label: 'Students', to: '/students', icon: STUDENT_ICON,
@@ -141,10 +139,8 @@ const navItems: NavItem[] = [
       { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON },
     ] },
 
-  // NOTE: duplicates the "Grades" / "Performance" parent rows above —
   // kept as-is to match current behavior. Safe to delete if unintentional.
   { label: 'Grades', to: '/grades', icon: GRADES_ICON, roles: [Role.PARENT] },
-  { label: 'Performance', to: '/performance', icon: PERFORMANCE_ICON, roles: [Role.PARENT] },
 
   { label: 'Classes', icon: CLASS_ICON,
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT],

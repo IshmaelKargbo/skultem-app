@@ -1,7 +1,7 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
+    <div class="p-4 space-y-4">
         <div ref="detailSection">
-            <Heading class="md:flex hidden" title="Notification Center"
+            <Heading class="md:block hidden" title="Notification Center"
                 subtitle="Stay updated with your latest notifications">
                 <div class="flex gap-3">
                     <UBadge color="error" variant="outline" size="lg">{{ summary.unread }} Unread</UBadge>
@@ -131,13 +131,13 @@
                 </UCard>
             </div>
             <div class="hidden md:block">
-                <UCard class="sticky top-0">
+                <div class="sticky top-0">
                     <NotificationView v-if="selected" @close="selected = undefined" :record="selected" />
-                    <div v-else class="flex flex-col items-center h-70 justify-center">
+                    <UCard v-else class="flex flex-col items-center h-70 justify-center">
                         <UIcon name="lucide:inbox" class="text-4xl mb-3" />
                         <p class="text-xs">Select a notification to view details</p>
-                    </div>
-                </UCard>
+                    </UCard>
+                </div>
             </div>
         </div>
 
