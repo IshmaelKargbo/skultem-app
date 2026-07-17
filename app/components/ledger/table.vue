@@ -9,7 +9,7 @@ const { format } = useMoney()
 const { records: data, meta, total } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-const columns: TableColumn<Ledger> = [
+const columns = [
   {
     accessorKey: 'date',
     header: 'Date'
@@ -86,10 +86,7 @@ const size = computed<number>({
 function updateQuery(newQuery: Record<string, any>) {
   const merged = { ...route.query, ...newQuery }
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
+  if (merged.page === route.query.page) {
     return
   }
 
@@ -112,8 +109,7 @@ watch(() => page.value, () => {
 
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 
@@ -121,11 +117,10 @@ watch(() => page.value, () => {
 }, { immediate: true })
 
 onMounted(async () => {
-  if (!route.query.page || !route.query.size) {
+  if (!route.query.page) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }

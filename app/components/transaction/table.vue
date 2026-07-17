@@ -55,8 +55,7 @@ watch(() => page.value, () => {
   })
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 
@@ -67,8 +66,7 @@ function updateQuery(newQuery: Record<string, any>) {
   const merged = { ...route.query, ...newQuery }
 
   if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
+    merged.page === route.query.page
   ) {
     return
   }
@@ -107,11 +105,10 @@ const selected = ref<ReportSelectPayload>({
 })
 
 onMounted(async () => {
-  if (!route.query.page || !route.query.size) {
+  if (!route.query.page) {
     router.replace({
       query: {
-        page: page.value,
-        size: size.value
+        page: page.value
       }
     })
   }
