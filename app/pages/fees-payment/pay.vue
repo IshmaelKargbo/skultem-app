@@ -1,9 +1,6 @@
 <template>
-    <div class="p-4 space-y-4 sm:space-y-5">
-        <!-- Header -->
-        <UCard>
-            <Heading class="hidden md:flex" title="Payment Recording" subtitle="Record and manage student fee payments" />
-        </UCard>
+    <div class="p-4 space-y-4">
+        <Heading class="hidden md:flex" title="Payment Recording" subtitle="Record and manage student fee payments" />
         <FeePaymentNew @complete="refresh" />
         <DashboardAccountantTable ref="paymentRef" />
     </div>

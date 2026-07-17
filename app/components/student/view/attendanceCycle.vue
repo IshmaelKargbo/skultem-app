@@ -98,11 +98,11 @@ watch(() => [term, student], () => fetchRecord(), { immediate: true })
 
 <template>
     <div class="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
-        <div class="rounded-xl border-2 border-indigo-300 bg-indigo-50  dark:border-indigo-800 dark:bg-indigo-950 p-4">
+        <div class="rounded-xl border-2 border-primary-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 p-4">
             <p class="text-[11px] uppercase text-muted">
                 Total Days
             </p>
-            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-indigo-200 dark:bg-indigo-800" />
+            <USkeleton v-if="loading" class="mt-1 h-8 w-16 bg-primary-200 dark:bg-primary-800" />
             <h2 v-else class="mt-1 text-2xl font-bold">
                 {{ report.total }}
             </h2>

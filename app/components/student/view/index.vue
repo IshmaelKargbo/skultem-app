@@ -11,7 +11,7 @@
 
         <div class="flex flex-col lg:flex-row gap-5">
             <div class="lg:w-1/3">
-                <UCard class="sticky top-0">
+                <UCard class="sticky top-10">
                     <div class="flex flex-col items-center">
                         <!-- Avatar -->
                         <div
@@ -23,7 +23,7 @@
                                     class="w-full rounded-lg object-cover h-72" />
                             </div>
 
-                            <div class="flex justify-between items-center gap-1 mt-3 w-full text-center">
+                            <div class="flex justify-between items-center gap-1 mt-3  xl:mt-5 w-full text-center">
                                 <USkeleton v-if="loading"
                                     class="h-5 w-40 bg-gray-200 dark:bg-gray-800" />
                                 <h2 v-else class="text-base font-semibold">
@@ -40,25 +40,25 @@
 
                         <!-- Info List -->
                         <div class="w-full mt-2 space-y-2">
-                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                            <div class="flex items-center justify-between bg-gray-100 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Admission</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ record?.admissionNumber }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                            <div class="flex items-center justify-between bg-gray-100 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Gender</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ clean(record?.gender || '') }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                            <div class="flex items-center justify-between bg-gray-100 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Nationality</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ clean(record?.nationality || '') }}</p>
                             </div>
 
-                            <div class="flex items-center justify-between bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                            <div class="flex items-center justify-between bg-gray-100 dark:bg-neutral-800 rounded-lg p-3">
                                 <p class="text-sm text-muted">Religion</p>
                                 <USkeleton v-if="loading" class="w-28 h-3" />
                                 <p class="font-medium" v-else>{{ clean(record?.religion || '') }}</p>

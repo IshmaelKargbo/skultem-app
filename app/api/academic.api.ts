@@ -40,6 +40,19 @@ export const AcademicYearApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    getTerms: async () => {
+      try {
+        const res = await $api(`/academic-year/terms`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch academic year terms')
+
+        return res.data
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

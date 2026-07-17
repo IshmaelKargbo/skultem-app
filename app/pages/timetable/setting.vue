@@ -1,9 +1,6 @@
 <template>
-  <div class="p-4 space-y-6">
-    <UCard>
-      <Heading title="Timetable Setting" subtitle="Manage timetable settings for grades and sections" />
-    </UCard>
-
+  <div class="p-4 space-y-4">
+    <Heading title="Timetable Setting" subtitle="Manage timetable settings for grades and sections" />
     <div class="grid gap-6 md:grid-cols-2">
       <!-- School Timing -->
       <TimetableTiming />
@@ -19,6 +16,6 @@
 
 <script setup lang="ts">
 onMounted(() => {
-    document.title = 'Setting| Timetable | Skultem'
+  document.title = 'Setting| Timetable | Skultem'
 })
 </script>

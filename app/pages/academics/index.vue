@@ -1,10 +1,11 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
-        <UCard>
+    <div class="p-4 space-y-4">
             <Heading title="Academic Year" subtitle="Configured academic sessions">
-                <AcademicsAdd />
+                <div class="flex space-x-2">
+                    <UInput placeholder="Search by name. . ." />
+                    <AcademicsAdd />
+                </div>
             </Heading>
-        </UCard>
         <AcademicsTable />
     </div>
 </template>

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-const route = useRoute()
-const router = useRouter()
 const classStore = useClassSessionStore()
 const studentStore = useStudentStore()
 

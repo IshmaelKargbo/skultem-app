@@ -24,7 +24,7 @@
             <!-- Fee Items -->
             <div v-if="loading" class="space-y-3">
                 <div v-for="i in 5" :key="i"
-                    class="rounded-xl border-2  dark:border-gray-700 dark:bg-gray-950 border-gray-100 bg-white p-4">
+                    class="rounded-xl border-2  dark:border-gray-700 dark:bg-gray-950 border-gray-100 bg-gray-100 p-4">
                     <div class="flex items-start justify-between">
                         <div class="space-y-2">
                             <USkeleton class="h-5 w-40" />
@@ -60,7 +60,7 @@
 
             <div v-else-if="fees.length" class="space-y-3">
                 <div v-for="fee in fees" :key="fee.id"
-                    class="rounded-xl border-2 border-gray-100  dark:border-gray-800 dark:bg-gray-950 bg-white p-4">
+                    class="rounded-xl border-2 border-gray-100  dark:border-gray-800 dark:bg-gray-950 bg-gray-100 p-4">
                     <div class="flex items-start justify-between">
                         <div>
                             <h4 class="font-semibold">
@@ -72,7 +72,7 @@
                             </p>
                         </div>
 
-                        <UBadge :color="fee.status === 'Paid'
+                        <UBadge :color="fee.status === 'Paid' 
                             ? 'success'
                             : fee.status === 'Partial'
                                 ? 'warning'
@@ -82,7 +82,7 @@
                     </div>
 
                     <div class="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Amount
                             </p>
@@ -92,7 +92,7 @@
                             </p>
                         </div>
 
-                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Paid
                             </p>
@@ -102,7 +102,7 @@
                             </p>
                         </div>
 
-                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Balance
                             </p>
@@ -112,7 +112,7 @@
                             </p>
                         </div>
 
-                        <div class="space-y-2 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Term
                             </p>

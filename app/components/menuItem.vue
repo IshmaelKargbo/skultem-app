@@ -77,11 +77,16 @@ const open = ref(false)
 const isActive = computed(() => {
   if (props.subNavs && props.subNavs.length) {
     return props.subNavs.some(nav =>
-      nav.exact ? route.path === nav.to : route.path.startsWith(nav.to)
+      nav.exact
+        ? route.path === nav.to
+        : route.path.startsWith(nav.to)
     )
   }
+
   if (!props.to) return false
-  return props.exact ? route.path === props.to : route.path.startsWith(props.to)
+
+  // Parent navigation should include child routes
+  return route.path === props.to || route.path.startsWith(`${props.to}/`)
 })
 
 // Subnav active check: uses nav.exact if provided

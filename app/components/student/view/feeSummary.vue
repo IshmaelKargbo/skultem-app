@@ -60,7 +60,7 @@ watch(() => record.value, () => fetchRecord(), { immediate: true })
 
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="border-2 border-info-300 bg-indigo-50  dark:border-indigo-800 dark:bg-indigo-950 rounded-xl p-4">
+        <div class="border-2 border-info-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 rounded-xl p-4">
             <p class="text-[11px] uppercase text-muted">
                 Total Fees
             </p>

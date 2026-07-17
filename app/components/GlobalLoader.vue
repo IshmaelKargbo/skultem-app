@@ -15,10 +15,10 @@
                     </div>
 
                     <!-- Text -->
-                    <div class="loader-text">
+                    <!-- <div class="loader-text">
                         <p class="loader-title">{{ title }}</p>
                         <p class="loader-sub">{{ subtitle }}</p>
-                    </div>
+                    </div> -->
 
                     <!-- Pencil writing -->
                     <div class="writing-wrap">

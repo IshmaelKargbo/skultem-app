@@ -31,19 +31,10 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: merged })
 }
 
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
-
 async function click(row: AttendanceHistory) {
   updateQuery({
     date: row.date,
     class: row.classId
-  })
-
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
   })
 }
 </script>

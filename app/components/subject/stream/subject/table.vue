@@ -3,7 +3,6 @@ const route = useRoute()
 const router = useRouter()
 const store = useStreamSubjectStore()
 const { records: data, meta, loading } = storeToRefs(store)
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
   {
@@ -17,10 +16,6 @@ const columns = [
   {
     accessorKey: 'groupName',
     header: 'Group'
-  },
-  {
-    accessorKey: 'mandatory',
-    header: 'Mandatory'
   }
 ]
 
@@ -54,16 +49,9 @@ function updateQuery(newQuery: Record<string, any>) {
 }
 
 watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
   router.replace({
     query: {
-      page: page.value,
-      size: size.value
+      page: page.value
     }
   })
 

@@ -1,7 +1,8 @@
 <template>
     <u-slideover :dismissible="false" title="Add Section" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
-        <UButton color="primary" label="Add Section" :icon="ADD_ICON" @click="open = true" />
+        <UButton color="primary" label="Add Section" class="hidden md:flex" :icon="ADD_ICON" @click="open = true" />
+        <UButton color="primary" class="md:hidden" :icon="ADD_ICON" @click="open = true" />
 
         <!-- Header -->
         <template #header>

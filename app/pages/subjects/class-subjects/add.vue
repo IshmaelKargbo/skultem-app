@@ -1,16 +1,12 @@
 <template>
-    <UForm class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3" :state="state"
-        :schema="schema" @submit="onSubmit">
+    <UForm class="p-4 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
         <!-- Header -->
-        <UCard>
-            <Heading title="Assign Subjects to Class"
-                subtitle="Define the curriculum structure for this class.">
-                <UFormField class="min-w-sm" name="classId">
-                    <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
-                        @change="fetchRecord" :items="classes" placeholder="Choose a class" />
-                </UFormField>
-            </Heading>
-        </UCard>
+        <Heading title="Assign Subjects to Class" subtitle="Define the curriculum structure for this class.">
+            <UFormField class="min-w-sm" name="classId">
+                <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
+                    @change="fetchRecord" :items="classes" placeholder="Choose a class" />
+            </UFormField>
+        </Heading>
         <!-- Assignments card (shown only when a class is selected) -->
         <UCard v-if="state.classId" :ui="{
             body: 'sm:p-0'

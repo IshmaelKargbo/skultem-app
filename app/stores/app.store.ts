@@ -22,6 +22,14 @@ export const useAppStore = defineStore('app', {
         throw err.data?.message || 'Failed to fetch tenant'
       }
     },
+    async fetchCycleOverview() {
+      try {
+        const response = await AssessmentApi().getCycleOverview() as AssessmentCycleOverview
+        return response
+      } catch (err: any) {
+        throw err.data?.message || 'Failed to fetch assessment cycle overview'
+      }
+    },
     async openNotifications() {
       try {
         const response = await UserApi().openNotifications() as any

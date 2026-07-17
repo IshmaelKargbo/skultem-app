@@ -77,7 +77,7 @@
           <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10">
             <UIcon name="i-lucide-calendar-clock" class="size-6 text-orange-500" />
           </div>
-          <div>/id-cards/templates
+          <div>
             <p class="text-2xl font-bold leading-tight">{{ template.validityYears }}yr</p>
             <p class="text-sm text-muted">Validity period</p>
           </div>

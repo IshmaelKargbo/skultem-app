@@ -1,11 +1,13 @@
 <template>
     <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-4 pb-0 space-y-3">
-        <UCard>
-            <Heading title="Stream Subject Management" subtitle="Manage stream subjects">
-                <UButton to="/subjects/stream-subjects/add" color="primary" label="Assign Stream Subject"
-                    :icon="ASSIGN_ICON" />
-            </Heading>
-        </UCard>
+        <Heading title="Stream Subject Management" subtitle="Manage stream subjects">
+            <div class="flex items-center space-x-2">
+                <UInput placeholder="Search by stream. . ." />
+                <UButton to="/subjects/stream-subjects/add" class="md:flex hidden" color="primary"
+                    label="Assign Stream Subject" :icon="ASSIGN_ICON" />
+                <UButton to="/subjects/stream-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
+            </div>
+        </Heading>
         <SubjectStreamSubjectTable />
     </div>
 </template>

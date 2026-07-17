@@ -26,7 +26,7 @@
             <!-- Summary -->
             <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-                <div class="rounded-xl border border-default p-5">
+                <div class="rounded-xl border-2 border-primary-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 p-5">
                     <p class="text-xs uppercase text-muted">
                         Subjects
                     </p>
@@ -38,7 +38,7 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border border-success/20 bg-success/5 p-5">
+                <div class="rounded-xl border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 p-5">
                     <p class="text-xs uppercase text-muted">
                         Passed
                     </p>
@@ -50,7 +50,7 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border border-warning/20 bg-warning/5 p-5">
+                <div class="rounded-xl border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 p-5">
                     <p class="text-xs uppercase text-muted">
                         Average
                     </p>
@@ -62,7 +62,7 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border border-error/20 bg-error/5 p-5">
+                <div class="rounded-xl border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 p-5">
                     <p class="text-xs uppercase text-muted">
                         Failed
                     </p>
@@ -98,7 +98,7 @@
 
                 <!-- Results -->
                 <div v-else-if="grades.length > 0" v-for="subject in grades" :key="subject.id"
-                    class="rounded-xl border border-default p-6 transition hover:border-primary/40">
+                    class="rounded-xl border border-default p-6 bg-gray-100 transition hover:border-primary/40">
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="text-lg font-semibold">
@@ -128,7 +128,7 @@
 
                     <div class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
 
-                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Score
                             </p>
@@ -138,7 +138,7 @@
                             </p>
                         </div>
 
-                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Weight ({{ subject.weight }})
                             </p>
@@ -148,7 +148,7 @@
                             </p>
                         </div>
 
-                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Term
                             </p>
@@ -158,7 +158,7 @@
                             </p>
                         </div>
 
-                        <div class="space-y-1 bg-gray-50 dark:bg-neutral-800 rounded-lg p-3">
+                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">
                                 Teacher
                             </p>

@@ -25,7 +25,7 @@
             <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-user-round" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -39,7 +39,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-user" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -53,7 +53,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-calendar-days" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -67,7 +67,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-users" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -81,7 +81,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-map-pinned" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -95,7 +95,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-house" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -129,7 +129,7 @@
             <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-user-round-check" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -144,7 +144,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-users-round" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -158,7 +158,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-phone" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -172,7 +172,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-mail" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -186,7 +186,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-map-pinned" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
@@ -200,7 +200,7 @@
                 </div>
 
                 <div
-                    class="rounded-2xl border border-default bg-gray-50 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
                     <div class="flex items-center gap-2 text-muted">
                         <UIcon name="i-lucide-house" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">

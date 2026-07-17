@@ -1,34 +1,13 @@
 <template>
-  <div class="space-y-6 mt-6 md:px-5">
-
-    <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">
-          Scheme of Work
-        </h1>
-
-        <p class="mt-1 text-sm text-muted">
-          Manage subjects, weekly topics, lesson plans, and curriculum coverage.
-        </p>
-      </div>
-
-      <div class="flex gap-3">
-        <UButton
-          icon="i-lucide-book-plus"
-          label="Create Scheme"
-          to="/curriculums/scheme-of-work/add"
-        />
-      </div>
-    </div>
-
+  <div class="space-y-5 p-4">
+    <Heading title="Scheme of Work" subtitle="Manage subjects, weekly topics, lesson plans, and curriculum coverage.">
+      <UButton icon="i-lucide-book-plus" label="Create Scheme" to="/curriculums/add" />
+    </Heading>
     <!-- Statistics -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
       <UCard v-for="stat in stats" :key="stat.label">
         <div class="flex items-center gap-4">
-          <div class="flex size-12 items-center justify-center rounded-2xl"
-            :class="stat.bg">
+          <div class="flex size-12 items-center justify-center rounded-2xl" :class="stat.bg">
             <UIcon :name="stat.icon" class="size-6" :class="stat.color" />
           </div>
 
@@ -50,79 +29,7 @@
     <div class="grid gap-6 xl:grid-cols-3">
 
       <!-- Recent Schemes -->
-      <div class="xl:col-span-2">
-        <UCard :ui="{ body: 'space-y-3' }">
-
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="font-semibold">
-                  Recent Schemes
-                </h3>
-
-                <p class="text-sm text-muted">
-                  Recently created schemes of work.
-                </p>
-              </div>
-
-              <UButton
-                variant="ghost"
-                color="neutral"
-                label="View All"
-                trailing-icon="i-lucide-arrow-right"
-                to="/scheme-of-work/list"
-              />
-            </div>
-          </template>
-
-          <NuxtLink
-            v-for="scheme in recentSchemes"
-            :key="scheme.title"
-            :to="scheme.to"
-            class="flex items-center justify-between gap-4 rounded-xl border border-default p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
-          >
-            <div class="flex items-center gap-3">
-              <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted">
-                <UIcon name="i-lucide-book-open" class="size-5" />
-              </div>
-
-              <div>
-                <h4 class="font-medium">
-                  {{ scheme.title }}
-                </h4>
-
-                <p class="mt-0.5 text-sm text-muted">
-                  {{ scheme.term }} • {{ scheme.year }}
-                </p>
-              </div>
-            </div>
-
-            <UBadge
-              :color="scheme.status === 'Active' ? 'success' : 'warning'"
-              variant="subtle"
-            >
-              {{ scheme.status }}
-            </UBadge>
-          </NuxtLink>
-
-          <div v-if="!recentSchemes.length" class="flex flex-col items-center gap-3 py-10 text-center">
-            <div class="flex size-12 items-center justify-center rounded-2xl bg-muted/40 text-muted">
-              <UIcon name="i-lucide-book-open" class="size-6" />
-            </div>
-
-            <div>
-              <h4 class="font-semibold">
-                No schemes yet
-              </h4>
-
-              <p class="mt-1 text-sm text-muted">
-                Create your first scheme of work to get started.
-              </p>
-            </div>
-          </div>
-
-        </UCard>
-      </div>
+      <CurriculumSchemeOfWorkSchemes />
 
       <!-- Quick Actions -->
       <div>
@@ -140,17 +47,8 @@
             </div>
           </template>
 
-          <UButton
-            v-for="action in quickActions"
-            :key="action.label"
-            block
-            variant="soft"
-            :color="action.color"
-            :icon="action.icon"
-            :label="action.label"
-            :to="action.to"
-            class="justify-start"
-          />
+          <UButton v-for="action in quickActions" :key="action.label" block variant="soft" :color="action.color"
+            :icon="action.icon" :label="action.label" :to="action.to" class="justify-start" />
 
         </UCard>
       </div>
@@ -187,9 +85,8 @@
 </template>
 
 <script setup lang="ts">
-onMounted(() => {
-  useAppStore().setTitle('Scheme of Work')
 
+onMounted(async () => {
   document.title = 'Scheme of Work | Skultem'
 })
 
