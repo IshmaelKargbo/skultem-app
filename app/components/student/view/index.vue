@@ -8,19 +8,8 @@
                 <UButton
                     to="/students"
                     variant="outline"
-                    size="sm"
                     color="primary"
                     label="All Students"
-                />
-
-                <UButton
-                    v-if="record && !loading"
-                    :to="`/students/${record.id}/edit`"
-                    size="sm"
-                    variant="outline"
-                    color="secondary"
-                    :icon="EDIT_ICON"
-                    label="Edit"
                 />
             </div>
         </Heading>
