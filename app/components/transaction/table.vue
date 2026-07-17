@@ -273,7 +273,7 @@ onMounted(async () => {
       </template>
 
       <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+      <div class="flex flex-col items-center gap-3 pt-2">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />

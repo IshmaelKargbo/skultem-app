@@ -18,7 +18,14 @@ export const useReportStore = defineStore('report', {
     report: null as ReportSelectFilterPayload | null,
     loading: false,
     entity: "",
-    meta: undefined as Meta | undefined,
+    meta: {
+      size: 0,
+      page: 0,
+      total: 0,
+      showingFrom: 0,
+      showingTo: 0,
+      totalPages: 0
+    } as Meta,
     error: null as string | null,
     run: false
   }),
@@ -87,7 +94,14 @@ export const useReportStore = defineStore('report', {
       this.students = []
       this.classes = []
       this.report = null
-      this.meta = undefined
+      this.meta = {
+        size: 0,
+        page: 0,
+        total: 0,
+        showingFrom: 0,
+        showingTo: 0,
+        totalPages: 0
+      }
     },
     async fetchAll(page: number = 1, size: number = 6) {
       this.loading = true
