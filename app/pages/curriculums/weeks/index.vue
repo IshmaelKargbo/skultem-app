@@ -1,35 +1,10 @@
 <template>
-  <div class="space-y-6 mt-6 md:px-5">
-
-    <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">
-          Weekly Topics & Objectives
-        </h1>
-
-        <p class="text-sm text-muted mt-1">
-          Manage weekly curriculum coverage and lesson objectives.
-        </p>
-      </div>
-
+  <div class="space-y-4 p-4">
+    <Heading title="Weekly Topics & Objectives" subtitle="Manage weekly curriculum coverage and lesson objectives.">
       <div class="flex flex-wrap gap-3">
-        <UButton
-          icon="i-lucide-plus"
-          label="Add Week"
-          to="/curriculums/weeks/add"
-        />
-
-        <UButton
-          icon="i-lucide-file-down"
-          variant="outline"
-          color="neutral"
-          label="Export PDF"
-        />
+        <UButton icon="i-lucide-plus" label="Add Week" to="/curriculums/weeks/add" />
       </div>
-    </div>
-
-
+    </Heading>
     <!-- Statistics -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
@@ -46,10 +21,7 @@
           </div>
 
           <div class="rounded-xl bg-primary/10 p-3">
-            <UIcon
-              name="i-lucide-calendar-days"
-              class="text-primary text-xl"
-            />
+            <UIcon name="i-lucide-calendar-days" class="text-primary text-xl" />
           </div>
         </div>
       </UCard>
@@ -68,10 +40,7 @@
           </div>
 
           <div class="rounded-xl bg-green-500/10 p-3">
-            <UIcon
-              name="i-lucide-check-circle"
-              class="text-green-500 text-xl"
-            />
+            <UIcon name="i-lucide-check-circle" class="text-green-500 text-xl" />
           </div>
         </div>
       </UCard>
@@ -90,10 +59,7 @@
           </div>
 
           <div class="rounded-xl bg-orange-500/10 p-3">
-            <UIcon
-              name="i-lucide-clock"
-              class="text-orange-500 text-xl"
-            />
+            <UIcon name="i-lucide-clock" class="text-orange-500 text-xl" />
           </div>
         </div>
       </UCard>
@@ -112,10 +78,7 @@
           </div>
 
           <div class="rounded-xl bg-primary/10 p-3">
-            <UIcon
-              name="i-lucide-chart-column"
-              class="text-primary text-xl"
-            />
+            <UIcon name="i-lucide-chart-column" class="text-primary text-xl" />
           </div>
         </div>
       </UCard>
@@ -126,48 +89,21 @@
     <!-- Filters -->
     <UCard>
       <div class="grid gap-4 md:grid-cols-4">
+        <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search topic..." />
+        <USelectMenu v-model="selectedSubject" :items="subjects" value-key="value" placeholder="Subject" />
 
-        <UInput
-          v-model="search"
-          icon="i-lucide-search"
-          placeholder="Search topic..."
-        />
+        <USelectMenu v-model="selectedClass" :items="classes" value-key="value" placeholder="Class" />
 
-        <USelectMenu
-          v-model="selectedSubject"
-          :items="subjects"
-          value-key="value"
-          placeholder="Subject"
-        />
-
-        <USelectMenu
-          v-model="selectedClass"
-          :items="classes"
-          value-key="value"
-          placeholder="Class"
-        />
-
-        <USelectMenu
-          v-model="selectedStatus"
-          :items="statuses"
-          value-key="value"
-          placeholder="Status"
-        />
+        <USelectMenu v-model="selectedStatus" :items="statuses" value-key="value" placeholder="Status" />
 
       </div>
     </UCard>
 
 
     <!-- Weeks -->
-    <div
-      v-if="filteredWeeks.length"
-      class="grid gap-5"
-    >
+    <div v-if="records.length > 0" class="grid gap-5">
 
-      <UCard
-        v-for="week in filteredWeeks"
-        :key="week.id"
-      >
+      <UCard v-for="week in records" :key="week.id">
 
         <template #header>
 
@@ -183,10 +119,7 @@
               </p>
             </div>
 
-            <UBadge
-              :color="getStatusColor(week.status)"
-              :label="week.statusLabel"
-            />
+            <UBadge variant="outline" :color="getStatusColor(week.state)" :label="clean(week.state)" />
 
           </div>
 
@@ -194,25 +127,19 @@
 
 
         <div class="space-y-5">
-
+          <p class="bg-gray-50 p-3 border-2 rounded-xl border-dashed border-gray-200 dark:border-gray-900">{{
+            week.subTopic }}
+          </p>
           <!-- Objectives -->
           <div>
-
             <p class="font-medium mb-3">
               Learning Objectives
             </p>
 
             <div class="space-y-2">
 
-              <div
-                v-for="objective in week.objectives"
-                :key="objective"
-                class="flex gap-2 text-sm text-muted"
-              >
-                <UIcon
-                  name="i-lucide-check"
-                  class="text-primary mt-0.5"
-                />
+              <div v-for="objective in week.objectives" :key="objective" class="flex gap-2 text-sm text-muted">
+                <UIcon name="i-lucide-check" class="text-primary mt-0.5" />
 
                 {{ objective }}
               </div>
@@ -220,44 +147,6 @@
             </div>
 
           </div>
-
-
-          <!-- Activities -->
-          <div>
-
-            <p class="font-medium mb-3">
-              Teaching Activities
-            </p>
-
-            <div class="flex flex-wrap gap-2">
-
-              <UBadge
-                v-for="activity in week.activities"
-                :key="activity"
-                variant="soft"
-                :label="activity"
-              />
-
-            </div>
-
-          </div>
-
-
-          <!-- Assessment -->
-          <div>
-
-            <p class="font-medium mb-2">
-              Assessment
-            </p>
-
-            <UBadge
-              variant="soft"
-              color="warning"
-              :label="week.assessment"
-            />
-
-          </div>
-
         </div>
 
 
@@ -265,48 +154,24 @@
 
           <div class="flex flex-wrap gap-3">
 
-            <UButton
-              size="sm"
-              icon="i-lucide-eye"
-              label="View"
-              :to="`/curriculums/weeks/${week.id}`"
-            />
+            <UButton size="sm" icon="i-lucide-eye" label="View" :to="`/curriculums/weeks/${week.id}`" />
 
-            <UButton
-              size="sm"
-              variant="outline"
-              icon="i-lucide-pencil"
-              label="Edit"
-            />
+            <UButton size="sm" variant="outline" icon="i-lucide-pencil" label="Edit" />
 
-            <UButton
-              size="sm"
-              variant="outline"
-              color="error"
-              icon="i-lucide-trash"
-              label="Delete"
-            />
+            <UButton size="sm" variant="outline" color="error" icon="i-lucide-trash" label="Delete" />
 
           </div>
 
         </template>
-
       </UCard>
-
     </div>
 
 
     <!-- Empty -->
-    <UCard
-      v-else
-      class="py-20"
-    >
+    <UCard v-else class="py-20">
       <div class="text-center">
 
-        <UIcon
-          name="i-lucide-book-open"
-          class="text-6xl text-muted mx-auto"
-        />
+        <UIcon name="i-lucide-book-open" class="text-6xl text-muted mx-auto" />
 
         <h3 class="mt-4 text-lg font-semibold">
           No weeks found
@@ -322,7 +187,8 @@
   </div>
 </template>
 <script setup lang="ts">
-
+const store = useWeekStore()
+const { records } = storeToRefs(store)
 const search = ref('')
 const selectedSubject = ref('')
 const selectedClass = ref('')
@@ -470,7 +336,7 @@ onMounted(() => {
 
   document.title =
     'Weeks | Scheme of Work | Skultem'
-
+  store.getWeeks()
 })
 
 

@@ -72,7 +72,6 @@
         </template>
 
       </UCard>
-
     </div>
 
 

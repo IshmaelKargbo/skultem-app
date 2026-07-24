@@ -9,27 +9,19 @@
                 <UAvatar size="md" :src="student.photo || '/avatar-placeholder.svg'"
                     :alt="`${student.givenNames} ${student.familyName}`"
                     class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
-                <div class="min-w-0">
+                <div class="min-w-0 space-y-0.5">
                     <p class="font-semibold truncate">
                         {{ student.givenNames }} {{ student.familyName }}
                     </p>
                     <p class="text-[11px] text-muted truncate">{{ student.admissionNumber || 'No Admission No' }}</p>
                 </div>
             </div>
-            <div>
-                <StudentEnrollment class="mb-1" :id="student.id">
-                    <template #default="{ value }">
-                        <p class="text-xs">
-                            {{ parseClass(value) }}
-                        </p>
-                    </template>
-                </StudentEnrollment>
-                <UBadge :color="outstanding == 0 ? 'success' : 'error'" variant="outline"
-                    :label="format(outstanding)" />
+            <div class="space-y-0.5">
+                <p class="text-xs text-end text-muted">{{ student.className }}</p>
+                <UBadge size="sm" :color="student.feeDetail.balance == 0 ? 'success' : 'error'" variant="outline"
+                    :label="format(student.feeDetail.balance)" />
             </div>
-
         </div>
-
     </div>
 </template>
 
@@ -38,25 +30,5 @@ const { student } = defineProps<{
     student: Student,
     active?: boolean
 }>()
-const store = useStudentStore()
 const { format } = useMoney()
-const outstanding = ref(0)
-
-async function fetchData() {
-    if (!student?.id) return
-
-    outstanding.value = 0
-
-    const res = await store.getAllStudentFeesById(
-        student.id
-    )
-
-    if (res) {
-        (res.records as StudentFee[]).map((e) => {
-            outstanding.value += e.outstanding
-        })
-    }
-}
-
-watch(() => student.id, () => fetchData(), { immediate: true })
 </script>

@@ -1,8 +1,9 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
-        <Heading class="hidden md:flex" title="Student Fees Management" subtitle="Manage student-specific fees and balances">
+    <div class="p-4 space-y-4">
+        <Heading class="hidden md:flex" title="Student Fees Management"
+            subtitle="Manage student-specific fees and balances">
             <div>
-                <FeeStructureAdd  v-if="can([Role.ACCOUNTANT, Role.OWNER])"/>
+                <FeeStructureAdd v-if="can([Role.ACCOUNTANT, Role.OWNER])" />
             </div>
         </Heading>
 
@@ -20,35 +21,39 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 rounded-2xl bg-gray-100 p-1 dark:bg-gray-800">
-                <button class="rounded-xl py-2 text-sm font-medium transition"
-                    :class="mobileView === 'students'
-                        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
-                        : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'students'">
+                <button class="rounded-xl py-2 text-sm font-medium transition" :class="mobileView === 'students'
+                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'students'">
                     Students
                 </button>
-                <button class="rounded-xl py-2 text-sm font-medium transition"
-                    :class="mobileView === 'details'
-                        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
-                        : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'details'">
+                <button class="rounded-xl py-2 text-sm font-medium transition" :class="mobileView === 'details'
+                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'details'">
                     Details
                 </button>
             </div>
         </div>
 
-        <div class="grid gap-5 lg:grid-cols-12 grid-cols-1">
+        <div class="grid gap-5 lg:grid-cols-12">
             <div class="lg:col-span-4" :class="mobileView === 'details' ? 'hidden md:block' : ''">
-                <FeeStudentList @select="select" />
+                <div class="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
+                    <FeeStudentList @select="select" />
+                </div>
             </div>
+
+            <!-- Right Panel -->
             <div class="lg:col-span-8" :class="mobileView === 'students' ? 'hidden md:block' : ''">
                 <div v-if="mobileView === 'details'" class="mb-3 flex items-center justify-between md:hidden">
                     <UButton icon="lucide:chevron-left" color="neutral" variant="ghost" size="sm"
                         @click="mobileView = 'students'">
                         Students
                     </UButton>
+
                     <p class="max-w-[65%] truncate text-xs text-gray-500 dark:text-gray-400">
-                        {{ selectedStudent ? `${selectedStudent.givenNames} ${selectedStudent.familyName}` : 'No student selected' }}
+                        {{ selectedStudent ? `${selectedStudent.givenNames} ${selectedStudent.familyName}` : NO_STUDENT }}
                     </p>
                 </div>
+
                 <FeeStudentRecord :student="selectedStudent" />
             </div>
         </div>
@@ -58,6 +63,7 @@
 <script setup lang="ts">
 const selectedStudent = ref<Student>()
 const mobileView = ref<'students' | 'details'>('students')
+const NO_STUDENT = 'No student selected'
 const { can } = useAuth()
 function select(row: Student) {
     if (row == null) return;

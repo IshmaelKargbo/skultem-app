@@ -24,9 +24,21 @@ export const CurriculumsApi = () => {
         useHandleError(err)
       }
     },
-    getWeeks: async (id: string) => {
+    getWeeksBySchema: async (id: string) => {
       try {
         const res = await $api(`/curriculum/scheme/weeks/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch scheme weeks')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getWeeks: async () => {
+      try {
+        const res = await $api('/curriculum/session/scheme/weeks') as any
 
         if (!res)
           throw new Error('Failed to fetch scheme weeks')
