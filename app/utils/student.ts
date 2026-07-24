@@ -48,6 +48,7 @@ export type ActiveCycle = {
 }
 
 export type StudentFee = {
+    id: string
     feeId: string
     feeName: string
     total: number

@@ -8,19 +8,7 @@
         </Heading>
 
         <div class="md:hidden space-y-3">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">
-                        Student Fees
-                    </h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        Manage balances and payments
-                    </p>
-                </div>
-                <FeeStructureAdd v-if="can([Role.ACCOUNTANT, Role.OWNER])" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 rounded-2xl bg-gray-100 p-1 dark:bg-gray-800">
+            <div class="grid grid-cols-2  gap-2 rounded-2xl bg-gray-50 border-2 border-gray-200 p-1 dark:bg-gray-800">
                 <button class="rounded-xl py-2 text-sm font-medium transition" :class="mobileView === 'students'
                     ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                     : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'students'">
@@ -35,10 +23,9 @@
         </div>
 
         <div class="grid gap-5 lg:grid-cols-12">
-            <div class="lg:col-span-4" :class="mobileView === 'details' ? 'hidden md:block' : ''">
-                <div class="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
-                    <FeeStudentList @select="select" />
-                </div>
+            <div class="lg:col-span-4 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)]"
+                :class="mobileView === 'details' ? 'hidden md:block' : ''">
+                <FeeStudentList @select="select" />
             </div>
 
             <!-- Right Panel -->
@@ -50,7 +37,8 @@
                     </UButton>
 
                     <p class="max-w-[65%] truncate text-xs text-gray-500 dark:text-gray-400">
-                        {{ selectedStudent ? `${selectedStudent.givenNames} ${selectedStudent.familyName}` : NO_STUDENT }}
+                        {{ selectedStudent ? `${selectedStudent.givenNames} ${selectedStudent.familyName}` : NO_STUDENT
+                        }}
                     </p>
                 </div>
 

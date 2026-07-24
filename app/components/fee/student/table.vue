@@ -60,17 +60,17 @@ const columns = [
   {
     accessorKey: 'total',
     header: 'Amount',
-    cell: ({ row }) => format(row.original.total)
+    cell: ({ row }: any) => format(row.original.total)
   },
   {
     accessorKey: 'paid',
     header: 'Paid',
-    cell: ({ row }) => format(row.original.paid)
+    cell: ({ row }: any) => format(row.original.paid)
   },
   {
     accessorKey: 'outstanding',
     header: 'Outstanding',
-    cell: ({ row }) => format(row.original.outstanding)
+    cell: ({ row }: any) => format(row.original.outstanding)
   },
   {
     accessorKey: 'discount',
@@ -170,7 +170,7 @@ const parseBatchStatusColor: Record<string, string> = {
       </UCard>
     </div>
 
-    <UTable :columns="columns" :data="records" :loading="loading">
+    <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
