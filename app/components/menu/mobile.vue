@@ -1,5 +1,5 @@
 <template>
-  <div class="px-5 pt-2" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));">
+  <div class="px-5 pt-2" style="padding-bottom: max(0.1rem, env(safe-area-inset-bottom));">
     <div class="rounded-4xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
       <ul
         class="grid gap-1.5"

@@ -1,7 +1,7 @@
 <template>
     <div class="px-4 pt-4">
         <UCard :ui="{
-            body: 'p-4 sm:p-3'
+            body: 'p-3 sm:p-3'
         }">
             <div class="flex items-center space-x-2">
                 <MenuDrawer class="lg:hidden block" />

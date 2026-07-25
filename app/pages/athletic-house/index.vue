@@ -1,8 +1,9 @@
 <template>
     <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Athletic House Management" subtitle="Manage and assignment student to houses">
-            <div class="w-1/3">
-                <USelectMenu :items="classes" value-key="value" v-model="selectedClass" placeholder="Select Class" />
+            <div>
+                <USelectMenu class="w-56" :items="classes" value-key="value" v-model="selectedClass"
+                    placeholder="Select Class" />
             </div>
         </Heading>
         <div class="flex space-x-4">
@@ -27,14 +28,15 @@
                         </div>
                     </template>
                     <div>
-                        <div v-for="item in houseStore.records" :key="`${item.id}-masters`" class="border-b py-3 last:pb-0 first:pt-0 border-gray-300 last:border-b-0">
+                        <div v-for="item in houseStore.records" :key="`${item.id}-masters`"
+                            class="border-b py-3 last:pb-0 first:pt-0 border-gray-300 last:border-b-0">
                             <div class="flex space-x-4 items-center">
                                 <div>
-                                    <div class="size-5 rounded border shadow-sm" :style="{ backgroundColor: item.color }" />
+                                    <div class="size-5 rounded border shadow-sm"
+                                        :style="{ backgroundColor: item.color }" />
                                 </div>
                                 <div>
-                                    <UBadge v-for="m in item.houseMasters" :key="m.id" color="neutral"
-                                        variant="soft">
+                                    <UBadge v-for="m in item.houseMasters" :key="m.id" color="neutral" variant="soft">
                                         {{ m.user?.givenNames }} {{ m.user?.familyName }}
                                     </UBadge>
                                 </div>
@@ -73,7 +75,8 @@
                         <template #givenNames-cell="{ row }">
                             <div class="flex space-x-4">
                                 <div>
-                                    <UAvatar :src="row.original.photo" />
+                                    <UAvatar :src="row.original.photo"
+                                        :alt="`${row.original.givenNames} ${row.original.familyName}`" />
                                 </div>
                                 <div>
                                     <p class="space-x-2"><span>{{ row.original.givenNames }}</span><span>{{
@@ -94,7 +97,6 @@
     </div>
 </template>
 <script setup lang="ts">
-const store = useHouseStore()
 const classStore = useClassStore()
 const houseStore = useHouseStore()
 const studentStore = useStudentStore()
@@ -104,7 +106,6 @@ const selectedClass = ref<string | undefined>()
 const classes = computed(() => classStore.records.map((e) => ({ label: e.name, value: e.id })))
 const houses = computed(() => houseStore.records.map((e) => ({ label: e.name, value: e.id })))
 
-const houseStats = ref([])
 const students = ref<Student[]>([])
 const loading = ref(false)
 
