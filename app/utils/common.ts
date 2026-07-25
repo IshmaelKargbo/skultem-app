@@ -1,4 +1,5 @@
 export const TITLE = "Skultem"
+export const DOT = "·"
 
 export type Meta = {
     size: number;

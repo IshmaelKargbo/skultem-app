@@ -1,9 +1,9 @@
 <template>
     <div class="px-4 pt-4">
         <UCard :ui="{
-            body: 'py-1'
+            body: 'p-4 sm:p-3'
         }">
-            <div class="flex items-center space-x-2 pt-1.5">
+            <div class="flex items-center space-x-2">
                 <MenuDrawer class="lg:hidden block" />
                 <p v-if="title" class="text-lg font-display font-semibold transition-colors pb-1"
                     :class="isDark ? 'text-gray-100' : 'text-gray-900'">
@@ -18,10 +18,7 @@
 
 <script setup lang="ts">
 const store = useAppStore()
-const { title, back } = storeToRefs(store)
-
-const router = useRouter()
-
+const { title } = storeToRefs(store)
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
 

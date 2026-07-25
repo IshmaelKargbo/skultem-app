@@ -79,8 +79,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="space-y-4 md:hidden">
-
+  <div class="space-y-4">
     <!-- Loading -->
     <template v-if="loading">
       <UCard :ui="{
