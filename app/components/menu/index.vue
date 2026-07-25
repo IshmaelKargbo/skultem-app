@@ -146,14 +146,14 @@ const navItems: NavItem[] = [
   //   ]
   // },
 
-  {
-    label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
-    subNavs: [
-      { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
-      { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
-      { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON },
-    ]
-  },
+  // {
+  //   label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+  //   subNavs: [
+  //     { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
+  //     { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
+  //     { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON },
+  //   ]
+  // },
 
   // kept as-is to match current behavior. Safe to delete if unintentional.
   { label: 'Grades', to: '/grades', icon: GRADES_ICON, roles: [Role.PARENT] },
