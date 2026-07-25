@@ -1,38 +1,33 @@
 <template>
     <div class="space-y-5 p-4">
         <Heading title="Class Timetables" subtitle="Manage weekly timetables for classes and sections">
-            <div class="flex items-center gap-3 w-72">
+            <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
-                    :loading="classLoading" />
+                    :loading="classLoading" class="w-full md:w-72" />
             </div>
         </Heading>
 
         <!-- Timetable -->
         <UCard v-if="session" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <UIcon name="i-lucide-calendar-days" class="size-5" />
+                    </div>
 
-                    <div class="flex items-center gap-3">
-                        <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                            <UIcon name="i-lucide-calendar-days" class="size-5" />
-                        </div>
+                    <div class="min-w-0">
+                        <h2 class="truncate font-semibold text-base">
+                            {{ session?.className }}
+                        </h2>
 
-                        <div>
-                            <h2 class="font-semibold text-base">
-                                {{ session?.className }}
-                            </h2>
-
-                            <p class="text-sm text-muted">
-                                {{ periods.length }} periods · {{ store.getDayRange }}
-                            </p>
-                        </div>
+                        <p class="text-sm text-muted">
+                            {{ periods.length }} periods · {{ store.getDayRange }}
+                        </p>
                     </div>
                 </div>
             </template>
 
-            <div class="overflow-x-auto">
-                <TimetablePeriod />
-            </div>
+            <TimetablePeriod />
         </UCard>
         <UCard v-else>
             <div class="flex flex-col items-center justify-center py-20 text-center">
@@ -58,10 +53,18 @@ const teacherStore = useTeacherSubjectStore()
 const { periods } = storeToRefs(store)
 
 const { list, loading: classLoading } = storeToRefs(parentStore)
-const grade = ref()
+const grade = ref('')
 
 const session = computed(() => teacherStore.getClass(grade.value))
 
+function syncGrade(items: { value: string }[]) {
+    if (!items.length) return
+
+    const exists = items.some(item => item.value === grade.value)
+    if (!exists) {
+        grade.value = items[0].value
+    }
+}
 
 watch(() => grade.value, async (value: string) => {
     if (value) {
@@ -70,9 +73,7 @@ watch(() => grade.value, async (value: string) => {
 }, { immediate: true })
 
 
-watch(() => list.value, () => {
-    grade.value = list.value[0]?.value || ''
-})
+watch(list, syncGrade, { immediate: true })
 
 onMounted(async () => {
     document.title = 'Timetable | Skultem'

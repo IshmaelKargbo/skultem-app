@@ -1,139 +1,143 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-import type { Row } from '@tanstack/vue-table'
+import type { TableColumn } from "@nuxt/ui";
+import type { Row } from "@tanstack/vue-table";
 
-const route = useRoute()
-const router = useRouter()
-const store = useBehaviourCategoryStore()
-const loading = ref(true)
-const { records: data, meta } = storeToRefs(store)
-const editRcord = ref<Holiday | null>(null)
-const editState = ref(false)
+const route = useRoute();
+const router = useRouter();
+const store = useBehaviourCategoryStore();
+const loading = ref(true);
+const { records: data, meta } = storeToRefs(store);
+const editRcord = ref<Holiday | null>(null);
+const editState = ref(false);
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
+const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
+const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
 const columns = [
   {
-    accessorKey: 'name',
-    header: 'Name'
+    accessorKey: "name",
+    header: "Name",
   },
   {
-    accessorKey: 'description',
-    header: 'Description'
+    accessorKey: "description",
+    header: "Description",
   },
   {
-    id: 'actions',
+    id: "actions",
     meta: {
       class: {
-        td: 'text-right'
-      }
+        td: "text-right",
+      },
     },
     cell: ({ row }) => {
       return h(
         UDropdownMenu,
         {
           content: {
-            align: 'end'
+            align: "end",
           },
-          size: 'sm',
+          size: "sm",
           items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
+          "aria-label": "Actions dropdown",
         },
         () =>
           h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
+            icon: "i-lucide-ellipsis-vertical",
+            color: "neutral",
+            size: "sm",
+            variant: "ghost",
+            "aria-label": "Actions dropdown",
           })
-      )
-    }
-  }
-]
+      );
+    },
+  },
+];
 
 function getRowItems(row: Row<Holiday>) {
   return [
     {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
+      label: "Edit Record",
+      icon: "i-lucide-edit",
       onClick: () => {
         editState.value = true;
         editRcord.value = row.original;
-      }
+      },
     },
     {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
+      label: "Delete Record",
+      icon: "i-lucide-trash",
+    },
+  ];
 }
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
+  set: (val) => updateQuery({ page: val }),
+});
 
 const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val })
-})
+  set: (val) => updateQuery({ size: val }),
+});
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+  const merged = { ...route.query, ...newQuery };
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
+  if (merged.page === route.query.page && merged.size === route.query.size) {
+    return;
   }
 
-  router.replace({ query: merged })
+  router.replace({ query: merged });
 }
 
 async function fetchRecord() {
-  loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
+  loading.value = true;
+  await store.fetchAll(page.value, size.value);
+  loading.value = false;
 }
 
-watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
-  router.replace({
-    query: {
-      page: page.value,
-      size: size.value
-    }
-  })
+watch(
+  () => page.value,
+  () => {
+    nextTick(() => {
+      scrollContainer?.value?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+    router.replace({
+      query: {
+        page: page.value,
+        size: size.value,
+      },
+    });
 
-  fetchRecord()
-}, { immediate: true })
+    fetchRecord();
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
     router.replace({
       query: {
         page: page.value,
-        size: size.value
-      }
-    })
+        size: size.value,
+      },
+    });
   }
 
-  fetchRecord()
-})
+  fetchRecord();
+});
 </script>
 
 <template>
-  <UCard :ui="{
-    body: 'p-0 sm:p-0'
-  }" class="hidden md:block">
+  <UCard
+    :ui="{
+      body: 'p-0 sm:p-0',
+    }"
+    class="hidden md:block"
+  >
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
@@ -148,8 +152,14 @@ onMounted(async () => {
     <template #footer>
       <div class="flex justify-between items-center">
         <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+        <UPagination
+          size="sm"
+          v-model:page="page"
+          :page-size="meta.size"
+          :items-per-page="meta.size"
+          :total="meta.total"
+          show-edges
+        />
       </div>
     </template>
   </UCard>
@@ -158,8 +168,11 @@ onMounted(async () => {
   <div class="md:hidden bg-gray-50 dark:bg-neutral-950 min-h-[300px]">
     <!-- Loading -->
     <div v-if="loading" class="space-y-3 p-4">
-      <div v-for="i in 5" :key="i"
-        class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div
+        v-for="i in 5"
+        :key="i"
+        class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+      >
         <div class="flex items-start gap-3">
           <USkeleton class="h-12 w-12 rounded-2xl" />
 
@@ -173,9 +186,13 @@ onMounted(async () => {
     </div>
 
     <!-- Empty -->
-    <div v-else-if="!data?.length" class="flex flex-col items-center justify-center px-6 py-16 text-center">
+    <Ucard
+      v-else-if="!data?.length"
+      class="flex flex-col items-center justify-center px-6 py-16 text-center"
+    >
       <div
-        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+      >
         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
       </div>
 
@@ -186,40 +203,43 @@ onMounted(async () => {
       <p class="mt-1 max-w-xs text-sm text-gray-500">
         Behaviour categories will appear here once created.
       </p>
-    </div>
+    </Ucard>
 
     <!-- Cards -->
-    <UCard v-else>
-      <div class="space-y-3 p-3">
-        <UCard v-for="item in data" :key="item.id"
-          class="overflow-hidden rounded-3xl bg-gray-50 shadow-sm transition-all active:scale-[0.99]"
-          :ui="{
-            body: 'p-4'
-          }">
-          <div class="flex items-start gap-3">
-            <!-- Content -->
-            <div class="min-w-0 flex-1">
-              <!-- Header -->
-              <div class="flex items-center gap-2">
-                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+    <div class="space-y-3">
+      <button
+        v-for="item in data"
+        :key="item.id"
+        type="button"
+        class="group w-full overflow-hidden rounded-2xl border border-default bg-gradient-to-br from-white to-neutral-50 p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg active:scale-[0.98] dark:from-neutral-900 dark:to-neutral-950"
+      >
+        <div class="flex items-start gap-3">
+          <!-- Avatar -->
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white"
+          >
+            <UIcon name="i-lucide-book-open" class="text-lg" />
+          </div>
+
+          <!-- Content -->
+          <div class="min-w-0 flex-1">
+            <!-- Top Row -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-highlighted">
                   {{ item.name }}
                 </h3>
 
-                <div class="h-2 w-2 rounded-full bg-emerald-500" />
+                <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted">
+                  {{ item.description || "No description available." }}
+                </p>
               </div>
 
-              <!-- Description -->
-              <p class="mt-1 line-clamp-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
-                {{
-                  item.description ||
-                  'No description available.'
-                }}
-              </p>
+              <UBadge color="success" variant="subtle" size="xs"> Active </UBadge>
             </div>
           </div>
-        </UCard>
-      </div>
-    </UCard>
+        </div>
+      </button>
+    </div>
   </div>
-
 </template>

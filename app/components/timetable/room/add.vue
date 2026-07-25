@@ -1,7 +1,13 @@
 <template>
   <UCard>
-    <UForm :schema="schema" :state="state" @submit.prevent="submit" :key="record.id" class="flex items-start space-x-3">
-      <div class="grid flex-1 gap-3 grid-cols-3">
+    <UForm
+      :key="record.id"
+      :schema="schema"
+      :state="state"
+      @submit.prevent="submit"
+      class="flex flex-col gap-4 lg:flex-row lg:items-end"
+    >
+      <div class="grid flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <UFormField label="Room Name" name="name" required>
           <UInput :disabled="mode == 'created'" v-model="state.name" placeholder="e.g. Science Lab" class="w-full" />
         </UFormField>
@@ -16,13 +22,13 @@
         </UFormField>
       </div>
 
-      <div class="flex space-x-1">
+      <div class="flex flex-row flex-wrap gap-2 lg:flex-col lg:flex-nowrap">
         <UButton :loading="isLoading" type="submit" :icon="SAVE_ICON" v-if="canSave" variant="ghost" color="primary"
-          square class="self-end sm:self-start sm:mt-6" />
+          square class="justify-center" />
         <UButton @click="mode = 'edit'" v-if="mode == 'created'" :icon="EDIT_ICON" variant="ghost" color="warning"
-          square class="self-end sm:self-start sm:mt-6" />
+          square class="justify-center" />
         <UButton @click="removeRoom" :icon="DELETE_ICON" variant="ghost" color="error" square
-          class="self-end sm:self-start sm:mt-6" />
+          class="justify-center" />
       </div>
     </UForm>
   </UCard>

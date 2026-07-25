@@ -9,7 +9,7 @@
             <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
           </p>
 
-          <div class="flex flex-1 md:space-x-5 space-x-3">
+          <div class="grid gap-5 grid-cols-1 md:grid-cols-2 w-full md:w-[450px]">
             <UFormField name="classId" class="w-full">
               <USelect v-model="state.classId" :items="classes" placeholder="Select class" @change="fetchRecords" />
             </UFormField>
@@ -85,8 +85,9 @@
             <USkeleton class="h-4 w-32" />
           </template>
         </UTable>
+
         <!-- Mobile Cards -->
-        <div class="md:hidden divide-y divide-gray-100">
+        <div class="md:hidden divide-y divide-gray-200">
           <!-- Mobile Skeleton -->
           <div v-if="isLoading" v-for="i in skeletonRows.length" :key="i" class="p-3 space-y-3">
             <div class="flex items-center space-x-2">
@@ -110,7 +111,7 @@
               <UAvatar
                 :src="row.studentPhoto || '/avatar-placeholder.svg'"
                 :alt="row.studentName"
-                size="md"
+                size="xl"
                 class="ring-1 ring-gray-200 dark:ring-gray-700"
               />
               <div>
@@ -119,7 +120,7 @@
               </div>
             </div>
 
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 mt-3">
               <UCheckbox label="Present" size="xs" color="success" variant="card" :disabled="isDisable"
                 :model-value="row.present" @change="stateChange(i, 'present')" />
               <UCheckbox label="Late" size="xs" color="warning" variant="card" :disabled="isDisable"

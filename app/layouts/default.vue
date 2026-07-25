@@ -35,10 +35,10 @@ watch(
     <!-- Main Content -->
     <main
       ref="scrollContainer"
-      class="flex min-w-0 flex-1 flex-col overflow-y-auto"
+      class="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+1rem)]"
     >
-      <Header class="md:hidden sticky top-0 z-20" />
-      <div class="container mx-auto flex-1">
+      <Header class="sticky top-0 z-20 md:hidden" />
+      <div class="container mx-auto flex-1  py-4 ">
         <slot />
       </div>
       <!-- Mobile Navigation -->

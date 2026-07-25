@@ -1,8 +1,8 @@
 <template>
-  <div class="space-y-6 mt-6">
+  <div class="space-y-6 mt-6 p-3 md:p-0">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-col gap-4 pl-2 md:pl-0 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h1 class="text-2xl font-bold">
           Add Teacher
@@ -26,7 +26,7 @@
                 Personal Information
               </p>
 
-              <p class="text-sm text-muted">
+              <p class="text-sm text-muted hidden md:block">
                 Enter the teacher's personal details.
               </p>
             </div>
@@ -90,7 +90,7 @@
                 Contact Information
               </p>
 
-              <p class="text-sm text-muted">
+              <p class="text-sm text-muted hidden md:block">
                 Provide the teacher's contact details for communication and account access.
               </p>
             </div>
@@ -149,7 +149,7 @@
                 Employment Information
               </p>
 
-              <p class="text-sm text-muted">
+              <p class="text-sm text-muted hidden md:block">
                 Provide the teacher's employment details.
               </p>
             </div>

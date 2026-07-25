@@ -54,7 +54,10 @@ async function deleteRoom() {
         </template>
 
         <div class="space-y-4">
-          <UAlert color="error" variant="soft" title="This action cannot be undone"
+          <UAlert
+            color="error"
+            variant="soft"
+            title="This action cannot be undone"
             description="Deleting this room may affect timetable entries and other records that reference it." />
 
           <p class="text-sm text-muted">
@@ -66,11 +69,9 @@ async function deleteRoom() {
           </div>
 
           <UInput v-model="confirmation" :placeholder="`Type '${roomName}'`" />
-
-
         </div>
         <template #footer>
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <UButton label="Cancel" variant="soft" @click="close" />
 
             <UButton label="Delete Room" color="error" class="disabled:bg-error-200" :loading="loading"

@@ -1,29 +1,33 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-3">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="flex items-start gap-3">
           <UIcon name="i-lucide-calendar-days" class="size-5 text-primary" />
           <div>
             <h3 class="font-semibold">Working Days</h3>
-            <p class="text-xs text-muted">
+            <p class="text-sm text-muted">
               Choose days classes are held
             </p>
           </div>
         </div>
-        <div>
+
+        <div class="flex items-center gap-2">
           <UButton v-if="mode != 'created'" size="sm" :loading="isLoading" label="Save" @click="save"
             :icon="SAVE_ICON" />
-          <UButton v-if="mode == 'created'" size="sm" @click="mode = 'edit'" :icon="EDIT_ICON" label="Edit" color="warning" variant="outline" />
+          <UButton v-else size="sm" @click="mode = 'edit'" :icon="EDIT_ICON" label="Edit" color="warning" variant="outline" />
         </div>
       </div>
     </template>
 
     <div class="space-y-3">
-      <div v-for="row in workingDays" :key="row.day"
-        class="flex items-center justify-between rounded-xl border border-default p-4"
-        :class="{ 'opacity-50': !row.state }">
-        <div>
+      <div
+        v-for="row in workingDays"
+        :key="row.day"
+        class="flex items-center justify-between rounded-2xl border border-default px-4 py-3"
+        :class="{ 'opacity-50': !row.state }"
+      >
+        <div class="min-w-0">
           <p class="font-medium">
             {{ clean(row.day) }}
           </p>

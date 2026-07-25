@@ -6,4 +6,9 @@
 
 <script setup lang="ts">
 const { can } = useAuth()
+
+onMounted(() => {
+    useAppStore().setTitle('Timetable');
+    document.title = 'Timetable | Skultem'
+})
 </script>
