@@ -60,14 +60,14 @@
 
             <div v-else-if="fees.length" class="space-y-3">
                 <div v-for="fee in fees" :key="fee.id"
-                    class="rounded-xl border-2 border-gray-100  dark:border-gray-800 dark:bg-gray-950 bg-gray-100 p-4">
+                    class="rounded-xl border-2 border-gray-100 space-y-4 dark:border-gray-800 dark:bg-gray-950 bg-gray-100 p-4">
                     <div class="flex items-start justify-between">
                         <div>
                             <h4 class="font-semibold">
                                 {{ fee.fee }}
                             </h4>
 
-                            <p class="mt-1 text-sm text-muted">
+                            <p class="mt-1 text-xs text-muted">
                                 Due Date: {{ formatDateString(fee.dueDate) }}
                             </p>
                         </div>
@@ -81,7 +81,7 @@
                         </UBadge>
                     </div>
 
-                    <div class="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                         <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-[10px] uppercase text-muted">
                                 Amount

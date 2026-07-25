@@ -3,7 +3,14 @@ import { defineStore } from 'pinia'
 export const useLedgerStore = defineStore('ledger', {
   state: () => ({
     records: [] as Ledger[],
-    meta: {} as Meta,
+    meta: {
+      size: 0,
+      page: 0,
+      total: 0,
+      showingFrom: 0,
+      showingTo: 0,
+      totalPages: 0
+    } as Meta,
     total: {} as LedgerReport,
     loading: true,
     error: null as string | null

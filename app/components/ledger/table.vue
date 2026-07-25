@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const store = useLedgerStore()
@@ -345,13 +343,11 @@ onMounted(async () => {
       </template>
 
       <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+      <div class="flex flex-col items-center gap-3 pt-2">
         <Showing :meta="meta" />
-
         <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
-
     </div>
   </div>
 </template>

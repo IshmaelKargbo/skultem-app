@@ -13,7 +13,7 @@
                         </p>
                     </div>
 
-                    <div class="grid w-full gap-3 md:w-[420px] md:grid-cols-2">
+                    <div class="grid w-full gap-3 md:w-105 md:grid-cols-2">
                         <USelectMenu v-model="state.term" :items="terms" value-key="value" size="xl"
                             placeholder="Select Term" />
 
@@ -26,50 +26,50 @@
             <!-- Summary -->
             <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-                <div class="rounded-xl border-2 border-primary-300 bg-primary-50  dark:border-primary-800 dark:bg-primary-950 p-5">
+                <div class="rounded-xl border-2 border-primary-300 space-y-1 flex flex-col justify-center bg-primary-50  dark:border-primary-800 dark:bg-primary-950 p-5 py-3">
                     <p class="text-xs uppercase text-muted">
                         Subjects
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+                    <USkeleton v-if="loading" class="h-8 w-16" />
 
-                    <h2 v-else class="mt-3 text-3xl font-bold">
+                    <h2 v-else class="text-3xl font-bold">
                         {{ summary.subjects }}
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-success-300 bg-success-50  dark:border-success-800 dark:bg-success-950 p-5">
+                <div class="rounded-xl border-2 border-success-300 space-y-1 bg-success-50 flex flex-col justify-center dark:border-success-800 dark:bg-success-950 p-5 py-3">
                     <p class="text-xs uppercase text-muted">
                         Passed
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+                    <USkeleton v-if="loading" class="h-8 w-16" />
 
-                    <h2 v-else class="mt-3 text-3xl font-bold text-success">
+                    <h2 v-else class="text-3xl font-bold text-success">
                         {{ summary.passed }}
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-error-300 bg-error-50  dark:border-error-800 dark:bg-error-950 p-5">
+                <div class="rounded-xl border-2 border-error-300 bg-error-50 space-y-1 flex flex-col justify-center dark:border-error-800 dark:bg-error-950 p-5 py-3">
                     <p class="text-xs uppercase text-muted">
                         Average
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+                    <USkeleton v-if="loading" class="h-8 w-16" />
 
-                    <h2 v-else class="mt-3 text-3xl font-bold text-warning">
+                    <h2 v-else class="text-3xl font-bold text-warning">
                         {{ summary.average }}%
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-warning-300 bg-warning-50  dark:border-warning-800 dark:bg-warning-950 p-5">
+                <div class="rounded-xl border-2 border-warning-300 bg-warning-50 space-y-1 flex flex-col justify-center dark:border-warning-800 dark:bg-warning-950 p-5 py-3">
                     <p class="text-xs uppercase text-muted">
                         Failed
                     </p>
 
-                    <USkeleton v-if="loading" class="mt-2 h-8 w-16" />
+                    <USkeleton v-if="loading" class="h-8 w-16" />
 
-                    <h2 v-else class="mt-3 text-3xl font-bold text-error">
+                    <h2 v-else class="text-3xl font-bold text-error">
                         {{ summary.failed }}
                     </h2>
                 </div>
@@ -98,14 +98,14 @@
 
                 <!-- Results -->
                 <div v-else-if="grades.length > 0" v-for="subject in grades" :key="subject.id"
-                    class="rounded-xl border border-default p-6 bg-gray-100 transition hover:border-primary/40">
+                    class="rounded-xl border border-default p-6 space-y-4 bg-gray-100 transition hover:border-primary/40">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="text-lg font-semibold">
+                            <h4 class="font-semibold">
                                 {{ subject.subject }}
                             </h4>
 
-                            <p class="mt-1 text-sm text-muted">
+                            <p class="mt-1 text-xs text-muted">
                                 {{ subject.teacher }}
                             </p>
                         </div>
@@ -124,9 +124,9 @@
                         </UBadge>
                     </div>
 
-                    <UProgress class="mt-5" size="xs" :model-value="subject.score" />
+                    <UProgress :model-value="subject.score" />
 
-                    <div class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
 
                         <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
                             <p class="text-xs uppercase text-muted">

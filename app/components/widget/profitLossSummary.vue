@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-card">
+  <div>
     <div v-if="!isReady" class="skeleton-loader">Loading Monthly Revenue...</div>
     <client-only v-else>
       <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />

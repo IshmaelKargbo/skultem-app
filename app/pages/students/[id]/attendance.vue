@@ -80,7 +80,7 @@ definePageMeta({
 
 const store = useStudentStore()
 const reportStore = useReportStore()
-const { record, activeCycle } = storeToRefs(store)
+const { record, activeCycle, loading } = storeToRefs(store)
 const { attendances, meta } = storeToRefs(reportStore)
 const route = useRoute()
 const router = useRouter()

@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-card">
+  <div>
     <div v-if="!isReady" class="skeleton-loader">Loading Expenses by Category...</div>
 
     <client-only v-else>

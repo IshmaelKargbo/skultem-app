@@ -40,9 +40,6 @@
                 <UCard>
                     <WidgetAttendanceTrend />
                 </UCard>
-                <UCard class="lg:col-span-2">
-                    <WidgetStudentPerformance />
-                </UCard>
                 <UCard>
                     <WidgetClassPerformance />
                 </UCard>
