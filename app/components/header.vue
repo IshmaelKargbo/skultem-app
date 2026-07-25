@@ -4,7 +4,7 @@
             body: 'py-1'
         }">
             <div class="flex items-center space-x-2 pt-1.5">
-                <MenuDrawer class="md:hidden block" />
+                <MenuDrawer class="lg:hidden block" />
                 <p v-if="title" class="text-lg font-display font-semibold transition-colors pb-1"
                     :class="isDark ? 'text-gray-100' : 'text-gray-900'">
                     {{ title }}

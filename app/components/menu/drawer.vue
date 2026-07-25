@@ -4,7 +4,7 @@
     content: 'w-full max-w-sm bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-950 border-r border-neutral-200 dark:border-neutral-800'
   }" @update:open="open = $event">
     <!-- Trigger -->
-    <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
+    <UButton color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
     <template #header>
       <div
         class="w-full">

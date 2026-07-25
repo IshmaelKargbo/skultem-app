@@ -1,5 +1,5 @@
 <template>
-    <div class="md:px-5 h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
+    <div class="md:px-4 h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
         <Heading
             title="View Student"
             subtitle="View detailed student information, including academic records, personal details, and enrollment data."

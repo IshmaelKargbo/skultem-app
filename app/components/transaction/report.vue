@@ -1,6 +1,9 @@
 <template>
-  <div class="grid gap-3 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-    <Metric v-for="metric in metrics" :key="metric.label" :record="metric" />
+  <div class="gap-3 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 md:hidden lg:grid">
+    <Metric class="hidden lg:block" v-for="metric in metrics" :key="metric.label" :record="metric" />
+  </div>
+  <div class="gap-3 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 grid lg:hidden">
+    <Metric class="last:sm:col-span-2" v-for="metric in metrics" :key="metric.label" :record="metric" />
   </div>
 </template>
 

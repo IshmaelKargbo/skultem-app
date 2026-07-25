@@ -4,20 +4,21 @@
             <div class="space-y-5">
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="text-base">Filters ({{ state.filters.length }})</p>
+                        <p class="lg:text-base">Filters ({{ state.filters.length }})</p>
                         <p class="text-xs text-mute">Add conditions to filter your data. Available fields: Direction,
                             Reference Type, etc</p>
                     </div>
                     <div>
-                        <UButton @click="addFilter" label="Add Filter" :icon="ADD_ICON" variant="outline"
+                        <UButton class="lg:hidden" @click="addFilter" :icon="ADD_ICON" variant="outline"
+                            color="neutral" />
+                        <UButton class="hidden lg:flex" @click="addFilter" label="Add Filter" :icon="ADD_ICON" variant="outline"
                             color="neutral" />
                     </div>
                 </div>
                 <div class="mt-3 space-y-3">
                     <template v-if="state.filters.length > 0">
                         <UCard v-for="(item, index) in state.filters" :key="index">
-                            <div class="flex space-x-3">
-
+                            <div class="flex space-x-2 space-y-2 sm:space-y-0 flex-wrap">
                                 <UFormField :name="`filters.${index}.field`" label="Field" class="flex-1" required>
                                     <USelectMenu v-model="item.field" value-key="value" placeholder="Select Field"
                                         :items="availableFields(index)" @change="fieldChange(index)" />
@@ -134,7 +135,7 @@ const { selected: entity } = defineProps<{
 }>()
 
 const store = useReportStore()
-const { loading, run: isRun, report } = storeToRefs(store)
+const { loading, run: isRun } = storeToRefs(store)
 
 const state = reactive<ReportBuilder>({
     name: "",

@@ -178,81 +178,65 @@ onMounted(async () => {
 
       <!-- Records -->
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="`${item.createdAt}-${item.referenceType}-${item.amount}`"
-          class="overflow-hidden" :ui="{ body: 'p-0' }">
-          <div class="p-4 space-y-4">
-
-            <!-- Header -->
-            <div class="flex items-start justify-between gap-3">
-
-              <div class="flex gap-3">
-
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl" :class="item.direction === 'CREDIT'
-                  ? 'bg-success-50 dark:bg-success-500/10'
-                  : 'bg-error-50 dark:bg-error-500/10'">
-                  <UIcon :name="item.direction === 'CREDIT'
-                    ? CREDIT_ICON
-                    : DEBIT_ICON" class="text-lg" :class="item.direction === 'CREDIT'
-                      ? 'text-success'
-                      : 'text-error'" />
-                </div>
-
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <h3 class="truncate text-sm font-semibold">
-                      {{ clean(item.type) }}
-                    </h3>
-
-                    <p class="text-xs text-muted">
-                      ( {{ clean(item.referenceType) }} )
-                    </p>
-
+        <UCard :ui="{
+          body: 'sm:p-0 p-0'
+        }">
+          <template #header>
+            <p>Transactions</p>
+            <p class="text-xs text-muted">Complete financial transaction history</p>
+          </template>
+          <div>
+            <div v-for="item in data" :key="`${item.createdAt}-${item.referenceType}-${item.amount}`"
+              class="overflow-hidden border-b border-gray-200 last:border-0">
+              <div class="px-4 py-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex gap-3">
+                    <div class="min-w-0  space-y-1">
+                      <h3 class="truncate text-sm font-semibold">
+                        {{ clean(item.type) }}
+                      </h3>
+                      <div class="flex space-x-2 items-center text-xs text-muted">
+                        <p>
+                          {{ clean(item.referenceType) }}
+                        </p>
+                        <p>·</p>
+                        <p>
+                          {{ formatDate(item.createdAt) }}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p class="mt-1 text-xs text-muted">
-                    {{ formatDate(item.createdAt) }}
-                  </p>
+
+                  <div class="space-y-1">
+                    <p class="text-sm font-bold text-info text-right">
+                      {{ format(item.balance) }}
+                    </p>
+                    <div class="flex space-x-2">
+                      <p class="text-sm font-bold" :class="item.direction === 'CREDIT'
+                        ? 'text-success'
+                        : 'text-error'">
+                        {{ format(item.amount) }}
+                      </p>
+                      <UBadge size="sm" variant="soft" :icon="item.direction === 'CREDIT'
+                        ? CREDIT_ICON
+                        : DEBIT_ICON" :color="item.direction === 'CREDIT'
+                          ? 'success'
+                          : 'error'" :label="clean(item.direction)" />
+                    </div>
+                  </div>
                 </div>
-
               </div>
-
-              <UBadge size="sm" variant="soft" :icon="item.direction === 'CREDIT'
-                ? CREDIT_ICON
-                : DEBIT_ICON" :color="item.direction === 'CREDIT'
-                  ? 'success'
-                  : 'error'" :label="clean(item.direction)" />
             </div>
-
-            <!-- Amount Cards -->
-            <div class="grid grid-cols-2 gap-3">
-
-              <div class="rounded-2xl p-3" :class="item.direction === 'CREDIT'
-                ? 'bg-success-50 dark:bg-success-950/20'
-                : 'bg-error-50 dark:bg-error-950/20'">
-                <p class="text-[11px] text-muted">
-                  Amount
-                </p>
-
-                <p class="mt-1 text-sm font-bold" :class="item.direction === 'CREDIT'
-                  ? 'text-success'
-                  : 'text-error'">
-                  {{ format(item.amount) }}
-                </p>
-              </div>
-
-              <div class="rounded-2xl bg-info-50 p-3 dark:bg-info-950/20">
-                <p class="text-[11px] text-muted">
-                  Balance
-                </p>
-
-                <p class="mt-1 text-sm font-bold text-info">
-                  {{ format(item.balance) }}
-                </p>
-              </div>
-
-            </div>
-
           </div>
+          <template #footer>
+            <div class="flex flex-col items-center gap-3">
+              <Showing :meta="meta" />
+              <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+                :total="meta.total" show-edges />
+            </div>
+          </template>
         </UCard>
+
       </template>
 
       <!-- Empty -->
@@ -272,12 +256,7 @@ onMounted(async () => {
         </div>
       </template>
 
-      <!-- Pagination -->
-      <div class="flex flex-col items-center gap-3 pt-2">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
+
     </div>
   </div>
 </template>
