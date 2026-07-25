@@ -1,119 +1,227 @@
 <template>
-    <div class="space-y-4 p-4">
-        <Heading title="Class Timetables" subtitle="Configure and manage weekly timetables for classes and sections">
-            <div class="flex items-center gap-3 w-72">
-                <USelectMenu placeholder="Select Class" v-model="grade" value-key="value" :items="list"
-                    :loading="classLoading" />
-            </div>
-        </Heading>
+  <div class="space-y-4 p-4">
+    <Heading
+      title="Class Timetables"
+      subtitle="Configure and manage weekly timetables for classes and sections"
+    >
+      <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+        <USelectMenu
+          v-model="grade"
+          placeholder="Select Class"
+          value-key="value"
+          :items="list"
+          :loading="classLoading"
+          class="w-full md:w-72"
+        />
+      </div>
+    </Heading>
+    <div v-if="session">
+      <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
+        <template #header>
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex min-w-0 items-center gap-3">
+              <div
+                class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
+              >
+                <UIcon name="i-lucide-calendar-days" class="size-5" />
+              </div>
 
-        <!-- Timetable -->
-        <UCard v-if="session" :ui="{ body: 'p-0 sm:p-0' }">
-            <template #header>
-                <div class="flex items-center justify-between">
+              <div class="min-w-0">
+                <h2 class="truncate font-semibold text-base">
+                  {{ session?.clazz }} · {{ session?.sectionName }}
+                </h2>
 
-                    <div class="flex items-center gap-3">
-                        <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                            <UIcon name="i-lucide-calendar-days" class="size-5" />
-                        </div>
-
-                        <div>
-                            <h2 class="font-semibold text-base">
-                                {{ session?.clazz }} · {{ session?.sectionName }}
-                            </h2>
-
-                            <p class="text-sm text-muted">
-                                {{ periods.length }} periods · {{ store.getDayRange }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <UButton :loading="breakLoading" icon="i-lucide-coffee" color="neutral" variant="outline"
-                            @click="addBreak">
-                            Add Break
-                        </UButton>
-
-                        <UButton :loading="lunchLoading" icon="i-lucide-coffee" color="neutral" variant="outline"
-                            @click="addLunch">
-                            Add Lunch
-                        </UButton>
-
-                        <UButton :loading="addLoading" icon="i-lucide-plus" @click="addPeriod">
-                            Add Period
-                        </UButton>
-
-                    </div>
-                </div>
-            </template>
-
-            <div class="overflow-x-auto">
-                <TimetablePeriod is-admin />
-            </div>
-        </UCard>
-        <UCard v-else>
-            <div class="flex flex-col items-center justify-center py-20 text-center">
-                <UIcon name="i-lucide-school" class="size-12 text-muted mb-3" />
-
-                <h3 class="text-base font-semibold">
-                    Select a class to continue
-                </h3>
-
-                <p class="text-sm text-muted mt-1">
-                    Choose a class from the dropdown to view or create its timetable.
+                <p class="text-sm text-muted">
+                  {{ periods.length }} periods · {{ store.getDayRange }}
                 </p>
+              </div>
             </div>
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
+              <UButton
+                :loading="breakLoading"
+                icon="i-lucide-coffee"
+                color="neutral"
+                variant="outline"
+                class="w-full justify-center sm:w-auto"
+                @click="addBreak"
+              >
+                Add Break
+              </UButton>
+
+              <UButton
+                :loading="lunchLoading"
+                icon="i-lucide-coffee"
+                color="neutral"
+                variant="outline"
+                class="w-full justify-center sm:w-auto"
+                @click="addLunch"
+              >
+                Add Lunch
+              </UButton>
+
+              <UButton
+                :loading="addLoading"
+                icon="i-lucide-plus"
+                class="w-full justify-center sm:w-auto"
+                @click="addPeriod"
+              >
+                Add Period
+              </UButton>
+            </div>
+          </div>
+        </template>
+
+        <TimetablePeriod is-admin />
+      </UCard>
+      <div class="md:hidden">
+        <UCard>
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex min-w-0 items-center gap-3">
+              <div
+                class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
+              >
+                <UIcon name="i-lucide-calendar-days" class="size-5" />
+              </div>
+
+              <div class="min-w-0">
+                <h2 class="truncate font-semibold text-base">
+                  {{ session?.clazz }} · {{ session?.sectionName }}
+                </h2>
+
+                <p class="text-sm text-muted">
+                  {{ periods.length }} periods · {{ store.getDayRange }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
+              <UButton
+                :loading="breakLoading"
+                icon="i-lucide-coffee"
+                color="neutral"
+                variant="outline"
+                class="w-full justify-center sm:w-auto"
+                @click="addBreak"
+              >
+                Add Break
+              </UButton>
+
+              <UButton
+                :loading="lunchLoading"
+                icon="i-lucide-coffee"
+                color="neutral"
+                variant="outline"
+                class="w-full justify-center sm:w-auto"
+                @click="addLunch"
+              >
+                Add Lunch
+              </UButton>
+
+              <UButton
+                :loading="addLoading"
+                icon="i-lucide-plus"
+                class="w-full justify-center sm:w-auto"
+                @click="addPeriod"
+              >
+                Add Period
+              </UButton>
+            </div>
+          </div>
         </UCard>
+
+        <TimetablePeriod is-admin class="" />
+      </div>
     </div>
+
+    <UCard v-else>
+      <div class="flex flex-col items-center justify-center py-20 text-center">
+        <UIcon name="i-lucide-school" class="mb-3 size-12 text-muted" />
+
+        <h3 class="text-base font-semibold">Select a class to continue</h3>
+
+        <p class="mt-1 text-sm text-muted">
+          Choose a class from the dropdown to view or create its timetable.
+        </p>
+      </div>
+    </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
-const store = useTimetableStore()
-const classStore = useClassSessionStore()
-const { periods } = storeToRefs(store)
-const { list, loading: classLoading } = storeToRefs(classStore)
-const grade = ref()
+const store = useTimetableStore();
+const classStore = useClassSessionStore();
+const teacherSubjectStore = useTeacherSubjectStore();
 
+const { periods } = storeToRefs(store);
+const { list, loading: classLoading } = storeToRefs(classStore);
+const grade = ref("");
 
-const addLoading = ref(false)
-const breakLoading = ref(false)
-const lunchLoading = ref(false)
+const addLoading = ref(false);
+const breakLoading = ref(false);
+const lunchLoading = ref(false);
 
-const session = computed(() => classStore.get(grade.value))
+const session = computed(() => classStore.get(grade.value));
+
+function syncGrade(items: { value: string }[]) {
+  if (!items.length) return;
+
+  const exists = items.some((item) => item.value === grade.value);
+  if (!exists) {
+    grade.value = items[0].value;
+  }
+}
 
 async function addPeriod() {
-    addLoading.value = true
-    await store.createPeriod({ session: session.value?.id || '' })
-    addLoading.value = false
+  if (!session.value?.id) return;
+
+  addLoading.value = true;
+  try {
+    await store.createPeriod({ session: session.value.id });
+  } finally {
+    addLoading.value = false;
+  }
 }
 
 async function addBreak() {
-    breakLoading.value = true
-    await store.createBreak({ session: session.value?.id || '' })
-    breakLoading.value = false
+  if (!session.value?.id) return;
+
+  breakLoading.value = true;
+  try {
+    await store.createBreak({ session: session.value.id });
+  } finally {
+    breakLoading.value = false;
+  }
 }
 
 async function addLunch() {
-    lunchLoading.value = true
-    await store.createLunch({ session: session.value?.id || '' })
-    lunchLoading.value = false
+  if (!session.value?.id) return;
+
+  lunchLoading.value = true;
+  try {
+    await store.createLunch({ session: session.value.id });
+  } finally {
+    lunchLoading.value = false;
+  }
 }
 
-watch(() => grade.value, async (value: string) => {
-    if (value) {
-        await store.getTimetable(value)
-        await useTeacherSubjectStore().allByClass(value)
-    }
-}, { immediate: true })
+watch(
+  () => grade.value,
+  async (value) => {
+    if (!value) return;
 
-watch(() => list.value, () => {
-    grade.value = list.value[0]?.value || ''
-})
+    await store.getTimetable(value);
+    await teacherSubjectStore.allByClass(value);
+  },
+  { immediate: true }
+);
+
+watch(list, syncGrade, { immediate: true });
 
 onMounted(async () => {
-    document.title = 'Timetable | Skultem'
-    await classStore.fetchAll(0, 0)
-    await store.getWorkingDays()
-    await store.searchRoom(0, 0)
-})
+  document.title = "Timetable | Skultem";
+  await classStore.fetchAll(0, 0);
+  await store.getWorkingDays();
+  await store.searchRoom(0, 0);
+});
 </script>

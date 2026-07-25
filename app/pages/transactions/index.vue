@@ -3,6 +3,7 @@
         <Heading class="hidden lg:block" title="Transactions" subtitle="Complete financial transaction history" />
         <TransactionReport />
         <TransactionTable />
+        <TransactionTable />
     </div>
 </template>
 

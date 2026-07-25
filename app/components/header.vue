@@ -10,7 +10,7 @@
                     {{ title }}
                 </p>
 
-                <USkeleton v-else class="h-4 w-44" />
+                <USkeleton v-else class="h-4 w-44 max-w-full" />
             </div>
         </UCard>
     </div>

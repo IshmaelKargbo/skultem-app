@@ -1,8 +1,8 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="flex items-start gap-3">
           <UIcon name="i-lucide-door-open" class="size-5 text-primary" />
           <div>
             <h3 class="font-semibold">Rooms</h3>
@@ -12,7 +12,7 @@
           </div>
         </div>
 
-        <UButton icon="i-lucide-plus" size="sm" @click="addRoom">
+        <UButton icon="i-lucide-plus" size="sm" class="w-full justify-center sm:w-auto" @click="addRoom">
           Add Room
         </UButton>
       </div>
@@ -24,8 +24,10 @@
       <TimetableRoomDeletePrompt :index="selectIndex" v-model:open="deleteModal" :room-id="selectRoom?.id || ''"
         :room-name="selectRoom?.name || ''" />
 
-      <div v-if="rooms.length === 0"
-        class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-default py-10 text-center">
+      <div
+        v-if="rooms.length === 0"
+        class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-default py-10 text-center"
+      >
         <UIcon name="i-lucide-door-closed" class="size-8 text-muted" />
         <p class="text-sm text-muted">No rooms added yet</p>
         <UButton variant="soft" size="sm" icon="i-lucide-plus" @click="addRoom">
@@ -41,7 +43,7 @@ const store = useTimetableStore()
 const { rooms } = storeToRefs(store)
 const deleteModal = ref(false)
 
-const selectIndex = ref()
+const selectIndex = ref('')
 const selectRoom = ref<Room>()
 
 function addRoom() {

@@ -1,6 +1,6 @@
 <template>
     <div class="p-4 space-y-4">
-        <Heading class="hidden md:flex" title="Payment Recording" subtitle="Record and manage student fee payments" />
+        <Heading title="Payment Recording" subtitle="Record and manage student fee payments" />
         <FeePaymentNew @complete="refresh" />
         <DashboardAccountantTable ref="paymentRef" />
     </div>

@@ -163,21 +163,8 @@
       </UCard>
     </template>
 
-    <!-- Pagination -->
-    <UCard class="md:hidden">
-      <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-        <Showing :meta="meta" />
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
-      </div>
-    </UCard>
-    <div class="hidden md:block mt-6">
+
+    <div class="mt-6">
       <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <Showing :meta="meta" />
         <UPagination

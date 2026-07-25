@@ -5,7 +5,6 @@ const store = useLedgerStore()
 const loading = ref(true)
 const { format } = useMoney()
 const { records: data, meta, total } = storeToRefs(store)
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
   {
@@ -97,14 +96,31 @@ async function fetchRecord() {
   loading.value = false
 }
 
-watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
 
+const equalSelectOperators = (options: Option[] = []): ReportOperator[] => [
+  { name: "Equals (=)", operator: "EQUALS", type: "select", input: "select", options },
+  { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "select", input: "select", options }
+]
+
+const instantOperators: ReportOperator[] = [
+  { name: "Equals (=)", operator: "EQUALS", type: "instant", input: "date" },
+  { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "instant", input: "date" },
+  { name: "After (>)", operator: "GREATER_THAN", type: "instant", input: "date" },
+  { name: "Before (<)", operator: "LESS_THAN", type: "instant", input: "date" },
+  { name: "Between (↔)", operator: "BETWEEN", type: "instant", input: "date-range" },
+]
+
+const selected = ref<ReportSelectPayload>({
+  entity: "transactions",
+  filters: [
+    { field: "createdAt", label: "Date", operators: instantOperators },
+    { field: "direction", label: "Direction", operators: equalSelectOperators(directionOptions) },
+    { field: "type", label: "Type", operators: equalSelectOperators(typeOptions) },
+    { field: "referenceType", label: "Reference", operators: equalSelectOperators(referenceTypeOptions) }
+  ]
+})
+
+watch(() => page.value, () => {
   router.replace({
     query: {
       page: page.value
@@ -129,6 +145,7 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
+    <TransactionFilters :selected="selected" />
     <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="data" :loading="loading" :ui="{ tfoot: 'bg-app-50/10' }">
         <template #empty-state>
@@ -235,7 +252,7 @@ onMounted(async () => {
                   {{
                     item.credit
                       ? format(item.credit)
-                      : format(item.debit)
+                      : format(item.debit || 0)
                   }}
                 </p>
               </div>

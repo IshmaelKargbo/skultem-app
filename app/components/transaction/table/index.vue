@@ -4,7 +4,6 @@ const router = useRouter()
 const store = useReportStore()
 const { transactions: data, meta, loading, report } = storeToRefs(store)
 const { format } = useMoney()
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
   {
@@ -47,12 +46,6 @@ const size = computed<number>({
 })
 
 watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
   router.replace({
     query: {
       page: page.value
@@ -117,7 +110,6 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-5">
-    <TransactionFilters :selected="selected" />
     <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
@@ -152,111 +144,5 @@ onMounted(async () => {
         </div>
       </template>
     </UCard>
-    <!-- Mobile -->
-    <div class="space-y-4 md:hidden">
-
-      <!-- Loading -->
-      <template v-if="loading">
-        <UCard v-for="i in 5" :key="i" :ui="{ body: 'p-4' }">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="space-y-2">
-                <USkeleton class="h-4 w-32" />
-                <USkeleton class="h-3 w-24" />
-              </div>
-
-              <USkeleton class="h-7 w-20 rounded-full" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <USkeleton class="h-20 rounded-2xl" />
-              <USkeleton class="h-20 rounded-2xl" />
-            </div>
-          </div>
-        </UCard>
-      </template>
-
-      <!-- Records -->
-      <template v-else-if="data?.length">
-        <UCard :ui="{
-          body: 'sm:p-0 p-0'
-        }">
-          <template #header>
-            <p>Transactions</p>
-            <p class="text-xs text-muted">Complete financial transaction history</p>
-          </template>
-          <div>
-            <div v-for="item in data" :key="`${item.createdAt}-${item.referenceType}-${item.amount}`"
-              class="overflow-hidden border-b border-gray-200 last:border-0">
-              <div class="px-4 py-3">
-                <div class="flex items-center justify-between">
-                  <div class="flex gap-3">
-                    <div class="min-w-0  space-y-1">
-                      <h3 class="truncate text-sm font-semibold">
-                        {{ clean(item.type) }}
-                      </h3>
-                      <div class="flex space-x-2 items-center text-xs text-muted">
-                        <p>
-                          {{ clean(item.referenceType) }}
-                        </p>
-                        <p>·</p>
-                        <p>
-                          {{ formatDate(item.createdAt) }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="space-y-1">
-                    <p class="text-sm font-bold text-info text-right">
-                      {{ format(item.balance) }}
-                    </p>
-                    <div class="flex space-x-2">
-                      <p class="text-sm font-bold" :class="item.direction === 'CREDIT'
-                        ? 'text-success'
-                        : 'text-error'">
-                        {{ format(item.amount) }}
-                      </p>
-                      <UBadge size="sm" variant="soft" :icon="item.direction === 'CREDIT'
-                        ? CREDIT_ICON
-                        : DEBIT_ICON" :color="item.direction === 'CREDIT'
-                          ? 'success'
-                          : 'error'" :label="clean(item.direction)" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <template #footer>
-            <div class="flex flex-col items-center gap-3">
-              <Showing :meta="meta" />
-              <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                :total="meta.total" show-edges />
-            </div>
-          </template>
-        </UCard>
-
-      </template>
-
-      <!-- Empty -->
-      <template v-else>
-        <div class="flex flex-col items-center py-16">
-          <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
-            <UIcon name="i-lucide-receipt" class="size-10 text-muted" />
-          </div>
-
-          <h3 class="mt-4 text-sm font-semibold">
-            No transactions found
-          </h3>
-
-          <p class="mt-1 text-sm text-muted">
-            Transaction records will appear here.
-          </p>
-        </div>
-      </template>
-
-
-    </div>
   </div>
 </template>

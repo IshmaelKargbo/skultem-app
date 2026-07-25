@@ -1,10 +1,18 @@
 <template>
-  <div class="px-3 pb-3 pt-2">
-    <div class="rounded-2xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
-      <ul class="grid grid-cols-4 gap-1.5">
+  <div class="px-5 pt-2" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));">
+    <div class="rounded-4xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
+      <ul
+        class="grid gap-1.5"
+        :style="{ gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))` }"
+      >
         <li v-for="item in visibleItems" :key="item.to">
-          <NuxtLink :to="item.to" class="menu-mobile-item" :class="isActive(item.to, item.exact)">
-            <UIcon class="text-xl" :name="item.icon" />
+          <NuxtLink
+            :to="item.to"
+            class="menu-mobile-item"
+            :class="isActive(item.to, item.exact)"
+            :aria-current="isActive(item.to, item.exact) ? 'page' : undefined"
+          >
+            <UIcon class="text-lg" :name="item.icon" />
             <span class="menu-mobile-label">{{ item.label }}</span>
           </NuxtLink>
         </li>
@@ -77,12 +85,16 @@ function isActive(to: string, exact = false) {
   gap: 4px;
   border-radius: 40px;
   color: #4b5563;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
 .menu-mobile-item:hover {
   background: rgba(99, 102, 241, 0.08);
   color: #1878c5;
+}
+
+.menu-mobile-item:active {
+  transform: scale(0.94);
 }
 
 .menu-mobile-item-active {
@@ -93,7 +105,7 @@ function isActive(to: string, exact = false) {
 
 .menu-mobile-label {
   max-width: 100%;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -112,5 +124,11 @@ function isActive(to: string, exact = false) {
 .dark .menu-mobile-item-active {
   background: rgba(99, 102, 241, 0.24);
   color: #c7d2fe;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-mobile-item {
+    transition: none !important;
+  }
 }
 </style>

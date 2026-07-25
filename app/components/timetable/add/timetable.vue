@@ -1,7 +1,9 @@
 <template>
   <UModal v-model:open="subjectModal" :ui="{ footer: 'justify-end' }">
     <template #header>
-      <h3 class="text-lg font-semibold">{{ isEdit ? 'Edit Subject' : 'Add Subject' }}</h3>
+      <h3 class="text-lg font-semibold">
+        {{ isEdit ? 'Edit Subject' : 'Add Subject' }}
+      </h3>
     </template>
 
     <template #body>
@@ -33,8 +35,12 @@
     <template #footer>
       <UButton label="Cancel" color="neutral" variant="outline" @click="close" />
 
-      <UButton :loading="loading" :label="isEdit ? 'Edit Subject' : 'Add Subject'" color="primary"
-        @click="formRef?.submit?.()" />
+      <UButton
+        :loading="loading"
+        :label="isEdit ? 'Edit Subject' : 'Add Subject'"
+        color="primary"
+        @click="formRef?.submit?.()"
+      />
     </template>
   </UModal>
 </template>
@@ -76,12 +82,6 @@ const schema = yup.object({
   room: yup.string().required('Room is required')
 })
 
-const state = reactive<TimetableForm>({
-  subject: props.state?.subjectId || '',
-  room: props.state?.roomId || '',
-  color: props.state?.color || ''
-})
-
 const colorOptions = [
   { value: 'bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-900', swatch: 'bg-blue-200 dark:bg-blue-900' },
   { value: 'bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-900', swatch: 'bg-green-200 dark:bg-green-900' },
@@ -92,6 +92,14 @@ const colorOptions = [
   { value: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/40 dark:border-yellow-900', swatch: 'bg-yellow-200 dark:bg-yellow-900' },
   { value: 'bg-primary/5 border-primary/20', swatch: 'bg-primary/30' }
 ]
+
+const defaultColor = colorOptions[colorOptions.length - 1].value
+
+const state = reactive<TimetableForm>({
+  subject: '',
+  room: '',
+  color: defaultColor,
+})
 
 async function save() {
   if (!props.index) return
@@ -112,17 +120,34 @@ async function save() {
   }
 }
 
-watch(() => props.state, (value) => {
-  if (!value) return
+function syncState(value?: { roomId: string; subjectId: string; color: string }) {
+  state.subject = value?.subjectId || ''
+  state.room = value?.roomId || ''
+  state.color = value?.color || defaultColor
+}
 
-  state.subject = value.subjectId
-  state.color = value.color
-  state.room = value.roomId
+watch(
+  () => props.open,
+  (open) => {
+    if (open) {
+      syncState(props.state)
+    }
+  },
+  { immediate: true }
+)
 
-}, { immediate: true })
+watch(
+  () => props.state,
+  (value) => {
+    if (props.open) {
+      syncState(value)
+    }
+  },
+  { deep: true }
+)
 
 const close = () => {
   subjectModal.value = false
-  Object.keys(state).forEach((key) => (state[key as keyof TimetableForm] = ''))
+  syncState()
 }
 </script>

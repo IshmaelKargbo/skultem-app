@@ -7,12 +7,18 @@ const { subtitle, title } = defineProps<{
 
 <template>
     <UCard>
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div class="min-w-0 space-y-0.5 hidden md:block">
-                <p class="text-xl md:text-2xl font-display font-semibold">{{ title }}</p>
-                <p class="text-sm text-mute">{{ subtitle }}</p>
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="min-w-0 space-y-0.5">
+                <p class="text-lg font-display font-semibold leading-tight sm:text-xl md:text-2xl">
+                    {{ title }}
+                </p>
+                <p class="text-sm text-muted sm:text-base">
+                    {{ subtitle }}
+                </p>
             </div>
-            <slot />
+            <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center md:justify-end">
+                <slot />
+            </div>
         </div>
     </UCard>
 </template>

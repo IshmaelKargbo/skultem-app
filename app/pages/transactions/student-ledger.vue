@@ -1,15 +1,6 @@
 <template>
     <div class="p-4 sm:p-6 lg:p-7 h-full overflow-y-auto space-y-4 sm:space-y-5">
         <LedgerReport />
-        <UCard>
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2">
-                <UInput type="date" />
-                <UInput type="date" />
-                <USelectMenu placeholder="Select Type" />
-                <USelectMenu placeholder="Select Class" />
-                <USelectMenu placeholder="Select Term" />
-            </div>
-        </UCard>
         <LedgerTable />
     </div>
 </template>

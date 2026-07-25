@@ -17,7 +17,7 @@
             subtle: 'Payments made',
             isReady: !isLoading
         }" />
-        <Metric :record="{
+        <Metric class="sm:col-span-2 lg:col-span-1" :record="{
             label: 'Net Balance',
             value: format(report?.netBalance || 0),
             icon: NET_ICON,
