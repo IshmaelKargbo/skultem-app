@@ -1,15 +1,26 @@
 <template>
-    <div class="p-4 space-y-5">
+    <div class="space-y-5 p-4">
         <Heading title="Attendance" subtitle="Track class attendance and export reports">
-            <div class="grid grid-cols-2 w-full md:w-auto gap-3">
-                <USelectMenu @change="change" :loading="loading" :items="children" value-key="value"
-                    v-model="state.student" placeholder="Select Student" />
-                <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
-                    placeholder="Select Term" />
+            <div class="grid w-full gap-3 sm:grid-cols-2 md:w-auto md:min-w-[420px]">
+                <USelectMenu
+                    v-model="state.student"
+                    :loading="loading"
+                    :items="children"
+                    value-key="value"
+                    placeholder="Select Student"
+                    @change="change"
+                />
+                <USelectMenu
+                    v-model="state.term"
+                    :loading="cycleLoading"
+                    value-key="value"
+                    :items="terms"
+                    placeholder="Select Term"
+                />
             </div>
         </Heading>
         <AttendanceParentReport :student="selected" :term="term" />
-        <TabMobile class="md:hidden block" :tabs="tabs">
+        <TabMobile class="block md:hidden" :tabs="tabs">
             <template #overview-data>
                 <AttendanceParentTableMobile />
             </template>

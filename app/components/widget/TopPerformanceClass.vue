@@ -10,7 +10,7 @@
 
       <template v-else-if="topClass">
         <div class="flex justify-between items-center">
-          <p class="text-2xl font-semibold">{{ topClass.label }}</p>
+          <p class="md:text-2xl text-xl font-semibold">{{ topClass.label }}</p>
           <UBadge :icon="TOP_ICON" variant="subtle" size="xl" class="p-1.5" color="success" />
         </div>
         <div class="text-xs text-success">

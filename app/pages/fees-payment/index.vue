@@ -1,13 +1,13 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
+    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
         <Heading class="hidden md:flex" title="Student Fees Management" subtitle="Manage student-specific fees and balances">
-            <div>
-                <FeeStructureAdd  v-if="can([Role.ACCOUNTANT, Role.OWNER])"/>
+            <div class="flex w-full justify-start md:w-auto md:justify-end">
+                <FeeStructureAdd v-if="can([Role.ACCOUNTANT, Role.OWNER])" />
             </div>
         </Heading>
 
-        <div class="md:hidden space-y-3">
-            <div class="flex items-center justify-between">
+        <div class="space-y-3 md:hidden">
+            <div class="flex items-start justify-between gap-3">
                 <div>
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white">
                         Student Fees
@@ -19,7 +19,7 @@
                 <FeeStructureAdd v-if="can([Role.ACCOUNTANT, Role.OWNER])" />
             </div>
 
-            <div class="grid grid-cols-2 gap-2 rounded-2xl bg-gray-100 p-1 dark:bg-gray-800">
+            <div class="grid grid-cols-2 gap-2 rounded-2xl bg-gray-100 p-1.5 dark:bg-gray-800">
                 <button class="rounded-xl py-2 text-sm font-medium transition"
                     :class="mobileView === 'students'
                         ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
@@ -35,11 +35,11 @@
             </div>
         </div>
 
-        <div class="grid gap-5 lg:grid-cols-12 grid-cols-1">
-            <div class="lg:col-span-4" :class="mobileView === 'details' ? 'hidden md:block' : ''">
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+            <div class="min-h-0" :class="mobileView === 'details' ? 'hidden md:block' : ''">
                 <FeeStudentList @select="select" />
             </div>
-            <div class="lg:col-span-8" :class="mobileView === 'students' ? 'hidden md:block' : ''">
+            <div class="min-h-0" :class="mobileView === 'students' ? 'hidden md:block' : ''">
                 <div v-if="mobileView === 'details'" class="mb-3 flex items-center justify-between md:hidden">
                     <UButton icon="lucide:chevron-left" color="neutral" variant="ghost" size="sm"
                         @click="mobileView = 'students'">

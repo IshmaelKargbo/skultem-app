@@ -1,5 +1,5 @@
 <template>
-    <div class="grid gap-5 grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric :record="{
             label: 'Total Classes',
             value: report.classes,

@@ -2,11 +2,11 @@
   <div class="space-y-4">
     <!-- Loading -->
     <template v-if="loading">
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         <UCard
           v-for="i in 6"
           :key="i"
-          class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800"
+          class="overflow-hidden rounded-3xl border border-gray-200 shadow-sm dark:border-gray-800"
         >
           <div class="space-y-5 p-4">
             <div class="flex items-center justify-between">
@@ -43,82 +43,79 @@
 
     <!-- Data -->
     <template v-else-if="data?.length">
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         <UCard
           v-for="item in data"
           :key="item.id"
-          class="overflow-hidden shadow-sm transition-all hover:shadow-md"
+          class="group overflow-hidden rounded-3xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
           :ui="{ body: 'p-0' }"
         >
           <!-- Header -->
-          <div class="border-b border-gray-100 p-4 dark:border-gray-800">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex min-w-0 items-center gap-3">
-                <UAvatar size="lg" :alt="item.clazz" class="rounded-2xl" />
+          <div class="relative overflow-hidden">
+            <div class="flex items-start justify-between p-5">
+              <div class="flex items-center gap-4">
+                <div
+                  class="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+                >
+                  <UIcon name="i-lucide-school" class="size-10" />
+                </div>
 
-                <div class="min-w-0">
-                  <h3
-                    class="truncate text-sm font-semibold text-gray-900 dark:text-white"
-                  >
+                <div>
+                  <h3 class="text-base font-semibold">
                     {{ item.clazz }}
                   </h3>
 
-                  <div class="mt-1 flex items-center gap-1 text-xs text-gray-500">
-                    <span>{{ item.grade }}</span>
+                  <div class="mt-1 flex items-center gap-2 text-xs text-muted">
+                    <UIcon name="i-lucide-graduation-cap" />
+
+                    {{ item.grade }}
 
                     <span>•</span>
 
-                    <span>
-                      {{ parseLevel[item.classLevel] }}
-                    </span>
+                    {{ parseLevel[item.classLevel] }}
                   </div>
                 </div>
               </div>
 
-              <UBadge
-                variant="soft"
-                size="lg"
-                color="primary"
-                :leading-icon="STUDENT_ICON"
-                :label="`${item.totalStudent}`"
-              />
+              <UBadge color="primary" variant="soft" size="lg">
+                {{ item.totalStudent }}
+                Students
+              </UBadge>
             </div>
           </div>
 
           <!-- Stats -->
-          <div class="grid grid-cols-3 gap-2 p-4">
-            <div class="rounded-2xl bg-blue-500/10 p-3 dark:bg-blue-500/15">
-              <p
-                class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500"
-              >
-                Section
-              </p>
+          <div class="grid grid-cols-1 gap-3 px-5 pb-5 sm:grid-cols-3">
+            <div class="rounded-xl border border-default p-3">
+              <div class="flex space-x-2">
+                <UIcon name="i-lucide-layout-grid" class="mb-2 text-primary" />
 
-              <p class="truncate text-sm font-medium">
+                <p class="text-xs text-muted">Section</p>
+              </div>
+              <p class="font-semibold">
                 {{ item.sectionName || "N/A" }}
               </p>
             </div>
 
-            <div class="rounded-2xl bg-emerald-500/10 p-3 dark:bg-emerald-500/15">
-              <p
-                class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500"
-              >
-                Stream
-              </p>
+            <div class="rounded-xl border border-default p-3">
+              <div class="flex space-x-2">
+                <UIcon name="i-lucide-git-branch" class="mb-2 text-emerald-500" />
 
-              <p class="truncate text-sm font-medium">
+                <p class="text-xs text-muted">Stream</p>
+              </div>
+
+              <p class="font-semibold">
                 {{ item.streamName || "N/A" }}
               </p>
             </div>
 
-            <div class="rounded-2xl bg-orange-500/10 p-3 dark:bg-orange-500/15">
-              <p
-                class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500"
-              >
-                Level
-              </p>
+            <div class="rounded-xl border border-default p-3">
+              <div class="flex space-x-2">
+                <UIcon name="i-lucide-layers-3" class="mb-2 text-orange-500" />
 
-              <p class="truncate text-sm font-medium">
+                <p class="text-xs text-muted">Level</p>
+              </div>
+              <p class="font-semibold">
                 {{ parseLevel[item.classLevel] }}
               </p>
             </div>
@@ -126,26 +123,25 @@
 
           <!-- Footer -->
           <div
-            class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800"
+            class="flex items-center justify-between border-t border-default px-5 py-4"
           >
-            <div class="flex min-w-0 items-center gap-3">
-              <UAvatar :alt="item.teacherName" size="sm" />
+            <div class="flex items-center gap-3">
+              <UAvatar size="xl" :alt="item.teacherName" />
 
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              <div>
+                <p class="font-medium">
                   {{ item.teacherName }}
                 </p>
 
-                <p class="text-xs text-gray-500">Class Teacher</p>
+                <p class="text-xs text-muted">Class Teacher</p>
               </div>
             </div>
 
             <UButton
-              icon="i-lucide-chevron-right"
+              icon="i-lucide-arrow-right"
               color="neutral"
               variant="ghost"
-              size="sm"
-              class="rounded-xl"
+              class="transition-all sm:opacity-0 sm:group-hover:translate-x-1 sm:group-hover:opacity-100"
             />
           </div>
         </UCard>
@@ -154,7 +150,7 @@
 
     <!-- Empty -->
     <template v-else>
-      <UCard>
+      <UCard class="rounded-3xl border border-default shadow-sm">
         <div class="flex flex-col items-center justify-center py-14">
           <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
 
@@ -162,7 +158,6 @@
         </div>
       </UCard>
     </template>
-
 
     <div class="mt-6">
       <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">

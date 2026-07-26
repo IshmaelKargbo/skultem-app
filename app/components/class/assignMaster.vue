@@ -1,52 +1,39 @@
 <template>
   <USlideover :dismissible="false" v-model:open="open">
-    <!-- Trigger -->
-    <UButton class="flex justify-center" color="info" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON"
-      @click="open = true" />
+    <UButton class="flex justify-center" color="info" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON" @click="open = true" />
 
-    <!-- Header -->
     <template #header>
-      <div class="flex justify-between w-full items-center">
+      <div class="flex w-full items-center justify-between gap-3">
         <p class="text-lg font-semibold">Assign Class Master</p>
         <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
       </div>
     </template>
 
-    <!-- Body -->
     <template #body>
-      <UForm ref="formRef" :schema="schema" :state="state" :disabled="isLoading" class="space-y-5 w-full"
-        @submit="onSubmit">
-        <!-- Class -->
+      <UForm ref="formRef" :schema="schema" :state="state" :disabled="isLoading" class="space-y-4 sm:space-y-5 w-full" @submit="onSubmit">
         <UFormField label="Class" name="classId" required>
-          <USelectMenu value-key="value" :items="classes" v-model="state.classId" placeholder="Select class"
-            :disabled="isLoading" />
+          <USelectMenu value-key="value" :items="classes" v-model="state.classId" placeholder="Select class" :disabled="isLoading" />
           <template #help>
             <p class="text-xs text-muted">Select the class where you want to assign a class master.</p>
           </template>
         </UFormField>
 
-        <!-- Section -->
         <UFormField v-if="selectedClass" label="Section" name="sectionId" required>
-          <USelectMenu value-key="value" :items="sections" v-model="state.sectionId" placeholder="Select section"
-            :disabled="isLoading || sections.length === 0" />
+          <USelectMenu value-key="value" :items="sections" v-model="state.sectionId" placeholder="Select section" :disabled="isLoading || sections.length === 0" />
           <template #help>
             <p class="text-xs text-muted">Choose the section within this class.</p>
           </template>
         </UFormField>
 
-        <!-- Stream (SSS only) -->
         <UFormField v-if="selectedClass?.level === Level.SSS" label="Stream" name="streamId" required>
-          <USelectMenu value-key="value" :items="streams" v-model="state.streamId" placeholder="Select stream"
-            :disabled="isLoading || streams.length === 0" />
+          <USelectMenu value-key="value" :items="streams" v-model="state.streamId" placeholder="Select stream" :disabled="isLoading || streams.length === 0" />
           <template #help>
             <p class="text-xs text-muted">Select the stream for this SSS class.</p>
           </template>
         </UFormField>
 
-        <!-- Teacher -->
         <UFormField v-if="selectedClass" label="Teacher" name="teacherId" required>
-          <USelectMenu value-key="value" :items="teachers" v-model="state.teacherId" placeholder="Select teacher"
-            :disabled="isLoading || teachers.length === 0" />
+          <USelectMenu value-key="value" :items="teachers" v-model="state.teacherId" placeholder="Select teacher" :disabled="isLoading || teachers.length === 0" />
           <template #help>
             <p class="text-xs text-muted">Select the teacher to assign as the class master.</p>
           </template>
@@ -54,11 +41,10 @@
       </UForm>
     </template>
 
-    <!-- Footer -->
     <template #footer>
-      <div class="flex space-x-3">
-        <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
-        <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <UButton class="justify-center" icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
+        <UButton class="justify-center" label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
       </div>
     </template>
   </USlideover>

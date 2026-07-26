@@ -35,7 +35,7 @@ watch(
     <!-- Main Content -->
     <main
       ref="scrollContainer"
-      class="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+1rem)]"
+      class="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
     >
       <Header class="sticky top-0 z-20 md:hidden" />
       <div class="container mx-auto flex-1  py-4 ">

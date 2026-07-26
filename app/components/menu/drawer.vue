@@ -1,14 +1,18 @@
 <template>
-  <USlideover :open="open" side="left" :ui="{
-    body: 'p-0',
-    content: 'w-full max-w-sm bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-950 border-r border-neutral-200 dark:border-neutral-800'
-  }" @update:open="open = $event">
+  <USlideover
+    :open="open"
+    side="left"
+    :ui="{
+      body: 'p-0',
+      content: 'w-full max-w-sm bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-950 border-r border-neutral-200 dark:border-neutral-800'
+    }"
+    @update:open="open = $event"
+  >
     <!-- Trigger -->
-    <UButton class="md:hidden" color="neutral" variant="ghost" icon="lucide:menu" @click="open = true" />
+    <UButton class="md:hidden" color="neutral" variant="link" icon="lucide:menu" @click="open = true" />
     <template #header>
-      <div
-        class="w-full">
-        <div class="flex justify-between items-center gap-3">
+      <div class="w-full">
+        <div class="flex items-center justify-between gap-3">
           <div class="relative shrink-0">
             <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900" />
             <span
@@ -31,7 +35,7 @@
 
     <!-- BODY -->
     <template #body>
-      <div class="flex h-full flex-col overflow-y-auto p-4">
+      <div class="flex h-full flex-col overflow-y-auto px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <!-- PROFILE -->
         <div class="pt-2">
           <!-- roles -->
@@ -47,11 +51,11 @@
             </div>
 
             <button v-for="role in userRoles" :key="role.value"
-              class="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 transition-all duration-200"
-              :class="activeRole === role.value
-                ? 'border-primary-500/20 bg-primary-500/8'
-                : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/2 hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/5'
-                " @click="switchRole(role.value)">
+                class="group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border p-3 transition-all duration-200"
+                :class="activeRole === role.value
+                  ? 'border-primary-500/20 bg-primary-500/8'
+                  : 'border-neutral-200/70 dark:border-white/5 bg-neutral-50 dark:bg-white/2 hover:border-primary-500/20 hover:bg-white dark:hover:bg-white/5'
+                  " @click="switchRole(role.value)">
               <!-- glow -->
               <div v-if="activeRole === role.value" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-primary" />
 
@@ -122,11 +126,10 @@
               </div>
 
         <!-- QUICK LINKS -->
-        <div
-          class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/2">
-          <NuxtLink v-for="link in quickLinks" :key="link.to" :to="link.to" @click="close"
+        <div class="mt-3 space-y-3 rounded-3xl border border-neutral-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/2">
+          <NuxtLink  v-for="link in quickLinks" :key="link.to" :to="link.to" @click="close"
             class="flex items-center gap-4 rounded-2xl border border-transparent bg-neutral-100 px-4 py-4 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20"
-            :class="route.path.startsWith(link.to) ? 'border-primary/20 bg-primary-50 dark:bg-primary-800' : ''">
+            :class="link.to === activeQuickLinkTo ? 'border-primary/20 bg-primary-50 dark:bg-primary-800' : ''">
             <UIcon :name="link.icon" class="size-7 text-neutral-700 dark:text-neutral-200" />
             <span class="text-[16px] font-medium">
               {{ link.label }}
@@ -154,10 +157,10 @@
 
             <!-- items -->
             <div v-if="expanded.includes(section.id)" class="px-5 pb-5 space-y-2">
-              <NuxtLink v-for="item in section.items.filter(x => !!x?.to)" :key="item.label" :to="item.to"
+              <NuxtLink  v-for="item in section.items.filter(x => !!x?.to)" :key="item.label" :to="item.to"
                 @click="close"
                 class="flex items-center gap-3 rounded-2xl border border-transparent bg-neutral-100 px-4 py-3.5 transition hover:border-primary/20 hover:bg-primary-50 hover:text-primary-600 dark:bg-neutral-900 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/20 dark:hover:text-primary-200"
-                :class="route.path.startsWith(item.to) ? 'border-primary-500 bg-primary-200 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-neutral-700 dark:text-neutral-200'">
+                :class="item.to === activeItemTo(section) ? 'border-primary-500 bg-primary-200 text-primary-600 font-semibold dark:bg-primary-500/10 dark:text-primary-200' : 'text-neutral-700 dark:text-neutral-200'">
                 <UIcon :name="item.icon" class="size-5" />
 
                 <span class="font-medium">
@@ -178,8 +181,10 @@
       </div>
     </template>
     <template #footer>
-      <div class="w-full">
-        <UButton to="/logout" color="error" class="w-full flex justify-center">Log out</UButton>
+      <div class="w-full px-4 pb-4">
+        <UButton to="/logout" color="error" class="flex w-full justify-center">
+          Log out
+        </UButton>
       </div>
     </template>
   </USlideover>
@@ -216,6 +221,40 @@ const { canInstall, install } = usePwaInstall()
 const router = useRouter()
 const route = useRoute()
 const open = ref(false)
+
+// --- Active-path matching -------------------------------------------------
+// A single item is "active" if the current route equals it exactly, or is a
+// descendant of it (route starts with `${to}/`). When several items in the
+// same list satisfy that (e.g. "/classes" and "/classes/sections" both match
+// "/classes/sections/edit/1"), only the most specific (longest `to`) one
+// should actually be highlighted — otherwise multiple links light up at once.
+function matchesRoute(to: string) {
+  return route.path === to || route.path.startsWith(`${to}/`)
+}
+
+function mostSpecificMatch(items: { to: string }[]): string | undefined {
+  const candidates = items.filter((i) => matchesRoute(i.to))
+  if (!candidates.length) return undefined
+  return candidates.reduce((a, b) => (b.to.length > a.to.length ? b : a)).to
+}
+
+function activeItemTo(section: Section) {
+  return mostSpecificMatch(
+    section.items.filter((i): i is SectionItem & { to: string } => !!i.to)
+  )
+}
+
+const activeQuickLinkTo = computed(() => mostSpecificMatch(quickLinks.value))
+// ---------------------------------------------------------------------------
+
+function isActive(path?: string) {
+  if (!path) return false
+
+  return (
+    route.path === path ||
+    route.path.startsWith(path + "/")
+  )
+}
 
 const expanded = ref<string[]>(['grades'])
 
@@ -337,22 +376,6 @@ const sections = computed<Section[]>(() => [
       { label: 'Streams', icon: CURRICULUM_STREAM_ICON, to: '/classes/streams' }
     ]
   },
-  // Disabled — restore by uncommenting and it will be picked up automatically.
-  // {
-  //   id: 'curriculum',
-  //   title: 'Curriculum',
-  //   icon: SCHEME_ICON,
-  //   visible: can([Role.PROPRIETOR, Role.ADMIN]),
-  //   items: [
-  //     { label: 'Scheme of Work', icon: SCHEME_ICON, to: '/curriculums/scheme-of-work' },
-  //     { label: 'Lesson Plans', icon: BOOK_OPEN_ICON, to: '/curriculums/lesson-plans' },
-  //     { label: 'Weeks', icon: WEEKS_ICON, to: '/curriculums/weeks' },
-  //     { label: 'Progress', icon: PROGRESS_ICON, to: '/curriculums/progress' },
-  //     { label: 'Student Progress', icon: STUDENT_ICON, to: '/curriculums/student-progress' },
-  //     { label: 'Teacher Progress', icon: TEACHER_ICON, to: '/curriculums/teacher-progress' },
-  //     { label: 'Class Progress', icon: CLASS_ICON, to: '/curriculums/class-progress' }
-  //   ]
-  // },
   {
     id: 'behaviours',
     title: 'Behaviours',
@@ -519,29 +542,6 @@ const sections = computed<Section[]>(() => [
       },
     ].filter(Boolean)
   },
-  // Disabled — restore by uncommenting and it will be picked up automatically.
-  // {
-  //   id: 'id-cards',
-  //   title: 'ID Cards',
-  //   icon: ID_CARD_ICON,
-  //   visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
-  //   items: [
-  //     { label: 'ID Cards', icon: ID_CARD_ICON, to: '/id-cards' },
-  //     { label: 'Generate', icon: GENERATE_ID_CARD_ICON, to: '/id-cards/generate' },
-  //     { label: 'Templates', icon: SETTINGS_ICON, to: '/id-cards/templates' },
-  //   ]
-  // },
-  // {
-  //   id: 'report-cards',
-  //   title: 'Report Cards',
-  //   icon: REPORT_ICON,
-  //   visible: can([Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER]),
-  //   items: [
-  //     { label: 'Report Cards', icon: REPORT_ICON, to: '/report-cards' },
-  //     { label: 'Generate', icon: GENERATE_ICON, to: '/report-cards/generate' },
-  //     { label: 'Templates', icon: SETTINGS_ICON, to: '/id-cards/templates' },
-  //   ]
-  // },
 ].filter((section) => section.visible !== false))
 
 function toggleSection(id: string) {

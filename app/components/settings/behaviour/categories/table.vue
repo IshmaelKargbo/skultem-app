@@ -165,7 +165,7 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="md:hidden bg-gray-50 dark:bg-neutral-950 min-h-[300px]">
+  <div class="md:hidden bg-gray-100 dark:bg-neutral-950 min-h-[300px]">
     <!-- Loading -->
     <div v-if="loading" class="space-y-3 p-4">
       <div
