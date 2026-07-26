@@ -16,6 +16,8 @@ const appleSplashScreens = [
   { width: 2048, height: 2732, media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)' }
 ]
 
+const splashBackgroundColor = '#f7fbff'
+
 export default defineNuxtConfig({
   ssr: false,
 
@@ -32,7 +34,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       meta: [
-        { name: 'theme-color', content: '#0f172a' },
+        { name: 'theme-color', content: splashBackgroundColor },
 
         // ✅ iOS/PWA improvements
         { name: 'mobile-web-app-capable', content: 'yes' },
@@ -94,7 +96,7 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
 
-    includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+    includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'splash/*.png'],
 
     devOptions: {
       enabled: false
@@ -102,6 +104,7 @@ export default defineNuxtConfig({
 
     workbox: {
       navigateFallback: '/',
+      maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
 
       globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
 
@@ -117,8 +120,8 @@ export default defineNuxtConfig({
       name: 'Skultem',
       short_name: 'Skultem',
       description: 'School management and assessment system',
-      theme_color: '#0f172a',
-      background_color: '#0f172a',
+      theme_color: splashBackgroundColor,
+      background_color: splashBackgroundColor,
       start_url: '/',
       scope: '/',
       display: 'standalone',

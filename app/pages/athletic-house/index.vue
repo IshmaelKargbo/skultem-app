@@ -91,6 +91,12 @@
                             <USelectMenu :items="houses" placeholder="Assign house" />
                         </template>
                     </UTable>
+                    <template #footer>
+                        <div class="flex space-x-2">
+                            <UButton variant="outline" color="error" label="Cancel" />
+                            <UButton label="Save Changes" :trailing-icon="SAVE_ICON" />
+                        </div>
+                    </template>
                 </UCard>
             </div>
         </div>
