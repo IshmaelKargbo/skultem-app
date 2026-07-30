@@ -1,10 +1,10 @@
 <template>
-    <UForm class="p-4 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
+    <UForm class="p-4 sm:p-6 space-y-4 pb-24 md:pb-4" :state="state" :schema="schema" @submit="onSubmit">
         <!-- Header -->
         <Heading title="Assign Subjects to Class" subtitle="Define the curriculum structure for this class.">
-            <UFormField class="min-w-sm" name="classId">
+            <UFormField class="w-full md:w-auto md:min-w-sm" name="classId">
                 <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
-                    @change="fetchRecord" :items="classes" placeholder="Choose a class" />
+                    @change="fetchRecord" :items="classes" placeholder="Choose a class" class="w-full" />
             </UFormField>
         </Heading>
         <!-- Assignments card (shown only when a class is selected) -->
@@ -13,93 +13,163 @@
         }">
             <template #header>
                 <div>
-                    <div v-if="lockedCount > 0"
-                        class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                        {{ lockedCount }} subject(s) are locked because student assessments already have grades.
-                        Locked rows are view-only.
+                    <div v-if="lockedCount > 0" role="status" aria-live="polite"
+                        class="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
+                        <UIcon name="lucide:lock" class="mt-0.5 size-3.5 shrink-0" />
+                        <span>
+                            {{ lockedCount }} subject(s) are locked because student assessments already have grades.
+                            Locked rows are view-only.
+                        </span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-700">
-                            Subject Assignments ({{ state.assignments.length }})
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                            Subject Assignments
+                            <span
+                                class="ml-1 inline-flex items-center justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                {{ state.assignments.length }}
+                            </span>
                         </h3>
-                        <UButton variant="subtle" color="primary" icon="prime:plus" label="Add Subject" @click="add" />
+                        <UButton variant="subtle" color="primary" icon="prime:plus" label="Add Subject"
+                            class="w-full justify-center sm:w-auto" @click="add" />
                     </div>
                 </div>
             </template>
 
-            <!-- Table -->
-            <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
-                <!-- Subject column -->
-                <template #subjectId-cell="{ row }">
-                    <UFormField :name="`assignments.${row.index}.subjectId`">
-                        <USelectMenu value-key="value" :items="availableSubjects(row.index)"
-                            :loading="subjectStore.loading" placeholder="Select Subject" class="w-full"
-                            v-model="row.original.subjectId" :disabled="Boolean(row.original.locked)" />
-                    </UFormField>
-                </template>
+            <!-- Desktop / tablet: table -->
+            <div class="hidden md:block">
+                <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
+                    <!-- # column -->
+                    <template #index-cell="{ row }">
+                        <span class="text-sm text-gray-400 tabular-nums">{{ row.index + 1 }}</span>
+                    </template>
 
-                <!-- Group column -->
-                <template #groupId-cell="{ row }">
-                    <UFormField :name="`assignments.${row.index}.groupId`">
-                        <USelectMenu value-key="value" :items="groups" :loading="subjectGroupStore.loading"
-                            placeholder="Select Group (Optional)" v-model="row.original.groupId"
-                            :disabled="disableByLevel || Boolean(row.original.locked)" />
-                    </UFormField>
-                </template>
+                    <!-- Subject column -->
+                    <template #subjectId-cell="{ row }">
+                        <UFormField :name="`assignments.${row.index}.subjectId`">
+                            <USelectMenu value-key="value" :items="availableSubjects(row.index)"
+                                :loading="subjectStore.loading" placeholder="Select Subject" class="w-full"
+                                v-model="row.original.subjectId" :disabled="Boolean(row.original.locked)" />
+                        </UFormField>
+                    </template>
 
-                <!-- Mandatory column -->
-                <template #mandatory-cell="{ row }">
-                    <div class="flex">
-                        <USwitch label="Mandatory" v-model="row.original.mandatory"
-                            :disabled="disableByLevel || Boolean(row.original.locked)" />
+                    <!-- Group column -->
+                    <template #groupId-cell="{ row }">
+                        <UFormField :name="`assignments.${row.index}.groupId`">
+                            <USelectMenu value-key="value" :items="groups" :loading="subjectGroupStore.loading"
+                                placeholder="Select Group (Optional)" class="w-full" v-model="row.original.groupId"
+                                :disabled="disableByLevel || Boolean(row.original.locked)" />
+                        </UFormField>
+                    </template>
+
+                    <!-- Mandatory column -->
+                    <template #mandatory-cell="{ row }">
+                        <div class="flex">
+                            <USwitch label="Mandatory" v-model="row.original.mandatory"
+                                :disabled="disableByLevel || Boolean(row.original.locked)" />
+                        </div>
+                    </template>
+
+                    <!-- Actions column -->
+                    <template #actions-cell="{ row }">
+                        <div class="flex justify-end">
+                            <UButton v-if="showDelete() && !row.original.locked" @click="remove(row.index)"
+                                variant="ghost" color="error" icon="lucide:trash-2"
+                                :aria-label="`Remove subject ${row.index + 1}`" />
+                            <UBadge v-else-if="row.original.locked" color="neutral" variant="outline" label="Locked" />
+                        </div>
+                    </template>
+
+                    <!-- Empty state -->
+                    <template #empty>
+                        <div class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
+                            <UIcon name="lucide:book-open" class="mx-auto mb-3 size-8 text-gray-300" />
+                            <p class="text-sm text-gray-500 mb-4">No subjects assigned yet.</p>
+                            <UButton icon="prime:plus" label="Add First Subject" @click="add" />
+                        </div>
+                    </template>
+                </UTable>
+            </div>
+
+            <!-- Mobile: stacked cards, one per assignment -->
+            <div class="md:hidden">
+                <div v-if="!state.assignments.length"
+                    class="border border-dashed border-gray-300 rounded-lg m-4 p-10 text-center">
+                    <UIcon name="lucide:book-open" class="mx-auto mb-3 size-8 text-gray-300" />
+                    <p class="text-sm text-gray-500 mb-4">No subjects assigned yet.</p>
+                    <UButton icon="prime:plus" label="Add First Subject" @click="add" />
+                </div>
+
+                <TransitionGroup v-else tag="div" name="row" class="divide-y divide-gray-200 dark:divide-gray-800">
+                    <div v-for="(assignment, index) in state.assignments" :key="index" class="p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                <UIcon v-if="assignment.locked" name="lucide:lock" class="size-3" />
+                                Subject {{ index + 1 }}
+                            </span>
+                            <UBadge v-if="assignment.locked" color="neutral" variant="outline" label="Locked" />
+                            <UButton v-else-if="showDelete()" @click="remove(index)" variant="ghost" color="error"
+                                icon="lucide:trash-2" size="xs" :aria-label="`Remove subject ${index + 1}`" />
+                        </div>
+
+                        <UFormField :name="`assignments.${index}.subjectId`" label="Subject">
+                            <USelectMenu value-key="value" :items="availableSubjects(index)"
+                                :loading="subjectStore.loading" placeholder="Select Subject" class="w-full"
+                                v-model="assignment.subjectId" :disabled="Boolean(assignment.locked)" />
+                        </UFormField>
+
+                        <UFormField :name="`assignments.${index}.groupId`" label="Group">
+                            <USelectMenu value-key="value" :items="groups" :loading="subjectGroupStore.loading"
+                                placeholder="Select Group (Optional)" class="w-full" v-model="assignment.groupId"
+                                :disabled="disableByLevel || Boolean(assignment.locked)" />
+                        </UFormField>
+
+                        <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-900">
+                            <span class="text-sm text-gray-600 dark:text-gray-300">Mandatory</span>
+                            <USwitch v-model="assignment.mandatory"
+                                :disabled="disableByLevel || Boolean(assignment.locked)" />
+                        </div>
                     </div>
-                </template>
-
-                <!-- Actions column -->
-                <template #actions-cell="{ row }">
-                    <div class="flex justify-end">
-                        <UButton v-if="showDelete() && !row.original.locked" @click="remove(row.index)" variant="ghost"
-                            color="error" icon="lucide:trash-2" />
-                        <UBadge v-else-if="row.original.locked" color="neutral" variant="outline" label="Locked" />
-                    </div>
-                </template>
-
-                <!-- Empty state -->
-                <template #empty>
-                    <div class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
-                        <p class="text-sm text-gray-500 mb-4">No subjects assigned yet.</p>
-                        <UButton icon="prime:plus" label="Add First Subject" @click="add" />
-                    </div>
-                </template>
-            </UTable>
+                </TransitionGroup>
+            </div>
 
             <div v-if="state.assignments.length"
-                class="p-4 bg-gray-50 dark:bg-gray-950 dark:border-gray-800 text-sm text-gray-600">
-                Total Subjects: <strong>{{ state.assignments.length }}</strong>
-                | Core: <strong>{{state.assignments.filter(a => a.mandatory).length}}</strong>
-                | Optional: <strong>{{state.assignments.filter(a => !a.mandatory).length}}</strong>
+                class="flex flex-wrap items-center gap-x-4 gap-y-1 p-4 bg-gray-50 dark:bg-gray-950 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400">
+                <span>Total Subjects: <strong class="text-gray-800 dark:text-gray-200">{{ state.assignments.length }}</strong></span>
+                <span>Core: <strong class="text-gray-800 dark:text-gray-200">{{state.assignments.filter(a => a.mandatory).length}}</strong></span>
+                <span>Optional: <strong class="text-gray-800 dark:text-gray-200">{{state.assignments.filter(a => !a.mandatory).length}}</strong></span>
             </div>
 
             <template #footer>
-                <div class="flex gap-3">
-                    <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving" />
-                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm" />
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
+                        class="w-full justify-center sm:w-auto" />
+                    <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm"
+                        class="w-full justify-center sm:w-auto" />
                 </div>
             </template>
         </UCard>
         <UCard v-else>
-            <div class="h-56 flex flex-col items-center justify-center gap-3 text-center">
-                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100">
+            <div class="h-56 flex flex-col items-center justify-center gap-3 px-4 text-center">
+                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800">
                     <UIcon :name="EMPTY_ICON" class="w-6 h-6 text-gray-400" />
                 </div>
                 <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-600">No Class Selected</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-300">No Class Selected</p>
                     <p class="text-xs text-gray-400">
                         Choose a class from the dropdown above to manage its subject assignments.
                     </p>
                 </div>
             </div>
         </UCard>
+
+        <!-- Sticky action bar on mobile so Save/Cancel stay reachable with long lists -->
+        <div v-if="state.classId"
+            class="fixed inset-x-0 bottom-0 z-10 flex gap-3 border-t border-gray-200 bg-white/95 p-4 backdrop-blur-sm md:hidden dark:border-gray-800 dark:bg-gray-950/95"
+            style="padding-bottom: max(1rem, env(safe-area-inset-bottom));">
+            <UButton color="neutral" variant="outline" label="Cancel" class="flex-1 justify-center" @click="resetForm" />
+            <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
+                class="flex-1 justify-center" @click="onSubmit" />
+        </div>
     </UForm>
 </template>
 
@@ -164,6 +234,7 @@ const schema = yup.object({
 })
 
 const columns: TableColumn<AssignmentRow>[] = [
+    { id: 'index', header: '#' },
     { accessorKey: 'subjectId', header: 'Subject' },
     { accessorKey: 'groupId', header: 'Group' },
     { accessorKey: 'mandatory', header: 'Type' },
@@ -264,3 +335,33 @@ definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 </script>
+
+<style scoped>
+.row-enter-active,
+.row-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.row-enter-from {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.row-leave-to {
+    opacity: 0;
+    transform: translateX(12px);
+}
+
+.row-leave-active {
+    position: absolute;
+    width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .row-enter-active,
+    .row-leave-active {
+        transition: none !important;
+    }
+}
+</style>

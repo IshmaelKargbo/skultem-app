@@ -219,7 +219,7 @@ onMounted(async () => {
             </p>
           </div>
 
-          <div class="flex gap-2">
+          <!-- <div class="flex gap-2">
 
             <UButton
               icon="i-lucide-eye"
@@ -238,7 +238,7 @@ onMounted(async () => {
               Edit
             </UButton>
 
-          </div>
+          </div> -->
         </div>
 
       </UCard>
@@ -269,7 +269,7 @@ onMounted(async () => {
   <!-- Pagination -->
   <div
     v-if="!loading && data?.length"
-    class="flex flex-col gap-3 pt-3 md:flex-row md:items-center md:justify-between"
+    class="flex flex-col gap-3 pt-3 md:flex-row items-center md:justify-between"
   >
     <Showing :meta="meta" />
 

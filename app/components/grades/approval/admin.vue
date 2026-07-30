@@ -38,7 +38,7 @@
 
       <!-- STATS -->
       <div class="grid grid-cols-3 gap-2">
-        <UCard class="rounded-3xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
+        <UCard class="rounded-xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
           <div class="text-center">
             <p class="text-[11px] text-gray-500">
               Pending
@@ -50,7 +50,7 @@
           </div>
         </UCard>
 
-        <UCard class="rounded-3xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
+        <UCard class="rounded-xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
           <div class="text-center">
             <p class="text-[11px] text-gray-500">
               Approved
@@ -62,7 +62,7 @@
           </div>
         </UCard>
 
-        <UCard class="rounded-3xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
+        <UCard class="rounded-xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
           <div class="text-center">
             <p class="text-[11px] text-gray-500">
               Returned

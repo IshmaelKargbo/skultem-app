@@ -359,13 +359,13 @@ const sections = computed<Section[]>(() => [
     visible: can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]),
     items: [
       { label: 'Subjects', icon: CURRICULUM_SUBJECT_ICON, to: '/subjects' },
+            { label: 'Teacher Assignment', icon: CLIPBOARD_ADD_ICON, to: '/subjects/teacher-assignment' },
       { label: 'Subject Groups', icon: CURRICULUM_GROUP_ICON, to: '/subjects/subject-groups' },
       { label: 'Class Subjects', icon: BOOK_OPEN_ICON, to: '/subjects/class-subjects' },
-      { label: 'Teacher Assignment', icon: CLIPBOARD_ADD_ICON, to: '/subjects/teacher-assignment' },
-      { label: 'Sections', icon: LAYERS_ICON, to: '/subjects/sections' },
-      { label: 'Streams Subjects', icon: CURRICULUM_STREAM_ICON, to: '/subjects/streams' }
+      { label: 'Streams Subjects', icon: CURRICULUM_STREAM_ICON, to: '/subjects/stream-subjects' }
     ]
   },
+
   {
     id: 'classes',
     title: 'Classes',
