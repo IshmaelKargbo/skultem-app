@@ -13,17 +13,14 @@
                     <p class="font-semibold truncate">
                         {{ student.givenNames }} {{ student.familyName }}
                     </p>
-                    <p class="text-[11px] text-muted truncate">{{ student.admissionNumber || 'No Admission No' }}</p>
+                    <div class="text-[11px] text-muted flex space-x-2">
+                        <p class="truncate">{{ student.admissionNumber || 'No Admission No' }}</p>
+                        <p>{{ student.className }}</p>
+                    </div>
                 </div>
             </div>
             <div>
-                <StudentEnrollment class="mb-1" :id="student.id">
-                    <template #default="{ value }">
-                        <p class="text-xs">
-                            {{ parseClass(value) }}
-                        </p>
-                    </template>
-                </StudentEnrollment>
+                
                 <UBadge :color="outstanding == 0 ? 'success' : 'error'" variant="outline"
                     :label="format(outstanding)" />
             </div>

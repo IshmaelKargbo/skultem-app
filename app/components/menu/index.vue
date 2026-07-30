@@ -127,19 +127,20 @@ const navItems: NavItem[] = [
       { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON },
     ] },
 
-  { label: 'ID Cards', icon: ID_CARD_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
-    subNavs: [
-      { label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true },
-      { label: 'Generate', to: '/id-cards/generate', icon: GENERATE_ID_CARD_ICON },
-      { label: 'Templates', to: '/id-cards/templates', icon: SETTINGS_ICON },
-    ] },
+  // { label: 'ID Cards', icon: ID_CARD_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+  //   subNavs: [
+  //     { label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true },
+  //     { label: 'Generate', to: '/id-cards/generate', icon: GENERATE_ID_CARD_ICON },
+  //     { label: 'Templates', to: '/id-cards/templates', icon: SETTINGS_ICON },
+  //   ] },
 
-  { label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
-    subNavs: [
-      { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
-      { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
-      { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON },
-    ] },
+  // { label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+  //   subNavs: [
+  //     { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
+  //     { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
+  //     { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON },
+  //   ] 
+  // },
 
   // NOTE: duplicates the "Grades" / "Performance" parent rows above —
   // kept as-is to match current behavior. Safe to delete if unintentional.
@@ -241,13 +242,13 @@ const navItems: NavItem[] = [
       { label: 'Template', to: '/academics/assessment-templates', icon: TEMPLATE_ICON },
       { label: 'Academic Cycle', to: '/academics/assessment-cycle', icon: CYCLE_ICON },
       { label: 'Grade Scale', to: '/academics/grade-scale', icon: GRADE_ICON },
-    ] },
-
+    ] 
+  },
   { label: 'Settings', icon: SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
       { label: 'Holidaies', to: '/settings', icon: HOLIDAY_ICON, exact: true },
-    ] },
-
+    ] 
+  },
   { label: 'Auth', icon: AUTH_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
       { label: 'Users', to: '/auth', icon: USERS_ICON, exact: true },

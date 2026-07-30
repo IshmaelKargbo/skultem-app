@@ -41,7 +41,7 @@ async function click(row: AttendanceHistory) {
 
 <template>
   <UCard :ui="{
-    body: 'p-2 sm:p-4'
+    body: 'p-0 sm:p-0'
   }">
     <div>
       <div v-if="records.length > 0" v-for="(item, index) in records" :key="index" :class="[

@@ -128,7 +128,7 @@ defineExpose({
         <template #student-cell="{ row }">
           <div class="flex items-center gap-3">
             <UAvatar
-              :src="row.original.student.photo"
+              :src="row.original.photo"
               :alt="row.original.student"
             />
             <div>
