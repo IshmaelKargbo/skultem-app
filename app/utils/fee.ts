@@ -82,7 +82,8 @@ export type FeePayment = {
     id: string
     fee: string
     term: string
-    student: Student
+    student: string
+    photo: string
     amount: number
     paymentMethod: string
     paidAt: string

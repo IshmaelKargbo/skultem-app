@@ -10,14 +10,17 @@
                     :alt="`${student.givenNames} ${student.familyName}`"
                     class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
                 <div class="min-w-0 space-y-0.5">
-                    <p class="font-semibold truncate">
+                    <p class="text-sm font-semibold truncate">
                         {{ student.givenNames }} {{ student.familyName }}
                     </p>
-                    <p class="text-[11px] text-muted truncate">{{ student.admissionNumber || 'No Admission No' }}</p>
+                    <div class="text-[11px] text-muted flex space-x-1.5">
+                        <p class="truncate">{{ student.admissionNumber || 'No Admission No' }}</p>
+                        <p>·</p>
+                        <p>{{ student.className }}</p>
+                    </div>
                 </div>
             </div>
             <div class="space-y-0.5">
-                <p class="text-xs text-end text-muted">{{ student.className }}</p>
                 <UBadge size="sm" :color="student.feeDetail.balance == 0 ? 'success' : 'error'" variant="outline"
                     :label="format(student.feeDetail.balance)" />
             </div>

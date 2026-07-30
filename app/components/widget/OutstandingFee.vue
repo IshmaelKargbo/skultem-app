@@ -10,7 +10,7 @@
 
       <template v-else>
         <div class="flex justify-between items-center">
-          <p class="text-2xl font-semibold">{{ totalOutstanding }}</p>
+          <p class="md:text-2xl text-xl font-semibold">{{ totalOutstanding }}</p>
           <UBadge :icon="FEE_STRUCTURE_ICON" variant="subtle" size="xl" class="p-1.5" color="error" />
         </div>
         <div class="text-xs text-muted">

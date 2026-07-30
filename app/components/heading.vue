@@ -8,7 +8,7 @@ const { subtitle, title } = defineProps<{
 <template>
     <UCard>
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div class="min-w-0 space-y-0.5">
+            <div class="min-w-0 space-y-0.5 hidden lg:block">
                 <p class="text-base font-display font-semibold leading-tight sm:text-xl md:text-2xl">
                     {{ title }}
                 </p>

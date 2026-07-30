@@ -1,5 +1,5 @@
 <template>
-    <UForm :state="state" @submit.prevent="onSubmit" :schema="schema" class="space-y-3">
+    <UForm :state="state" @submit.prevent="onSubmit" :schema="schema">
         <div class="space-y-3">
             <div class="grid md:grid-cols-2 grid-cols-1 gap-4">
 
@@ -62,7 +62,7 @@
 
                         <!-- EMPTY: no student selected -->
                         <div v-if="!state.studentId"
-                            class="items-center space-y-3 justify-center h-110 py-10 rounded-xl border-dashed flex flex-col text-sm text-muted border-2">
+                            class="items-center space-y-3 justify-center min-h-73 py-5 rounded-xl border-dashed flex flex-col text-sm text-muted border-2">
                             <UIcon :name="EMPTY_ICON" class="w-12 h-12" />
                             <p>Select a student to view their outstanding fees</p>
                         </div>
@@ -95,7 +95,7 @@
                                 <div>
                                     <p class="font-medium">{{ fee.feeName }}</p>
                                     <p class="text-xs text-muted">
-                                        Outstanding: {{ format(fee.outstanding) }}
+                                        Outstanding: <span :class="[fee.outstanding > 0 ? 'text-error' : '']">{{ format(fee.outstanding) }}</span>
                                     </p>
                                 </div>
 
@@ -147,7 +147,7 @@
 
                                     <div class="flex justify-between">
                                         <span class="text-muted">Total Outstanding</span>
-                                        <span>{{ format(totalOutstanding) }}</span>
+                                        <span :class="[totalOutstanding > 0 ? 'text-error' : '']">{{ format(totalOutstanding) }}</span>
                                     </div>
 
                                     <UDivider />
@@ -199,9 +199,9 @@
                     <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-100">
                         <UIcon name="i-lucide-check" class="text-xl text-green-600" />
                     </div>
-                    <div class="space-y-1">
-                        <h2 class="text-lg font-semibold">Payment Recorded</h2>
-                        <p class="text-sm text-muted">
+                    <div>
+                        <h2 class="font-semibold">Payment Recorded</h2>
+                        <p class="text-app text-muted">
                             Do you want to download a receipt for this payment?
                         </p>
                     </div>

@@ -119,7 +119,7 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="md:hidden bg-gray-50 dark:bg-neutral-950 min-h-[300px]">
+  <div class="md:hidden  dark:bg-neutral-950 min-h-[300px]">
     <!-- Loading -->
     <div v-if="loading" class="space-y-3 p-4">
       <div v-for="i in 4" :key="i" class="">
@@ -153,7 +153,7 @@ onMounted(async () => {
     </div>
 
     <!-- Cards -->
-  <div v-else class="space-y-3 p-3">
+  <div v-else class="space-y-3">
   <UCard
     v-for="row in data"
     :key="row.id"
@@ -169,14 +169,7 @@ onMounted(async () => {
           <UAvatar
             size="lg"
             :src="row.student?.photo"
-            :alt="`${row.student?.givenNames} ${row.student?.familyName}`"
-          />
-
-          <div
-            class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-neutral-900"
-            :class="row.kind === 'POSITIVE'
-              ? 'bg-emerald-500'
-              : 'bg-red-500'"
+            :alt="`${row.student}`"
           />
         </div>
 
@@ -188,22 +181,13 @@ onMounted(async () => {
               <h3
                 class="truncate text-sm font-semibold text-gray-900 dark:text-white"
               >
-                {{ row.student?.givenNames }}
-                {{ row.student?.familyName }}
+                {{ row.student}}
               </h3>
 
               <p class="mt-1 text-xs text-gray-500">
                 {{ row.category }}
               </p>
             </div>
-
-            <UBadge
-              size="xs"
-              variant="soft"
-              :color="parseBehaviourKindColor[row.kind]"
-            >
-              {{ parseBehaviourKind[row.kind] }}
-            </UBadge>
 
           </div>
 
@@ -213,18 +197,9 @@ onMounted(async () => {
 
       <!-- Note -->
       <div
-        class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800"
+        class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800"
       >
         <div class="flex items-start gap-2">
-
-          <div
-            class="mt-1 flex h-8 w-8 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10"
-          >
-            <UIcon
-              name="i-lucide-file-text"
-              class="text-primary-500"
-            />
-          </div>
 
           <div class="flex-1">
             <p class="text-xs text-gray-500">

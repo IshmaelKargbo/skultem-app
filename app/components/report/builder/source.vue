@@ -3,7 +3,7 @@
         <p class="text-base">Data Source</p>
         <p class="text-xs text-mute">Select the data entity you want to explore</p>
 
-        <div class="mt-3 grid grid-cols-4 gap-3">
+        <div class="mt-3 grid md:grid-cols-4 grid-cols-2 gap-3">
             <UButton v-for="(item, index) in datasource" :key="item.key" :label="item.value" size="lg"
                 class="w-full flex justify-center" :color="active === index ? 'primary' : 'neutral'"
                 :variant="active === index ? 'solid' : 'outline'" @click="onSelect(index)"

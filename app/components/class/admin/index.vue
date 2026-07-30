@@ -1,12 +1,12 @@
 <template>
-    <div class="p-4 space-y-4">
+    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
         <Heading title="Class Management" subtitle="Organize academic classes">
-            <div class="flex md:space-x-3 flex-wrap space-y-2 md:space-y-0 w-full md:w-1/3">
-                <div class="grid grid-cols-2 w-full gap-3">
+            <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-start md:gap-3">
+                <div class="grid w-full grid-cols-2 gap-3 sm:w-auto">
                     <ClassAssignMaster />
                     <ClassAdd />
                 </div>
-                <UInput class="md:hidden" placeholder="Search by name" />
+                <UInput class="w-full md:hidden" placeholder="Search by name" />
             </div>
         </Heading>
         <ClassTable />

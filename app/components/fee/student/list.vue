@@ -1,9 +1,10 @@
 <template>
     <UCard class="sticky top-0" :ui="{ body: 'p-3 md:p-4' }">
-        <div class="space-y-3">
+        <template #header>
             <UInput ref="searchInput" v-model="search" placeholder="Search students..." :leading-icon="SEARCH_ICON"
                 :disabled="isLoading" size="lg" />
-
+        </template>
+        <div class="space-y-3">
             <div v-if="isLoading" class="space-y-3">
                 <div v-for="n in 7" :key="n"
                     class="border p-3 rounded-xl border-gray-300 dark:border-gray-700 space-y-2">
@@ -29,12 +30,13 @@
                     <FeeStudentCard :active="item.id == selected?.id" :student="item" />
                 </button>
             </div>
-
+        </div>
+        <template #footer>
             <div class="flex justify-center">
                 <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
                     :items-per-page="meta.size" :total="meta.total" show-edges />
             </div>
-        </div>
+        </template>
     </UCard>
 </template>
 <script setup lang="ts">
@@ -68,7 +70,7 @@ const page = computed<number>({
     }
 })
 
-const size = ref(7)
+const size = ref(6)
 
 const focusSearch = async () => {
     await nextTick()

@@ -9,7 +9,7 @@
         </div>
         <template v-else>
           <div>
-            <p class="text-2xl font-semibold">{{ year }}</p>
+            <p class="md:text-2xl text-xl font-semibold">{{ year }}</p>
             <p class="text-xs text-success">{{ term }}</p>
           </div>
           <UBadge :icon="ATTENDANCE_ICON" variant="subtle" size="xl" class="p-1.5" color="info" />

@@ -2,9 +2,9 @@
   <div class="p-4 space-y-4">
     <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="flex flex-wrap gap-2 md:justify-end">
-        <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
+        <UButton :trailing-icon="SAVE_ICON" label="Save Grades" :loading="saving" :disabled="disableActions"
           @click="saveGrades" />
-        <UButton icon="lucide:check-circle" label="Complete Assessment" color="success" :loading="completing"
+        <UButton trailing-icon="lucide:check-circle" label="Complete Assessment" color="success" :loading="completing"
           variant="subtle" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
       </div>
     </Heading>
@@ -137,9 +137,9 @@
     </div>
     <UCard v-if="hasDraftAssessments">
       <div class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
-        <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"
+        <UButton class="flex justify-center" :trailing-icon="SAVE_ICON" label="Save Grades" :loading="saving"
           :disabled="disableActions" @click="saveGrades" />
-        <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
+        <UButton class="flex justify-center" trailing-icon="lucide:check-circle" label="Complete Assessment" color="success"
           :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments"
           @click="completeAssessment" />
       </div>

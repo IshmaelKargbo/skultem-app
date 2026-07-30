@@ -1,6 +1,8 @@
 <template>
-  <div class="px-4 py-1">
-    <div class="rounded-4xl border border-gray-200 bg-white/95 p-1 shadow-md dark:border-gray-800 dark:bg-gray-900/95">
+  <div class="px-3 pt-2">
+    <div
+      class="rounded-4xl border border-white/60 bg-white dark:bg-gray-800 p-1 shadow-[0_8px_32px_rgba(15,23,42,0.12),0_1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:from-gray-900/70 dark:to-gray-950/60 dark:shadow-[0_8px_32px_rgba(0,0,0,0.45),0_1px_0_rgba(255,255,255,0.06)_inset]"
+    >
       <ul
         class="grid gap-1.5"
         :style="{ gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))` }"
@@ -8,12 +10,14 @@
         <li v-for="item in visibleItems" :key="item.to">
           <NuxtLink
             :to="item.to"
-            class="menu-mobile-item"
-            :class="isActive(item.to, item.exact)"
+            class="flex min-h-15 flex-col items-center justify-center gap-1 rounded-3xl text-gray-600 transition-all duration-200 ease-out active:scale-95 motion-reduce:transition-none dark:text-gray-300"
+            :class="isActive(item.to, item.exact)
+              ? 'bg-primary-100 dark:bg-primary-500 text-white font-semibold shadow'
+              : 'hover:bg-white/50 hover:text-primary dark:hover:bg-white/8 dark:hover:text-primary-300'"
             :aria-current="isActive(item.to, item.exact) ? 'page' : undefined"
           >
             <UIcon class="text-lg" :name="item.icon" />
-            <span class="menu-mobile-label">{{ item.label }}</span>
+            <span class="max-w-full truncate text-[10px] leading-none">{{ item.label }}</span>
           </NuxtLink>
         </li>
       </ul>
@@ -69,66 +73,11 @@ const visibleItems = computed(() =>
   navItems.filter((item) => !item.roles || can(item.roles))
 )
 
+// `startsWith(to)` with no boundary would let '/fees' match '/fees-payment/pay'.
+// Require an exact match or a '/' right after `to` so sibling routes that
+// merely share a prefix (e.g. /fees vs /fees-payment) don't both light up.
 function isActive(to: string, exact = false) {
-  const active = exact ? route.path === to : route.path.startsWith(to)
-  return active ? 'menu-mobile-item-active' : ''
+  if (exact) return route.path === to
+  return route.path === to || route.path.startsWith(`${to}/`)
 }
 </script>
-
-<style scoped>
-.menu-mobile-item {
-  display: flex;
-  min-height: 60px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 40px;
-  color: #4b5563;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-}
-
-.menu-mobile-item:hover {
-  background: rgba(99, 102, 241, 0.08);
-  color: #1878c5;
-}
-
-.menu-mobile-item:active {
-  transform: scale(0.94);
-}
-
-.menu-mobile-item-active {
-  background: rgba(99, 102, 241, 0.12);
-  color: #1878c5;
-  font-weight: 600;
-}
-
-.menu-mobile-label {
-  max-width: 100%;
-  font-size: 10px;
-  line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dark .menu-mobile-item {
-  color: #d1d5db;
-}
-
-.dark .menu-mobile-item:hover {
-  background: rgba(99, 102, 241, 0.18);
-  color: #c7d2fe;
-}
-
-.dark .menu-mobile-item-active {
-  background: rgba(99, 102, 241, 0.24);
-  color: #c7d2fe;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .menu-mobile-item {
-    transition: none !important;
-  }
-}
-</style>

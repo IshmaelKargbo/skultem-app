@@ -76,10 +76,10 @@
       </div>
     </div>
 
-    <div class="grid gap-5 md:grid-cols-2">
+    <div class="grid gap-5 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       <!-- LEFT -->
-      <div>
-        <UCard class="overflow-hidden sticky top-2" :ui="{
+      <div class="min-h-0">
+        <UCard class="overflow-hidden lg:sticky lg:top-2" :ui="{
           body: 'p-3 md:p-4',
           header: 'p-3 md:p-4',
           footer: 'p-3 md:p-4'
@@ -88,7 +88,7 @@
           <template #header>
             <div class="space-y-4">
               <!-- FILTERS -->
-              <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide rounded-2xl bg-gray-50 p-1.5 dark:bg-gray-800/70">
+              <div class="flex gap-2 overflow-x-auto rounded-2xl bg-gray-50 p-1.5 pb-1 scrollbar-hide dark:bg-gray-800/70">
                 <UButton size="sm" class="shrink-0 rounded-xl" :variant="filter === 'ALL' ? 'solid' : 'ghost'"
                   @click="filter = 'ALL'">
                   All {{ requests.length }}
@@ -114,8 +114,6 @@
               <div class="space-y-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-800 dark:bg-gray-900/40">
                 <USelectMenu v-model="state.teacherId" value-key="value" size="xl" :items="teachers"
                   :loading="loadingSession" placeholder="Select teacher" @change="fetchRecords" />
-
-                <UInput v-model="search" icon="lucide:search" size="lg" placeholder="Search subject or teacher..." />
               </div>
             </div>
           </template>
@@ -211,7 +209,7 @@
 
           <!-- FOOTER -->
           <template #footer>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between gap-3">
               <Showing :meta="meta" />
 
               <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
@@ -222,7 +220,7 @@
       </div>
 
       <!-- DESKTOP VIEW -->
-      <div class="hidden md:block">
+      <div class="hidden min-h-0 lg:block">
         <GradesViewRequest :record="selected" @refresh="fetchRecordAndUpdate" @close="close" />
       </div>
     </div>

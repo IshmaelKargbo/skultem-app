@@ -57,7 +57,7 @@ const stats = computed(() => {
                 </div>
                 <div v-else class="space-y-2">
                     <p class="text-xs text-mute">{{ card.label }}</p>
-                    <p class="text-2xl font-semibold">{{ card.value }}</p>
+                    <p class="lg:text-2xl text-base font-semibold">{{ card.value }}</p>
                 </div>
                 <UBadge v-if="!isLoading" :icon="card.icon" class="p-2" size="xl" variant="subtle" :color="card.color" />
             </div>

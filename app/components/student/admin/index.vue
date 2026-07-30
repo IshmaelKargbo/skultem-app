@@ -3,8 +3,9 @@
         <Heading title="Students Management" subtitle="Organize academic classes">
             <div class="flex space-x-2">
                 <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80" />
-                <UButton to="/students/add" class="items-center flex justify-center" color="primary"
+                <UButton to="/students/add" class="items-center hidden md:flex justify-center" color="primary"
                     label="Enrolled Student" :icon="ADD_ICON" />
+                <UButton to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
             </div>
         </Heading>
         <StudentAdminTable />

@@ -41,7 +41,7 @@
             <div class="flex items-center gap-3">
               <UAvatar
                 size="md"
-                :src="row.original.studentPhoto || '/avatar-placeholder.svg'"
+                :src="row.original.photo || '/avatar-placeholder.svg'"
                 :alt="row.original.studentName"
                 class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
               />
@@ -109,7 +109,7 @@
           <div v-else v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
             <div class="flex items-center space-x-2">
               <UAvatar
-                :src="row.studentPhoto || '/avatar-placeholder.svg'"
+                :src="row.photo || '/avatar-placeholder.svg'"
                 :alt="row.studentName"
                 size="xl"
                 class="ring-1 ring-gray-200 dark:ring-gray-700"
@@ -173,7 +173,7 @@ type AttendanceRowRecord = {
   studentName: string
   studentId: string
   admissionNumber: string
-  studentPhoto?: string | null
+  photo?: string | null
   present: boolean
   late: boolean
   excused: boolean
