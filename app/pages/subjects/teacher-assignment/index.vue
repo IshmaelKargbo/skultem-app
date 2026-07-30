@@ -9,7 +9,7 @@
                      :icon="ASSIGN_ICON" />
             </div>
         </Heading>
-        <ClassTeacherAssignmntTable />
+        <SubjectTeacherAssignmntTable />
     </div>
 </template>
 

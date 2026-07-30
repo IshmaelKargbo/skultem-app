@@ -16,7 +16,7 @@
         </Heading>
 
         <!-- Desktop -->
-        <UCard
+        <UCard class="hidden md:block"
             :ui="{
                 body: 'p-0 sm:p-0'
             }">
@@ -148,7 +148,7 @@
 
                     <!-- Body -->
                     <div class="space-y-3 p-4">
-                        <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+                        <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
                             <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                                 User
                             </p>
@@ -163,7 +163,7 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+                            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
                                 <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                                     IP Address
                                 </p>
@@ -173,7 +173,7 @@
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+                            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
                                 <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                                     Device
                                 </p>

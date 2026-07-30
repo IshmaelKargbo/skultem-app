@@ -10,15 +10,12 @@
         <UButton to="/teachers/add" :icon="ADD_ICON" class="md:hidden" />
       </div>
     </Heading>
-    <!-- Table -->
-    <TeacherTable />
 
+    <TeacherTable />
   </div>
 </template>
 
 <script setup lang="ts">
-const teacherStore = useTeacherStore()
-
 const route = useRoute()
 const router = useRouter()
 

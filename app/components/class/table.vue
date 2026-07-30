@@ -6,36 +6,60 @@
         <UCard
           v-for="i in 6"
           :key="i"
-          class="overflow-hidden rounded-3xl border border-gray-200 shadow-sm dark:border-gray-800"
+          class="overflow-hidden rounded-[28px] border border-default"
+          :ui="{ body: 'p-0' }"
         >
-          <div class="space-y-5 p-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <USkeleton class="size-12 rounded-xl" />
+          <!-- Header -->
+          <div
+            class="border-b border-default p-5"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-4">
+                <USkeleton class="size-14 rounded-2xl" />
 
                 <div class="space-y-2">
-                  <USkeleton class="h-3 w-28" />
-                  <USkeleton class="h-2 w-20" />
+                  <USkeleton class="h-5 w-32 rounded-lg" />
+                  <USkeleton class="h-3 w-24 rounded-lg" />
                 </div>
               </div>
 
-              <USkeleton class="h-6 w-16 rounded-full" />
-            </div>
-
-            <div class="grid grid-cols-3 gap-2">
-              <USkeleton class="h-16 rounded-xl" />
-              <USkeleton class="h-16 rounded-xl" />
-              <USkeleton class="h-16 rounded-xl" />
-            </div>
-
-            <div class="flex items-center gap-3">
-              <USkeleton class="size-9 rounded-full" />
-
-              <div class="space-y-2">
-                <USkeleton class="h-3 w-24" />
-                <USkeleton class="h-2 w-16" />
+              <div class="space-y-2 text-right">
+                <USkeleton class="ml-auto h-7 w-10 rounded-lg" />
+                <USkeleton class="ml-auto h-3 w-16 rounded-lg" />
               </div>
             </div>
+          </div>
+
+          <!-- Information -->
+          <div class="grid grid-cols-2 gap-3 p-5">
+            <div
+              v-for="j in 4"
+              :key="j"
+              class="rounded-2xl border border-default bg-gray-50 border border-gray-200 p-4 dark:bg-gray-800"
+            >
+              <div class="mb-3 flex items-center gap-2">
+                <USkeleton class="size-8 rounded-lg" />
+                <USkeleton class="h-3 w-16 rounded" />
+              </div>
+
+              <USkeleton class="h-5 w-24 rounded" />
+            </div>
+          </div>
+
+          <!-- Teacher -->
+          <div
+            class="flex items-center justify-between border-t border-default px-5 py-4"
+          >
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-12 rounded-full" />
+
+              <div class="space-y-2">
+                <USkeleton class="h-4 w-32 rounded" />
+                <USkeleton class="h-3 w-20 rounded" />
+              </div>
+            </div>
+
+            <USkeleton class="size-10 rounded-xl" />
           </div>
         </UCard>
       </div>
@@ -47,61 +71,75 @@
         <UCard
           v-for="item in data"
           :key="item.id"
-          class="group overflow-hidden rounded-3xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
-          :ui="{ body: 'p-0' }"
+          class="group overflow-hidden  cursor-pointer border border-default bg-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow"
+          :ui="{ body: 'p-0 sm:p-0' }"
         >
           <!-- Header -->
-          <div class="relative overflow-hidden">
-            <div class="flex items-start justify-between p-5">
+          <div class="relative overflow-hidden border-b border-default p-5">
+            <div class="flex items-center justify-between gap-4">
               <div class="flex items-center gap-4">
                 <div
-                  class="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+                  class="flex size-11 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20"
                 >
-                  <UIcon name="i-lucide-school" class="size-10" />
+                  <UIcon name="i-lucide-school" class="size-6 text-primary" />
                 </div>
 
                 <div>
-                  <h3 class="text-base font-semibold">
+                  <h3 class="font-bold">
                     {{ item.clazz }}
                   </h3>
 
-                  <div class="mt-1 flex items-center gap-2 text-xs text-muted">
-                    <UIcon name="i-lucide-graduation-cap" />
-
-                    {{ item.grade }}
+                  <div class="flex items-center gap-2 text-xs text-muted">
+                    <UIcon name="i-lucide-graduation-cap" class="size-3.5" />
+                    <span>{{ item.grade }}</span>
 
                     <span>•</span>
 
-                    {{ parseLevel[item.classLevel] }}
+                    <span>{{ parseLevel[item.classLevel] }}</span>
                   </div>
                 </div>
               </div>
 
-              <UBadge color="primary" variant="soft" size="lg">
-                {{ item.totalStudent }}
-                Students
-              </UBadge>
+              <div class="text-right">
+                <p class="text-xl font-bold text-primary">
+                  {{ item.totalStudent }}
+                </p>
+                <p class="text-xs uppercase tracking-wide text-muted">Students</p>
+              </div>
             </div>
           </div>
 
-          <!-- Stats -->
-          <div class="grid grid-cols-1 gap-3 px-5 pb-5 sm:grid-cols-3">
-            <div class="rounded-xl border border-default p-3">
-              <div class="flex space-x-2">
-                <UIcon name="i-lucide-layout-grid" class="mb-2 text-primary" />
+          <!-- Information -->
+          <div class="grid grid-cols-2 gap-3 p-5">
+            <div class="rounded-2xl bg-gray-50 border border-gray-200 p-4 dark:bg-neutral-800">
+              <div class="mb-3 flex items-center gap-2">
+                <div
+                  class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
+                >
+                  <UIcon name="i-lucide-layout-grid" class="size-4 text-primary" />
+                </div>
 
-                <p class="text-xs text-muted">Section</p>
+                <span class="text-[11px] uppercase tracking-wide text-muted">
+                  Section
+                </span>
               </div>
+
               <p class="font-semibold">
                 {{ item.sectionName || "N/A" }}
               </p>
             </div>
 
-            <div class="rounded-xl border border-default p-3">
-              <div class="flex space-x-2">
-                <UIcon name="i-lucide-git-branch" class="mb-2 text-emerald-500" />
+            <div class="rounded-2xl bg-gray-50 border border-gray-200 p-4 dark:bg-neutral-800">
+              <div class="mb-3 flex items-center gap-2">
+                <div
+                  class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
+                >
+                  <UIcon name="i-lucide-git-branch" class="size-4 text-emerald-600" />
+                </div>
 
-                <p class="text-xs text-muted">Stream</p>
+                <span class="text-[11px] uppercase tracking-wide text-muted">
+                  Stream
+                </span>
               </div>
 
               <p class="font-semibold">
@@ -109,28 +147,53 @@
               </p>
             </div>
 
-            <div class="rounded-xl border border-default p-3">
-              <div class="flex space-x-2">
-                <UIcon name="i-lucide-layers-3" class="mb-2 text-orange-500" />
+            <div class="rounded-2xl bg-gray-50 border border-gray-200 p-4 dark:bg-neutral-800">
+              <div class="mb-3 flex items-center gap-2">
+                <div
+                  class="flex size-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-500/15"
+                >
+                  <UIcon name="i-lucide-layers-3" class="size-4 text-orange-600" />
+                </div>
 
-                <p class="text-xs text-muted">Level</p>
+                <span class="text-[11px] uppercase tracking-wide text-muted">
+                  Level
+                </span>
               </div>
+
               <p class="font-semibold">
                 {{ parseLevel[item.classLevel] }}
               </p>
             </div>
+
+            <div class="rounded-2xl bg-primary-50 border-primary-200 p-4 dark:bg-primary-500/10">
+              <div class="mb-3 flex items-center gap-2">
+                <div
+                  class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
+                >
+                  <UIcon name="i-lucide-users" class="size-4 text-primary" />
+                </div>
+
+                <span class="text-[11px] uppercase tracking-wide text-muted">
+                  Capacity
+                </span>
+              </div>
+
+              <p class="text-lg font-bold text-primary">
+                {{ item.totalStudent }}
+              </p>
+            </div>
           </div>
 
-          <!-- Footer -->
+          <!-- Teacher -->
           <div
             class="flex items-center justify-between border-t border-default px-5 py-4"
           >
             <div class="flex items-center gap-3">
-              <UAvatar size="xl" :alt="item.teacherName" />
+              <UAvatar size="lg" :alt="item.teacherName" />
 
               <div>
-                <p class="font-medium">
-                  {{ item.teacherName }}
+                <p class="font-semibold">
+                  {{ item.teacherName || "No Teacher Assigned" }}
                 </p>
 
                 <p class="text-xs text-muted">Class Teacher</p>
@@ -140,8 +203,9 @@
             <UButton
               icon="i-lucide-arrow-right"
               color="neutral"
-              variant="ghost"
-              class="transition-all sm:opacity-0 sm:group-hover:translate-x-1 sm:group-hover:opacity-100"
+              variant="soft"
+              square
+              class="rounded-xl transition-all group-hover:translate-x-1"
             />
           </div>
         </UCard>

@@ -1,126 +1,127 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
+import type { Row } from "@tanstack/vue-table";
 
-const route = useRoute()
-const router = useRouter()
-const store = useSubjectGroupStore()
-const { records: data, meta, loading } = storeToRefs(store)
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
+const route = useRoute();
+const router = useRouter();
+const store = useSubjectGroupStore();
+const { records: data, meta, loading } = storeToRefs(store);
+const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
 
-const editRcord = ref<SubjectGroup | null>(null)
-const editState = ref(false)
+const editRcord = ref<SubjectGroup | null>(null);
+const editState = ref(false);
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
+const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
 const columns = [
   {
-    accessorKey: 'name',
-    header: 'Name'
+    accessorKey: "name",
+    header: "Name",
   },
   {
-    accessorKey: 'className',
-    header: 'Class'
+    accessorKey: "className",
+    header: "Class",
   },
   {
-    accessorKey: 'streamName',
-    header: 'Stream'
+    accessorKey: "streamName",
+    header: "Stream",
   },
   {
-    accessorKey: 'totalSelection',
-    header: 'Select'
+    accessorKey: "totalSelection",
+    header: "Select",
   },
   {
-    id: 'actions',
+    id: "actions",
     meta: {
       class: {
-        td: 'text-right'
-      }
+        td: "text-right",
+      },
     },
     cell: ({ row }) => {
       return h(
         UDropdownMenu,
         {
           content: {
-            align: 'end'
+            align: "end",
           },
-          size: 'sm',
+          size: "sm",
           items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
+          "aria-label": "Actions dropdown",
         },
         () =>
           h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
+            icon: "i-lucide-ellipsis-vertical",
+            color: "neutral",
+            size: "sm",
+            variant: "ghost",
+            "aria-label": "Actions dropdown",
           })
-      )
-    }
-  }
-]
+      );
+    },
+  },
+];
 
 function getRowItems(row: Row<SubjectGroup>) {
   return [
     {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
+      label: "Edit Record",
+      icon: "i-lucide-edit",
       onClick: () => {
         editState.value = true;
         editRcord.value = row.original;
-      }
+      },
     },
     {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
+      label: "Delete Record",
+      icon: "i-lucide-trash",
+    },
+  ];
 }
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
+  set: (val) => updateQuery({ page: val }),
+});
 
 const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val })
-})
+  set: (val) => updateQuery({ size: val }),
+});
 
-watch(() => page.value, () => {
-  nextTick(() => {
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  })
-  router.replace({
-    query: {
-      page: page.value,
-      size: size.value
-    }
-  })
+watch(
+  () => page.value,
+  () => {
+    nextTick(() => {
+      scrollContainer?.value?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+    router.replace({
+      query: {
+        page: page.value,
+        size: size.value,
+      },
+    });
 
-  fetchRecord()
-}, { immediate: true })
+    fetchRecord();
+  },
+  { immediate: true }
+);
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+  const merged = { ...route.query, ...newQuery };
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
+  if (merged.page === route.query.page && merged.size === route.query.size) {
+    return;
   }
 
-  router.replace({ query: merged })
+  router.replace({ query: merged });
 }
 
 async function fetchRecord() {
-  loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
+  loading.value = true;
+  await store.fetchAll(page.value, size.value);
+  loading.value = false;
 }
 
 onMounted(async () => {
@@ -128,11 +129,11 @@ onMounted(async () => {
     router.replace({
       query: {
         page: page.value,
-        size: size.value
-      }
-    })
+        size: size.value,
+      },
+    });
   }
-})
+});
 </script>
 
 <template>
@@ -149,107 +150,166 @@ onMounted(async () => {
           <TableLoading :size="columns.length" />
         </template>
         <template #totalSelection-cell="{ row }">
-          <UBadge :label="row.original.totalSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
+          <UBadge
+            :label="row.original.totalSelection"
+            variant="outline"
+            icon="mdi:select-multiple"
+            color="neutral"
+          />
         </template>
       </UTable>
       <template #footer>
         <div v-if="!loading" class="flex justify-between items-center">
           <Showing :meta="meta" />
-          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
+          <UPagination
+            size="sm"
+            v-model:page="page"
+            :page-size="meta.size"
+            :items-per-page="meta.size"
+            :total="meta.total"
+            show-edges
+          />
         </div>
       </template>
     </UCard>
-    <div class="space-y-3 md:hidden">
+    
+    <div class="space-y-4 md:hidden">
       <!-- Loading -->
       <template v-if="loading">
-        <UCard v-for="i in 5" :key="i" class="rounded-2xl border border-gray-200 dark:border-gray-800"
-          :ui="{ body: 'p-4' }">
-          <div class="space-y-3">
-            <USkeleton class="h-4 w-36" />
-            <USkeleton class="h-3 w-24" />
-            <USkeleton class="h-8 w-full rounded-xl" />
+        <UCard
+          v-for="i in 5"
+          :key="i"
+          class="overflow-hidden rounded-3xl border border-default shadow-sm"
+          :ui="{ body: 'p-5' }"
+        >
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-12 rounded-2xl" />
+
+              <div class="flex-1 space-y-2">
+                <USkeleton class="h-4 w-36" />
+                <USkeleton class="h-3 w-24" />
+              </div>
+
+              <USkeleton class="size-8 rounded-xl" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <USkeleton class="h-16 rounded-2xl" />
+              <USkeleton class="h-16 rounded-2xl" />
+            </div>
           </div>
         </UCard>
       </template>
 
       <!-- Data -->
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id"
-          class="overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800"
-          :ui="{ body: 'p-0' }">
-          <div class="p-4 space-y-4">
+        <UCard
+          v-for="item in data"
+          :key="item.id"
+          class="group overflow-hidden rounded-3xl border border-default shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+          :ui="{ body: 'p-0' }"
+        >
+ 
 
+          <div class="p-5 space-y-5">
             <!-- Header -->
             <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                  {{ item.name }}
-                </h3>
+              <div class="flex min-w-0 items-center gap-3">
+                <div
+                  class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+                >
+                  <UIcon name="i-lucide-folder-tree" class="size-6" />
+                </div>
 
-                <div class="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                  <UIcon name="i-lucide-school" class="size-3.5" />
-                  <span>{{ item.className || 'No class' }}</span>
+                <div class="min-w-0">
+                  <h3 class="truncate text-base font-semibold text-highlighted">
+                    {{ item.name }}
+                  </h3>
+
+                  <div class="mt-1 flex items-center gap-1.5 text-xs text-muted">
+                    <UIcon name="i-lucide-school" class="size-3.5" />
+
+                    <span>
+                      {{ item.className || "No class assigned" }}
+                    </span>
+                  </div>
                 </div>
               </div>
-
-              <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-                <UButton icon="i-lucide-more-vertical" color="neutral" variant="ghost" size="sm" class="rounded-full" />
-              </UDropdownMenu>
             </div>
 
-            <!-- Stream + Selection -->
+            <!-- Stats -->
             <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-default bg-gray-100 dark:bg-gray-800 p-4">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-git-branch" class="text-primary" />
 
-              <div class="rounded-xl bg-gray-50 px-3 py-3 dark:bg-gray-900">
-                <p class="text-[11px] text-gray-500">
-                  Stream
-                </p>
-
-                <p class="mt-1 text-sm font-medium">
-                  {{ item.streamName || 'None' }}
-                </p>
-              </div>
-
-              <div class="rounded-xl bg-primary-50 px-3 py-3 dark:bg-primary-950/30">
-                <p class="text-[11px] text-gray-500">
-                  Selections
-                </p>
-
-                <div class="mt-1">
-                  <UBadge color="primary" variant="soft" :label="item.totalSelection || 0" icon="mdi:select-multiple" />
+                  <span class="text-xs text-muted"> Stream </span>
                 </div>
+
+                <p class="mt-3 font-semibold">
+                  {{ item.streamName || "None" }}
+                </p>
               </div>
 
+              <div class="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-list-checks" class="text-primary" />
+
+                  <span class="text-xs text-muted"> Selection </span>
+                </div>
+
+                <p class="mt-3 text-lg font-bold text-primary">
+                  {{ item.totalSelection || 0 }}
+                </p>
+              </div>
             </div>
 
+            <!-- Footer -->
+            <div class="flex items-center justify-between border-t border-default pt-4">
+              <div class="flex items-center gap-2 text-xs text-muted">
+                <UIcon name="i-lucide-book-open" class="size-4" />
+
+                Subject Group
+              </div>
+
+              <UBadge color="primary" variant="soft"> Active </UBadge>
+            </div>
           </div>
         </UCard>
       </template>
 
       <!-- Empty -->
       <template v-else>
-        <UCard class="flex flex-col items-center justify-center py-14">
-          <div class="flex flex-col items-center py-16">
-            <UIcon name="ph:books-light" class="mb-3 text-5xl text-gray-300" />
+        <UCard class="rounded-3xl border border-default shadow-sm">
+          <div class="flex flex-col items-center justify-center py-16">
+            <div
+              class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10"
+            >
+              <UIcon name="i-lucide-folder-tree" class="size-10 text-primary" />
+            </div>
 
-            <h3 class="text-sm font-medium">
-              No subject groups found
-            </h3>
+            <h3 class="text-base font-semibold">No subject groups</h3>
 
-            <p class="mt-1 text-xs text-gray-500">
-              Subject groups will appear here.
+            <p class="mt-2 text-center text-sm text-muted">
+              Create your first subject group to organize subjects by stream or class.
             </p>
           </div>
         </UCard>
       </template>
 
       <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center justify-center mt-5 space-y-3 md:hidden">
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-4 pt-2">
         <Showing :meta="meta" />
 
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
+        <UPagination
+          v-model:page="page"
+          size="sm"
+          :page-size="meta.size"
+          :items-per-page="meta.size"
+          :total="meta.total"
+          show-edges
+        />
       </div>
     </div>
   </div>
