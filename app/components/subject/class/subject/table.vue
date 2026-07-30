@@ -164,7 +164,7 @@ onMounted(async () => {
             <!-- Stats -->
             <div class="grid grid-cols-2 gap-3">
 
-              <div class="rounded-xl bg-muted p-3">
+              <div class="rounded-xl bg-gray-100 dark:bg-gray-800 p-3">
                 <p class="text-[11px] text-muted">
                   Type
                 </p>
@@ -173,7 +173,7 @@ onMounted(async () => {
                   :label="item.mandatory ? 'Core' : 'Optional'" />
               </div>
 
-              <div class="rounded-xl bg-muted p-3">
+              <div class="rounded-xl bg-gray-100 dark:bg-gray-800 p-3">
                 <p class="text-[11px] text-muted">
                   Group
                 </p>

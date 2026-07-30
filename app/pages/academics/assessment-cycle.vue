@@ -280,8 +280,8 @@
 
           <!-- Timeline -->
           <div v-else-if="assessmentItems.length" class="space-y-4">
-            <div v-for="(assessment, index) in assessmentItems" :key="assessment.id"
-              class="group relative overflow-hidden rounded-3xl border  border-default bg-gray-50 p-5 transition hover:border-primary/40 hover:shadow-sm dark:bg-neutral-900">
+            <div v-for="(assessment, index) in assessmentItems" :key="assessment.id" 
+              class="group relative overflow-hidden rounded-3xl border  border-default bg-gray-100 p-5 transition hover:border-primary/40 hover:shadow-sm dark:bg-neutral-900">
               <div class="flex items-start justify-between gap-4">
 
                 <div class="flex gap-4">
@@ -314,7 +314,7 @@
 
                 </div>
 
-                <UBadge variant="soft" :color="parseAssessmentStatusColor[assessment.status]">
+                <UBadge variant="soft" size="lg" :color="parseAssessmentStatusColor[assessment.status]">
                   {{ parseAssessmentStatus[assessment.status] }}
                 </UBadge>
 

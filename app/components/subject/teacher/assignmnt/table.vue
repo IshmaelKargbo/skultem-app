@@ -175,7 +175,7 @@ onMounted(async () => {
           </template>
           <!-- Content -->
           <div class="grid grid-cols-2 gap-3 p-4">
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
               <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                 Class
               </p>
@@ -185,7 +185,7 @@ onMounted(async () => {
               </p>
             </div>
 
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
               <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                 Section
               </p>
@@ -195,7 +195,7 @@ onMounted(async () => {
               </p>
             </div>
 
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
               <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                 Stream
               </p>
@@ -205,7 +205,7 @@ onMounted(async () => {
               </p>
             </div>
 
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
               <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
                 Assigned
               </p>

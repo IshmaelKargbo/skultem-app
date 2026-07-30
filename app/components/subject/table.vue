@@ -19,9 +19,7 @@
       class="overflow-hidden rounded-3xl border border-default"
       :ui="{ body: 'p-0' }"
     >
-      <!-- Accent -->
-      <USkeleton class="h-1 w-full rounded-none" />
-
+  
       <!-- Header -->
       <div class="flex items-start justify-between p-5">
         <div class="flex flex-1 items-center gap-4">
@@ -112,11 +110,9 @@
         class="group overflow-hidden rounded-3xl border border-default transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
         :ui="{ body: 'p-0' }"
       >
-        <!-- Accent -->
-        <div class="h-1 bg-primary" />
 
         <!-- Header -->
-        <div class="flex items-start justify-between p-5">
+        <div class="flex items-start justify-between p-5 ">
           <div class="flex min-w-0 items-center gap-4">
             <div
               class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"
@@ -130,7 +126,7 @@
               </h3>
 
               <div class="mt-1 flex items-center gap-2 text-xs text-muted">
-                <UBadge color="neutral" variant="soft" size="xs">
+                <UBadge color="neutral" variant="soft" size="sm">
                   {{ value.code }}
                 </UBadge>
 
@@ -140,8 +136,6 @@
               </div>
             </div>
           </div>
-
-          <UButton icon="i-lucide-chevron-right" color="neutral" variant="ghost" square />
         </div>
 
         <!-- Description -->
@@ -153,7 +147,7 @@
 
         <!-- Info -->
         <div class="mt-5 grid grid-cols-2 gap-3 px-5 pb-5">
-          <div class="rounded-2xl border border-default bg-muted/20 p-3">
+          <div class="rounded-2xl border border-default bg-gray-100 dark:bg-gray-800 p-3">
             <div class="mb-2 flex items-center gap-2">
               <UIcon name="i-lucide-hash" class="size-4 text-primary" />
               <span class="text-xs text-muted"> Code </span>
@@ -164,7 +158,7 @@
             </p>
           </div>
 
-          <div class="rounded-2xl border border-default bg-muted/20 p-3">
+          <div class="rounded-2xl border border-default bg-gray-100 dark:bg-gray-800 p-3">
             <div class="mb-2 flex items-center gap-2">
               <UIcon name="i-lucide-book-copy" class="size-4 text-primary" />
               <span class="text-xs text-muted"> Type </span>
