@@ -281,82 +281,164 @@ onMounted(async () => {
         <!-- Stats -->
         <div class="grid grid-cols-2 gap-3 p-4">
           <!-- Gender -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="rounded-2xl border p-3"
+            :class="
+              item.gender === 'MALE'
+                ? 'border-sky-200 bg-sky-50 dark:border-sky-500/20 dark:bg-sky-500/10'
+                : item.gender === 'FEMALE'
+                ? 'border-pink-200 bg-pink-50 dark:border-pink-500/20 dark:bg-pink-500/10'
+                : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
+            "
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-pink-100 dark:bg-pink-500/15"
+                class="flex size-7 items-center justify-center rounded-lg"
+                :class="
+                  item.gender === 'MALE'
+                    ? 'bg-sky-100 dark:bg-sky-500/20'
+                    : item.gender === 'FEMALE'
+                    ? 'bg-pink-100 dark:bg-pink-500/20'
+                    : 'bg-gray-200 dark:bg-gray-700'
+                "
               >
                 <UIcon
                   name="i-lucide-users"
-                  class="size-4 text-pink-600 dark:text-pink-400"
+                  class="size-4"
+                  :class="
+                    item.gender === 'MALE'
+                      ? 'text-sky-600 dark:text-sky-400'
+                      : item.gender === 'FEMALE'
+                      ? 'text-pink-600 dark:text-pink-400'
+                      : 'text-gray-600 dark:text-gray-400'
+                  "
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide"
+                :class="
+                  item.gender === 'MALE'
+                    ? 'text-sky-700 dark:text-sky-300'
+                    : item.gender === 'FEMALE'
+                    ? 'text-pink-700 dark:text-pink-300'
+                    : 'text-gray-600 dark:text-gray-400'
+                "
+              >
                 Gender
               </p>
             </div>
 
-            <UBadge
-              :label="parseGender[item.gender]"
-              :color="parseGenderColor[item.gender]"
-              size="md"
-              variant="soft"
-            />
+            <p
+              class="text-sm font-semibold"
+              :class="
+                item.gender === 'MALE'
+                  ? 'text-sky-700 dark:text-sky-300'
+                  : item.gender === 'FEMALE'
+                  ? 'text-pink-700 dark:text-pink-300'
+                  : 'text-gray-900 dark:text-white'
+              "
+            >
+              {{ parseGender[item.gender] }}
+            </p>
           </div>
 
           <!-- Status -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="rounded-2xl border p-3"
+            :class="
+              item.status === 'ACTIVE'
+                ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/10'
+                : item.status === 'INACTIVE'
+                ? 'border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10'
+                : 'border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/10'
+            "
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
+                class="flex size-7 items-center justify-center rounded-lg"
+                :class="
+                  item.status === 'ACTIVE'
+                    ? 'bg-emerald-100 dark:bg-emerald-500/20'
+                    : item.status === 'INACTIVE'
+                    ? 'bg-red-100 dark:bg-red-500/20'
+                    : 'bg-amber-100 dark:bg-amber-500/20'
+                "
               >
                 <UIcon
                   name="i-lucide-badge-check"
-                  class="size-4 text-emerald-600 dark:text-emerald-400"
+                  class="size-4"
+                  :class="
+                    item.status === 'ACTIVE'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : item.status === 'INACTIVE'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-amber-600 dark:text-amber-400'
+                  "
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide"
+                :class="
+                  item.status === 'ACTIVE'
+                    ? 'text-emerald-700 dark:text-emerald-300'
+                    : item.status === 'INACTIVE'
+                    ? 'text-red-700 dark:text-red-300'
+                    : 'text-amber-700 dark:text-amber-300'
+                "
+              >
                 Status
               </p>
             </div>
 
-            <UBadge
-              :label="parseStaus[item.status]"
-              :color="parseStatusColor[item.status]"
-              size="md"
-              variant="soft"
-            />
+            <p
+              class="text-sm font-semibold"
+              :class="
+                item.status === 'ACTIVE'
+                  ? 'text-emerald-700 dark:text-emerald-300'
+                  : item.status === 'INACTIVE'
+                  ? 'text-red-700 dark:text-red-300'
+                  : 'text-amber-700 dark:text-amber-300'
+              "
+            >
+              {{ parseStaus[item.status] }}
+            </p>
           </div>
 
           <!-- Phone -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="rounded-2xl border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/20 dark:bg-indigo-500/10"
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-sky-100 dark:bg-sky-500/15"
+                class="flex size-7 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20"
               >
                 <UIcon
                   name="i-lucide-phone"
-                  class="size-4 text-sky-600 dark:text-sky-400"
+                  class="size-4 text-indigo-600 dark:text-indigo-400"
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-indigo-700 dark:text-indigo-300"
+              >
                 Phone
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
               {{ item.phone || "N/A" }}
             </p>
           </div>
 
           <!-- City -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10"
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15"
+                class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20"
               >
                 <UIcon
                   name="i-lucide-map-pinned"
@@ -364,12 +446,14 @@ onMounted(async () => {
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300"
+              >
                 City
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
               {{ item.city || "N/A" }}
             </p>
           </div>

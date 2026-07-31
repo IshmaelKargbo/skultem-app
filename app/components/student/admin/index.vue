@@ -9,7 +9,7 @@
             </div>
         </Heading>
         <StudentAdminTable />
-    </div>
+    </div> 
 </template>
 
 <script setup lang="ts">
