@@ -2,13 +2,14 @@
     <div class="p-4 space-y-5">
         <Heading title="Students Management" subtitle="Organize academic classes">
             <div class="flex space-x-2">
-                <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80" />
-                <UButton to="/students/add" class="items-center flex justify-center" color="primary"
+                <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80 w-full" />
+                <UButton to="/students/add" class="md:items-center md:flex md:justify-center hidden" color="primary"
                     label="Enrolled Student" :icon="ADD_ICON" />
+                     <UButton to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
             </div>
         </Heading>
         <StudentAdminTable />
-    </div>
+    </div> 
 </template>
 
 <script setup lang="ts">

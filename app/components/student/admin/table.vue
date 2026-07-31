@@ -262,11 +262,11 @@ onMounted(async () => {
               />
 
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                <h3 class=" text-base font-bold text-gray-900 dark:text-white">
                   {{ item.givenNames }} {{ item.familyName }}
                 </h3>
 
-                <div class="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                <div class="mt-1 flex items-center gap-1 text-xs text-gray-500">
                   <span>
                     {{ item.admissionNumber || "No Admission No" }}
                   </span>
@@ -291,57 +291,92 @@ onMounted(async () => {
         <!-- Stats -->
         <div class="grid grid-cols-2 gap-3 p-4">
           <!-- Gender -->
-          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border p-3"
+            :class="
+              item.gender === 'MALE'
+                ? 'border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10'
+                : item.gender === 'FEMALE'
+                ? 'border-pink-200 bg-pink-50 dark:border-pink-500/20 dark:bg-pink-500/10'
+                : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
+            "
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-pink-100 dark:bg-pink-500/15"
+                class="flex size-7 items-center justify-center rounded-lg"
+                :class="
+                  item.gender === 'MALE'
+                    ? 'bg-blue-100 dark:bg-blue-500/20'
+                    : item.gender === 'FEMALE'
+                    ? 'bg-pink-100 dark:bg-pink-500/20'
+                    : 'bg-gray-200 dark:bg-gray-700'
+                "
               >
                 <UIcon
                   name="i-lucide-users"
-                  class="size-4 text-pink-600 dark:text-pink-400"
+                  class="size-4"
+                  :class="
+                    item.gender === 'MALE'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : item.gender === 'FEMALE'
+                      ? 'text-pink-600 dark:text-pink-400'
+                      : 'text-gray-600 dark:text-gray-400'
+                  "
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide"
+                :class="
+                  item.gender === 'MALE'
+                    ? 'text-blue-700 dark:text-blue-300'
+                    : item.gender === 'FEMALE'
+                    ? 'text-pink-700 dark:text-pink-300'
+                    : 'text-gray-600 dark:text-gray-400'
+                "
+              >
                 Gender
               </p>
             </div>
 
-            <UBadge
-              :label="parseGender[item.gender]"
-              :color="parseGenderColor[item.gender]"
-              size="sm"
-              variant="soft"
-            />
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              {{ parseGender[item.gender] }}
+            </p>
           </div>
 
           <!-- Date of Birth -->
-          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10"
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/15"
+                class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20"
               >
                 <UIcon
                   name="i-lucide-calendar-days"
-                  class="size-4 text-blue-600 dark:text-blue-400"
+                  class="size-4 text-amber-600 dark:text-amber-400"
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300"
+              >
                 Date of Birth
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
               {{ formatDate(item.dateOfBirth) }}
             </p>
           </div>
 
           <!-- Guardian -->
-          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10"
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
+                class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20"
               >
                 <UIcon
                   name="i-lucide-user-round"
@@ -349,22 +384,26 @@ onMounted(async () => {
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300"
+              >
                 Guardian
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
               {{ item.guardian?.givenNames }}
               {{ item.guardian?.familyName }}
             </p>
           </div>
 
           <!-- Class -->
-          <div class="min-w-0 rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10"
+          >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex size-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/15"
+                class="flex size-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20"
               >
                 <UIcon
                   name="i-lucide-school"
@@ -372,12 +411,14 @@ onMounted(async () => {
                 />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300"
+              >
                 Class
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
               {{ item.className || "N/A" }}
             </p>
           </div>

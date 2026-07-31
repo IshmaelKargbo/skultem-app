@@ -6,13 +6,11 @@
         <UCard
           v-for="i in 6"
           :key="i"
-          class="overflow-hidden rounded-[28px] border border-default"
+          class="overflow-hidden rounded-[28px] border border-gray-200 dark:border-gray-800"
           :ui="{ body: 'p-0' }"
         >
           <!-- Header -->
-          <div
-            class="border-b border-default p-5"
-          >
+          <div class="border-b border-gray-200 dark:border-gray-800 p-5">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-4">
                 <USkeleton class="size-14 rounded-2xl" />
@@ -35,7 +33,7 @@
             <div
               v-for="j in 4"
               :key="j"
-              class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-gray-800"
+              class="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-100 p-4 dark:bg-gray-800"
             >
               <div class="mb-3 flex items-center gap-2">
                 <USkeleton class="size-8 rounded-lg" />
@@ -48,7 +46,7 @@
 
           <!-- Teacher -->
           <div
-            class="flex items-center justify-between border-t border-default px-5 py-4"
+            class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-5 py-4"
           >
             <div class="flex items-center gap-3">
               <USkeleton class="size-12 rounded-full" />
@@ -71,27 +69,27 @@
         <UCard
           v-for="item in data"
           :key="item.id"
-          class="group overflow-hidden rounded-[28px] border border-default bg-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          class="group overflow-hidden rounded-[28px] border border-gray-200 dark:border-gray-800 bg-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
           :ui="{ body: 'p-0' }"
         >
           <!-- Header -->
-          <div class="relative overflow-hidden border-b border-default p-5">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex items-center gap-4">
+          <div
+            class="relative overflow-hidden border-b border-gray-200 dark:border-gray-800 p-5"
+          >
+            <div class="flex items-start justify-between ">
+              <div class="flex items-center justify-center space-x-4">
                 <div
-                  class="flex size-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20"
+                  class="flex size-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20"
                 >
-                  <UIcon name="i-lucide-school" class="size-7 text-primary" />
+                  <UIcon name="i-lucide-school" class="size-5 text-primary" />
                 </div>
 
                 <div>
-                  <h3 class="text-lg font-bold">
+                  <h3 class="text-base font-bold">
                     {{ item.clazz }}
                   </h3>
 
-                  <div class="mt-1 flex items-center gap-2 text-xs text-muted">
-                    <UIcon name="i-lucide-graduation-cap" class="size-3.5" />
-
+                  <div class=" flex items-center gap-2 text-xs text-muted">
                     <span>{{ item.grade }}</span>
 
                     <span>•</span>
@@ -102,7 +100,7 @@
               </div>
 
               <div class="text-right">
-                <p class="text-2xl font-bold text-primary">
+                <p class="text-base font-bold text-primary">
                   {{ item.totalStudent }}
                 </p>
 
@@ -113,74 +111,103 @@
 
           <!-- Information -->
           <div class="grid grid-cols-2 gap-3 p-5">
-            <div class="rounded-2xl bg-gray-100 p-4 dark:bg-neutral-800">
+            <!-- Section -->
+            <div
+              class="rounded-2xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-500/20 dark:bg-primary-500/10"
+            >
               <div class="mb-3 flex items-center gap-2">
                 <div
-                  class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
+                  class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20"
                 >
                   <UIcon name="i-lucide-layout-grid" class="size-4 text-primary" />
                 </div>
 
-                <span class="text-[11px] uppercase tracking-wide text-muted">
+                <span
+                  class="text-[11px] font-medium uppercase tracking-wide text-primary"
+                >
                   Section
                 </span>
               </div>
 
-              <p class="font-semibold">
+              <p class="truncate font-semibold text-gray-900 dark:text-white">
                 {{ item.sectionName || "N/A" }}
               </p>
             </div>
 
-            <div class="rounded-2xl bg-gray-100 p-4 dark:bg-neutral-800">
+            <!-- Stream -->
+            <div
+              class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10"
+            >
               <div class="mb-3 flex items-center gap-2">
                 <div
-                  class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
+                  class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20"
                 >
-                  <UIcon name="i-lucide-git-branch" class="size-4 text-emerald-600" />
+                  <UIcon
+                    name="i-lucide-git-branch"
+                    class="size-4 text-emerald-600 dark:text-emerald-400"
+                  />
                 </div>
 
-                <span class="text-[11px] uppercase tracking-wide text-muted">
+                <span
+                  class="text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300"
+                >
                   Stream
                 </span>
               </div>
 
-              <p class="font-semibold">
+              <p class="truncate font-semibold text-gray-900 dark:text-white">
                 {{ item.streamName || "N/A" }}
               </p>
             </div>
 
-            <div class="rounded-2xl bg-gray-100 p-4 dark:bg-neutral-800">
+            <!-- Level -->
+            <div
+              class="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10"
+            >
               <div class="mb-3 flex items-center gap-2">
                 <div
-                  class="flex size-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-500/15"
+                  class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20"
                 >
-                  <UIcon name="i-lucide-layers-3" class="size-4 text-orange-600" />
+                  <UIcon
+                    name="i-lucide-layers-3"
+                    class="size-4 text-amber-600 dark:text-amber-400"
+                  />
                 </div>
 
-                <span class="text-[11px] uppercase tracking-wide text-muted">
+                <span
+                  class="text-[11px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300"
+                >
                   Level
                 </span>
               </div>
 
-              <p class="font-semibold">
+              <p class="truncate font-semibold text-gray-900 dark:text-white">
                 {{ parseLevel[item.classLevel] }}
               </p>
             </div>
 
-            <div class="rounded-2xl bg-primary-50 p-4 dark:bg-primary-500/10">
+            <!-- Capacity -->
+            <div
+              class="rounded-2xl border border-violet-200 bg-violet-50 p-4 dark:border-violet-500/20 dark:bg-violet-500/10"
+            >
               <div class="mb-3 flex items-center gap-2">
                 <div
-                  class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
+                  class="flex size-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20"
                 >
-                  <UIcon name="i-lucide-users" class="size-4 text-primary" />
+                  <UIcon
+                    name="i-lucide-users"
+                    class="size-4 text-violet-600 dark:text-violet-400"
+                  />
                 </div>
 
-                <span class="text-[11px] uppercase tracking-wide text-muted">
+                <span
+                  class="text-[11px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300"
+                >
                   Capacity
                 </span>
               </div>
 
-              <p class="text-lg font-bold text-primary">
+              <p class="text-lg font-bold text-violet-600 dark:text-violet-400">
                 {{ item.totalStudent }}
               </p>
             </div>
@@ -188,7 +215,7 @@
 
           <!-- Teacher -->
           <div
-            class="flex items-center justify-between border-t border-default px-5 py-4"
+            class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-5 py-4"
           >
             <div class="flex items-center gap-3">
               <UAvatar size="lg" :alt="item.teacherName" />
@@ -202,13 +229,13 @@
               </div>
             </div>
 
-            <UButton
+            <!-- <UButton
               icon="i-lucide-arrow-right"
               color="neutral"
               variant="soft"
               square
               class="rounded-xl transition-all group-hover:translate-x-1"
-            />
+            /> -->
           </div>
         </UCard>
       </div>
@@ -216,7 +243,7 @@
 
     <!-- Empty -->
     <template v-else>
-      <UCard class="rounded-3xl border border-default shadow-sm">
+      <UCard class="rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
         <div class="flex flex-col items-center justify-center py-14">
           <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
 

@@ -205,41 +205,102 @@ onMounted(async () => {
       </p>
     </Ucard>
 
-    <!-- Cards -->
-    <div class="space-y-3">
-      <button
+    <div class="space-y-4">
+      <UCard
         v-for="item in data"
         :key="item.id"
-        type="button"
-        class="group w-full overflow-hidden rounded-2xl border border-default bg-gradient-to-br from-white to-neutral-50 p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg active:scale-[0.98] dark:from-neutral-900 dark:to-neutral-950"
+        class="group overflow-hidden rounded-[28px] border border-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl active:scale-[0.99]"
+        :ui="{ body: 'p-0' }"
       >
-        <div class="flex items-start gap-3">
-          <!-- Avatar -->
-          <div
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white"
-          >
-            <UIcon name="i-lucide-book-open" class="text-lg" />
-          </div>
+        <!-- Header -->
+        <div class="border-b border-default p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex min-w-0 items-center gap-4">
+              <div
+                class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:text-white"
+              >
+                <UIcon
+                  name="i-lucide-book-open-text"
+                  class="size-5 text-primary group-hover:text-white"
+                />
+              </div>
 
-          <!-- Content -->
-          <div class="min-w-0 flex-1">
-            <!-- Top Row -->
-            <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-highlighted">
+                <h3 class="truncate text-base font-semibold">
                   {{ item.name }}
                 </h3>
 
-                <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted">
-                  {{ item.description || "No description available." }}
-                </p>
-              </div>
+                <div class="mt-1 flex items-center gap-2 text-xs text-muted">
+                  <UIcon name="i-lucide-shield-check" class="size-3.5 text-primary" />
 
-              <UBadge color="success" variant="subtle" size="xs"> Active </UBadge>
+                  Behaviour Category
+                </div>
+              </div>
             </div>
+
+            <UButton
+              icon="i-lucide-ellipsis"
+              color="neutral"
+              variant="ghost"
+              square
+              class="rounded-xl"
+            />
           </div>
         </div>
-      </button>
+
+        <!-- Description -->
+        <div class="p-5">
+          <div
+            class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800"
+          >
+            <div class="mb-3 flex items-center gap-2">
+              <div
+                class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
+              >
+                <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
+              </div>
+
+              <span class="text-[11px] font-medium uppercase tracking-wide text-muted">
+                Description
+              </span>
+            </div>
+
+            <p class="text-sm leading-6 text-toned">
+              {{ item.description || "No description available." }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between border-t border-default px-5 py-4">
+          <div class="flex items-center gap-2">
+            <div
+              class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
+            >
+              <UIcon
+                name="i-lucide-check-circle-2"
+                class="size-4 text-emerald-600 dark:text-emerald-400"
+              />
+            </div>
+
+            <div>
+              <p class="text-xs font-medium">Active Category</p>
+
+              <p class="text-[11px] text-muted">Available for behaviour records</p>
+            </div>
+          </div>
+
+          <!-- <UButton
+            icon="i-lucide-pencil"
+            color="primary"
+            variant="soft"
+            size="sm"
+            class="rounded-xl"
+          >
+            Edit
+          </UButton> -->
+        </div>
+      </UCard>
     </div>
   </div>
 </template>
