@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4 space-y-5">
+    <div class="p-4 space-y-4">
         <Heading title="Students Management" subtitle="Organize academic classes">
             <div class="flex space-x-2">
                 <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80" />

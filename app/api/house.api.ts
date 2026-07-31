@@ -28,6 +28,16 @@ export const HouseApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    assignHouse: async (records: [AssignRecordDTO]) => {
+      try {
+        return await $api('/house/assignment', {
+          method: 'POST',
+          body: { records }
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

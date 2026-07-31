@@ -6,100 +6,36 @@
                     placeholder="Select Class" />
             </div>
         </Heading>
-        <div class="flex space-x-4">
-            <div class="w-1/3 space-y-4">
-                <UCard>
-                    <template #header>
-                        <div class="flex items-center gap-3">
-
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                                <UIcon name="i-lucide-info" class="text-primary" />
-                            </div>
-
-                            <div>
-                                <h3 class="font-semibold">
-                                    House Masters
-                                </h3>
-
-                                <p class="text-xs text-muted">
-                                    Scheme details and progress
-                                </p>
-                            </div>
+        <UCard :ui="{
+            body: 'sm:p-0'
+        }">
+            <UTable :columns="columns" :data="students">
+                <template #givenNames-cell="{ row }">
+                    <div class="flex space-x-4">
+                        <div>
+                            <UAvatar :src="row.original.photo"
+                                :alt="`${row.original.givenNames} ${row.original.familyName}`" />
                         </div>
-                    </template>
-                    <div>
-                        <div v-for="item in houseStore.records" :key="`${item.id}-masters`"
-                            class="border-b py-3 last:pb-0 first:pt-0 border-gray-300 last:border-b-0">
-                            <div class="flex space-x-4 items-center">
-                                <div>
-                                    <div class="size-5 rounded border shadow-sm"
-                                        :style="{ backgroundColor: item.color }" />
-                                </div>
-                                <div>
-                                    <UBadge v-for="m in item.houseMasters" :key="m.id" color="neutral" variant="soft">
-                                        {{ m.user?.givenNames }} {{ m.user?.familyName }}
-                                    </UBadge>
-                                </div>
-                            </div>
+                        <div>
+                            <p class="space-x-2"><span>{{ row.original.givenNames }}</span><span>{{
+                                row.original.familyName
+                                    }}</span></p>
+                            <p class="text-xs text-muted">{{ row.original.admissionNumber }}</p>
                         </div>
                     </div>
-                </UCard>
-                <UCard>
-                    <template #header>
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                                <UIcon name="i-lucide-bar-chart-3" class="text-primary" />
-                            </div>
+                </template>
 
-                            <div>
-                                <h3 class="font-semibold">House Placement</h3>
-                                <p class="text-xs text-muted">Students per house</p>
-                            </div>
-                        </div>
-                    </template>
-
-                    <div class="space-y-2">
-                        <div v-for="h in houseStore.records" :key="h.id"
-                            class="flex justify-between items-center text-sm">
-                            <span>{{ h.name }}</span>
-                            <UBadge color="primary">{{ 0 }}</UBadge>
-                        </div>
-                    </div>
-                </UCard>
-            </div>
-            <div class="w-2/3">
-                <UCard :ui="{
-                    body: 'sm:p-0'
-                }">
-                    <UTable :columns="columns" :data="students">
-                        <template #givenNames-cell="{ row }">
-                            <div class="flex space-x-4">
-                                <div>
-                                    <UAvatar :src="row.original.photo"
-                                        :alt="`${row.original.givenNames} ${row.original.familyName}`" />
-                                </div>
-                                <div>
-                                    <p class="space-x-2"><span>{{ row.original.givenNames }}</span><span>{{
-                                        row.original.familyName
-                                            }}</span></p>
-                                    <p class="text-xs text-muted">{{ row.original.admissionNumber }}</p>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template #house-cell="{ row }">
-                            <USelectMenu :items="houses" placeholder="Assign house" />
-                        </template>
-                    </UTable>
-                    <template #footer>
-                        <div class="flex space-x-2">
-                            <UButton variant="outline" color="error" label="Cancel" />
-                            <UButton label="Save Changes" :trailing-icon="SAVE_ICON" />
-                        </div>
-                    </template>
-                </UCard>
-            </div>
-        </div>
+                <template #house-cell="{ row }">
+                    <USelectMenu :items="houses" placeholder="Assign house" />
+                </template>
+            </UTable>
+            <template #footer>
+                <div class="flex space-x-2">
+                    <UButton variant="outline" color="error" label="Cancel" />
+                    <UButton label="Save Changes" :trailing-icon="SAVE_ICON" />
+                </div>
+            </template>
+        </UCard>
     </div>
 </template>
 <script setup lang="ts">

@@ -35,7 +35,7 @@ watch(
     <!-- Main Content -->
     <main
       ref="scrollContainer"
-      class="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
+      class="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+0.1rem)]"
     >
       <Header class="lg:hidden sticky top-0 z-20" />
       <div class="lg:container lg:mx-auto flex-1">

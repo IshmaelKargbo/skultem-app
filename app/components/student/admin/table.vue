@@ -93,8 +93,7 @@ watch(
     });
 
     fetchRecord();
-  },
-  { immediate: true }
+  }
 );
 
 watch(

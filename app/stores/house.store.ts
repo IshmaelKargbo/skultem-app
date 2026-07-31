@@ -24,6 +24,9 @@ export const useHouseStore = defineStore('house', {
     },
     create(payload: CreateHouseDto) {
       return HouseApi().create(payload)
+    },
+    assignHouse(payload: [AssignRecordDTO]) {
+      return HouseApi().assignHouse(payload)
     }
   }
 })
