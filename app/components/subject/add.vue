@@ -10,7 +10,13 @@
     <UButton
       color="primary"
       label="Add Subject"
-      class="flex justify-center"
+      class="md:flex md:justify-center hidden"
+      :icon="ADD_ICON"
+      @click="open = true"
+    />
+    <UButton
+      color="primary"
+      class="md:hidden"
       :icon="ADD_ICON"
       @click="open = true"
     />

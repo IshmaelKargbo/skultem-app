@@ -1,95 +1,92 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table'
+import type { Row } from "@tanstack/vue-table";
 
-const route = useRoute()
-const router = useRouter()
-const store = useStreamStore()
-const loading = ref(true)
-const { records: data } = storeToRefs(store)
+const route = useRoute();
+const router = useRouter();
+const store = useStreamStore();
+const loading = ref(true);
+const { records: data } = storeToRefs(store);
 
-const editRcord = ref<Stream | null>(null)
-const editState = ref(false)
+const editRcord = ref<Stream | null>(null);
+const editState = ref(false);
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
+const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
 const columns = [
   {
-    accessorKey: 'name',
-    header: 'Name'
+    accessorKey: "name",
+    header: "Name",
   },
   {
-    accessorKey: 'description',
-    header: 'Description'
+    accessorKey: "description",
+    header: "Description",
   },
   {
-    id: 'actions',
+    id: "actions",
     meta: {
       class: {
-        td: 'text-right'
-      }
+        td: "text-right",
+      },
     },
     cell: ({ row }: any) => {
       return h(
         UDropdownMenu,
         {
           content: {
-            align: 'end'
+            align: "end",
           },
-          size: 'sm',
+          size: "sm",
           items: getRowItems(row),
-          'aria-label': 'Actions dropdown'
+          "aria-label": "Actions dropdown",
         },
         () =>
           h(UButton, {
-            icon: 'i-lucide-ellipsis-vertical',
-            color: 'neutral',
-            size: 'sm',
-            variant: 'ghost',
-            'aria-label': 'Actions dropdown'
+            icon: "i-lucide-ellipsis-vertical",
+            color: "neutral",
+            size: "sm",
+            variant: "ghost",
+            "aria-label": "Actions dropdown",
           })
-      )
-    }
-  }
-]
+      );
+    },
+  },
+];
 
 function getRowItems(row: Row<Stream>) {
   return [
     {
-      label: 'Edit Record',
-      icon: 'i-lucide-edit',
+      label: "Edit Record",
+      icon: "i-lucide-edit",
       onClick: () => {
         editState.value = true;
         editRcord.value = row.original;
-      }
+      },
     },
     {
-      label: 'Delete Record',
-      icon: 'i-lucide-trash',
-    }
-  ]
+      label: "Delete Record",
+      icon: "i-lucide-trash",
+    },
+  ];
 }
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
+  set: (val) => updateQuery({ page: val }),
+});
 
 const size = computed<number>({
   get: () => Number(route.query.size ?? 6),
-  set: (val) => updateQuery({ size: val })
-})
+  set: (val) => updateQuery({ size: val }),
+});
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+  const merged = { ...route.query, ...newQuery };
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
+  if (merged.page === route.query.page && merged.size === route.query.size) {
+    return;
   }
 
-  router.replace({ query: merged })
+  router.replace({ query: merged });
 }
 
 onMounted(async () => {
@@ -97,131 +94,210 @@ onMounted(async () => {
     router.replace({
       query: {
         page: page.value,
-        size: size.value
-      }
-    })
+        size: size.value,
+      },
+    });
   }
 
-  loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
-})
+  loading.value = true;
+  await store.fetchAll(page.value, size.value);
+  loading.value = false;
+});
 </script>
 
 <template>
-  <div class="space-y-4">
-    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+  <div class="">
+    <UCard class="hidden md:block" :ui="{ body: 'p-0' }">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No streams found.</p>
+          <div class="flex flex-col items-center justify-center py-16">
+            <div
+              class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10"
+            >
+              <UIcon name="i-lucide-git-branch" class="size-10 text-primary" />
+            </div>
+
+            <h3 class="text-lg font-semibold">No Streams Found</h3>
+
+            <p class="mt-2 max-w-xs text-center text-sm text-muted">
+              Create academic streams to organize students and classes.
+            </p>
           </div>
         </template>
+
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
       </UTable>
+
       <template #footer>
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Showing :meta="store.meta" />
-          <UPagination size="sm" v-model:page="page" :page-size="store.meta.size" :items-per-page="store.meta.size"
-            :total="store.meta.total" show-edges />
+
+          <UPagination
+            v-model:page="page"
+            size="sm"
+            :page-size="store.meta.size"
+            :items-per-page="store.meta.size"
+            :total="store.meta.total"
+            show-edges
+          />
         </div>
       </template>
     </UCard>
 
+    <!-- Mobile -->
     <div class="space-y-3 md:hidden">
+      <!-- Loading -->
       <template v-if="loading">
-        <UCard v-for="i in 4" :key="i" class="rounded-2xl border border-default" :ui="{ body: 'p-4' }">
-          <div class="space-y-3">
-            <div class="flex gap-3">
-              <USkeleton class="size-11 rounded-xl" />
+        <UCard
+          v-for="i in 5"
+          :key="i"
+          class="overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800"
+          :ui="{ body: 'p-0' }"
+        >
+          <div class="p-5 space-y-5">
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-12 rounded-2xl" />
 
               <div class="flex-1 space-y-2">
-                <USkeleton class="h-4 w-28" />
-                <USkeleton class="h-3 w-20" />
+                <USkeleton class="h-4 w-36" />
+                <USkeleton class="h-3 w-24" />
               </div>
+
+              <USkeleton class="size-8 rounded-xl" />
             </div>
 
-            <USkeleton class="h-20 rounded-xl" />
+            <USkeleton class="h-20 rounded-2xl" />
+
+            <div class="flex items-center justify-between pt-2">
+              <USkeleton class="h-6 w-16 rounded-full" />
+              <USkeleton class="h-8 w-8 rounded-xl" />
+            </div>
           </div>
         </UCard>
       </template>
 
-      <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id" class="rounded-2xl border border-default shadow-sm"
-          :ui="{ body: 'p-4' }">
-          <div class="space-y-4">
+      <!-- Empty -->
+      <template v-else-if="!data?.length">
+        <UCard class="rounded-3xl" :ui="{ body: 'p-10' }">
+          <div class="flex flex-col items-center text-center">
+            <div
+              class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-primary/10"
+            >
+              <UIcon name="i-lucide-git-branch" class="size-8 text-primary" />
+            </div>
 
-            <!-- Header -->
+            <h3 class="font-semibold">No streams found</h3>
+
+            <p class="mt-2 text-sm text-muted">
+              Create a stream to organize classes and students.
+            </p>
+          </div>
+        </UCard>
+      </template>
+
+      <!-- Cards -->
+      <template v-else>
+        <UCard
+          v-for="item in data"
+          :key="item.id"
+          class="group overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+          :ui="{ body: 'p-0' }"
+        >
+          <!-- Header -->
+          <div class="border-b border-gray-200 dark:border-gray-800 p-5">
             <div class="flex items-start justify-between gap-3">
-
-              <div class="flex gap-3 min-w-0 flex-1">
-
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <UIcon name="i-lucide-git-branch" class="size-5 text-primary" />
+              <div class="flex min-w-0 items-center gap-4">
+                <div
+                  class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10"
+                >
+                  <UIcon name="i-lucide-git-branch" class="size-6 text-primary" />
                 </div>
 
-                <div class="min-w-0 flex-1">
-                  <h3 class="truncate text-sm font-semibold text-highlighted">
+                <div class="min-w-0">
+                  <h3 class="text-base font-bold">
                     {{ item.name }}
                   </h3>
 
-                  <p class="mt-1 text-xs text-muted">
-                    Academic Stream
-                  </p>
-                </div>
+                  <div class="mt-1 flex items-center gap-2 text-xs text-muted">
+                    <UIcon name="i-lucide-folder-tree" class="size-3.5" />
 
+                    Academic Stream
+                  </div>
+                </div>
               </div>
 
-              <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost"
-                  class="rounded-xl" />
+              <UDropdownMenu
+                :items="getRowItems({ original: item } as any)"
+                :content="{ align: 'end' }"
+              >
+                <UButton
+                  icon="i-lucide-ellipsis-vertical"
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  class="rounded-xl"
+                />
               </UDropdownMenu>
-
             </div>
+          </div>
 
-            <!-- Description -->
-            <div class="rounded-xl bg-muted p-3">
-              <p class="text-[11px] text-muted">
-                Description
+          <!-- Body -->
+          <div class="p-4">
+            <div
+              class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-100 p-4 dark:bg-neutral-800"
+            >
+              <div class="mb-3 flex items-center gap-2">
+                <div
+                  class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
+                >
+                  <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
+                </div>
+
+                <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
+                  Description
+                </p>
+              </div>
+
+              <p class="text-sm leading-6 text-highlighted">
+                {{ item.description || "No description available for this stream." }}
               </p>
-
-              <p class="mt-2 text-sm text-highlighted line-clamp-2">
-                {{
-                  item.description ||
-                  'No description available.'
-                }}
-              </p>
             </div>
+          </div>
 
-            <!-- Footer -->
-            <div class="flex items-center justify-between border-t border-default pt-3">
-              <UBadge label="Active" color="success" variant="soft" />
+          <!-- Footer -->
+          <div
+            class="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 px-5 py-4"
+          >
+            <UBadge label="Active" color="success" variant="soft" />
 
-              <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
-            </div>
-
+            <!-- <UButton
+                icon="i-lucide-arrow-right"
+                color="neutral"
+                variant="ghost"
+                square
+                class="rounded-xl transition-transform group-hover:translate-x-1"
+              /> -->
           </div>
         </UCard>
       </template>
 
-      <template v-else>
-        <UCard class="rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-4' }">
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No streams found.</p>
-          </div>
-        </UCard>
-      </template>
-
-      <div v-if="!loading && data?.length && store.meta.total > store.meta.size"
-        class="flex flex-col items-center gap-3 pt-2">
+      <!-- Pagination -->
+      <div
+        v-if="!loading && data?.length && store.meta.total > store.meta.size"
+        class="flex flex-col items-center gap-3 pt-3"
+      >
         <Showing :meta="store.meta" />
 
-        <UPagination v-model:page="page" size="sm" :page-size="store.meta.size" :items-per-page="store.meta.size"
-          :total="store.meta.total" show-edges />
+        <UPagination
+          v-model:page="page"
+          size="sm"
+          :page-size="store.meta.size"
+          :items-per-page="store.meta.size"
+          :total="store.meta.total"
+          show-edges
+        />
       </div>
     </div>
   </div>

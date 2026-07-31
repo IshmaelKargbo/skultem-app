@@ -1,5 +1,5 @@
 <template>
-  <div class="px-3 pt-2">
+  <div class="px-3 ">
     <div
       class="rounded-4xl border border-white/60 bg-white dark:bg-gray-800 p-1 shadow-[0_8px_32px_rgba(15,23,42,0.12),0_1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:from-gray-900/70 dark:to-gray-950/60 dark:shadow-[0_8px_32px_rgba(0,0,0,0.45),0_1px_0_rgba(255,255,255,0.06)_inset]"
     >
