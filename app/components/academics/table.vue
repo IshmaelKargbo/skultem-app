@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useAcademicYearStore()
@@ -92,8 +93,10 @@ onMounted(async () => {
 </script>
 
 <template>
+  <TableViewToggle v-model="view" />
+
   <!-- Desktop -->
-  <UCard class="hidden md:block" :ui="{
+  <UCard v-if="view === 'table'" class="hidden md:block" :ui="{
     body: 'sm:p-0'
   }">
     <UTable :columns="columns" :data="data" :loading="loading">
@@ -135,7 +138,7 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
     <template v-if="loading">
       <UCard v-for="i in 4" :key="i" class="overflow-hidden">
@@ -259,7 +262,7 @@ onMounted(async () => {
 
     <!-- Empty -->
     <template v-else>
-      <UCard class="overflow-hidden">
+      <UCard class="overflow-hidden col-span-full">
         <div class="flex flex-col items-center justify-center py-14">
           <UIcon name="i-lucide-calendar-range" class="mb-3 size-10 text-gray-400" />
 
@@ -271,7 +274,7 @@ onMounted(async () => {
     </template>
 
   <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2 col-span-full">
         <Showing :meta="meta" />
 
         <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"

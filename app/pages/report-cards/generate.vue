@@ -1,37 +1,16 @@
-```vue
 <template>
     <div class="space-y-6 mt-6 p-4">
 
-        <!-- Hero -->
-        <UCard class="overflow-hidden rounded-3xl">
-            <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <!-- Header -->
+        <Heading title="Generate Report Cards" subtitle="Generate, preview and publish report cards for students.">
+            <UButton icon="i-lucide-eye" variant="outline" class="justify-center" @click="previewReportCards">
+                Preview
+            </UButton>
 
-                <div>
-                    <p class="text-sm font-medium text-primary">
-                        Documents
-                    </p>
-
-                    <h1 class="mt-2 text-3xl font-bold">
-                        Generate Report Cards
-                    </h1>
-
-                    <p class="mt-2 text-sm text-muted">
-                        Generate, preview and publish report cards for students.
-                    </p>
-                </div>
-
-                <div class="flex flex-wrap gap-3">
-                    <UButton icon="i-lucide-eye" variant="outline">
-                        Preview
-                    </UButton>
-
-                    <UButton icon="i-lucide-file-text" color="primary" :loading="loading" @click="generateReportCards">
-                        Generate Report Cards
-                    </UButton>
-                </div>
-
-            </div>
-        </UCard>
+            <UButton icon="i-lucide-file-text" color="primary" class="justify-center" :loading="loading" @click="generateReportCards">
+                Generate Report Cards
+            </UButton>
+        </Heading>
 
         <!-- Statistics -->
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -69,7 +48,7 @@
                         </p>
 
                         <p class="text-2xl font-bold text-green-600">
-                            40
+                            {{ passedStudents }}
                         </p>
                     </div>
 
@@ -89,7 +68,7 @@
                         </p>
 
                         <p class="text-2xl font-bold text-red-600">
-                            5
+                            {{ failedStudents }}
                         </p>
                     </div>
 
@@ -109,7 +88,7 @@
                         </p>
 
                         <p class="text-2xl font-bold">
-                            72%
+                            {{ classAverage }}%
                         </p>
                     </div>
 
@@ -307,7 +286,7 @@
 
 <script setup lang="ts">
 const appStore = useAppStore()
-const { success, error } = useNotify()
+const { success, error, info } = useNotify()
 
 const loading = ref(false)
 const generating = ref(false)
@@ -480,6 +459,16 @@ const classAverage = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| Preview
+|--------------------------------------------------------------------------
+*/
+
+function previewReportCards() {
+    info('Previewing report cards is not available yet.')
+}
+
+/*
+|--------------------------------------------------------------------------
 | Generate Report Cards
 |--------------------------------------------------------------------------
 */
@@ -568,4 +557,3 @@ definePageMeta({
     ]
 })
 </script>
-```

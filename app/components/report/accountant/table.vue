@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
@@ -92,7 +93,9 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'sm:p-0' }">
       <UTable
         :column-pinning="columnPinning"
         :columns="columns"
@@ -158,11 +161,12 @@ onMounted(() => {
       </template>
     </UCard>
 
-    <div class="space-y-3 md:hidden">
+    <div class="space-y-3" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <UCard
         v-for="item in data"
         :key="item.id"
-        class="overflow-hidden border border-gray-200 shadow-sm dark:border-gray-800"
+        variant="outline"
+        class="overflow-hidden"
         :ui="{ body: 'p-4 sm:p-5' }"
       >
         <div class="space-y-4">
@@ -222,12 +226,12 @@ onMounted(() => {
         </div>
       </UCard>
 
-      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
+      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10 col-span-full">
         <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
         <p class="text-gray-500 dark:text-gray-400">No students found.</p>
       </div>
 
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
+      <UCard class="col-span-full" :ui="{ body: 'p-4 sm:p-5' }">
         <div class="space-y-3">
           <Showing :meta="meta" />
           <UPagination

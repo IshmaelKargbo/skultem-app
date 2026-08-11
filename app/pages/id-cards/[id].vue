@@ -2,48 +2,34 @@
   <div class="space-y-6 mt-6 p-4">
 
     <!-- Header Section -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <Heading :title="template.name" subtitle="Preview how ID cards generated with this template will appear.">
+      <UBadge color="success" variant="subtle">
+        Default
+      </UBadge>
 
-      <div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold tracking-tight">
-            {{ template.name }}
-          </h1>
-          <UBadge color="success" variant="subtle">
-            Default
-          </UBadge>
-        </div>
-        <p class="mt-1 text-sm text-muted">
-          Preview how ID cards generated with this template will appear.
-        </p>
-      </div>
+      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/id-cards/templates" class="justify-center">
+        Back
+      </UButton>
 
-      <div class="flex flex-wrap gap-3 items-center">
-        <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/id-cards/templates">
-          Back
-        </UButton>
+      <!-- <div class="flex items-center gap-2">
+        <USelect :items="templateOptions" v-model="settings.preset" class="w-48" />
+        <UButton size="sm" :variant="settings.layout === 'vertical' ? 'solid' : 'outline'" @click="settings.layout = 'vertical'">Vertical</UButton>
+        <UButton size="sm" :variant="settings.layout === 'horizontal' ? 'solid' : 'outline'" @click="settings.layout = 'horizontal'">Horizontal</UButton>
+        <UButton size="sm" :variant="settings.profileShape === 'round' ? 'solid' : 'outline'" @click="settings.profileShape = 'round'">Round</UButton>
+        <UButton size="sm" :variant="settings.profileShape === 'square' ? 'solid' : 'outline'" @click="settings.profileShape = 'square'">Square</UButton>
+      </div> -->
 
-        <!-- <div class="flex items-center gap-2">
-          <USelect :items="templateOptions" v-model="settings.preset" class="w-48" />
-          <UButton size="sm" :variant="settings.layout === 'vertical' ? 'solid' : 'outline'" @click="settings.layout = 'vertical'">Vertical</UButton>
-          <UButton size="sm" :variant="settings.layout === 'horizontal' ? 'solid' : 'outline'" @click="settings.layout = 'horizontal'">Horizontal</UButton>
-          <UButton size="sm" :variant="settings.profileShape === 'round' ? 'solid' : 'outline'" @click="settings.profileShape = 'round'">Round</UButton>
-          <UButton size="sm" :variant="settings.profileShape === 'square' ? 'solid' : 'outline'" @click="settings.profileShape = 'square'">Square</UButton>
-        </div> -->
+      <UButton icon="i-lucide-settings-2" variant="outline" color="neutral" to="/id-cards/settings" class="justify-center">
+        Settings
+      </UButton>
 
-        <UButton icon="i-lucide-settings-2" variant="outline" color="neutral" to="/id-cards/settings">
-          Settings
-        </UButton>
-
-        <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading" @click="downloadPdf">
-          Download PDF
-        </UButton>
-        <UButton icon="i-lucide-printer" variant="outline" color="neutral" @click="printCard">
-          Print
-        </UButton>
-      </div>
-
-    </div>
+      <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading" class="justify-center" @click="downloadPdf">
+        Download PDF
+      </UButton>
+      <UButton icon="i-lucide-printer" variant="outline" color="neutral" class="justify-center" @click="printCard">
+        Print
+      </UButton>
+    </Heading>
 
     <!-- Quick Stats -->
     <div class="grid gap-4 sm:grid-cols-3">

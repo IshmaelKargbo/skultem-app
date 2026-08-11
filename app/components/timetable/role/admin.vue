@@ -16,7 +16,7 @@
       </div>
     </Heading>
     <div v-if="session">
-      <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex min-w-0 items-center gap-3">
@@ -74,64 +74,6 @@
 
         <TimetablePeriod is-admin />
       </UCard>
-      <div class="md:hidden">
-        <UCard>
-          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div class="flex min-w-0 items-center gap-3">
-              <div
-                class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
-              >
-                <UIcon name="i-lucide-calendar-days" class="size-5" />
-              </div>
-
-              <div class="min-w-0">
-                <h2 class="truncate font-semibold text-base">
-                  {{ session?.clazz }} · {{ session?.sectionName }}
-                </h2>
-
-                <p class="text-sm text-muted">
-                  {{ periods.length }} periods · {{ store.getDayRange }}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
-              <UButton
-                :loading="breakLoading"
-                icon="i-lucide-coffee"
-                color="neutral"
-                variant="outline"
-                class="w-full justify-center sm:w-auto"
-                @click="addBreak"
-              >
-                Add Break
-              </UButton>
-
-              <UButton
-                :loading="lunchLoading"
-                icon="i-lucide-coffee"
-                color="neutral"
-                variant="outline"
-                class="w-full justify-center sm:w-auto"
-                @click="addLunch"
-              >
-                Add Lunch
-              </UButton>
-
-              <UButton
-                :loading="addLoading"
-                icon="i-lucide-plus"
-                class="w-full justify-center sm:w-auto"
-                @click="addPeriod"
-              >
-                Add Period
-              </UButton>
-            </div>
-          </div>
-        </UCard>
-
-        <TimetablePeriod is-admin class="" />
-      </div>
     </div>
 
     <UCard v-else>

@@ -1,10 +1,7 @@
 export function useAuth() {
     const userStore = useUserStore()
 
-    const roleCookie = useCookie<string | null>('active_role', {
-        default: () => null,
-        sameSite: 'lax'
-    })
+    const { activeRole: roleCookie } = useAuthCookies()
 
     const activeRole = useState<string>('active-role', () => '')
     const authResolved = useState<boolean>('auth-resolved', () => false)

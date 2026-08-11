@@ -5,13 +5,7 @@ export default defineNuxtPlugin(() => {
 
   let refreshPromise: Promise<string | null> | null = null
 
-  const getAuthCookies = () => {
-    const accessToken = useCookie<string | null>("access_token")
-    const refreshToken = useCookie<string | null>("refresh_token")
-    const activeRole = useCookie<string | null>("active_role")
-
-    return { accessToken, refreshToken, activeRole }
-  }
+  const getAuthCookies = () => useAuthCookies()
 
   const clearAuthState = () => {
     const { accessToken, refreshToken, activeRole } = getAuthCookies()
@@ -61,7 +55,7 @@ export default defineNuxtPlugin(() => {
     baseURL,
 
     onRequest(context: any) {
-      const accessToken = useCookie("access_token")
+      const { accessToken } = getAuthCookies()
       if (accessToken.value) {
         context.options.headers = {
           ...context.options.headers,

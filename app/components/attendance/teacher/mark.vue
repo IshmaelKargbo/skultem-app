@@ -35,7 +35,9 @@
         </div>
 
         <!-- Desktop Table -->
-        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+        <TableViewToggle v-model="view" />
+
+        <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
@@ -87,7 +89,7 @@
         </UTable>
 
         <!-- Mobile Cards -->
-        <div class="md:hidden divide-y divide-gray-100">
+        <div class="divide-y divide-gray-100" :class="{ 'md:hidden': view === 'table' }">
 
           <!-- Mobile Skeleton -->
           <template v-if="isLoading">
@@ -158,6 +160,7 @@
 import * as yup from 'yup'
 import type { FormSubmitEvent, TableColumn } from '#ui/types'
 
+const view = ref<'table' | 'card'>('table')
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()
 

@@ -7,7 +7,7 @@
         :to="tab.to"
         class="rounded-3xl px-3 py-2 text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
         :class="isActive(tab.to, tab.exact)
-          ? 'bg-primary-100 text-primary-600 font-semibold dark:bg-primary-800 dark:text-primary-200'
+          ? 'bg-secondary-100 text-secondary-600 font-semibold dark:bg-secondary-800 dark:text-secondary-200'
           : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
       >
         {{ tab.label }}

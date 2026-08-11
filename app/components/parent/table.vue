@@ -4,6 +4,8 @@ import { computed, h, onMounted, ref, watch } from "vue";
 const route = useRoute();
 const router = useRouter();
 
+const view = ref<"table" | "card">("table");
+
 const store = useParentStore();
 const { records: data, meta, loading } = storeToRefs(store);
 
@@ -39,6 +41,10 @@ const columns = [
   {
     accessorKey: "city",
     header: "City",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
   },
 ];
 
@@ -100,12 +106,11 @@ onMounted(() => {
 });
 </script>
 <template>
-  <UCard
-    class="hidden overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 md:block"
-    :ui="{
-      body: 'sm:p-0',
-    }"
-  >
+  <TableViewToggle v-model="view" />
+
+  <UCard v-if="view === 'table'" variant="outline" class="hidden overflow-hidden md:block" :ui="{
+    body: 'sm:p-0',
+  }">
     <UTable :columns="columns" :data="data" :loading="loading" class="min-w-full">
       <template #empty-state>
         <div class="flex flex-col items-center justify-center py-14">
@@ -123,6 +128,10 @@ onMounted(() => {
       <template #students-cell="{ row }">
         <UBadge :label="`${row.original.students} Students`" variant="outline" />
       </template>
+      <template #status-cell="{ row }">
+        <UBadge :label="STATUS_LABELS[row.original.status]" :color="STATUS_COLORS[row.original.status]"
+          variant="soft" />
+      </template>
       <template #loading>
         <TableLoading :size="columns.length" />
       </template>
@@ -133,20 +142,15 @@ onMounted(() => {
       <div class="flex items-center justify-between">
         <Showing :meta="meta" />
 
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="meta?.size || 10"
-          :items-per-page="meta?.size || 10"
-          :total="meta?.total || 0"
-          show-edges
-        />
+        <UPagination v-model:page="page" size="sm" :page-size="meta?.size || 10" :items-per-page="meta?.size || 10"
+          :total="meta?.total || 0" show-edges />
       </div>
     </template>
   </UCard>
 
-  <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <!-- Mobile / Card -->
+  <div class="space-y-4"
+    :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
     <template v-if="loading">
       <UCard v-for="i in 4" :key="i" class="overflow-hidden">
@@ -188,16 +192,11 @@ onMounted(() => {
     </template>
 
     <template v-else-if="data?.length">
-      <UCard
-        v-for="parent in data"
-        :key="parent.id"
-        class="group overflow-hidden rounded-[28px] border border-gray-200/70 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-[0.98] dark:border-neutral-800 dark:bg-neutral-900"
-        :ui="{ body: 'p-0' }"
-      >
+      <UCard v-for="parent in data" :key="parent.id"
+        class="group overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow transition-all duration-300 hover:-translate-y-1 hover:shadow-sm active:scale-[0.98] dark:border-neutral-800 dark:bg-neutral-900"
+        :ui="{ body: 'p-0' }">
         <!-- Hero -->
-        <div
-          class="relative overflow-hidden px-5 py-5 border-b border-gray-200 dark:border-gray-800"
-        >
+        <div class="relative overflow-hidden  pb-3 border-b border-gray-200 dark:border-gray-800">
           <div class="relative flex items-start justify-between">
             <div class="flex space-x-4">
               <UAvatar icon="i-lucide-user" size="xl" class="rounded-2xl" />
@@ -206,116 +205,95 @@ onMounted(() => {
                   {{ parent.name }}
                 </h3>
 
-                <div class="mt-1 flex items-center gap-2 text-xs">
+                <div class="flex items-center gap-2 text-xs">
                   <span class="truncate">{{ parent.email }}</span>
                 </div>
               </div>
             </div>
 
-            <UBadge
-              :label="STATUS_LABELS[parent.status]"
-              :color="STATUS_COLORS[parent.status]"
-              variant="solid"
-              class="rounded-full"
-            />
+            <UBadge :label="STATUS_LABELS[parent.status]" :color="STATUS_COLORS[parent.status]" variant="solid"
+              class="rounded-full" />
           </div>
         </div>
 
         <!-- Information -->
         <div class="grid grid-cols-2 gap-3 p-4">
           <!-- Students -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/15"
-              >
-                <UIcon name="i-lucide-graduation-cap" class="size-4 text-primary" />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                <UIcon name="i-lucide-users-round" class="size-4 text-primary-600 dark:text-primary-400" />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">
                 Students
               </p>
             </div>
 
-            <p class="text-lg font-semibold">
+            <p class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ parent.students }}
             </p>
           </div>
 
           <!-- Phone -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
-              >
-                <UIcon
-                  name="i-lucide-phone"
-                  class="size-4 text-emerald-600 dark:text-emerald-400"
-                />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                <UIcon name="i-lucide-phone" class="size-4 text-emerald-600 dark:text-emerald-400" />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                 Phone
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
-              {{ parent.phone || "N/A" }}
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              {{ parent.phone || 'N/A' }}
             </p>
           </div>
 
           <!-- City -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15"
-              >
-                <UIcon
-                  name="i-lucide-map-pinned"
-                  class="size-4 text-amber-600 dark:text-amber-400"
-                />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20">
+                <UIcon name="i-lucide-map-pinned" class="size-4 text-amber-600 dark:text-amber-400" />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
                 City
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
-              {{ parent.city || "N/A" }}
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              {{ parent.city || 'N/A' }}
             </p>
           </div>
 
           <!-- Street -->
-          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
+          <div
+            class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/15"
-              >
-                <UIcon
-                  name="i-lucide-map"
-                  class="size-4 text-violet-600 dark:text-violet-400"
-                />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
+                <UIcon name="i-lucide-map" class="size-4 text-violet-600 dark:text-violet-400" />
               </div>
 
-              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+              <p class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">
                 Street
               </p>
             </div>
 
-            <p class="truncate text-sm font-medium">
-              {{ parent.street || "N/A" }}
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              {{ parent.street || 'N/A' }}
             </p>
           </div>
         </div>
         <!-- Footer -->
-        <div
-          class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800"
-        >
+        <div class="flex items-center border-t border-gray-100 pt-3 dark:border-gray-800">
           <div class="flex min-w-0 items-center gap-3">
-            <div
-              class="flex size-10 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/15"
-            >
+            <div class="flex size-10 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/15">
               <UIcon name="i-lucide-users" class="size-5 text-primary" />
             </div>
 
@@ -327,37 +305,29 @@ onMounted(() => {
               <p class="truncate text-xs text-gray-500">Linked to this guardian</p>
             </div>
           </div>
-
-          <UButton
-            label="View"
-            trailing-icon="i-lucide-chevron-right"
-            variant="ghost"
-            class="rounded-xl"
-          />
         </div>
       </UCard>
     </template>
 
     <!-- Empty -->
     <template v-else>
-      <div class="flex flex-col items-center justify-center py-14">
-        <UIcon name="i-lucide-users" class="mb-3 size-10 text-gray-400" />
+      <UCard class="col-span-full overflow-hidden">
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="i-lucide-users" class="mb-3 size-10 text-gray-400" />
 
-        <p class="text-sm text-gray-500">No parents found</p>
-      </div>
+          <h3 class="font-semibold">No Parents Found</h3>
+
+          <p class="text-sm text-gray-500">There are no parents to show yet.</p>
+        </div>
+      </UCard>
     </template>
 
     <!-- Pagination -->
-    <div class="flex justify-between items-center mt-3 md:hidden">
+    <div v-if="!loading && data?.length"
+      class="flex flex-col gap-3 items-center justify-between mt-3 sm:flex-row col-span-full">
       <Showing :meta="meta" />
-      <UPagination
-        size="sm"
-        v-model:page="page"
-        :page-size="meta.size"
-        :items-per-page="meta.size"
-        :total="meta.total"
-        show-edges
-      />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
     </div>
   </div>
 </template>

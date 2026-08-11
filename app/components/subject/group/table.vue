@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Row } from "@tanstack/vue-table";
 
+const view = ref<'table' | 'card'>('table')
 const route = useRoute();
 const router = useRouter();
 const store = useSubjectGroupStore();
@@ -138,7 +139,9 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'sm:p-0' }">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -150,38 +153,24 @@ onMounted(async () => {
           <TableLoading :size="columns.length" />
         </template>
         <template #totalSelection-cell="{ row }">
-          <UBadge
-            :label="row.original.totalSelection"
-            variant="outline"
-            icon="mdi:select-multiple"
-            color="neutral"
-          />
+          <UBadge :label="row.original.totalSelection" variant="outline" icon="mdi:select-multiple" color="neutral" />
         </template>
       </UTable>
       <template #footer>
         <div v-if="!loading" class="flex justify-between items-center">
           <Showing :meta="meta" />
-          <UPagination
-            size="sm"
-            v-model:page="page"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
+          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </template>
     </UCard>
-    
-    <div class="space-y-4 md:hidden">
+
+    <div class="space-y-4"
+      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <!-- Loading -->
       <template v-if="loading">
-        <UCard
-          v-for="i in 5"
-          :key="i"
-          class="overflow-hidden rounded-3xl border border-default shadow-sm"
-          :ui="{ body: 'p-5' }"
-        >
+        <UCard v-for="i in 5" :key="i" class="overflow-hidden rounded-3xl border border-default shadow-sm"
+          :ui="{ body: 'p-5' }">
           <div class="space-y-4">
             <div class="flex items-center gap-3">
               <USkeleton class="size-12 rounded-2xl" />
@@ -204,21 +193,16 @@ onMounted(async () => {
 
       <!-- Data -->
       <template v-else-if="data?.length">
-        <UCard
-          v-for="item in data"
-          :key="item.id"
-          class="group overflow-hidden rounded-3xl border border-default shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-          :ui="{ body: 'p-0' }"
-        >
- 
+        <UCard v-for="item in data" :key="item.id"
+          class="group overflow-hidden rounded-3xl border border-default shadow transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm"
+          :ui="{ body: 'p-0' }">
 
-          <div class="p-5 space-y-5">
+
+          <div class="space-y-5">
             <!-- Header -->
-            <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start justify-between gap-3 border-b border-default p-3 md:p-0 md:pb-3">
               <div class="flex min-w-0 items-center gap-3">
-                <div
-                  class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"
-                >
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <UIcon name="i-lucide-folder-tree" class="size-6" />
                 </div>
 
@@ -239,30 +223,42 @@ onMounted(async () => {
             </div>
 
             <!-- Stats -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="rounded-2xl border border-default bg-gray-100 dark:bg-gray-800 p-4">
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-lucide-git-branch" class="text-primary" />
+            <div class="grid grid-cols-2 space-x-3 p-4">
+              <div
+                class="rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                    <UIcon name="i-lucide-git-branch" class="size-4 text-primary-600 dark:text-primary-400" />
+                  </div>
 
-                  <span class="text-xs text-muted"> Stream </span>
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">
+                    Stream
+                  </p>
                 </div>
 
-                <p class="mt-3 font-semibold">
+                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
                   {{ item.streamName || "None" }}
                 </p>
               </div>
 
-              <div class="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-lucide-list-checks" class="text-primary" />
+              <div
+                class="rounded-2xl border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/20 dark:bg-indigo-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-7 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
+                    <UIcon name="i-lucide-git-branch" class="size-4 text-indigo-600 dark:text-indigo-400" />
+                  </div>
 
-                  <span class="text-xs text-muted"> Selection </span>
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+                    Selection
+                  </p>
                 </div>
 
-                <p class="mt-3 text-lg font-bold text-primary">
+                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
                   {{ item.totalSelection || 0 }}
                 </p>
               </div>
+
+
             </div>
 
             <!-- Footer -->
@@ -281,11 +277,9 @@ onMounted(async () => {
 
       <!-- Empty -->
       <template v-else>
-        <UCard class="rounded-3xl border border-default shadow-sm">
+        <UCard class="rounded-3xl border border-default shadow-sm col-span-full">
           <div class="flex flex-col items-center justify-center py-16">
-            <div
-              class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10"
-            >
+            <div class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10">
               <UIcon name="i-lucide-folder-tree" class="size-10 text-primary" />
             </div>
 
@@ -298,18 +292,12 @@ onMounted(async () => {
         </UCard>
       </template>
 
-      <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-4 pt-2">
+      <!-- Mobile Pagination -->
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
         <Showing :meta="meta" />
-
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
       </div>
     </div>
   </div>

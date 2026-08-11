@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute();
 const router = useRouter();
 const store = useStreamSubjectStore();
@@ -73,14 +74,17 @@ onMounted(async () => {
 </script>
 <template>
   <div class="space-y-4">
+    <TableViewToggle v-model="view" />
+
     <UCard
+      v-if="view === 'table'"
       class="hidden md:block"
       :ui="{
         body: 'sm:p-0',
       }"
     >
       <UTable :columns="columns" :data="data" :loading="loading">
-        <template #empty>
+        <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-muted" aria-hidden="true" />
             <p class="text-muted">No stream subject found.</p>
@@ -97,26 +101,27 @@ onMounted(async () => {
             />
           </div>
         </template>
-        <template #footer>
-          <div class="flex justify-between items-center">
-            <Showing :meta="meta" />
-            <UPagination
-              size="sm"
-              v-model:page="page"
-              :page-size="meta.size"
-              :items-per-page="meta.size"
-              :total="meta.total"
-              show-edges
-            />
-          </div>
-        </template>
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
       </UTable>
+
+      <template #footer>
+        <div class="flex items-center justify-between">
+          <Showing :meta="meta" />
+          <UPagination
+            v-model:page="page"
+            size="sm"
+            :page-size="meta.size"
+            :items-per-page="meta.size"
+            :total="meta.total"
+            show-edges
+          />
+        </div>
+      </template>
     </UCard>
 
-    <div class="space-y-4 md:hidden">
+    <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <template v-if="loading">
         <UCard
           v-for="i in 4"
@@ -180,43 +185,122 @@ onMounted(async () => {
               />
             </div>
           </div>
+<div class="grid grid-cols-2 gap-3 p-4">
+  <!-- Subject Type -->
+  <div
+    class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10"
+  >
+    <div class="mb-2 flex items-center gap-2">
+      <div
+        class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20"
+      >
+        <UIcon
+          name="i-lucide-book-open-check"
+          class="size-4 text-primary-600 dark:text-primary-400"
+        />
+      </div>
 
-          <div class="grid grid-cols-2 gap-3 p-4">
-            <div class="rounded-2xl bg-muted p-3">
-              <p class="mb-1 text-[10px] uppercase tracking-wide text-muted">
-                Subject Type
-              </p>
-              <UBadge
-                variant="soft"
-                size="sm"
-                :color="item.mandatory ? 'success' : 'info'"
-                :label="item.mandatory ? 'Core' : 'Optional'"
-              />
-            </div>
+      <p
+        class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300"
+      >
+        Subject Type
+      </p>
+    </div>
 
-            <div class="rounded-2xl bg-muted p-3">
-              <p class="mb-1 text-[10px] uppercase tracking-wide text-muted">Group</p>
-              <p class="truncate text-sm font-medium text-highlighted">
-                {{ item.groupName || "N/A" }}
-              </p>
-            </div>
+    <UBadge
+      variant="soft"
+      size="sm"
+      :color="item.mandatory ? 'success' : 'info'"
+      :label="item.mandatory ? 'Core' : 'Optional'"
+    />
+  </div>
 
-            <div class="rounded-2xl bg-muted p-3 col-span-2">
-              <p class="mb-1 text-[10px] uppercase tracking-wide text-muted">
-                Status
-              </p>
-              <UBadge
-                variant="soft"
-                :color="item.locked ? 'error' : 'success'"
-                :label="item.locked ? 'Locked' : 'Active'"
-              />
-            </div>
-          </div>
+  <!-- Group -->
+  <div
+    class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10"
+  >
+    <div class="mb-2 flex items-center gap-2">
+      <div
+        class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20"
+      >
+        <UIcon
+          name="i-lucide-layers-3"
+          class="size-4 text-violet-600 dark:text-violet-400"
+        />
+      </div>
+
+      <p
+        class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300"
+      >
+        Group
+      </p>
+    </div>
+
+    <p class="truncate text-sm font-semibold text-violet-900 dark:text-violet-100">
+      {{ item.groupName || "N/A" }}
+    </p>
+  </div>
+
+  <!-- Status -->
+  <div
+    class="col-span-2 flex items-center justify-between rounded-2xl border p-3"
+    :class="
+      item.locked
+        ? 'border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10'
+        : 'border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/10'
+    "
+  >
+    <div class="flex min-w-0 items-center gap-3">
+      <div
+        class="flex size-8 shrink-0 items-center justify-center rounded-xl"
+        :class="
+          item.locked
+            ? 'bg-red-100 dark:bg-red-500/20'
+            : 'bg-emerald-100 dark:bg-emerald-500/20'
+        "
+      >
+        <UIcon
+          :name="item.locked ? 'i-lucide-lock' : 'i-lucide-circle-check'"
+          class="size-4"
+          :class="
+            item.locked
+              ? 'text-red-600 dark:text-red-400'
+              : 'text-emerald-600 dark:text-emerald-400'
+          "
+        />
+      </div>
+
+      <div class="min-w-0">
+        <p
+          class="text-[10px] font-medium uppercase tracking-wide"
+          :class="
+            item.locked
+              ? 'text-red-700 dark:text-red-300'
+              : 'text-emerald-700 dark:text-emerald-300'
+          "
+        >
+          Status
+        </p>
+
+        <p class="mt-0.5 text-sm font-semibold text-highlighted">
+          {{ item.locked ? "Subject is locked" : "Subject is active" }}
+        </p>
+      </div>
+    </div>
+
+    <UBadge
+      variant="soft"
+      size="sm"
+      :color="item.locked ? 'error' : 'success'"
+      :label="item.locked ? 'Locked' : 'Active'"
+    />
+  </div>
+</div>
         </UCard>
       </template>
 
       <template v-else>
-        <UCard class="rounded-3xl">
+        <UCard class="rounded-3xl col-span-full">
           <div class="flex flex-col items-center justify-center py-14">
             <UIcon name="ph:books-light" class="mb-3 text-4xl text-muted" aria-hidden="true" />
             <p class="text-sm text-muted">No stream subject found.</p>
@@ -224,20 +308,19 @@ onMounted(async () => {
         </UCard>
       </template>
 
-      <div  v-if="!loading && data?.length"  class="flex flex-col items-center justify-center gap-2">
+      <div
+        v-if="!loading && data?.length"
+        class="col-span-full flex flex-col items-center gap-3 pt-2 md:flex-row md:justify-between"
+      >
         <Showing :meta="meta" />
-        <div class="w-full overflow-x-auto pb-1">
-          <div class="flex min-w-max justify-center px-1">
-            <UPagination
-              size="sm"
-              v-model:page="page"
-              :page-size="meta.size"
-              :items-per-page="meta.size"
-              :total="meta.total"
-              show-edges
-            />
-          </div>
-        </div>
+        <UPagination
+          v-model:page="page"
+          size="sm"
+          :page-size="meta.size"
+          :items-per-page="meta.size"
+          :total="meta.total"
+          show-edges
+        />
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table');
 const route = useRoute();
 const router = useRouter();
 const store = useSectionStore();
@@ -56,12 +57,11 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <UCard
-    class="hidden md:block"
-    :ui="{
-      body: 'sm:p-0',
-    }"
-  >
+  <TableViewToggle v-model="view" />
+
+  <UCard v-if="view === 'table'" class="hidden md:block" :ui="{
+    body: 'sm:p-0',
+  }">
     <!-- Desktop Table -->
     <div>
       <UTable :columns="columns" :data="data" :loading="loading">
@@ -72,7 +72,20 @@ onMounted(async () => {
             <p class="text-gray-500">No sections found.</p>
           </div>
         </template>
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <div
+              class="flex size-10 items-center justify-center rounded-2xl bg-primary-50 text-primary dark:bg-primary-500/10">
+              <UIcon name="i-lucide-git-branch" class="size-5" />
+            </div>
 
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ row.original.name }}
+              </p>
+            </div>
+          </div>
+        </template>
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
@@ -85,29 +98,19 @@ onMounted(async () => {
         <Showing :meta="meta" />
 
         <div class="overflow-x-auto">
-          <UPagination
-            v-model:page="page"
-            size="sm"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-          />
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </div>
     </template>
   </UCard>
-  
+
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4"
+    :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
     <template v-if="loading">
-      <UCard
-        v-for="i in 5"
-        :key="i"
-        class="overflow-hidden rounded-[28px]"
-        :ui="{ body: 'p-0' }"
-      >
+      <UCard v-for="i in 5" :key="i" class="overflow-hidden rounded-[28px]" :ui="{ body: 'p-0' }">
         <!-- Header -->
         <div class="border-b border-default p-5">
           <div class="flex items-center gap-4">
@@ -157,9 +160,7 @@ onMounted(async () => {
     <template v-else-if="!data?.length">
       <UCard class="overflow-hidden rounded-[28px]" :ui="{ body: 'p-8' }">
         <div class="flex flex-col items-center text-center">
-          <div
-            class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10"
-          >
+          <div class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10">
             <UIcon name="i-lucide-layout-template" class="size-10 text-primary" />
           </div>
 
@@ -175,29 +176,25 @@ onMounted(async () => {
 
     <!-- Cards -->
     <template v-else>
-      <UCard
-        v-for="item in data"
-        :key="item.id"
+      <UCard v-for="item in data" :key="item.id"
         class="group overflow-hidden rounded-[28px] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-        :ui="{ body: 'p-0' }"
-      >
+        :ui="{ body: 'p-0' }">
         <!-- Header -->
-        <div class="border-b border-default p-5">
+        <div class="border-b border-default p-3 md:p-0 md:pb-3">
           <div class="flex items-start justify-between gap-4">
             <div class="flex items-center gap-4">
               <div
-                class="flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:text-white"
-              >
-                <UIcon
-                  name="i-lucide-layout-template"
-                  class="size-5 text-primary group-hover:text-white"
-                />
+                class="flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:text-white">
+                <UIcon name="i-lucide-layout-template" class="size-5 text-primary group-hover:text-white" />
               </div>
 
               <div>
                 <h3 class="text-base font-bold">
                   {{ item.name }}
                 </h3>
+                <div class="mt-1 flex items-center gap-2 text-xs text-muted">
+                  Academic Section
+                </div>
               </div>
             </div>
 
@@ -206,14 +203,10 @@ onMounted(async () => {
         </div>
 
         <!-- Description -->
-        <div class="p-5">
-          <div
-            class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800"
-          >
+        <div class="p-4 md:p-0 md:py-4">
+          <div class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800">
             <div class="mb-3 flex items-center gap-2">
-              <div
-                class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
-              >
+              <div class="flex size-8 items-center justify-center rounded-lg bg-primary/10">
                 <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
               </div>
 
@@ -229,15 +222,10 @@ onMounted(async () => {
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-between border-t border-default px-5 py-4">
+        <div class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3">
           <div class="flex items-center gap-2">
-            <div
-              class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15"
-            >
-              <UIcon
-                name="i-lucide-check-circle-2"
-                class="size-4 text-emerald-600 dark:text-emerald-400"
-              />
+            <div class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
+              <UIcon name="i-lucide-check-circle-2" class="size-4 text-emerald-600 dark:text-emerald-400" />
             </div>
 
             <div>
@@ -258,21 +246,14 @@ onMounted(async () => {
       </UCard>
     </template>
 
-    <!-- Pagination -->
-    <div
-      v-if="!loading && data?.length && meta.total > meta.size"
-      class="flex flex-col items-center gap-3 pt-3"
-    >
-      <Showing :meta="meta" />
 
-      <UPagination
-        v-model:page="page"
-        size="sm"
-        :page-size="meta.size"
-        :items-per-page="meta.size"
-        :total="meta.total"
-        show-edges
-      />
+    <!-- Pagination -->
+    <div v-if="!loading && data?.length"
+      class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
+      <Showing :meta="store.meta" />
+
+      <UPagination v-model:page="page" size="sm" :page-size="store.meta.size" :items-per-page="store.meta.size"
+        :total="store.meta.total" show-edges />
     </div>
   </div>
 </template>

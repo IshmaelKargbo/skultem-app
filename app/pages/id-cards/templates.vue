@@ -2,19 +2,11 @@
   <div class="space-y-6 mt-6 p-4">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <h1 class="text-3xl font-bold">ID Card Templates</h1>
-        <p class="mt-2 text-sm text-muted">
-          Create and manage ID card designs used throughout the school.
-        </p>
-      </div>
-      <div class="flex gap-3">
-        <UButton icon="i-lucide-plus" color="primary" to="/documents/ID Cards/create-template">
-          New Template
-        </UButton>
-      </div>
-    </div>
+    <Heading title="ID Card Templates" subtitle="Create and manage ID card designs used throughout the school.">
+      <UButton icon="i-lucide-plus" color="primary" to="/documents/ID Cards/create-template" class="justify-center">
+        New Template
+      </UButton>
+    </Heading>
 
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-4">
@@ -78,6 +70,7 @@
       <UCard
         v-for="tpl in filteredTemplates"
         :key="tpl.id"
+        variant="outline"
         class="overflow-hidden rounded-3xl"
       >
 
@@ -290,10 +283,10 @@
           <UButton size="sm" icon="i-lucide-pencil" variant="outline" :to="`/id-cards/${tpl.id}/edit`">
             Edit
           </UButton>
-          <UButton size="sm" icon="i-lucide-copy" variant="outline">
+          <UButton size="sm" icon="i-lucide-copy" variant="outline" @click="duplicateTemplate(tpl)">
             Duplicate
           </UButton>
-          <UButton v-if="!tpl.active" size="sm" icon="i-lucide-check" color="success">
+          <UButton v-if="!tpl.active" size="sm" icon="i-lucide-check" color="success" @click="setDefaultTemplate(tpl)">
             Set Default
           </UButton>
         </div>
@@ -316,6 +309,8 @@ interface Template {
   profileShape: 'round' | 'square'
   previewSide: 'front' | 'back'
 }
+
+const { info } = useNotify()
 
 const search = ref('')
 const filterStatus = ref('All')
@@ -412,6 +407,14 @@ const filteredTemplates = computed(() => {
 
   return list
 })
+
+function duplicateTemplate(tpl: Template) {
+  info(`Duplicating "${tpl.name}" is not available yet.`)
+}
+
+function setDefaultTemplate(tpl: Template) {
+  info(`Setting "${tpl.name}" as default is not available yet.`)
+}
 
 definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]

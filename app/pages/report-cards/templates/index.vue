@@ -2,25 +2,11 @@
   <div class="space-y-6 mt-6 p-4">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-      <div>
-        <h1 class="text-3xl font-bold">
-          Report Card Templates
-        </h1>
-
-        <p class="mt-2 text-sm text-muted">
-          Create and manage report card layouts used throughout the school.
-        </p>
-      </div>
-
-      <div class="flex gap-3">
-        <UButton icon="i-lucide-plus" color="primary" to="/report-cards/templates/add">
-          New Template
-        </UButton>
-      </div>
-
-    </div>
+    <Heading title="Report Card Templates" subtitle="Create and manage report card layouts used throughout the school.">
+      <UButton icon="i-lucide-plus" color="primary" to="/report-cards/templates/add" class="justify-center">
+        New Template
+      </UButton>
+    </Heading>
 
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-4">
@@ -102,22 +88,24 @@
     <!-- Search -->
     <UCard>
 
-      <div class="grid gap-4 lg:grid-cols-3">
+      <div class="grid gap-4 lg:grid-cols-4">
 
-        <UInput icon="i-lucide-search" placeholder="Search templates..." />
+        <UInput v-model="search" icon="i-lucide-search" placeholder="Search templates..." />
 
-        <USelect :items="['All Status', 'Active', 'Draft']" placeholder="Status" />
+        <USelect v-model="statusFilter" :items="['All Status', 'Active', 'Draft']" placeholder="Status" />
 
-        <USelect :items="['Recent', 'Oldest']" placeholder="Sort By" />
+        <USelect v-model="sortBy" :items="['Recent', 'Oldest']" placeholder="Sort By" />
+
+        <UButton icon="i-lucide-x" variant="outline" label="Clear" @click="resetFilters" />
 
       </div>
 
     </UCard>
 
     <!-- Templates -->
-    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <div v-if="filteredTemplates.length" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-      <UCard v-for="template in templates" :key="template.id" class="rounded-3xl overflow-hidden hover:ring-primary-300">
+      <UCard v-for="template in filteredTemplates" :key="template.id" variant="outline" class="rounded-3xl overflow-hidden hover:ring-primary-300">
 
         <!-- Preview -->
         <div
@@ -174,10 +162,24 @@
 
     </div>
 
+    <UCard v-else>
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <UIcon name="i-lucide-files" class="mb-3 size-12 text-muted" />
+        <h3 class="text-base font-semibold">No templates match these filters</h3>
+        <p class="mt-1 text-sm text-muted">Try adjusting your search or clearing the filters.</p>
+      </div>
+    </UCard>
+
   </div>
 </template>
 
 <script setup lang="ts">
+const { info } = useNotify()
+
+const search = ref('')
+const statusFilter = ref('All Status')
+const sortBy = ref('Recent')
+
 const templates = ref([
   {
     id: 1,
@@ -216,4 +218,32 @@ const templates = ref([
     active: false
   }
 ])
+
+const filteredTemplates = computed(() => {
+  const result = templates.value.filter((template) => {
+    const matchesSearch = !search.value
+      || template.name.toLowerCase().includes(search.value.toLowerCase())
+      || template.description.toLowerCase().includes(search.value.toLowerCase())
+
+    const matchesStatus = statusFilter.value === 'All Status'
+      || (statusFilter.value === 'Active' && template.active)
+      || (statusFilter.value === 'Draft' && !template.active)
+
+    return matchesSearch && matchesStatus
+  })
+
+  return [...result].sort((a, b) =>
+    sortBy.value === 'Oldest' ? a.id - b.id : b.id - a.id
+  )
+})
+
+function resetFilters() {
+  search.value = ''
+  statusFilter.value = 'All Status'
+  sortBy.value = 'Recent'
+}
+
+function setDefault(template: { name: string }) {
+  info(`Setting "${template.name}" as the default template is not available yet.`)
+}
 </script>

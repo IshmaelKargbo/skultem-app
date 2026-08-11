@@ -2,35 +2,19 @@
   <div class="space-y-6 mt-6 p-4">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <Heading title="Student Report Card" subtitle="Academic performance summary.">
+      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" class="justify-center" to="/report-cards">
+        Back
+      </UButton>
 
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">
-          Student Report Card
-        </h1>
+      <UButton icon="i-lucide-printer" variant="outline" color="neutral" class="justify-center" @click="printCard">
+        Print
+      </UButton>
 
-        <p class="mt-1 text-sm text-muted">
-          Academic performance summary.
-        </p>
-      </div>
-
-      <div class="flex flex-wrap gap-3">
-
-        <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/report-cards">
-          Back
-        </UButton>
-
-        <UButton icon="i-lucide-printer" variant="outline" color="neutral" @click="printCard">
-          Print
-        </UButton>
-
-        <UButton icon="i-lucide-download" color="primary" :loading="downloading" @click="downloadPdf">
-          Download PDF
-        </UButton>
-
-      </div>
-
-    </div>
+      <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading" @click="downloadPdf">
+        Download PDF
+      </UButton>
+    </Heading>
 
     <!-- Student Info -->
     <UCard>

@@ -7,6 +7,7 @@ const { classId } = defineProps<{
 }>();
 const store = useBehaviourStore();
 const { records: data, meta, loading } = storeToRefs(store);
+const view = ref<'table' | 'card'>('table');
 
 const editRcord = ref<Behaviour | null>(null);
 const editState = ref(false);
@@ -94,7 +95,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UCard :ui="{ body: 'p-0 sm:p-0' }" class="hidden md:block" >
+  <TableViewToggle v-model="view" />
+
+  <UCard v-if="view === 'table'" :ui="{ body: 'p-0 sm:p-0' }" class="hidden md:block" >
     <!-- Desktop -->
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
@@ -130,10 +133,10 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="md:hidden dark:bg-neutral-950 min-h-[300px] mt-8">
+  <div class="dark:bg-neutral-950 min-h-[300px] mt-8" :class="{ 'md:hidden': view === 'table' }">
     <!-- Loading -->
     <template v-if="loading">
-      <div class="space-y-4">
+      <div class="space-y-4" :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }">
         <UCard
           v-for="i in 6"
           :key="i"
@@ -222,11 +225,11 @@ onMounted(async () => {
     </div>
 
     <!-- Cards -->
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-4" :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }">
       <UCard
         v-for="row in data"
         :key="row.id"
-        class="group overflow-hidden rounded-[28px] border border-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+        class="group overflow-hidden rounded-[28px] border border-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-l"
         :ui="{ body: 'p-0' }"
       >
         <!-- Header -->
@@ -266,9 +269,6 @@ onMounted(async () => {
 
                   {{ row.category }}
 
-                  <span>•</span>
-
-                  {{ parseBehaviourKind[row.kind] }}
                 </div>
               </div>
             </div>
@@ -322,18 +322,17 @@ onMounted(async () => {
       </UCard>
 
       <!-- Pagination -->
-      <div class="flex flex-col items-center gap-3 pt-2">
-        <Showing :meta="meta" />
-
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
-      </div>
+     <div v-if="!loading && data?.length" class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
+      <Showing :meta="meta" />
+      <UPagination
+        size="sm"
+        v-model:page="page"
+        :page-size="meta.size"
+        :items-per-page="meta.size"
+        :total="meta.total"
+        show-edges
+      />
+    </div>
     </div>
   </div>
 </template>

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.framer.com)",
+      "Bash(npx @framer/agent@latest setup)",
+      "Bash(npx nuxt *)",
+      "Bash(node /tmp/claude-1000/-home-moriba-moriba-skultem-app/02c0c29d-9aca-4933-9cfa-d03b9ed5ce58/scratchpad/sfc-check.js)"
+    ]
+  }
+}

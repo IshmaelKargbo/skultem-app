@@ -1,74 +1,72 @@
 <script setup lang="ts">
-const route = useRoute()
-const router = useRouter()
-const { format } = useMoney()
-const store = useFeeStructureStore()
-const loading = ref(true)
-const { records: data, meta } = storeToRefs(store)
+const route = useRoute();
+const router = useRouter();
+const { format } = useMoney();
+const store = useFeeStructureStore();
+const loading = ref(true);
+const { records: data, meta } = storeToRefs(store);
+const view = ref<"table" | "card">("table");
 
 const columns = [
   {
-    accessorKey: 'type',
-    header: 'Type'
+    accessorKey: "type",
+    header: "Type",
   },
   {
-    accessorKey: 'category',
-    header: 'Category'
+    accessorKey: "category",
+    header: "Category",
   },
   {
-    accessorKey: 'amount',
-    header: 'Amount',
+    accessorKey: "amount",
+    header: "Amount",
     cell({ row }: any) {
       return format((row.original as FeeStructure).amount);
     },
   },
   {
-    accessorKey: 'students',
-    header: 'Students'
+    accessorKey: "students",
+    header: "Students",
   },
   {
-    accessorKey: 'hasSupply',
-    header: 'Supply'
+    accessorKey: "hasSupply",
+    header: "Supply",
   },
   {
-    accessorKey: 'dueDate',
-    header: 'Due Date'
+    accessorKey: "dueDate",
+    header: "Due Date",
   },
   {
-    accessorKey: 'allowInstallment',
-    header: 'Installment'
+    accessorKey: "allowInstallment",
+    header: "Installment",
   },
   {
-    id: 'actions',
+    id: "actions",
     meta: {
       class: {
-        td: 'text-right'
-      }
-    }
-  }
-]
+        td: "text-right",
+      },
+    },
+  },
+];
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
+  set: (val) => updateQuery({ page: val }),
+});
 
 const size = computed<number>({
   get: () => Number(route.query.size ?? 6),
-  set: (val) => updateQuery({ size: val })
-})
+  set: (val) => updateQuery({ size: val }),
+});
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+  const merged = { ...route.query, ...newQuery };
 
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
+  if (merged.page === route.query.page && merged.size === route.query.size) {
+    return;
   }
 
-  router.replace({ query: merged })
+  router.replace({ query: merged });
 }
 
 onMounted(async () => {
@@ -76,39 +74,33 @@ onMounted(async () => {
     router.replace({
       query: {
         page: page.value,
-        size: size.value
-      }
-    })
+        size: size.value,
+      },
+    });
   }
 
-  loading.value = true
-  await store.fetchAll(page.value, size.value)
-  loading.value = false
-})
+  loading.value = true;
+  await store.fetchAll(page.value, size.value);
+  loading.value = false;
+});
 </script>
 <template>
+  <TableViewToggle v-model="view" />
+
   <!-- Desktop -->
   <UCard
+    v-if="view === 'table'"
     class="hidden md:block"
     :ui="{
-      body: 'sm:p-0'
+      body: 'sm:p-0',
     }"
   >
-    <UTable
-      :columns="columns"
-      :data="data"
-      :loading="loading"
-    >
+    <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon
-            name="ph:books-light"
-            class="text-4xl text-gray-400"
-          />
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
 
-          <p class="text-gray-500">
-            No fee structures found.
-          </p>
+          <p class="text-gray-500">No fee structures found.</p>
         </div>
       </template>
 
@@ -129,7 +121,7 @@ onMounted(async () => {
           <p>{{ clean(row.original.type) }}</p>
 
           <p class="text-xs text-muted">
-            {{ row.original.clazz?.name || '-' }}
+            {{ row.original.clazz?.name || "-" }}
           </p>
         </div>
       </template>
@@ -139,7 +131,7 @@ onMounted(async () => {
           <p>{{ clean(row.original.category.name) }}</p>
 
           <p class="text-xs text-muted">
-            {{ row.original.term.name || '-' }}
+            {{ row.original.term.name || "-" }}
           </p>
         </div>
       </template>
@@ -149,17 +141,10 @@ onMounted(async () => {
           <p v-if="row.original.hasSupply">
             <span>{{ row.original.material?.name }}</span>
 
-            <span>
-              ({{ row.original.totalSupply || '0' }})
-            </span>
+            <span> ({{ row.original.totalSupply || "0" }}) </span>
           </p>
 
-          <p
-            v-else
-            class="text-muted"
-          >
-            -
-          </p>
+          <p v-else class="text-muted">-</p>
         </div>
       </template>
 
@@ -195,201 +180,167 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div
+    class="space-y-4"
+    :class="
+      view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'
+    "
+  >
     <!-- Loading -->
-    <div
-      v-if="loading"
-      class="space-y-4"
-    >
-      <div
-        v-for="i in 4"
-        :key="i"
-        class="rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        <div class="flex gap-3">
-          <USkeleton class="h-14 w-14 rounded-2xl" />
+    <template v-if="loading">
+      <UCard v-for="i in 4" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-0' }">
+        <div class="animate-pulse">
+          <!-- Header -->
+          <div class="border-b border-default p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex min-w-0 items-center gap-3">
+                <USkeleton class="size-12 shrink-0 rounded-2xl" />
+                <div class="min-w-0 space-y-2">
+                  <USkeleton class="h-4 w-32 rounded-md" />
+                  <USkeleton class="h-3 w-24 rounded-md" />
+                </div>
+              </div>
+              <USkeleton class="h-6 w-24 shrink-0 rounded-full" />
+            </div>
+          </div>
 
-          <div class="flex-1 space-y-3">
-            <USkeleton class="h-4 w-32" />
-            <USkeleton class="h-3 w-full" />
-
-            <div class="grid grid-cols-2 gap-2">
-              <USkeleton class="h-14 rounded-2xl" />
-              <USkeleton class="h-14 rounded-2xl" />
+          <!-- Stats -->
+          <div class="grid grid-cols-2 gap-3 p-4">
+            <div v-for="j in 4" :key="j" class="rounded-2xl border border-default bg-muted/40 p-3">
+              <div class="mb-3 flex items-center gap-2">
+                <USkeleton class="size-7 shrink-0 rounded-lg" />
+                <USkeleton class="h-3 w-16 rounded-md" />
+              </div>
+              <USkeleton class="h-4 w-24 rounded-md" />
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </UCard>
+    </template>
 
     <!-- Empty -->
-    <div
-      v-else-if="!data?.length"
-      class="flex min-h-[60vh] flex-col items-center justify-center rounded-[32px] border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900"
-    >
-      <div
-        class="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10"
-      >
-        <UIcon
-          name="lucide:wallet-cards"
-          class="text-5xl text-primary-500"
-        />
+    <UCard v-else-if="!data?.length" class="col-span-full">
+      <div class="flex flex-col items-center justify-center py-14">
+        <UIcon name="lucide:wallet-cards" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
+
+        <h3 class="text-sm font-semibold text-highlighted">
+          No fee structures found
+        </h3>
+
+        <p class="mt-1 text-sm text-muted">
+          Fee structures, installments, and payment configurations will appear here.
+        </p>
       </div>
-
-      <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-        No fee structures found
-      </h3>
-
-      <p class="mt-2 max-w-xs text-sm leading-6 text-gray-500">
-        Fee structures, installments, and payment configurations will appear here.
-      </p>
-    </div>
+    </UCard>
 
     <!-- Cards -->
-    <div
-      v-else
-      class="space-y-4"
-    >
-      <div
+    <template v-else>
+      <UCard
         v-for="item in data"
         :key="item.id"
-        class="overflow-hidden rounded-[30px] border border-gray-200 bg-white shadow-sm transition-all duration-200 active:scale-[0.99] dark:border-neutral-800 dark:bg-neutral-900"
+        class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+        :ui="{ body: 'p-0' }"
       >
-
-        <div class="p-4">
-          <div class="flex gap-3">
-            <!-- Icon -->
-            <div
-              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10"
-            >
-              <UIcon
-                name="lucide:wallet"
-                class="text-xl text-primary-500"
-              />
-            </div>
-
-            <!-- Content -->
-            <div class="min-w-0 flex-1">
-              <!-- Header -->
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h3
-                    class="truncate text-sm font-semibold text-gray-900 dark:text-white"
-                  >
-                    {{ clean(item.category.name) }}
-                  </h3>
-
-                  <p class="mt-1 text-xs text-gray-400">
-                    {{ clean(item.type) }}
-                  </p>
-                </div>
-
-                <UBadge
-                  :color="item.allowInstallment ? 'success' : 'neutral'"
-                  variant="soft"
-                >
-                  {{ item.allowInstallment ? 'Installment' : 'Full Payment' }}
-                </UBadge>
+        <!-- Header -->
+        <div class="border-b border-default p-3 md:p-0 md:pb-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+                <UIcon name="lucide:wallet" class="text-xl text-primary-500" />
               </div>
 
-              <!-- Class / Term -->
-              <div class="mt-4 grid grid-cols-2 gap-3">
-                <div
-                  class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-                >
-                  <p class="text-[11px] text-gray-500">
-                    Class
-                  </p>
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-highlighted">
+                  {{ clean(item.category.name) }}
+                </h3>
 
-                  <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                    {{ item.clazz?.name || '-' }}
-                  </p>
-                </div>
-
-                <div
-                  class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-                >
-                  <p class="text-[11px] text-gray-500">
-                    Term
-                  </p>
-
-                  <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                    {{ item.term.name || '-' }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Supply -->
-              <div
-                class="mt-4 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800/60"
-              >
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-[11px] text-gray-500">
-                      Material Supply
-                    </p>
-
-                    <p
-                      v-if="item.hasSupply"
-                      class="mt-1 text-sm font-semibold text-gray-900 dark:text-white"
-                    >
-                      {{ item.material?.name }}
-                    </p>
-
-                    <p
-                      v-else
-                      class="mt-1 text-sm text-gray-400"
-                    >
-                      No supply attached
-                    </p>
-                  </div>
-
-                  <div
-                    v-if="item.hasSupply"
-                    class="rounded-xl bg-primary-50 px-3 py-2 text-xs font-semibold text-primary-600 dark:bg-primary-500/10"
-                  >
-                    {{ item.totalSupply || 0 }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Footer -->
-              <div class="mt-4 flex items-center justify-between">
-                <FeeStructureCount :id="item.id">
-                  <template #default="{ value }">
-                    <div class="flex items-center gap-2">
-                      <div
-                        class="flex h-9 w-9 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-500/10"
-                      >
-                        <UIcon
-                          :name="STUDENT_ICON"
-                          class="text-primary-500"
-                        />
-                      </div>
-
-                      <div>
-                        <p class="text-[11px] text-gray-500">
-                          Students
-                        </p>
-
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                          {{ value }}
-                        </p>
-                      </div>
-                    </div>
-                  </template>
-                </FeeStructureCount>
-
-                <span
-                  class="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-600 dark:bg-emerald-500/10"
-                >
-                  Active
-                </span>
+                <p class="mt-1 truncate text-xs text-muted">
+                  {{ clean(item.type) }} · {{ item.clazz?.name || 'All Classes' }}
+                </p>
               </div>
             </div>
+
+            <UBadge :color="item.allowInstallment ? 'success' : 'neutral'" variant="soft">
+              {{ item.allowInstallment ? 'Installment' : 'Full Payment' }}
+            </UBadge>
           </div>
         </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3 p-4">
+          <!-- Term -->
+          <div class="min-w-0 rounded-2xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                <UIcon name="i-lucide-calendar-range" class="size-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p class="text-[10px] font-medium uppercase tracking-wide text-blue-700 dark:text-blue-300">Term</p>
+            </div>
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ item.term.name || 'N/A' }}
+            </p>
+          </div>
+
+          <!-- Amount -->
+          <div class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                <UIcon name="i-lucide-wallet" class="size-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Amount</p>
+            </div>
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ format(item.amount || 0) }}
+            </p>
+          </div>
+
+          <!-- Due Date -->
+          <div class="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20">
+                <UIcon name="i-lucide-calendar-clock" class="size-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <p class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">Due Date</p>
+            </div>
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ item.dueDate ? formatDate(item.dueDate) : 'N/A' }}
+            </p>
+          </div>
+
+          <!-- Students -->
+          <div class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
+                <UIcon :name="STUDENT_ICON" class="size-4 text-violet-600 dark:text-violet-400" />
+              </div>
+              <p class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">Students</p>
+            </div>
+            <FeeStructureCount :id="item.id">
+              <template #default="{ value }">
+                <p class="truncate text-sm font-medium text-highlighted">
+                  {{ value }}
+                </p>
+              </template>
+            </FeeStructureCount>
+          </div>
+        </div>
+
+        <!-- Supply -->
+        <div class="flex items-center justify-between gap-3 border-t border-default p-3 md:p-0 md:pt-3 text-xs text-muted">
+          <span>Material Supply</span>
+          <span v-if="item.hasSupply" class="truncate font-medium text-highlighted">
+            {{ item.material?.name }} ({{ item.totalSupply || 0 }})
+          </span>
+          <span v-else class="text-muted">No supply attached</span>
+        </div>
+      </UCard>
+
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
       </div>
-    </div>
+    </template>
   </div>
 </template>

@@ -7,6 +7,7 @@
                     @change="fetchRecord" :items="classes" placeholder="Choose a class" class="w-full" />
             </UFormField>
         </Heading>
+
         <!-- Assignments card (shown only when a class is selected) -->
         <UCard v-if="state.classId" :ui="{
             body: 'sm:p-0'
@@ -100,7 +101,7 @@
                 </div>
 
                 <TransitionGroup v-else tag="div" name="row" class="divide-y divide-gray-200 dark:divide-gray-800">
-                    <div v-for="(assignment, index) in state.assignments" :key="index" class="p-4 space-y-3">
+                    <div v-for="(assignment, index) in state.assignments" :key="index" class="py-4 space-y-3">
                         <div class="flex items-center justify-between">
                             <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
                                 <UIcon v-if="assignment.locked" name="lucide:lock" class="size-3" />
@@ -177,6 +178,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import * as yup from 'yup'
 
+const view = ref<'table' | 'card'>('table')
 const store = useClassSubjectStore()
 const subjectStore = useSubjectStore()
 const classStore = useClassSessionStore()

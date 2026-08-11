@@ -3,6 +3,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useTeacherStore();
 const { records: data, meta, loading } = storeToRefs(store);
+const view = ref<'table' | 'card'>('table');
 
 const UButton = resolveComponent("UButton");
 const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
@@ -131,7 +132,10 @@ onMounted(async () => {
 </script>
 
 <template>
+  <TableViewToggle v-model="view" />
+
   <UCard
+    v-if="view === 'table'"
     class="hidden md:block"
     :ui="{
       body: 'p-0 sm:p-0',
@@ -202,12 +206,12 @@ onMounted(async () => {
     </template>
   </UCard>
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <template v-if="loading">
       <UCard
         v-for="i in 4"
         :key="i"
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900"
+        variant="outline"
       >
         <div class="space-y-5 p-4">
           <!-- Header -->
@@ -254,16 +258,17 @@ onMounted(async () => {
       <UCard
         v-for="item in data"
         :key="item.id"
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md active:scale-[0.99] dark:border-gray-800 dark:bg-neutral-900"
+        variant="outline"
+        class="overflow-hidden transition-all hover:shadow-md active:scale-[0.99]"
         :ui="{
           body: 'p-0',
         }"
       >
         <!-- Header -->
-        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+        <div class="border-b border-gray-200 p-3 md:p-0 md:pb-3  dark:border-gray-800">
           <div class="flex items-start justify-between gap-3">
             <div class="flex min-w-0 items-center gap-3">
-              <UAvatar size="xl" :alt="name(item)" class="rounded-2xl" />
+              <UAvatar size="3xl" :alt="name(item)" />
 
               <div class="min-w-0">
                 <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
@@ -461,10 +466,10 @@ onMounted(async () => {
 
         <!-- Footer -->
         <div
-          class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800"
+          class="flex items-center justify-between border-t border-gray-100  p-3 md:p-0 md:pt-3 dark:border-gray-800"
         >
           <div class="flex min-w-0 items-center gap-3">
-            <UAvatar size="md" icon="i-lucide-map-pin" />
+            <UAvatar size="xl" icon="i-lucide-map-pin" />
 
             <div class="min-w-0">
               <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
@@ -497,7 +502,7 @@ onMounted(async () => {
       </div>
     </template>
     <!-- Pagination -->
-    <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+    <div v-if="!loading && data?.length" class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
       <Showing :meta="meta" />
       <UPagination
         size="sm"

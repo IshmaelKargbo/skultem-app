@@ -19,16 +19,16 @@
                 <FeeStructureAdd v-if="can([Role.ACCOUNTANT, Role.OWNER])" />
             </div>
 
-            <div class="grid grid-cols-2 gap-2 rounded-2xl bg-gray-100 p-1.5 dark:bg-gray-800">
+            <div class="grid grid-cols-2 gap-2 rounded-2xl bg-white p-1.5 dark:bg-gray-800">
                 <button class="rounded-xl py-2 text-sm font-medium transition"
                     :class="mobileView === 'students'
-                        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                        ? 'bg-secondary text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                         : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'students'">
                     Students
                 </button>
                 <button class="rounded-xl py-2 text-sm font-medium transition"
                     :class="mobileView === 'details'
-                        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                        ? 'bg-secondary text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                         : 'text-gray-600 dark:text-gray-300'" @click="mobileView = 'details'">
                     Details
                 </button>

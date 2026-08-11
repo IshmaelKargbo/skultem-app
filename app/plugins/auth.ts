@@ -1,7 +1,5 @@
 export default defineNuxtPlugin(async () => {
-    const token = useCookie('access_token')
-    const refreshToken = useCookie('refresh_token')
-    const activeRole = useCookie('active_role')
+    const { accessToken: token, refreshToken, activeRole } = useAuthCookies()
     const route = useRoute()
     if (!token.value) return
 

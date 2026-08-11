@@ -1,8 +1,6 @@
 <template>
   <div class="space-y-6 mt-6 p-4">
-    <Heading title="ID Card Settings" subtitle="Configure default ID card templates and presets.">
-      <div />
-    </Heading>
+    <Heading title="ID Card Settings" subtitle="Configure default ID card templates and presets." />
 
     <IDCardSettings v-model="open" :settings="settings" :active-fields="activeFields" :default-settings="defaultSettings"
       @update:settings="updateSettings" @update:active-fields="updateFields" @save="saveSettings" @close="onClose" />

@@ -1,12 +1,12 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex justify-between">
         <div class="flex items-start gap-3">
           <UIcon name="i-lucide-calendar-days" class="size-5 text-primary" />
           <div>
             <h3 class="font-semibold">Working Days</h3>
-            <p class="text-sm text-muted">
+            <p class="text-sm text-muted hidden md:block">
               Choose days classes are held
             </p>
           </div>

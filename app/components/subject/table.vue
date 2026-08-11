@@ -1,16 +1,23 @@
 <template>
   <div class="space-y-5">
+    <TableViewToggle v-model="view" />
+
     <!-- Loading -->
     <template v-if="loading">
       <!-- Desktop -->
-      <div class="hidden md:block">
+      <div v-if="view === 'table'" class="hidden md:block">
         <UCard :ui="{ body: 'sm:p-0' }">
           <TableLoading :size="columns.length" />
         </UCard>
       </div>
 
       <!-- Mobile -->
-      <div class="space-y-4 md:hidden">
+      <div
+        class="space-y-4"
+        :class="
+          view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'
+        "
+      >
         <UCard
           v-for="i in 6"
           :key="i"
@@ -67,7 +74,7 @@
     <!-- Data -->
     <template v-else-if="data.length">
       <!-- Desktop -->
-      <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+      <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'sm:p-0' }">
         <UTable :columns="columns" :data="data" :loading="loading">
           <template #empty-state>
             <div class="flex flex-col items-center gap-2 py-10">
@@ -97,15 +104,20 @@
       </UCard>
 
       <!-- Mobile -->
-      <div class="space-y-4 md:hidden">
+      <div
+        class="space-y-4"
+        :class="
+          view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'
+        "
+      >
         <UCard
           v-for="value in data"
           :key="value.id"
-          class="group overflow-hidden rounded-[28px] border border-default bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl dark:bg-neutral-900"
+          class="group overflow-hidden rounded-[28px] border border-default bg-white shadow transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 dark:hover:border-primary-500 hover:shadow-sm dark:bg-neutral-900"
           :ui="{ body: 'p-0' }"
         >
           <!-- Header -->
-          <div class="border-b border-default p-5">
+          <div class="border-b border-default p-3 md:p-0 md:pb-3">
             <div class="flex items-start justify-between gap-4">
               <div class="flex min-w-0 items-center gap-4">
                 <div
@@ -121,18 +133,19 @@
                 </div>
               </div>
 
-              <UButton
+              <!-- <UButton
                 icon="i-lucide-chevron-right"
                 color="neutral"
                 variant="ghost"
                 square
                 class="rounded-xl transition-transform group-hover:translate-x-1"
-              />
+              /> -->
             </div>
           </div>
 
+         <div class="p-4">
           <!-- Description -->
-          <div class="px-5 pt-5">
+          <div class="">
             <div
               class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800"
             >
@@ -155,7 +168,7 @@
           </div>
 
           <!-- Information -->
-          <div class="grid grid-cols-2 gap-3 p-5">
+          <div class="grid grid-cols-2 gap-3 py-2">
             <!-- Code -->
             <div
               class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-500/20 dark:bg-indigo-500/10"
@@ -209,9 +222,10 @@
             </div>
           </div>
 
+         </div>
           <!-- Footer -->
           <div
-            class="flex items-center justify-between border-t border-default px-5 py-4"
+            class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3"
           >
             <div class="flex items-center gap-2 text-xs text-muted">
               <UIcon name="i-lucide-school" class="size-4 text-primary" />
@@ -229,7 +243,22 @@
             </div> -->
           </div>
         </UCard>
+           <div
+        v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full"
+      >
+        <Showing :meta="meta" />
+        <UPagination
+          size="sm"
+          v-model:page="page"
+          :page-size="meta.size"
+          :items-per-page="meta.size"
+          :total="meta.total"
+          show-edges
+        />
       </div>
+      </div>
+   
     </template>
 
     <!-- Empty -->
@@ -244,11 +273,13 @@
         </div>
       </UCard>
     </template>
+    <!-- Pagination -->
   </div>
 </template>
 <script setup lang="ts">
 import { nextTick } from "vue";
 
+const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
 

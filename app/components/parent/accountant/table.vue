@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useParentStore()
@@ -86,7 +87,9 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'sm:p-0' }">
       <UTable :columns="columns" :data="data" :loading="loading" class="w-full">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -144,12 +147,12 @@ onMounted(() => {
       </template>
     </UCard>
 
-    <div class="md:hidden space-y-3">
+    <div class="space-y-3" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <template v-if="loading">
         <div
           v-for="i in 5"
           :key="i"
-          class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+          class="overflow-hidden rounded-2xl bg-white/80 shadow ring-2 ring-gray-100 dark:bg-gray-900 dark:ring-gray-800"
         >
           <div class="space-y-4 p-4">
             <div class="flex items-start justify-between gap-3">
@@ -175,7 +178,8 @@ onMounted(() => {
         <UCard
           v-for="parent in data"
           :key="parent.id"
-          class="overflow-hidden border border-gray-200 shadow-sm dark:border-gray-800"
+          variant="outline"
+          class="overflow-hidden"
           :ui="{ body: 'p-4 sm:p-5' }"
         >
           <div class="space-y-4">
@@ -243,14 +247,14 @@ onMounted(() => {
       </template>
 
       <template v-else>
-        <div class="flex flex-col items-center gap-2 px-4 py-12">
+        <div class="flex flex-col items-center gap-2 px-4 py-12 col-span-full">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
           <p class="text-gray-500 dark:text-gray-400">No parents found.</p>
         </div>
       </template>
 
 
-        <div class="space-y-3 flex flex-col justify-center items-center mt-2">
+        <div class="space-y-3 flex flex-col justify-center items-center mt-2 col-span-full">
           <Showing :meta="meta" />
           <UPagination
             v-model:page="page"

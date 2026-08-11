@@ -1,16 +1,65 @@
 <template>
   <div class="space-y-4">
+    <TableViewToggle v-model="view" />
+
+    <!-- Desktop Table -->
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+      <UTable :columns="columns" :data="data" :loading="loading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+            <p class="text-gray-500 dark:text-gray-400">No classes found.</p>
+          </div>
+        </template>
+        <template #clazz-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <div class="flex size-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+              <UIcon name="i-lucide-school" class="size-4 text-primary" />
+            </div>
+            <div>
+              <p class="font-medium text-highlighted">{{ row.original.clazz }}</p>
+              <p class="text-xs text-muted">{{ row.original.grade }}</p>
+            </div>
+          </div>
+        </template>
+        <template #classLevel-cell="{ row }">
+          <p>{{ parseLevel[row.original.classLevel] }}</p>
+        </template>
+        <template #totalStudent-cell="{ row }">
+          <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent}`" />
+        </template>
+        <template #teacherName-cell="{ row }">
+          <p>{{ row.original.teacherName || 'No Teacher Assigned' }}</p>
+        </template>
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+      </UTable>
+      <template #footer>
+        <div class="flex items-center justify-between">
+          <Showing :meta="meta" />
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+            show-edges />
+        </div>
+      </template>
+    </UCard>
+
+    <!-- Mobile -->
+    <div
+      class="space-y-4"
+      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'"
+    >
     <!-- Loading -->
     <template v-if="loading">
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         <UCard
           v-for="i in 6"
           :key="i"
-          class="overflow-hidden rounded-[28px] border border-gray-200 dark:border-gray-800"
+          variant="outline"
+          class="overflow-hidden"
           :ui="{ body: 'p-0' }"
         >
           <!-- Header -->
-          <div class="border-b border-gray-200 dark:border-gray-800 p-5">
+          <div class="border-b border-default p-5">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-4">
                 <USkeleton class="size-14 rounded-2xl" />
@@ -33,7 +82,7 @@
             <div
               v-for="j in 4"
               :key="j"
-              class="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-100 p-4 dark:bg-gray-800"
+              class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800"
             >
               <div class="mb-3 flex items-center gap-2">
                 <USkeleton class="size-8 rounded-lg" />
@@ -46,7 +95,7 @@
 
           <!-- Teacher -->
           <div
-            class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-5 py-4"
+            class="flex items-center justify-between border-t border-default px-5 py-4"
           >
             <div class="flex items-center gap-3">
               <USkeleton class="size-12 rounded-full" />
@@ -60,26 +109,25 @@
             <USkeleton class="size-10 rounded-xl" />
           </div>
         </UCard>
-      </div>
     </template>
 
     <!-- Data -->
     <template v-else-if="data?.length">
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         <UCard
           v-for="item in data"
           :key="item.id"
-          class="group overflow-hidden rounded-[28px] border border-gray-200 dark:border-gray-800 bg-default shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          variant="outline"
+          class="group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-sm"
           :ui="{ body: 'p-0' }"
         >
           <!-- Header -->
           <div
-            class="relative overflow-hidden border-b border-gray-200 dark:border-gray-800 p-5"
+            class="relative overflow-hidden border-b border-default p-3 md:p-0 md:pb-3"
           >
             <div class="flex items-start justify-between ">
-              <div class="flex items-center justify-center space-x-4">
+              <div class="flex items-center justify-center space-x-4 p-1">
                 <div
-                  class="flex size-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20"
+                  class="flex size-10  items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20"
                 >
                   <UIcon name="i-lucide-school" class="size-5 text-primary" />
                 </div>
@@ -110,7 +158,7 @@
           </div>
 
           <!-- Information -->
-          <div class="grid grid-cols-2 gap-3 p-5">
+          <div class="grid grid-cols-2 gap-3 p-4">
             <!-- Section -->
             <div
               class="rounded-2xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-500/20 dark:bg-primary-500/10"
@@ -215,7 +263,7 @@
 
           <!-- Teacher -->
           <div
-            class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-5 py-4"
+            class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3"
           >
             <div class="flex items-center gap-3">
               <UAvatar size="lg" :alt="item.teacherName" />
@@ -238,12 +286,11 @@
             /> -->
           </div>
         </UCard>
-      </div>
     </template>
 
     <!-- Empty -->
     <template v-else>
-      <UCard class="rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+      <UCard class="col-span-full rounded-3xl border border-default shadow-sm">
         <div class="flex flex-col items-center justify-center py-14">
           <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
 
@@ -252,18 +299,21 @@
       </UCard>
     </template>
 
-    <div class="mt-6">
-      <div class="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-        <Showing :meta="meta" />
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="meta.size"
-          :items-per-page="meta.size"
-          :total="meta.total"
-          show-edges
-        />
-      </div>
+    <!-- Pagination -->
+    <div
+      v-if="!loading && data?.length"
+      class="col-span-full flex flex-col items-center gap-3 pt-2 md:flex-row md:justify-between"
+    >
+      <Showing :meta="meta" />
+      <UPagination
+        v-model:page="page"
+        size="sm"
+        :page-size="meta.size"
+        :items-per-page="meta.size"
+        :total="meta.total"
+        show-edges
+      />
+    </div>
     </div>
   </div>
 </template>
@@ -273,6 +323,18 @@ const router = useRouter();
 
 const store = useClassSessionStore();
 const { records: data, meta, loading } = storeToRefs(store);
+
+const view = ref<'table' | 'card'>('table');
+
+const columns = [
+  { accessorKey: 'clazz', header: 'Name' },
+  { accessorKey: 'grade', header: 'Grade' },
+  { accessorKey: 'classLevel', header: 'Level' },
+  { accessorKey: 'sectionName', header: 'Section' },
+  { accessorKey: 'streamName', header: 'Stream' },
+  { accessorKey: 'totalStudent', header: 'Students' },
+  { accessorKey: 'teacherName', header: 'Class Teacher' }
+];
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),

@@ -2,27 +2,16 @@
   <div class="space-y-6 mt-6 p-4">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-      <div>
-        <h1 class="text-3xl font-bold">
-          Generate ID Cards
-        </h1>
-
-        <p class="mt-2 text-sm text-muted">
-          Generate printable student and staff identification cards.
-        </p>
-      </div>
-
+    <Heading title="Generate ID Cards" subtitle="Generate printable student and staff identification cards.">
       <UButton
         icon="i-lucide-arrow-left"
         variant="outline"
         to="/id-cards"
+        class="justify-center"
       >
         Back
       </UButton>
-
-    </div>
+    </Heading>
 
     <!-- Statistics -->
     <div class="grid gap-4 md:grid-cols-4">
@@ -221,6 +210,7 @@
         icon="i-lucide-id-card"
         color="primary"
         size="lg"
+        @click="generateCards"
       >
         Generate Cards
       </UButton>
@@ -270,6 +260,8 @@
 </template>
 
 <script setup lang="ts">
+const { info, success } = useNotify()
+
 const form = reactive({
   type: 'Student',
   year: '2025/2026',
@@ -316,6 +308,121 @@ const templates = [
   'Classic Green',
   'International'
 ]
+
+// Preview + settings panel state
+const previewOpen = ref(false)
+const settingsOpen = ref(false)
+
+const defaultSettings = {
+  audience: 'student' as 'student' | 'staff',
+  layout: 'vertical' as 'vertical' | 'horizontal',
+  profileShape: 'square' as 'round' | 'square',
+  preset: 'modern',
+  headerColor: '#2563eb',
+  footerColor: '#2563eb',
+  headerTextColor: '#ffffff',
+  primaryTextColor: '#111827',
+  widthMm: 85,
+  heightMm: 54,
+  bgImageUrl: '' as string,
+  bgOpacity: 20
+}
+
+const settings = reactive({ ...defaultSettings })
+
+interface FieldDef {
+  key: string
+  label: string
+  icon: string
+  cardSlot: 'front' | 'back'
+  enabled: boolean
+  required?: boolean
+}
+
+const studentFields = reactive<FieldDef[]>([
+  { key: 'name', label: 'Full Name', icon: 'i-lucide-user', cardSlot: 'front', enabled: true, required: true },
+  { key: 'admissionNo', label: 'Admission No.', icon: 'i-lucide-id-card', cardSlot: 'front', enabled: true, required: true },
+  { key: 'class', label: 'Class', icon: 'i-lucide-school', cardSlot: 'front', enabled: true },
+  { key: 'gender', label: 'Gender', icon: 'i-lucide-user-round', cardSlot: 'front', enabled: true },
+  { key: 'dob', label: 'Date of Birth', icon: 'i-lucide-calendar-days', cardSlot: 'front', enabled: true },
+  { key: 'expiryDate', label: 'Valid Until', icon: 'i-lucide-calendar-check', cardSlot: 'front', enabled: true },
+  { key: 'parentContact', label: 'Parent Contact', icon: 'i-lucide-phone', cardSlot: 'back', enabled: true },
+  { key: 'emergencyContact', label: 'Emergency Contact', icon: 'i-lucide-phone-call', cardSlot: 'back', enabled: true }
+])
+
+const staffFields = reactive<FieldDef[]>([
+  { key: 'name', label: 'Full Name', icon: 'i-lucide-user', cardSlot: 'front', enabled: true, required: true },
+  { key: 'staffId', label: 'Staff ID', icon: 'i-lucide-id-card', cardSlot: 'front', enabled: true, required: true },
+  { key: 'role', label: 'Role', icon: 'i-lucide-briefcase', cardSlot: 'front', enabled: true },
+  { key: 'department', label: 'Department', icon: 'i-lucide-building-2', cardSlot: 'front', enabled: true },
+  { key: 'gender', label: 'Gender', icon: 'i-lucide-user-round', cardSlot: 'front', enabled: false },
+  { key: 'expiryDate', label: 'Valid Until', icon: 'i-lucide-calendar-check', cardSlot: 'front', enabled: true },
+  { key: 'email', label: 'Email', icon: 'i-lucide-mail', cardSlot: 'back', enabled: true },
+  { key: 'phone', label: 'Phone', icon: 'i-lucide-phone', cardSlot: 'back', enabled: true }
+])
+
+const activeFields = computed(() =>
+  settings.audience === 'student' ? studentFields : staffFields
+)
+
+// Sample template used only to power the in-page live preview panel
+const sampleTemplate = reactive({
+  id: 'sample',
+  name: 'Standard Template',
+  type: 'Student ID Card',
+  level: 'Secondary School',
+  createdBy: 'Administrator',
+  updatedAt: 'Jun 17, 2026',
+  cardsIssued: 0,
+  validityYears: 1,
+  accentColor: '#2563eb',
+  accentColorDark: '#1e3a8a',
+  school: {
+    name: "KING'S WAY INTERNATIONAL SCHOOL",
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg',
+    principal: 'Dr. A. Conteh',
+    address: '12 Wilkinson Road, Freetown, Sierra Leone'
+  },
+  student: {
+    name: 'Sample Student',
+    admissionNo: 'PREVIEW001',
+    class: 'JSS1-A',
+    gender: 'Male',
+    dob: '01 Jan 2010',
+    expiryDate: '2027-06-30',
+    emergencyContact: '+232 76 000 000',
+    parentContact: '+232 76 000 000'
+  }
+})
+
+function updateSettings(newSettings: typeof settings) {
+  Object.assign(settings, newSettings)
+}
+
+function updateFields(newFields: FieldDef[]) {
+  if (settings.audience === 'student') {
+    studentFields.splice(0, studentFields.length, ...newFields)
+  } else {
+    staffFields.splice(0, staffFields.length, ...newFields)
+  }
+}
+
+function saveSettings() {
+  success('Settings saved')
+  settingsOpen.value = false
+}
+
+function generateCards() {
+  info('Generating ID cards is not available yet.')
+}
+
+function downloadPdf() {
+  info('Bulk PDF export is not available yet.')
+}
+
+function printCards() {
+  info('Printing all ID cards is not available yet.')
+}
 
 definePageMeta({
   role: [

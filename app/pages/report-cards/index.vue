@@ -1,28 +1,12 @@
 <template>
   <div class="space-y-6 mt-6 p-4">
 
-    <!-- Hero -->
-    <div class="rounded-3xl">
-      <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+    <!-- Header -->
+    <Heading title="Report Cards" subtitle="Generate, preview and export student report cards.">
+      <UButton icon="i-lucide-plus" label="Generate Report Cards" class="justify-center" to="/report-cards/generate" />
 
-        <div>
-          <h1 class="mt-3 text-3xl font-bold">
-            Report Cards
-          </h1>
-
-          <p class="mt-2 text-sm text-muted">
-            Generate, preview and export student report cards.
-          </p>
-        </div>
-
-        <div class="flex flex-wrap gap-3">
-          <UButton icon="i-lucide-plus" label="Generate Report Cards" />
-
-          <UButton icon="i-lucide-download" variant="outline" label="Bulk Export" />
-        </div>
-
-      </div>
-    </div>
+      <UButton icon="i-lucide-download" variant="outline" label="Bulk Export" class="justify-center" @click="bulkExport" />
+    </Heading>
 
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-4">
@@ -122,15 +106,15 @@
 
         <USelect v-model="selectedStatus" :items="statuses" placeholder="Status" />
 
-        <UButton icon="i-lucide-filter" label="Apply Filters" />
+        <UButton icon="i-lucide-x" variant="outline" label="Clear" @click="resetFilters" />
 
       </div>
 
     </UCard>
 
-    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      <UCard v-for="item in reports" :key="item.id"
-        class="overflow-hidden rounded-3xl border border-default shadow hover:shadow-sm hover:ring-primary-300 transition">
+    <div v-if="filteredReports.length" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <UCard v-for="item in filteredReports" :key="item.id" variant="outline"
+        class="overflow-hidden rounded-3xl transition hover:-translate-y-0.5 hover:shadow-lg">
         <!-- Header -->
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
@@ -203,21 +187,31 @@
             Preview
           </UButton>
 
-          <UButton block icon="i-lucide-download">
+          <UButton block icon="i-lucide-download" @click="exportOne(item)">
             PDF
           </UButton>
         </div>
       </UCard>
     </div>
 
+    <UCard v-else>
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <UIcon name="i-lucide-file-text" class="mb-3 size-12 text-muted" />
+        <h3 class="text-base font-semibold">No report cards match these filters</h3>
+        <p class="mt-1 text-sm text-muted">Try adjusting your search or clearing the filters.</p>
+      </div>
+    </UCard>
+
   </div>
 </template>
 <script setup lang="ts">
+const { info } = useNotify()
+
 const search = ref('')
 
-const selectedTerm = ref()
-const selectedClass = ref()
-const selectedStatus = ref()
+const selectedTerm = ref('')
+const selectedClass = ref('')
+const selectedStatus = ref('')
 
 const terms = [
   'Term 1',
@@ -273,4 +267,32 @@ const reports = ref([
     color: 'success'
   }
 ])
+
+const filteredReports = computed(() =>
+  reports.value.filter((report) => {
+    const matchesSearch = !search.value
+      || report.student.toLowerCase().includes(search.value.toLowerCase())
+
+    const matchesTerm = !selectedTerm.value || report.term === selectedTerm.value
+    const matchesClass = !selectedClass.value || report.class.startsWith(selectedClass.value)
+    const matchesStatus = !selectedStatus.value || report.status === selectedStatus.value
+
+    return matchesSearch && matchesTerm && matchesClass && matchesStatus
+  })
+)
+
+function resetFilters() {
+  search.value = ''
+  selectedTerm.value = ''
+  selectedClass.value = ''
+  selectedStatus.value = ''
+}
+
+function bulkExport() {
+  info('Bulk export is not available yet.')
+}
+
+function exportOne(report: { student: string }) {
+  info(`Exporting ${report.student}'s report card is not available yet.`)
+}
 </script>

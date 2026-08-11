@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const scrollContainer = ref<HTMLElement | null>(null)
 
-const token = useCookie('access_token')
+const { accessToken: token } = useAuthCookies()
 const route = useRoute()
 const { authResolved } = useAuth()
 

@@ -37,7 +37,9 @@
         <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
       </div>
     </UCard>
-    <UCard :ui="{
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" :ui="{
       body: 'sm:p-0'
     }" class="hidden md:block">
       <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
@@ -52,7 +54,7 @@
         </template>
       </UTable>
     </UCard>
-    <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3 md:hidden">
+    <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <UCard :ui="{
         body: 'p-0 sm:p-0'
       }" v-for="student in rows" :key="student.id">
@@ -149,6 +151,7 @@ const state = reactive<GradeAssessmentForm>({
   termId: ''
 })
 
+const view = ref<'table' | 'card'>('table')
 const loading = ref(true)
 const saving = ref(false)
 const completing = ref(false)

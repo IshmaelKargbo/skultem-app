@@ -1,6 +1,6 @@
 <template>
     <div class="p-4 sm:p-6 lg:p-7 space-y-5 h-full overflow-y-auto">
-        <section class="rounded-3xl border border-gray-200 bg-white/90 p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/80 sm:p-5 lg:p-6">
+        <section class="rounded-2xl bg-white/80 p-4 shadow ring-2 ring-gray-100 dark:bg-gray-900 dark:ring-gray-800 sm:p-5 lg:p-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="space-y-1.5">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">

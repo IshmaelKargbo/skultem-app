@@ -2,29 +2,15 @@
   <div class="space-y-6 mt-6 p-4">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <Heading title="Create Report Card Template" subtitle="Configure a new report card design for your school.">
+      <UButton variant="outline" color="neutral" icon="i-lucide-arrow-left" to="/report-cards/templates" class="justify-center">
+        Back
+      </UButton>
 
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">
-          Create Report Card Template
-        </h1>
-
-        <p class="mt-1 text-sm text-muted">
-          Configure a new report card design for your school.
-        </p>
-      </div>
-
-      <div class="flex gap-3">
-        <UButton variant="outline" color="neutral" icon="i-lucide-arrow-left" to="/report-cards/templates">
-          Back
-        </UButton>
-
-        <UButton color="primary" icon="i-lucide-save" :loading="saving" @click="saveTemplate">
-          Save Template
-        </UButton>
-      </div>
-
-    </div>
+      <UButton color="primary" icon="i-lucide-save" :loading="saving" class="justify-center" @click="saveTemplate">
+        Save Template
+      </UButton>
+    </Heading>
 
     <div class="grid gap-6 lg:grid-cols-3">
 

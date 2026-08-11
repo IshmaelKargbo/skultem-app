@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
@@ -68,7 +69,9 @@ watch(
 
 <template>
   <UCard :ui="{ body: 'p-0 sm:p-0' }" class="block">
-    <UTable class="hidden md:block" :columns="columns" :data="feeDetails.records" :loading="loading">
+    <TableViewToggle v-model="view" />
+
+    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="feeDetails.records" :loading="loading">
 
       <!-- Empty State -->
       <template #empty-state>
@@ -105,11 +108,11 @@ watch(
       </div>
     </template>
   </UCard>
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Mobile Table -->
     <FeeTeacherTableMobile v-if="feeDetails" :records="feeDetails.records" :seed="6" :loading="loading" />
 
-    <div class="flex justify-center">
+    <div class="flex justify-center col-span-full">
       <!-- Mobile -->
       <UPagination v-model:page="page" :page-size="feeDetails.meta?.size" :items-per-page="feeDetails.meta?.size"
         :total="feeDetails.meta?.total" show-edges />

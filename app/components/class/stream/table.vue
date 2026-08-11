@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Row } from "@tanstack/vue-table";
 
+const view = ref<'table' | 'card'>('table');
 const route = useRoute();
 const router = useRouter();
 const store = useStreamStore();
@@ -106,56 +107,56 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="">
-    <UCard class="hidden md:block" :ui="{ body: 'p-0' }">
-      <UTable :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
-          <div class="flex flex-col items-center justify-center py-16">
-            <div
-              class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10"
-            >
-              <UIcon name="i-lucide-git-branch" class="size-10 text-primary" />
+  <div class="space-y-4">
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
+      <!-- Desktop Table -->
+      <div>
+        <UTable :columns="columns" :data="data" :loading="loading">
+          <template #empty-state>
+            <div class="flex flex-col items-center gap-2 py-10">
+              <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+
+              <p class="text-gray-500">No sections found.</p>
             </div>
+          </template>
+          <template #name-cell="{ row }">
+            <div class="flex items-center gap-3">
+              <div
+                class="flex size-10 items-center justify-center rounded-2xl bg-primary-50 text-primary dark:bg-primary-500/10">
+                <UIcon name="i-lucide-git-branch" class="size-5" />
+              </div>
 
-            <h3 class="text-lg font-semibold">No Streams Found</h3>
-
-            <p class="mt-2 max-w-xs text-center text-sm text-muted">
-              Create academic streams to organize students and classes.
-            </p>
-          </div>
-        </template>
-
-        <template #loading>
-          <TableLoading :size="columns.length" />
-        </template>
-      </UTable>
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">
+                  {{ row.original.name }}
+                </p>
+              </div>
+            </div>
+          </template>
+          <template #loading>
+            <TableLoading :size="columns.length" />
+          </template>
+        </UTable>
+      </div>
 
       <template #footer>
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Showing :meta="store.meta" />
 
-          <UPagination
-            v-model:page="page"
-            size="sm"
-            :page-size="store.meta.size"
-            :items-per-page="store.meta.size"
-            :total="store.meta.total"
-            show-edges
-          />
+          <UPagination v-model:page="page" size="sm" :page-size="store.meta.size" :items-per-page="store.meta.size"
+            :total="store.meta.total" show-edges />
         </div>
       </template>
     </UCard>
 
     <!-- Mobile -->
-    <div class="space-y-3 md:hidden">
+    <div class="space-y-4"
+      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <!-- Loading -->
       <template v-if="loading">
-        <UCard
-          v-for="i in 5"
-          :key="i"
-          class="overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800"
-          :ui="{ body: 'p-0' }"
-        >
+        <UCard v-for="i in 5" :key="i" variant="outline" class="overflow-hidden" :ui="{ body: 'p-0' }">
           <div class="p-5 space-y-5">
             <div class="flex items-center gap-3">
               <USkeleton class="size-12 rounded-2xl" />
@@ -182,9 +183,7 @@ onMounted(async () => {
       <template v-else-if="!data?.length">
         <UCard class="rounded-3xl" :ui="{ body: 'p-10' }">
           <div class="flex flex-col items-center text-center">
-            <div
-              class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-primary/10"
-            >
+            <div class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-primary/10">
               <UIcon name="i-lucide-git-branch" class="size-8 text-primary" />
             </div>
 
@@ -199,105 +198,83 @@ onMounted(async () => {
 
       <!-- Cards -->
       <template v-else>
-        <UCard
-          v-for="item in data"
-          :key="item.id"
-          class="group overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 transition-all hover:-translate-y-0.5 hover:shadow-lg"
-          :ui="{ body: 'p-0' }"
-        >
+        <UCard v-for="item in data" :key="item.id" variant="outline"
+          class="group overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg" :ui="{ body: 'p-0' }">
+
           <!-- Header -->
-          <div class="border-b border-gray-200 dark:border-gray-800 p-5">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex min-w-0 items-center gap-4">
+          <div class="border-b border-default p-3 md:p-0 md:pb-3">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-center gap-4">
                 <div
-                  class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10"
-                >
-                  <UIcon name="i-lucide-git-branch" class="size-6 text-primary" />
+                  class="flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:text-white">
+                  <UIcon name="i-lucide-git-branch" class="size-5 text-primary group-hover:text-white" />
                 </div>
 
-                <div class="min-w-0">
+                <div>
                   <h3 class="text-base font-bold">
                     {{ item.name }}
                   </h3>
-
                   <div class="mt-1 flex items-center gap-2 text-xs text-muted">
-                    <UIcon name="i-lucide-folder-tree" class="size-3.5" />
-
                     Academic Stream
                   </div>
                 </div>
               </div>
 
-              <UDropdownMenu
-                :items="getRowItems({ original: item } as any)"
-                :content="{ align: 'end' }"
-              >
-                <UButton
-                  icon="i-lucide-ellipsis-vertical"
-                  color="neutral"
-                  variant="ghost"
-                  square
-                  class="rounded-xl"
-                />
-              </UDropdownMenu>
+              <UBadge label="Active" color="success" variant="soft" />
             </div>
           </div>
 
-          <!-- Body -->
-          <div class="p-4">
-            <div
-              class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-100 p-4 dark:bg-neutral-800"
-            >
+          <!-- Description -->
+          <div class="p-4 md:p-0 md:py-4">
+            <div class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800">
               <div class="mb-3 flex items-center gap-2">
-                <div
-                  class="flex size-8 items-center justify-center rounded-lg bg-primary/10"
-                >
+                <div class="flex size-8 items-center justify-center rounded-lg bg-primary/10">
                   <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
                 </div>
 
-                <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
+                <span class="text-[11px] font-medium uppercase tracking-wide text-muted">
                   Description
-                </p>
+                </span>
               </div>
 
-              <p class="text-sm leading-6 text-highlighted">
-                {{ item.description || "No description available for this stream." }}
+              <p class="line-clamp-3 text-sm leading-6 text-toned">
+                {{ item.description || "No description available." }}
               </p>
             </div>
           </div>
 
           <!-- Footer -->
-          <div
-            class="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 px-5 py-4"
-          >
-            <UBadge label="Active" color="success" variant="soft" />
+          <div class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3">
+            <div class="flex items-center gap-2">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
+                <UIcon name="i-lucide-check-circle-2" class="size-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+
+              <div>
+                <p class="text-xs font-medium">Academic Structure</p>
+
+                <p class="text-[11px] text-muted">Used in class organization</p>
+              </div>
+            </div>
 
             <!-- <UButton
-                icon="i-lucide-arrow-right"
-                color="neutral"
-                variant="ghost"
-                square
-                class="rounded-xl transition-transform group-hover:translate-x-1"
-              /> -->
+          square
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-chevron-right"
+          class="rounded-xl transition-all group-hover:translate-x-1"
+        /> -->
           </div>
         </UCard>
       </template>
 
       <!-- Pagination -->
-      <div
-        v-if="!loading && data?.length && store.meta.total > store.meta.size"
-        class="flex flex-col items-center gap-3 pt-3"
-      >
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
         <Showing :meta="store.meta" />
 
-        <UPagination
-          v-model:page="page"
-          size="sm"
-          :page-size="store.meta.size"
-          :items-per-page="store.meta.size"
-          :total="store.meta.total"
-          show-edges
-        />
+        <UPagination v-model:page="page" size="sm" :page-size="store.meta.size" :items-per-page="store.meta.size"
+          :total="store.meta.total" show-edges />
       </div>
     </div>
   </div>

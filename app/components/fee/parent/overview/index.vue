@@ -1,5 +1,5 @@
 <template>
-    <UCard class="hidden md:block" :ui="{
+    <UCard :ui="{
         body: 'sm:p-0'
     }">
         <template #header>

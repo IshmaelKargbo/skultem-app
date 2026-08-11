@@ -1,12 +1,12 @@
 <template>
     <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Athletic House Management" subtitle="Manage and assignment student to houses">
-            <div class="w-1/3">
+            <div class="w-full md:w-1/3">
                 <USelectMenu :items="classes" value-key="value" v-model="selectedClass" placeholder="Select Class" />
             </div>
         </Heading>
-        <div class="flex space-x-4">
-            <div class="w-1/3 space-y-4">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="w-full md:w-1/3 space-y-4">
                 <UCard>
                     <template #header>
                         <div class="flex items-center gap-3">
@@ -65,7 +65,7 @@
                     </div>
                 </UCard>
             </div>
-            <div class="w-2/3">
+            <div class="w-full md:w-2/3">
                 <UCard :ui="{
                     body: 'sm:p-0'
                 }">

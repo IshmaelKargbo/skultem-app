@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 
@@ -72,7 +73,9 @@ const columns = [
 </script>
 
 <template>
-  <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
+  <TableViewToggle v-model="view" />
+
+  <UCard v-if="view === 'table'" class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
     <UTable :columns="columns" :data="records" :loading="loading">
       <!-- Empty -->
       <template #empty-state>
@@ -131,11 +134,10 @@ const columns = [
   <!-- ===================== -->
   <!-- MOBILE VIEW -->
   <!-- ===================== -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
     <template v-if="loading">
-      <UCard v-for="i in 4" :key="i"
-        class="rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-neutral-900">
+      <UCard v-for="i in 4" :key="i" variant="outline">
         <div class="space-y-4 p-4">
           <div class="flex items-center gap-3">
             <USkeleton class="size-12 rounded-2xl" />
@@ -153,7 +155,7 @@ const columns = [
     <!-- Data -->
     <template v-else-if="records?.length">
       <UCard v-for="item in records" :key="item.id"
-        class="rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900"
+        variant="outline"
         :ui="{ body: 'p-0' }">
         <!-- Header -->
         <div class="flex items-start justify-between border-b p-4 dark:border-gray-800">
@@ -202,7 +204,7 @@ const columns = [
 
     <!-- Empty -->
     <template v-else>
-      <div class="flex flex-col items-center justify-center py-14">
+      <div class="flex flex-col items-center justify-center py-14 col-span-full">
         <div class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800">
           <UIcon name="i-lucide-home" class="text-3xl text-gray-400" />
         </div>
@@ -218,7 +220,7 @@ const columns = [
     </template>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-between mt-3">
+    <div class="flex items-center justify-between mt-3 col-span-full">
       <Showing :meta="meta" />
 
       <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"

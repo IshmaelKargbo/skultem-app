@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useUserStore()
@@ -116,7 +117,9 @@ onMounted(async () => {
 <template>
   <div class="space-y-4">
     <!-- Desktop -->
-    <UCard class="hidden md:block" :ui="{
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{
       body: 'p-0 sm:p-0'
     }">
       <UTable :ui="{
@@ -196,7 +199,8 @@ onMounted(async () => {
     </UCard>
 
     <!-- Mobile -->
-    <div class="space-y-4 md:hidden">
+    <div class="space-y-4"
+      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <!-- Loading -->
       <template v-if="loading">
         <UCard v-for="i in 4" :key="i" class="overflow-hidden ">
@@ -226,10 +230,10 @@ onMounted(async () => {
           body: 'p-0'
         }">
           <!-- Header -->
-          <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+        <div class="border-b border-gray-100 p-3 md:p-0 md:pb-3 dark:border-gray-800">
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <UAvatar :alt="`${item.givenNames} ${item.familyName}`" size="lg" />
+                <UAvatar :alt="`${item.givenNames} ${item.familyName}`" size="2xl" />
 
                 <div class="min-w-0">
                   <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
@@ -250,30 +254,53 @@ onMounted(async () => {
 
           <!-- Content -->
           <div class="grid grid-cols-2 gap-3 p-4">
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-              <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                Status
-              </p>
+            <!-- Status -->
+            <div
+              class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
+              <div class="mb-2 flex items-center gap-2">
+                <div class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                  <UIcon name="i-lucide-calendar-days" class="size-4 text-primary-600 dark:text-primary-400" />
+                </div>
 
-              <UBadge :label="parseStatus[item.status]" variant="soft" size="sm"
-                :color="parseStatusColor[item.status]" />
+                <p class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">
+                  Status
+                </p>
+              </div>
+
+              <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                {{ item.status }}
+              </p>
             </div>
 
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-              <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                Roles
+            <!-- Roles -->
+            <div
+              class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+              <div class="mb-2 flex items-center gap-2">
+                <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                  <UIcon name="i-lucide-user-round" class="size-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+
+                <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                  Roles
+                </p>
+              </div>
+
+              <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              <p v-if="item.roles.length > 1"
+                class="inline-flex w-fit rounded-lg px-2.5 py-1  font-semibold text-gray-700  dark:text-gray-300">
+                {{ item.roles.length }} Roles
               </p>
 
-              <UBadge v-if="item.roles.length > 1" :label="`${item.roles.length} Roles`" color="neutral" size="sm"
-                variant="soft" />
-
-              <UBadge v-else :label="`${parseRole[item.roles[0] || '']}`" :color="parseRoleColor[item.roles[0] || '']"
-                size="sm" variant="soft" />
+              <p v-else class="truncate text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                {{ parseRole[item.roles[0] || ''] }}
+              </p>
+              </p>
             </div>
+
           </div>
 
           <!-- Footer -->
-          <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+          <div class="flex items-center justify-between border-t border-gray-100 p-3 md:p-0 md:pt-3 dark:border-gray-800">
             <div>
               <p class="text-xs text-gray-500">
                 User Account
@@ -292,7 +319,7 @@ onMounted(async () => {
 
       <!-- Empty -->
       <template v-else>
-        <div class="flex flex-col items-center justify-center py-14">
+        <div class="flex flex-col items-center justify-center py-14 col-span-full">
           <div class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800">
             <UIcon name="i-lucide-users" class="size-8 text-gray-400" />
           </div>
@@ -308,7 +335,7 @@ onMounted(async () => {
       </template>
 
       <!-- Pagination -->
-      <div class="flex justify-between items-center mt-3 md:hidden">
+      <div class="flex justify-between items-center mt-3 col-span-full">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />

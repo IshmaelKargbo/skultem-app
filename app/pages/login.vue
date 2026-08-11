@@ -87,7 +87,7 @@
       <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
 
-      <div class="relative z-10 w-full max-w-md">
+      <div class="relative z-10 w-full max-w-md lg:max-w-xl">
 
         <!-- Logo -->
         <div class="flex items-center gap-3 mb-6">

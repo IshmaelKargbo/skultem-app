@@ -109,11 +109,11 @@
           </div>
 
           <!-- Mobile: stacked cards, one per assignment -->
-          <div class="md:hidden divide-y divide-gray-200 dark:divide-gray-800">
+          <div class="divide-y divide-gray-200 dark:divide-gray-800 md:hidden" >
             <div
               v-for="(assignment, index) in state.assignments"
               :key="index"
-              class="p-4 space-y-3"
+              class="py-4 space-y-3 "
             >
               <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -204,6 +204,8 @@
         </div>
       </template>
     </UCard>
+    
+    <!-- empty -->
     <UCard v-else>
       <div class="h-56 flex flex-col items-center justify-center gap-3 px-4 text-center">
         <div
@@ -227,6 +229,7 @@
 import type { TableColumn } from "@nuxt/ui";
 import * as yup from "yup";
 
+const view = ref<'table' | 'card'>('table');
 const store = useStreamSubjectStore();
 const subjectStore = useSubjectStore();
 const streamStore = useStreamStore();

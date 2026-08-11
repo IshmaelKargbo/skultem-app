@@ -1,8 +1,8 @@
 <template>
-  <div class="p-7 overflow-y-auto h-full space-y-5">
+  <div class="md:p-7 overflow-y-auto h-full md:space-y-5 space-y-3 p-4">
     <!-- Page Header -->
     <Heading title="Leaderboard" subtitle="View class performance and explore detailed student reports">
-      <div class="flex w-1/2 space-x-3">
+      <div class="flex md:w-1/2 w-full space-x-3">
         <USelectMenu v-model="state.classId" :items="classes" value-key="value" class="w-full"
           placeholder="Select Class" />
 

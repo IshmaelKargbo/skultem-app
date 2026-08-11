@@ -5,6 +5,7 @@ const router = useRouter()
 const store = useMaterialStore()
 
 const { supplies: data, loading, meta } = storeToRefs(store)
+const view = ref<'table' | 'card'>('table')
 
 const columns = [
   {
@@ -71,8 +72,10 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
+    <TableViewToggle v-model="view" />
+
     <!-- Desktop -->
-    <UCard class="hidden md:block" :ui="{
+    <UCard v-if="view === 'table'" class="hidden md:block" :ui="{
       body: 'sm:p-0'
     }">
       <UTable :columns="columns" :data="data" :loading="loading">
@@ -153,7 +156,8 @@ onMounted(async () => {
     </UCard>
 
     <!-- Mobile -->
-    <div class="space-y-4 md:hidden">
+    <div class="space-y-4"
+      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
       <!-- Loading -->
       <div v-if="loading" class="space-y-4">
         <div v-for="i in 5" :key="i"
@@ -176,7 +180,7 @@ onMounted(async () => {
       </div>
 
       <!-- Empty -->
-      <UCard v-else-if="!loading && !data?.length" class="rounded-2xl border border-default shadow-sm"
+      <UCard v-else-if="!loading && !data?.length" class="rounded-2xl border border-default shadow-sm col-span-full"
         :ui="{ body: 'p-4' }">
         <div class="flex flex-col items-center gap-3 py-14">
           <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
@@ -202,109 +206,132 @@ onMounted(async () => {
           :ui="{ body: 'p-4' }">
           <div class="space-y-4">
 
-            <!-- Student -->
-            <div class="flex items-start gap-3">
-              <UAvatar size="lg" :src="item.student.photo" class="shrink-0" />
-
-              <div class="min-w-0 flex-1">
-
-                <div class="flex items-start justify-between gap-3">
-
-                  <div class="min-w-0">
-                    <h3 class="truncate text-sm font-semibold text-highlighted">
-                      {{ item.student.givenNames }}
-                      {{ item.student.familyName }}
-                    </h3>
-
-                    <p class="mt-1 text-xs text-muted">
-                      {{ item.student.admissionNumber }}
-                    </p>
-                  </div>
-
-                  <UBadge size="sm" variant="soft" :color="item.status === 'COLLECTED'
-                    ? 'success'
-                    : 'warning'">
-                    {{ clean(item.status) }}
-                  </UBadge>
-
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Material -->
-            <div class="rounded-xl bg-muted p-3">
-              <div class="flex items-center gap-3">
-
-                <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10">
-                  <UIcon name="i-lucide-package" class="size-4 text-primary" />
-                </div>
+            <!-- Student Header -->
+            <div
+              class="flex items-center justify-between gap-3 border-b border-gray-200 p-3 md:p-0 md:pb-3  dark:border-gray-800">
+              <div class="flex min-w-0 items-center gap-3">
+                <UAvatar size="lg" :src="item.student.photo"
+                  :alt="`${item.student.givenNames} ${item.student.familyName}`"
+                  class="shrink-0 ring-2 ring-primary/10" />
 
                 <div class="min-w-0">
-                  <p class="text-sm font-medium text-highlighted">
+                  <h3 class="truncate text-sm font-semibold text-highlighted">
+                    {{ item.student.givenNames }}
+                    {{ item.student.familyName }}
+                  </h3>
+
+                  <div class="mt-1 flex items-center gap-1.5">
+                    <UIcon name="i-lucide-id-card" class="size-3.5 text-muted" />
+
+                    <span class="text-xs text-muted">
+                      {{ item.student.admissionNumber }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <UBadge size="sm" variant="soft" :color="item.status === 'COLLECTED' ? 'success' : 'warning'" :icon="item.status === 'COLLECTED'
+                ? 'i-lucide-check'
+                : 'i-lucide-clock-3'
+                ">
+                {{ clean(item.status) }}
+              </UBadge>
+            </div>
+
+            <div class="p-4">
+              <!-- Material -->
+              <div class="flex items-center gap-3 rounded-2xl border border-primary/10 bg-primary-50 dark:bg-primary-500/10 p-4">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/10">
+                  <UIcon name="i-lucide-package" class="size-5 text-primary" />
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-semibold text-highlighted">
                     {{ item.material.name }}
                   </p>
 
-                  <p class="text-xs text-muted">
-                    {{ item.material.category.name }}
+                  <div class="mt-1 flex items-center gap-1.5">
+                    <UIcon name="i-lucide-layers-2" class="size-3.5 text-muted" />
+
+                    <p class="truncate text-xs text-muted">
+                      {{ item.material.category.name }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quantity -->
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <!-- Requested -->
+                <div class="rounded-2xl border border-default bg-gray-50 dark:bg-gray-600 p-3.5">
+                  <div class="flex items-center gap-2">
+                    <div class="flex size-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-600">
+                      <UIcon name="i-lucide-package" class="size-4 text-muted" />
+                    </div>
+
+                    <p class="text-xs font-medium text-muted">
+                      Requested
+                    </p>
+                  </div>
+
+                  <p class="mt-3 text-xl font-bold text-highlighted">
+                    {{ item.qty }}
                   </p>
                 </div>
 
-              </div>
-            </div>
+                <!-- Collected -->
+                <div class="rounded-2xl border border-success/10 bg-success-50 dark:bg-success-500/10 p-3.5">
+                  <div class="flex items-center gap-2">
+                    <div class="flex size-8 items-center justify-center rounded-lg bg-success-100 ">
+                      <UIcon name="i-lucide-package-check" class="size-4 text-success" />
+                    </div>
 
-            <!-- Quantity -->
-            <div class="grid grid-cols-2 gap-3">
+                    <p class="text-xs font-medium text-muted">
+                      Collected
+                    </p>
+                  </div>
 
-              <div class="rounded-xl bg-muted p-3">
-                <p class="text-[11px] text-muted">
-                  Requested
-                </p>
-
-                <p class="mt-1 text-lg font-semibold text-highlighted">
-                  {{ item.qty }}
-                </p>
-              </div>
-
-              <div class="rounded-xl bg-muted p-3">
-                <p class="text-[11px] text-muted">
-                  Collected
-                </p>
-
-                <p class="mt-1 text-lg font-semibold text-highlighted">
-                  {{ item.collectedQty }}
-                </p>
+                  <p class="mt-3 text-xl font-bold text-success">
+                    {{ item.collectedQty }}
+                  </p>
+                </div>
               </div>
 
             </div>
+            <!-- Collection Date -->
+            <div class="mt-4 flex items-center justify-between border-t border-default pt-4">
+              <div class="flex items-center gap-3">
+                <div class="flex size-9 items-center justify-center rounded-xl bg-muted">
+                  <UIcon name="i-lucide-calendar-days" class="size-4 text-muted" />
+                </div>
 
-            <!-- Footer -->
-            <div class="flex items-center justify-between border-t border-default pt-3">
-              <div>
-                <p class="text-[11px] text-muted">
-                  Collection Date
-                </p>
+                <div>
+                  <p class="text-[11px] text-muted">
+                    Collection Date
+                  </p>
 
-                <p class="mt-1 text-sm text-highlighted">
-                  {{
-                    item.collectedOn
-                      ? formatDateTime(item.collectedOn)
-                      : '-'
-                  }}
-                </p>
+                  <p class="mt-0.5 text-sm font-medium text-highlighted">
+                    {{
+                      item.collectedOn
+                        ? formatDateTime(item.collectedOn)
+                        : 'Not collected yet'
+                    }}
+                  </p>
+                </div>
               </div>
 
-              <UIcon name="i-lucide-calendar-days" class="size-5 text-muted" />
+              <UBadge v-if="item.collectedQty >= item.qty" color="success" variant="soft" size="xs">
+                Complete
+              </UBadge>
             </div>
-
           </div>
         </UCard>
       </div>
 
-      <div v-if="!loading && data" class="flex flex-col items-center gap-3 pt-2 md:hidden">
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
         <Showing :meta="meta" />
-
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
     </div>

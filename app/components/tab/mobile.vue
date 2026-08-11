@@ -44,7 +44,7 @@ function setActive(key: string) {
           :to="tab.to"
           class="flex justify-center px-2 py-1.5 text-center cursor-pointer transition-all"
           :class="{
-            'bg-primary-500 rounded-3xl text-white': isRouteActive(tab),
+            'bg-secondary-500 rounded-3xl text-white': isRouteActive(tab),
             'text-gray-700 dark:text-gray-200': !isRouteActive(tab)
           }"
         >
@@ -56,7 +56,7 @@ function setActive(key: string) {
           type="button"
           class="flex justify-center px-2 py-1.5 text-center cursor-pointer transition-all"
           :class="{
-            'bg-primary-950 rounded-3xl text-white': tab.key === isActive,
+            'bg-secondary-950 rounded-3xl text-white': tab.key === isActive,
             'text-gray-700 dark:text-gray-200': tab.key !== isActive
           }"
           @click="setActive(tab.key || '')"

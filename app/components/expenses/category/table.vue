@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Row } from '@tanstack/vue-table'
 
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 
@@ -125,8 +126,11 @@ onMounted(async () => {
 </script>
 
 <template>
+  <TableViewToggle v-model="view" />
+
   <!-- Desktop -->
   <UCard
+    v-if="view === 'table'"
     class="hidden md:block"
     :ui="{
       body: 'p-0 sm:p-0'
@@ -207,13 +211,13 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
     <template v-if="loading">
       <UCard
         v-for="i in 4"
         :key="i"
-        class="rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900"
+        variant="outline"
       >
         <div class="space-y-4 p-4">
           <div class="flex items-start justify-between">
@@ -239,72 +243,90 @@ onMounted(async () => {
       <UCard
         v-for="item in data"
         :key="item.id"
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all active:scale-[0.99] dark:border-gray-800 dark:bg-neutral-900"
+        variant="outline"
+        class="overflow-hidden transition-all active:scale-[0.99]"
         :ui="{
           body: 'p-0'
         }"
       >
-        <!-- Header -->
-        <div
-          class="flex items-start justify-between border-b border-gray-100 p-4 dark:border-gray-800"
-        >
-          <div class="flex min-w-0 items-center gap-3">
-            <div
-              class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary dark:bg-primary-500/10"
-            >
-              <UIcon
-                name="i-lucide-folder"
-                class="size-5"
-              />
+          <div class="border-b border-default p-3 md:p-0 md:pb-3 ">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex min-w-0 items-center gap-4">
+                <div
+                  class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-primary dark:bg-gray-800 dark:text-primary">
+                  <UIcon name="i-lucide-book-open-text" class="size-5 text-primary group-hover:text-white" />
+                </div>
+
+                <div class="min-w-0">
+                  <h3 class="truncate text-base font-semibold">
+                    {{ item.name }}
+                  </h3>
+
+                  <div class="mt-1 flex items-center gap-2 text-xs text-muted">
+                    Expense Category
+                  </div>
+                </div>
+              </div>
+
+              <!-- <UButton
+              icon="i-lucide-ellipsis"
+              color="neutral"
+              variant="ghost"
+              square
+              class="rounded-xl"
+            /> -->
             </div>
+          </div>
 
-            <div class="min-w-0">
-              <h3
-                class="truncate text-sm font-semibold text-gray-900 dark:text-white"
-              >
-                {{ item.name }}
-              </h3>
+          <!-- Description -->
+          <div class="p-5">
+            <div class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800">
+              <div class="mb-3 flex items-center gap-2">
+                <div class="flex size-8 items-center justify-center rounded-lg bg-primary/10">
+                  <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
+                </div>
 
-              <p class="text-xs text-gray-500">
-                Expense Category
+                <span class="text-[11px] font-medium uppercase tracking-wide text-muted">
+                  Description
+                </span>
+              </div>
+
+              <p class="text-sm leading-6 text-toned">
+                {{ item.description || "No description available." }}
               </p>
             </div>
           </div>
 
-          <UDropdownMenu
-            :items="getRowItems({ original: item } as any)"
-            :content="{ align: 'end' }"
+          <!-- Footer -->
+          <div class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3 ">
+            <div class="flex items-center gap-2">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
+                <UIcon name="i-lucide-check-circle-2" class="size-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+
+              <div>
+                <p class="text-xs font-medium">Active Category</p>
+
+                <p class="text-[11px] text-muted">Available for expense records</p>
+              </div>
+            </div>
+
+            <!-- <UButton
+            icon="i-lucide-pencil"
+            color="primary"
+            variant="soft"
+            size="sm"
+            class="rounded-xl"
           >
-            <UButton
-              icon="i-lucide-ellipsis-vertical"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              class="rounded-xl"
-            />
-          </UDropdownMenu>
-        </div>
-
-        <!-- Content -->
-        <div class="p-4">
-          <div class="rounded-2xl bg-gray-50 p-4 dark:bg-neutral-800">
-            <p
-              class="mb-2 text-[10px] font-medium uppercase tracking-wide text-gray-500"
-            >
-              Description
-            </p>
-
-            <p class="text-sm leading-6 text-gray-700 dark:text-gray-300">
-              {{ item.description || 'No description provided.' }}
-            </p>
+            Edit
+          </UButton> -->
           </div>
-        </div>
       </UCard>
     </template>
 
     <!-- Empty -->
     <template v-else>
-      <div class="flex flex-col items-center justify-center py-14">
+      <div class="flex flex-col items-center justify-center py-14 col-span-full">
         <div
           class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800"
         >
@@ -325,7 +347,7 @@ onMounted(async () => {
     </template>
 
    <!-- Pagination -->
-    <div class="flex justify-between items-center mt-3 md:hidden">
+    <div class="flex justify-between items-center mt-3 col-span-full">
       <Showing :meta="meta" />
       <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />

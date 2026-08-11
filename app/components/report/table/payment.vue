@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useReportStore()
@@ -90,12 +91,14 @@ watch(() => page.value, async () => {
 
 <template>
   <div class="space-y-4">
-    <UCard class="hidden md:block">
+    <TableViewToggle v-model="view" />
+
+    <UCard v-if="view === 'table'" class="hidden md:block">
       <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-          <p class="text-gray-500">No Attendance found.</p>
+          <p class="text-gray-500">No payments found.</p>
         </div>
       </template>
       <template #amount-cell="{ row }">
@@ -111,21 +114,141 @@ watch(() => page.value, async () => {
       </div>
     </UCard>
 
-    <div class="space-y-3 md:hidden">
-      <UCard v-for="item in data" :key="item.id" :ui="{ body: 'p-4' }">
-        <div class="space-y-1">
-          <p class="font-semibold text-sm">{{ item.student }}</p>
-          <p class="text-xs text-muted">{{ item.fee }}</p>
-          <p class="text-xs text-success">{{ format(item.amount) }}</p>
-          <p class="text-xs text-muted">{{ formatDateTime(item.paidAt) }}</p>
-          <p class="text-xs">{{ parseMethod[item.paymentMethod] || item.paymentMethod }} · {{ item.referenceNo || 'No Ref' }}</p>
-        </div>
-      </UCard>
-      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-        <p class="text-gray-500">No Attendance found.</p>
-      </div>
-      <div v-if="meta" class="flex justify-between items-center">
+    <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <template v-if="loading">
+        <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-0' }">
+          <div class="animate-pulse">
+            <!-- Header -->
+            <div class="border-b border-default p-4">
+              <div class="flex items-center gap-3">
+                <USkeleton class="size-12 shrink-0 rounded-full" />
+                <div class="min-w-0 space-y-2">
+                  <USkeleton class="h-4 w-32 rounded-md" />
+                  <USkeleton class="h-3 w-24 rounded-md" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3 p-4">
+              <div v-for="j in 4" :key="j" class="rounded-2xl border border-default bg-muted/40 p-3">
+                <div class="mb-3 flex items-center gap-2">
+                  <USkeleton class="size-7 shrink-0 rounded-lg" />
+                  <USkeleton class="h-3 w-16 rounded-md" />
+                </div>
+                <USkeleton class="h-4 w-24 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </UCard>
+      </template>
+
+      <!-- Data -->
+      <template v-else-if="data?.length">
+        <UCard v-for="item in data" :key="item.id"
+          class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+          :ui="{ body: 'p-0' }">
+          <!-- Header -->
+          <div class="border-b border-default p-4">
+            <div class="flex min-w-0 items-center gap-3">
+              <UAvatar size="2xl" icon="i-lucide-user-round" :alt="item.student" />
+
+              <div class="min-w-0">
+                <h3 class="truncate text-base font-bold text-highlighted">
+                  {{ item.student }}
+                </h3>
+                <p class="mt-1 truncate text-xs text-muted">
+                  {{ item.fee }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 gap-3 p-4">
+            <!-- Amount -->
+            <div
+              class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+              <div class="mb-2 flex items-center gap-2">
+                <div
+                  class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                  <UIcon name="i-lucide-wallet" class="size-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                  Amount
+                </p>
+              </div>
+              <p class="truncate text-sm font-medium text-highlighted">
+                {{ format(item.amount) }}
+              </p>
+            </div>
+
+            <!-- Paid On -->
+            <div
+              class="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
+              <div class="mb-2 flex items-center gap-2">
+                <div
+                  class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20">
+                  <UIcon name="i-lucide-calendar-clock" class="size-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <p class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                  Paid On
+                </p>
+              </div>
+              <p class="truncate text-sm font-medium text-highlighted">
+                {{ formatDateTime(item.paidAt) }}
+              </p>
+            </div>
+
+            <!-- Method -->
+            <div
+              class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
+              <div class="mb-2 flex items-center gap-2">
+                <div
+                  class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
+                  <UIcon name="i-lucide-credit-card" class="size-4 text-violet-600 dark:text-violet-400" />
+                </div>
+                <p class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                  Method
+                </p>
+              </div>
+              <p class="truncate text-sm font-medium text-highlighted">
+                {{ parseMethod[item.paymentMethod] || item.paymentMethod }}
+              </p>
+            </div>
+
+            <!-- Reference No -->
+            <div
+              class="min-w-0 rounded-2xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+              <div class="mb-2 flex items-center gap-2">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                  <UIcon name="i-lucide-hash" class="size-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <p class="text-[10px] font-medium uppercase tracking-wide text-blue-700 dark:text-blue-300">
+                  Reference No
+                </p>
+              </div>
+              <p class="truncate text-sm font-medium text-highlighted">
+                {{ item.referenceNo || 'No Ref' }}
+              </p>
+            </div>
+          </div>
+        </UCard>
+      </template>
+
+      <!-- Empty -->
+      <template v-else>
+        <UCard class="col-span-full">
+          <div class="flex flex-col items-center justify-center py-14">
+            <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
+            <p class="text-sm text-gray-500">No payments found.</p>
+          </div>
+        </UCard>
+      </template>
+
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
       </div>

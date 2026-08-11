@@ -6,6 +6,7 @@ const router = useRouter()
 const store = useAssessmentStore()
 
 const { records: data, meta, loading } = storeToRefs(store)
+const view = ref<'table' | 'card'>('table')
 
 const editRecord = ref<AssessmentTemplate | null>(null)
 const editState = ref(false)
@@ -243,8 +244,11 @@ watch(
 </script>
 
 <template>
+  <TableViewToggle v-model="view" />
+
   <!-- Desktop -->
   <UCard
+    v-if="view === 'table'"
     class="hidden md:block"
     :ui="{
       body: 'sm:p-0'
@@ -394,7 +398,7 @@ watch(
   </UCard>
 
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
     <template v-if="loading">
       <UCard
@@ -431,13 +435,14 @@ watch(
       <UCard
         v-for="item in data"
         :key="item.id"
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900"
+        variant="outline"
+        class="overflow-hidden"
         :ui="{
           body: 'p-0'
         }"
       >
         <!-- Header -->
-        <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+        <div class="border-b border-gray-100 pb-3 dark:border-gray-800">
           <div class="flex items-start justify-between gap-3">
             <div class="flex min-w-0 items-center gap-3">
               <div
@@ -489,7 +494,7 @@ watch(
 
         <!-- Stats -->
         <div class="grid grid-cols-2 gap-3 p-4">
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
             <p class="mb-1 text-[10px] uppercase tracking-wide text-gray-500">
               Pass Mark
             </p>
@@ -499,7 +504,7 @@ watch(
             </p>
           </div>
 
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
+          <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
             <p class="mb-1 text-[10px] uppercase tracking-wide text-gray-500">
               Total Weight
             </p>
@@ -595,7 +600,7 @@ watch(
 
     <!-- Empty -->
     <template v-else>
-    <UCard class="overflow-hidden">
+    <UCard class="overflow-hidden col-span-full">
         <div class="flex flex-col items-center justify-center py-14">
           <UIcon name="i-lucide-clipboard-list" class="mb-3 size-10 text-gray-400" />
 
@@ -606,11 +611,9 @@ watch(
       </UCard>
     </template>
 
-     <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
+     <div class="flex justify-between items-center mt-3 col-span-full">
         <Showing :meta="meta" />
-
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />
       </div>
   </div>

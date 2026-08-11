@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Row } from '@tanstack/vue-table'
 
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const { format } = useMoney()
@@ -138,8 +139,10 @@ onMounted(async () => {
 </script>
 
 <template>
+  <TableViewToggle v-model="view" />
+
   <!-- Desktop -->
-  <UCard class="hidden md:block" :ui="{
+  <UCard v-if="view === 'table'" class="hidden md:block" :ui="{
     body: 'sm:p-0'
   }">
     <UTable :columns="columns" :data="data" :loading="loading">
@@ -200,9 +203,9 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
+  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
     <!-- Loading -->
-    <div v-if="loading" class="space-y-4">
+    <template v-if="loading">
       <div v-for="i in 4" :key="i"
         class="rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
         <div class="flex gap-3">
@@ -219,11 +222,11 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-    </div>
+    </template>
 
     <!-- Empty -->
     <div v-else-if="!data?.length"
-      class="flex min-h-[60vh] flex-col items-center justify-center rounded-[32px] border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
+      class="flex min-h-[60vh] flex-col items-center justify-center rounded-[32px] border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900 col-span-full">
       <div class="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10">
         <UIcon name="lucide:badge-percent" class="text-5xl text-primary-500" />
       </div>
@@ -238,13 +241,12 @@ onMounted(async () => {
     </div>
 
     <!-- Cards -->
-    <!-- Cards -->
-    <div v-else class="space-y-3">
+    <template v-else>
       <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl" :ui="{ body: 'p-0' }">
         <!-- Header -->
-        <div class="flex items-center justify-between p-4">
+        <div class="flex items-center justify-between border-b border-gray-100 px-4 pt-4 pb-4 dark:border-neutral-800">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
               <UIcon name="lucide:badge-percent" class="text-primary text-lg" />
             </div>
 
@@ -253,37 +255,67 @@ onMounted(async () => {
                 {{ item.name }}
               </h3>
 
-              <p class="text-xs text-gray-500">
+              <p class="truncate text-xs text-gray-500">
                 {{ item.student }}
               </p>
             </div>
           </div>
 
           <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" />
+            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" class="shrink-0" />
           </UDropdownMenu>
         </div>
 
         <!-- Stats -->
-        <div class="grid grid-cols-3 gap-2 px-4 pb-4">
+        <div class="grid grid-cols-3 gap-2 px-4 pb-4 pt-4">
           <!-- Type -->
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="text-[10px] uppercase text-gray-500">
-              Type
-            </p>
+          <div
+            class="rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800/50"
+          >
+            <div class="mb-2 flex items-center gap-2">
+              <div
+                class="flex size-7 items-center justify-center rounded-lg bg-gray-100 dark:bg-neutral-800"
+              >
+                <UIcon
+                  name="i-lucide-tag"
+                  class="size-4 text-gray-600 dark:text-gray-400"
+                />
+              </div>
 
-            <p class="mt-1 text-xs font-medium">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300"
+              >
+                Type
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
               {{ parseKind[item.type] }}
             </p>
           </div>
 
           <!-- Value -->
-          <div class="rounded-2xl bg-primary-50 p-3 dark:bg-primary-500/10">
-            <p class="text-[10px] uppercase text-gray-500">
-              Value
-            </p>
+          <div
+            class="rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10"
+          >
+            <div class="mb-2 flex items-center gap-2">
+              <div
+                class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20"
+              >
+                <UIcon
+                  name="i-lucide-badge-percent"
+                  class="size-4 text-primary"
+                />
+              </div>
 
-            <p class="mt-1 text-sm font-bold text-primary">
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-primary"
+              >
+                Value
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-bold text-primary">
               {{
                 item.type === 'PERCENTAGE'
                   ? `${item.value}%`
@@ -293,20 +325,35 @@ onMounted(async () => {
           </div>
 
           <!-- Saved -->
-          <div class="rounded-2xl bg-emerald-50 p-3 dark:bg-emerald-500/10">
-            <p class="text-[10px] uppercase text-gray-500">
-              Saved
-            </p>
+          <div
+            class="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10"
+          >
+            <div class="mb-2 flex items-center gap-2">
+              <div
+                class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20"
+              >
+                <UIcon
+                  name="i-lucide-piggy-bank"
+                  class="size-4 text-emerald-600 dark:text-emerald-400"
+                />
+              </div>
 
-            <p class="mt-1 text-sm font-bold text-emerald-600">
-              {{ (item.totalSaved) }}
+              <p
+                class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300"
+              >
+                Saved
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-bold text-emerald-600 dark:text-emerald-400">
+              {{ item.totalSaved }}
             </p>
           </div>
         </div>
 
         <!-- Information -->
         <div
-          class="mx-4 my-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800">
+          class="mx-4 my-4 rounded-2xl border border-gray-100 bg-gray-100 p-3 dark:border-neutral-800 dark:bg-neutral-800">
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-500">
               Class
@@ -339,7 +386,7 @@ onMounted(async () => {
         </div>
 
         <!-- Reason -->
-        <div v-if="item.reason" class="border-t border-gray-100 px-4 py-3 dark:border-neutral-800">
+        <div v-if="item.reason" class="border-t border-gray-100 px-4 pt-4 pb-4 dark:border-neutral-800">
           <p class="text-[11px] uppercase text-gray-500 mb-1">
             Reason
           </p>
@@ -349,13 +396,18 @@ onMounted(async () => {
           </p>
         </div>
       </UCard>
-      <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
-        <Showing :meta="meta" />
-
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
+    <!-- Pagination -->
+    <div v-if="!loading && data?.length" class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
+      <Showing :meta="meta" />
+      <UPagination
+        size="sm"
+        v-model:page="page"
+        :page-size="meta.size"
+        :items-per-page="meta.size"
+        :total="meta.total"
+        show-edges
+      />
     </div>
+    </template>
   </div>
 </template>
