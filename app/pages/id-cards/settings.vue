@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 mt-6 p-4">
+  <div class="space-y-6 mt-6 p-4 md:px-6">
     <Heading title="ID Card Settings" subtitle="Configure default ID card templates and presets." />
 
     <IDCardSettings v-model="open" :settings="settings" :active-fields="activeFields" :default-settings="defaultSettings"

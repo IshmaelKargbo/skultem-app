@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4 space-y-4">
+    <div class="p-4 md:px-6 space-y-4">
         <Heading title="Teacher Assignment" subtitle="Manage teacher assignment">
             <div class="flex items-center space-x-2">
                 <UInput placeholder="Search by teacher name" />

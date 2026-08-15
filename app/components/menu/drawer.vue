@@ -5,7 +5,7 @@
     :ui="{
       body: 'p-0',
       content:
-        'w-full max-w-sm bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-900 border-r border-gray-200 dark:border-gray-800',
+        'w-full max-w-sm   border-r border-gray-200 dark:border-gray-800',
     }"
     @update:open="open = $event"
   >
@@ -416,6 +416,17 @@ const allQuickLinks: QuickLink[] = [
     to: "/teachers",
     icon: TEACHER_ICON,
     roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
+  }, {
+    label: "Classes",
+    to: "/classes",
+    icon: CLASS_ICON,
+    roles: [Role.ACCOUNTANT, ],
+  },
+  {
+    label: "Subjects",
+    to: "/subjects",
+    icon: CURRICULUM_SUBJECT_ICON,
+    roles: [Role.TEACHER, ],
   },
   {
     label: "Students",
@@ -495,7 +506,7 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     id: "classes",
     title: "Classes",
     icon: CLASS_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.ACCOUNTANT, Role.OWNER],
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
     items: [
       { label: "Classes", icon: CLASS_ICON, to: "/classes" },
       { label: "Sections", icon: LAYERS_ICON, to: "/classes/sections" },
@@ -519,7 +530,31 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     roles: [Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER],
     items: [
       { label: "Timetable", icon: TIMETABLE_ICON, to: "/timetable" },
-      { label: "Settings", icon: TIMETABLE_SETTINGS_ICON, to: "/timetable/settings" },
+      { label: "Settings", icon: TIMETABLE_SETTINGS_ICON, to: "/timetable/setting" },
+    ],
+  },
+  {
+    id: "library",
+    title: "Library",
+    icon: LIBRARY_ICON,
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
+    items: [
+      { label: "Library Dashboard", icon: LIBRARY_ICON, to: "/library" },
+      { label: "Issue/Return Book", icon: ISSUE_BOOK_ICON, to: "/library/issue" },
+      { label: "Manage Books", icon: BOOK_ICON, to: "/library/books" },
+      { label: "Book Categories", icon: BOOK_CATEGORY_ICON, to: "/library/categories" },
+    ],
+  },
+  {
+    id: "communicate",
+    title: "Communicate",
+    icon: COMMUNICATE_ICON,
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER],
+    items: [
+      { label: "Notice Board", icon: NOTICE_ICON, to: "/communicate" },
+      { label: "Events & Holidays", icon: EVENT_ICON, to: "/communicate/events" },
+      { label: "Compose Broadcast", icon: BROADCAST_ICON, to: "/communicate/broadcast" },
+      { label: "Broadcast History", icon: BROADCAST_HISTORY_ICON, to: "/communicate/broadcast/history" },
     ],
   },
   {
@@ -575,6 +610,7 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
       { label: "Template", icon: TEMPLATE_ICON, to: "/academics/assessment-templates" },
       { label: "Academic Cycle", icon: CYCLE_ICON, to: "/academics/assessment-cycle" },
       { label: "Grade Scale", icon: GRADE_ICON, to: "/academics/grade-scale" },
+      { label: "Promote Students", icon: PROMOTE_STUDENTS_ICON, to: "/academics/promote-students" },
     ],
   },
   {

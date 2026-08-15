@@ -1,197 +1,224 @@
 <template>
     <StudentView>
-        <UCard class="rounded-3xl">
+        <UCard>
             <template #header>
-                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div class="space-y-1">
-                        <h3 class="text-xl font-bold">
-                            Academic Performance
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-lg">
+                            Academic Information
                         </h3>
-
                         <p class="text-sm text-muted">
-                            Subject results, grades and overall performance summary.
+                            Subject results, grades and performance grouped by term.
                         </p>
-                    </div>
-
-                    <div class="grid w-full gap-3 md:w-105 md:grid-cols-2">
-                        <USelectMenu v-model="state.term" :items="terms" value-key="value" size="xl"
-                            placeholder="Select Term" />
-
-                        <USelectMenu v-model="state.assessment" :items="assessmentItems" value-key="value" size="xl"
-                            placeholder="Select Assessment" />
                     </div>
                 </div>
             </template>
 
-            <!-- Summary -->
-            <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <!-- Filters -->
+            <div class="mb-6 grid gap-3 sm:grid-cols-2 md:max-w-[34rem]">
+                <USelectMenu
+                    v-model="state.term"
+                    :items="terms"
+                    value-key="value"
+                    size="lg"
+                    placeholder="Select Term"
+                />
 
-                <div class="rounded-xl border-2 border-primary-300 space-y-1 flex flex-col justify-center bg-primary-50  dark:border-primary-800 dark:bg-primary-950 p-5 py-3">
-                    <p class="text-xs uppercase text-muted">
+                <USelectMenu
+                    v-model="state.assessment"
+                    :items="assessmentItems"
+                    value-key="value"
+                    size="lg"
+                    placeholder="Select Assessment"
+                />
+            </div>
+
+            <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-xl border-2 border-primary-300 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950">
+                    <p class="text-[11px] uppercase text-muted">
                         Subjects
                     </p>
-
-                    <USkeleton v-if="loading" class="h-8 w-16" />
-
-                    <h2 v-else class="text-3xl font-bold">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16" />
+                    <h2 v-else class="mt-1 text-2xl font-bold">
                         {{ summary.subjects }}
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-success-300 space-y-1 bg-success-50 flex flex-col justify-center dark:border-success-800 dark:bg-success-950 p-5 py-3">
-                    <p class="text-xs uppercase text-muted">
+                <div class="rounded-xl border-2 border-success-300 bg-success-50 p-4 dark:border-success-800 dark:bg-success-950">
+                    <p class="text-[11px] uppercase text-muted">
                         Passed
                     </p>
-
-                    <USkeleton v-if="loading" class="h-8 w-16" />
-
-                    <h2 v-else class="text-3xl font-bold text-success">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16" />
+                    <h2 v-else class="mt-1 text-2xl font-bold text-success-600">
                         {{ summary.passed }}
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-error-300 bg-error-50 space-y-1 flex flex-col justify-center dark:border-error-800 dark:bg-error-950 p-5 py-3">
-                    <p class="text-xs uppercase text-muted">
+                <div class="rounded-xl border-2 border-warning-300 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
+                    <p class="text-[11px] uppercase text-muted">
                         Average
                     </p>
-
-                    <USkeleton v-if="loading" class="h-8 w-16" />
-
-                    <h2 v-else class="text-3xl font-bold text-warning">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16" />
+                    <h2 v-else class="mt-1 text-2xl font-bold text-warning-600">
                         {{ summary.average }}%
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-warning-300 bg-warning-50 space-y-1 flex flex-col justify-center dark:border-warning-800 dark:bg-warning-950 p-5 py-3">
-                    <p class="text-xs uppercase text-muted">
+                <div class="rounded-xl border-2 border-error-300 bg-error-50 p-4 dark:border-error-800 dark:bg-error-950">
+                    <p class="text-[11px] uppercase text-muted">
                         Failed
                     </p>
-
-                    <USkeleton v-if="loading" class="h-8 w-16" />
-
-                    <h2 v-else class="text-3xl font-bold text-error">
+                    <USkeleton v-if="loading" class="mt-1 h-8 w-16" />
+                    <h2 v-else class="mt-1 text-2xl font-bold text-error-600">
                         {{ summary.failed }}
                     </h2>
                 </div>
             </div>
 
-            <!-- Results -->
-            <div class="space-y-4">
+            <div v-if="loading" class="space-y-3">
+                <div
+                    v-for="i in 3"
+                    :key="i"
+                    class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950"
+                >
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <USkeleton class="h-5 w-5 rounded-full" />
+                            <USkeleton class="h-5 w-48" />
+                            <USkeleton class="h-6 w-20 rounded-full" />
+                        </div>
 
-                <!-- Loading -->
-                <div v-if="loading" v-for="i in runtimeConf().limit" :key="i"
-                    class="rounded-xl border border-default p-6 space-y-6">
-                    <div class="flex items-center justify-between">
-                        <USkeleton class="h-6 w-32" />
-                        <USkeleton class="h-7 w-24" />
-                    </div>
-
-                    <USkeleton class="h-2 w-full" />
-
-                    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                        <USkeleton class="h-12" />
-                        <USkeleton class="h-12" />
-                        <USkeleton class="h-12" />
-                        <USkeleton class="h-12" />
+                        <USkeleton class="h-5 w-24" />
                     </div>
                 </div>
+            </div>
 
-                <!-- Results -->
-                <div v-else-if="grades.length > 0" v-for="subject in grades" :key="subject.id"
-                    class="rounded-xl border border-default p-6 space-y-4 bg-gray-100 transition hover:border-primary/40">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="font-semibold">
-                                {{ subject.subject }}
+            <div v-else-if="groups.length" class="space-y-3">
+                <div
+                    v-for="group in groups"
+                    :key="group.key"
+                    class="overflow-hidden rounded-xl border border-default border-l-4"
+                    :class="group.passed === group.items.length ? 'border-l-success-500' : 'border-l-warning-500'"
+                >
+                    <button
+                        type="button"
+                        class="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+                        @click="toggle(group.key)"
+                    >
+                        <div class="flex min-w-0 items-center gap-2.5">
+                            <UIcon
+                                :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                                class="size-4 shrink-0 text-muted"
+                            />
+
+                            <UIcon
+                                :name="group.passed === group.items.length ? 'i-lucide-check-circle-2' : 'i-lucide-book-open'"
+                                class="size-4 shrink-0"
+                                :class="group.passed === group.items.length ? 'text-success-500' : 'text-primary-500'"
+                            />
+
+                            <h4 class="truncate font-semibold">
+                                {{ group.title }}
                             </h4>
 
-                            <p class="mt-1 text-xs text-muted">
-                                {{ subject.teacher }}
-                            </p>
+                            <UBadge
+                                :color="group.passed === group.items.length ? 'success' : 'warning'"
+                                variant="solid"
+                                size="sm"
+                                class="shrink-0 rounded-full"
+                            >
+                                {{ group.passed === group.items.length ? 'All Passed' : `${group.failed} Attention` }}
+                            </UBadge>
                         </div>
 
-                        <UBadge size="lg" variant="soft" :color="subject.grade === 'A'
-                                ? 'success'
-                                : subject.grade === 'B'
-                                    ? 'primary'
-                                    : subject.grade === 'C'
-                                        ? 'warning'
-                                        : subject.grade === null
-                                            ? 'neutral'
-                                            : 'error'
-                            ">
-                            Grade {{ subject.grade || 'N/A' }}
-                        </UBadge>
-                    </div>
+                        <div class="flex shrink-0 items-center gap-4 text-sm">
+                            <span class="text-muted">
+                                Subjects: <span class="font-semibold text-highlighted">{{ group.items.length }}</span>
+                            </span>
 
-                    <UProgress :model-value="subject.score" />
-
-                    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-
-                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-xs uppercase text-muted">
-                                Score
-                            </p>
-
-                            <p class="text-lg font-semibold">
-                                {{ subject.score }}%
-                            </p>
+                            <span class="text-muted">
+                                Avg: <span class="font-semibold text-highlighted">{{ group.average }}%</span>
+                            </span>
                         </div>
+                    </button>
 
-                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-xs uppercase text-muted">
-                                Weight ({{ subject.weight }})
-                            </p>
+                    <div v-if="expandedKeys.has(group.key)" class="overflow-x-auto border-t border-default">
+                        <table class="w-full min-w-max text-sm">
+                            <thead>
+                                <tr class="text-[11px] uppercase tracking-wide text-muted">
+                                    <th class="px-4 py-2 text-left font-semibold">Subject</th>
+                                    <th class="px-4 py-2 text-left font-semibold">Teacher</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Score</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Weight</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Grade</th>
+                                </tr>
+                            </thead>
 
-                            <p class="text-lg font-semibold">
-                                {{ subject.weightScore }}%
-                            </p>
-                        </div>
-
-                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-xs uppercase text-muted">
-                                Term
-                            </p>
-
-                            <p class="text-lg font-semibold">
-                                {{ subject.term }}
-                            </p>
-                        </div>
-
-                        <div class="space-y-1 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-xs uppercase text-muted">
-                                Teacher
-                            </p>
-
-                            <p class="text-lg font-semibold">
-                                {{ subject.teacher }}
-                            </p>
-                        </div>
-
+                            <tbody>
+                                <tr v-for="subject in group.items" :key="subject.id" class="border-t border-default">
+                                    <td class="px-4 py-2.5 font-medium">
+                                        {{ subject.subject }}
+                                    </td>
+                                    <td class="px-4 py-2.5 text-muted">
+                                        {{ subject.teacher }}
+                                    </td>
+                                    <td class="px-4 py-2.5 text-right">
+                                        {{ subject.score }}%
+                                    </td>
+                                    <td class="px-4 py-2.5 text-right">
+                                        {{ subject.weightScore }}%
+                                    </td>
+                                    <td class="px-4 py-2.5 text-right">
+                                        <UBadge
+                                            size="sm"
+                                            variant="soft"
+                                            :color="subject.grade === 'A'
+                                                ? 'success'
+                                                : subject.grade === 'B'
+                                                    ? 'primary'
+                                                    : subject.grade === 'C'
+                                                        ? 'warning'
+                                                        : subject.grade === null
+                                                            ? 'neutral'
+                                                            : 'error'"
+                                        >
+                                            {{ subject.grade || 'N/A' }}
+                                        </UBadge>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
 
-                <!-- Empty -->
-                <div v-else class="rounded-xl border border-dashed border-default p-16 text-center">
-                    <UIcon name="i-lucide-book-x" class="mx-auto size-14 text-muted" />
+            <div
+                v-else
+                class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-10 dark:border-gray-700"
+            >
+                <UIcon name="i-lucide-book-x" class="mb-2 text-4xl text-muted" />
 
-                    <h3 class="mt-4 text-lg font-semibold">
-                        No Academic Records Found
-                    </h3>
+                <p class="font-medium">
+                    No Academic Records Found
+                </p>
 
-                    <p class="mt-2 text-sm text-muted">
-                        Try selecting another term or assessment.
-                    </p>
-                </div>
-
+                <p class="text-sm text-muted">
+                    Try selecting another term or assessment.
+                </p>
             </div>
 
             <template #footer>
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <Showing :meta="meta" />
 
-                    <UPagination v-model:page="page" size="md" :page-size="meta?.size" :items-per-page="meta?.size"
-                        :total="meta?.total" show-edges />
+                    <UPagination
+                        v-model:page="page"
+                        size="md"
+                        :page-size="meta?.size"
+                        :items-per-page="meta?.size"
+                        :total="meta?.total"
+                        show-edges
+                    />
                 </div>
             </template>
         </UCard>
@@ -216,16 +243,18 @@ const state = reactive({
     term: '',
     assessment: ''
 })
-const student = computed(() => record.value)
+
 const terms = computed(() =>
     activeCycle.value?.terms.map(term => ({
         label: term.name,
         value: term.id
     })) || []
 )
-const term = computed(() => activeCycle.value?.terms.find(e => e.id == state.term))
 
-const assessmentItems = computed(() => assessments.value?.map(e => ({ label: e.name, value: e.id })))
+const assessmentItems = computed(() =>
+    assessments.value?.map(e => ({ label: e.name, value: e.id })) || []
+)
+
 const summary = computed(() => {
     const list = grades.value || []
     const total = list.length
@@ -247,15 +276,42 @@ const summary = computed(() => {
     }
 })
 
+const groups = computed(() => {
+    const map = new Map<string, any[]>()
 
-async function fetchAssessment() {
-    if (!record.value) return
+    for (const grade of grades.value || []) {
+        const key = grade.term || 'Other'
+        const items = map.get(key) ?? []
+        items.push(grade)
+        map.set(key, items)
+    }
 
-    await assessmentStore.fetchClassAssessments(record.value?.classId || '')
+    return Array.from(map.entries()).map(([key, items]) => {
+        const scores = items.map((item: any) => Number(item.score ?? 0)).filter((n: number) => !Number.isNaN(n))
+        const passed = items.filter((item: any) => Number(item.score ?? 0) >= 50).length
+        const failed = Math.max(items.length - passed, 0)
+        const average = scores.length
+            ? (scores.reduce((sum: number, n: number) => sum + n, 0) / scores.length).toFixed(1)
+            : '0.0'
 
-    if (assessmentItems.value && assessmentItems.value.length > 0)
-        state.assessment = assessmentItems.value[0].value
-}
+        return {
+            key,
+            title: key,
+            items,
+            passed,
+            failed,
+            average
+        }
+    })
+})
+
+const expandedKeys = ref(new Set<string>())
+
+watch(groups, newGroups => {
+    for (const group of newGroups) {
+        if (!expandedKeys.value.has(group.key)) expandedKeys.value.add(group.key)
+    }
+}, { immediate: true })
 
 const page = computed<number>({
     get: () => Number(route.query.page ?? 1),
@@ -280,98 +336,94 @@ function updateQuery(newQuery: Record<string, any>) {
     router.replace({ query: merged })
 }
 
+function toggle(key: string) {
+    if (expandedKeys.value.has(key)) expandedKeys.value.delete(key)
+    else expandedKeys.value.add(key)
+}
+
 async function fetchCycle() {
-    if (!student.value?.sessionId) return
+    if (!record.value?.sessionId) return
 
-    await store.fetchActiveCycle(student.value.sessionId)
+    await store.fetchActiveCycle(record.value.sessionId)
 
-    const activeTerm = activeCycle.value?.terms.find(
-        term => term.status === 'ACTIVE'
-    )
-
-    if (activeTerm && state.term == '') {
+    const activeTerm = activeCycle.value?.terms.find(term => term.status === 'ACTIVE')
+    if (activeTerm && !state.term) {
         state.term = activeTerm.id
     }
 }
 
-async function fetchAcademicRecords() {
-    if (!record.value?.id) return
+async function fetchAssessments() {
+    if (!record.value?.classId) return
+
+    await assessmentStore.fetchClassAssessments(record.value.classId)
+
+    if (!state.assessment && assessmentItems.value.length) {
+        state.assessment = assessmentItems.value[0].value
+    }
+}
+
+async function fetchRecord() {
+    loading.value = true
+
+    if (!record.value?.id || !state.term || !state.assessment) {
+        loading.value = false
+        return
+    }
 
     await reportStore.runReport(
         {
             entity: 'grades',
             filters: [
                 {
-                    field: "studentAssessment.enrollment.student.id",
+                    field: 'studentAssessment.enrollment.student.id',
                     value: record.value.id,
-                    operator: "EQUALS",
-                    type: "select"
+                    operator: 'EQUALS',
+                    type: 'select'
                 },
                 {
-                    field: "cycle.term.id",
+                    field: 'cycle.term.id',
                     value: state.term,
-                    operator: "EQUALS",
-                    type: "select"
+                    operator: 'EQUALS',
+                    type: 'select'
                 },
                 {
-                    field: "cycle.assessment.id",
+                    field: 'cycle.assessment.id',
                     value: state.assessment,
-                    operator: "EQUALS",
-                    type: "select"
+                    operator: 'EQUALS',
+                    type: 'select'
                 }
             ]
         },
         page.value,
         size.value
     )
+
+    loading.value = false
 }
-
-watch(() => page.value, async () => {
-    router.replace({
-        query: {
-            page: page.value
-        }
-    })
-
-    await fetchCycle()
-    await fetchAcademicRecords()
-}, { immediate: true })
 
 watch(
     () => record.value,
     async value => {
         if (!value) return
+
         await fetchCycle()
+        await fetchAssessments()
     },
     { immediate: true }
 )
 
 watch(
-    () => state.assessment,
-    async value => {
-        if (!value) return
-
-        await fetchCycle()
-        await fetchAcademicRecords()
-    },
-    { immediate: true }
-)
-
-watch(
-    () => state.term,
+    () => [record.value?.id, state.term, state.assessment, page.value, size.value],
     async () => {
-        loading.value = true
-        await fetchAssessment()
-        await fetchAcademicRecords()
-        loading.value = false
+        await fetchRecord()
     },
     { immediate: true }
 )
 
-onMounted(async () => {
+onMounted(() => {
     useAppStore().setTitle('View Student')
     useAppStore().setBack(true)
-    await fetchCycle()
+
     document.title = 'Academic Information | View Student | Students | Skultem'
 })
 </script>

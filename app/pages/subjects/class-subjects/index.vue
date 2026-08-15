@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4 space-y-4">
+    <div class="p-4 md:px-6 space-y-4">
         <Heading title="Class Subject Management" subtitle="Manage class subjects">
             <div class="flex space-x-2">
                 <UInput placeholder="Search by class" />

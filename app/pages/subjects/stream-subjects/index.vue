@@ -1,5 +1,5 @@
 <template>
-    <div class="md:px-5 overflow-y-auto h-full md:space-y-5 p-4 py-4 pb-0 space-y-3">
+    <div class="md:px-6 overflow-y-auto h-full md:space-y-5 p-4 py-4 pb-0 space-y-3">
         <Heading title="Stream Subject Management" subtitle="Manage stream subjects">
             <div class="flex items-center space-x-2">
                 <UInput placeholder="Search by stream. . ." />

@@ -74,6 +74,8 @@ async function fetchRecord() {
   try {
     loading.value = true
     await store.getTiming()
+  } catch (error: any) {
+    useNotify().error(error)
   } finally {
     loading.value = false
   }

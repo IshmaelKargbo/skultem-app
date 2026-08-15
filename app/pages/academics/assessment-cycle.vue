@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 sm:p-6  overflow-y-auto h-full space-y-4 sm:space-y-5">
+  <div class="p-4 md:px-6  overflow-y-auto h-full space-y-4 sm:space-y-5">
     <!-- Hero -->
     <UCard class="overflow-hidden">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

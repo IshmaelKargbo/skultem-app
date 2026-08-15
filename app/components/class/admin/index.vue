@@ -1,7 +1,7 @@
 <template>
-    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
+    <div class="space-y-4 p-4 sm:space-y-5 md:px-6 ">
         <Heading title="Class Management" subtitle="Organize academic classes">
-            <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-start md:gap-3">
+            <div class="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-start lg:gap-3">
                 <div class="grid w-full grid-cols-2 gap-3 sm:w-auto">
                     <ClassAssignMaster />
                     <ClassAdd />

@@ -1,9 +1,15 @@
 <template>
-    <div class="space-y-5 p-4">
-        <Heading title="Class Timetables" subtitle="Manage weekly timetables for classes and sections">
+    <div class="space-y-4 p-4 md:px-6">
+        <Heading title="My Timetable" subtitle="View your weekly teaching schedule across your classes">
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-                <USelectMenu placeholder="Select Class" v-model="grade" value-key="value" :items="classes"
-                    :loading="classLoading" class="w-full md:w-72" />
+                <USelectMenu
+                    v-model="grade"
+                    placeholder="Select Class"
+                    value-key="value"
+                    :items="list"
+                    :loading="classLoading"
+                    class="w-full md:w-72"
+                />
             </div>
         </Heading>
 
@@ -17,7 +23,7 @@
 
                     <div class="min-w-0">
                         <h2 class="truncate font-semibold text-base">
-                            {{ session?.className }}
+                            {{ session?.className }} · {{ session?.sectionName }}
                         </h2>
 
                         <p class="text-sm text-muted">
@@ -29,16 +35,17 @@
 
             <TimetablePeriod />
         </UCard>
+
         <UCard v-else>
             <div class="flex flex-col items-center justify-center py-20 text-center">
-                <UIcon name="i-lucide-school" class="size-12 text-muted mb-3" />
+                <UIcon name="i-lucide-school" class="mb-3 size-12 text-muted" />
 
                 <h3 class="text-base font-semibold">
                     Select a class to continue
                 </h3>
 
-                <p class="text-sm text-muted mt-1">
-                    Choose a class from the dropdown to view or create its timetable.
+                <p class="mt-1 text-sm text-muted">
+                    Choose one of your classes from the dropdown to view its timetable.
                 </p>
             </div>
         </UCard>
@@ -47,13 +54,13 @@
 
 <script setup lang="ts">
 const store = useTimetableStore()
+const teacherSubjectStore = useTeacherSubjectStore()
 
-const teacherStore = useTeacherSubjectStore()
 const { periods } = storeToRefs(store)
-const { classes, loading: classLoading } = storeToRefs(teacherStore)
+const { classes: list, loading: classLoading } = storeToRefs(teacherSubjectStore)
 const grade = ref('')
 
-const session = computed(() => teacherStore.getClass(grade.value))
+const session = computed(() => teacherSubjectStore.getClass(grade.value))
 
 function syncGrade(items: { value: string }[]) {
     if (!items.length) return
@@ -65,18 +72,29 @@ function syncGrade(items: { value: string }[]) {
 }
 
 watch(() => grade.value, async (value: string) => {
-    if (value) {
+    if (!value) return
+
+    try {
         await store.getTimetable(value)
+    } catch (error: any) {
+        useNotify().error(error)
     }
 }, { immediate: true })
 
-
-watch(classes, syncGrade, { immediate: true })
+watch(list, syncGrade, { immediate: true })
 
 onMounted(async () => {
-    document.title = 'Timetable | Skultem'
-    await teacherStore.allByTeacher()
-    await store.getWorkingDays()
-    await store.searchRoom(0, 0)
+    useAppStore().setTitle('My Timetable')
+    document.title = 'My Timetable | Skultem'
+    try {
+        await teacherSubjectStore.allByTeacher()
+        await store.getWorkingDays()
+    } catch (error: any) {
+        useNotify().error(error)
+    }
+})
+
+definePageMeta({
+    role: [Role.TEACHER]
 })
 </script>

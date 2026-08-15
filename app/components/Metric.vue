@@ -33,7 +33,7 @@ const { record } = defineProps<{
                 </div>
                 <div
                     v-if="record.subtle"
-                    :class="[`text-[11px] md:text-xs text-${record.subtileColor || 'neutral-100'}`]"
+                    :class="[`text-[11px] lg:text-xs text-${record.subtileColor || 'neutral-100'}`]"
                 >
                     <p>{{ record.subtle }}</p>
                 </div>

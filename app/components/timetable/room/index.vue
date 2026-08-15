@@ -58,7 +58,11 @@ function removeRoom(param: Room, index: string) {
 }
 
 async function fetchRecord() {
-  await store.searchRoom(0, 0, "")
+  try {
+    await store.searchRoom(0, 0, "")
+  } catch (error: any) {
+    useNotify().error(error)
+  }
 }
 
 onMounted(async () => {

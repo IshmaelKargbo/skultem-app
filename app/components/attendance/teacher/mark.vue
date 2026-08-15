@@ -9,17 +9,19 @@
             <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
           </p>
 
-          <div class="flex flex-1 md:space-x-5 space-x-3">
+          <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
             <UFormField name="classId" class="w-full">
-              <USelect v-model="state.classId" :items="classes" placeholder="Select class" @change="fetchRecords" />
+              <USelect v-model="state.classId" :items="classes" placeholder="Select class" class="w-full"
+                @change="fetchRecords" />
             </UFormField>
 
             <UFormField name="date" class="w-full">
-              <UInput v-model="state.date" type="date" @change="fetchRecords" />
+              <UInput v-model="state.date" type="date" class="w-full" @change="fetchRecords" />
             </UFormField>
           </div>
         </div>
       </template>
+
       <div>
         <!-- Actions -->
         <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
@@ -34,19 +36,13 @@
           </div>
         </div>
 
-        <!-- Desktop Table -->
-        <TableViewToggle v-model="view" />
 
-        <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
-              <UAvatar
-                size="md"
-                :src="row.original.studentPhoto || '/avatar-placeholder.svg'"
-                :alt="row.original.studentName"
-                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
-              />
+              <UAvatar size="md" :src="row.original.studentPhoto || '/avatar-placeholder.svg'"
+                :alt="row.original.studentName" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
               <div class="min-w-0">
                 <p class="text-sm font-medium truncate">{{ row.original.studentName }}</p>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ row.original.admissionNumber }}</p>
@@ -89,7 +85,7 @@
         </UTable>
 
         <!-- Mobile Cards -->
-        <div class="divide-y divide-gray-100" :class="{ 'md:hidden': view === 'table' }">
+        <div class="divide-y divide-gray-100 md:hidden">
 
           <!-- Mobile Skeleton -->
           <template v-if="isLoading">
@@ -114,12 +110,8 @@
           <template v-else>
             <div v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
               <div class="flex items-center space-x-2">
-                <UAvatar
-                  :src="row.studentPhoto || '/avatar-placeholder.svg'"
-                  :alt="row.studentName"
-                  size="md"
-                  class="shrink-0 ring-1 ring-gray-200 dark:ring-gray-700"
-                />
+                <UAvatar :src="row.studentPhoto || '/avatar-placeholder.svg'" :alt="row.studentName" size="md"
+                  class="shrink-0 ring-1 ring-gray-200 dark:ring-gray-700" />
                 <div>
                   <p class="text-sm font-medium leading-tight">{{ row.studentName }}</p>
                   <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ row.admissionNumber }}</p>

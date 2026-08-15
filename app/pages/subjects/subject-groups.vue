@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4 overflow-y-auto h-full space-y-4">
+    <div class="p-4 md:px-6 overflow-y-auto h-full space-y-4">
         <Heading title="Subject Groups Management" subtitle="Manage all subject groups">
             <div class="space-x-2 flex items-center">
                 <UInput placeholder="Search by name. . ." />

@@ -6,7 +6,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
+    <div class="p-4 md:px-6 overflow-y-auto h-full space-y-4 sm:space-y-5">
         <Heading title="Materials" subtitle="Manage and track school materials">
             <div class="flex space-x-3">
                 <MaterialAdd />

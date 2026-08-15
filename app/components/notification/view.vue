@@ -16,7 +16,13 @@ const META_GROUPS: Record<string, string[]> = {
 const META_ORDER = Object.values(META_GROUPS).flat();
 
 function formatMetaKey(key: string) {
-    return key.replace(/_/g, ' ')
+    return key
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/_/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ')
 }
 
 function isAttendanceStatus(key: string) {
@@ -71,72 +77,130 @@ watch(() => record, () => {
 <template>
     <div v-if="state && record" class="h-full flex flex-col">
         <!-- Header -->
-        <div class="sticky top-0 z-10 bg-default border-b border-default px-4 py-4">
-            <div class="flex items-start gap-3">
-                <div class="flex-1 min-w-10">
-                    <h2 class="font-semibold text-base leading-tight">
-                        {{ record.title }}
-                    </h2>
-
-                    <div class="mt-1">
-                        <span class="text-xs text-muted">
-                            {{ formatDate(record.createdAt) }}
-                        </span>
-                    </div>
+        <div class="border-b border-default bg-default">
+            <div class="flex items-start gap-3 p-4 sm:p-5">
+                <!-- Notification Icon -->
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
+                    <UIcon name="i-lucide-bell" class="size-5 text-primary" />
                 </div>
 
-              <div>
-                  <UButton icon="i-heroicons-x-mark" variant="ghost" color="neutral" size="md" square @click="close" />
-              </div>
+                <!-- Header Content -->
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h2 class="truncate text-base font-semibold leading-tight text-highlighted">
+                                {{ record.title }}
+                            </h2>
+
+                            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                <UBadge :color="notificationTypeColor(record.type)" variant="soft" size="md">
+                                    {{ clean(record.type) }}
+                                </UBadge>
+
+                                <UBadge v-if="record.priority" :color="notificationPriorityColor(record.priority)"
+                                    variant="outline" size="md">
+                                    {{ clean(record.priority) }}
+                                </UBadge>
+                            </div>
+
+                            <div class="mt-2 flex items-center gap-1.5 text-xs text-muted">
+                                <UIcon name="i-lucide-clock-3" class="size-3.5" />
+
+                                <span>
+                                    {{ formatDate(record.createdAt) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Close -->
+                        <UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm" class="shrink-0 rounded-xl"
+                            aria-label="Close notification" @click="close" />
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-5">
-            <!-- Message -->
-            <UCard>
-                <template #header>
-                    <div class="font-medium">Message</div>
-                </template>
+        <div class="flex-1 overflow-y-auto">
+            <div class="space-y-4 p-4 sm:p-5">
 
-                <p class="text-sm leading-6 text-toned whitespace-pre-wrap">
-                    {{ record.message }}
-                </p>
-            </UCard>
+                <!-- Message -->
+                <div class="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+                    <div class="mb-3 flex items-center gap-2">
+                        <div class="flex size-8 items-center justify-center rounded-xl bg-primary/10">
+                            <UIcon name="i-lucide-message-square-text" class="size-4 text-primary" />
+                        </div>
 
-            <!-- Metadata -->
-            <UCard v-if="Object.keys(filteredMeta).length">
-                <template #header>
-                    <div class="font-medium">Details</div>
-                </template>
+                        <div>
+                            <p class="text-sm font-semibold text-highlighted">
+                                Message
+                            </p>
 
-                <div class="space-y-3">
-                    <div v-for="(value, key) in filteredMeta" :key="key" class="flex items-start justify-between gap-4">
-                        <span class="text-xs uppercase tracking-wide text-muted shrink-0">
-                            {{ formatMetaKey(key) }}
-                        </span>
+                            <p class="text-[11px] text-muted">
+                                Notification details
+                            </p>
+                        </div>
+                    </div>
 
-                        <UBadge v-if="isAttendanceStatus(key)" :color="attendanceStatusColor(value)" variant="soft"
-                            size="sm">
-                            {{ value || '—' }}
-                        </UBadge>
+                    <p class="whitespace-pre-wrap text-sm leading-6 text-toned">
+                        {{ record.message || 'No additional details provided.' }}
+                    </p>
+                </div>
 
-                        <span v-else class="text-sm text-right font-medium break-words">
-                            {{ value || '—' }}
-                        </span>
+                <!-- Metadata -->
+                <div v-if="Object.keys(filteredMeta).length" class="overflow-hidden rounded-2xl border border-default">
+                    <div class="flex items-center gap-2 border-b border-default bg-muted/30 px-4 py-3">
+                        <div class="flex size-8 items-center justify-center rounded-xl bg-muted">
+                            <UIcon name="i-lucide-list-details" class="size-4 text-muted" />
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-highlighted">
+                                Details
+                            </p>
+
+                            <p class="text-[11px] text-muted">
+                                Additional information
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="divide-y divide-default">
+                        <div v-for="(value, key) in filteredMeta" :key="key"
+                            class="flex items-center justify-between gap-4 px-4 py-3.5">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <UIcon name="i-lucide-chevron-right" class="size-3.5 shrink-0 text-muted" />
+
+                                <span class="truncate text-xs font-medium text-muted">
+                                    {{ formatMetaKey(key) }}
+                                </span>
+                            </div>
+
+                            <UBadge v-if="isAttendanceStatus(key)" :color="attendanceStatusColor(value)" variant="soft"
+                                size="sm" class="shrink-0">
+                                {{ value || '—' }}
+                            </UBadge>
+
+                            <span v-else
+                                class="max-w-[60%] break-words text-right text-sm font-medium text-highlighted">
+                                {{ value || '—' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </UCard>
+
+            </div>
         </div>
 
         <!-- Footer -->
-        <div class="sticky bottom-0 border-t border-default bg-default p-4">
-            <UButton v-if="!record.read" block color="primary" icon="lucide:check" @click="markAsRead(record)">
+        <div class="border-t border-default bg-default/95 p-4 backdrop-blur sm:p-5">
+            <UButton v-if="!record.read" block color="primary" size="md" icon="i-lucide-check" class="rounded-xl"
+                @click="markAsRead(record)">
                 Mark as Read
             </UButton>
 
-            <div v-else class="flex justify-center">
-                <UBadge color="success" variant="soft" size="lg" icon="lucide:check-check">
+            <div v-else class="flex items-center justify-center gap-2">
+                <UBadge color="success" variant="soft" size="md" icon="i-lucide-check-check">
                     Read
                 </UBadge>
             </div>

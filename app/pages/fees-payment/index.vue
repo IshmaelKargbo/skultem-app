@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
+    <div class="space-y-4 p-4 sm:space-y-5 md:px-6 ">
         <Heading class="hidden md:flex" title="Student Fees Management" subtitle="Manage student-specific fees and balances">
             <div class="flex w-full justify-start md:w-auto md:justify-end">
                 <FeeStructureAdd v-if="can([Role.ACCOUNTANT, Role.OWNER])" />

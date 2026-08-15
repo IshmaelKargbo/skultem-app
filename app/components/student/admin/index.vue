@@ -1,8 +1,8 @@
 <template>
-    <div class="p-4 space-y-5">
+    <div class="p-4 md:px-6 space-y-5">
         <Heading title="Students Management" subtitle="Organize academic classes">
-            <div class="flex space-x-2">
-                <UInput v-model="value" placeholder="Search by name or admission no" class="md:w-80 w-full" />
+            <div class="flex space-x-2 w-full">
+                <UInput v-model="value" placeholder="Search by name or admission no" class="lg:w-80 w-full" />
                 <UButton to="/students/add" class="md:items-center md:flex md:justify-center hidden" color="primary"
                     label="Enrolled Student" :icon="ADD_ICON" />
                      <UButton to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />

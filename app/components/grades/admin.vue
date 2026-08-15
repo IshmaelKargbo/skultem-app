@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 space-y-4">
+  <div class="p-4 md:px-6 space-y-4">
     <Heading
       title="Grade Entry"
       subtitle="Enter scores for the active test. Locked assessments are read-only"
@@ -105,6 +105,7 @@
           />
         </div>
       </template>
+
       <template v-if="assessments.length && state.teacherSubjectId" #default>
         <div class="space-y-3">
           <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
@@ -289,6 +290,7 @@
         }"
       />
     </div>
+    
     <UCard v-if="hasDraftAssessments">
       <div class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
         <UButton

@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+    <div class="md:px-6 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Athletic House Management" subtitle="Manage and assignment student to houses">
             <div class="w-full md:w-1/3">
                 <USelectMenu :items="classes" value-key="value" v-model="selectedClass" placeholder="Select Class" />

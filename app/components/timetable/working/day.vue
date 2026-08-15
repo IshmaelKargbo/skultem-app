@@ -60,7 +60,11 @@ async function save() {
 }
 
 onMounted(async () => {
-  await store.getWorkingDays()
-  mode.value = store.isWorkingDaysEmpty ? 'init' : 'created'
+  try {
+    await store.getWorkingDays()
+    mode.value = store.isWorkingDaysEmpty ? 'init' : 'created'
+  } catch (error: any) {
+    useNotify().error(error)
+  }
 })
 </script>

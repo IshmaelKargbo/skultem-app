@@ -4,11 +4,11 @@
       title="Teachers"
       subtitle="Manage teacher accounts, assignments, and contact information."
     >
-      <div class="flex  gap-3 sm:flex-row">
+      <div class="flex  gap-3 md:flex-row w-full lg:flex lg:items-center lg:justify-end">
         <UInput
           v-model="value"
           icon="i-lucide-search"
-          class="w-full md::w-96"
+          class="w-full lg::w-96"
           placeholder="Search by name, staff ID, email or phone"
         />
 

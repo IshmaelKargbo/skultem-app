@@ -203,25 +203,90 @@ onMounted(async () => {
   </UCard>
 
   <!-- Mobile -->
-  <div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
-    <!-- Loading -->
+  <div class="space-y-4"
+    :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+    <!-- Loading Skeleton -->
     <template v-if="loading">
-      <div v-for="i in 4" :key="i"
-        class="rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <div class="flex gap-3">
-          <USkeleton class="h-14 w-14 rounded-2xl" />
+      <UCard v-for="n in 6" :key="`discount-skeleton-${n}`" class="overflow-hidden rounded-3xl border border-default"
+        :ui="{ body: 'p-0' }">
+        <!-- Header -->
+        <div class="flex items-center justify-between gap-3 p-4">
+          <div class="flex min-w-0 flex-1 items-center gap-3">
+            <!-- Icon -->
+            <USkeleton class="size-11 shrink-0 rounded-2xl" />
 
-          <div class="flex-1 space-y-3">
-            <USkeleton class="h-4 w-32" />
-            <USkeleton class="h-3 w-full" />
-
-            <div class="grid grid-cols-2 gap-2 pt-2">
-              <USkeleton class="h-14 rounded-2xl" />
-              <USkeleton class="h-14 rounded-2xl" />
+            <!-- Name -->
+            <div class="min-w-0 flex-1 space-y-2">
+              <USkeleton class="h-4 w-3/5 rounded-md" />
+              <USkeleton class="h-3 w-2/5 rounded-md" />
             </div>
           </div>
+
+          <!-- Menu -->
+          <USkeleton class="size-8 shrink-0 rounded-lg" />
         </div>
-      </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-2 px-4 pb-4 pt-1">
+          <!-- Type -->
+          <div class="rounded-2xl border border-default bg-muted/30 p-3">
+            <div class="mb-2 flex items-center gap-2">
+              <USkeleton class="size-7 rounded-lg" />
+              <USkeleton class="h-2.5 w-10 rounded" />
+            </div>
+
+            <USkeleton class="h-4 w-16 rounded-md" />
+          </div>
+
+          <!-- Value -->
+          <div class="rounded-2xl border border-primary/10 bg-primary/[0.03] p-3">
+            <div class="mb-2 flex items-center gap-2">
+              <USkeleton class="size-7 rounded-lg" />
+              <USkeleton class="h-2.5 w-10 rounded" />
+            </div>
+
+            <USkeleton class="h-4 w-14 rounded-md" />
+          </div>
+
+          <!-- Saved -->
+          <div class="rounded-2xl border border-success/10 bg-success/[0.03] p-3">
+            <div class="mb-2 flex items-center gap-2">
+              <USkeleton class="size-7 rounded-lg" />
+              <USkeleton class="h-2.5 w-10 rounded" />
+            </div>
+
+            <USkeleton class="h-4 w-16 rounded-md" />
+          </div>
+        </div>
+
+        <!-- Information -->
+        <div class="mx-4 mb-4 rounded-2xl border border-default bg-muted/30 p-3">
+          <!-- Class -->
+          <div class="flex items-center justify-between">
+            <USkeleton class="h-3 w-10 rounded" />
+            <USkeleton class="h-4 w-24 rounded-md" />
+          </div>
+
+          <!-- Status -->
+          <div class="mt-4 flex items-center justify-between">
+            <USkeleton class="h-3 w-12 rounded" />
+            <USkeleton class="h-5 w-16 rounded-full" />
+          </div>
+
+          <!-- Expiry -->
+          <div class="mt-4 flex items-center justify-between">
+            <USkeleton class="h-3 w-10 rounded" />
+            <USkeleton class="h-4 w-20 rounded-md" />
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="border-t border-default px-4 py-4">
+          <USkeleton class="mb-2 h-2.5 w-12 rounded" />
+          <USkeleton class="h-3.5 w-full rounded-md" />
+          <USkeleton class="mt-2 h-3.5 w-4/5 rounded-md" />
+        </div>
+      </UCard>
     </template>
 
     <!-- Empty -->
@@ -246,7 +311,8 @@ onMounted(async () => {
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-gray-100 px-4 pt-4 pb-4 dark:border-neutral-800">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
               <UIcon name="lucide:badge-percent" class="text-primary text-lg" />
             </div>
 
@@ -269,22 +335,13 @@ onMounted(async () => {
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-2 px-4 pb-4 pt-4">
           <!-- Type -->
-          <div
-            class="rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800/50"
-          >
+          <div class="rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800/50">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-gray-100 dark:bg-neutral-800"
-              >
-                <UIcon
-                  name="i-lucide-tag"
-                  class="size-4 text-gray-600 dark:text-gray-400"
-                />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-gray-100 dark:bg-neutral-800">
+                <UIcon name="i-lucide-tag" class="size-4 text-gray-600 dark:text-gray-400" />
               </div>
 
-              <p
-                class="text-[10px] font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300"
-              >
+              <p class="text-[10px] font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300">
                 Type
               </p>
             </div>
@@ -296,21 +353,13 @@ onMounted(async () => {
 
           <!-- Value -->
           <div
-            class="rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10"
-          >
+            class="rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20"
-              >
-                <UIcon
-                  name="i-lucide-badge-percent"
-                  class="size-4 text-primary"
-                />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                <UIcon name="i-lucide-badge-percent" class="size-4 text-primary" />
               </div>
 
-              <p
-                class="text-[10px] font-medium uppercase tracking-wide text-primary"
-              >
+              <p class="text-[10px] font-medium uppercase tracking-wide text-primary">
                 Value
               </p>
             </div>
@@ -326,21 +375,13 @@ onMounted(async () => {
 
           <!-- Saved -->
           <div
-            class="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10"
-          >
+            class="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
             <div class="mb-2 flex items-center gap-2">
-              <div
-                class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20"
-              >
-                <UIcon
-                  name="i-lucide-piggy-bank"
-                  class="size-4 text-emerald-600 dark:text-emerald-400"
-                />
+              <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                <UIcon name="i-lucide-piggy-bank" class="size-4 text-emerald-600 dark:text-emerald-400" />
               </div>
 
-              <p
-                class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300"
-              >
+              <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                 Saved
               </p>
             </div>
@@ -396,18 +437,13 @@ onMounted(async () => {
           </p>
         </div>
       </UCard>
-    <!-- Pagination -->
-    <div v-if="!loading && data?.length" class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
-      <Showing :meta="meta" />
-      <UPagination
-        size="sm"
-        v-model:page="page"
-        :page-size="meta.size"
-        :items-per-page="meta.size"
-        :total="meta.total"
-        show-edges
-      />
-    </div>
+      <!-- Pagination -->
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
     </template>
   </div>
 </template>

@@ -67,8 +67,12 @@ function syncGrade(items: { value: string }[]) {
 }
 
 watch(() => grade.value, async (value: string) => {
-    if (value) {
+    if (!value) return
+
+    try {
         await store.getTimetable(value)
+    } catch (error: any) {
+        useNotify().error(error)
     }
 }, { immediate: true })
 
@@ -77,9 +81,13 @@ watch(list, syncGrade, { immediate: true })
 
 onMounted(async () => {
     document.title = 'Timetable | Skultem'
-    await teacherStore.allByTeacher()
-    await parentStore.fetchAllStudents(0, 0)
-    await store.getWorkingDays()
-    await store.searchRoom(0, 0)
+    try {
+        await teacherStore.allByTeacher()
+        await parentStore.fetchAllStudents(0, 0)
+        await store.getWorkingDays()
+        await store.searchRoom(0, 0)
+    } catch (error: any) {
+        useNotify().error(error)
+    }
 })
 </script>

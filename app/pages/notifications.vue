@@ -1,64 +1,24 @@
 <template>
     <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
         <div ref="detailSection">
-            <Heading class="hidden md:flex" title="Notification Center" subtitle="Stay updated with your latest notifications">
-                <div class="flex gap-3">
+            <Heading title="Notification Center" subtitle="Stay updated with your latest notifications">
+                <div class="flex flex-1 gap-3">
                     <UBadge color="error" variant="outline" size="lg">{{ summary.unread }} Unread</UBadge>
                     <UBadge color="success" variant="outline" size="lg">{{ summary.read }} Read</UBadge>
                 </div>
             </Heading>
         </div>
-        <div class="space-y-3 md:hidden">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-xl font-bold">
-                        Notifications
-                    </h1>
-
-                    <p class="text-xs text-gray-500">
-                        Stay updated with recent activity
-                    </p>
+        <USlideover v-model:open="mobileOpen" side="right" :ui="{
+            content: 'bg-default'
+        }">
+            <template #content>
+                <div class="flex h-screen flex-col">
+                    <div class="flex-1 overflow-y-auto">
+                        <NotificationView v-if="selected" :record="selected" @close="close" />
+                    </div>
                 </div>
-
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-                <UCard>
-                    <div class="text-center">
-                        <p class="text-xs text-gray-500">
-                            Unread
-                        </p>
-
-                        <p class="text-lg font-bold text-red-500">
-                            {{ summary.unread }}
-                        </p>
-                    </div>
-                </UCard>
-
-                <UCard>
-                    <div class="text-center">
-                        <p class="text-xs text-gray-500">
-                            Read
-                        </p>
-
-                        <p class="text-lg font-bold text-success">
-                            {{ summary.read }}
-                        </p>
-                    </div>
-                </UCard>
-            </div>
-            <USlideover v-model:open="mobileOpen" side="right" :ui="{
-                content: 'bg-white dark:bg-gray-950'
-            }">
-                <template #content>
-                    <div class="flex h-screen flex-col">
-                        <div class="flex-1 overflow-y-auto">
-                            <NotificationView v-if="selected" :record="selected" @close="close" />
-                        </div>
-                    </div>
-                </template>
-            </USlideover>
-        </div>
+            </template>
+        </USlideover>
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
             <div class="min-h-0">
                 <UCard :ui="{ body: 'sm:p-0' }">
@@ -77,48 +37,69 @@
                         </div>
                     </template>
                     <div>
-                        <div v-if="isLoading" class="p-6 text-center text-gray-400">Loading notifications...</div>
-                        <div v-else-if="filteredNotifications.length === 0" class="p-6 text-center text-gray-400">No
-                            notifications found</div>
+                        <!-- Loading -->
+                        <template v-if="isLoading">
+                            <div v-for="i in 5" :key="i"
+                                class="flex items-start gap-3 border-b border-default p-4 last:border-b-0">
+                                <USkeleton class="size-9 shrink-0 rounded-xl" />
+                                <div class="flex-1 space-y-2">
+                                    <USkeleton class="h-3.5 w-2/5 rounded-md" />
+                                    <USkeleton class="h-3 w-full rounded-md" />
+                                    <USkeleton class="h-3 w-16 rounded-md" />
+                                </div>
+                            </div>
+                        </template>
 
+                        <!-- Empty -->
+                        <div v-else-if="filteredNotifications.length === 0"
+                            class="flex flex-col items-center gap-2 py-14">
+                            <UIcon name="lucide:bell-off" class="text-4xl text-muted" />
+                            <p class="text-sm text-muted">No notifications found</p>
+                        </div>
+
+                        <!-- Data -->
                         <div v-for="(notification, index) in filteredNotifications" :key="notification.id"
-                            class="cursor-pointer border-b border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-950"
+                            class="cursor-pointer border-b border-default p-4 transition-colors hover:bg-muted/50"
                             :class="{
                                 'border-l-4': true,
                                 [stateBorderClass(notification)]: true,
-                                'bg-blue-50 dark:bg-gray-950': selected?.id === notification.id,
+                                'bg-primary-100 dark:bg-primary-500/20': selected?.id === notification.id,
                                 'border-b-0': index + 1 === filteredNotifications.length
                             }" @click="open(notification)">
-                            <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <div class="relative shrink-0">
+                                    <UBadge :icon="notificationTypeIcon(notification.type)" variant="subtle" size="lg"
+                                        class="rounded-xl p-2" :color="notificationTypeColor(notification.type)" />
+                                    <span v-if="!notification.read"
+                                        class="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-default" />
+                                </div>
+
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 min-w-0">
-                                        <p class="font-semibold truncate">{{ notification.title }}</p>
-                                        <UBadge :color="typeColor(notification.type)" variant="soft" size="xs"
-                                            class="shrink-0">
+                                        <p class="truncate"
+                                            :class="notification.read ? 'font-medium text-toned' : 'font-semibold text-highlighted'">
+                                            {{ notification.title }}
+                                        </p>
+                                        <UBadge :color="notificationTypeColor(notification.type)" variant="soft"
+                                            size="xs" class="shrink-0">
                                             {{ clean(notification.type) }}
                                         </UBadge>
                                     </div>
-                                    <p class="text-sm text-gray-500 line-clamp-2">{{ notification.message }}</p>
+                                    <p class="text-sm text-muted line-clamp-2">{{ notification.message }}</p>
                                     <div class="mt-2 flex items-center gap-2">
-                                        <UBadge :color="stateColor(notification)" variant="soft" size="xs"
-                                            class="shrink-0">
-                                            {{ notification.read ? 'Read' : 'Unread' }}
-                                        </UBadge>
                                         <UBadge v-if="notification.priority"
-                                            :color="priorityColor(notification.priority)" variant="outline" size="xs"
-                                            class="shrink-0">
+                                            :color="notificationPriorityColor(notification.priority)" variant="outline"
+                                            size="xs" class="shrink-0">
                                             {{ clean(notification.priority) }}
                                         </UBadge>
-                                        <p class="text-xs text-gray-400">{{ formatDate(notification.createdAt) }}</p>
+                                        <p class="text-xs text-muted">{{ formatDate(notification.createdAt) }}</p>
                                     </div>
                                 </div>
-                                <UIcon :name="notification.read ? 'lucide:check-check' : 'lucide:bell-ring'"
-                                    class="shrink-0" :class="notification.read ? 'text-success' : 'text-primary'" />
                             </div>
                         </div>
                     </div>
                     <template #footer>
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex flex-col gap-3 sm:items-center sm:justify-between">
                             <Showing :meta="meta" />
                             <UPagination v-if="meta.total > meta.size" v-model:page="page" size="sm"
                                 :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
@@ -130,8 +111,8 @@
                 <UCard class="sticky top-0">
                     <NotificationView v-if="selected" @close="selected = undefined" :record="selected" />
                     <div v-else class="flex h-72 flex-col items-center justify-center">
-                        <UIcon name="lucide:inbox" class="mb-3 text-4xl" />
-                        <p class="text-xs">Select a notification to view details</p>
+                        <UIcon name="lucide:inbox" class="mb-3 text-4xl text-muted" />
+                        <p class="text-xs text-muted">Select a notification to view details</p>
                     </div>
                 </UCard>
             </div>
@@ -252,20 +233,6 @@ async function fetchNotifications() {
     } finally {
         isLoading.value = false
     }
-}
-
-function priorityColor(priority?: string) {
-    const map: Record<string, string> = { URGENT: 'error', HIGH: 'warning', NORMAL: 'info' }
-    return map[priority ?? ''] ?? 'neutral'
-}
-
-function typeColor(type?: string) {
-    const map: Record<string, string> = { ATTENDANCE: 'warning', BEHAVIOUR: 'error', ASSESSMENT: 'primary', FEE: 'success' }
-    return map[type ?? ''] ?? 'neutral'
-}
-
-function stateColor(n: AppNotification) {
-    return n.read ? 'success' : 'primary'
 }
 
 function stateBorderClass(n: AppNotification) {

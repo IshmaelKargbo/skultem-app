@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
+    <div class="md:px-6 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Athletic House" subtitle="Create and manage athletic houses for student assignment">
             <AthleticCategoryAdd />
         </Heading>

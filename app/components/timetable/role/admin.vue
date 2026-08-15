@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 p-4">
+  <div class="space-y-4 p-4 md:px-6">
     <Heading
       title="Class Timetables"
       subtitle="Configure and manage weekly timetables for classes and sections"
@@ -152,8 +152,12 @@ watch(
   async (value) => {
     if (!value) return;
 
-    await store.getTimetable(value);
-    await teacherSubjectStore.allByClass(value);
+    try {
+      await store.getTimetable(value);
+      await teacherSubjectStore.allByClass(value);
+    } catch (error: any) {
+      useNotify().error(error);
+    }
   },
   { immediate: true }
 );
@@ -162,8 +166,12 @@ watch(list, syncGrade, { immediate: true });
 
 onMounted(async () => {
   document.title = "Timetable | Skultem";
-  await classStore.fetchAll(0, 0);
-  await store.getWorkingDays();
-  await store.searchRoom(0, 0);
+  try {
+    await classStore.fetchAll(0, 0);
+    await store.getWorkingDays();
+    await store.searchRoom(0, 0);
+  } catch (error: any) {
+    useNotify().error(error);
+  }
 });
 </script>

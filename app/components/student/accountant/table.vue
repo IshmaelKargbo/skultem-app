@@ -85,6 +85,10 @@ async function fetchRecord() {
   loading.value = false
 }
 
+function viewStudent(row: Student) {
+  router.push(`/students/${row.id}/fee-structure`)
+}
+
 watch(() => page.value, () => {
   router.replace({
     query: {
@@ -153,167 +157,214 @@ onMounted(() => {
     </template>
   </UCard>
   <!-- Mobile -->
-<div class="space-y-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
-  <!-- Loading -->
-  <template v-if="loading">
-    <UCard
-      v-for="i in 4"
-      :key="i"
-    >
-      <div class="space-y-3 p-4">
-        <USkeleton class="h-12 w-full rounded-xl" />
-        <USkeleton class="h-20 w-full rounded-2xl" />
-        <USkeleton class="h-10 w-full rounded-xl" />
-      </div>
-    </UCard>
-  </template>
+  <div class="space-y-4"
+    :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+    <template v-if="loading">
+      <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm"
+        :ui="{ body: 'p-0' }">
+        <div class="animate-pulse">
+          <!-- Header -->
+          <div class="border-b border-default  p-3 md:p-0 md:pb-3 ">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex min-w-0 items-center gap-3">
+                <!-- Avatar -->
+                <USkeleton class="size-12 shrink-0 rounded-xl" />
 
-  <!-- Records -->
-  <template v-else-if="data?.length">
-    <UCard
-      v-for="item in data"
-      :key="item.id"
-      class="overflow-hidden"
-      :ui="{ body: 'p-0' }"
-    >
-      <!-- Header -->
-      <div class="border-b border-gray-100 p-4 dark:border-gray-800">
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex items-center gap-3 min-w-0">
-            <UAvatar
-              :src="item.photo"
-              :alt="`${item.givenNames} ${item.familyName}`"
-              size="lg"
-            />
+                <!-- Name -->
+                <div class="min-w-0 space-y-2">
+                  <USkeleton class="h-4 w-36 rounded-md" />
+                  <USkeleton class="h-3 w-28 rounded-md" />
+                </div>
+              </div>
+
+              <!-- Status -->
+              <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 gap-3 p-4">
+            <div v-for="j in 4" :key="j" class="rounded-2xl border border-default bg-muted/40 p-3">
+              <div class="mb-3 flex items-center gap-2">
+                <USkeleton class="size-7 shrink-0 rounded-lg" />
+                <USkeleton class="h-3 w-16 rounded-md" />
+              </div>
+
+              <USkeleton class="h-4 w-24 rounded-md" />
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between gap-3 border-t border-default  p-3 md:p-0 md:pt-3 ">
+            <div class="flex min-w-0 items-center gap-3">
+              <USkeleton class="size-10 shrink-0 rounded-full" />
+
+              <div class="min-w-0 space-y-2">
+                <USkeleton class="h-4 w-28 rounded-md" />
+                <USkeleton class="h-3 w-24 rounded-md" />
+              </div>
+            </div>
+
+            <USkeleton class="h-9 w-20 shrink-0 rounded-xl" />
+          </div>
+        </div>
+      </UCard>
+    </template>
+
+    <!-- Data -->
+    <template v-else-if="data?.length">
+      <UCard v-for="item in data" :key="item.id"
+        class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+        :ui="{ body: 'p-0' }">
+        <!-- Header -->
+        <div class="border-b border-default  p-3 md:p-0 md:pb-3 ">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <UAvatar size="2xl" :src="item.photo || '/avatar-placeholder.svg'"
+                :alt="`${item.givenNames} ${item.familyName}`" />
+
+              <div class="min-w-0">
+                <h3 class="truncate text-base font-bold text-highlighted">
+                  {{ item.givenNames }} {{ item.familyName }}
+                </h3>
+
+                <div class="mt-1 flex items-center gap-1 text-xs text-muted">
+                  <span>
+                    {{ item.admissionNumber || 'No Admission No' }}
+                  </span>
+
+                  <span>•</span>
+
+                  <span>
+                    {{ item.className || 'No Class' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <UBadge v-if="item.feeDetail" :label="item.feeDetail.status" :color="parseFeeStatusColor[item.feeDetail.status]"
+              :icon="parseFeeStatusIcon[item.feeDetail.status]" variant="soft" />
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3 p-4">
+          <!-- Total -->
+          <div
+            class="min-w-0 rounded-2xl border border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-500/20">
+                <UIcon name="i-lucide-receipt" class="size-4 text-red-600 dark:text-red-400" />
+              </div>
+
+              <p class="text-[10px] font-medium uppercase tracking-wide text-red-700 dark:text-red-300">
+                Total
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ format(item.feeDetail?.total || 0) }}
+            </p>
+          </div>
+
+          <!-- Paid -->
+          <div
+            class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div
+                class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                <UIcon name="i-lucide-circle-check-big" class="size-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+
+              <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                Paid
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ format(item.feeDetail?.paid || 0) }}
+            </p>
+          </div>
+
+          <!-- Balance -->
+          <div
+            class="min-w-0 rounded-2xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div
+                class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                <UIcon name="i-lucide-wallet" class="size-4 text-blue-600 dark:text-blue-400" />
+              </div>
+
+              <p class="text-[10px] font-medium uppercase tracking-wide text-blue-700 dark:text-blue-300">
+                Balance
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ format(item.feeDetail?.balance || 0) }}
+            </p>
+          </div>
+
+          <!-- Guardian -->
+          <div
+            class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
+            <div class="mb-2 flex items-center gap-2">
+              <div
+                class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
+                <UIcon name="i-lucide-user-round" class="size-4 text-violet-600 dark:text-violet-400" />
+              </div>
+
+              <p class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                Guardian
+              </p>
+            </div>
+
+            <p class="truncate text-sm font-medium text-highlighted">
+              {{ item.guardian?.givenNames }}
+              {{ item.guardian?.familyName }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between gap-3 border-t border-default  p-3 md:p-0 md:pt-3 ">
+          <div class="flex min-w-0 items-center gap-3">
+            <UAvatar size="xl" icon="i-lucide-users" />
 
             <div class="min-w-0">
-              <h3 class="truncate text-sm font-semibold">
-                {{ item.givenNames }} {{ item.familyName }}
-              </h3>
+              <p class="truncate text-sm font-medium text-highlighted">
+                {{ item.family?.fatherName || 'No Father Name' }}
+              </p>
 
-              <p class="text-xs text-gray-500">
-                {{ item.className || 'No Class' }}
+              <p class="truncate text-xs text-muted">
+                {{ item.family?.motherName || 'No Mother Name' }}
               </p>
             </div>
           </div>
 
-          <UBadge
-            v-if="item.feeDetail"
-            :label="item.feeDetail.status"
-            :color="parseFeeStatusColor[item.feeDetail.status]"
-            variant="soft"
-          />
+          <UButton label="View" trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="lg"
+            class="shrink-0 rounded-xl" @click="viewStudent(item)" />
         </div>
-      </div>
+      </UCard>
+    </template>
 
-      <!-- Amounts -->
-      <div class="grid grid-cols-3 gap-3 p-4">
-        <div class="rounded-2xl bg-error-50 p-3 dark:bg-error-950/20">
-          <p class="text-[10px] uppercase text-gray-500">
-            Total
-          </p>
+    <!-- Empty -->
+    <template v-else>
+      <UCard class="col-span-full">
+        <div class="flex flex-col items-center justify-center py-14">
+          <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
 
-          <p class="mt-1 text-sm font-semibold text-error">
-            {{ format(item.feeDetail?.total || 0) }}
-          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">No students found.</p>
         </div>
+      </UCard>
+    </template>
 
-        <div class="rounded-2xl bg-success-50 p-3 dark:bg-success-950/20">
-          <p class="text-[10px] uppercase text-gray-500">
-            Paid
-          </p>
-
-          <p class="mt-1 text-sm font-semibold text-success">
-            {{ format(item.feeDetail?.paid || 0) }}
-          </p>
-        </div>
-
-        <div class="rounded-2xl bg-info-50 p-3 dark:bg-info-950/20">
-          <p class="text-[10px] uppercase text-gray-500">
-            Balance
-          </p>
-
-          <p class="mt-1 text-sm font-semibold text-info">
-            {{ format(item.feeDetail?.balance || 0) }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Details -->
-      <div class="space-y-3 px-4 pb-4">
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">
-            Gender
-          </span>
-
-          <UBadge
-            :label="parseGender[item.gender]"
-            :color="parseGenderColor[item.gender]"
-            variant="soft"
-            size="sm"
-          />
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">
-            Guardian
-          </span>
-
-          <span class="text-sm font-medium">
-            {{ item.guardian?.givenNames }}
-            {{ item.guardian?.familyName }}
-          </span>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">
-            Father
-          </span>
-
-          <span class="text-sm font-medium truncate">
-            {{ item.family?.fatherName || 'N/A' }}
-          </span>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">
-            Mother
-          </span>
-
-          <span class="text-sm font-medium truncate">
-            {{ item.family?.motherName || 'N/A' }}
-          </span>
-        </div>
-      </div>
-    </UCard>
-  </template>
-
-  <!-- Empty -->
-  <template v-else>
-    <div class="flex flex-col items-center py-12 col-span-full">
-      <UIcon
-        name="ph:books-light"
-        class="text-4xl text-gray-400"
-      />
-
-      <p class="mt-3 text-sm text-gray-500">
-        No students found.
-      </p>
+    <!-- Pagination -->
+    <div v-if="!loading && data?.length"
+      class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
+      <Showing :meta="meta" />
+      <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
     </div>
-  </template>
-
-  <!-- Pagination -->
-  <div class="flex items-center justify-between col-span-full">
-    <Showing :meta="meta" />
-
-    <UPagination
-      v-model:page="page"
-      size="sm"
-      :page-size="meta.size"
-      :items-per-page="meta.size"
-      :total="meta.total"
-      show-edges
-    />
   </div>
-</div>
 </template>

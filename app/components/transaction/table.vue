@@ -245,10 +245,10 @@ onMounted(async () => {
       <!-- Records -->
       <template v-else-if="data?.length">
         <UCard v-for="item in data" :key="item.id" class="overflow-hidden" :ui="{ body: 'p-0' }">
-          <div class="p-4 space-y-4">
+          <div class="space-y-4">
 
             <!-- Header -->
-            <div class="flex items-start justify-between ">
+            <div class="flex items-start justify-between border-b border-default  p-3 md:p-0 md:pb-3">
 
               <div class="flex gap-3">
 
@@ -279,7 +279,7 @@ onMounted(async () => {
             </div>
 
             <!-- Amount Cards -->
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3 p-4">
               <!-- Amount -->
               <div class="min-w-0 rounded-2xl border p-3" :class="[directionStyle(item.direction).border, directionStyle(item.direction).bg]">
                 <div class="mb-2 flex items-center gap-2">
@@ -335,8 +335,9 @@ onMounted(async () => {
         </div>
       </template>
 
-      <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2 col-span-full">
+  <!-- Pagination -->
+      <div v-if="!loading && data?.length"
+        class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">
         <Showing :meta="meta" />
         <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
           :total="meta.total" show-edges />

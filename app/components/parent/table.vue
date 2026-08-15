@@ -196,7 +196,7 @@ onMounted(() => {
         class="group overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow transition-all duration-300 hover:-translate-y-1 hover:shadow-sm active:scale-[0.98] dark:border-neutral-800 dark:bg-neutral-900"
         :ui="{ body: 'p-0' }">
         <!-- Hero -->
-        <div class="relative overflow-hidden  pb-3 border-b border-gray-200 dark:border-gray-800">
+        <div class="relative overflow-hidden   p-3 md:p-0 md:pb-3  border-b border-gray-200 dark:border-gray-800">
           <div class="relative flex items-start justify-between">
             <div class="flex space-x-4">
               <UAvatar icon="i-lucide-user" size="xl" class="rounded-2xl" />
@@ -291,7 +291,7 @@ onMounted(() => {
           </div>
         </div>
         <!-- Footer -->
-        <div class="flex items-center border-t border-gray-100 pt-3 dark:border-gray-800">
+        <div class="flex items-center border-t border-gray-100  p-3 md:p-0 md:pt-3  dark:border-gray-800">
           <div class="flex min-w-0 items-center gap-3">
             <div class="flex size-10 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/15">
               <UIcon name="i-lucide-users" class="size-5 text-primary" />

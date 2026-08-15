@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 mt-6 p-4">
+  <div class="space-y-6 mt-6 p-4 md:px-6">
 
     <!-- Header -->
     <Heading title="Student Report Card" subtitle="Academic performance summary.">

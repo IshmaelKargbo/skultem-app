@@ -54,6 +54,8 @@
 </template>
 
 <script setup lang="ts">
+import { ROOM_ICON } from '~/utils/icons'
+
 interface SubNavItem {
   label: string
   to: string
@@ -92,7 +94,13 @@ const navItems: NavItem[] = [
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT] },
 
   { label: 'Teachers', to: '/teachers', icon: TEACHER_ICON,
-    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] }, 
+    
+    { label: 'Classes', to: '/classes', icon: CLASS_ICON,
+    roles: [Role.ACCOUNTANT, ]},
+
+  { label: 'Subjects', to: '/subjects', icon:  CURRICULUM_SUBJECT_ICON,
+    roles: [Role.TEACHER, ]},
 
   { label: 'Parents', to: '/parents', icon: PARENT_ICON,
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT] },
@@ -127,6 +135,22 @@ const navItems: NavItem[] = [
       { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON },
     ] },
 
+  { label: 'Library', icon: LIBRARY_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+    subNavs: [
+      { label: 'Library Dashboard', to: '/library', icon: LIBRARY_ICON, exact: true },
+      { label: 'Issue/Return Book', to: '/library/issue', icon: ISSUE_BOOK_ICON },
+      { label: 'Manage Books', to: '/library/books', icon: BOOK_ICON },
+      { label: 'Book Categories', to: '/library/categories', icon: BOOK_CATEGORY_ICON },
+    ] },
+
+  { label: 'Communicate', icon: COMMUNICATE_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER],
+    subNavs: [
+      { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true },
+      { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON },
+      { label: 'Compose Broadcast', to: '/communicate/broadcast', icon: BROADCAST_ICON, exact: true },
+      { label: 'Broadcast History', to: '/communicate/broadcast/history', icon: BROADCAST_HISTORY_ICON },
+    ] },
+
   { label: 'ID Cards', icon: ID_CARD_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
       { label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true },
@@ -141,13 +165,9 @@ const navItems: NavItem[] = [
       { label: 'Templates', to: '/report-cards/templates', icon: SETTINGS_ICON },
     ] },
 
-  // NOTE: duplicates the "Grades" / "Performance" parent rows above —
-  // kept as-is to match current behavior. Safe to delete if unintentional.
-  { label: 'Grades', to: '/grades', icon: GRADES_ICON, roles: [Role.PARENT] },
-  { label: 'Performance', to: '/performance', icon: PERFORMANCE_ICON, roles: [Role.PARENT] },
 
   { label: 'Classes', icon: CLASS_ICON,
-    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT],
+    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR],
     subNavs: [
       { label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true },
       { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON },
@@ -155,7 +175,7 @@ const navItems: NavItem[] = [
     ] },
 
   { label: 'Subjects', icon: SUBJECT_ICON,
-    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER],
+    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR],
     subNavs: [
       { label: 'Subjects', to: '/subjects', icon: CURRICULUM_SUBJECT_ICON, exact: true },
       { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON },
@@ -225,6 +245,16 @@ const navItems: NavItem[] = [
       { label: 'House', to: '/athletic-house/house', icon: CATEGORY_ICON },
     ] },
 
+  { label: 'Hostel', icon: HOSTEL_ICON,
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+    subNavs: [
+      { label: 'Hostel Dashboard', to: '/hostel', icon: HOSTEL_ICON, exact: true },
+      { label: 'Student Allocation', to: '/hostel/allocation', icon: STUDENT_ICON },
+      { label: 'Manage Rooms', to: '/hostel/rooms', icon: ROOM_ICON },
+      { label: 'Room Types', to: '/hostel/room-types', icon: CATEGORY_ICON },
+      { label: 'Manage Hostels', to: '/hostel/hostels', icon: SCHOOL_ICON },
+    ] },
+
   { label: 'Materials & Supplies', icon: MATERIAL_ICON,
     roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
@@ -245,6 +275,7 @@ const navItems: NavItem[] = [
 
   { label: 'Settings', icon: SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
+      { label: 'School', to: '/settings/school', icon: SCHOOL_ICON, exact: true },
       { label: 'Holidaies', to: '/settings', icon: HOLIDAY_ICON, exact: true },
     ] },
 

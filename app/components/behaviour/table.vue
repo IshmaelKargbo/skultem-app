@@ -233,7 +233,7 @@ onMounted(async () => {
         :ui="{ body: 'p-0' }"
       >
         <!-- Header -->
-        <div class="border-b border-default p-5">
+        <div class="border-b border-default p-3 md:p-0 md:pb-3">
           <div class="flex items-start justify-between gap-4">
             <div class="flex min-w-0 items-center gap-4">
               <div class="relative">
@@ -280,7 +280,7 @@ onMounted(async () => {
         </div>
 
         <!-- Content -->
-        <div class="p-5">
+        <div class="p-4">
           <div
             class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800"
           >
@@ -312,7 +312,7 @@ onMounted(async () => {
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-between border-t border-default px-5 py-4">
+        <div class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3">
           <div class="flex items-center gap-2 text-xs text-muted">
             <UIcon name="i-lucide-shield-check" class="size-4 text-primary" />
 

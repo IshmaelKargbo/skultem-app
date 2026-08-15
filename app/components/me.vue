@@ -10,8 +10,26 @@
             'w-full max-w-sm bg-white/95 dark:bg-neutral-950/95 backdrop-blur-2xl border-l border-gray-200/70 dark:border-white/10',
         }"
       >
+        <!-- Compact trigger: avatar only, for use in the header -->
         <div
-          v-if="user && user.email && !loading"
+          v-if="compact && user && user.email && !loading"
+          class="group relative cursor-pointer"
+          :aria-label="`Account menu for ${name}`"
+        >
+          <UAvatar
+            :alt="name"
+            size="md"
+            class="ring-2 ring-default transition group-hover:ring-primary-300"
+          />
+
+          <div
+            class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500"
+          />
+        </div>
+
+        <!-- Full trigger: avatar + name/role, for use in the sidebar footer -->
+        <div
+          v-else-if="user && user.email && !loading"
           color="neutral"
           class="group w-full rounded-xl border border-default px-4 py-2 hover:border-primary-300 cursor-pointer transition-all duration-300"
         >
@@ -44,12 +62,12 @@
         <!-- Loading -->
         <template #fallback>
           <div class="flex items-center gap-3">
-            <div class="space-y-2 flex flex-col items-end">
+            <div v-if="!compact" class="space-y-2 flex flex-col items-end">
               <USkeleton class="h-3 w-24 rounded-full" />
               <USkeleton class="h-2 w-16 rounded-full" />
             </div>
 
-            <USkeleton class="h-10 w-10 rounded-full" />
+            <USkeleton :class="compact ? 'h-9 w-9 rounded-full' : 'h-10 w-10 rounded-full'" />
           </div>
         </template>
 
@@ -318,17 +336,21 @@
     </ClientOnly>
 
     <div v-if="loading" class="flex items-center gap-3">
-      <div class="space-y-2 flex flex-col items-end">
+      <div v-if="!compact" class="space-y-2 flex flex-col items-end">
         <USkeleton class="h-3 w-24 rounded-full" />
         <USkeleton class="h-2 w-16 rounded-full" />
       </div>
 
-      <USkeleton class="h-10 w-10 rounded-full" />
+      <USkeleton :class="compact ? 'h-9 w-9 rounded-full' : 'h-10 w-10 rounded-full'" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+// `compact` swaps the trigger for an avatar-only button (used in the header);
+// the default full trigger (avatar + name/role) is used in the sidebar footer.
+withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
+
 const userStore = useUserStore();
 const { user, meLoading: loading } = storeToRefs(userStore);
 

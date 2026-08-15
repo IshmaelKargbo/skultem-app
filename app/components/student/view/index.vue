@@ -1,137 +1,164 @@
 <template>
-    <div class="md:px-5 h-full md:space-y-5 p-4 py-2 md:py-4 pb-0 space-y-3">
-        <Heading
-            title="View Student"
-            subtitle="View detailed student information, including academic records, personal details, and enrollment data."
-        >
-            <div class="flex space-x-2 items-center">
-                <UButton
-                    to="/students"
-                    variant="outline"
-                    size="sm"
-                    color="primary"
-                    label="All Students"
-                />
+    <div class="min-h-full space-y-4 p-4 pb-0 md:space-y-6 md:px-6 md:py-5">
+        <!-- Profile banner -->
+        <UCard :ui="{
+            body: 'p-0 sm:p-0'
+        }" class="overflow-hidden">
+            <!-- Cover -->
+            <div
+                class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />
 
-                <UButton
-                    v-if="record && !loading"
-                    :to="`/students/${record.id}/edit`"
-                    size="sm"
-                    variant="outline"
-                    color="secondary"
-                    :icon="EDIT_ICON"
-                    label="Edit"
-                />
-            </div>
-        </Heading>
-
-        <div class="flex flex-col lg:flex-row items-start gap-5">
-            <!-- Left Sidebar -->
-            <aside class="lg:w-1/3 lg:sticky lg:top-6 self-start">
-                <UCard>
-                    <div class="flex flex-col items-center">
+            <div class="px-5 pb-5">
+                <div class="-mt-12 flex flex-col gap-5 md:-mt-14 md:flex-row md:items-end md:justify-between">
+                    <!-- Student Identity -->
+                    <div class="flex min-w-0 items-end gap-4">
                         <!-- Avatar -->
                         <div
-                            class="border-b pb-1 border-gray-200 dark:border-gray-800 w-full flex flex-col items-center"
-                        >
-                            <USkeleton
-                                v-if="loading"
-                                class="h-72 w-full rounded-lg bg-gray-200 dark:bg-gray-800"
-                            />
+                            class="shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
+                            <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
-                            <div
-                                v-else
-                                class="w-full rounded-xl border-2 overflow-hidden p-0.5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600"
-                            >
-                                <img
-                                    :src="photo"
-                                    :alt="name"
-                                    class="w-full h-72 object-cover rounded-lg"
-                                />
-                            </div>
-
-                            <div
-                                class="flex justify-between items-center gap-1 mt-3 xl:mt-5 w-full"
-                            >
-                                <USkeleton
-                                    v-if="loading"
-                                    class="h-5 w-40 bg-gray-200 dark:bg-gray-800"
-                                />
-
-                                <h2
-                                    v-else
-                                    class="text-base font-semibold"
-                                >
-                                    {{ name }}
-                                </h2>
-
-                                <USkeleton
-                                    v-if="loading"
-                                    class="h-3 w-24 bg-gray-200 dark:bg-gray-800"
-                                />
-
-                                <p
-                                    v-else
-                                    class="text-xs text-muted"
-                                >
-                                    {{ record?.className || 'No class assigned' }}
-                                </p>
-                            </div>
+                            <img v-else :src="photo" :alt="name"
+                                class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24" />
                         </div>
 
-                        <div class="w-full mt-2 space-y-2">
-                            <div class="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-neutral-800 p-3">
-                                <p class="text-sm text-muted">Admission</p>
-                                <USkeleton v-if="loading" class="w-28 h-3" />
-                                <p v-else class="font-medium">{{ record?.admissionNumber }}</p>
+                        <!-- Identity -->
+                        <div class="min-w-0 pb-0.5 md:pb-1">
+                            <!-- Name -->
+                            <USkeleton v-if="loading" class="h-6 w-48 md:h-7 md:w-60" />
+
+                            <h2 v-else
+                                class="max-w-[calc(100vw-150px)] truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
+                                {{ name }}
+                            </h2>
+
+                            <!-- Class + Status -->
+                            <div v-if="loading" class="mt-2 flex items-center gap-2">
+                                <USkeleton class="h-4 w-28" />
+                                <USkeleton class="h-5 w-14 rounded-full" />
                             </div>
 
-                            <div class="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-neutral-800 p-3">
-                                <p class="text-sm text-muted">Gender</p>
-                                <USkeleton v-if="loading" class="w-28 h-3" />
-                                <p v-else class="font-medium">{{ clean(record?.gender || '') }}</p>
+                            <div v-else class="mt-2 flex flex-wrap items-center gap-2">
+                                <span class="text-sm text-muted">
+                                    {{ record?.className || 'No class assigned' }}
+                                </span>
+
+                                <span class="size-1 rounded-full bg-dimmed" />
+
+                                <UBadge color="success" variant="subtle" size="xs" class="rounded-full">
+                                    <span class="mr-1.5 size-1.5 rounded-full bg-success" />
+                                    Active
+                                </UBadge>
                             </div>
 
-                            <div class="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-neutral-800 p-3">
-                                <p class="text-sm text-muted">Nationality</p>
-                                <USkeleton v-if="loading" class="w-28 h-3" />
-                                <p v-else class="font-medium">{{ clean(record?.nationality || '') }}</p>
-                            </div>
+                            <!-- Admission -->
+                            <div v-if="!loading" class="mt-1.5 flex items-center gap-1.5 text-xs text-dimmed">
+                                <UIcon name="i-lucide-id-card" class="size-3.5" />
 
-                            <div class="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-neutral-800 p-3">
-                                <p class="text-sm text-muted">Religion</p>
-                                <USkeleton v-if="loading" class="w-28 h-3" />
-                                <p v-else class="font-medium">{{ clean(record?.religion || '') }}</p>
+                                <span>Admission</span>
+
+                                <span class="font-medium text-muted">
+                                    {{ record?.admissionNumber || 'Not assigned' }}
+                                </span>
                             </div>
                         </div>
                     </div>
-                </UCard>
-            </aside>
 
-            <!-- Right Content -->
-            <div class="flex-1 min-w-0 space-y-5">
-                <TabMobile
-                    class="md:hidden"
-                    :tabs="[
-                        { label: 'Personal', to: personalInfo, exact: true },
-                        { label: 'Attendance', to: attendanceInfo, exact: true },
-                        { label: 'Fees', to: feeStructureInfo, exact: true },
-                        { label: 'Academics', to: academicInfo, exact: true }
-                    ]"
-                />
+                    <!-- Actions -->
+                    <div class="flex shrink-0 items-center gap-2">
+                        <UButton to="/students" variant="outline" size="sm" color="neutral" icon="i-lucide-arrow-left"
+                            label="Students" />
 
-                <Tab
-                    class="hidden md:block"
-                    :tabs="[
-                        { label: 'Personal Information', to: personalInfo, exact: true },
-                        { label: 'Attendance', to: attendanceInfo, exact: true },
-                        { label: 'Fee Structure', to: feeStructureInfo, exact: true },
-                        { label: 'Academic Information', to: academicInfo, exact: true }
-                    ]"
-                />
+                        <UButton v-if="record && !loading" :to="`/students/${record.id}/edit`" size="sm" color="primary"
+                            :icon="EDIT_ICON" label="Edit Student" />
+                    </div>
+                </div>
 
-                <slot />
+                <!-- Quick facts -->
+                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    <div v-for="item in quickFacts" :key="item.label"
+                        class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <UIcon :name="item.icon" class="size-4" />
+                        </div>
+
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted">
+                                {{ item.label }}
+                            </p>
+
+                            <USkeleton v-if="loading" class="mt-1 h-4 w-16" />
+
+                            <p v-else class="truncate text-sm font-semibold text-highlighted">
+                                {{ item.value }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </UCard>
+
+        <!-- Mobile tabs -->
+        <TabMobile class="md:hidden" :tabs="[
+            {
+                label: 'Personal',
+                to: personalInfo,
+                exact: true
+            },
+            {
+                label: 'Attendance',
+                to: attendanceInfo,
+                exact: true
+            },
+            {
+                label: 'Fees',
+                to: feeStructureInfo,
+                exact: true
+            },
+            {
+                label: 'Academics',
+                to: academicInfo,
+                exact: true
+            },
+            {
+                label: 'Behaviours',
+                to: behavioursInfo,
+                exact: true
+            }
+        ]" />
+
+        <!-- Desktop tabs -->
+        <Tab class="hidden md:block" :tabs="[
+            {
+                label: 'Personal Information',
+                to: personalInfo,
+                exact: true
+            },
+            {
+                label: 'Attendance',
+                to: attendanceInfo,
+                exact: true
+            },
+            {
+                label: 'Fee Structure',
+                to: feeStructureInfo,
+                exact: true
+            },
+            {
+                label: 'Academic Information',
+                to: academicInfo,
+                exact: true
+            },
+            {
+                label: 'Behaviours',
+                to: behavioursInfo,
+                exact: true
+            }
+        ]" />
+
+        <!-- Page content -->
+        <div class="min-w-0">
+            <slot />
         </div>
     </div>
 </template>
@@ -148,24 +175,59 @@ definePageMeta({
 
 const name = computed(() => {
     if (!record.value) return ''
+
     return `${record.value.givenNames} ${record.value.familyName}`
 })
 
 const photo = computed(() => {
-    if (!record.value) return '/avatar-placeholder.svg'
-    return record.value.photo || '/avatar-placeholder.svg'
+    return record.value?.photo || '/avatar-placeholder.svg'
 })
+
+const quickFacts = computed(() => [
+    {
+        label: 'Admission',
+        value: record.value?.admissionNumber || '—',
+        icon: 'i-lucide-badge-check'
+    },
+    {
+        label: 'Class',
+        value: record.value?.className || '—',
+        icon: 'i-lucide-school'
+    },
+    {
+        label: 'Nationality',
+        value: clean(record.value?.nationality || '') || '—',
+        icon: 'i-lucide-globe-2'
+    },
+    {
+        label: 'Gender',
+        value: clean(record.value?.gender || '') || '—',
+        icon: 'i-lucide-user'
+    },
+    {
+        label: 'Religion',
+        value: clean(record.value?.religion || '') || '—',
+        icon: 'i-lucide-heart'
+    }
+])
 
 const personalInfo = `/students/${route.params.id}`
 const attendanceInfo = `/students/${route.params.id}/attendance`
 const feeStructureInfo = `/students/${route.params.id}/fee-structure`
 const academicInfo = `/students/${route.params.id}/academic-information`
+const behavioursInfo = `/students/${route.params.id}/behaviours`
 
 async function fetchStudent() {
     await store.viewStudent(route.params.id as string)
 }
 
-watch(() => route.params.id, () => {
-    fetchStudent()
-}, { immediate: true })
+watch(
+    () => route.params.id,
+    () => {
+        fetchStudent()
+    },
+    {
+        immediate: true
+    }
+)
 </script>
