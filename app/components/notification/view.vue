@@ -118,7 +118,7 @@ watch(() => record, () => {
                     </div>
                 </div>
             </div>
-        </template>
+        </div>
 
         <!-- Content -->
         <div class="flex-1 overflow-y-auto">
@@ -205,5 +205,5 @@ watch(() => record, () => {
                 </UBadge>
             </div>
         </div>
-    </div>
+    </UCard>
 </template>

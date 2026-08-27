@@ -3,7 +3,7 @@
         <div class="space-y-4">
             <UInput ref="searchInput" v-model="search" placeholder="Search students..." :leading-icon="SEARCH_ICON"
                 :disabled="isLoading" size="lg" />
-        </template>
+        </div>
         <div class="space-y-3">
             <div v-if="isLoading" class="space-y-3">
                 <div v-for="n in 7" :key="n"
