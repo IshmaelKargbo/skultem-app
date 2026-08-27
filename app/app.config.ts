@@ -93,7 +93,8 @@ export default defineAppConfig({
     badge: {
       variants: {
         size: {
-          md: 'text-xs px-2 py-1 gap-1 rounded-xl'
+          md: 'text-xs px-2 py-1 gap-1 rounded-xl',
+          lg: 'rounded-2xl p-2.5 px-3 space-x-1.5'
         }
       }
     },

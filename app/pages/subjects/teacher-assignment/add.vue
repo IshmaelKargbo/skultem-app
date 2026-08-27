@@ -41,8 +41,10 @@
         </div>
       </template>
 
+
+
       <!-- Desktop / tablet: table -->
-      <div class="hidden md:block">
+      <div  class="hidden md:block">
         <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
           <!-- Subject -->
           <template #subjectId-cell="{ row }">
@@ -77,7 +79,7 @@
       <!-- Mobile: stacked cards, one per assignment -->
       <div
         v-if="state.assignments.length"
-        class="md:hidden divide-y divide-gray-200 dark:divide-gray-800"
+        class="divide-y md:hidden divide-gray-200 dark:divide-gray-800"
       >
         <div
           v-for="(assignment, index) in state.assignments"
@@ -161,6 +163,7 @@
 import type { TableColumn } from "@nuxt/ui";
 import * as yup from "yup";
 
+const view = ref<'table' | 'card'>('table');
 const store = useTeacherSubjectStore();
 const subjectStore = useSubjectStore();
 const classStore = useClassSessionStore();

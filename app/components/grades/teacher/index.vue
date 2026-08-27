@@ -1,109 +1,96 @@
 <template>
-  <div class="p-4 space-y-4">
+  <div class="px-4 md:px-6 space-y-4">
     <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
-      <div v-if="hasDraftAssessments" class="flex w-full space-x-3 md:w-auto md:justify-end">
-        <UButton icon="lucide:save" label="Save Grades" :loading="saving" :disabled="disableActions"
-          @click="saveGrades" />
-        <UButton icon="lucide:check-circle" label="Complete Assessment" color="success" :loading="completing"
-          variant="subtle" :disabled="disableActions || !hasDraftAssessments" @click="completeAssessment" />
+      <div v-if="hasDraftAssessments" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
+        <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"
+          :disabled="disableActions" @click="saveGrades" />
+        <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
+          :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments"
+          @click="completeAssessment" />
       </div>
     </Heading>
+
     <UCard class="hidden md:block">
-      <div class="grid gap-3 grid-cols-2">
+      <div class="flex space-x-3">
         <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject"
           v-model="state.teacherSubjectId" @change="fetchStudents" />
         <USelectMenu value-key="value" :loading="termStore.loading" :items="terms" placeholder="Select Term"
           v-model="state.termId" @change="fetchStudents" />
       </div>
-    </UCard>
-    <div class="flex space-x-3 md:hidden">
-      <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject"
-        v-model="state.teacherSubjectId" @change="fetchStudents" />
-      <USelectMenu value-key="value" :loading="termStore.loading" :items="terms" placeholder="Select Term"
-        v-model="state.termId" @change="fetchStudents" />
-    </div>
-    <UCard v-if="assessments.length && state.teacherSubjectId">
-      <div class="space-y-3">
-        <div class="flex gap-3 md:items-center justify-between mb-3">
-          <div class="flex space-x-2">
-            <p class="text-sm text-gray-500">State:</p>
-            <p class="text-sm font-semibold text-gray-800">
-              {{ workflowLabel }}
-            </p>
+      <template v-if="assessments.length && state.teacherSubjectId" #footer>
+        <div class="space-y-3">
+          <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
+            <div class="flex space-x-2">
+              <p class="text-sm text-gray-500">State:</p>
+              <p class="text-sm font-semibold text-gray-800">
+                {{ workflowLabel }}
+              </p>
+            </div>
+            <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
+              variant="outline" icon="mdi:chart-timeline-variant" />
           </div>
-          <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
-            variant="outline" icon="mdi:chart-timeline-variant" />
+          <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
         </div>
-        <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
-      </div>
+      </template>
     </UCard>
-    <UCard :ui="{
-      body: 'sm:p-0'
-    }" class="hidden md:block">
-      <UTable :columns="columns" :data="rows" :loading="loading" scrollable class="w-full">
+
+    <UCard class="md:hidden">
+      <template #header>
+        <div class="grid gap-3 grid-cols-2">
+          <USelectMenu value-key="value" :items="subjects" placeholder="Select Subject" v-model="state.teacherSubjectId"
+            @change="fetchStudents" />
+          <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
+            @change="fetchStudents" />
+        </div>
+      </template>
+
+      <template v-if="assessments.length && state.teacherSubjectId" #default>
+        <div class="space-y-3">
+          <div class="flex gap-3 md:flex-row items-center justify-between mb-3">
+            <div class="flex space-x-2">
+              <p class="text-sm text-gray-500">State:</p>
+              <p class="text-sm font-semibold text-gray-800">
+                {{ workflowLabel }}
+              </p>
+            </div>
+            <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
+              variant="outline" icon="mdi:chart-timeline-variant" />
+          </div>
+          <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
+        </div>
+      </template>
+    </UCard>
+
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <div class="flex justify-end">
+          <TableViewToggle v-model="view" />
+        </div>
+      </template>
+
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="rows" :loading="loading"
+        scrollable>
         <template #student-cell="{ row }">
           <StudentIdentityCell :given-names="row.original.givenNames || row.original.name"
-            :family-name="row.original.familyName || ''"
-            :photo="row.original.photo || row.original.studentPhoto || row.original.student?.photo"
+            :family-name="row.original.familyName || ''" :photo="row.original.photo"
             :subtitle="hasSubmittedAssessments ? `Position: ${rankingMap[row.original.id] || '-'}` : 'Position: N/A'" />
         </template>
         <template #loading>
           <TableLoading :size="7" />
         </template>
       </UTable>
+
+      <div v-if="state.teacherSubjectId && rows.length" class="grid gap-4 p-4"
+        :class="view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'">
+        <GradesStudentCard v-for="student in rows" :key="student.id" :record="student" :assessments="assessments"
+          :total="calculateTotal(student)"
+          :position="hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A'"
+          @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)" />
+      </div>
     </UCard>
-    <div v-if="state.teacherSubjectId && rows.length > 0" class="grid gap-3 md:hidden">
-      <UCard :ui="{
-        body: 'p-0 sm:p-0'
-      }" v-for="student in rows" :key="student.id">
-        <template #header>
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0 flex items-start gap-3">
-              <UAvatar size="md"
-                :src="student.photo || student.studentPhoto || student.student?.photo || '/avatar-placeholder.svg'"
-                :alt="student.name" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
-              <div>
-                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ student.name }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Position: {{ hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A' }}
-                </p>
-              </div>
-            </div>
-            <div class="text-right shrink-0">
-              <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
-              <p class="text-sm font-semibold">{{ calculateTotal(student) }}</p>
-            </div>
-          </div>
-        </template>
-        <div class="">
-          <div class="grid">
-            <div v-for="assessment in assessments" :key="assessment.id"
-              class="border-b border-gray-200 dark:border-gray-800 p-3 py-2">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0 space-y-1">
-                  <p class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{{ assessment.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Weight {{ assessment.weight }}</p>
-                </div>
-                <div v-if="isEditableStatus(getStudentScore(student, assessment.id)?.status as ScoreStatus)">
-                  <UInput :model-value="getStudentScore(student, assessment.id)?.score" type="number" min="0" max="100"
-                    size="sm" @update:model-value="updateStudentScore(student, assessment.id, $event)" />
-                </div>
-                <div v-else class="space-y-1">
-                  <UBadge size="xs" variant="outline" :color="statusBadgeColor(assessment.status)">
-                    {{ clean(assessment.status) }}
-                  </UBadge>
-                  <p class="font-medium">{{ getStudentScore(student, assessment.id)?.score ?? '-' }} ({{
-                    getStudentScore(student, assessment.id)?.weightScore ?? '-' }})</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </UCard>
-    </div>
     <div class="grid gap-3 grid-cols-2 lg:grid-cols-5">
       <Metric :class="{
-        'col -span-2 md:col-span-1': (i + 1 == statusSummary.length)
+        'col-span-2 md:col-span-1': (i + 1 == statusSummary.length)
       }" v-for="(summary, i) in statusSummary" :key="summary.status" :record="{
         color: summary.color,
         icon: summary.icon,
@@ -149,6 +136,7 @@ const state = reactive<GradeAssessmentForm>({
   termId: ''
 })
 
+const view = ref<'table' | 'card'>('table')
 const loading = ref(true)
 const saving = ref(false)
 const completing = ref(false)
@@ -344,43 +332,6 @@ const rankingMap = computed(() => {
 
   return ranks
 })
-
-function isEditableStatus(status: ScoreStatus) {
-  return status === "DRAFT" || status === "RETURNED"
-}
-
-function statusBadgeColor(status: any) {
-  switch (status) {
-    case "DRAFT":
-      return "warning"
-    case "SUBMITTED":
-      return "info"
-    case "RETURNED":
-      return "error"
-    case "APPROVED":
-    case "COMPLETED":
-      return "success"
-    case "LOCKED":
-    default:
-      return "neutral"
-  }
-}
-
-function getStudentScore(student: StudentAssessment, assessmentId: string) {
-  return student.scores.find(score => score.assessment === assessmentId)
-}
-
-function updateStudentScore(student: StudentAssessment, assessmentId: string, value: unknown) {
-  const score = getStudentScore(student, assessmentId)
-  if (!score) return
-  score.score = toNumberInRange(value, 0, 100)
-}
-
-function toNumberInRange(value: unknown, min: number, max: number) {
-  const parsed = Number(value)
-  if (Number.isNaN(parsed)) return min
-  return Math.min(max, Math.max(min, parsed))
-}
 
 async function fetchRecord() {
   if (!state.classId) return

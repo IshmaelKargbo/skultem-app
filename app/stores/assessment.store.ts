@@ -4,6 +4,7 @@ export const useAssessmentStore = defineStore('assessment', {
   state: () => ({
     records: [] as AssessmentTemplate[],
     assessments: [] as Assessment[],
+    requests: [] as AssessmentApprovalRequest[],
     gradingScale: null as GradingScale | null,
     meta: {} as Meta,
     loading: false,
@@ -72,14 +73,38 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number) {
+    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number, status?: string) {
       if (!teacherId)
         return []
 
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size) as any
+        const { data, meta } = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size, status) as any
+        this.meta = meta
+        this.requests = data
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch approval requests'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchAssessmentApprovalSummary(teacherId: string) {
+      if (!teacherId)
+        return null
+
+      try {
+        return await AssessmentApi().getAssessmentApprovalSummary(teacherId) || null
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch approval summary'
+        return null
+      }
+    },
+    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12, status?: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size, status) as any
         return response || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch approval requests'
@@ -87,23 +112,19 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12) {
-      this.loading = true
-      this.error = null
+    async fetchMeAssessmentApprovalSummary() {
       try {
-        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size) as any
-        return response || []
+        return await AssessmentApi().getMeAssessmentApprovalSummary() || null
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval requests'
-      } finally {
-        this.loading = false
+        this.error = err.data?.message || 'Failed to fetch approval summary'
+        return null
       }
     },
-    async fetchActiveCycle(classId?: string) {
+    async fetchActiveCycle(classId?: string, academicYearId?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getActiveCycle(classId) as ActiveAssessmentCycle
+        const response = await AssessmentApi().getActiveCycle(classId, academicYearId) as ActiveAssessmentCycle
         return response
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch active assessment cycle'
@@ -112,11 +133,11 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchCycleOverview() {
+    async fetchCycleOverview(academicYearId?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getCycleOverview() as AssessmentCycleOverview
+        const response = await AssessmentApi().getCycleOverview(academicYearId) as AssessmentCycleOverview
         return response
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch assessment cycle overview'
@@ -183,6 +204,9 @@ export const useAssessmentStore = defineStore('assessment', {
     },
     returnRequest(approvalRequestId: string, note: string) {
       return AssessmentApi().returnRequest(approvalRequestId, note)
+    },
+    reopen(teacherSubjectId: string, payload: ReopenAssessmentDto) {
+      return AssessmentApi().reopen(teacherSubjectId, payload)
     }
   }
 })

@@ -1,7 +1,7 @@
 <template>
-    <div class="p-4 border-b border-gray-200">
+    <div class="rounded-xl border border-default p-4">
         <div class="flex gap-3">
-            <USkeleton class="h-10 w-10 rounded-full" />
+            <USkeleton class="h-10 w-10 rounded-xl" />
 
             <div class="flex-1 space-y-2">
                 <USkeleton class="h-4 w-40" />

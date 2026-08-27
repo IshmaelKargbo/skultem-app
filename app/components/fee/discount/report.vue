@@ -1,5 +1,4 @@
 <template>
-
     <div class="grid lg:grid-cols-3 grid-cols-1 gap-5">
         <Metric :record="{
             label: 'Active Discounts',

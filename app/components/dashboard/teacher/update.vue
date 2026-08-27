@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-const store = useParentStore()
-const { notifications } = storeToRefs(store)
+const store = useNotificationStore()
+const { records: notifications } = storeToRefs(store)
 
 const loading = ref(true)
 
 onMounted(async () => {
   loading.value = true
-  await store.fetchAllNotifications(1, 3)
+  await store.fetchAll(1, 3)
   loading.value = false
 })
 </script>

@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 export const useClassStore = defineStore('class', {
   state: () => ({
     records: [] as Clazz[],
+    record: undefined as Clazz | undefined,
+    overview: undefined as ClassOverview | undefined,
     meta: {} as Meta,
     loading: false,
     error: null as string | null
@@ -18,6 +20,24 @@ export const useClassStore = defineStore('class', {
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch classes'
+      } finally {
+        this.loading = false
+      }
+    },
+    async viewClass(id: string) {
+      this.loading = true
+      this.error = null
+      this.record = undefined
+      this.overview = undefined
+      try {
+        const [record, overview] = await Promise.all([
+          ClassApi().getOne(id),
+          ClassApi().getOverview(id)
+        ])
+        this.record = record
+        this.overview = overview
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class'
       } finally {
         this.loading = false
       }
@@ -46,6 +66,16 @@ export const useClassStore = defineStore('class', {
     },
     updateTemplate(classId: string, templateId: string) {
       return ClassApi().updateTemplate(classId, templateId)
+    },
+    async setNextClass(id: string, nextClass: string) {
+      const res = await ClassApi().setNextClass(id, nextClass)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
+    async setTerminal(id: string, terminal: boolean) {
+      const res = await ClassApi().setTerminal(id, terminal)
+      if (res && this.record?.id === id) this.record = res
+      return res
     }
   }
 })

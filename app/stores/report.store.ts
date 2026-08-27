@@ -10,6 +10,7 @@ export const useReportStore = defineStore('report', {
     attendances: [] as Attendance[],
     expenses: [] as Expense[],
     transactions: [] as Transaction[],
+    ledger: [] as Ledger[],
     leaderboard: [] as LeaderBoard[],
     grades: [] as Grade[],
     breakdown: [] as Breakdown[],
@@ -63,6 +64,9 @@ export const useReportStore = defineStore('report', {
             break
           case "transactions":
             this.transactions = response.data
+            break
+          case "ledger":
+            this.ledger = response.data
             break
           case "expenses":
             this.expenses = response.data

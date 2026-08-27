@@ -1,11 +1,9 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
-const router = useRouter()
 const store = useParentStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
-
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
   { accessorKey: 'name', header: 'Guardian', pin: 'left' },
@@ -22,42 +20,20 @@ const columns = [
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
   set: (val) => {
-    router.replace({
-      query: {
-        ...route.query,
-        page: val,
-        size: size.value
-      }
+    updateQuery({
+      page: val
     })
   }
 })
 
 // SIZE (URL synced)
-const size = computed<number>({
-  get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => {
-    router.replace({
-      query: {
-        ...route.query,
-        page: page.value,
-        size: val
-      }
-    })
-  }
-})
+const size = ref(runtimeConf().limit)
 
 // FETCH whenever query changes
 watch(
   () => [page.value, size.value],
   async () => {
     await fetchRecord()
-
-    nextTick(() => {
-      scrollContainer?.value?.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      })
-    })
   },
   { immediate: true }
 )
@@ -73,21 +49,22 @@ async function fetchRecord() {
 
 // Ensure initial query exists
 onMounted(() => {
-  if (!route.query.page || !route.query.size) {
-    router.replace({
-      query: {
-        page: page.value,
-        size: size.value
-      }
-    })
-  }
+  updateQuery({
+    page: page.value
+  })
 })
 </script>
 
 <template>
   <div class="space-y-4">
-    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
-      <UTable :columns="columns" :data="data" :loading="loading" class="w-full">
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <div class="flex justify-end">
+          <TableViewToggle v-model="view" />
+        </div>
+      </template>
+
+      <UTable v-if="view === 'table'" class="hidden md:block w-full" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -96,13 +73,9 @@ onMounted(() => {
         </template>
 
         <template #status-cell="{ row }">
-          <UBadge
-            v-if="row.original.feeDetail"
-            :label="row.original.feeDetail.status"
+          <UBadge v-if="row.original.feeDetail" :label="row.original.feeDetail.status"
             :color="parseFeeStatusColor[row.original.feeDetail.status]"
-            :icon="parseFeeStatusIcon[row.original.feeDetail.status]"
-            variant="outline"
-          />
+            :icon="parseFeeStatusIcon[row.original.feeDetail.status]" variant="outline" />
         </template>
 
         <template #students-cell="{ row }">
@@ -128,140 +101,193 @@ onMounted(() => {
         </template>
       </UTable>
 
-      <template #footer>
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Showing :meta="meta" />
-          <UPagination
-            v-model:page="page"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            size="sm"
-            show-edges
-            class="justify-center lg:justify-end"
-          />
-        </div>
-      </template>
-    </UCard>
+      <div class="p-4"
+        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+        <!-- Loading -->
+        <template v-if="loading">
+          <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm"
+            :ui="{ body: 'p-0' }">
+            <div class="animate-pulse">
+              <!-- Header -->
+              <div class="border-b border-default p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <USkeleton class="size-12 shrink-0 rounded-xl" />
 
-    <div class="md:hidden space-y-3">
-      <template v-if="loading">
-        <div
-          v-for="i in 5"
-          :key="i"
-          class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
-        >
-          <div class="space-y-4 p-4">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0 flex-1 space-y-2">
-                <USkeleton class="h-4 w-32" />
-                <USkeleton class="h-3 w-48" />
-                <USkeleton class="h-3 w-24" />
+                    <div class="min-w-0 space-y-2">
+                      <USkeleton class="h-4 w-36 rounded-md" />
+                      <USkeleton class="h-3 w-28 rounded-md" />
+                    </div>
+                  </div>
+
+                  <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
+                </div>
               </div>
-              <USkeleton class="h-6 w-16 rounded-full" />
-            </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <USkeleton class="h-18 rounded-2xl" />
-              <USkeleton class="h-18 rounded-2xl" />
-              <USkeleton class="h-18 rounded-2xl" />
-              <USkeleton class="h-18 rounded-2xl" />
-            </div>
-          </div>
-        </div>
-      </template>
+              <!-- Stats -->
+              <div class="grid grid-cols-2 gap-3 p-4">
+                <div v-for="j in 4" :key="j" class="rounded-2xl border border-default bg-muted/40 p-3">
+                  <div class="mb-3 flex items-center gap-2">
+                    <USkeleton class="size-7 shrink-0 rounded-lg" />
+                    <USkeleton class="h-3 w-16 rounded-md" />
+                  </div>
 
-      <template v-else-if="data?.length">
-        <UCard
-          v-for="parent in data"
-          :key="parent.id"
-          class="overflow-hidden border border-gray-200 shadow-sm dark:border-gray-800"
-          :ui="{ body: 'p-4 sm:p-5' }"
-        >
-          <div class="space-y-4">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-start gap-3">
-                  <UAvatar :alt="parent.name" size="lg" />
+                  <USkeleton class="h-4 w-24 rounded-md" />
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="flex items-center justify-between gap-3 border-t border-default p-4">
+                <USkeleton class="h-4 w-32 rounded-md" />
+                <USkeleton class="h-4 w-20 rounded-md" />
+              </div>
+            </div>
+          </UCard>
+        </template>
+
+        <!-- Data -->
+        <template v-else-if="data?.length">
+          <UCard v-for="parent in data" :key="parent.id"
+            class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+            :ui="{ body: 'sm:p-0 p-0' }">
+            <!-- Header -->
+            <template #header>
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-3">
+                  <UAvatar size="2xl" icon="i-lucide-user" :alt="parent.name" />
 
                   <div class="min-w-0">
-                    <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                    <h3 class="truncate text-base font-bold text-highlighted">
                       {{ parent.name }}
                     </h3>
-                    <p class="truncate text-xs text-gray-500 dark:text-gray-400">
-                      {{ parent.email }}
+
+                    <p class="mt-1 truncate text-xs text-muted">
+                      {{ parent.email || 'No Email' }}
                     </p>
                   </div>
                 </div>
+
+                <UBadge v-if="parent.feeDetail" :label="parent.feeDetail.status"
+                  :color="parseFeeStatusColor[parent.feeDetail.status]"
+                  :icon="parseFeeStatusIcon[parent.feeDetail.status]" variant="soft" />
               </div>
+            </template>
 
-              <UBadge
-                v-if="parent.feeDetail"
-                :label="parent.feeDetail.status"
-                :color="parseFeeStatusColor[parent.feeDetail.status]"
-                :icon="parseFeeStatusIcon[parent.feeDetail.status]"
-                variant="outline"
-                size="sm"
-                class="shrink-0"
-              />
-            </div>
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3 p-4">
+              <!-- Children -->
+              <div
+                class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div
+                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                    <UIcon :name="STUDENT_ICON" class="size-4 text-primary-600 dark:text-primary-400" />
+                  </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-                <div class="flex items-center justify-between">
-                  <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Children</p>
-                  <UIcon :name="STUDENT_ICON" class="size-3.5 text-primary" />
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">
+                    Children
+                  </p>
                 </div>
-                <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
+
+                <p class="truncate text-sm font-medium text-highlighted">
                   {{ parent.students }}
                 </p>
               </div>
 
-              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Outstanding</p>
-                <p class="mt-2 truncate text-sm font-semibold text-info">
-                  {{ parent.feeDetail ? format(parent.feeDetail.balance) : '-' }}
-                </p>
-              </div>
+              <!-- Total -->
+              <div
+                class="min-w-0 rounded-2xl border border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div
+                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-500/20">
+                    <UIcon name="i-lucide-receipt" class="size-4 text-red-600 dark:text-red-400" />
+                  </div>
 
-              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Total</p>
-                <p class="mt-2 truncate text-sm font-semibold text-error">
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-red-700 dark:text-red-300">
+                    Total
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-medium text-highlighted">
                   {{ parent.feeDetail ? format(parent.feeDetail.total) : '-' }}
                 </p>
               </div>
 
-              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Paid</p>
-                <p class="mt-2 truncate text-sm font-semibold text-success">
+              <!-- Paid -->
+              <div
+                class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div
+                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                    <UIcon name="i-lucide-circle-check-big" class="size-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                    Paid
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-medium text-highlighted">
                   {{ parent.feeDetail ? format(parent.feeDetail.paid) : '-' }}
                 </p>
               </div>
+
+              <!-- Balance -->
+              <div
+                class="min-w-0 rounded-2xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div
+                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                    <UIcon name="i-lucide-wallet" class="size-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-blue-700 dark:text-blue-300">
+                    Balance
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-medium text-highlighted">
+                  {{ parent.feeDetail ? format(parent.feeDetail.balance) : '-' }}
+                </p>
+              </div>
             </div>
-          </div>
-        </UCard>
-      </template>
 
-      <template v-else>
-        <div class="flex flex-col items-center gap-2 px-4 py-12">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
-          <p class="text-gray-500 dark:text-gray-400">No parents found.</p>
-        </div>
-      </template>
+            <!-- Footer -->
+            <template #footer>
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-2 text-sm text-muted">
+                  <UIcon name="i-lucide-phone" class="size-4 shrink-0" />
+                  <span class="truncate">{{ parent.phone || 'No Phone' }}</span>
+                </div>
 
+                <p class="shrink-0 truncate text-sm font-medium text-highlighted">
+                  {{ parent.students }} Student{{ parent.students === 1 ? '' : 's' }}
+                </p>
+              </div>
+            </template>
+          </UCard>
+        </template>
 
-        <div class="space-y-3 flex flex-col justify-center items-center mt-2">
+        <!-- Empty -->
+        <template v-else>
+          <UCard class="col-span-full">
+            <div class="flex flex-col items-center justify-center py-14">
+              <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
+
+              <p class="text-sm text-gray-500 dark:text-gray-400">No parents found.</p>
+            </div>
+          </UCard>
+        </template>
+
+      </div>
+
+      <template #footer>
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Showing :meta="meta" />
-          <UPagination
-            v-model:page="page"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            size="xs"
-            show-edges
-            class="justify-center"
-          />
+          <UPagination v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+            size="sm" show-edges class="justify-center lg:justify-end" />
         </div>
-    </div>
+      </template>
+    </UCard>
   </div>
 </template>

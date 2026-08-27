@@ -1,363 +1,190 @@
 <template>
-  <div class="space-y-6 mt-6 p-4">
+  <div class="space-y-6 mt-6 p-4 md:px-6">
 
-    <!-- Header Section -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <Heading :title="studentName || 'ID Card Preview'" subtitle="Preview and print this student's identification card.">
+      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/id-cards" class="justify-center">
+        Back
+      </UButton>
 
-      <div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold tracking-tight">
-            {{ template.name }}
-          </h1>
-          <UBadge color="success" variant="subtle">
-            Default
-          </UBadge>
-        </div>
-        <p class="mt-1 text-sm text-muted">
-          Preview how ID cards generated with this template will appear.
-        </p>
-      </div>
+      <UButton icon="i-lucide-settings-2" variant="outline" color="neutral" to="/id-cards/settings"
+        class="justify-center">
+        Card Design
+      </UButton>
 
-      <div class="flex flex-wrap gap-3 items-center">
-        <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/id-cards/templates">
-          Back
-        </UButton>
+      <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading" class="justify-center"
+        @click="downloadPdf">
+        Download PDF
+      </UButton>
 
-        <!-- <div class="flex items-center gap-2">
-          <USelect :items="templateOptions" v-model="settings.preset" class="w-48" />
-          <UButton size="sm" :variant="settings.layout === 'vertical' ? 'solid' : 'outline'" @click="settings.layout = 'vertical'">Vertical</UButton>
-          <UButton size="sm" :variant="settings.layout === 'horizontal' ? 'solid' : 'outline'" @click="settings.layout = 'horizontal'">Horizontal</UButton>
-          <UButton size="sm" :variant="settings.profileShape === 'round' ? 'solid' : 'outline'" @click="settings.profileShape = 'round'">Round</UButton>
-          <UButton size="sm" :variant="settings.profileShape === 'square' ? 'solid' : 'outline'" @click="settings.profileShape = 'square'">Square</UButton>
-        </div> -->
+      <UButton icon="i-lucide-printer" variant="outline" color="neutral" :loading="printing" class="justify-center"
+        @click="printCard">
+        Print
+      </UButton>
+    </Heading>
 
-        <UButton icon="i-lucide-settings-2" variant="outline" color="neutral" to="/id-cards/settings">
-          Settings
-        </UButton>
-
-        <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading" @click="downloadPdf">
-          Download PDF
-        </UButton>
-        <UButton icon="i-lucide-printer" variant="outline" color="neutral" @click="printCard">
-          Print
-        </UButton>
-      </div>
-
+    <div v-if="loading" class="flex justify-center py-20">
+      <USkeleton class="h-80 w-full max-w-[420px] rounded-[28px]" />
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid gap-4 sm:grid-cols-3">
-
-      <UCard :ui="{ body: 'p-5' }">
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <UIcon name="i-lucide-users" class="size-6 text-primary" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold leading-tight">{{ template.cardsIssued }}</p>
-            <p class="text-sm text-muted">Cards issued</p>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard :ui="{ body: 'p-5' }">
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
-            <UIcon name="i-lucide-school" class="size-6 text-blue-500" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold leading-tight">{{ template.level }}</p>
-            <p class="text-sm text-muted">Applies to</p>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard :ui="{ body: 'p-5' }">
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10">
-            <UIcon name="i-lucide-calendar-clock" class="size-6 text-orange-500" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold leading-tight">{{ template.validityYears }}yr</p>
-            <p class="text-sm text-muted">Validity period</p>
-          </div>
-        </div>
-      </UCard>
-
-    </div>
-    <!-- Main Content Grid -->
-    <div class="grid gap-6 lg:grid-cols-3">
-
-      <!-- Template Info Sidebar -->
-      <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
-
-        <UCard>
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-info" class="size-5 text-primary" />
-              <h3 class="font-semibold">Template Details</h3>
-            </div>
-          </template>
-          <dl class="divide-y divide-default">
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-sm text-muted">Type</dt>
-              <dd class="text-sm font-medium">{{ template.type }}</dd>
-            </div>
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-sm text-muted">School Level</dt>
-              <dd class="text-sm font-medium">{{ template.level }}</dd>
-            </div>
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-sm text-muted">Created By</dt>
-              <dd class="text-sm font-medium">{{ template.createdBy }}</dd>
-            </div>
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-sm text-muted">Updated</dt>
-              <dd class="text-sm font-medium">{{ template.updatedAt }}</dd>
-            </div>
-          </dl>
-        </UCard>
-
-        <UCard>
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-palette" class="size-5 text-primary" />
-              <h3 class="font-semibold">Theme</h3>
-            </div>
-          </template>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <div class="size-9 shrink-0 rounded-lg border border-default"
-                :style="{ backgroundColor: template.accentColor }" />
-              <div>
-                <p class="text-sm font-medium">Accent Color</p>
-                <p class="font-mono text-xs text-muted">{{ template.accentColor }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 pt-1">
-              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-default">
-                <UIcon name="i-lucide-shield-check" class="size-4 text-muted" />
-              </div>
-              <div>
-                <p class="text-sm font-medium">Security Features</p>
-                <p class="text-xs text-muted">Watermark, barcode, hologram strip</p>
-              </div>
-            </div>
-          </div>
-        </UCard>
-      </div>
-
-      <!-- Settings + Preview Section -->
-      <div class="lg:col-span-2 space-y-4">
-        <!-- Card Preview (Separate Component) -->
-        <IDCardPreview :template="template" :settings="settings" :active-fields="activeFields" />
-
-      </div>
-
-    </div>
-
+    <IdCardsIDCardPreview v-else-if="template" v-model:side="side" :template="template" :is-pdf-capture="isPdfCapture"
+      :settings="idCardStore.settings" :active-fields="idCardStore.fields" />
   </div>
 </template>
 
 <script setup lang="ts">
-import IDCardPreview from '../../components/id-cards/IDCardPreview.vue'
-
 const route = useRoute()
-const appStore = useAppStore()
-const { success } = useNotify()
+const isPdfCapture = ref(false)
+const idCardStore = useIdCardStore()
+const { success, error: toastError } = useNotify()
 
-const templateId = computed(() => route.params.id)
+const studentId = computed(() => String(route.params.id))
+const student = ref<Student>()
+const school = ref<any>()
+const brandingAssets = ref<{ logo: string | null, principalSignature: string | null }>()
+const loading = ref(true)
 const downloading = ref(false)
+const printing = ref(false)
+const side = ref<'front' | 'back'>('front')
 
-// Template data
-const template = ref({
-  id: templateId.value,
-  name: 'Modern Blue Template',
-  type: 'Student ID Card',
-  level: 'Secondary School',
-  createdBy: 'Administrator',
-  updatedAt: 'Jun 17, 2026',
-  cardsIssued: 482,
-  validityYears: 1,
-  accentColor: '#2563eb',
-  accentColorDark: '#1e3a8a',
-  school: {
-    name: "KING'S WAY INTERNATIONAL SCHOOL",
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg',
-    principal: 'Dr. A. Conteh',
-    address: '12 Wilkinson Road, Freetown, Sierra Leone'
-  },
-  student: {
-    name: 'John Kamara',
-    admissionNo: 'KWIS001',
-    class: 'JSS1-A',
-    gender: 'Male',
-    dob: '12 Mar 2011',
-    expiryDate: 'Jun 30, 2027',
-    emergencyContact: '+232 76 123 456',
-    parentContact: '+232 76 123 456',
+const studentName = computed(() => student.value ? `${student.value.givenNames} ${student.value.familyName}` : '')
+
+// Issued "today", expiring after however many years the school's card design
+// settings say a card stays valid for (default 1) - not persisted anywhere,
+// just computed fresh each time the card is viewed/downloaded.
+const validUntil = computed(() => {
+  const years = idCardStore.settings.validityYears || 1
+  const date = new Date()
+  date.setFullYear(date.getFullYear() + years)
+  return date.toISOString()
+})
+
+const template = computed(() => {
+  if (!student.value) return undefined
+  const s = student.value
+
+  return {
+    id: s.id,
+    name: `${s.givenNames} ${s.familyName}`,
+    type: 'Student ID Card',
+    level: s.className,
+    createdBy: 'System',
+    updatedAt: '',
+    cardsIssued: 0,
+    validityYears: idCardStore.settings.validityYears || 1,
+    accentColor: idCardStore.settings.headerColor,
+    accentColorDark: idCardStore.settings.headerColor,
+    school: {
+      name: idCardStore.settings.schoolName || 'School',
+      // Plain R2 URL for on-screen display (fast, no extra round trip) - the
+      // CORS-safe data: URI from getBrandingAssets() is only fetched lazily,
+      // right before a PDF/print capture that actually needs it (see
+      // captureBothSides), so it never blocks the initial page load.
+      logo: brandingAssets.value?.logo || school.value?.logo || '/icon.svg',
+      principal: idCardStore.settings.principalName || school.value?.principalName || '',
+      signature: brandingAssets.value?.principalSignature || school.value?.principalSignature || '',
+      address: idCardStore.settings.schoolAddress || ''
+    },
+    student: {
+      name: `${s.givenNames} ${s.familyName}`,
+      admissionNo: s.admissionNumber,
+      class: s.className,
+      gender: s.gender,
+      dob: s.dateOfBirth ? formatDate(s.dateOfBirth) : '',
+      expiryDate: formatDate(validUntil.value),
+      emergencyContact: s.guardian?.phone || '',
+      parentContact: s.guardian?.phone || '',
+      photo: s.photo || ''
+    }
   }
 })
 
-// Settings state
-const defaultSettings = {
-  audience: 'student' as 'student' | 'staff',
-  layout: 'vertical' as 'vertical' | 'horizontal',
-  profileShape: 'square' as 'round' | 'square',
-  preset: 'modern',
-  headerColor: '#2563eb',
-  footerColor: '#2563eb',
-  headerTextColor: '#ffffff',
-  primaryTextColor: '#111827',
-  widthMm: 85,
-  heightMm: 54,
-  bgImageUrl: '' as string,
-  bgOpacity: 20,
-}
+async function captureBothSides(): Promise<HTMLCanvasElement[]> {
+  try {
+    const original = side.value
+    const canvases: HTMLCanvasElement[] = []
+    isPdfCapture.value = true
 
-const settings = reactive({ ...defaultSettings })
-
-// Template presets
-const presets: Record<string, any> = {
-  modern: {
-    name: 'Modern Blue Template',
-    accentColor: '#2563eb',
-    accentColorDark: '#1e3a8a',
-    headerColor: '#2563eb',
-    footerColor: '#2563eb',
-    headerTextColor: '#ffffff',
-    primaryTextColor: '#111827',
-    school: {
-      name: "KING'S WAY INTERNATIONAL SCHOOL",
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg',
-      principal: 'Dr. A. Conteh',
-      address: '12 Wilkinson Road, Freetown, Sierra Leone'
+    // Fetch once, lazily, right before the capture that needs it - not on
+    // page load, so viewing the card stays fast. Cached in the ref so a
+    // second download/print in the same visit doesn't re-fetch.
+    if (!brandingAssets.value) {
+      brandingAssets.value = await SchoolApi().getBrandingAssets()
+      await nextTick()
     }
-  },
-  classic: {
-    name: 'Classic Green Template',
-    accentColor: '#10b981',
-    accentColorDark: '#065f46',
-    headerColor: '#10b981',
-    footerColor: '#10b981',
-    headerTextColor: '#ffffff',
-    primaryTextColor: '#0f172a',
-    school: {
-      name: "KING'S WAY CLASSIC SCHOOL",
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png',
-      principal: 'Mrs. J. Doe',
-      address: '88 Classic Ave, Freetown'
+
+    if (document.fonts?.ready) {
+      await document.fonts.ready
     }
+
+    for (const face of ['front', 'back'] as const) {
+      side.value = face
+
+      await nextTick()
+
+      await new Promise(resolve =>
+        requestAnimationFrame(() => resolve(null))
+      )
+
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      const el = document.querySelector(
+        '.id-card-face'
+      ) as HTMLElement | null
+
+      if (!el) {
+        throw new Error(`Unable to find ${face} ID card`)
+      }
+
+      canvases.push(await captureCardFace(el))
+    }
+
+    side.value = original
+    await nextTick()
+
+    return canvases
+  } finally {
+    isPdfCapture.value = false
   }
-}
-
-// options for select
-const templateOptions = [
-  { label: 'Modern Blue', value: 'modern' },
-  { label: 'Classic Green', value: 'classic' }
-]
-
-
-// Field definitions
-interface FieldDef {
-  key: string
-  label: string
-  icon: string
-  cardSlot: 'front' | 'back'
-  enabled: boolean
-  required?: boolean
-}
-
-const studentFields = reactive<FieldDef[]>([
-  { key: 'name', label: 'Full Name', icon: 'i-lucide-user', cardSlot: 'front', enabled: true, required: true },
-  { key: 'admissionNo', label: 'Admission No.', icon: 'i-lucide-id-card', cardSlot: 'front', enabled: true, required: true },
-  { key: 'class', label: 'Class', icon: 'i-lucide-school', cardSlot: 'front', enabled: true },
-  { key: 'gender', label: 'Gender', icon: 'i-lucide-user-round', cardSlot: 'front', enabled: true },
-  { key: 'dob', label: 'Date of Birth', icon: 'i-lucide-calendar-days', cardSlot: 'front', enabled: true },
-  { key: 'expiryDate', label: 'Valid Until', icon: 'i-lucide-calendar-check', cardSlot: 'front', enabled: true },
-  { key: 'parentContact', label: 'Parent Contact', icon: 'i-lucide-phone', cardSlot: 'back', enabled: true },
-  { key: 'emergencyContact', label: 'Emergency Contact', icon: 'i-lucide-phone-call', cardSlot: 'back', enabled: true },
-])
-
-const staffFields = reactive<FieldDef[]>([
-  { key: 'name', label: 'Full Name', icon: 'i-lucide-user', cardSlot: 'front', enabled: true, required: true },
-  { key: 'staffId', label: 'Staff ID', icon: 'i-lucide-id-card', cardSlot: 'front', enabled: true, required: true },
-  { key: 'role', label: 'Role', icon: 'i-lucide-briefcase', cardSlot: 'front', enabled: true },
-  { key: 'department', label: 'Department', icon: 'i-lucide-building-2', cardSlot: 'front', enabled: true },
-  { key: 'gender', label: 'Gender', icon: 'i-lucide-user-round', cardSlot: 'front', enabled: false },
-  { key: 'expiryDate', label: 'Valid Until', icon: 'i-lucide-calendar-check', cardSlot: 'front', enabled: true },
-  { key: 'email', label: 'Email', icon: 'i-lucide-mail', cardSlot: 'back', enabled: true },
-  { key: 'phone', label: 'Phone', icon: 'i-lucide-phone', cardSlot: 'back', enabled: true },
-])
-
-const activeFields = computed(() =>
-  settings.audience === 'student' ? studentFields : staffFields
-)
-
-// Event handlers
-function updateSettings(newSettings: typeof settings) {
-  Object.assign(settings, newSettings)
-}
-
-function updateFields(newFields: FieldDef[]) {
-  if (settings.audience === 'student') {
-    studentFields.splice(0, studentFields.length, ...newFields)
-  } else {
-    staffFields.splice(0, staffFields.length, ...newFields)
-  }
-}
-
-function saveSettings() {
-  // TODO: persist via API
-  success('Settings saved')
-  settingsOpen.value = false
-}
-
-function printCard() {
-  window.print()
 }
 
 async function downloadPdf() {
+  downloading.value = true
   try {
-    downloading.value = true
-    await new Promise(resolve => setTimeout(resolve, 600))
+    const canvases = await captureBothSides()
+    await downloadCardsFromCanvases(canvases, idCardStore.settings.widthMm, idCardStore.settings.heightMm, studentName.value || 'id-card')
     success('ID card downloaded')
+  } catch (err: any) {
+    toastError(err?.message || 'Failed to generate PDF')
   } finally {
     downloading.value = false
   }
 }
 
-onMounted(() => {
-  appStore.setTitle(`${template.value.name} Preview`)
+async function printCard() {
+  printing.value = true
   try {
-    const saved = localStorage.getItem('idcard:settings')
-    if (saved) {
-      const s = JSON.parse(saved)
-      Object.assign(settings, s)
-      if (s.preset && presets[s.preset]) {
-        const p = presets[s.preset]
-        template.value.name = p.name
-        template.value.accentColor = p.accentColor
-        template.value.accentColorDark = p.accentColorDark
-        template.value.school = { ...template.value.school, ...p.school }
-        template.value.headerColor = p.headerColor
-        template.value.footerColor = p.footerColor
-        template.value.headerTextColor = p.headerTextColor
-        template.value.primaryTextColor = p.primaryTextColor
-      }
-    } else {
-      const p = presets[settings.preset] || presets.modern
-      template.value.name = p.name
-      template.value.accentColor = p.accentColor
-      template.value.accentColorDark = p.accentColorDark
-      template.value.school = { ...template.value.school, ...p.school }
-      template.value.headerColor = p.headerColor
-      template.value.footerColor = p.footerColor
-      template.value.headerTextColor = p.headerTextColor
-      template.value.primaryTextColor = p.primaryTextColor
-    }
-  } catch (e) {
-    // ignore
+    const canvases = await captureBothSides()
+    await printCardsFromCanvases(canvases, idCardStore.settings.widthMm, idCardStore.settings.heightMm, studentName.value || 'id-card')
+  } catch (err: any) {
+    toastError(err?.message || 'Failed to prepare card for printing')
+  } finally {
+    printing.value = false
+  }
+}
+
+onMounted(async () => {
+  useAppStore().setTitle('ID Card Preview')
+  loading.value = true
+  try {
+    const [studentRes, schoolRes] = await Promise.all([
+      StudentApi().getStudent(studentId.value),
+      SchoolApi().get('current'),
+      idCardStore.fetch()
+    ])
+    student.value = studentRes
+    school.value = schoolRes
+  } finally {
+    loading.value = false
   }
 })
 

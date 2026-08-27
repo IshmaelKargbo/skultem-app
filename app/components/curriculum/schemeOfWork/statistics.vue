@@ -1,21 +1,26 @@
 <script lang="ts" setup>
-const id = useRoute().params.id as string
+const route = useRoute()
 const store = useSchemeOfWorkStore()
 const { progress } = storeToRefs(store)
 const isReady = ref(false)
 
-onMounted(async () => {
-    if (id) {
-        await store.getProgress(id)
+watch(
+    () => route.params.id,
+    async (id) => {
+        if (!id) return
+
+        isReady.value = false
+        await store.getProgress(id as string)
         isReady.value = true
-    }
-})
+    },
+    { immediate: true }
+)
 </script>
 
 <template>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Metric :record="{
-            color: 'info',
+            color: 'neutral',
             label: 'Total Weeks',
             isReady: isReady,
             value: progress?.totalWeeks || '0',
@@ -29,14 +34,14 @@ onMounted(async () => {
             icon: CHECK_ICON
         }" />
         <Metric :record="{
-            color: 'warning',
+            color: 'error',
             label: 'Remaining',
             isReady: isReady,
             value: progress?.remaining || '0',
             icon: PENDING_ICON
         }" />
         <Metric :record="{
-            color: 'primary',
+            color: 'info',
             label: 'coverage',
             isReady: isReady,
             value: `${progress?.coverage || 0}%`,

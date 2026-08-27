@@ -1,108 +1,146 @@
 <template>
   <div>
-    <div v-if="selected"
-      class="p-6 space-y-6 relative w-full bg-white dark:bg-gray-900 overflow-y-auto border-2 rounded-xl border-gray-200 dark:border-gray-800">
-      <!-- CLOSE BUTTON -->
-      <UButton icon="prime:times" size="sm" variant="ghost" class="absolute top-3 right-3" @click="close" />
-      <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase"> {{ selected.subject }} · {{ selected.assessment }} · {{
-          selected.term
-        }}</p>
-        <p class="text-lg font-semibold"> {{ selected.teacher }} </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400"> {{ selected.class }} </p>
-      </div>
+    <UCard v-if="selected" class="relative overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
+      <!-- BANNER -->
+      <div class="h-14 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
 
-      <!-- STATUS BADGE -->
-      <UBadge variant="outline" :color="statusColor(selected.status)">
-        {{ statusLabel(selected.status) }}
-      </UBadge>
+      <UButton icon="lucide:x" size="sm" variant="soft" color="neutral" class="absolute top-3 right-3 rounded-full" @click="close" />
 
-      <!-- STATS -->
-      <div class="grid grid-cols-3 gap-3">
-        <UCard>
-          <p class="text-lg font-semibold">{{ selected.studentCount }}</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Students</p>
-        </UCard>
-        <UCard>
-          <p class="text-lg font-semibold">{{ selected.avergeScore }}</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Avg Score</p>
-        </UCard>
-        <UCard>
-          <p class="text-lg font-semibold">{{ selected.passPercentage }}%</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Pass Rate</p>
-        </UCard>
-      </div>
+      <div class="space-y-6 px-5 pb-5">
+        <!-- IDENTITY -->
+        <div class="-mt-7 flex flex-wrap items-end justify-between gap-3">
+          <div class="flex items-end gap-3">
+            <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-default p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+              <div class="flex size-full items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10">
+                <UIcon name="lucide:clipboard-check" class="size-6 text-primary-500" />
+              </div>
+            </div>
 
-      <!-- GRADE DISTRIBUTION -->
-      <div>
-        <p class="text-sm font-medium mb-2">Grade Distribution</p>
-        <GradeDistributionBar :average="selected.avgPercentage" :pass="selected.passPercentage"
-          :fail="selected.failPercentage" />
-      </div>
+            <div class="min-w-0 pb-0.5">
+              <p class="text-xs font-medium uppercase tracking-wide text-muted">
+                {{ selected.subject }} &middot; {{ selected.assessment }} &middot; {{ selected.term }}
+              </p>
+              <p class="text-lg font-bold text-highlighted">{{ selected.teacher }}</p>
+              <p class="text-sm text-muted">{{ selected.class }}</p>
+            </div>
+          </div>
 
-      <!-- TEACHER NOTE -->
-      <div>
-        <p class="text-sm font-medium mb-2">Teacher's Note</p>
-        <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm">
-          {{ selected.note }}
+          <UBadge variant="subtle" size="lg" :color="statusColor(selected.status)" class="rounded-full">
+            {{ statusLabel(selected.status) }}
+          </UBadge>
         </div>
-      </div>
 
-      <!-- STUDENT SCORES -->
-      <div>
-        <p class="text-sm font-semibold mb-2">Student Scores</p>
-        <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-800/70 text-left">
-              <tr>
-                <th class="p-2">Student</th>
-                <th class="p-2">Score</th>
-                <th class="p-2 text-right">Grade</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="student in sortedStudentScores" :key="student.id" class="border-t border-gray-200 dark:border-gray-700">
-                <td class="p-2">
-                  <div class="flex items-center gap-2">
-                    <UAvatar
-                      size="xs"
-                      :alt="student.student"
-                      :text="studentInitials(student.student)"
-                      class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
-                    />
-                    <span class="truncate">{{ student.student }}</span>
-                  </div>
-                </td>
-                <td class="p-2 font-medium"> {{ student.score }} </td>
-                <td class="p-2 text-right">
-                  <UBadge size="sm" variant="outline" color="primary"> {{ student.grade }} </UBadge>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-5" v-if="returnForm">
-          <UFormField label="Reason For Return">
-            <UTextarea v-model="state.note" placeholder="Explain what needs to be corrected" />
-          </UFormField>
-          <div class="flex space-x-3 mt-3">
-            <UButton :loading="isReturnLoading" @click="remove" :disabled="!state.note" label="Confirm Return"
-              color="error" class="flex justify-center flex-1" />
-            <UButton @click="returnForm = false" label="Cancel" variant="outline" size="xl" />
+        <!-- STATS -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="rounded-2xl border border-default bg-elevated/40 p-3 text-center">
+            <p class="text-lg font-bold text-highlighted">{{ selected.studentCount }}</p>
+            <p class="text-xs text-muted">Students</p>
+          </div>
+          <div class="rounded-2xl border border-default bg-elevated/40 p-3 text-center">
+            <p class="text-lg font-bold text-highlighted">{{ selected.avergeScore }}</p>
+            <p class="text-xs text-muted">Avg Score</p>
+          </div>
+          <div class="rounded-2xl border border-default bg-elevated/40 p-3 text-center">
+            <p class="text-lg font-bold text-highlighted">{{ selected.passPercentage }}%</p>
+            <p class="text-xs text-muted">Pass Rate</p>
           </div>
         </div>
-        <div class="flex space-x-3 pt-3 border-t mt-3 border-gray-200 dark:border-gray-800" v-if="showAction">
-          <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
-            class="w-full flex justify-center" label="Return" @click="returnForm = true" />
-          <UButton :loading="isApproveLoading" @click="approve" icon="lucide:check-circle" color="success" size="xl"
-            class="w-full flex justify-center" label="Approve" />
+
+        <!-- GRADE DISTRIBUTION -->
+        <div>
+          <p class="mb-2 text-sm font-semibold text-highlighted">Grade Distribution</p>
+          <GradeDistributionBar :average="selected.avgPercentage" :pass="selected.passPercentage"
+            :fail="selected.failPercentage" />
+        </div>
+
+        <!-- TEACHER NOTE -->
+        <div v-if="selected.note">
+          <p class="mb-2 text-sm font-semibold text-highlighted">Teacher's Note</p>
+          <div class="rounded-xl border border-default bg-elevated/40 p-3 text-sm text-muted">
+            {{ selected.note }}
+          </div>
+        </div>
+
+        <!-- STUDENT SCORES -->
+        <div>
+          <p class="mb-2 text-sm font-semibold text-highlighted">Student Scores</p>
+          <div class="overflow-hidden rounded-xl border border-default">
+            <table class="w-full text-sm">
+              <thead class="bg-elevated/60 text-left">
+                <tr>
+                  <th class="p-2 font-medium text-muted">Student</th>
+                  <th class="p-2 font-medium text-muted">Score</th>
+                  <th class="p-2 text-right font-medium text-muted">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="student in sortedStudentScores" :key="student.id" class="border-t border-default">
+                  <td class="p-2">
+                    <div class="flex items-center gap-2">
+                      <UAvatar
+                        size="xs"
+                        :alt="student.student"
+                        :text="studentInitials(student.student)"
+                        class="shrink-0 ring-1 ring-default"
+                      />
+                      <span class="truncate text-highlighted">{{ student.student }}</span>
+                    </div>
+                  </td>
+                  <td class="p-2 font-medium text-highlighted"> {{ student.score }} </td>
+                  <td class="p-2 text-right">
+                    <UBadge size="sm" variant="subtle" color="primary"> {{ student.grade }} </UBadge>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-if="returnForm" class="mt-5">
+            <UFormField label="Reason For Return">
+              <UTextarea v-model="state.note" placeholder="Explain what needs to be corrected" class="w-full" :rows="2" autoresize />
+            </UFormField>
+            <div class="mt-3 flex gap-3">
+              <UButton :loading="isReturnLoading" :disabled="!state.note" label="Confirm Return"
+                color="error" class="flex flex-1 justify-center" @click="remove" />
+              <UButton label="Cancel" variant="outline" color="neutral" @click="returnForm = false" />
+            </div>
+          </div>
+
+          <div v-if="reopenForm" class="mt-5">
+            <UFormField label="Reason For Reopening">
+              <UTextarea v-model="state.reopenNote" placeholder="Why does this approved grade need editing again?" class="w-full" :rows="2" autoresize />
+            </UFormField>
+            <div class="mt-3 flex gap-3">
+              <UButton :loading="isReopenLoading" :disabled="!state.reopenNote" label="Confirm Reopen"
+                color="warning" class="flex flex-1 justify-center" @click="reopen" />
+              <UButton label="Cancel" variant="outline" color="neutral" @click="reopenForm = false" />
+            </div>
+          </div>
+
+          <div v-if="showAction" class="mt-3 flex gap-3 border-t border-default pt-3">
+            <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
+              class="flex w-full justify-center" label="Return" @click="returnForm = true" />
+            <UButton :loading="isApproveLoading" icon="lucide:check-circle" color="success" size="xl"
+              class="flex w-full justify-center" label="Approve" @click="approve" />
+          </div>
+
+          <div v-if="canReopen && !reopenForm" class="mt-3 border-t border-default pt-3">
+            <UButton icon="lucide:lock-open" variant="outline" color="warning" size="xl"
+              class="flex w-full justify-center" label="Reopen for Editing" @click="reopenForm = true" />
+            <p class="mt-2 text-center text-xs text-muted">
+              Lets the teacher edit this already-approved grade again. Only works while the academic year is still open.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-    <UCard v-else class="w-full h-64 flex flex-col items-center justify-center">
-      <div class="flex flex-col items-center">
-        <UIcon name="lucide:inbox" class="text-4xl mb-3" />
-        <p class="text-xs">Select a grade submission to view details</p>
+    </UCard>
+
+    <UCard v-else class="flex h-100 w-full flex-col items-center justify-center">
+      <div class="flex flex-col items-center gap-3 text-center">
+        <div class="flex size-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+          <UIcon name="lucide:inbox" class="text-2xl text-primary-500" />
+        </div>
+        <p class="text-xs text-muted">Select a grade submission to view details</p>
       </div>
     </UCard>
   </div>
@@ -115,15 +153,23 @@ const { record } = defineProps({
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 const isApproveLoading = ref(false)
 const isReturnLoading = ref(false)
+const isReopenLoading = ref(false)
 const store = useAssessmentStore()
 const { error: toastError, success: toastSuccess } = useNotify()
+const { can } = useAuth()
 
 const state = reactive({
-  note: ''
+  note: '',
+  reopenNote: ''
 })
 
 const returnForm = ref(false)
+const reopenForm = ref(false)
 const showAction = computed(() => selected.value?.status === 'Pending Review' && !returnForm.value)
+const canReopen = computed(() =>
+  selected.value?.status === 'Approved'
+  && can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])
+)
 const sortedStudentScores = computed(() => {
   if (!selected.value?.studentScores) return []
 
@@ -137,6 +183,10 @@ watch(
   () => record,
   (newVal) => {
     if (newVal) open.value = true
+    returnForm.value = false
+    reopenForm.value = false
+    state.note = ''
+    state.reopenNote = ''
   }
 )
 
@@ -204,6 +254,33 @@ async function remove() {
     toastError(error?.data?.message || error?.message || 'Failed to return request')
   } finally {
     isReturnLoading.value = false
+  }
+}
+
+async function reopen() {
+  try {
+    if (!selected.value) return
+
+    isReopenLoading.value = true
+    await store.reopen(selected.value.teacherSubjectId, {
+      assessmentId: selected.value.assessmentId,
+      termId: selected.value.termId,
+      note: state.reopenNote
+    })
+    toastSuccess("Assessment reopened for editing")
+    emit("refresh")
+    reopenForm.value = false
+    state.reopenNote = ''
+    nextTick(() => {
+      scrollContainer?.value?.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    })
+  } catch (error: any) {
+    toastError(error?.data?.message || error?.message || 'Failed to reopen assessment')
+  } finally {
+    isReopenLoading.value = false
   }
 }
 

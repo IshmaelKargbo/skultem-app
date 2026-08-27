@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-5 p-4">
+    <div class="space-y-4 px-4 md:px-6">
         <Heading title="Class Timetables" subtitle="Manage weekly timetables for classes and sections">
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
@@ -67,8 +67,12 @@ function syncGrade(items: { value: string }[]) {
 }
 
 watch(() => grade.value, async (value: string) => {
-    if (value) {
+    if (!value) return
+
+    try {
         await store.getTimetable(value)
+    } catch (error: any) {
+        useNotify().error(error)
     }
 }, { immediate: true })
 
@@ -77,9 +81,13 @@ watch(list, syncGrade, { immediate: true })
 
 onMounted(async () => {
     document.title = 'Timetable | Skultem'
-    await teacherStore.allByTeacher()
-    await parentStore.fetchAllStudents(0, 0)
-    await store.getWorkingDays()
-    await store.searchRoom(0, 0)
+    try {
+        await teacherStore.allByTeacher()
+        await parentStore.fetchAllStudents(0, 0)
+        await store.getWorkingDays()
+        await store.searchRoom(0, 0)
+    } catch (error: any) {
+        useNotify().error(error)
+    }
 })
 </script>

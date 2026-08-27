@@ -2,6 +2,18 @@ export const TeacherApi = () => {
   const { $api } = useNuxtApp()
 
   return {
+    getMyClassMasterAssignments: async () => {
+      try {
+        const res = await $api('/teacher/class-master/me') as any
+
+        if (!res)
+          throw new Error('Failed to fetch class master assignments')
+
+        return res.data as TeacherClassMaster[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAll: async (search: string, page: number, size: number) => {
       try {
         const res = await $api(`/teacher?page=${page}&size=${size}&search=${search}`) as any

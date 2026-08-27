@@ -1,6 +1,5 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 h-full overflow-y-auto space-y-4 sm:space-y-5">
-        <Heading title="Transactions" subtitle="Complete financial transaction history" />
+    <div class="px-4 sm:px-6 space-y-4">
         <TransactionReport />
         <TransactionTable />
     </div>

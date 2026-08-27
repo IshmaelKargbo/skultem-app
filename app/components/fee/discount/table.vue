@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { Row } from '@tanstack/vue-table'
 
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
-const router = useRouter()
 const { format } = useMoney()
 const store = useFeeDiscountStore()
 const loading = ref(true)
+
+const emit = defineEmits(['refresh'])
 const { records: data, meta } = storeToRefs(store)
 
 const editRcord = ref<FeeDiscount | null>(null)
@@ -103,33 +105,16 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val })
 })
 
-const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
-  set: (val) => updateQuery({ size: val })
-})
+const size = ref(runtimeConf().limit)
 
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
+function refreshReport() {
+  emit('refresh')
 }
 
 onMounted(async () => {
-  if (!route.query.page || !route.query.size) {
-    router.replace({
-      query: {
-        page: page.value,
-        size: size.value
-      }
-    })
-  }
+  updateQuery({
+    page: page.value
+  })
 
   loading.value = true
   await store.fetchAll(page.value, size.value)
@@ -138,11 +123,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Desktop -->
-  <UCard class="hidden md:block" :ui="{
-    body: 'sm:p-0'
-  }">
-    <UTable :columns="columns" :data="data" :loading="loading">
+  <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <template #header>
+      <div class="flex space-x-3">
+        <div class="flex flex-1 space-x-3">
+          <UInput placeholder="Search by name" />
+          <FeeDiscountAdd :refresh-report="refreshReport" />
+        </div>
+        <TableViewToggle v-model="view" />
+      </div>
+    </template>
+    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -189,6 +180,230 @@ onMounted(async () => {
       </template>
     </UTable>
 
+    <!-- Mobile -->
+    <div class="space-y-4 p-4"
+      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <!-- Loading Skeleton -->
+      <template v-if="loading">
+        <UCard v-for="n in 6" :key="`discount-skeleton-${n}`" class="overflow-hidden rounded-3xl border border-default"
+          :ui="{ body: 'p-0' }">
+          <!-- Header -->
+          <div class="flex items-center justify-between gap-3 p-4">
+            <div class="flex min-w-0 flex-1 items-center gap-3">
+              <!-- Icon -->
+              <USkeleton class="size-11 shrink-0 rounded-2xl" />
+
+              <!-- Name -->
+              <div class="min-w-0 flex-1 space-y-2">
+                <USkeleton class="h-4 w-3/5 rounded-md" />
+                <USkeleton class="h-3 w-2/5 rounded-md" />
+              </div>
+            </div>
+
+            <!-- Menu -->
+            <USkeleton class="size-8 shrink-0 rounded-lg" />
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-3 gap-2 px-4 pb-4 pt-1">
+            <!-- Type -->
+            <div class="rounded-2xl border border-default bg-muted/30 p-3">
+              <div class="mb-2 flex items-center gap-2">
+                <USkeleton class="size-7 rounded-lg" />
+                <USkeleton class="h-2.5 w-10 rounded" />
+              </div>
+
+              <USkeleton class="h-4 w-16 rounded-md" />
+            </div>
+
+            <!-- Value -->
+            <div class="rounded-2xl border border-primary/10 bg-primary/3 p-3">
+              <div class="mb-2 flex items-center gap-2">
+                <USkeleton class="size-7 rounded-lg" />
+                <USkeleton class="h-2.5 w-10 rounded" />
+              </div>
+
+              <USkeleton class="h-4 w-14 rounded-md" />
+            </div>
+
+            <!-- Saved -->
+            <div class="rounded-2xl border border-success/10 bg-success/3 p-3">
+              <div class="mb-2 flex items-center gap-2">
+                <USkeleton class="size-7 rounded-lg" />
+                <USkeleton class="h-2.5 w-10 rounded" />
+              </div>
+
+              <USkeleton class="h-4 w-16 rounded-md" />
+            </div>
+          </div>
+
+          <!-- Information -->
+          <div class="mx-4 mb-4 rounded-2xl border border-default bg-muted/30 p-3">
+            <!-- Class -->
+            <div class="flex items-center justify-between">
+              <USkeleton class="h-3 w-10 rounded" />
+              <USkeleton class="h-4 w-24 rounded-md" />
+            </div>
+
+            <!-- Status -->
+            <div class="mt-4 flex items-center justify-between">
+              <USkeleton class="h-3 w-12 rounded" />
+              <USkeleton class="h-5 w-16 rounded-full" />
+            </div>
+
+            <!-- Expiry -->
+            <div class="mt-4 flex items-center justify-between">
+              <USkeleton class="h-3 w-10 rounded" />
+              <USkeleton class="h-4 w-20 rounded-md" />
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div class="border-t border-default px-4 py-4">
+            <USkeleton class="mb-2 h-2.5 w-12 rounded" />
+            <USkeleton class="h-3.5 w-full rounded-md" />
+            <USkeleton class="mt-2 h-3.5 w-4/5 rounded-md" />
+          </div>
+        </UCard>
+      </template>
+
+      <!-- Empty -->
+      <div v-else-if="!data?.length"
+        class="flex min-h-[30vh] flex-col items-center justify-center  py-16 text-center dark:bg-neutral-900 col-span-full">
+        <div
+          class="mb-5 flex h-16 w-16 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10">
+          <UIcon name="lucide:badge-percent" class="text-4xl text-primary-500" />
+        </div>
+
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+          No fee discounts found
+        </h3>
+
+        <p class="text-sm leading-6 text-gray-500">
+          Discounts, scholarships, and student waivers will appear here.
+        </p>
+      </div>
+
+      <!-- Cards -->
+      <template v-else>
+        <UCard v-for="item in data" :key="item.id"  :ui="{ body: 'sm:p-0 p-0' }">
+          <!-- Header -->
+          <div class="flex items-center justify-between border-b border-gray-100 p-3 dark:border-neutral-800">
+            <div class="flex items-center gap-3 min-w-0">
+              <div
+                class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+                <UIcon name="lucide:badge-percent" class="text-primary size-5" />
+              </div>
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold">{{ item.name }}</h3>
+                <p class="truncate text-xs-base text-gray-500">{{ item.student }}</p>
+              </div>
+            </div>
+
+            <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
+              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" class="shrink-0" />
+            </UDropdownMenu>
+          </div>
+
+          <div class="p-3 space-y-2">
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-2">
+              <!-- Type -->
+              <div
+                class="rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800/50">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-6 items-center justify-center rounded-lg bg-gray-100 dark:bg-neutral-800">
+                    <UIcon name="i-lucide-tag" class="size-4 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <p class="text-xs-base font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300"> Type
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                  {{ parseKind[item.type] }}
+                </p>
+              </div>
+
+              <!-- Value -->
+              <div
+                class="rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-6 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                    <UIcon name="i-lucide-badge-percent" class="size-4 text-primary" />
+                  </div>
+
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-primary">
+                    Value
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-bold text-primary">
+                  {{
+                    item.type === 'PERCENTAGE' ? item.value : format(Number.parseInt(item.value))
+                  }}
+                </p>
+              </div>
+
+              <!-- Saved -->
+              <div
+                class="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-6 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                    <UIcon name="i-lucide-piggy-bank" class="size-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                    Saved
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  {{ item.totalSaved }}
+                </p>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                  Class:
+                </span>
+
+                <span class="font-medium text-sm">
+                  {{ item.clazz }}
+                </span>
+              </div>
+
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                  Status:
+                </span>
+
+                <UBadge color="success" variant="soft" size="xs">
+                  Applied
+                </UBadge>
+              </div>
+
+              <div v-if="item.expires" class="mt-3 flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                  Expiry:
+                </span>
+
+                <span class="text-sm font-medium">
+                  {{ formatDate(item.expires) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div v-if="item.reason" class="border-t border-gray-100 p-3 dark:border-neutral-800">
+            <p class="text-xs-base uppercase text-gray-500"> Reason</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2"> {{ item.reason }} </p>
+          </div>
+        </UCard>
+      </template>
+    </div>
+
     <template #footer>
       <div class="flex justify-between items-center">
         <Showing :meta="meta" />
@@ -198,164 +413,4 @@ onMounted(async () => {
       </div>
     </template>
   </UCard>
-
-  <!-- Mobile -->
-  <div class="space-y-4 md:hidden">
-    <!-- Loading -->
-    <div v-if="loading" class="space-y-4">
-      <div v-for="i in 4" :key="i"
-        class="rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <div class="flex gap-3">
-          <USkeleton class="h-14 w-14 rounded-2xl" />
-
-          <div class="flex-1 space-y-3">
-            <USkeleton class="h-4 w-32" />
-            <USkeleton class="h-3 w-full" />
-
-            <div class="grid grid-cols-2 gap-2 pt-2">
-              <USkeleton class="h-14 rounded-2xl" />
-              <USkeleton class="h-14 rounded-2xl" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Empty -->
-    <div v-else-if="!data?.length"
-      class="flex min-h-[60vh] flex-col items-center justify-center rounded-[32px] border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
-      <div class="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10">
-        <UIcon name="lucide:badge-percent" class="text-5xl text-primary-500" />
-      </div>
-
-      <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-        No fee discounts found
-      </h3>
-
-      <p class="mt-2 max-w-xs text-sm leading-6 text-gray-500">
-        Discounts, scholarships, and student waivers will appear here.
-      </p>
-    </div>
-
-    <!-- Cards -->
-    <!-- Cards -->
-    <div v-else class="space-y-3">
-      <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-3xl" :ui="{ body: 'p-0' }">
-        <!-- Header -->
-        <div class="flex items-center justify-between p-4">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-              <UIcon name="lucide:badge-percent" class="text-primary text-lg" />
-            </div>
-
-            <div class="min-w-0">
-              <h3 class="truncate text-sm font-semibold">
-                {{ item.name }}
-              </h3>
-
-              <p class="text-xs text-gray-500">
-                {{ item.student }}
-              </p>
-            </div>
-          </div>
-
-          <UDropdownMenu :items="getRowItems({ original: item } as any)" :content="{ align: 'end' }">
-            <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" />
-          </UDropdownMenu>
-        </div>
-
-        <!-- Stats -->
-        <div class="grid grid-cols-3 gap-2 px-4 pb-4">
-          <!-- Type -->
-          <div class="rounded-2xl bg-gray-50 p-3 dark:bg-neutral-800">
-            <p class="text-[10px] uppercase text-gray-500">
-              Type
-            </p>
-
-            <p class="mt-1 text-xs font-medium">
-              {{ parseKind[item.type] }}
-            </p>
-          </div>
-
-          <!-- Value -->
-          <div class="rounded-2xl bg-primary-50 p-3 dark:bg-primary-500/10">
-            <p class="text-[10px] uppercase text-gray-500">
-              Value
-            </p>
-
-            <p class="mt-1 text-sm font-bold text-primary">
-              {{
-                item.type === 'PERCENTAGE'
-                  ? `${item.value}%`
-                  : format(item.value)
-              }}
-            </p>
-          </div>
-
-          <!-- Saved -->
-          <div class="rounded-2xl bg-emerald-50 p-3 dark:bg-emerald-500/10">
-            <p class="text-[10px] uppercase text-gray-500">
-              Saved
-            </p>
-
-            <p class="mt-1 text-sm font-bold text-emerald-600">
-              {{ (item.totalSaved) }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Information -->
-        <div
-          class="mx-4 my-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-800">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-500">
-              Class
-            </span>
-
-            <span class="font-medium text-sm">
-              {{ item.clazz }}
-            </span>
-          </div>
-
-          <div class="mt-3 flex items-center justify-between">
-            <span class="text-xs text-gray-500">
-              Status
-            </span>
-
-            <UBadge color="success" variant="soft" size="xs">
-              Applied
-            </UBadge>
-          </div>
-
-          <div v-if="item.expires" class="mt-3 flex items-center justify-between">
-            <span class="text-xs text-gray-500">
-              Expiry
-            </span>
-
-            <span class="text-sm font-medium">
-              {{ formatDate(item.expires) }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Reason -->
-        <div v-if="item.reason" class="border-t border-gray-100 px-4 py-3 dark:border-neutral-800">
-          <p class="text-[11px] uppercase text-gray-500 mb-1">
-            Reason
-          </p>
-
-          <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-            {{ item.reason }}
-          </p>
-        </div>
-      </UCard>
-      <!-- Pagination -->
-      <div v-if="!loading && data?.length" class="flex flex-col items-center gap-3 pt-2">
-        <Showing :meta="meta" />
-
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
-    </div>
-  </div>
 </template>

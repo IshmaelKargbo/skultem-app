@@ -1,12 +1,12 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex justify-between">
         <div class="flex items-start gap-3">
           <UIcon name="i-lucide-clock-3" class="size-5 text-primary" />
           <div>
             <h3 class="font-semibold">School Timing</h3>
-            <p class="text-sm text-muted">
+            <p class="text-sm text-muted hidden md:block">
               Set the overall school schedule
             </p>
           </div>
@@ -21,7 +21,7 @@
       </div>
     </template>
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-1">
       <UFormField label="School Starts">
         <USkeleton v-if="loading" class="h-10 w-full bg-gray-200" />
         <UInput v-else :disabled="state == 'created'" v-model="settings.startTime" type="time" class="w-full" />
@@ -74,6 +74,8 @@ async function fetchRecord() {
   try {
     loading.value = true
     await store.getTiming()
+  } catch (error: any) {
+    useNotify().error(error)
   } finally {
     loading.value = false
   }

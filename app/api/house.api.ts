@@ -28,6 +28,27 @@ export const HouseApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    assign: async (payload: AssignHouseDto) => {
+      try {
+        return await $api('/house/assignment', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    randomAssign: async (classId: string) => {
+      try {
+        return await $api(`/house/assignment/random/${classId}`, {
+          method: 'POST'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

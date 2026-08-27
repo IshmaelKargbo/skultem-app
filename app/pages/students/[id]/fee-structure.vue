@@ -18,112 +18,119 @@
                     </div>
                 </div>
             </template>
+
             <!-- Fee Summary -->
             <StudentViewFeeSummary />
 
-            <!-- Fee Items -->
+            <!-- Fee Groups -->
             <div v-if="loading" class="space-y-3">
-                <div v-for="i in 5" :key="i"
-                    class="rounded-xl border-2  dark:border-gray-700 dark:bg-gray-950 border-gray-100 bg-gray-100 p-4">
-                    <div class="flex items-start justify-between">
-                        <div class="space-y-2">
-                            <USkeleton class="h-5 w-40" />
-                            <USkeleton class="h-4 w-28" />
+                <div v-for="i in 3" :key="i" class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <USkeleton class="h-5 w-5 rounded-full" />
+                            <USkeleton class="h-5 w-48" />
+                            <USkeleton class="h-6 w-20 rounded-full" />
                         </div>
 
-                        <USkeleton class="h-6 w-20 rounded-full" />
-                    </div>
-
-                    <div class="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <div class="space-y-2">
-                            <USkeleton class="h-3 w-16" />
-                            <USkeleton class="h-5 w-24" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <USkeleton class="h-3 w-14" />
-                            <USkeleton class="h-5 w-24" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <USkeleton class="h-3 w-16" />
-                            <USkeleton class="h-5 w-24" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <USkeleton class="h-3 w-12" />
-                            <USkeleton class="h-5 w-20" />
-                        </div>
+                        <USkeleton class="h-5 w-24" />
                     </div>
                 </div>
             </div>
 
-            <div v-else-if="fees.length" class="space-y-3">
-                <div v-for="fee in fees" :key="fee.id"
-                    class="rounded-xl border-2 border-gray-100 space-y-4 dark:border-gray-800 dark:bg-gray-950 bg-gray-100 p-4">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h4 class="font-semibold">
-                                {{ fee.fee }}
+            <div v-else-if="groups.length" class="space-y-3">
+                <div v-for="group in groups" :key="group.key"
+                    class="overflow-hidden rounded-xl border border-default border-l-4"
+                    :class="group.fullyPaid ? 'border-l-success-500' : 'border-l-error-500'"
+                >
+                    <!-- Group header -->
+                    <button type="button"
+                        class="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+                        @click="toggle(group.key)"
+                    >
+                        <div class="flex min-w-0 items-center gap-2.5">
+                            <UIcon :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                                class="size-4 shrink-0 text-muted" />
+
+                            <UIcon :name="group.fullyPaid ? 'i-lucide-check-circle-2' : 'i-lucide-folder'"
+                                class="size-4 shrink-0"
+                                :class="group.fullyPaid ? 'text-success-500' : 'text-warning-500'" />
+
+                            <h4 class="truncate font-semibold">
+                                {{ group.title }}
                             </h4>
 
-                            <p class="mt-1 text-xs text-muted">
-                                Due Date: {{ formatDateString(fee.dueDate) }}
-                            </p>
+                            <UBadge :color="group.fullyPaid ? 'success' : 'error'" variant="solid" size="sm"
+                                class="shrink-0 rounded-full"
+                            >
+                                {{ group.fullyPaid ? 'Fully Paid' : `${group.unpaidCount} Unpaid` }}
+                            </UBadge>
                         </div>
 
-                        <UBadge :color="fee.status === 'Paid' 
-                            ? 'success'
-                            : fee.status === 'Partial'
-                                ? 'warning'
-                                : 'error'" variant="soft">
-                            {{ fee.status }}
-                        </UBadge>
-                    </div>
+                        <div class="flex shrink-0 items-center gap-4 text-sm">
+                            <span class="text-muted">
+                                Total: <span class="font-semibold text-highlighted">{{ format(group.total) }}</span>
+                            </span>
 
-                    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-[10px] uppercase text-muted">
-                                Amount
-                            </p>
-
-                            <p class="font-semibold">
-                                Le {{ fee.amount }}
-                            </p>
+                            <span v-if="group.due > 0" class="text-error-600 dark:text-error-400">
+                                Due: <span class="font-semibold">{{ format(group.due) }}</span>
+                            </span>
                         </div>
+                    </button>
 
-                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-[10px] uppercase text-muted">
-                                Paid
-                            </p>
+                    <!-- Group items -->
+                    <div v-if="expandedKeys.has(group.key)" class="overflow-x-auto border-t border-default">
+                        <table class="w-full min-w-max text-sm">
+                            <thead>
+                                <tr class="text-[11px] uppercase tracking-wide text-muted">
+                                    <th class="px-4 py-2 text-left font-semibold">Fee Type</th>
+                                    <th class="px-4 py-2 text-left font-semibold">Due Date</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Amount</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Paid</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Due</th>
+                                    <th class="px-4 py-2 text-right font-semibold">Status</th>
+                                </tr>
+                            </thead>
 
-                            <p class="font-semibold text-success-600">
-                                Le {{ fee.amountPaid }}
-                            </p>
-                        </div>
+                            <tbody>
+                                <tr v-for="fee in group.items" :key="fee.id" class="border-t border-default">
+                                    <td class="px-4 py-2.5">{{ fee.fee }}</td>
+                                    <td class="px-4 py-2.5 text-muted">{{ formatDateString(fee.dueDate) }}</td>
+                                    <td class="px-4 py-2.5 text-right">{{ format(fee.amount) }}</td>
+                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{ format(fee.amountPaid) }}</td>
+                                    <td class="px-4 py-2.5 text-right"
+                                        :class="fee.outstanding > 0 ? 'text-error-600 dark:text-error-400' : 'text-muted'"
+                                    >
+                                        {{ format(fee.outstanding) }}
+                                    </td>
+                                    <td class="px-4 py-2.5 text-right">
+                                        <UBadge :color="(parseFeeStatusColor[fee.status] as any)"
+                                            :icon="parseFeeStatusIcon[fee.status]" variant="solid" size="sm"
+                                            class="rounded-full"
+                                        >
+                                            {{ fee.status }}
+                                        </UBadge>
+                                    </td>
+                                </tr>
+                            </tbody>
 
-                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-[10px] uppercase text-muted">
-                                Balance
-                            </p>
-
-                            <p class="font-semibold text-warning-600">
-                                Le {{ fee.outstanding }}
-                            </p>
-                        </div>
-
-                        <div class="space-y-2 bg-white dark:bg-neutral-800 rounded-lg p-3">
-                            <p class="text-[10px] uppercase text-muted">
-                                Term
-                            </p>
-
-                            <p class="font-semibold">
-                                {{ fee.term }}
-                            </p>
-                        </div>
+                            <tfoot>
+                                <tr class="font-semibold"
+                                    :class="group.fullyPaid ? 'bg-success-50 dark:bg-success-950/60' : 'bg-warning-50 dark:bg-warning-950/60'"
+                                >
+                                    <td class="px-4 py-2.5" colspan="2">Sub-Total ({{ group.items.length }} items)</td>
+                                    <td class="px-4 py-2.5 text-right">{{ format(group.total) }}</td>
+                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{ format(group.paid) }}</td>
+                                    <td class="px-4 py-2.5 text-right" :class="group.due > 0 ? 'text-error-600 dark:text-error-400' : ''">
+                                        {{ format(group.due) }}
+                                    </td>
+                                    <td />
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
+
             <div v-else
                 class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200  dark:border-gray-700 py-10">
                 <UIcon name="i-lucide-wallet" class="mb-2 text-4xl text-muted" />
@@ -136,53 +143,74 @@
                     Fee records will appear here.
                 </p>
             </div>
-
-            <template #footer>
-                <div class="flex justify-between items-center">
-                    <Showing :meta="meta" />
-                    <UPagination size="sm" v-model:page="page" :page-size="meta?.size" :items-per-page="meta?.size"
-                        :total="meta?.total" show-edges />
-                </div>
-            </template>
         </UCard>
     </StudentView>
 </template>
 
 <script setup lang="ts">
-const route = useRoute()
 const { can } = useAuth()
 const store = useStudentStore()
 const reportStore = useReportStore()
-const { fees, meta } = storeToRefs(reportStore)
+const { fees } = storeToRefs(reportStore)
 const loading = ref(true)
 const { record } = storeToRefs(store)
-const router = useRouter()
+const { format } = useMoney()
 
 definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
+type FeeGroup = {
+    key: string
+    title: string
+    items: Fee[]
+    total: number
+    paid: number
+    due: number
+    unpaidCount: number
+    fullyPaid: boolean
+}
 
-const size = computed<number>({
-    get: () => Number(route.query.size ?? 6),
-    set: (val) => updateQuery({ size: val })
-})
+const groups = computed<FeeGroup[]>(() => {
+    const map = new Map<string, Fee[]>()
 
-function updateQuery(newQuery: Record<string, any>) {
-    const merged = { ...route.query, ...newQuery }
-
-    if (
-        merged.page === route.query.page &&
-        merged.size === route.query.size
-    ) {
-        return
+    for (const fee of fees.value) {
+        const key = fee.term || 'Other'
+        const items = map.get(key) ?? []
+        items.push(fee)
+        map.set(key, items)
     }
 
-    router.replace({ query: merged })
+    return Array.from(map.entries()).map(([term, items]) => {
+        const total = items.reduce((sum, fee) => sum + fee.amount, 0)
+        const paid = items.reduce((sum, fee) => sum + fee.amountPaid, 0)
+        const due = items.reduce((sum, fee) => sum + fee.outstanding, 0)
+        const unpaidCount = items.filter(fee => fee.status !== 'Paid').length
+
+        return {
+            key: term,
+            title: term,
+            items,
+            total,
+            paid,
+            due,
+            unpaidCount,
+            fullyPaid: unpaidCount === 0
+        }
+    })
+})
+
+const expandedKeys = ref(new Set<string>())
+
+watch(groups, newGroups => {
+    for (const group of newGroups) {
+        if (!expandedKeys.value.has(group.key)) expandedKeys.value.add(group.key)
+    }
+}, { immediate: true })
+
+function toggle(key: string) {
+    if (expandedKeys.value.has(key)) expandedKeys.value.delete(key)
+    else expandedKeys.value.add(key)
 }
 
 async function fetchFeeStructure() {
@@ -201,21 +229,11 @@ async function fetchFeeStructure() {
                 }
             ]
         },
-        page.value,
-        size.value
+        1,
+        100
     )
     loading.value = false
 }
-
-watch(() => page.value, async () => {
-    router.replace({
-        query: {
-            page: page.value
-        }
-    })
-
-    await fetchFeeStructure()
-}, { immediate: true })
 
 watch(
     () => record.value,

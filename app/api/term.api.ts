@@ -49,6 +49,28 @@ export const TermApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    update: async (id: string, payload: CreateTermDto) => {
+      try {
+        const res = await $api(`/term/${id}`, {
+          method: 'PUT',
+          body: payload
+        }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    remove: async (id: string) => {
+      try {
+        return await $api(`/term/${id}`, {
+          method: 'DELETE'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

@@ -69,17 +69,15 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="md:p-7 p-4 md:space-y-5 space-y-3">
-    <UCard>
+  <div class="md:px-6 px-4 space-y-4">
       <Heading title="Fees Collected" subtitle="Create custom reports and explore your school data">
-        <div class="flex w-full space-x-3 md:w-1/3">
+        <div class="flex w-full space-x-3 ">
           <USelectMenu :loading="classStore.loading" :items="classes" value-key="value" v-model="state.classId"
             placeholder="Select Class" @change="change" />
           <USelectMenu :loading="cycleLoading" :items="terms" value-key="value" v-model="state.term"
             placeholder="Select Term" />
         </div>
       </Heading>
-    </UCard>
     <FeeTeacherReport />
     <FeeTeacherTable />
   </div>

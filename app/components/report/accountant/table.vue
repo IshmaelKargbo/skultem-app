@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
@@ -92,13 +93,20 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <UCard class="hidden md:block" :ui="{ body: 'sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <div class="flex justify-end">
+          <TableViewToggle v-model="view" />
+        </div>
+      </template>
+
       <UTable
+        v-if="view === 'table'"
+        class="hidden md:block w-full"
         :column-pinning="columnPinning"
         :columns="columns"
         :data="data"
         :loading="loading"
-        class="w-full"
       >
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -142,6 +150,77 @@ onMounted(() => {
         </template>
       </UTable>
 
+      <div class="p-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+        <UCard
+          v-for="item in data"
+          :key="item.id"
+          variant="outline"
+          class="overflow-hidden"
+          :ui="{ body: 'p-4 sm:p-5' }"
+        >
+          <div class="space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ item.givenNames }} {{ item.familyName }}
+                </p>
+                <p class="truncate text-xs text-gray-500 dark:text-gray-400">
+                  {{ item.className || 'No Class' }}
+                </p>
+              </div>
+
+              <UBadge
+                v-if="item.feeDetail"
+                :label="item.feeDetail.status"
+                :color="parseFeeStatusColor[item.feeDetail.status]"
+                :icon="parseFeeStatusIcon[item.feeDetail.status]"
+                variant="outline"
+                size="sm"
+                class="shrink-0"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Total</p>
+                <p class="mt-2 truncate text-sm font-semibold text-error">
+                  {{ format(item.feeDetail?.total) }}
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Paid</p>
+                <p class="mt-2 truncate text-sm font-semibold text-success">
+                  {{ format(item.feeDetail?.paid) }}
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Outstanding</p>
+                <p class="mt-2 truncate text-sm font-semibold text-info">
+                  {{ format(item.feeDetail?.balance) }}
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Gender</p>
+                <UBadge
+                  class="mt-2 w-fit"
+                  :label="parseGender[item.gender]"
+                  :color="parseGenderColor[item.gender]"
+                  variant="outline"
+                />
+              </div>
+            </div>
+          </div>
+        </UCard>
+
+        <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10 col-span-full">
+          <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+          <p class="text-gray-500 dark:text-gray-400">No students found.</p>
+        </div>
+      </div>
+
       <template #footer>
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Showing :meta="meta" />
@@ -157,90 +236,5 @@ onMounted(() => {
         </div>
       </template>
     </UCard>
-
-    <div class="space-y-3 md:hidden">
-      <UCard
-        v-for="item in data"
-        :key="item.id"
-        class="overflow-hidden border border-gray-200 shadow-sm dark:border-gray-800"
-        :ui="{ body: 'p-4 sm:p-5' }"
-      >
-        <div class="space-y-4">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                {{ item.givenNames }} {{ item.familyName }}
-              </p>
-              <p class="truncate text-xs text-gray-500 dark:text-gray-400">
-                {{ item.className || 'No Class' }}
-              </p>
-            </div>
-
-            <UBadge
-              v-if="item.feeDetail"
-              :label="item.feeDetail.status"
-              :color="parseFeeStatusColor[item.feeDetail.status]"
-              :icon="parseFeeStatusIcon[item.feeDetail.status]"
-              variant="outline"
-              size="sm"
-              class="shrink-0"
-            />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-              <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Total</p>
-              <p class="mt-2 truncate text-sm font-semibold text-error">
-                {{ format(item.feeDetail?.total) }}
-              </p>
-            </div>
-
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-              <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Paid</p>
-              <p class="mt-2 truncate text-sm font-semibold text-success">
-                {{ format(item.feeDetail?.paid) }}
-              </p>
-            </div>
-
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-              <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Outstanding</p>
-              <p class="mt-2 truncate text-sm font-semibold text-info">
-                {{ format(item.feeDetail?.balance) }}
-              </p>
-            </div>
-
-            <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
-              <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Gender</p>
-              <UBadge
-                class="mt-2 w-fit"
-                :label="parseGender[item.gender]"
-                :color="parseGenderColor[item.gender]"
-                variant="outline"
-              />
-            </div>
-          </div>
-        </div>
-      </UCard>
-
-      <div v-if="!loading && !data?.length" class="flex flex-col items-center gap-2 py-10">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
-        <p class="text-gray-500 dark:text-gray-400">No students found.</p>
-      </div>
-
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <div class="space-y-3">
-          <Showing :meta="meta" />
-          <UPagination
-            size="sm"
-            v-model:page="page"
-            :page-size="meta.size"
-            :items-per-page="meta.size"
-            :total="meta.total"
-            show-edges
-            class="justify-center"
-          />
-        </div>
-      </UCard>
-    </div>
   </div>
 </template>

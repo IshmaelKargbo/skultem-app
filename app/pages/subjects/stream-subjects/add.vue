@@ -1,5 +1,5 @@
 <template>
-  <UForm class="p-4 sm:p-6 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
+  <UForm class="px-4 md:px-6 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
     <Heading
       title="Assign Subjects to Stream"
       subtitle="Define the curriculum structure for this stream."
@@ -109,11 +109,11 @@
           </div>
 
           <!-- Mobile: stacked cards, one per assignment -->
-          <div class="md:hidden divide-y divide-gray-200 dark:divide-gray-800">
+          <div class="divide-y divide-gray-200 dark:divide-gray-800 md:hidden" >
             <div
               v-for="(assignment, index) in state.assignments"
               :key="index"
-              class="p-4 space-y-3"
+              class="py-4 space-y-3 "
             >
               <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -187,23 +187,25 @@
       <template #footer>
         <div class="flex flex-col gap-3 sm:flex-row">
           <UButton
-            type="submit"
-            color="primary"
-            :icon="SAVE_ICON"
-            label="Save Changes"
-            :loading="saving"
-            class="w-full justify-center sm:w-auto"
-          />
-          <UButton
             color="neutral"
             variant="outline"
             label="Cancel"
             @click="resetForm"
             class="w-full justify-center sm:w-auto"
           />
+          <UButton
+            type="submit"
+            color="primary"
+            :trailing-icon="SAVE_ICON"
+            label="Save Changes"
+            :loading="saving"
+            class="w-full justify-center sm:w-auto"
+          />
         </div>
       </template>
     </UCard>
+    
+    <!-- empty -->
     <UCard v-else>
       <div class="h-56 flex flex-col items-center justify-center gap-3 px-4 text-center">
         <div
@@ -227,6 +229,7 @@
 import type { TableColumn } from "@nuxt/ui";
 import * as yup from "yup";
 
+const view = ref<'table' | 'card'>('table');
 const store = useStreamSubjectStore();
 const subjectStore = useSubjectStore();
 const streamStore = useStreamStore();

@@ -1,6 +1,5 @@
 <template>
-    <div class="p-4 space-y-5">
-        <Heading title="Student Finance Overview" subtitle="Track student fee status, balances, and collections." />
+    <div class="px-4 md:px-6 space-y-4">
         <StudentAccountantReport />
         <StudentAccountantTable />
     </div>

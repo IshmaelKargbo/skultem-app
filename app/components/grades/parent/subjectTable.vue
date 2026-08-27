@@ -1,130 +1,59 @@
 <script setup lang="ts">
 const store = useReportStore()
-const assessmentStore = useAssessmentStore()
-const UBadge = resolveComponent('UBadge')
-const UButton = resolveComponent('UButton')
-const UTable = resolveComponent('UTable')
-const UCard = resolveComponent('UCard')
-const UIcon = resolveComponent('UIcon')
+const { grades: records, loading } = storeToRefs(store)
 
-const rows = ref<StudentAssessment[]>([])
-const { assessments } = storeToRefs(assessmentStore)
-const { student, term, clazz } = defineProps<{
+const { student, term } = defineProps<{
     term: string
     student: string
     clazz: string
 }>()
-const { grades: records, loading } = storeToRefs(store)
-const columns = ref<any[]>([])
 
-const parseStatusColor: Record<string, string> = {
-    "DRAFT": "info",
-    "SUBMITED": "info",
-    "APPROVED": "success",
-    "RETURNED": "warning",
-    "COMPLETED": "success",
-    "LOCKED": "neutral"
-}
+// Grouped by assessment (Test 1, Test 2, Exam, ...) - each one gets its own expandable section,
+// in the order it runs, same as the student's own Academic Information page.
+const groups = computed(() => {
+    const map = new Map<string, any[]>()
 
-const parseStatus: Record<string, string> = {
-    "DRAFT": "Draft",
-    "SUBMITED": "Submited",
-    "APPROVED": "Approved",
-    "RETURNED": "Returned",
-    "COMPLETED": "Completed",
-    "LOCKED": "Locked"
-}
+    for (const grade of records.value || []) {
+        const key = grade.name || 'Other'
+        const items = map.get(key) ?? []
+        items.push(grade)
+        map.set(key, items)
+    }
 
-// Build table columns dynamically
-function buildColumns() {
-    const baseColumn = [
-        { accessorKey: "subject", header: "Subject" },
-        { accessorKey: "teacher", header: "Teacher" }
-    ]
+    return Array.from(map.entries())
+        .map(([key, items]) => {
+            const scores = items.map((item: any) => Number(item.score ?? 0)).filter((n: number) => !Number.isNaN(n))
+            const passed = items.filter((item: any) => Number(item.score ?? 0) >= 50).length
+            const failed = Math.max(items.length - passed, 0)
+            const average = scores.length
+                ? (scores.reduce((sum: number, n: number) => sum + n, 0) / scores.length).toFixed(1)
+                : '0.0'
+            const position = Number((items[0] as any)?.level ?? Number.MAX_SAFE_INTEGER)
 
-    const assessmentColumns = assessments.value.map(a => ({
-        id: a.id,
-        header: `${a.name} (${a.weight})`,
-        accessorKey: a.id,
-        cell: ({ row }: any) => {
-            const scoreObj = row.original.scores.find((s: any) => s.assessment === a.id)
-            if (!scoreObj || scoreObj.weightScore === undefined || (scoreObj.status != "APPROVED" && scoreObj.status != "COMPLETED"))
-                return h("div", { class: "text-gray-400" }, "-")
-
-
-            const scoreTxt = `${scoreObj.score} (${scoreObj.weightScore})`
-
-            return h("div", { class: "font-medium text-gray-800" }, scoreTxt)
-        }
-    }))
-
-    const summaryColumns = [
-        {
-            id: "total",
-            header: "Final (100)",
-            cell: ({ row }: any) => {
-                const total: any = calculateWeightedTotal(row.original)
-                const totalTxt = `${total[0]} (${total[1]})`
-                return h("div", { class: "font-semibold" }, totalTxt)
+            return {
+                key,
+                title: key,
+                items,
+                passed,
+                failed,
+                average,
+                position
             }
-        }
-    ]
-
-    columns.value = [...baseColumn, ...assessmentColumns, ...summaryColumns]
-}
-
-function calculateWeightedTotal(row: any) {
-    const scores = row.scores as Array<{ score?: number; weightScore?: number; status: string }>
-    if (!scores || scores.length === 0) return 0
-
-    const totalScore = scores.reduce((sum, s) => {
-        const value = (s.status === "APPROVED" || s.status === "COMPLETED") ? s.score || 0 : 0
-        return sum + value
-    }, 0)
-
-    const totalWeight = scores.reduce((sum, s) => {
-        const value = (s.status === "APPROVED" || s.status === "COMPLETED") ? s.weightScore || 0 : 0
-        return sum + value
-    }, 0)
-    return [totalScore, totalWeight]
-}
-
-function prepareRecord() {
-    const map = new Map<string, any>()
-
-    records.value.forEach(r => {
-        if (!map.has(r.subject)) {
-            map.set(r.subject, {
-                subject: r.subject,
-                teacher: r.teacher,
-                scores: [] as Array<{ assessment: string; score?: number; weightScore?: number; status?: string }>
-            })
-        }
-        const subject = map.get(r.subject)
-        subject.scores.push({
-            assessment: r.assessment,
-            score: r.score,
-            weightScore: r.weightScore,
-            status: r.status
         })
-    })
+        .sort((a, b) => a.position - b.position)
+})
 
-    rows.value = Array.from(map.values())
+const expandedKeys = ref(new Set<string>())
 
-    rows.value.forEach(row => {
-        const allCompleted = row.scores.every((s: any) => s.status === 'COMPLETED')
-        row.total = allCompleted ? calculateWeightedTotal(row) : 0
-        row.allCompleted = allCompleted
-    })
+watch(groups, newGroups => {
+    for (const group of newGroups) {
+        if (!expandedKeys.value.has(group.key)) expandedKeys.value.add(group.key)
+    }
+}, { immediate: true })
 
-    rows.value.sort((a, b) => (b.total || 0) - (a.total || 0))
-
-    buildColumns()
-}
-
-async function fetchAssessment() {
-    if (!clazz) return
-    await assessmentStore.fetchClassAssessments(clazz)
+function toggle(key: string) {
+    if (expandedKeys.value.has(key)) expandedKeys.value.delete(key)
+    else expandedKeys.value.add(key)
 }
 
 async function runReport() {
@@ -146,35 +75,147 @@ async function runReport() {
             }
         ]
     }, 1, 200)
-
-    prepareRecord()
 }
 
-watch(() => [term, student], async () => {
-    await fetchAssessment()
-    await runReport()
-}, { immediate: true })
-
-onMounted(async () => {
-    await assessmentStore.fetchGradingScale().catch(() => null)
-})
+watch(() => [term, student], runReport, { immediate: true })
 </script>
 
 <template>
-    <UCard :ui="{
-        body: 'sm:p-0'
-    }">
-        <UTable :columns="columns" :data="rows" :loading="loading">
-            <template #empty-state>
-                <div class="flex flex-col items-center gap-2 py-10">
-                    <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-                    <p class="text-gray-500">No Attendance found.</p>
+    <UCard>
+        <template #header>
+            <h3 class="text-sm font-semibold">Subject Results</h3>
+        </template>
+
+        <div v-if="loading" class="space-y-3">
+            <div
+                v-for="i in 3"
+                :key="i"
+                class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950"
+            >
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <USkeleton class="h-5 w-5 rounded-full" />
+                        <USkeleton class="h-5 w-48" />
+                        <USkeleton class="h-6 w-20 rounded-full" />
+                    </div>
+
+                    <USkeleton class="h-5 w-24" />
                 </div>
-            </template>
-            <template #status-cell="{ row }">
-                <UBadge :label="parseStatus[row.original.status]" variant="outline"
-                    :color="parseStatusColor[row.original.status]" />
-            </template>
-        </UTable>
+            </div>
+        </div>
+
+        <div v-else-if="groups.length" class="space-y-3">
+            <div
+                v-for="group in groups"
+                :key="group.key"
+                class="overflow-hidden rounded-xl border border-default border-l-4"
+                :class="group.passed === group.items.length ? 'border-l-success-500' : 'border-l-warning-500'"
+            >
+                <button
+                    type="button"
+                    class="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+                    @click="toggle(group.key)"
+                >
+                    <div class="flex min-w-0 items-center gap-2.5">
+                        <UIcon
+                            :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                            class="size-4 shrink-0 text-muted"
+                        />
+
+                        <UIcon
+                            :name="group.passed === group.items.length ? 'i-lucide-check-circle-2' : 'i-lucide-book-open'"
+                            class="size-4 shrink-0"
+                            :class="group.passed === group.items.length ? 'text-success-500' : 'text-primary-500'"
+                        />
+
+                        <h4 class="truncate font-semibold">
+                            {{ group.title }}
+                        </h4>
+
+                        <UBadge
+                            :color="group.passed === group.items.length ? 'success' : 'warning'"
+                            variant="solid"
+                            size="sm"
+                            class="shrink-0 rounded-full"
+                        >
+                            {{ group.passed === group.items.length ? 'All Passed' : `${group.failed} Attention` }}
+                        </UBadge>
+                    </div>
+
+                    <div class="flex shrink-0 items-center gap-4 text-sm">
+                        <span class="text-muted">
+                            Subjects: <span class="font-semibold text-highlighted">{{ group.items.length }}</span>
+                        </span>
+
+                        <span class="text-muted">
+                            Avg: <span class="font-semibold text-highlighted">{{ group.average }}%</span>
+                        </span>
+                    </div>
+                </button>
+
+                <div v-if="expandedKeys.has(group.key)" class="overflow-x-auto border-t border-default">
+                    <table class="w-full min-w-max text-sm">
+                        <thead>
+                            <tr class="text-[11px] uppercase tracking-wide text-muted">
+                                <th class="px-4 py-2 text-left font-semibold">Subject</th>
+                                <th class="px-4 py-2 text-left font-semibold">Teacher</th>
+                                <th class="px-4 py-2 text-right font-semibold">Score</th>
+                                <th class="px-4 py-2 text-right font-semibold">Weight</th>
+                                <th class="px-4 py-2 text-right font-semibold">Grade</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr v-for="subject in group.items" :key="subject.id" class="border-t border-default">
+                                <td class="px-4 py-2.5 font-medium">
+                                    {{ subject.subject }}
+                                </td>
+                                <td class="px-4 py-2.5 text-muted">
+                                    {{ subject.teacher }}
+                                </td>
+                                <td class="px-4 py-2.5 text-right">
+                                    {{ subject.score }}%
+                                </td>
+                                <td class="px-4 py-2.5 text-right">
+                                    {{ subject.weightScore }}%
+                                </td>
+                                <td class="px-4 py-2.5 text-right">
+                                    <UBadge
+                                        size="sm"
+                                        variant="soft"
+                                        :color="subject.grade === 'A'
+                                            ? 'success'
+                                            : subject.grade === 'B'
+                                                ? 'primary'
+                                                : subject.grade === 'C'
+                                                    ? 'warning'
+                                                    : subject.grade === null
+                                                        ? 'neutral'
+                                                        : 'error'"
+                                    >
+                                        {{ subject.grade || 'N/A' }}
+                                    </UBadge>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div
+            v-else
+            class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-10 dark:border-gray-700"
+        >
+            <UIcon name="i-lucide-book-x" class="mb-2 text-4xl text-muted" />
+
+            <p class="font-medium">
+                No Academic Records Found
+            </p>
+
+            <p class="text-sm text-muted">
+                Try selecting another term.
+            </p>
+        </div>
     </UCard>
 </template>

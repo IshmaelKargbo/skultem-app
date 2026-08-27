@@ -1,13 +1,16 @@
 <template>
-    <u-slideover :dismissible="false" title="Add Academic Year" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" :title="isEdit ? 'Edit Academic Year' : 'Add Academic Year'" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
-        <UButton color="primary" label="Add Academic Year" class="hidden md:flex" :icon="ADD_ICON" @click="open = true" />
-        <UButton color="primary" class="md:hidden" :icon="ADD_ICON" @click="open = true" />
+        <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
+        <template v-else>
+            <UButton color="primary" label="Add Academic Year" class="hidden md:flex" :icon="ADD_ICON" @click="open = true" />
+            <UButton color="primary" class="md:hidden" :icon="ADD_ICON" @click="open = true" />
+        </template>
 
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
-                <p class="text-lg font-semibold">Add Academic Year</p>
+                <p class="text-lg font-semibold">{{ isEdit ? 'Edit Academic Year' : 'Add Academic Year' }}</p>
                 <u-button icon="lucide:x" variant="ghost"  color="neutral" @click="close" />
             </div>
         </template>
@@ -41,8 +44,8 @@
         <!-- Footer -->
         <template #footer>
             <div class="flex space-x-3">
-                <u-button icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <u-button label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
+                <u-button :trailing-icon="SAVE_ICON" :loading="isLoading" label="Save" @click="formRef?.submit()" />
             </div>
         </template>
     </u-slideover>
@@ -53,9 +56,12 @@ import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
+const { year } = defineProps<{ year?: AcademicYear }>()
+
 const store = useAcademicYearStore()
 const { error: toastError, success: toastSuccess } = useNotify()
 const isLoading = ref(false)
+const isEdit = computed(() => !!year)
 
 type AcademicYearForm = {
     name: string
@@ -63,19 +69,16 @@ type AcademicYearForm = {
     endDate: string
 }
 
-// reactive form state
-const state = reactive<AcademicYearForm>({
-    name: '',
-    startDate: '',
-    endDate: ''
-})
+function defaultState(): AcademicYearForm {
+    return {
+        name: year?.name || '',
+        startDate: year?.startDate || '',
+        endDate: year?.endDate || ''
+    }
+}
 
-// reactive error state
-const errors = reactive<Record<string, string>>({
-    name: '',
-    startDate: '',
-    endDate: ''
-})
+// reactive form state
+const state = reactive<AcademicYearForm>(defaultState())
 
 // yup validation schema
 const schema = yup.object({
@@ -87,13 +90,10 @@ const schema = yup.object({
 const formRef = ref<any>(null)
 const open = ref(false)
 
-// reset form and errors
+// reset form to whatever it should show next time it opens
 const close = () => {
     open.value = false
-    state.name = ''
-    state.startDate = ''
-    state.endDate = ''
-    Object.keys(errors).forEach(key => (errors[key] = ''))
+    Object.assign(state, defaultState())
 }
 
 
@@ -104,17 +104,27 @@ const onSubmit = async (event: FormSubmitEvent<AcademicYearForm>) => {
 
     try {
         await schema.validate(state, { abortEarly: false })
-        await store.create({
-            name: state.name,
-            startDate: state.startDate,
-            endDate: state.endDate
-        })
 
-        await store.fetchAll()
-        toastSuccess('Academic year created successfully')
+        if (isEdit.value && year) {
+            await store.update(year.id, {
+                name: state.name,
+                startDate: state.startDate,
+                endDate: state.endDate
+            })
+            toastSuccess('Academic year updated successfully')
+        } else {
+            await store.create({
+                name: state.name,
+                startDate: state.startDate,
+                endDate: state.endDate
+            })
+            await store.fetchAll()
+            toastSuccess('Academic year created successfully')
+        }
+
         close()
     } catch (err: any) {
-        toastSuccess(err.message)
+        toastError(err.message)
     } finally {
         isLoading.value = false
     }

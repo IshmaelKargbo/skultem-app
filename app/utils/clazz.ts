@@ -3,7 +3,7 @@ export type Clazz = {
     name: string
     level: string
     levelOrder: number
-    nextClass: string | null
+    nextClass: Clazz | null
     streamId: string
     terminal: boolean
     createdAt: string
@@ -22,6 +22,7 @@ export type ClassSection = {
     id: string
     clazz: Clazz
     section: Section
+    sectionName?: string
     createdAt: string
     updatedAt: string
 }
@@ -55,6 +56,16 @@ export type ClassTeacher = {
     familyName: string
     streamId: string
     streamName: string
+}
+
+export type ClassOverview = {
+    clazz: Clazz
+    sectionCount: number
+    streamCount: number
+    classMasterCount: number
+    sections: ClassSection[]
+    streams: ClassStream[]
+    classMasters: ClassMaster[]
 }
 
 export type CreateClassDto = {
@@ -99,6 +110,13 @@ export type AssignMastertsDto = {
     teacherId: string,
     sectionId: string,
     streamId: string
+}
+
+export type CreateClassSessionDto = {
+    classId: string
+    academicYear: string
+    sectionId: string
+    streamId?: string | null
 }
 
 export type Address = {

@@ -16,7 +16,7 @@ export const ReportApi = () => {
   }
 
   const download = async (path: string, params: Record<string, string | undefined>) => {
-    const accessToken = useCookie("access_token")
+    const { accessToken } = useAuthCookies()
     const url = buildUrl(path, params)
 
     const res = await fetch(url, {

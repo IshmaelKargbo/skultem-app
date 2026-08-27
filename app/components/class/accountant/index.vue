@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
+    <div class="space-y-4 px-4 md:px-6 ">
         <ClassAccountantReport />
         <ClassAccountantTable />
     </div>

@@ -102,9 +102,10 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
-    getAllStructures: async (page: number, size: number) => {
+    getAllStructures: async (page: number, size: number, termId?: string) => {
       try {
-        const res = await $api(`/fee/structure?page=${page}&size=${size}`) as any
+        const query = termId ? `&termId=${termId}` : ''
+        const res = await $api(`/fee/structure?page=${page}&size=${size}${query}`) as any
 
         if (!res)
           throw new Error('Failed to fetch fee structures')
@@ -144,6 +145,26 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
+    updateCategory: async (id: string, payload: CreateFeeCategoryDto) => {
+      try {
+        const res = await $api(`/fee/category/${id}`, {
+          method: 'PUT',
+          body: payload
+        }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    deleteCategory: async (id: string) => {
+      try {
+        return await $api(`/fee/category/${id}`, {
+          method: 'DELETE'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     recordPayment: async (payload: RecordPaymentDto) => {
       try {
         return await $api('/payment', {
@@ -159,6 +180,38 @@ export const FeeApi = () => {
         return await $api('/fee/structure', {
           method: 'POST',
           body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getStructure: async (id: string) => {
+      try {
+        const res = await $api(`/fee/structure/${id}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch fee structure')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    updateStructure: async (id: string, payload: UpdateFeeStructureDto) => {
+      try {
+        const res = await $api(`/fee/structure/${id}`, {
+          method: 'PUT',
+          body: payload
+        }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    deleteStructure: async (id: string) => {
+      try {
+        return await $api(`/fee/structure/${id}`, {
+          method: 'DELETE'
         })
       } catch (err: any) {
         useHandleError(err)

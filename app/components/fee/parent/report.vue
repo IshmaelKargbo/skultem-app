@@ -11,13 +11,11 @@ const report = ref<{
     paid: string
     total: string
     pending: string
-    balance: string
     overdue: string
 }>({
     paid: "0",
     total: "0",
     pending: "0",
-    balance: "0",
     overdue: "0"
 })
 
@@ -149,13 +147,9 @@ async function fetchRecord() {
         Number(paid?.data?.[0] ?? 0) +
         Number(partial?.data?.[0] ?? 0)
 
-    const totalValue = format(Number(paid?.data?.[0] ?? 0))
-    const balanceValue = format(Number(paid?.data?.[0] ?? 0) - totalPaid)
-
     report.value = {
         paid: format(totalPaid),
-        total: totalValue,
-        balance: balanceValue,
+        total: format(Number(total?.data?.[0] ?? 0)),
         pending: format(Number(totalPending)),
         overdue: format(Number(overdue?.data?.[0] ?? 0))
     }
@@ -164,14 +158,22 @@ async function fetchRecord() {
 watch(() => student, fetchRecord, { immediate: true })
 </script>
 <template>
-    <div class="grid gap-3 md:grid-cols-3 grid-cols-1">
+    <div class="grid gap-3 md:grid-cols-4 grid-cols-2">
+        <Metric :record="{
+            label: 'Total Fees',
+            icon: DEBIT_ICON,
+            value: report?.total,
+            isReady: !loading,
+            color: 'neutral',
+            subtle: 'This academic year'
+        }" />
         <Metric  :record="{
             label: 'Total Paid',
             icon: PAYMENT_ICON,
             value: report?.paid,
             isReady: !loading,
             color: 'success',
-            subtle: 'This academic year'
+            subtle: 'Amount received'
         }" />
         <Metric  :record="{
             label: 'Pending',

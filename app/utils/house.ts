@@ -15,3 +15,10 @@ export type CreateHouseDto = {
     motto: string
     masters: string[]
 }
+
+export type AssignHouseDto = {
+    records: {
+        id: string
+        house: string
+    }[]
+}

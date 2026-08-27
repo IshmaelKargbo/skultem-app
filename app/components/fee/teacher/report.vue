@@ -15,7 +15,7 @@ const { loading, feeDetails } = storeToRefs(feeStore)
         <Metric :record="{
             label: 'Partial',
             icon: PARTIAL_ICON,
-            value: feeDetails.summery?.pending,
+            value: feeDetails.summery?.partial,
             isReady: !loading,
             color: 'info',
             subtle: 'Payments still in progress'

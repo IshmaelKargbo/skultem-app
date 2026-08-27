@@ -125,6 +125,21 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    getByClass: async (classId: string, page: number, size: number) => {
+      try {
+        const res = await $api(`/enrollment/class/${classId}?page=${page}&size=${size}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch students by class')
+
+        const data = res.data
+        const meta = useMeta(res.meta)
+
+        return { data, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     sumFeesPaidByStudentAndFee: async (studentId: string, feeId: string) => {
       try {
         const res = await $api(`/payment/student/${studentId}/${feeId}`) as any

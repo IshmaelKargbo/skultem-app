@@ -7,7 +7,7 @@
                 <div class="space-y-4">
                     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div class="flex items-center gap-3">
-                            <UAvatar size="lg" :src="student.photo || '/avatar-placeholder.svg'"
+                            <UAvatar size="3xl" :src="student.photo || '/avatar-placeholder.svg'"
                                 :alt="`${student.givenNames} ${student.familyName}`"
                                 class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
                             <div>
@@ -29,6 +29,7 @@
                     </div>
                 </div>
             </template>
+
             <div v-if="student">
                 <div class="pb-5 p-0 md:p-5 grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
                     <UCard class="bg-info-100/60 dark:bg-info-900/30 ring-info-300/70 dark:ring-info-800/70">

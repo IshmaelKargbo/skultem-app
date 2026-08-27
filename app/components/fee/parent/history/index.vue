@@ -1,5 +1,5 @@
 <template>
-  <UCard class="hidden md:block" :ui="{
+  <UCard :ui="{
         body: 'sm:p-0'
     }">
     <template #header>
@@ -10,9 +10,12 @@
     <UTable :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+          <UIcon name="ph:receipt-light" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No payment found.</p>
         </div>
+      </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
       </template>
     </UTable>
   </UCard>
@@ -54,16 +57,16 @@ const columns = [
 ]
 
 async function fetchRecord() {
+  if (!student) return
   loading.value = true
   data.value = []
-  const res = await studentStore.getPaymentHistoryByStudent(student)
-  if (res == null) return
-
-  data.value = res.records
-  loading.value = false
+  try {
+    const res = await studentStore.getPaymentHistoryByStudent(student)
+    data.value = res?.records ?? []
+  } finally {
+    loading.value = false
+  }
 }
 
-watch(() => student, () => {
-  fetchRecord()
-})
+watch(() => student, fetchRecord, { immediate: true })
 </script>

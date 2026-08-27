@@ -1,20 +1,21 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex justify-between">
         <div class="flex items-start gap-3">
           <UIcon name="i-lucide-door-open" class="size-5 text-primary" />
           <div>
             <h3 class="font-semibold">Rooms</h3>
-            <p class="text-sm text-muted">
+            <p class="text-sm text-muted hidden md:block">
               Manage classrooms and spaces available for scheduling
             </p>
           </div>
         </div>
 
-        <UButton icon="i-lucide-plus" size="sm" class="w-full justify-center sm:w-auto" @click="addRoom">
+        <UButton icon="i-lucide-plus" size="sm" class="w-full justify-center sm:w-auto hidden md:block" @click="addRoom">
           Add Room
         </UButton>
+           <UButton icon="i-lucide-plus" size="sm" class=" md:hidden" @click="addRoom"/>
       </div>
     </template>
 
@@ -57,7 +58,11 @@ function removeRoom(param: Room, index: string) {
 }
 
 async function fetchRecord() {
-  await store.searchRoom(0, 0, "")
+  try {
+    await store.searchRoom(0, 0, "")
+  } catch (error: any) {
+    useNotify().error(error)
+  }
 }
 
 onMounted(async () => {

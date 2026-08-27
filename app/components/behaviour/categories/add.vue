@@ -1,7 +1,7 @@
 <template>
     <USlideover :dismissible="false" title="Add Behaviour Category" :open="open" @update:open="open = $event">
         <!-- Trigger -->
-        <UButton color="primary" label="Add Behaviour Category" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Add Category" class="flex justify-center items-center" icon="prime:plus" @click="open = true" />
 
         <!-- Header -->
         <template #header>

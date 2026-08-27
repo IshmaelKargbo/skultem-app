@@ -26,6 +26,7 @@ export type Student = {
     sessionId: string
     classTeacher: string
     rank: string
+    house?: House
     status: string
     createdAt: string
     updatedAt: string
@@ -57,6 +58,7 @@ export type StudentFee = {
     term: string
     dueDate: string
     status: string
+    allowInstallment: boolean
 }
 
 export type StudentSubject = {

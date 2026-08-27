@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 mt-6">
+  <div class="space-y-6  p-4 md:px-6">
     <Heading title="Edit Teacher" subtitle="Edit a teacher profile and assign responsibilities.">
       <div class="md:w-auto w-full items-center space-x-2 flex">
         <UButton label="Back" to="/teachers" :icon="BACK_ICON" variant="outline" color="neutral" />

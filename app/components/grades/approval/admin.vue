@@ -1,292 +1,112 @@
 <template>
-  <UForm :state="state"
-    class="min-h-screen space-y-4 p-3 md:space-y-5  md:p-5 ">
-    <!-- Desktop Heading -->
-    <Heading class="hidden md:block" title="Approval Requests" :subtitle="headerMessage">
-      <div class="flex flex-wrap gap-2">
-        <UBadge color="warning" variant="soft" size="lg" class="rounded-full px-3 py-1">
-          {{ summary.pending }} Pending
-        </UBadge>
+  <div class="px-4 md:px-6 space-y-4">
+    <UCard>
+      <template #header>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <USelectMenu v-model="state.teacherId" value-key="value" :items="teachers" :loading="loadingSession"
+              placeholder="Select teacher" class="w-full sm:w-56" @change="fetchRecords" />
+            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
+              class="w-full sm:w-64" />
+            <USelectMenu v-model="filter" value-key="value" :items="filterOptions" class="w-full sm:w-40"
+              @change="onFilterChange" />
+          </div>
 
-        <UBadge color="success" variant="soft" size="lg" class="rounded-full px-3 py-1">
-          {{ summary.approved }} Approved
-        </UBadge>
+          <div class="flex items-center gap-2">
+            <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
+            <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
+            <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>
+          </div>
+        </div>
+      </template>
 
-        <UBadge color="error" variant="soft" size="lg" class="rounded-full px-3 py-1">
-          {{ summary.returned }} Returned
-        </UBadge>
-      </div>
-    </Heading>
-
-    <!-- MOBILE HEADER -->
-    <div class="md:hidden space-y-3">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-xl font-bold text-gray-900 dark:text-white">
-            Approvals
-          </h1>
-
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            Review teacher submissions
-          </p>
+      <div class="space-y-4">
+        <!-- NO TEACHER SELECTED -->
+        <div v-if="!state.teacherId"
+          class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-16 text-center">
+          <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+            <UIcon name="lucide:user-search" class="text-3xl text-primary-500" />
+          </div>
+          <h3 class="font-semibold text-highlighted">Select a teacher</h3>
+          <p class="text-sm text-muted">Choose a teacher to review submitted grades and approval requests.</p>
         </div>
 
-        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-500 text-white shadow-lg">
-          <UIcon name="lucide:clipboard-check" class="size-5" />
+        <!-- LOADING -->
+        <div v-else-if="isLoading" class="space-y-3">
+          <GradesRecordLoading v-for="(_, index) in 6" :key="index" />
+        </div>
+
+        <!-- EMPTY -->
+        <div v-else-if="!filteredRequests.length"
+          class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-16 text-center">
+          <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-elevated">
+            <UIcon name="lucide:inbox" class="text-3xl text-muted" />
+          </div>
+          <h3 class="font-semibold text-highlighted">No requests found</h3>
+          <p class="text-sm text-muted">No approval requests match this filter.</p>
+        </div>
+
+        <!-- LIST -->
+        <div v-else class="space-y-3">
+          <GradesRecord v-for="req in filteredRequests" :key="req.id" :selected="selected" :record="req"
+            @click="selected = req" />
         </div>
       </div>
 
-      <!-- STATS -->
-      <div class="grid grid-cols-3 gap-2">
-        <UCard class="rounded-xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
-          <div class="text-center">
-            <p class="text-[11px] text-gray-500">
-              Pending
-            </p>
+      <template v-if="meta.total" #footer>
+        <div class="flex items-center justify-between">
+          <Showing :meta="meta" />
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
+        </div>
+      </template>
+    </UCard>
 
-            <p class="mt-1 text-lg font-bold text-warning">
-              {{ summary.pending }}
-            </p>
-          </div>
-        </UCard>
-
-        <UCard class="rounded-xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
-          <div class="text-center">
-            <p class="text-[11px] text-gray-500">
-              Approved
-            </p>
-
-            <p class="mt-1 text-lg font-bold text-success">
-              {{ summary.approved }}
-            </p>
-          </div>
-        </UCard>
-
-        <UCard class="rounded-xl border-0 shadow-sm ring-1 ring-gray-200 dark:ring-gray-800">
-          <div class="text-center">
-            <p class="text-[11px] text-gray-500">
-              Returned
-            </p>
-
-            <p class="mt-1 text-lg font-bold text-error">
-              {{ summary.returned }}
-            </p>
-          </div>
-        </UCard>
-      </div>
-    </div>
-
-    <div class="grid gap-5 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-      <!-- LEFT -->
-      <div class="min-h-0">
-        <UCard class="overflow-hidden lg:sticky lg:top-2" :ui="{
-          body: 'p-3 md:p-4',
-          header: 'p-3 md:p-4',
-          footer: 'p-3 md:p-4'
-        }">
-          <!-- HEADER -->
-          <template #header>
-            <div class="space-y-4">
-              <!-- FILTERS -->
-              <div class="flex gap-2 overflow-x-auto rounded-2xl bg-gray-50 p-1.5 pb-1 scrollbar-hide dark:bg-gray-800/70">
-                <UButton size="sm" class="shrink-0 rounded-xl" :variant="filter === 'ALL' ? 'solid' : 'ghost'"
-                  @click="filter = 'ALL'">
-                  All {{ requests.length }}
-                </UButton>
-
-                <UButton size="sm" class="shrink-0 rounded-xl"
-                  :variant="filter === 'Pending Review' ? 'solid' : 'ghost'" @click="filter = 'Pending Review'">
-                  Pending {{ summary.pending }}
-                </UButton>
-
-                <UButton size="sm" class="shrink-0 rounded-xl" :variant="filter === 'Approved' ? 'solid' : 'ghost'"
-                  @click="filter = 'Approved'">
-                  Approved {{ summary.approved }}
-                </UButton>
-
-                <UButton size="sm" class="shrink-0 rounded-xl" :variant="filter === 'Returned' ? 'solid' : 'ghost'"
-                  @click="filter = 'Returned'">
-                  Returned {{ summary.returned }}
-                </UButton>
-              </div>
-
-              <!-- SEARCH -->
-              <div class="space-y-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-800 dark:bg-gray-900/40">
-                <USelectMenu v-model="state.teacherId" value-key="value" size="xl" :items="teachers"
-                  :loading="loadingSession" placeholder="Select teacher" @change="fetchRecords" />
-
-                <UInput v-model="search" icon="lucide:search" size="lg" placeholder="Search subject or teacher..." />
-              </div>
-            </div>
-          </template>
-
-          <!-- EMPTY -->
-          <div v-if="!state.teacherId" class="flex flex-col items-center justify-center py-14 text-center">
-            <div
-              class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary-100 dark:bg-primary-500/10">
-              <UIcon name="lucide:user-search" class="size-7 text-primary" />
-            </div>
-
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-              Select Teacher
-            </h3>
-
-            <p class="mt-1 max-w-xs text-xs text-gray-500">
-              Choose a teacher to review submitted grades and approval requests.
-            </p>
-          </div>
-
-          <!-- LOADING -->
-          <div v-else-if="isLoading" class="space-y-3">
-            <GradesRecordLoading v-for="(_, index) in 6" :key="index" />
-          </div>
-
-          <!-- EMPTY REQUEST -->
-          <div v-else-if="filteredRequests.length === 0"
-            class="flex flex-col items-center justify-center py-14  text-center">
-            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-gray-800">
-              <UIcon name="lucide:inbox" class="size-7 text-gray-500" />
-            </div>
-
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-              No Requests Found
-            </h3>
-
-            <p class="mt-1 text-xs text-gray-500">
-              No approval requests match this filter.
-            </p>
-          </div>
-
-          <!-- DESKTOP -->
-          <div v-else class="hidden space-y-3 md:block">
-            <GradesRecord v-for="req in filteredRequests" :key="req.id" :selected="selected" :record="req"
-              @click="selected = req" />
-          </div>
-
-          <!-- MOBILE -->
-          <div v-if="filteredRequests.length > 0" class="space-y-3 md:hidden">
-            <UCard v-for="req in filteredRequests" :key="req.id"
-              class="cursor-pointer rounded-3xl border-0 shadow-sm ring-1 ring-gray-200 transition-all active:scale-[0.98] dark:ring-gray-800"
-              :class="selected?.id === req.id ? 'ring-2 ring-primary-400 dark:ring-primary-500' : ''"
-              :ui="{ body: 'p-4' }" @click="selected = req">
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex min-w-0 flex-1 gap-3">
-                  <div
-                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-500/10">
-                    <UIcon name="lucide:clipboard-check" class="size-5 text-primary" />
-                  </div>
-
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                        {{ req.subject }}
-                      </h3>
-
-                      <UBadge size="xs" :color="req.status === 'Approved'
-                          ? 'success'
-                          : req.status === 'Returned'
-                            ? 'error'
-                            : 'warning'
-                        " variant="soft">
-                        {{ req.status }}
-                      </UBadge>
-                    </div>
-
-                    <p class="mt-1 truncate text-xs text-gray-500">
-                      {{ req.teacher }}
-                    </p>
-
-                    <div class="mt-3 flex items-center justify-between">
-                      <p class="text-[11px] text-gray-400">
-                        Tap to review
-                      </p>
-
-                      <UIcon name="lucide:chevron-right" class="size-4 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </UCard>
-          </div>
-
-          <!-- FOOTER -->
-          <template #footer>
-            <div class="flex items-center justify-between gap-3">
-              <Showing :meta="meta" />
-
-              <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                :total="meta.total" show-edges />
-            </div>
-          </template>
-        </UCard>
-      </div>
-
-      <!-- DESKTOP VIEW -->
-      <div class="hidden min-h-0 lg:block">
-        <GradesViewRequest :record="selected" @refresh="fetchRecordAndUpdate" @close="close" />
-      </div>
-    </div>
-
-    <!-- MOBILE SLIDEOVER -->
-    <USlideover v-model:open="mobileOpen" side="right" :ui="{
-      content: 'bg-white dark:bg-gray-950'
-    }">
+    <USlideover :open="!!selected" side="right" :ui="{ content: 'bg-default' }" @update:open="close">
       <template #content>
         <div class="flex h-screen flex-col">
-          <!-- HEADER -->
           <div
-            class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 p-4 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
+            class="sticky top-0 z-10 flex items-center justify-between border-b border-default bg-default/95 p-4 backdrop-blur">
             <div>
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
-                Approval Details
-              </h2>
-
-              <p class="text-xs text-gray-500">
-                Review submission
-              </p>
+              <h2 class="text-sm font-semibold text-highlighted">Approval Details</h2>
+              <p class="text-xs text-muted">Review submission</p>
             </div>
-
             <UButton icon="lucide:x" color="neutral" variant="ghost" class="rounded-full" @click="close" />
           </div>
 
-          <!-- BODY -->
           <div class="flex-1 overflow-y-auto p-3">
             <GradesViewRequest :record="selected" @refresh="fetchRecordAndUpdate" @close="close" />
           </div>
         </div>
       </template>
     </USlideover>
-  </UForm>
+  </div>
 </template>
 
 <script setup lang="ts">
-type ApprovalRequestStatus = 'Pending Review' | 'Approved' | 'Returned'
-type RequestFilter = 'ALL' | ApprovalRequestStatus
+type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
 
 type ApprovalRequestForm = {
   teacherId: string
 }
 
-const mobileOpen = ref(false)
-
-const headerMessage = computed(() => {
-  if (!state.teacherId) {
-    return 'Select a teacher to review grade submissions'
-  }
-
-  return 'Review grade submissions from subject teachers'
-})
+const filterOptions: { label: string, value: ApprovalRequestStatusFilter }[] = [
+  { label: 'All', value: '' },
+  { label: 'Pending', value: 'PENDING_REVIEW' },
+  { label: 'Approved', value: 'APPROVED' },
+  { label: 'Returned', value: 'RETURNED' }
+]
 
 const sessionStore = useTeacherStore()
 const store = useAssessmentStore()
 
-const { records, meta } = storeToRefs(sessionStore)
+const { records: teacherRecords } = storeToRefs(sessionStore)
 
 const isLoading = ref(false)
 const loadingSession = ref(true)
 
 const teachers = computed(() =>
-  records.value.map(e => ({
+  teacherRecords.value.map(e => ({
     label: `${e.user.givenNames} ${e.user.familyName}`,
     value: e.id
   }))
@@ -296,44 +116,25 @@ const router = useRouter()
 const route = useRoute()
 
 const search = ref('')
-const filter = ref<RequestFilter>('ALL')
-const requests = ref<AssessmentApprovalRequest[]>([])
+const filter = ref<ApprovalRequestStatusFilter>('')
+const { requests, meta } = storeToRefs(store)
+const summary = ref<AssessmentApprovalSummary | null>(null)
 
 const selected = ref<AssessmentApprovalRequest | null>(null)
 
-watch(selected, (val) => {
-  if (import.meta.client && window.innerWidth < 768) {
-    mobileOpen.value = !!val
-  }
-})
-
 function close() {
   selected.value = null
-  mobileOpen.value = false
 }
 
-const summary = computed(() => ({
-  pending: requests.value.filter(i => i.status === 'Pending Review').length,
-  approved: requests.value.filter(i => i.status === 'Approved').length,
-  returned: requests.value.filter(i => i.status === 'Returned').length
-}))
-
+// Backend already filters by status - search narrows further within the current page.
 const filteredRequests = computed(() => {
-  let list = requests.value
+  if (!search.value) return requests.value
 
-  if (filter.value !== 'ALL') {
-    list = list.filter(i => i.status === filter.value)
-  }
+  const q = search.value.toLowerCase()
 
-  if (search.value) {
-    const q = search.value.toLowerCase()
-
-    list = list.filter(i =>
-      `${i.teacher} ${i.subject}`.toLowerCase().includes(q)
-    )
-  }
-
-  return list
+  return requests.value.filter(i =>
+    `${i.teacher} ${i.subject}`.toLowerCase().includes(q)
+  )
 })
 
 async function fetchRecords() {
@@ -341,7 +142,11 @@ async function fetchRecords() {
 }
 
 async function fetchRecordAndUpdate() {
-  await loadRequests(true)
+  await Promise.all([loadRequests(true), fetchSummary()])
+}
+
+async function fetchSummary() {
+  summary.value = await store.fetchAssessmentApprovalSummary(state.teacherId)
 }
 
 async function loadRequests(keepSelection: boolean) {
@@ -350,14 +155,9 @@ async function loadRequests(keepSelection: boolean) {
   isLoading.value = true
 
   try {
-    const res = await store.fetchAllAssessmentApprovalRequest(state.teacherId, page.value, size.value)
-
-    requests.value = res.data || []
-
+    await store.fetchAllAssessmentApprovalRequest(state.teacherId, page.value, size.value, filter.value || undefined)
     if (!keepSelection) return
-
-    selected.value =
-      requests.value.find(e => e.id === selected.value?.id) || null
+    selected.value = requests.value.find(e => e.id === selected.value?.id) || null
   } finally {
     isLoading.value = false
   }
@@ -367,27 +167,22 @@ const state = reactive<ApprovalRequestForm>({
   teacherId: ''
 })
 
+watch(() => state.teacherId, fetchSummary)
+
+function onFilterChange() {
+  updateQuery({ page: 1 })
+  fetchRecords()
+}
+
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
   set: val => updateQuery({ page: val })
 })
 
-const size = computed<number>({
-  get: () => Number(route.query.size ?? 5),
-  set: val => updateQuery({ size: val })
-})
+const size = ref(5)
 
 function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
+  router.replace({ query: { ...route.query, ...newQuery } })
 }
 
 watch(

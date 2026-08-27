@@ -1,146 +1,55 @@
 <template>
-  <div class="p-4 sm:p-6  overflow-y-auto h-full space-y-4 sm:space-y-5">
-    <!-- Hero -->
-    <UCard class="overflow-hidden">
-      <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p class="text-sm font-medium text-primary"> Assessment Cycle Management </p>
-          <h1 class="mt-2 text-3xl font-bold"> Assessment Workflow </h1>
-          <p class="mt-2 text-sm text-muted"> Monitor assessment progress and control transitions between assessment
-            stages. </p>
-        </div>
-        <div class="flex flex-wrap gap-3">
-          <UButton icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
-            :disabled="!selectedTermId" @click="advanceAssessmentStage"> Move To Next Assessment </UButton>
-          <UButton icon="i-lucide-calendar" variant="outline" to="/settings/terms"> Terms </UButton>
-          <UButton icon="i-lucide-clipboard-list" variant="outline" to="/settings/assessment-templates"> Templates
-          </UButton>
-        </div>
+  <div class="px-4 md:px-6 space-y-4">
+    <Heading title="Assessment Cycle"
+      subtitle="Monitor assessment progress and control transitions between assessment stages">
+      <div class="flex flex-wrap items-center gap-2">
+        <USelectMenu v-model="viewingYearId" value-key="value" :items="yearOptions" class="w-full sm:w-52">
+          <template #leading>
+            <UIcon name="i-lucide-history" class="text-muted" />
+          </template>
+        </USelectMenu>
+        <UButton icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
+          :disabled="!selectedTermId || isViewingPastYear" @click="advanceAssessmentStage">
+          Move To Next Assessment
+        </UButton>
       </div>
-    </UCard>
+    </Heading>
 
-    <div v-if="loadError"
-      class="mt-4 rounded-xl dark:bg-gray-950 dark:border-red-600 border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-      {{ loadError }}
-    </div>
+    <UAlert v-if="isViewingPastYear" color="info" variant="soft" icon="i-lucide-history"
+      title="Viewing a different academic year"
+      description="This is a personal view for your account only - it doesn't change what's active for the rest of the school, and stage transitions are disabled while browsing another year." />
+
+    <UAlert v-if="loadError" color="error" variant="soft" icon="i-lucide-alert-circle" :description="loadError" />
 
     <!-- Stats -->
-    <div class="grid gap-4 md:grid-cols-3">
-
-      <!-- Active Term -->
-      <div
-        class="group rounded-3xl border border-primary-200/40 bg-white p-6 hover:shadow-sm dark:border-primary-900">
-        <div class="flex items-start justify-between">
-
-          <div>
-            <p class="text-xs font-medium uppercase tracking-wider text-muted">
-              Active Term
-            </p>
-
-            <h3 class="mt-2 text-xl font-bold">
-              {{ activeTerm?.name || 'Not configured' }}
-            </h3>
-          </div>
-
-          <div class="flex size-14 items-center justify-center rounded-2xl bg-primary-500/15">
-            <UIcon name="i-lucide-calendar" class="text-2xl text-primary" />
-          </div>
-
-        </div>
-
-        <div class="mt-6 border-t border-primary-200/30 pt-4">
-          <p class="text-sm text-muted">
-            this term is active now
-          </p>
-        </div>
-      </div>
-
-      <!-- Template -->
-      <div
-        class="group rounded-3xl border border-blue-200/40 bg-white p-6  hover:shadow-sm dark:border-blue-900">
-        <div class="flex items-start justify-between">
-
-          <div>
-            <p class="text-xs font-medium uppercase tracking-wider text-muted">
-              Template In Use
-            </p>
-
-            <h3 class="mt-2 text-xl font-bold">
-              {{ cycle?.templateName || 'No Template' }}
-            </h3>
-          </div>
-
-          <div class="flex size-14 items-center justify-center rounded-2xl bg-blue-500/15">
-            <UIcon name="i-lucide-layout-template" class="text-2xl text-blue-600" />
-          </div>
-
-        </div>
-
-        <div class="mt-6 border-t border-blue-200/30 pt-4">
-          <p class="line-clamp-2 text-sm text-muted">
-            {{ templateDescription }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Weight -->
-      <div
-        class="group rounded-3xl border border-emerald-200/40 bg-white p-6  hover:shadow-sm dark:border-emerald-900">
-        <div class="flex items-start justify-between">
-
-          <div>
-            <p class="text-xs font-medium uppercase tracking-wider text-muted">
-              Total Weight
-            </p>
-
-            <h3 class="mt-2 text-3xl font-bold">
-              {{ totalWeight }}%
-            </h3>
-          </div>
-
-          <div class="flex size-14 items-center justify-center rounded-2xl bg-emerald-500/15">
-            <UIcon name="i-lucide-chart-pie" class="text-2xl text-emerald-600" />
-          </div>
-
-        </div>
-
-        <div class="mt-6 space-y-3">
-
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-muted">Completion</span>
-
-            <UBadge variant="soft" :color="totalWeight === 100
-              ? 'success'
-              : totalWeight > 100
-                ? 'error'
-                : 'warning'
-              ">
-              {{
-                totalWeight === 100
-                  ? 'Balanced'
-                  : totalWeight > 100
-                    ? 'Exceeded'
-                    : 'Incomplete'
-              }}
-            </UBadge>
-          </div>
-
-          <UProgress :model-value="totalWeight" size="md" :color="totalWeight === 100
-            ? 'success'
-            : totalWeight > 100
-              ? 'error'
-              : 'warning'
-            " />
-
-        </div>
-      </div>
-
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <Metric :record="{
+        color: 'info',
+        icon: CALANDA_ICON,
+        label: 'Active Term',
+        value: activeTerm?.name || 'Not configured',
+        isReady: !loading
+      }" />
+      <Metric :record="{
+        color: 'warning',
+        icon: TEMPLATE_ICON,
+        label: 'Template In Use',
+        value: cycle?.templateName || 'No Template',
+        isReady: !loading
+      }" />
+      <Metric :record="{
+        color: 'success',
+        icon: 'i-lucide-chart-pie',
+        label: 'Total Weight',
+        value: `${totalWeight}%`,
+        isReady: !loading
+      }" />
     </div>
 
-    <div class="grid gap-5  lg:grid-cols-3">
+    <div class="grid gap-5 lg:grid-cols-3">
 
       <div>
-        <UCard class="lg:col-span-1 h-fit sticky top-1 rounded-3xl">
+        <UCard class="lg:col-span-1 h-fit sticky top-1">
 
           <template #header>
             <div class="space-y-4">
@@ -170,14 +79,13 @@
 
           <!-- Loading -->
           <div v-if="isLoadingOverview" class="space-y-3">
-            <USkeleton v-for="i in 5" :key="i" class="h-28 rounded-3xl" />
+            <USkeleton v-for="i in 5" :key="i" class="h-28 rounded-xl" />
           </div>
 
           <!-- Classes -->
           <div v-else class="space-y-3 max-h-[700px] overflow-y-auto pr-1">
-
             <button v-for="item in filteredClasses" :key="item.classId"
-              class="group w-full rounded-3xl border p-5 text-left transition-all duration-200" :class="selectedClassId === item.classId
+              class="group w-full rounded-xl border p-4 text-left transition-all duration-200" :class="selectedClassId === item.classId
                 ? 'border-primary bg-primary/5 shadow-sm'
                 : 'border-default hover:border-primary/40 hover:bg-muted/30'
                 " @click="selectClass(item.classId)">
@@ -187,8 +95,8 @@
 
                 <div class="flex gap-3">
 
-                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-                    <UIcon name="i-lucide-school" class="text-xl text-primary" />
+                  <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+                    <UIcon :name="CLASS_ICON" class="size-5 text-primary" />
                   </div>
 
                   <div>
@@ -215,7 +123,7 @@
 
             <!-- Empty -->
             <div v-if="!filteredClasses.length"
-              class="flex flex-col items-center justify-center rounded-3xl border border-dashed py-12">
+              class="flex flex-col items-center justify-center rounded-xl border border-dashed py-12">
 
               <UIcon name="i-lucide-search-x" class="mb-3 text-4xl text-muted" />
 
@@ -232,15 +140,15 @@
       </div>
 
 
-      <UCard class="lg:col-span-2 shadow-sm">
+      <UCard class="lg:col-span-2">
         <template #header>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 class="text-lg font-semibold">
+              <h2 class="text-base font-semibold">
                 Assessment Cycle
               </h2>
 
-              <p class="mt-1 text-sm text-muted">
+              <p class="text-xs text-muted">
                 Assessment stages and progression for the selected class.
               </p>
             </div>
@@ -275,13 +183,13 @@
 
           <!-- Loading -->
           <div v-if="isLoadingCycle" class="space-y-3">
-            <USkeleton v-for="i in 4" :key="i" class="h-20 rounded-3xl" />
+            <USkeleton v-for="i in 4" :key="i" class="h-20 rounded-xl" />
           </div>
 
           <!-- Timeline -->
           <div v-else-if="assessmentItems.length" class="space-y-4">
-            <div v-for="(assessment, index) in assessmentItems" :key="assessment.id" 
-              class="group relative overflow-hidden rounded-3xl border  border-default bg-gray-100 p-5 transition hover:border-primary/40 hover:shadow-sm dark:bg-neutral-900">
+            <div v-for="(assessment, index) in assessmentItems" :key="assessment.id"
+              class="group relative overflow-hidden rounded-xl border border-default bg-elevated/40 p-4 transition hover:border-primary/40 hover:shadow-sm">
               <div class="flex items-start justify-between gap-4">
 
                 <div class="flex gap-4">
@@ -323,7 +231,7 @@
           </div>
 
           <!-- Empty -->
-          <div v-else class="rounded-3xl border border-dashed border-default py-16 text-center">
+          <div v-else class="rounded-xl border border-dashed border-default py-16 text-center">
             <div
               class="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
               <UIcon name="i-lucide-clipboard-list" class="text-2xl text-muted" />
@@ -348,9 +256,31 @@
 const appStore = useAppStore()
 const assessmentStore = useAssessmentStore()
 const termStore = useTermStore()
+const academicYearStore = useAcademicYearStore()
 const route = useRoute()
 const router = useRouter()
 const { error: toastError, success: toastSuccess, warning } = useNotify()
+
+// Personal "viewing year" - lets this admin browse a past academic year's assessment cycle
+// without touching what's active for the rest of the school. Stored per-browser only, so it
+// really is just for this account, not a school-wide setting.
+const VIEWING_YEAR_KEY = 'skultem-viewing-academic-year'
+const viewingYearId = ref(localStorage.getItem(VIEWING_YEAR_KEY) || '')
+
+const yearOptions = computed(() => [
+  { label: 'Current Year (Active)', value: '' },
+  ...academicYearStore.list
+])
+
+const isViewingPastYear = computed(() => !!viewingYearId.value)
+
+// Only fires on a change after mount - the initial value above is read directly, not via this
+// watcher, so restoring it on load doesn't trigger a duplicate fetch alongside onMounted's own.
+watch(viewingYearId, (value) => {
+  if (value) localStorage.setItem(VIEWING_YEAR_KEY, value)
+  else localStorage.removeItem(VIEWING_YEAR_KEY)
+  refreshAll()
+})
 
 const overview = ref<AssessmentCycleOverview | null>(null)
 const cycle = ref<ActiveAssessmentCycle | null>(null)
@@ -361,9 +291,6 @@ const isRefreshing = ref(false)
 const isLoadingOverview = ref(false)
 const isLoadingCycle = ref(false)
 const isAdvancingAssessment = ref(false)
-
-const academicPeriod = computed(() => activeTerm ? `${formatDate(activeTerm.startDate)} - ${formatDate(activeTerm.endDate)}` : 'Set one term to ACTIVE to start assessment entry.')
-const templateDescription = computed(() => cycle?.templateDescription || 'Assign a template to this class first.')
 
 const selectedTermId = ref('')
 const selectedTemplateId = ref('')
@@ -442,7 +369,7 @@ async function loadOverview() {
   loadError.value = ''
 
   try {
-    overview.value = await assessmentStore.fetchCycleOverview() || null
+    overview.value = await assessmentStore.fetchCycleOverview(viewingYearId.value || undefined) || null
 
     if (!overview.value) {
       throw new Error(assessmentStore.error || 'Failed to load assessment overview')
@@ -470,7 +397,7 @@ async function loadCycle() {
   loadError.value = ''
 
   try {
-    cycle.value = await assessmentStore.fetchActiveCycle(selectedClassId.value) || null
+    cycle.value = await assessmentStore.fetchActiveCycle(selectedClassId.value, viewingYearId.value || undefined) || null
 
     if (!cycle.value) {
       throw new Error(assessmentStore.error || 'Failed to load class assessment cycle')
@@ -539,7 +466,7 @@ onMounted(async () => {
   appStore.setTitle('Assessment Cycle')
   document.title = 'Assessment Cycle | Academics | Skultem'
   loading.value = true
-  await refreshAll()
+  await Promise.all([academicYearStore.fetchAll(1, 100), refreshAll()])
   loading.value = false
 })
 

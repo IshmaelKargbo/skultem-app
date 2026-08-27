@@ -93,7 +93,13 @@
                             <div v-for="fee in fees" :key="fee.feeId"
                                 class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
                                 <div>
-                                    <p class="font-medium">{{ fee.feeName }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="font-medium">{{ fee.feeName }}</p>
+                                        <UBadge v-if="fee.allowInstallment === false" size="xs" color="warning"
+                                            variant="subtle">
+                                            Full payment only
+                                        </UBadge>
+                                    </div>
                                     <p class="text-xs text-muted">
                                         Outstanding: <span :class="[fee.outstanding > 0 ? 'text-error' : '']">{{ format(fee.outstanding) }}</span>
                                     </p>
@@ -123,12 +129,17 @@
                                     </div>
 
                                     <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding"
+                                        :disabled="a.allowInstallment === false"
                                         :placeholder="`0 – ${format(a.outstanding)}`" @update:modelValue="val => {
                                             a.amount = Number(val)
                                             clampAmount(a)
                                         }" />
 
-                                    <p class="text-xs text-muted">
+                                    <p v-if="a.allowInstallment === false" class="text-xs text-warning">
+                                        This fee doesn't allow installments - the full outstanding balance is paid at
+                                        once.
+                                    </p>
+                                    <p v-else class="text-xs text-muted">
                                         Enter the amount being paid toward this fee. Cannot exceed the outstanding
                                         balance.
                                     </p>
@@ -181,7 +192,7 @@
                                 <UButton variant="outline" color="neutral" to="/fees-payment/pay">
                                     Cancel
                                 </UButton>
-                                <UButton :icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading">
+                                <UButton :trailing-icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading">
                                     Record Payment
                                 </UButton>
                             </div>
@@ -290,7 +301,10 @@ function addFee(fee: any) {
         feeId: fee.feeId,
         feeName: fee.feeName,
         outstanding: Number(fee.outstanding),
-        amount: 0,
+        allowInstallment: fee.allowInstallment !== false,
+        // No installments allowed - there's only one valid amount, so fill it in and lock the field
+        // rather than let the accountant type a partial figure that the backend will just reject.
+        amount: fee.allowInstallment === false ? Number(fee.outstanding) : 0,
     })
 }
 
