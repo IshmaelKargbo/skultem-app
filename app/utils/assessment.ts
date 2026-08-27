@@ -14,6 +14,8 @@ export type Assessment = {
     weight: number
     position: number
     status: string
+    createdAt: string
+    updatedAt: string
 }
 
 export type ApprovalRequestStatus = "Pending Review" | "Approved" | "Returned"
@@ -37,6 +39,15 @@ export type AssessmentApprovalRequest = {
     time: string
     note: string
     studentScores: AssessmentScore[]
+    teacherSubjectId: string
+    assessmentId: string
+    termId: string
+}
+
+export type AssessmentApprovalSummary = {
+    pending: number
+    approved: number
+    returned: number
 }
 
 export type LeaderBoard = {
@@ -111,6 +122,45 @@ export type StudentAssessment = {
     status: string
     createdAt: string
     updatedAt: string
+}
+
+export type ScoreStatus = "DRAFT" | "SUBMITTED" | "RETURNED" | "APPROVED" | "COMPLETED" | "LOCKED"
+
+export function isEditableStatus(status: ScoreStatus) {
+    return status === "DRAFT" || status === "RETURNED"
+}
+
+export function statusBadgeColor(status: any) {
+    switch (status) {
+        case "DRAFT":
+            return "warning"
+        case "SUBMITTED":
+            return "info"
+        case "RETURNED":
+            return "error"
+        case "APPROVED":
+        case "COMPLETED":
+            return "success"
+        case "LOCKED":
+        default:
+            return "neutral"
+    }
+}
+
+export function getStudentScore(student: StudentAssessment, assessmentId: string) {
+    return student.scores.find(score => score.assessment === assessmentId)
+}
+
+export function toNumberInRange(value: unknown, min: number, max: number) {
+    const parsed = Number(value)
+    if (Number.isNaN(parsed)) return min
+    return Math.min(max, Math.max(min, parsed))
+}
+
+export function updateStudentScore(student: StudentAssessment, assessmentId: string, value: unknown) {
+    const score = getStudentScore(student, assessmentId)
+    if (!score) return
+    score.score = toNumberInRange(value, 0, 100)
 }
 
 export type ActiveAssessmentCycle = {
@@ -193,6 +243,12 @@ export type GradeAssessmentDto = {
 }
 
 export type SubmitAssessmentDto = {
+    assessmentId: string
+    termId: string
+    note: string
+}
+
+export type ReopenAssessmentDto = {
     assessmentId: string
     termId: string
     note: string

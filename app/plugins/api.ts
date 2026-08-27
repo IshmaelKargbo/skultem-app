@@ -5,13 +5,7 @@ export default defineNuxtPlugin(() => {
 
   let refreshPromise: Promise<string | null> | null = null
 
-  const getAuthCookies = () => {
-    const accessToken = useCookie<string | null>("access_token")
-    const refreshToken = useCookie<string | null>("refresh_token")
-    const activeRole = useCookie<string | null>("active_role")
-
-    return { accessToken, refreshToken, activeRole }
-  }
+  const getAuthCookies = () => useAuthCookies()
 
   const clearAuthState = () => {
     const { accessToken, refreshToken, activeRole } = getAuthCookies()
@@ -61,7 +55,7 @@ export default defineNuxtPlugin(() => {
     baseURL,
 
     onRequest(context: any) {
-      const accessToken = useCookie("access_token")
+      const { accessToken } = getAuthCookies()
       if (accessToken.value) {
         context.options.headers = {
           ...context.options.headers,
@@ -77,13 +71,47 @@ export default defineNuxtPlugin(() => {
     },
   })
 
+  // Two report/analytics endpoints are reads shaped as POST (they need a filter payload in the
+  // body), not mutations - the dashboard's widgets and the Transactions/report-builder pages both
+  // go through these. They're the only POSTs that get the year switcher applied; every other POST
+  // is left alone on purpose (see below).
+  const READ_VIA_POST = ["/report/export/run", "/widget/run"]
+  const isReadViaPost = (request: string) => READ_VIA_POST.some((path) => request.includes(path))
+
+  // The header's year switcher (useAcademicYearStore().viewingYearId) is the single source of
+  // truth for "what year is the user looking at". Rather than threading that through every list
+  // page's fetch calls by hand, every plain GET request picks it up here automatically - unless
+  // the caller already put its own academicYearId on the URL (e.g. a report comparing a specific
+  // year on purpose), in which case that wins. Mutations (POST/PUT/DELETE) are never touched: they
+  // must always act on the school's actual active year, not whichever one is merely being viewed -
+  // the two read-via-POST endpoints above are the sole, explicit exception.
+  const withViewingYear = (request: string): string => {
+    try {
+      if (/[?&]academicYearId=/.test(request)) return request
+
+      const yearId = useAcademicYearStore().viewingYearId
+      if (!yearId) return request
+
+      const separator = request.includes("?") ? "&" : "?"
+      return `${request}${separator}academicYearId=${encodeURIComponent(yearId)}`
+    } catch {
+      // Pinia not ready yet (e.g. very early in app boot) - fall back to the plain request.
+      return request
+    }
+  }
+
   const api = async <T>(request: any, options: Record<string, any> = {}): Promise<T> => {
     const requestUrl = typeof request === "string" ? request : request?.toString?.() || ""
     const isRefreshRequest = requestUrl.includes("/auth/refresh")
     const hasRetried = Boolean(options._retried)
+    const method = String(options.method || "GET").toUpperCase()
+    const appliesYearSwitch = typeof request === "string"
+      && (method === "GET" || (method === "POST" && isReadViaPost(requestUrl)))
+
+    const finalRequest = appliesYearSwitch ? withViewingYear(request) : request
 
     try {
-      return await rawApi<T>(request, options)
+      return await rawApi<T>(finalRequest, options)
     } catch (error: any) {
       const status = error?.response?.status
       const { refreshToken } = getAuthCookies()
@@ -104,7 +132,7 @@ export default defineNuxtPlugin(() => {
         throw error
       }
 
-      return await rawApi<T>(request, {
+      return await rawApi<T>(finalRequest, {
         ...options,
         _retried: true,
         headers: {

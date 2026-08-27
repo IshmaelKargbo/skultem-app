@@ -94,7 +94,7 @@ function deletePeriodRecord(periodItem: Period) {
 
 <template>
   <div v-if="loading" class="space-y-3 p-2">
-    <div class="space-y-3 md:hidden">
+    <div class="space-y-3 px-4 pb-4 md:hidden md:px-0 md:pb-0">
       <div v-for="row in 3" :key="row" class="rounded-3xl border border-default p-4">
         <div class="mb-4 flex items-center justify-between gap-3">
           <USkeleton class="h-5 w-24 rounded-full" />
@@ -121,7 +121,7 @@ function deletePeriodRecord(periodItem: Period) {
   </div>
 
   <div v-else class="space-y-4">
-    <div class="space-y-3 md:hidden mt-5">
+    <div class="space-y-3 px-4 pb-4 mt-5 md:hidden md:px-0 md:pb-0">
       <div v-if="days.length" class="overflow-x-auto pb-2 pt-1">
         <div class="flex min-w-max gap-2">
           <button

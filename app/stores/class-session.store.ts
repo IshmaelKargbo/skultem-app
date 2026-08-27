@@ -9,11 +9,11 @@ export const useClassSessionStore = defineStore('classSession', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 6, academicYearId?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await ClassApi().getAllClassSessions(page, size) as any
+        const response = await ClassApi().getAllClassSessions(page, size, academicYearId) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
@@ -21,6 +21,9 @@ export const useClassSessionStore = defineStore('classSession', {
       } finally {
         this.loading = false
       }
+    },
+    create(payload: CreateClassSessionDto) {
+      return ClassApi().createSession(payload)
     },
     async fetchAllMe() {
       this.loading = true
@@ -41,6 +44,9 @@ export const useClassSessionStore = defineStore('classSession', {
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch class sessions'
       }
+    },
+    setupAll(academicYearId: string) {
+      return ClassApi().setupAllSessions(academicYearId)
     },
   },
   getters: {

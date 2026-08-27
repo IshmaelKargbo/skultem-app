@@ -5,18 +5,33 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
     records: [] as SchemeOfWork[],
     meta: {} as Meta,
     progress: undefined as SchemeProgress | undefined,
+    filter: {} as SchemeOfWorkFilter,
     loading: false
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 6, filter?: SchemeOfWorkFilter) {
       this.loading = true
+      if (filter) this.filter = filter
       try {
-        const response = await CurriculumsApi().getSchemes(page, size) as any
+        const response = await CurriculumsApi().getSchemes(page, size, this.filter) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
         throw err.data?.message || 'Failed to fetch scheme of work'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchMine(page: number = 1, size: number = 6, filter?: SchemeOfWorkFilter) {
+      this.loading = true
+      if (filter) this.filter = filter
+      try {
+        const response = await CurriculumsApi().getMySchemes(page, size, this.filter) as any
+        this.records = response.data || []
+        this.meta = response.meta || {} as Meta
+      } catch (err: any) {
+        throw err.data?.message || 'Failed to fetch my schemes of work'
       } finally {
         this.loading = false
       }

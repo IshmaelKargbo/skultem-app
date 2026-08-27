@@ -1,37 +1,36 @@
 <template>
-    <div v-if="record"
-        class="p-4 border-2 border-gray-200 dark:border-gray-800 rounded-xl space-y-2 cursor-pointer hover:bg-primary-50/70 dark:hover:bg-primary-950/30 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
-        :class="[selected?.id === record.id ? 'bg-primary-50/80 dark:bg-primary-950/35 border-primary-300 dark:border-primary-700' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800']">
-
-        <div class="flex items-center justify-between w-full">
-            <p class="font-medium">{{ record.subject }} -
-                <span class="text-primary-600 dark:text-primary-300">{{ record.assessment }}</span> -
-                <span class="text-emerald-600 dark:text-emerald-300">{{ record.term }}</span>
-            </p>
-            <UBadge size="md" variant="outline" :color="statusColor(record.status)"
-                :label="statusLabel(record.status)" />
-
-        </div>
-
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-
-        </p>
-
-        <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
-            <div class="flex items-center space-x-1">
-                <span>{{ record.studentCount }} - </span>
-                <UIcon :name="STUDENT_ICON" class="text-lg" />
+    <UCard v-if="record" :ui="{ body: 'p-4' }" class="cursor-pointer border-l-4 transition-colors hover:border-primary/40"
+        :class="[borderClass(record.status), selected?.id === record.id ? 'ring-2 ring-primary/40' : '']">
+        <div class="flex items-start gap-3">
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10">
+                <UIcon name="lucide:clipboard-check" class="text-primary-500" />
             </div>
 
-            <span class="font-medium text-emerald-600 dark:text-emerald-300">
-                Avg {{ record.avergeScore }}
-            </span>
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="min-w-0 truncate font-semibold text-highlighted">{{ record.subject }}</h3>
+                    <UBadge size="sm" variant="subtle" :color="statusColor(record.status)"
+                        :label="statusLabel(record.status)" class="shrink-0" />
+                </div>
 
-            <span>{{ record.passPercentage }}% pass</span>
+                <p class="mt-0.5 truncate text-xs text-muted">
+                    <span class="font-medium text-primary">{{ record.assessment }}</span> &middot; {{ record.term }}
+                </p>
+
+                <div class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs-base text-muted">
+                    <span>{{ record.studentCount }} students</span>
+                    <span class="font-medium text-success">
+                        Avg {{ record.avergeScore }}
+                    </span>
+
+                    <span>{{ record.passPercentage }}% pass</span>
+                </div>
+
+                <GradeDistributionBar class="mt-2.5" :height="1" :show-label="false" :average="record.avgPercentage"
+                    :pass="record.passPercentage" :fail="record.failPercentage" />
+            </div>
         </div>
-        <GradeDistributionBar :height="2" :show-label="false" :average="record.avgPercentage"
-            :pass="record.passPercentage" :fail="record.failPercentage" />
-    </div>
+    </UCard>
 </template>
 
 <script setup lang="ts">
@@ -53,4 +52,9 @@ function statusColor(status: ApprovalRequestStatus) {
     return "warning"
 }
 
+function borderClass(status: ApprovalRequestStatus) {
+    if (status === "Approved") return "border-l-success"
+    if (status === "Returned") return "border-l-error"
+    return "border-l-primary"
+}
 </script>

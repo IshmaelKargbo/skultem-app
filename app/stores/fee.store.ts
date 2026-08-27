@@ -58,6 +58,20 @@ export const useFeeStore = defineStore('fee', {
     create(payload: CreateFeeCategoryDto) {
       return FeeApi().createCategory(payload)
     },
+    async updateCategory(payload: CreateFeeCategoryDto & { id: string }) {
+      const { id, ...rest } = payload
+      const response = await FeeApi().updateCategory(id, rest) as any
+
+      const index = this.records.findIndex(c => c.id === id)
+      if (index !== -1)
+        this.records[index] = response
+
+      return response
+    },
+    async removeCategory(id: string) {
+      await FeeApi().deleteCategory(id)
+      this.records = this.records.filter(c => c.id !== id)
+    },
     recordPayment(payload: RecordPaymentDto) {
       return FeeApi().recordPayment(payload)
     },

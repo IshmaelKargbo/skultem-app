@@ -1,6 +1,6 @@
 <template>
-    <UCard class="sticky top-0" :ui="{ body: 'p-3 md:p-4' }">
-        <template #header>
+    <UCard class="sticky top-4" :ui="{ body: 'p-3 md:p-4' }">
+        <div class="space-y-4">
             <UInput ref="searchInput" v-model="search" placeholder="Search students..." :leading-icon="SEARCH_ICON"
                 :disabled="isLoading" size="lg" />
         </template>

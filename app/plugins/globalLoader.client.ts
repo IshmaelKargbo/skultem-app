@@ -1,6 +1,6 @@
 export default defineNuxtPlugin(() => {
     const { show, hide } = useGlobalLoader()
-    const token = useCookie('access_token')
+    const { accessToken: token } = useAuthCookies()
     const nuxtApp = useNuxtApp()
     const router = useRouter()
 

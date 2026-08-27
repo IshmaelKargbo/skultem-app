@@ -12,10 +12,12 @@ const { error: toastError, success: toastSuccess } = useNotify();
 const isLoading = ref(false);
 
 const categories = computed(() =>
-  feeCategoryStore.records.map((e) => ({
-    label: e.name,
-    value: e.id,
-  }))
+  feeCategoryStore.records
+    .filter((e) => !e.system)
+    .map((e) => ({
+      label: e.name,
+      value: e.id,
+    }))
 );
 
 const materials = computed(() =>
@@ -116,8 +118,8 @@ async function onSubmit() {
       state.classId == "ALL"
         ? "ALL"
         : state.classId == "SELECTION"
-        ? "SELECTION"
-        : "CLASS";
+          ? "SELECTION"
+          : "CLASS";
 
     await feeStructureStore.create({
       classId:
@@ -171,156 +173,107 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5">
-    <Heading
-      title="Fee Structure"
-      subtitle="Create and assign fee structures to students or classes"
-    />
-
-    <UForm
-      ref="formRef"
-      :schema="schema"
-      :state="state"
-      class="space-y-5"
-      @submit="onSubmit"
-    >
+  <div class="px-4 md:px-6">
+    <UForm ref="formRef" :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
       <div class="grid lg:grid-cols-2 gap-4">
         <!-- Fee Details -->
-        <UCard>
-          <div class="space-y-2.5">
-            <!-- Term -->
-            <UFormField label="Term" name="termId" required>
-              <USelectMenu
-                v-model="state.termId"
-                value-key="value"
-                :items="terms"
-                placeholder="Select term"
-                :disabled="isLoading"
-              />
-
-              <template #help>
-                <p class="text-xs text-muted">
-                  Select the academic term this fee applies to.
-                </p>
-              </template>
-            </UFormField>
-
-            <!-- Category -->
-            <UFormField label="Fee Category" name="feeCategory" required>
-              <USelectMenu
-                v-model="state.feeCategory"
-                value-key="value"
-                :items="categories"
-                placeholder="Select fee category"
-                :disabled="isLoading"
-              />
-
-              <template #help>
-                <p class="text-xs text-muted">
-                  Example: Tuition, Exam, PTA or Development.
-                </p>
-              </template>
-            </UFormField>
-
-            <!-- Amount -->
-            <UFormField label="Amount" name="amount" required>
-              <UInput
-                v-model.number="state.amount"
-                type="number"
-                min="0"
-                placeholder="Enter amount"
-                :disabled="isLoading"
-              />
-
-              <template #help>
-                <p class="text-xs text-muted">
-                  Total amount students are required to pay.
-                </p>
-              </template>
-            </UFormField>
-
-            <!-- Due Date -->
-            <UFormField label="Due Date" name="dueDate" required>
-              <UInput v-model="state.dueDate" type="date" :disabled="isLoading" />
-
-              <template #help>
-                <p class="text-xs text-muted">Deadline for completing payment.</p>
-              </template>
-            </UFormField>
-
-            <div class="grid grid-cols-2 gap-3">
-              <!-- Material -->
-              <UFormField
-                v-if="state.hasSupply"
-                label="Material"
-                name="material"
-                required
-              >
-                <USelectMenu
-                  v-model="state.material"
-                  value-key="value"
-                  :items="materials"
-                  placeholder="Select material"
-                  :disabled="isLoading"
-                />
+        <div>
+          <UCard  class="sticky top-2">
+            <div class="space-y-2.5">
+              <!-- Term -->
+              <UFormField label="Term" name="termId" required>
+                <USelectMenu v-model="state.termId" value-key="value" :items="terms" placeholder="Select term"
+                  :disabled="isLoading" />
 
                 <template #help>
                   <p class="text-xs text-muted">
-                    Select the type of material or supply item.
+                    Select the academic term this fee applies to.
                   </p>
                 </template>
               </UFormField>
 
-              <!-- Total Supply -->
-              <UFormField
-                v-if="state.hasSupply"
-                label="Total Supply"
-                name="totalSupply"
-                required
-              >
-                <UInput
-                  v-model.number="state.totalSupply"
-                  type="number"
-                  min="1"
-                  placeholder="Enter quantity"
-                  :disabled="isLoading"
-                />
+              <!-- Category -->
+              <UFormField label="Fee Category" name="feeCategory" required>
+                <USelectMenu v-model="state.feeCategory" value-key="value" :items="categories"
+                  placeholder="Select fee category" :disabled="isLoading" />
 
                 <template #help>
                   <p class="text-xs text-muted">
-                    Number of items each student will receive.
+                    Example: Tuition, Exam, PTA or Development.
+                  </p>
+                </template>
+              </UFormField>
+
+              <!-- Amount -->
+              <UFormField label="Amount" name="amount" required>
+                <UInput v-model.number="state.amount" type="number" min="0" placeholder="Enter amount"
+                  :disabled="isLoading" />
+
+                <template #help>
+                  <p class="text-xs text-muted">
+                    Total amount students are required to pay.
+                  </p>
+                </template>
+              </UFormField>
+
+              <!-- Due Date -->
+              <UFormField label="Due Date" name="dueDate" required>
+                <UInput v-model="state.dueDate" type="date" :disabled="isLoading" />
+
+                <template #help>
+                  <p class="text-xs text-muted">Deadline for completing payment.</p>
+                </template>
+              </UFormField>
+
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Material -->
+                <UFormField v-if="state.hasSupply" label="Material" name="material" required>
+                  <USelectMenu v-model="state.material" value-key="value" :items="materials"
+                    placeholder="Select material" :disabled="isLoading" />
+
+                  <template #help>
+                    <p class="text-xs text-muted">
+                      Select the type of material or supply item.
+                    </p>
+                  </template>
+                </UFormField>
+
+                <!-- Total Supply -->
+                <UFormField v-if="state.hasSupply" label="Total Supply" name="totalSupply" required>
+                  <UInput v-model.number="state.totalSupply" type="number" min="1" placeholder="Enter quantity"
+                    :disabled="isLoading" />
+
+                  <template #help>
+                    <p class="text-xs text-muted">
+                      Number of items each student will receive.
+                    </p>
+                  </template>
+                </UFormField>
+              </div>
+
+              <!-- Description -->
+              <UFormField label="Description" name="description">
+                <UTextarea v-model="state.description" placeholder="Optional description" :disabled="isLoading" />
+
+                <template #help>
+                  <p class="text-xs text-muted">
+                    Additional notes or payment instructions.
                   </p>
                 </template>
               </UFormField>
             </div>
-
-            <!-- Description -->
-            <UFormField label="Description" name="description">
-              <UTextarea
-                v-model="state.description"
-                placeholder="Optional description"
-                :disabled="isLoading"
-              />
-
-              <template #help>
-                <p class="text-xs text-muted">
-                  Additional notes or payment instructions.
-                </p>
-              </template>
-            </UFormField>
-          </div>
-        </UCard>
+          </UCard>
+        </div>
 
         <!-- Assignment -->
         <div>
           <UCard class="sticky top-0">
-            <div class="space-y-5">
+            <div class="space-y-4">
               <!-- Installment -->
               <UFormField name="allowInstallment">
-                <div class="flex justify-between items-start py-2">
+                <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Allow Installment</p>
-
                     <p class="text-xs text-muted">Students can pay in multiple parts.</p>
                   </div>
 
@@ -330,10 +283,9 @@ definePageMeta({
 
               <!-- Has Supply -->
               <UFormField name="hasSupply">
-                <div class="flex justify-between items-start py-2">
+                <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Has Supply</p>
-
                     <p class="text-xs text-muted">
                       Supplies will be issued after payment completion.
                     </p>
@@ -344,13 +296,8 @@ definePageMeta({
               </UFormField>
               <!-- Assign -->
               <UFormField label="Assign To" name="classId" required>
-                <USelectMenu
-                  v-model="state.classId"
-                  value-key="value"
-                  :items="classes"
-                  placeholder="Select assignment"
-                  :disabled="isLoading"
-                />
+                <USelectMenu v-model="state.classId" value-key="value" :items="classes" placeholder="Select assignment"
+                  :disabled="isLoading" />
 
                 <template #help>
                   <p class="text-xs text-muted">
@@ -360,16 +307,11 @@ definePageMeta({
               </UFormField>
 
               <!-- Student Selector -->
-              <FeeStructureStudents
-                v-if="state.classId === 'SELECTION'"
-                v-model="state.studentIds"
-              />
+              <FeeStructureStudents v-if="state.classId === 'SELECTION'" v-model="state.studentIds" />
 
               <!-- Info -->
-              <div
-                v-else
-                class="h-72 border-2 rounded-xl border-gray-200 p-5 flex flex-col text-muted space-y-3 items-center justify-center border-dashed"
-              >
+              <div v-else
+                class="h-72 border-2 rounded-xl border-gray-200 p-5 flex flex-col text-muted space-y-3 items-center justify-center border-dashed">
                 <UIcon :name="FEE_STRUCTURE_ICON" class="w-12 h-12" />
 
                 <p v-if="state.classId === 'ALL'" class="text-center">
@@ -387,20 +329,10 @@ definePageMeta({
             </div>
             <template #footer>
               <div class="flex justify-end gap-3">
-                <UButton
-                  label="Cancel"
-                  color="neutral"
-                  variant="outline"
-                  :disabled="isLoading"
-                  to="/fees-payment/structure"
-                />
+                <UButton label="Cancel" color="neutral" variant="outline" :disabled="isLoading"
+                  to="/fees-payment/structure" />
 
-                <UButton
-                  type="submit"
-                  icon="lucide:save"
-                  label="Create Fee Structure"
-                  :loading="isLoading"
-                />
+                <UButton type="submit" :trailing-icon="SAVE_ICON" label="Create Fee Structure" :loading="isLoading" />
               </div>
             </template>
           </UCard>

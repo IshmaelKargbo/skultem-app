@@ -1,26 +1,29 @@
 <template>
-    <div class="p-4 space-y-4">
-        <Heading title="Audit Logs" subtitle="Track system activity and user actions">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <UInput v-model="search" icon="i-lucide-search" placeholder="Search logs..." size="lg"
-                    class="w-full sm:w-72" />
+    <div class="p-4 md:px-6 space-y-4">
+        <Heading title="Audit Logs" subtitle="Track system activity and user actions" />
 
-                <div class="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 py-2 dark:bg-neutral-800">
-                    <div class="size-2 rounded-full bg-success-500" />
+        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+            <template #header>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <UInput v-model="search" icon="i-lucide-search" placeholder="Search logs..." size="lg"
+                            class="w-full sm:w-72" />
 
-                    <p class="text-xs font-medium text-gray-600 dark:text-gray-300">
-                        {{ meta.total }} Logs
-                    </p>
+                        <div class="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 py-2 dark:bg-neutral-800">
+                            <div class="size-2 rounded-full bg-success-500" />
+
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                {{ meta.total }} Logs
+                            </p>
+                        </div>
+                    </div>
+
+                    <TableViewToggle v-model="view" />
                 </div>
-            </div>
-        </Heading>
+            </template>
 
-        <!-- Desktop -->
-        <UCard class="hidden md:block"
-            :ui="{
-                body: 'p-0 sm:p-0'
-            }">
-            <UTable :columns="columns" :data="filtered" :loading="loading">
+            <!-- Desktop -->
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filtered" :loading="loading">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-3 py-14">
                         <div
@@ -78,22 +81,12 @@
                 </template>
             </UTable>
 
-            <template #footer>
-                <div class="flex items-center justify-between px-4 py-3">
-                    <Showing :meta="meta" />
-
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
-        </UCard>
-
-        <!-- Mobile -->
-        <div class="space-y-4 md:hidden overflow-x-hidden">
+            <!-- Mobile -->
+            <div class="p-4 overflow-x-hidden"
+                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
             <!-- Loading -->
             <template v-if="loading">
-                <UCard v-for="i in 5" :key="i"
-                    class="rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-neutral-900">
+                <UCard v-for="i in 5" :key="i" variant="outline">
                     <div class="space-y-4 p-4">
                         <div class="flex items-center gap-3">
                             <USkeleton class="size-12 rounded-2xl" />
@@ -121,7 +114,7 @@
                 <UCard v-for="item in filtered" :key="item.id" class="w-full overflow-hidden transition-all"
                     :ui="{ body: 'p-0 overflow-hidden' }">
                     <!-- Header -->
-                    <div class="border-b border-gray-100 p-4 dark:border-gray-800">
+                    <div class="border-b border-gray-100 p-3 md:p-0 md:pb-3 dark:border-gray-800">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <div
@@ -137,57 +130,93 @@
                                     <p class="truncate text-xs text-gray-500">
                                         {{ item.userName || 'System' }}
                                     </p>
+
                                 </div>
                             </div>
 
-                            <UBadge :color="item.status === 'SUCCESS' ? 'success' : 'error'" variant="soft" size="sm">
+                            <UBadge :color="item.status === 'SUCCESS' ? 'success' : 'error'" variant="soft" size="md">
                                 {{ clean(item.status) }}
                             </UBadge>
                         </div>
                     </div>
 
                     <!-- Body -->
-                    <div class="space-y-3 p-4">
-                        <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
-                            <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                                User
-                            </p>
+                    <div class="space-y-4 p-4">
+                        <!-- User -->
+                        <div
+                            class="rounded-2xl border border-gray-200 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-500/15">
+                                    <UIcon name="i-lucide-user-round"
+                                        class="size-5 text-emerald-600 dark:text-emerald-400" />
+                                </div>
 
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                {{ item.userName || 'System' }}
-                            </p>
+                                <div class="min-w-0">
+                                    <p
+                                        class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                        User
+                                    </p>
 
-                            <p class="text-xs text-gray-500">
-                                {{ item.userEmail || '-' }}
-                            </p>
+                                    <p class="mt-0.5 truncate text-sm font-semibold text-gray-900 dark:text-white">
+                                        {{ item.userName || 'System' }}
+                                    </p>
+
+                                    <p class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                                        {{ item.userEmail || 'No email available' }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
-                                <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                                    IP Address
-                                </p>
+                        <!-- Technical Details -->
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <!-- IP Address -->
+                            <div
+                                class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50/80 p-3.5 dark:border-primary-500/20 dark:bg-primary-500/10">
+                                <div class="mb-3 flex items-center gap-2">
+                                    <div
+                                        class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/20">
+                                        <UIcon name="i-lucide-globe-2"
+                                            class="size-4 text-primary-600 dark:text-primary-400" />
+                                    </div>
 
-                                <p class="truncate text-sm font-medium">
-                                    {{ item.ipAddress || '-' }}
+                                    <p
+                                        class="text-[10px] font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300">
+                                        IP Address
+                                    </p>
+                                </div>
+
+                                <p class="truncate font-mono text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ item.ipAddress || 'Not available' }}
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-gray-100 p-3 dark:bg-neutral-800">
-                                <p class="mb-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                                    Device
-                                </p>
+                            <!-- Device -->
+                            <div
+                                class="min-w-0 rounded-2xl border border-secondary-200 bg-secondary-50/80 p-3.5 dark:border-secondary-500/20 dark:bg-secondary-500/10">
+                                <div class="mb-3 flex items-center gap-2">
+                                    <div
+                                        class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-100 dark:bg-secondary-500/20">
+                                        <UIcon name="i-lucide-monitor-smartphone"
+                                            class="size-4 text-secondary-600 dark:text-secondary-400" />
+                                    </div>
 
-                                <p class="truncate text-sm font-medium">
-                                    {{ item.device || 'Unknown' }}
+                                    <p
+                                        class="text-[10px] font-semibold uppercase tracking-wider text-secondary-700 dark:text-secondary-300">
+                                        Device
+                                    </p>
+                                </div>
+
+                                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ item.device || 'Unknown device' }}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Footer -->
-                    <div
-                        class="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+                    <div class="flex items-center justify-between border-t border-gray-100 p-3 md:p-0 md:pt-3 dark:border-gray-800">
                         <div>
                             <p class="text-xs text-gray-500">
                                 Logged At
@@ -198,14 +227,14 @@
                             </p>
                         </div>
 
-                        <UAvatar size="sm" :alt="item.userName || 'System'" />
+                        <UAvatar size="md" :alt="item.userName || 'System'" />
                     </div>
                 </UCard>
             </template>
 
             <!-- Empty -->
             <template v-else>
-                <div class="flex flex-col items-center justify-center py-16">
+                <div class="flex flex-col items-center justify-center py-16 col-span-full">
                     <div
                         class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800">
                         <UIcon name="lucide:shield-check" class="size-8 text-gray-400" />
@@ -220,17 +249,21 @@
                     </p>
                 </div>
             </template>
-
-            <!-- Pagination -->
-            <div class="flex flex-col justify-between items-center mt-3 space-y-3 md:hidden">
-                <Showing :meta="meta" />
-                <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                    :total="meta.total" show-edges />
             </div>
-        </div>
+
+            <template #footer>
+                <div class="flex items-center justify-between">
+                    <Showing :meta="meta" />
+
+                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+                        :total="meta.total" show-edges />
+                </div>
+            </template>
+        </UCard>
     </div>
 </template>
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const store = useAuditStore()
 const { records, meta, loading } = storeToRefs(store)
 

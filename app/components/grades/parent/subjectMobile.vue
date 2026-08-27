@@ -1,88 +1,59 @@
 <script setup lang="ts">
 const store = useReportStore()
-const assessmentStore = useAssessmentStore()
+const { grades: records, loading } = storeToRefs(store)
 
-const rows = ref<any[]>([])
-const expanded = ref<Record<string, boolean>>({})
-
-const { student, term, clazz } = defineProps<{
+const { student, term } = defineProps<{
     term: string
     student: string
     clazz: string
 }>()
 
-const { grades: records } = storeToRefs(store)
+// Grouped by assessment (Test 1, Test 2, Exam, ...) - each one gets its own expandable section,
+// in the order it runs, same as the student's own Academic Information page.
+const groups = computed(() => {
+    const map = new Map<string, any[]>()
 
-type Score = {
-    assessment: string
-    name: string
-    score?: number
-    weightScore?: number
-    status?: string
-}
+    for (const grade of records.value || []) {
+        const key = grade.name || 'Other'
+        const items = map.get(key) ?? []
+        items.push(grade)
+        map.set(key, items)
+    }
 
-function toggleScores(subject: string) {
-    expanded.value[subject] = !expanded.value[subject]
-}
+    return Array.from(map.entries())
+        .map(([key, items]) => {
+            const scores = items.map((item: any) => Number(item.score ?? 0)).filter((n: number) => !Number.isNaN(n))
+            const passed = items.filter((item: any) => Number(item.score ?? 0) >= 50).length
+            const failed = Math.max(items.length - passed, 0)
+            const average = scores.length
+                ? (scores.reduce((sum: number, n: number) => sum + n, 0) / scores.length).toFixed(1)
+                : '0.0'
+            const position = Number((items[0] as any)?.level ?? Number.MAX_SAFE_INTEGER)
 
-function calculateWeightedTotal(row: any) {
-    const scores: Score[] = row.scores || []
-
-    let totalScore = 0
-    let totalWeight = 0
-
-    scores.forEach(s => {
-        if (s.status === "APPROVED" || s.status === "COMPLETED") {
-            totalScore += s.score || 0
-            totalWeight += s.weightScore || 0
-        }
-    })
-
-    return [totalScore, totalWeight]
-}
-
-function prepareRecord() {
-    const map = new Map()
-
-    records.value.forEach(r => {
-        if (!map.has(r.subject)) {
-            map.set(r.subject, {
-                subject: r.subject,
-                teacher: r.teacher,
-                scores: [] as Score[]
-            })
-        }
-
-        const subject = map.get(r.subject)
-
-        subject.scores.push({
-            assessment: r.assessment,
-            name: r.name,
-            score: r.score,
-            weightScore: r.weightScore,
-            status: r.status
+            return {
+                key,
+                title: key,
+                items,
+                passed,
+                failed,
+                average,
+                position
+            }
         })
-    })
+        .sort((a, b) => a.position - b.position)
+})
 
-    rows.value = Array.from(map.values())
+const expandedKeys = ref(new Set<string>())
 
-    rows.value.forEach(row => {
-        const allCompleted = row.scores.every((s: Score) => s.status === "COMPLETED")
+watch(groups, newGroups => {
+    for (const group of newGroups) {
+        if (!expandedKeys.value.has(group.key)) expandedKeys.value.add(group.key)
+    }
+}, { immediate: true })
 
-        row.total = allCompleted ? calculateWeightedTotal(row) : [0, 0]
-        row.allCompleted = allCompleted
-
-        if (expanded.value[row.subject] === undefined) {
-            expanded.value[row.subject] = false
-        }
-    })
-
-    rows.value.sort((a, b) => b.total[0] - a.total[0])
-}
-
-async function fetchAssessment() {
-    if (!clazz) return
-    await assessmentStore.fetchClassAssessments(clazz)
+function toggle(key: string) {
+    if (expandedKeys.value.has(key)) expandedKeys.value.delete(key)
+    else expandedKeys.value.add(key)
 }
 
 async function runReport() {
@@ -109,69 +80,118 @@ async function runReport() {
         1,
         200
     )
-
-    prepareRecord()
 }
 
-function checkFinal(row: any) {
-    const [score, weight] = calculateWeightedTotal(row)
-    return `${score} (${weight})`
-}
-
-watch(
-    () => term,
-    async () => {
-        await fetchAssessment()
-        await runReport()
-    },
-    { immediate: true }
-)
-
-onMounted(async () => {
-    await assessmentStore.fetchGradingScale().catch(() => null)
-})
+watch(() => [term, student], runReport, { immediate: true })
 </script>
 
 <template>
-    <div class="md:hidden block space-y-2">
-        <UCard v-for="row in rows" :key="row.subject">
-            <template #header>
-                <div class="flex justify-between cursor-pointer" @click="toggleScores(row.subject)">
-                    <div class="flex space-x-3 items-center">
-                        <UAvatar size="lg" :alt="row.subject" />
+    <div class="block space-y-3 md:hidden">
+        <div v-if="loading" class="space-y-3">
+            <div
+                v-for="i in 3"
+                :key="i"
+                class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950"
+            >
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <USkeleton class="h-5 w-5 rounded-full" />
+                        <USkeleton class="h-5 w-32" />
+                        <USkeleton class="h-6 w-16 rounded-full" />
+                    </div>
 
-                        <div>
-                            <p class="text-sm font-medium">{{ row.subject }}</p>
-                            <p class="text-[11px] text-muted">{{ row.teacher }}</p>
+                    <USkeleton class="h-5 w-16" />
+                </div>
+            </div>
+        </div>
+
+        <div v-else-if="groups.length" class="space-y-3">
+            <div
+                v-for="group in groups"
+                :key="group.key"
+                class="overflow-hidden rounded-xl border border-default border-l-4"
+                :class="group.passed === group.items.length ? 'border-l-success-500' : 'border-l-warning-500'"
+            >
+                <button
+                    type="button"
+                    class="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-3 text-left transition hover:bg-elevated/40"
+                    @click="toggle(group.key)"
+                >
+                    <div class="flex min-w-0 items-center gap-2">
+                        <UIcon
+                            :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                            class="size-4 shrink-0 text-muted"
+                        />
+
+                        <h4 class="truncate text-sm font-semibold">
+                            {{ group.title }}
+                        </h4>
+
+                        <UBadge
+                            :color="group.passed === group.items.length ? 'success' : 'warning'"
+                            variant="solid"
+                            size="sm"
+                            class="shrink-0 rounded-full"
+                        >
+                            {{ group.passed === group.items.length ? 'All Passed' : `${group.failed} Attention` }}
+                        </UBadge>
+                    </div>
+
+                    <span class="shrink-0 text-xs text-muted">
+                        Avg <span class="font-semibold text-highlighted">{{ group.average }}%</span>
+                    </span>
+                </button>
+
+                <div v-if="expandedKeys.has(group.key)" class="space-y-2 border-t border-default p-3">
+                    <div
+                        v-for="subject in group.items"
+                        :key="subject.id"
+                        class="flex items-center justify-between gap-2 rounded-lg bg-elevated/40 px-3 py-2"
+                    >
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium">{{ subject.subject }}</p>
+                            <p class="truncate text-[11px] text-muted">{{ subject.teacher }}</p>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <span class="text-sm">
+                                {{ subject.score }}% <span class="text-muted">({{ subject.weightScore }}%)</span>
+                            </span>
+
+                            <UBadge
+                                size="sm"
+                                variant="soft"
+                                :color="subject.grade === 'A'
+                                    ? 'success'
+                                    : subject.grade === 'B'
+                                        ? 'primary'
+                                        : subject.grade === 'C'
+                                            ? 'warning'
+                                            : subject.grade === null
+                                                ? 'neutral'
+                                                : 'error'"
+                            >
+                                {{ subject.grade || 'N/A' }}
+                            </UBadge>
                         </div>
                     </div>
-                    <div class="flex space-x-3 items-center">
-                        <div class="flex flex-col items-end">
-                            <p class="text-muted text-[11px]">Final Grade</p>
-                            <p class="font-semibold">{{ checkFinal(row) }}</p>
-                        </div>
-
-                        <UIcon :name="expanded[row.subject] ? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'"
-                            class="text-lg text-mute" variant="link" />
-                    </div>
                 </div>
-            </template>
+            </div>
+        </div>
 
-            <template v-if="expanded[row.subject]" #default>
-                <div class="space-y-1.5">
-                    <div v-for="(score, i) in row.scores" :key="i" class="flex justify-between pb-1.5" :class="{
-                        'border-b border-gray-100':
-                            Number.parseInt(i) + 1 < row.scores.length
-                    }">
-                        <p class="text-sm">{{ score.name }}</p>
+        <div
+            v-else
+            class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-10 dark:border-gray-700"
+        >
+            <UIcon name="i-lucide-book-x" class="mb-2 text-4xl text-muted" />
 
-                        <p class="text-sm">
-                            <span>{{ score.score ?? '-' }}</span>
-                            <span class="text-muted"> ({{ score.weightScore ?? '-' }}) </span>
-                        </p>
-                    </div>
-                </div>
-            </template>
-        </UCard>
+            <p class="font-medium">
+                No Academic Records Found
+            </p>
+
+            <p class="text-sm text-muted">
+                Try selecting another term.
+            </p>
+        </div>
     </div>
 </template>

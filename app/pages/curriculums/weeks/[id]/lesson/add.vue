@@ -1,329 +1,365 @@
 <template>
   <div class="space-y-5 p-4">
-    <Heading title="Create Lesson Plan" subtitle="Prepare and organize lesson activities for students.">
+    <Heading title="Write Lesson Note" subtitle="Record the day's lesson note for this week's topic.">
       <div class="flex gap-3">
-
-        <UButton variant="outline" color="neutral" :icon="BACK_ICON" to="/curriculums/lesson-plans">
+        <UButton variant="outline" color="neutral" :icon="BACK_ICON" @click="back">
           Back
         </UButton>
       </div>
     </Heading>
 
-    <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+    <UForm ref="formRef" :state="state" :schema="schema" class="space-y-6" @submit="onSubmit">
+      <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
 
-      <!-- Sidebar -->
-      <div class="space-y-6 xl:sticky xl:top-6 xl:self-start">
+        <!-- Sidebar -->
+        <div class="space-y-6 xl:sticky xl:top-6 xl:self-start">
 
-        <UCard>
+          <!-- Inherited from the scheme of work -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-notebook-pen" class="text-primary size-5" />
+                <span class="font-semibold">Week {{ week?.week }}</span>
+              </div>
+            </template>
 
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-info" class="text-primary size-5" />
-
-              <span class="font-semibold">
-                Lesson Details
-              </span>
+            <div class="space-y-3 text-sm">
+              <div>
+                <p class="text-xs text-muted uppercase tracking-wide">Topic</p>
+                <p class="font-medium">{{ week?.topic || '—' }}</p>
+              </div>
+              <div v-if="week?.subTopic">
+                <p class="text-xs text-muted uppercase tracking-wide">Sub-topic</p>
+                <p class="font-medium">{{ week?.subTopic }}</p>
+              </div>
             </div>
-          </template>
+          </UCard>
 
-          <div class="space-y-4">
-            <UFormField label="Lesson Title" required>
-              <UInput v-model="form.title" placeholder="e.g. Introduction to Fractions" icon="i-lucide-text"
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-info" class="text-primary size-5" />
+                <span class="font-semibold">Lesson Details</span>
+              </div>
+            </template>
+
+            <div class="space-y-4">
+              <UFormField label="Lesson Title" name="title" required>
+                <UInput v-model="state.title" placeholder="e.g. Introduction to Simple Fractions" icon="i-lucide-text"
+                  class="w-full" />
+              </UFormField>
+
+              <UFormField label="Content / Focus" name="content" required>
+                <UTextarea v-model="state.content" :rows="2"
+                  placeholder="Short summary of what this lesson covers" class="w-full" />
+              </UFormField>
+
+              <UFormField label="Date" name="date" required>
+                <UInput v-model="state.date" type="date" icon="i-lucide-calendar" class="w-full" />
+              </UFormField>
+
+              <UFormField label="Duration / Period" name="duration">
+                <UInput v-model="state.duration" placeholder="e.g. 40 minutes or Double period" icon="i-lucide-clock"
+                  class="w-full" />
+              </UFormField>
+            </div>
+          </UCard>
+
+        </div>
+
+        <!-- Main Content -->
+        <div class="space-y-6">
+
+          <!-- Instructional Objectives -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-target" class="text-primary size-5" />
+                  <span class="font-semibold">Instructional Objectives</span>
+                </div>
+                <UButton variant="soft" size="sm" :icon="ADD_ICON" label="Add" @click="addObjective" />
+              </div>
+            </template>
+
+            <p class="mb-3 text-sm text-muted">
+              By the end of the lesson, pupils should be able to...
+            </p>
+
+            <div class="space-y-3">
+              <div v-for="(objective, index) in state.objectives" :key="index" class="flex gap-3">
+                <UFormField :name="`objectives.${index}`" class="flex-1">
+                  <UInput v-model="state.objectives[index]" :placeholder="`Objective ${index + 1}`" />
+                </UFormField>
+                <UButton v-if="state.objectives.length > 1" color="error" variant="ghost" :icon="DELETE_ICON"
+                  @click="removeObjective(index)" />
+              </div>
+            </div>
+          </UCard>
+
+          <!-- Previous Knowledge -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-brain" class="text-primary size-5" />
+                <span class="font-semibold">Previous Knowledge</span>
+              </div>
+            </template>
+
+            <UFormField name="previousKnowledge">
+              <UTextarea v-model="state.previousKnowledge" :rows="2"
+                placeholder="e.g. Pupils can already identify and count whole numbers" class="w-full" />
+            </UFormField>
+          </UCard>
+
+          <!-- Teaching Aids -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-boxes" class="text-primary size-5" />
+                  <span class="font-semibold">Teaching Aids</span>
+                </div>
+                <UButton variant="soft" size="sm" :icon="ADD_ICON" label="Add" @click="addAid" />
+              </div>
+            </template>
+
+            <div class="space-y-3">
+              <div v-for="(aid, index) in state.teachingAids" :key="index" class="flex gap-3">
+                <UFormField :name="`teachingAids.${index}`" class="flex-1">
+                  <UInput v-model="state.teachingAids[index]" placeholder="e.g. Chalkboard, fraction charts" />
+                </UFormField>
+                <UButton v-if="state.teachingAids.length > 1" color="error" variant="ghost" :icon="DELETE_ICON"
+                  @click="removeAid(index)" />
+              </div>
+            </div>
+          </UCard>
+
+          <!-- Reference Materials -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-book-open" class="text-primary size-5" />
+                  <span class="font-semibold">Reference Materials</span>
+                </div>
+                <UButton variant="soft" size="sm" :icon="ADD_ICON" label="Add" @click="addReference" />
+              </div>
+            </template>
+
+            <div class="space-y-3">
+              <div v-for="(ref, index) in state.referenceMaterials" :key="index" class="flex gap-3">
+                <UFormField :name="`referenceMaterials.${index}`" class="flex-1">
+                  <UInput v-model="state.referenceMaterials[index]"
+                    placeholder="e.g. New General Mathematics Bk 1, pg 45-47" />
+                </UFormField>
+                <UButton v-if="state.referenceMaterials.length > 1" color="error" variant="ghost" :icon="DELETE_ICON"
+                  @click="removeReference(index)" />
+              </div>
+            </div>
+          </UCard>
+
+          <!-- Presentation -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-presentation" class="text-primary size-5" />
+                <span class="font-semibold">Presentation</span>
+              </div>
+            </template>
+
+            <p class="mb-4 text-sm text-muted">
+              What the teacher does and what pupils do, at each stage of the lesson.
+            </p>
+
+            <div class="space-y-4">
+              <div v-for="(item, index) in state.presentation" :key="index"
+                class="rounded-xl border border-default p-4">
+                <p class="mb-3 font-medium">{{ item.stage }}</p>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                  <UFormField label="Teacher's Activity" :name="`presentation.${index}.teacherActivity`">
+                    <UTextarea v-model="item.teacherActivity" :rows="3" class="w-full" />
+                  </UFormField>
+
+                  <UFormField label="Pupils' Activity" :name="`presentation.${index}.pupilsActivity`">
+                    <UTextarea v-model="item.pupilsActivity" :rows="3" class="w-full" />
+                  </UFormField>
+                </div>
+              </div>
+            </div>
+          </UCard>
+
+          <!-- Evaluation -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-clipboard-check" class="text-primary size-5" />
+                <span class="font-semibold">Evaluation</span>
+              </div>
+            </template>
+
+            <p class="mb-2 text-sm text-muted">
+              How you will check pupils' understanding before the lesson ends.
+            </p>
+
+            <UFormField name="evaluation">
+              <UTextarea v-model="state.evaluation" :rows="3"
+                placeholder="e.g. Ask pupils to solve 3 fraction problems on the board" class="w-full" />
+            </UFormField>
+          </UCard>
+
+          <!-- Assignment -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-pencil" class="text-primary size-5" />
+                <span class="font-semibold">Assignment</span>
+              </div>
+            </template>
+
+            <UFormField name="assignment">
+              <UTextarea v-model="state.assignment" :rows="3" placeholder="e.g. Complete exercise 4.2, questions 1-10"
                 class="w-full" />
             </UFormField>
+          </UCard>
 
-            <UFormField label="Date" required>
-              <UInput v-model="form.date" type="date" icon="i-lucide-calendar" class="w-full" />
-            </UFormField>
+          <!-- Footer Actions -->
+          <UCard>
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm text-muted">
+                Objectives, title, content and date are required.
+              </p>
 
-          </div>
+              <div class="flex gap-3">
+                <UButton variant="outline" color="neutral" @click="back">
+                  Cancel
+                </UButton>
 
-        </UCard>
-
-
-        <UCard>
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-settings-2" class="text-primary size-5" />
-
-              <span class="font-semibold">
-                Publish Settings
-              </span>
+                <UButton type="submit" icon="i-lucide-save" :loading="isSubmitting">
+                  Save Lesson Note
+                </UButton>
+              </div>
             </div>
-          </template>
+          </UCard>
 
-          <div class="space-y-3">
-
-            <label
-              class="flex items-start gap-3 rounded-lg border border-default p-3 cursor-pointer hover:bg-muted/40 transition-colors">
-              <UCheckbox v-model="form.publish" class="mt-0.5" />
-              <div>
-                <p class="text-sm font-medium">Publish immediately</p>
-                <p class="text-xs text-muted">Make this lesson plan active right away.</p>
-              </div>
-            </label>
-
-            <label
-              class="flex items-start gap-3 rounded-lg border border-default p-3 cursor-pointer hover:bg-muted/40 transition-colors">
-              <UCheckbox v-model="form.visibleToStudents" class="mt-0.5" />
-              <div>
-                <p class="text-sm font-medium">Visible to students</p>
-                <p class="text-xs text-muted">Students can view this lesson plan.</p>
-              </div>
-            </label>
-
-            <label
-              class="flex items-start gap-3 rounded-lg border border-default p-3 cursor-pointer hover:bg-muted/40 transition-colors">
-              <UCheckbox v-model="form.includeHomework" class="mt-0.5" />
-              <div>
-                <p class="text-sm font-medium">Include homework</p>
-                <p class="text-xs text-muted">Attach homework section to this plan.</p>
-              </div>
-            </label>
-
-          </div>
-
-        </UCard>
-
+        </div>
       </div>
-
-
-      <!-- Main Content -->
-      <div class="space-y-6">
-
-        <!-- Objectives -->
-        <UCard>
-
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-target" class="text-primary size-5" />
-
-                <span class="font-semibold">
-                  Learning Objectives
-                </span>
-              </div>
-
-              <UBadge color="neutral" variant="subtle" size="sm">Required</UBadge>
-            </div>
-          </template>
-
-          <div class="space-y-2">
-            <p class="text-sm text-muted">
-              List what students should know or be able to do by the end of the lesson.
-            </p>
-
-            <UTextarea v-model="form.objectives" :rows="4"
-              placeholder="e.g. Students will be able to identify and compare fractions..." class="w-full" />
-          </div>
-
-        </UCard>
-
-        <!-- Materials -->
-        <UCard>
-
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-book-open" class="text-primary size-5" />
-
-              <span class="font-semibold">
-                Resources
-              </span>
-            </div>
-          </template>
-
-          <div class="space-y-2">
-            <p class="text-sm text-muted">
-              List any books, charts, devices, or tools needed for this lesson.
-            </p>
-
-            <UTextarea v-model="form.materials" :rows="3"
-              placeholder="e.g. Textbook, fraction charts, whiteboard markers" class="w-full" />
-          </div>
-
-        </UCard>
-
-        <!-- Assessment -->
-        <UCard>
-
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-clipboard-check" class="text-primary size-5" />
-
-              <span class="font-semibold">
-                Assessment
-              </span>
-            </div>
-          </template>
-
-          <div class="space-y-2">
-            <p class="text-sm text-muted">
-              Describe how you will check students' understanding.
-            </p>
-
-            <UTextarea v-model="form.assessment" :rows="3"
-              placeholder="e.g. Short quiz, oral questions, classwork review" class="w-full" />
-          </div>
-
-        </UCard>
-
-
-        <!-- Homework -->
-        <UCard v-if="form.includeHomework">
-
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-pencil" class="text-primary size-5" />
-
-              <span class="font-semibold">
-                Homework
-              </span>
-            </div>
-          </template>
-
-          <div class="space-y-2">
-            <p class="text-sm text-muted">
-              Assign follow-up exercises or reading for students.
-            </p>
-
-            <UTextarea v-model="form.homework" :rows="3" placeholder="e.g. Complete exercise 4.2, questions 1-10"
-              class="w-full" />
-          </div>
-
-        </UCard>
-
-
-        <!-- Footer Actions -->
-        <UCard>
-          <div
-            class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-            <p class="text-sm text-muted">
-              All required fields must be completed before publishing.
-            </p>
-
-            <div class="flex gap-3">
-
-              <UButton variant="outline" color="neutral" @click="resetForm">
-                Cancel
-              </UButton>
-
-              <UButton icon="i-lucide-save" :loading="isSubmitting" @click="saveLessonPlan(false)">
-                Save Lesson Plan
-              </UButton>
-
-            </div>
-
-          </div>
-        </UCard>
-
-      </div>
-
-    </div>
-
+    </UForm>
   </div>
 </template>
+
 <script setup lang="ts">
-const router = useRouter()
+import * as yup from 'yup'
 
-const form = reactive({
-  subject: '',
-  class: '',
-  week: '',
-  title: '',
-  date: '',
-  objectives: '',
-  activities: '',
-  materials: '',
-  assessment: '',
-  homework: '',
-  publish: false,
-  visibleToStudents: false,
-  includeHomework: true
-})
+const route = useRoute()
+const weekStore = useWeekStore()
+const lessonStore = useLessonStore()
 
-const subjects = [
-  'Mathematics',
-  'English Language',
-  'Integrated Science',
-  'Social Studies',
-  'Basic Science',
-  'Agricultural Science'
-]
+const weekId = computed(() => route.params.id as string)
+const { current: week } = storeToRefs(weekStore)
 
-const classes = [
-  'JSS 1',
-  'JSS 2',
-  'JSS 3',
-  'SSS 1',
-  'SSS 2',
-  'SSS 3'
-]
-
-const weeks = Array.from(
-  { length: 12 },
-  (_, i) => ({
-    label: `Week ${i + 1}`,
-    value: i + 1
-  })
-)
-
+const formRef = ref()
 const isSubmitting = ref(false)
 
-async function saveLessonPlan(asDraft: boolean) {
+const state = reactive({
+  title: '',
+  content: '',
+  date: new Date().toISOString().slice(0, 10),
+  duration: '',
+  objectives: [''],
+  previousKnowledge: '',
+  teachingAids: [''],
+  referenceMaterials: [''],
+  presentation: [
+    { stage: 'Introduction', teacherActivity: '', pupilsActivity: '' },
+    { stage: 'Development', teacherActivity: '', pupilsActivity: '' },
+    { stage: 'Conclusion', teacherActivity: '', pupilsActivity: '' }
+  ] as LessonStage[],
+  evaluation: '',
+  assignment: ''
+})
+
+const schema = yup.object({
+  title: yup.string().trim().required('Lesson title is required'),
+  content: yup.string().trim().required('Content is required'),
+  date: yup.string().required('Date is required'),
+  objectives: yup.array()
+    .of(yup.string().trim().required('Objective is required'))
+    .min(1, 'At least one objective is required')
+    .required()
+})
+
+function addObjective() {
+  state.objectives.push('')
+}
+
+function removeObjective(index: number) {
+  if (state.objectives.length > 1)
+    state.objectives.splice(index, 1)
+}
+
+function addAid() {
+  state.teachingAids.push('')
+}
+
+function removeAid(index: number) {
+  if (state.teachingAids.length > 1)
+    state.teachingAids.splice(index, 1)
+}
+
+function addReference() {
+  state.referenceMaterials.push('')
+}
+
+function removeReference(index: number) {
+  if (state.referenceMaterials.length > 1)
+    state.referenceMaterials.splice(index, 1)
+}
+
+function back() {
+  navigateTo(`/curriculums/weeks/${weekId.value}`)
+}
+
+async function onSubmit() {
   try {
     isSubmitting.value = true
 
-    if (asDraft) {
-      form.publish = false
-    }
-
-    // TODO: Replace with API request
-    console.log(form)
-
-    useToast().add({
-      title: asDraft ? 'Draft saved' : 'Lesson plan saved',
-      description: asDraft
-        ? 'Your lesson plan has been saved as a draft.'
-        : 'Lesson plan created successfully.',
-      color: 'success'
+    await lessonStore.create({
+      week: weekId.value,
+      title: state.title,
+      content: state.content,
+      date: state.date,
+      duration: state.duration || undefined,
+      objectives: state.objectives.filter(o => o.trim()),
+      previousKnowledge: state.previousKnowledge || undefined,
+      teachingAids: state.teachingAids.filter(a => a.trim()),
+      referenceMaterials: state.referenceMaterials.filter(r => r.trim()),
+      presentation: state.presentation.filter(p => p.teacherActivity.trim() || p.pupilsActivity.trim()),
+      evaluation: state.evaluation || undefined,
+      assignment: state.assignment || undefined
     })
 
-    router.push('/lesson-plans')
-  }
-  catch {
-    useToast().add({
-      title: 'Error',
-      description: 'Unable to save lesson plan.',
-      color: 'error'
-    })
-  }
-  finally {
+    useNotify().success('Lesson note saved successfully.')
+    back()
+  } catch (error: any) {
+    useNotify().error(error.message || error || 'Unable to save lesson note.')
+  } finally {
     isSubmitting.value = false
   }
 }
 
-function resetForm() {
-  form.subject = ''
-  form.class = ''
-  form.week = ''
-  form.title = ''
-  form.date = ''
-  form.objectives = ''
-  form.activities = ''
-  form.materials = ''
-  form.assessment = ''
-  form.homework = ''
-  form.publish = false
-  form.visibleToStudents = false
-  form.includeHomework = true
-}
+watch(
+  () => route.params.id,
+  async (id) => {
+    if (id) await weekStore.getWeek(id as string)
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
-  useAppStore().setTitle('Create Lesson Plan')
-
-  document.title =
-    'Create Lesson Plan | Skultem'
+  useAppStore().setTitle('Write Lesson Note')
+  document.title = 'Write Lesson Note | Skultem'
 })
 
 definePageMeta({

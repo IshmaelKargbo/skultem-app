@@ -98,8 +98,13 @@ export default defineNuxtConfig({
 
     includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'splash/*.png'],
 
+    // Enabled so the manifest + service worker are real in `nuxt dev` too —
+    // otherwise /manifest.webmanifest falls through to the SPA shell (served
+    // as HTML, not JSON) and a phone can never install/splash-screen a PWA
+    // pointed at the dev server.
     devOptions: {
-      enabled: false
+      enabled: true,
+      type: 'module'
     },
 
     workbox: {

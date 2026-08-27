@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-5 p-4">
+    <div class="space-y-4 px-4 md:px-6">
         <Heading title="Add Week" subtitle="Create weekly topics and learning objectives.">
             <div class="flex gap-3">
                 <UButton color="neutral" variant="outline" :icon="BACK_ICON" label="Back" @click="back" />
@@ -77,7 +77,8 @@ const { progress } = storeToRefs(schemeStore)
 
 const formRef = ref()
 
-const id = useRoute().params.id as string
+const route = useRoute()
+const id = computed(() => route.params.id as string)
 
 const state = reactive({
     week: 0,
@@ -110,7 +111,7 @@ function removeObjective(index: number) {
 async function onSubmit() {
     try {
         isLoading.value = true
-        await store.create({ ...state, scheme: id })
+        await store.create({ ...state, scheme: id.value })
         back()
     } catch (error: any) {
         useNotify().error(error.message);
@@ -119,7 +120,7 @@ async function onSubmit() {
 }
 
 function back() {
-    navigateTo(`/curriculums/${id}`)
+    navigateTo(`/curriculums/${id.value}`)
 }
 
 watch(() => progress.value, (value) => {
@@ -128,8 +129,15 @@ watch(() => progress.value, (value) => {
     }
 })
 
+watch(
+    () => route.params.id,
+    (schemeId) => {
+        if (schemeId) schemeStore.getProgress(schemeId as string)
+    },
+    { immediate: true }
+)
+
 onMounted(() => {
-    if (id) schemeStore.getProgress(id)
     document.title = "Add Week | Scheme of Work | Skultem"
 })
 </script>

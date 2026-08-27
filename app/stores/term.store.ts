@@ -37,6 +37,16 @@ export const useTermStore = defineStore('term', {
     },
     activate(id: string) {
       return TermApi().activate(id)
+    },
+    async update(id: string, payload: CreateTermDto) {
+      const response = await TermApi().update(id, payload)
+      const index = this.records.findIndex(t => t.id === id)
+      if (index !== -1) this.records[index] = response
+      return response
+    },
+    async remove(id: string) {
+      await TermApi().remove(id)
+      this.records = this.records.filter(t => t.id !== id)
     }
   }
 })

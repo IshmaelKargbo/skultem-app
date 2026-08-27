@@ -17,202 +17,116 @@
             </template>
 
             <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <div v-for="i in 6" :key="i" class="rounded-2xl border border-default p-4 space-y-3">
+                <div v-for="i in 8" :key="i" class="rounded-2xl border border-default p-4 space-y-3 bg-gray-100 dark:bg-neutral-800">
                     <USkeleton class="h-3 w-20" />
                     <USkeleton class="h-5 w-32" />
                 </div>
             </div>
+
             <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-
                 <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    v-for="item in personalDetails"
+                    :key="item.label"
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800"
+                >
                     <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-user-round" class="size-4" />
+                        <UIcon :name="item.icon" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
-                            Given Names
+                            {{ item.label }}
                         </p>
                     </div>
 
                     <p class="mt-2 font-semibold">
-                        {{ record?.givenNames || '-' }}
+                        {{ item.value || '-' }}
                     </p>
                 </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-user" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Family Name
-                        </p>
-                    </div>
-
-                    <p class="mt-2 font-semibold">
-                        {{ record?.familyName || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-calendar-days" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Date of Birth
-                        </p>
-                    </div>
-
-                    <p class="mt-2 font-semibold">
-                        {{ record?.dateOfBirth || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-users" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Gender
-                        </p>
-                    </div>
-
-                    <p class="mt-2 font-semibold">
-                        {{ clean(record?.gender || '') || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-map-pinned" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            City
-                        </p>
-                    </div>
-
-                    <p class="mt-2 font-semibold">
-                        {{ record?.city || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-house" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Address
-                        </p>
-                    </div>
-
-                    <p class="mt-2 font-semibold">
-                        {{ record?.street || '-' }}
-                    </p>
-                </div>
-
             </div>
         </UCard>
-        <UCard class="overflow-hidden">
+
+        <UCard class="overflow-hidden mt-6">
             <template #header>
-                <div class="flex items-center gap-2">
-                    <UIcon name="i-lucide-users" class="size-5 text-primary" />
-                    <h3 class="text-lg font-semibold">
-                        Parent / Guardian Information
-                    </h3>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <UIcon name="i-lucide-users" class="size-5 text-primary" />
+                        <h3 class="text-lg font-semibold">
+                            Parent / Guardian Information
+                        </h3>
+                    </div>
+
+                    <p class="text-sm text-muted">
+                        Contact and family details for the student’s parent or guardian.
+                    </p>
                 </div>
             </template>
 
+            <!-- Guardian contact -->
             <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <div v-for="i in 6" :key="i" class="rounded-2xl border border-default p-4 space-y-3">
+                <div v-for="i in 6" :key="i" class="rounded-2xl border border-default bg-gray-100 p-4 space-y-3 dark:bg-neutral-800">
                     <USkeleton class="h-3 w-20" />
                     <USkeleton class="h-5 w-32" />
                 </div>
             </div>
+
             <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-
                 <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
+                    v-for="item in guardianContact"
+                    :key="item.label"
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800"
+                >
                     <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-user-round-check" class="size-4" />
+                        <UIcon :name="item.icon" class="size-4" />
                         <p class="text-xs uppercase tracking-wide">
-                            Guardian Name
+                            {{ item.label }}
                         </p>
                     </div>
 
-                    <p class="mt-2 font-semibold">
-                        {{ record?.guardian?.givenNames || '-' }}
-                        {{ record?.guardian?.familyName || '' }}
+                    <p class="mt-2 break-words font-semibold">
+                        {{ item.value || '-' }}
                     </p>
                 </div>
+            </div>
 
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-users-round" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Relationship
-                        </p>
+            <!-- Father / Mother -->
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+                <div class="overflow-hidden rounded-2xl border border-default">
+                    <div class="flex items-center gap-2 border-b border-default bg-gray-100 px-4 py-2.5 dark:bg-neutral-800">
+                        <UIcon name="i-lucide-user-round" class="size-4 text-primary" />
+                        <h4 class="text-sm font-semibold">
+                            Father Details
+                        </h4>
                     </div>
 
-                    <p class="mt-2 font-semibold">
-                        {{ clean(record?.relationship || '') || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-phone" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Phone Number
-                        </p>
+                    <div v-if="loading" class="space-y-3 p-4">
+                        <USkeleton v-for="i in 3" :key="i" class="h-4 w-full" />
                     </div>
 
-                    <p class="mt-2 font-semibold">
-                        {{ record?.guardian?.phone || '-' }}
-                    </p>
+                    <div v-else class="divide-y divide-default">
+                        <div v-for="item in fatherDetails" :key="item.label" class="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                            <span class="text-muted">{{ item.label }}</span>
+                            <span class="font-medium">{{ item.value || '-' }}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-mail" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Email
-                        </p>
+                <div class="overflow-hidden rounded-2xl border border-default">
+                    <div class="flex items-center gap-2 border-b border-default bg-gray-100 px-4 py-2.5 dark:bg-neutral-800">
+                        <UIcon name="i-lucide-user-round" class="size-4 text-primary" />
+                        <h4 class="text-sm font-semibold">
+                            Mother Details
+                        </h4>
                     </div>
 
-                    <p class="mt-2 font-semibold break-all">
-                        {{ record?.guardian?.email || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-map-pinned" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            City
-                        </p>
+                    <div v-if="loading" class="space-y-3 p-4">
+                        <USkeleton v-for="i in 3" :key="i" class="h-4 w-full" />
                     </div>
 
-                    <p class="mt-2 font-semibold">
-                        {{ record?.guardian?.city || '-' }}
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800">
-                    <div class="flex items-center gap-2 text-muted">
-                        <UIcon name="i-lucide-house" class="size-4" />
-                        <p class="text-xs uppercase tracking-wide">
-                            Address
-                        </p>
+                    <div v-else class="divide-y divide-default">
+                        <div v-for="item in motherDetails" :key="item.label" class="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                            <span class="text-muted">{{ item.label }}</span>
+                            <span class="font-medium">{{ item.value || '-' }}</span>
+                        </div>
                     </div>
-
-                    <p class="mt-2 font-semibold">
-                        {{ record?.guardian?.street || '-' }}
-                    </p>
                 </div>
-
             </div>
         </UCard>
     </StudentView>
@@ -225,6 +139,36 @@ const { record, loading } = storeToRefs(store)
 definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
 })
+
+const personalDetails = computed(() => ([
+    { label: 'Given Names', icon: 'i-lucide-user-round', value: record.value?.givenNames },
+    { label: 'Family Name', icon: 'i-lucide-user', value: record.value?.familyName },
+    { label: 'Date of Birth', icon: 'i-lucide-calendar-days', value: record.value?.dateOfBirth ? formatDate(record.value.dateOfBirth) : '' },
+    { label: 'Religion', icon: 'i-lucide-heart', value: clean(record.value?.religion || '') },
+    { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.city },
+    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street }
+]))
+
+const guardianContact = computed(() => ([
+    { label: 'Guardian Name', icon: 'i-lucide-user-round-check', value: `${record.value?.guardian?.givenNames || ''} ${record.value?.guardian?.familyName || ''}`.trim() },
+    { label: 'Relationship', icon: 'i-lucide-users-round', value: clean(record.value?.relationship || '') },
+    { label: 'Phone Number', icon: 'i-lucide-phone', value: record.value?.guardian?.phone },
+    { label: 'Email', icon: 'i-lucide-mail', value: record.value?.guardian?.email },
+    { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.guardian?.city },
+    { label: 'Address', icon: 'i-lucide-house', value: record.value?.guardian?.street }
+]))
+
+const fatherDetails = computed(() => ([
+    { label: 'Name', value: record.value?.family?.fatherName },
+    { label: 'Occupation', value: record.value?.family?.fatherOccupation },
+    { label: 'Contact', value: record.value?.family?.fatherContact }
+]))
+
+const motherDetails = computed(() => ([
+    { label: 'Name', value: record.value?.family?.motherName },
+    { label: 'Occupation', value: record.value?.family?.motherOccupation },
+    { label: 'Contact', value: record.value?.family?.motherContact }
+]))
 
 onMounted(() => {
     useAppStore().setTitle('View Student')

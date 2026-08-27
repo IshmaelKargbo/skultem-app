@@ -1,21 +1,18 @@
 <template>
-  <div class="space-y-5 p-4">
+  <div class="space-y-4 px-4 md:px-6">
     <Heading title="Weekly Topics & Objectives" subtitle="Manage weekly curriculum coverage and lesson objectives.">
-      <UButton icon="i-lucide-plus" label="Add Week" @click="add" />
+      <UButton v-if="isAdmin" icon="i-lucide-plus" label="Add Week" @click="add" />
     </Heading>
 
     <!-- Statistics -->
     <CurriculumSchemeOfWorkStatistics />
-    
+
     <!-- Weeks -->
     <div v-if="records.length" class="grid gap-5">
 
       <UCard v-for="week in records" :key="week.id">
-
         <template #header>
-
           <div class="flex items-center justify-between">
-
             <div>
               <h3 class="text-lg font-semibold">
                 Week {{ week.week }}
@@ -26,15 +23,16 @@
               </p>
             </div>
 
-            <UBadge variant="outline" :color="getStatusColor(week.state)" :label="clean(week.state)" />
-
+            <UDropdownMenu :items="weekStateItems(week)" :content="{ align: 'end' }">
+              <UBadge variant="outline" :color="getLessonStateColor(week.state)" :label="clean(week.state)"
+                class="cursor-pointer" />
+            </UDropdownMenu>
           </div>
-
         </template>
 
 
         <div class="space-y-5">
-          <p class="bg-gray-50 p-3 border-2 rounded-xl border-dashed border-gray-200 dark:border-gray-900">{{
+          <p v-if="week.subTopic" class="bg-gray-50 p-3 border-2 rounded-xl border-dashed border-gray-200 dark:border-gray-900">{{
             week.subTopic }}
           </p>
           <!-- Objectives -->
@@ -60,13 +58,7 @@
         <template #footer>
 
           <div class="flex flex-wrap gap-3">
-
             <UButton size="sm" icon="i-lucide-eye" label="View" :to="`/curriculums/weeks/${week.id}`" />
-
-            <UButton size="sm" variant="outline" icon="i-lucide-pencil" label="Edit" />
-
-            <UButton size="sm" variant="outline" color="error" icon="i-lucide-trash" label="Delete" />
-
           </div>
 
         </template>
@@ -96,162 +88,56 @@
 </template>
 <script setup lang="ts">
 const store = useWeekStore()
+const schemeStore = useSchemeOfWorkStore()
 const { records } = storeToRefs(store)
+const { can } = useAuth()
+const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
 const route = useRoute()
-const search = ref('')
-const selectedSubject = ref('')
-const selectedClass = ref('')
-const selectedStatus = ref('')
+const id = computed(() => route.params.id as string)
 
-const id = route.params.id as string
-const subjects = [
-  { label: 'Mathematics', value: 'MATH' },
-  { label: 'English Language', value: 'ENG' }
-]
+function weekStateItems(week: Week) {
+  const options: { label: string, value: LessonState, icon: string }[] = [
+    { label: 'Not Started', value: 'NOT_STARTED', icon: 'i-lucide-circle-dashed' },
+    { label: 'In Progress', value: 'IN_PROGRESS', icon: 'i-lucide-loader' },
+    { label: 'Completed', value: 'COMPLETED', icon: 'i-lucide-check-circle' }
+  ]
 
-const classes = [
-  { label: 'JSS 1', value: 'JSS1' },
-  { label: 'JSS 2', value: 'JSS2' }
-]
+  return options
+    .filter(o => o.value !== week.state)
+    .map(o => ({
+      label: o.label,
+      icon: o.icon,
+      onClick: () => onWeekStateChange(week.id, o.value)
+    }))
+}
 
-const statuses = [
-  { label: 'Completed', value: 'COMPLETED' },
-  { label: 'In Progress', value: 'IN_PROGRESS' },
-  { label: 'Pending', value: 'PENDING' }
-]
-
-const weeks = ref([
-  {
-    id: '1',
-    week: 1,
-    topic: 'Whole Numbers',
-    objectives: [
-      'Understand whole numbers',
-      'Compare numbers',
-      'Write numbers in words'
-    ],
-    activities: [
-      'Discussion',
-      'Group Work',
-      'Examples'
-    ],
-    assessment: 'Quiz',
-    status: 'COMPLETED',
-    statusLabel: 'Completed',
-    subject: 'MATH',
-    class: 'JSS1'
-  },
-
-  {
-    id: '2',
-    week: 2,
-    topic: 'Fractions',
-    objectives: [
-      'Understand fractions',
-      'Solve problems'
-    ],
-    activities: [
-      'Practical Work',
-      'Examples'
-    ],
-    assessment: 'Homework',
-    status: 'IN_PROGRESS',
-    statusLabel: 'In Progress',
-    subject: 'MATH',
-    class: 'JSS1'
+async function onWeekStateChange(weekId: string, state: LessonState) {
+  try {
+    await store.updateState(weekId, state)
+    useNotify().success('Week status updated.')
+    await schemeStore.getProgress(id.value)
+  } catch (error: any) {
+    useNotify().error(error.message || error || 'Unable to update week status.')
   }
-])
-
-
-const filteredWeeks = computed(() => {
-  return weeks.value.filter((week) => {
-
-    const matchesSearch =
-      week.topic.toLowerCase()
-        .includes(search.value.toLowerCase())
-
-    const matchesSubject =
-      !selectedSubject.value ||
-      week.subject === selectedSubject.value
-
-    const matchesClass =
-      !selectedClass.value ||
-      week.class === selectedClass.value
-
-    const matchesStatus =
-      !selectedStatus.value ||
-      week.status === selectedStatus.value
-
-    return (
-      matchesSearch &&
-      matchesSubject &&
-      matchesClass &&
-      matchesStatus
-    )
-
-  })
-})
-
-
-const totalWeeks = computed(
-  () => weeks.value.length
-)
-
-const completedWeeks = computed(
-  () =>
-    weeks.value.filter(
-      week => week.status === 'COMPLETED'
-    ).length
-)
-
-const remainingWeeks = computed(
-  () => totalWeeks.value - completedWeeks.value
-)
-
-const coverage = computed(() => {
-  if (!totalWeeks.value)
-    return 0
-
-  return Math.round(
-    (completedWeeks.value /
-      totalWeeks.value) * 100
-  )
-})
-
-
-function getStatusColor(status: string) {
-
-  switch (status) {
-
-    case 'NOT_STARTED':
-      return 'neutral'
-
-    case 'COMPLETED':
-      return 'success'
-
-    case 'IN_PROGRESS':
-      return 'warning'
-
-    default:
-      return 'neutral'
-
-  }
-
 }
 
 function add() {
-  navigateTo(`${id}/week/add`)
+  navigateTo(`${id.value}/week/add`)
 }
 
-onMounted(() => {
-  if (id) store.fetchAll(id)
-  useAppStore().setTitle(
-    'Weekly Topics & Objectives'
-  )
+watch(
+  () => route.params.id,
+  (schemeId) => {
+    if (schemeId) store.fetchAll(schemeId as string)
+  },
+  { immediate: true }
+)
 
-  document.title =
-    'Weeks | Scheme of Work | Skultem'
+onMounted(() => {
+  useAppStore().setTitle('Weekly Topics & Objectives')
+  useAppStore().setBack(true)
+  document.title = 'Weeks | Scheme of Work | Skultem'
 
 })
 

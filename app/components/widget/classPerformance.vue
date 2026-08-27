@@ -9,8 +9,7 @@
 import { ref, computed, onMounted, defineAsyncComponent } from "vue"
 
 const store = useWidgetStore()
-const studentStore = useStudentStore()
-const { activeCycle } = storeToRefs(studentStore)
+const termStore = useTermStore()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
@@ -65,14 +64,10 @@ const chartOptions = computed(() => ({
   }
 }))
 
-onMounted(loadData)
-
-async function fetchCycle() {
-  await studentStore.fetchActiveCycle("all")
-  if (activeCycle.value == null) return null
-  const active = activeCycle.value.terms.find(e => e.status == "ACTIVE")
-  if (active == null) return
-  term.value = active
+// This is a school-wide widget, not scoped to one student, so it needs the school's active term
+// directly (/term/active) rather than piggybacking on a per-student assessment cycle lookup.
+async function fetchActiveTerm() {
+  term.value = await termStore.getActive() || undefined
 }
 
 async function loadData() {
@@ -119,9 +114,7 @@ async function loadData() {
   }
 }
 
-onMounted(async () => {
-  await fetchCycle()
-})
+onMounted(fetchActiveTerm)
 
 watch(() => term.value, async () => {
   await loadData()

@@ -1,5 +1,5 @@
 <template>
-    <UCard class="hidden md:block" :ui="{
+    <UCard :ui="{
         body: 'sm:p-0'
     }">
         <template #header>
@@ -10,9 +10,12 @@
         <UTable :columns="columns" :data="data" :loading="loading">
             <template #empty-state>
                 <div class="flex flex-col items-center gap-2 py-10">
-                    <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-                    <p class="text-gray-500">No fee found.</p>
+                    <UIcon name="ph:wallet-light" class="text-4xl text-gray-400" />
+                    <p class="text-gray-500">No fee records found.</p>
                 </div>
+            </template>
+            <template #loading>
+                <TableLoading :size="columns.length" />
             </template>
             <template #total-cell="{ row }">
                 <p class="text-info">{{ format(row.original.total as number || 0) }}</p>
@@ -25,7 +28,8 @@
             </template>
             <template #status-cell="{ row }">
                 <UBadge :label="row.original.status" variant="outline"
-                    :color="parseFeeStatusColor[row.original.status]" />
+                    :color="parseFeeStatusColor[row.original.status]"
+                    :icon="parseFeeStatusIcon[row.original.status]" />
             </template>
         </UTable>
     </UCard>
@@ -42,11 +46,6 @@ const store = useStudentStore()
 const loading = ref(true)
 
 const data = ref<any>([])
-const parseFeeStatusColor = {
-    Unpaid: 'error',
-    Paid: 'success',
-    Partial: 'info'
-}
 
 const columns: TableColumn<any> = [
     {
@@ -81,16 +80,16 @@ const columns: TableColumn<any> = [
 ]
 
 async function fetchRecord() {
+    if (!student) return
     loading.value = true
     data.value = []
-    const res = await store.getAllStudentFeesById(student)
-    if (res == null) return
-
-    data.value = res.records
-    loading.value = false
+    try {
+        const res = await store.getAllStudentFeesById(student)
+        data.value = res?.records ?? []
+    } finally {
+        loading.value = false
+    }
 }
 
-watch(() => student, () => {
-    fetchRecord()
-})
+watch(() => student, fetchRecord, { immediate: true })
 </script>

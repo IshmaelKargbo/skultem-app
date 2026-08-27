@@ -87,7 +87,8 @@
             <!-- Role Switcher -->
             <UCard
                 v-if="user?.roles?.length > 1"
-                class="mt-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800">
+                variant="outline"
+                class="mt-10">
 
                 <p
                     class="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-4">

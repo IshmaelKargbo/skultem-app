@@ -1,5 +1,5 @@
 <template>
-  <div class="md:p-7 p-4 h-full overflow-y-auto md:space-y-5 space-y-3">
+  <div class="md:px-6 px-4 space-y-4">
     <!-- Top Card -->
     <UCard class="hidden md:block">
       <div class="flex flex-col md:flex-row items-center justify-between space-y-5 md:space-y-0">

@@ -1,6 +1,5 @@
 <template>
-    <div class="p-4 space-y-4">
-        <Heading class="hidden lg:block" title="Transactions" subtitle="Complete financial transaction history" />
+    <div class="px-4 sm:px-6 space-y-4">
         <TransactionReport />
         <TransactionFilters :selected="selected" />
         <TransactionTable class="hidden md:block" />

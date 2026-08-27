@@ -1,432 +1,210 @@
-```vue
 <template>
-  <div class="space-y-6 mt-6 p-4">
-
-    <!-- Header -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-      <div>
-        <h1 class="text-2xl font-bold">
-          Teacher Progress
-        </h1>
-
-        <p class="text-sm text-muted mt-1">
-          Monitor curriculum coverage and performance by teacher.
-        </p>
+  <div class="space-y-4 px-4 md:px-6">
+    <Heading title="Teacher Progress" subtitle="Monitor curriculum coverage by teacher.">
+      <div class="flex space-x-2">
+        <div class="grid gap-2 md:grid-cols-2">
+          <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." />
+          <USelectMenu v-model="status" :items="statuses" value-key="value" placeholder="Filter status" />
+        </div>
+        <UButton icon="i-lucide-refresh-cw" variant="outline" color="neutral" :loading="loading" label="Refresh"
+          @click="load" />
       </div>
-
-      <div class="flex gap-3">
-        <UButton icon="i-lucide-file-down" variant="outline" color="neutral" label="Export Report" />
-
-        <UButton icon="i-lucide-refresh-cw" label="Refresh" />
-      </div>
-
-    </div>
+    </Heading>
 
     <!-- Statistics -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-muted">
-              Teachers
-            </p>
-
-            <p class="text-3xl font-bold">
-              {{ totalTeachers }}
-            </p>
-          </div>
-
-          <div class="rounded-xl bg-primary/10 p-3">
-            <UIcon name="i-lucide-users" class="text-primary text-xl" />
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-muted">
-              Completed
-            </p>
-
-            <p class="text-3xl font-bold text-green-600">
-              {{ completedTeachers }}
-            </p>
-          </div>
-
-          <div class="rounded-xl bg-green-500/10 p-3">
-            <UIcon name="i-lucide-check-circle" class="text-green-500 text-xl" />
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-muted">
-              Behind Schedule
-            </p>
-
-            <p class="text-3xl font-bold text-orange-500">
-              {{ behindTeachers }}
-            </p>
-          </div>
-
-          <div class="rounded-xl bg-orange-500/10 p-3">
-            <UIcon name="i-lucide-triangle-alert" class="text-orange-500 text-xl" />
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-muted">
-              Average Coverage
-            </p>
-
-            <p class="text-3xl font-bold text-primary">
-              {{ averageCoverage }}%
-            </p>
-          </div>
-
-          <div class="rounded-xl bg-primary/10 p-3">
-            <UIcon name="i-lucide-chart-column" class="text-primary text-xl" />
-          </div>
-        </div>
-      </UCard>
-
+      <Metric :record="{
+        color: 'neutral',
+        label: 'Teachers',
+        isReady: !loading,
+        value: totalTeachers || '0',
+        icon: TEACHER_ICON
+      }" />
+      <Metric :record="{
+        color: 'success',
+        label: 'Completed',
+        isReady: !loading,
+        value: completedTeachers || '0',
+        icon: CHECK_ICON
+      }" />
+      <Metric :record="{
+        color: 'error',
+        label: 'Remaining',
+        isReady: !loading,
+        value: behindTeachers || '0',
+        icon: PENDING_ICON
+      }" />
+      <Metric :record="{
+        color: 'info',
+        label: 'coverage',
+        isReady: !loading,
+        value: `${averageCoverage || 0}%`,
+        icon: COVERAGE_ICON
+      }" />
     </div>
 
-    <!-- Search -->
-    <UCard>
+    <div v-if="loading" class="space-y-5">
+      <USkeleton v-for="i in 3" :key="i" class="h-40 rounded-2xl" />
+    </div>
 
-      <div class="grid gap-4 md:grid-cols-2">
-
-        <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." />
-
-        <USelectMenu v-model="status" :items="statuses" value-key="value" placeholder="Filter status" />
-
-      </div>
-
-    </UCard>
-
-<div class="space-y-5">
-
-  <UCard
-    v-for="teacher in filteredTeachers"
-    :key="teacher.id"
-    class="overflow-hidden"
-  >
-    <div class="space-y-6">
-
-      <!-- Top -->
-      <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-
-        <div class="flex items-center gap-4">
-
-          <UAvatar
-            :alt="teacher.name"
-            size="3xl"
-          />
-
-          <div>
-
-            <div class="flex flex-wrap items-center gap-2">
-
-              <h3 class="text-xl font-bold">
-                {{ teacher.name }}
-              </h3>
-
-              <UBadge
-                :label="getStatusLabel(teacher.status)"
-                :color="getStatusColor(teacher.status)"
-              />
-
+    <div v-else-if="filteredTeachers.length" class="grid grid-cols-2 gap-4">
+      <UCard v-for="teacher in filteredTeachers" :key="teacher.id" class="overflow-hidden">
+        <template #header>
+          <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-center gap-2">
+              <UAvatar :alt="teacher.name" size="xl" />
+              <div>
+                <h3 class="text-base font-bold">{{ teacher.name }}</h3>
+                <p class="text-xs-base text-muted">
+                  {{ teacher.completedWeeks }} of {{ teacher.totalWeeks }} weeks completed
+                </p>
+              </div>
             </div>
 
-            <p class="mt-1 text-sm text-muted">
-              {{ teacher.completedWeeks }} of {{ teacher.totalWeeks }} weeks completed
-            </p>
-
+            <!-- Coverage -->
+            <div class="text-left lg:text-right space-y-1">
+              <!-- <UBadge size="sm" variant="subtle" :label="getStatusLabel(teacher.status)"
+                :color="getStatusColor(teacher.status)" /> -->
+              <h2 class="text-3xl font-bold text-primary">{{ teacher.coverage }}%</h2>
+            </div>
           </div>
-
-        </div>
-
-
-        <!-- Coverage -->
-        <div class="text-left lg:text-right">
-
-          <p class="text-sm text-muted">
-            Curriculum Coverage
-          </p>
-
-          <h2 class="text-4xl font-bold text-primary">
-            {{ teacher.percentage }}%
-          </h2>
-
-        </div>
-
-      </div>
-
-
-      <!-- Progress -->
-      <div>
-
-        <div class="mb-2 flex justify-between">
-
-          <span class="text-sm text-muted">
-            Progress
-          </span>
-
-          <span class="font-medium">
-            {{ teacher.percentage }}%
-          </span>
-
-        </div>
-
-        <UProgress
-          :model-value="teacher.percentage"
-          size="lg"
-        />
-
-      </div>
-
-
-      <!-- Statistics -->
-      <div class="grid gap-4 md:grid-cols-3">
-
-        <div
-          class="rounded-2xl border border-default p-4"
-        >
-          <div class="flex items-center gap-2">
-
-            <UIcon
-              name="i-lucide-book-open"
-              class="text-primary"
-            />
-
-            <span class="text-sm text-muted">
-              Subjects
-            </span>
-
+        </template>
+        <div class="space-y-5">
+          <UProgress color="secondary" :model-value="teacher.coverage" />
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="rounded-2xl border border-default p-3 bg-warning-50">
+              <div class="flex items-center gap-2">
+                <div class="p-1 bg-warning-100  items-center rounded-md flex">
+                  <UIcon :name="SUBJECT_ICON" class="text-warning size-5" />
+                </div>
+                <span class="text-xs uppercase text-muted">Subjects</span>
+              </div>
+              <p class="mt-0.5 pl-1 text-xl font-bold">{{ teacher.subjects }}</p>
+            </div>
+            <div class="rounded-2xl border border-default p-3 bg-info-50">
+              <div class="flex items-center gap-2">
+                <div class="p-1 bg-info-100 items-center rounded-md flex">
+                  <UIcon :name="CLASS_ICON" class="text-info size-5" />
+                </div>
+                <span class="text-xs uppercase text-muted">Classes</span>
+              </div>
+              <p class="mt-0.5 pl-1 text-xl font-bold">{{ teacher.classes }}</p>
+            </div>
+            <div class="rounded-2xl border border-default p-3 bg-error-50">
+              <div class="flex items-center gap-2">
+                <div class="p-1 bg-error-100 items-center rounded-md flex">
+                  <UIcon :name="CLASS_ICON" class="text-error size-5" />
+                </div>
+                <span class="text-xs uppercase text-muted">Weeks</span>
+              </div>
+              <p class="mt-0.5 pl-1 text-xl font-bold">{{ teacher.completedWeeks }}/{{ teacher.totalWeeks }}</p>
+            </div>
           </div>
-
-          <p class="mt-2 text-2xl font-bold">
-            {{ teacher.subjects }}
-          </p>
         </div>
-
-
-        <div
-          class="rounded-2xl border border-default p-4"
-        >
-          <div class="flex items-center gap-2">
-
-            <UIcon
-              name="i-lucide-school"
-              class="text-green-600"
-            />
-
-            <span class="text-sm text-muted">
-              Classes
-            </span>
-
+        <template #footer>
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <UButton icon="i-lucide-eye" size="sm" :to="`/curriculums/teacher-progress/${teacher.id}`">
+              View Progress
+            </UButton>
           </div>
-
-          <p class="mt-2 text-2xl font-bold">
-            {{ teacher.classes }}
-          </p>
-        </div>
-
-
-        <div
-          class="rounded-2xl border border-default p-4"
-        >
-          <div class="flex items-center gap-2">
-
-            <UIcon
-              name="i-lucide-calendar-days"
-              class="text-orange-500"
-            />
-
-            <span class="text-sm text-muted">
-              Weeks
-            </span>
-
-          </div>
-
-          <p class="mt-2 text-2xl font-bold">
-            {{ teacher.completedWeeks }}/{{ teacher.totalWeeks }}
-          </p>
-        </div>
-
-      </div>
-
-
-      <!-- Actions -->
-      <div class="flex flex-col gap-3 sm:flex-row">
-
-        <UButton
-          icon="i-lucide-eye"
-          :to="`/curriculums/teacher-progress/${teacher.id}`"
-        >
-          View Progress
-        </UButton>
-
-        <UButton
-          variant="outline"
-          icon="i-lucide-pencil"
-        >
-          Edit
-        </UButton>
-
-      </div>
+        </template>
+      </UCard>
 
     </div>
-  </UCard>
 
-</div>
+    <!-- Empty -->
+    <UCard v-else class="py-16">
+      <div class="text-center">
+        <UIcon name="i-lucide-users" class="text-5xl text-muted mx-auto" />
+        <h3 class="mt-4 text-lg font-semibold">No teachers found</h3>
+        <p class="text-sm text-muted mt-2">
+          {{ teachers.length ? 'No teacher matches your search or filter.' : NO_ACTIVE_TEACHER }}
+        </p>
+      </div>
+    </UCard>
+
   </div>
 </template>
 
 <script setup lang="ts">
 const search = ref('')
 const status = ref('')
+const loading = ref(true)
+
+const teachers = ref<TeacherProgress[]>([])
+const NO_ACTIVE_TEACHER = 'No active teachers with subject assignments yet.'
 
 const statuses = [
-  {
-    label: 'Completed',
-    value: 'COMPLETED'
-  },
-  {
-    label: 'On Track',
-    value: 'ON_TRACK'
-  },
-  {
-    label: 'Behind Schedule',
-    value: 'BEHIND'
-  }
+  { label: 'Completed', value: 'COMPLETED' },
+  { label: 'On Track', value: 'ON_TRACK' },
+  { label: 'Behind Schedule', value: 'BEHIND' },
+  { label: 'No Data Yet', value: 'NO_DATA' }
 ]
 
-const teacherProgress = ref([
-  {
-    id: 1,
-    name: 'Mr. Kargbo',
-    subjects: 3,
-    classes: 2,
-    completedWeeks: 24,
-    totalWeeks: 30,
-    percentage: 80,
-    status: 'ON_TRACK'
-  },
-  {
-    id: 2,
-    name: 'Mrs. Johnson',
-    subjects: 2,
-    classes: 3,
-    completedWeeks: 30,
-    totalWeeks: 30,
-    percentage: 100,
-    status: 'COMPLETED'
-  },
-  {
-    id: 3,
-    name: 'Mr. Bangura',
-    subjects: 2,
-    classes: 1,
-    completedWeeks: 15,
-    totalWeeks: 30,
-    percentage: 50,
-    status: 'BEHIND'
+async function load() {
+  loading.value = true
+  try {
+    teachers.value = await CurriculumsApi().getTeacherProgress() || []
+  } finally {
+    loading.value = false
   }
-])
+}
 
 const filteredTeachers = computed(() => {
-  return teacherProgress.value.filter((teacher) => {
-    const matchesSearch =
-      teacher.name
-        .toLowerCase()
-        .includes(search.value.toLowerCase())
-
-    const matchesStatus =
-      !status.value ||
-      teacher.status === status.value
-
+  return teachers.value.filter((teacher) => {
+    const matchesSearch = teacher.name.toLowerCase().includes(search.value.toLowerCase())
+    const matchesStatus = !status.value || teacher.status === status.value
     return matchesSearch && matchesStatus
   })
 })
 
-const totalTeachers = computed(
-  () => teacherProgress.value.length
-)
+const totalTeachers = computed(() => teachers.value.length)
 
 const completedTeachers = computed(
-  () =>
-    teacherProgress.value.filter(
-      x => x.status === 'COMPLETED'
-    ).length
+  () => teachers.value.filter(x => x.status === 'COMPLETED').length
 )
 
 const behindTeachers = computed(
-  () =>
-    teacherProgress.value.filter(
-      x => x.status === 'BEHIND'
-    ).length
+  () => teachers.value.filter(x => x.status === 'BEHIND').length
 )
 
 const averageCoverage = computed(() => {
-  const total = teacherProgress.value.reduce(
-    (sum, item) => sum + item.percentage,
-    0
-  )
-
-  return Math.round(
-    total / teacherProgress.value.length
-  )
+  if (!teachers.value.length) return 0
+  const total = teachers.value.reduce((sum, item) => sum + item.coverage, 0)
+  return Math.round(total / teachers.value.length)
 })
 
-function getStatusColor(status: string) {
+function getStatusColor(status: TeacherProgressStatus) {
   switch (status) {
     case 'COMPLETED':
       return 'success'
-
     case 'ON_TRACK':
       return 'primary'
-
     case 'BEHIND':
       return 'warning'
-
     default:
       return 'neutral'
   }
 }
 
-function getStatusLabel(status: string) {
+function getStatusLabel(status: TeacherProgressStatus) {
   switch (status) {
     case 'COMPLETED':
       return 'Completed'
-
     case 'ON_TRACK':
       return 'On Track'
-
     case 'BEHIND':
       return 'Behind Schedule'
-
     default:
-      return status
+      return 'No Data Yet'
   }
 }
 
 onMounted(() => {
-  useAppStore().setTitle(
-    'Teacher Progress'
-  )
+  load()
 
-  document.title =
-    'Teacher Progress | Skultem'
+  useAppStore().setTitle('Teacher Progress')
+  document.title = 'Teacher Progress | Skultem'
 })
 
 definePageMeta({
@@ -437,4 +215,3 @@ definePageMeta({
   ]
 })
 </script>
-```

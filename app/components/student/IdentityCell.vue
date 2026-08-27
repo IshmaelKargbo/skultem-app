@@ -2,7 +2,7 @@
   <div class="flex items-center gap-3 min-w-0">
     <UAvatar
       size="lg"
-      :src="photoSrc"
+      :src="photo"
       :alt="displayName"
       class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
     />
@@ -28,6 +28,4 @@ const props = defineProps<{
 const displayName = computed(() =>
   `${props.givenNames ?? ''} ${props.familyName ?? ''}`.trim() || 'Student'
 )
-
-const photoSrc = computed(() => props.photo || '/avatar-placeholder.svg')
 </script>

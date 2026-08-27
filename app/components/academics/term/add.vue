@@ -1,12 +1,13 @@
 <template>
-    <u-slideover :dismissible="false" title="Add Term" :open="open" @update:open="open = $event">
+    <u-slideover :dismissible="false" :title="isEdit ? 'Edit Term' : 'Add Term'" :open="open" @update:open="open = $event">
         <!-- Trigger button -->
-        <UButton color="primary" label="Add Term" icon="prime:plus" @click="open = true" />
+        <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
+        <UButton v-else color="primary" label="Add Term" icon="prime:plus" @click="open = true" />
 
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
-                <p class="text-lg font-semibold">Add Term</p>
+                <p class="text-lg font-semibold">{{ isEdit ? 'Edit Term' : 'Add Term' }}</p>
                 <u-button icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
@@ -75,10 +76,13 @@
 import * as yup from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
 
+const { term } = defineProps<{ term?: Term }>()
+
 const store = useTermStore()
 const academicYearStore = useAcademicYearStore()
-const {error: toastError, success: toastSuccess, warning: toastWarning} = useNotify()
+const { error: toastError, success: toastSuccess, warning: toastWarning } = useNotify()
 const isLoading = ref(false)
+const isEdit = computed(() => !!term)
 
 type TermForm = {
     name: string
@@ -90,19 +94,16 @@ const activeAcademicYear = computed(() =>
     academicYearStore.records.find((year) => year.active || year.status === 'ACTIVE')
 )
 
-// reactive form state
-const state = reactive<TermForm>({
-    name: '',
-    startDate: '',
-    endDate: ''
-})
+function defaultState(): TermForm {
+    return {
+        name: term?.name || '',
+        startDate: term?.startDate || '',
+        endDate: term?.endDate || ''
+    }
+}
 
-// reactive error state
-const errors = reactive<Record<string, string>>({
-    name: '',
-    startDate: '',
-    endDate: ''
-})
+// reactive form state
+const state = reactive<TermForm>(defaultState())
 
 // yup validation schema
 const schema = yup.object({
@@ -116,10 +117,7 @@ const open = ref(false)
 
 const close = () => {
     open.value = false
-    state.name = ''
-    state.startDate = ''
-    state.endDate = ''
-    Object.keys(errors).forEach(key => (errors[key] = ''))
+    Object.assign(state, defaultState())
 }
 
 const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
@@ -134,14 +132,24 @@ const onSubmit = async (event: FormSubmitEvent<TermForm>) => {
 
     try {
         await schema.validate(state, { abortEarly: false })
-        await store.create({
-            name: state.name,
-            startDate: state.startDate,
-            endDate: state.endDate
-        })
 
-        await store.fetchAll()
-        toastSuccess('Term created successfully')
+        if (isEdit.value && term) {
+            await store.update(term.id, {
+                name: state.name,
+                startDate: state.startDate,
+                endDate: state.endDate
+            })
+            toastSuccess('Term updated successfully')
+        } else {
+            await store.create({
+                name: state.name,
+                startDate: state.startDate,
+                endDate: state.endDate
+            })
+            await store.fetchAll()
+            toastSuccess('Term created successfully')
+        }
+
         close()
     } catch (err: any) {
         toastError(err.message)

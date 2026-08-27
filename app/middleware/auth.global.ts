@@ -1,5 +1,13 @@
+// Public marketing/lead pages that must work without a resolved school tenant or a logged-in
+// session - e.g. linked directly from the corporate site.
+const PUBLIC_PATHS = ['/request-demo']
+
 export default defineNuxtRouteMiddleware(async (to) => {
-    const token = useCookie("access_token")
+    if (PUBLIC_PATHS.includes(to.path)) {
+        return
+    }
+
+    const { accessToken: token } = useAuthCookies()
     const { activeRole } = useAuth()
     const store = useUserStore()
 

@@ -44,8 +44,7 @@ export const useUserStore = defineStore('user', {
     },
     async login(payload: LoginDto) {
       const res = await UserApi().login(payload)
-      const accessToken = useCookie("access_token")
-      const refreshToken = useCookie("refresh_token")
+      const { accessToken, refreshToken } = useAuthCookies()
 
       accessToken.value = res.accessToken
       refreshToken.value = res.refreshToken
@@ -55,9 +54,7 @@ export const useUserStore = defineStore('user', {
     async logout() {
       await UserApi().logout()
 
-      const accessToken = useCookie("access_token")
-      const refreshToken = useCookie("refresh_token")
-      const activeRole = useCookie("active_role")
+      const { accessToken, refreshToken, activeRole } = useAuthCookies()
 
       accessToken.value = null
       refreshToken.value = null

@@ -20,6 +20,9 @@ export type FeeCategory = {
     id: string
     name: string
     description: string
+    // Seeded by the platform itself (see SeedPlatformFeeForAcademicYearUseCase) - never something a
+    // school creates by hand, so it's kept out of pickers and locked against edit/delete.
+    system: boolean
     createdAt: string
     updatedAt: string
 }
@@ -53,6 +56,9 @@ export type FeeStructure = {
     amount: number
     dueDate: string
     description: string
+    // The platform fee the system seeds automatically - see the backend's FeeStructure.system.
+    // Locked against edit/delete regardless of role.
+    isSystem: boolean
     createdAt: string
     updatedAt: string
 }
@@ -124,6 +130,20 @@ export type CreateFeeStructureDto = {
     allowInstallment: boolean,
     description?: string
     dueDate: string
+}
+
+// What a fee structure applies to (academic year, class, type) can't be changed after
+// creation - only these details can, see UpdateFeeStructureUseCase on the backend.
+export type UpdateFeeStructureDto = {
+    feeCategory: string
+    termId: string
+    amount: number
+    dueDate: string
+    allowInstallment: boolean
+    hasSupply: boolean
+    totalSupply: number
+    materialId: string
+    description?: string
 }
 
 export type CreateFeeDiscountDto = {

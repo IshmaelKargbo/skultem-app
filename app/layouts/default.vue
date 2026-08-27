@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const scrollContainer = ref<HTMLElement | null>(null)
 
-const token = useCookie('access_token')
+const { accessToken: token } = useAuthCookies()
 const route = useRoute()
 const { authResolved } = useAuth()
 
 const layoutReady = computed(
-  () => !token.value || authResolved.value
+  () => !token.value || authResolved.value,
 )
 
 provide('scrollContainer', scrollContainer)
@@ -15,34 +15,44 @@ watch(
   () => route.fullPath,
   async () => {
     await nextTick()
+
     scrollContainer.value?.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     })
-  }
+  },
 )
 </script>
 
 <template>
   <AuthSplash v-if="!layoutReady" />
-  <div v-else class="flex h-dvh overflow-hidden bg-[--app-bg]">
-  
+
+  <div
+    v-else
+    class="flex h-dvh overflow-hidden bg-[--app-bg]"
+  >
     <!-- Desktop Sidebar -->
-    <aside class="hidden w-72 p-4 pr-0.5 lg:block">
+    <aside class="hidden w-72 shrink-0 p-4 pr-0.5 lg:block">
       <Menu />
     </aside>
 
-    <!-- Main Content -->
-    <main
-      ref="scrollContainer"
-      class="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+0.1rem)]"
-    >
-      <Header class="lg:hidden sticky top-0 z-20" />
-      <div class="lg:container lg:mx-auto flex-1">
-        <slot />
-      </div>
-      <!-- Mobile Navigation -->
-      <MenuMobile class="sticky bottom-0 z-20 lg:hidden" />
-    </main>
+    <!-- Application Area -->
+    <div class="flex min-w-0 flex-1 flex-col">
+      <!-- Header -->
+      <Header class="shrink-0" />
+
+      <!-- Scroll Container -->
+      <main
+        ref="scrollContainer"
+        class="min-h-0 flex-1 mt-1 overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
+      >
+        <div class="py-4">
+          <slot />
+        </div>
+
+        <!-- Mobile Navigation -->
+        <MenuMobile class="sticky bottom-0 z-20 lg:hidden" />
+      </main>
+    </div>
   </div>
 </template>

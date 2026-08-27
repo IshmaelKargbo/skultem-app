@@ -7,7 +7,7 @@
             </div>
         </Heading>
         <BehaviourReport ref="reportRef" :clazz="state.id" />
-        <BehaviourTable :class-id="clazzId" />
+        <BehaviourTable :state="{ classId: clazzId }" />
     </div>
 </template>
 

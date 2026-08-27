@@ -16,7 +16,9 @@ export type CreateHouseDto = {
     masters: string[]
 }
 
-export type AssignRecordDTO = {
-    id: string
-    house: string
+export type AssignHouseDto = {
+    records: {
+        id: string
+        house: string
+    }[]
 }

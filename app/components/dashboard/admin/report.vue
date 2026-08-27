@@ -1,5 +1,5 @@
 <template>
-    <div class="grid md:gap-5 gap-3 md:grid-cols-4 grid-cols-2 space-y-0 w-full">
+    <div class="grid md:gap-5 gap-3 lg:grid-cols-4 grid-cols-2 space-y-0 w-full">
         <Metric class="col-span-2 md:col-span-1" :record="{
             value: report?.totalStudents,
             color: 'success',

@@ -1,6 +1,7 @@
 export type SubjectGroup = {
     id: string
     name: string
+    className: string
     streamName: string
     totalSelection: string
 }

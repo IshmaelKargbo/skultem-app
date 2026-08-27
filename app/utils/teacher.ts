@@ -19,6 +19,18 @@ export type ClassMaster = {
     session: ClassSession
 }
 
+export type TeacherClassMasterPromotionStatus = 'READY' | 'PENDING_REVIEW' | 'RETURNED' | 'APPROVED' | null
+
+export type TeacherClassMaster = {
+    classMasterId: string
+    sessionId: string
+    classId: string
+    sessionName: string
+    className: string
+    studentCount: number
+    promotionStatus: TeacherClassMasterPromotionStatus
+}
+
 export type TeacherSubject = {
     id: string
     teacherId: string

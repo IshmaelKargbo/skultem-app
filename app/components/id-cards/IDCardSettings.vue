@@ -3,8 +3,7 @@
     enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
     leave-active-class="transition-all duration-200 ease-in" leave-from-class="opacity-100 translate-y-0"
     leave-to-class="opacity-0 -translate-y-2">
-    <UCard v-if="modelValue" :ui="{ body: 'p-6 overflow-y-auto max-h-[75vh]' }">
-
+    <UCard v-if="modelValue" :ui="{ body: 'p-6' }">
       <template #header>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -23,19 +22,6 @@
           <div class="flex gap-2">
             <UButton :variant="settings.preset === 'modern' ? 'solid' : 'outline'" :color="settings.preset === 'modern' ? 'primary' : 'neutral'" size="sm" @click="updateSetting('preset', 'modern')">Modern Blue</UButton>
             <UButton :variant="settings.preset === 'classic' ? 'solid' : 'outline'" :color="settings.preset === 'classic' ? 'primary' : 'neutral'" size="sm" @click="updateSetting('preset', 'classic')">Classic Green</UButton>
-          </div>
-        </section>
-
-        <!-- ── Target Audience ── -->
-        <section>
-          <p class="mb-2.5 text-xs font-semibold uppercase tracking-widest text-muted">Target Audience</p>
-          <div class="flex gap-2">
-            <UButton v-for="a in audienceOptions" :key="a.value"
-              :variant="settings.audience === a.value ? 'solid' : 'outline'"
-              :color="settings.audience === a.value ? 'primary' : 'neutral'" :icon="a.icon" size="sm"
-              @click="updateSetting('audience', a.value)">
-              {{ a.label }}
-            </UButton>
           </div>
         </section>
 
@@ -150,6 +136,25 @@
 
         <div class="border-t border-default" />
 
+        <!-- ── Validity ── -->
+        <section>
+          <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">Validity</p>
+          <div class="space-y-1.5 sm:w-1/3">
+            <label class="text-sm font-medium">Card valid for</label>
+            <UInput :model-value="settings.validityYears" type="number" min="1" max="10" placeholder="1"
+              @update:model-value="(val) => updateSetting('validityYears', val)">
+              <template #trailing>
+                <span class="text-xs text-muted">year{{ Number(settings.validityYears) === 1 ? '' : 's' }}</span>
+              </template>
+            </UInput>
+            <p class="text-xs text-muted">
+              The "Valid Until" field is calculated from today's date plus this many years.
+            </p>
+          </div>
+        </section>
+
+        <div class="border-t border-default" />
+
         <!-- ── Background ── -->
         <section>
           <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">Background</p>
@@ -223,8 +228,7 @@
           <div class="mb-3 flex items-center justify-between">
             <p class="text-xs font-semibold uppercase tracking-widest text-muted">
               Select fields
-              <span class="ml-1 font-normal normal-case">({{ settings.audience === 'student' ? 'Student' : 'Staff'
-              }})</span>
+              <span class="ml-1 font-normal normal-case">(Student)</span>
             </p>
             <p class="text-[11px] text-muted">Click to toggle visibility</p>
           </div>
@@ -255,14 +259,14 @@
 
       <template #footer>
         <div class="flex items-center justify-between">
-          <UButton variant="ghost" color="neutral" size="sm" @click="resetSettings">
+          <UButton variant="ghost" color="neutral" @click="resetSettings">
             Reset to defaults
           </UButton>
           <div class="flex gap-2">
-            <UButton variant="outline" color="neutral" size="sm" @click="() => { emit('update:modelValue', false); emit('close') }">
+            <UButton variant="outline" color="neutral" @click="() => { emit('update:modelValue', false); emit('close') }">
               Cancel
             </UButton>
-            <UButton color="primary" size="sm" icon="i-lucide-save" @click="saveSettings">
+            <UButton color="primary" :trailing-icon="SAVE_ICON" @click="saveSettings">
               Save settings
             </UButton>
           </div>
@@ -286,7 +290,6 @@ interface FieldDef {
 }
 
 interface Settings {
-  audience: 'student' | 'staff'
   layout: 'vertical' | 'horizontal'
   profileShape: 'round' | 'square'
   preset: string
@@ -298,6 +301,7 @@ interface Settings {
   heightMm: number
   bgImageUrl: string
   bgOpacity: number
+  validityYears: number
 }
 
 const props = defineProps<{
@@ -317,11 +321,6 @@ const emit = defineEmits<{
 
 const { success } = useNotify()
 const bgImageInput = ref<HTMLInputElement | null>(null)
-
-const audienceOptions = [
-  { value: 'student', label: 'Student', icon: 'i-lucide-graduation-cap' },
-  { value: 'staff', label: 'Staff', icon: 'i-lucide-briefcase' },
-]
 
 const layoutOptions = [
   { value: 'vertical', label: 'Vertical' },
@@ -391,7 +390,7 @@ function resetSettings() {
   emit('update:settings', { ...props.defaultSettings })
   const defaultFields = props.activeFields.map(f => ({
     ...f,
-    enabled: f.required ? true : true
+    enabled: true
   }))
   emit('update:activeFields', defaultFields)
 }

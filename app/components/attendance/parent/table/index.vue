@@ -26,7 +26,7 @@ const parseStateColor: Record<string, string> = {
 }
 </script>
 <template>
-    <UCard class="md:block hidden" :ui="{
+    <UCard :ui="{
         body: 'sm:p-0'
     }">
         <UTable :columns="columns" :data="data" :loading="loading">

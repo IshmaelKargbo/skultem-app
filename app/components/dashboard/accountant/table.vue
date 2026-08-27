@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
 const store = useFeePaymentStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
@@ -115,7 +116,7 @@ defineExpose({
 
 <template>
   <UCard class="overflow-hidden" :ui="{ body: 'sm:p-0' }">
-    <!-- Desktop Table -->
+
     <div class="hidden md:block">
       <UTable :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
@@ -177,7 +178,7 @@ defineExpose({
     </div>
 
     <!-- Mobile Cards -->
-    <div class="md:hidden">
+    <div class="md:hidden block">
       <div v-if="loading" class="space-y-3 p-4 sm:p-5">
         <USkeleton class="h-28 w-full rounded-xl" />
         <USkeleton class="h-28 w-full rounded-xl" />
@@ -186,12 +187,14 @@ defineExpose({
 
       <div
         v-else-if="data?.length"
-        class="space-y-3 "
+        class="space-y-3"
+        :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }"
       >
         <UCard
           v-for="record in data"
           :key="record.id"
-          class="overflow-hidden border border-gray-200/80 dark:border-gray-800"
+          variant="outline"
+          class="overflow-hidden"
           :ui="{ body: 'p-4 sm:p-5' }"
         >
           <div class="space-y-4">
@@ -226,7 +229,7 @@ defineExpose({
             <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div class="rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50">
                 <p class="text-muted text-xs">Fee</p>
-                <p class="font-medium break-words">
+                <p class="font-medium wrap-break-word">
                   {{ record.fee }}
                 </p>
               </div>

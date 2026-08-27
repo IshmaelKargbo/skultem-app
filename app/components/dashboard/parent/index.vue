@@ -1,5 +1,5 @@
 <template>
-    <div class="md:p-7 p-4 md:space-y-5 space-y-3">
+    <div class="px-4 space-y-4 md:px-6">
         <UCard>
             <div class="grid grid-cols-2 gap-2">
                 <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"

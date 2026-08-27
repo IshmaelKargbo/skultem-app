@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-5 p-4">
+    <div class="space-y-5 p-4 md:px-6">
         <Heading title="Attendance" subtitle="Track class attendance and export reports">
             <div class="grid w-full gap-3 sm:grid-cols-2 md:w-auto md:min-w-[420px]">
                 <USelectMenu
@@ -19,17 +19,26 @@
                 />
             </div>
         </Heading>
-        <AttendanceParentReport :student="selected" :term="term" />
-        <TabMobile class="block md:hidden" :tabs="tabs">
-            <template #overview-data>
-                <AttendanceParentTableMobile />
+
+        <UCard>
+            <template #header>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold">
+                            Attendance
+                        </h3>
+                        <p class="text-sm text-muted">
+                            Monthly attendance overview and daily records.
+                        </p>
+                    </div>
+                </div>
             </template>
-            <template #breakdown-data>
-                <AttendanceParentBreakdown :student="selected" :term="term" />
-            </template>
-        </TabMobile>
-        <AttendanceParentTable />
-        <AttendanceParentBreakdown class="hidden md:block" :student="selected" :term="term" />
+
+            <div class="space-y-4 md:space-y-6">
+                <!-- Calendar -->
+                <StudentViewAttendanceCycle :student="selected" />
+            </div>
+        </UCard>
     </div>
 </template>
 

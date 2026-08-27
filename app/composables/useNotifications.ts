@@ -25,7 +25,7 @@ export function useNotifications() {
     client = new Client({
       webSocketFactory: () => new SockJS(`${socketBase}/ws`),
       beforeConnect: () => {
-        const accessToken = useCookie<string | null>('access_token')
+        const { accessToken } = useAuthCookies()
         if (!accessToken.value) {
           throw new Error('Missing notification socket token')
         }

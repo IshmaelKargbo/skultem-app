@@ -264,6 +264,7 @@ export function generateColors(count: number) {
 
 export enum Role {
     OWNER = 'OWNER',
+    SYSTEM_ADMIN = 'SYSTEM_ADMIN',
     PROPRIETOR = 'PROPRIETOR',
     ADMIN = 'ADMIN',
     TEACHER = 'TEACHER',
@@ -313,6 +314,37 @@ export const typeOptions = [
     {
         label: 'Expense',
         value: "EXPENSE"
+    },
+    {
+        label: 'Refund',
+        value: "REFUND"
+    },
+    {
+        label: 'Adjustment',
+        value: "ADJUSTMENT"
+    }
+]
+
+// StudentLedgerEntry has its own TransactionType enum, distinct from Transaction's above - no
+// EXPENSE (a student ledger is per-student, an expense never is), and FEE_ASSINMENT is spelled
+// exactly like that on the backend (see StudentLedgerEntry.TransactionType) - matching it here,
+// typo and all, is what makes the filter actually match rows instead of silently returning none.
+export const ledgerTypeOptions = [
+    {
+        label: 'Fee Assignment',
+        value: "FEE_ASSINMENT"
+    },
+    {
+        label: 'Payment',
+        value: "PAYMENT"
+    },
+    {
+        label: 'Discount',
+        value: "DISCOUNT"
+    },
+    {
+        label: 'Refund',
+        value: "REFUND"
     },
     {
         label: 'Adjustment',
@@ -422,6 +454,16 @@ export type AssignmentTeacherSubject = {
 
 export const runtimeConf = () => {
     return { limit: Number.parseInt(useRuntimeConfig().public.limit), domain: useRuntimeConfig().public.domain }
+}
+
+export function updateQuery(newQuery: Record<string, any>) {
+  const merged = { ...useRoute().query, ...newQuery };
+
+  if (merged.page === useRoute().query.page && merged.size === useRoute().query.size) {
+    return;
+  }
+
+  useRouter().replace({ query: merged });
 }
 
 export const parseGenderColor: Record<string, string> = {

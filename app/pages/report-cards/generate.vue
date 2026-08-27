@@ -1,122 +1,13 @@
-```vue
 <template>
-    <div class="space-y-6 mt-6 p-4">
+    <div class="space-y-6 mt-6 p-4 md:px-6">
 
-        <!-- Hero -->
-        <UCard class="overflow-hidden rounded-3xl">
-            <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
-                <div>
-                    <p class="text-sm font-medium text-primary">
-                        Documents
-                    </p>
-
-                    <h1 class="mt-2 text-3xl font-bold">
-                        Generate Report Cards
-                    </h1>
-
-                    <p class="mt-2 text-sm text-muted">
-                        Generate, preview and publish report cards for students.
-                    </p>
-                </div>
-
-                <div class="flex flex-wrap gap-3">
-                    <UButton icon="i-lucide-eye" variant="outline">
-                        Preview
-                    </UButton>
-
-                    <UButton icon="i-lucide-file-text" color="primary" :loading="loading" @click="generateReportCards">
-                        Generate Report Cards
-                    </UButton>
-                </div>
-
-            </div>
-        </UCard>
-
-        <!-- Statistics -->
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-            <UCard class="rounded-3xl">
-                <div class="flex items-center gap-4">
-
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-primary/10">
-                        <UIcon name="i-lucide-users" class="text-xl text-primary" />
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-muted">
-                            Students
-                        </p>
-
-                        <p class="text-2xl font-bold">
-                            {{ students.length }}
-                        </p>
-                    </div>
-
-                </div>
-            </UCard>
-
-            <UCard class="rounded-3xl">
-                <div class="flex items-center gap-4">
-
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-green-500/10">
-                        <UIcon name="i-lucide-circle-check-big" class="text-xl text-green-600" />
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-muted">
-                            Passed
-                        </p>
-
-                        <p class="text-2xl font-bold text-green-600">
-                            40
-                        </p>
-                    </div>
-
-                </div>
-            </UCard>
-
-            <UCard class="rounded-3xl">
-                <div class="flex items-center gap-4">
-
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-red-500/10">
-                        <UIcon name="i-lucide-circle-x" class="text-xl text-red-600" />
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-muted">
-                            Failed
-                        </p>
-
-                        <p class="text-2xl font-bold text-red-600">
-                            5
-                        </p>
-                    </div>
-
-                </div>
-            </UCard>
-
-            <UCard class="rounded-3xl">
-                <div class="flex items-center gap-4">
-
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-amber-500/10">
-                        <UIcon name="i-lucide-chart-column" class="text-xl text-amber-600" />
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-muted">
-                            Average
-                        </p>
-
-                        <p class="text-2xl font-bold">
-                            72%
-                        </p>
-                    </div>
-
-                </div>
-            </UCard>
-
-        </div>
+        <!-- Header -->
+        <Heading title="Generate Report Cards" subtitle="Generate report cards for every student in a class and term.">
+            <UButton icon="i-lucide-file-text" color="primary" class="justify-center" :loading="generating"
+                :disabled="!form.classId || !form.termId" @click="generateReportCards">
+                Generate Report Cards
+            </UButton>
+        </Heading>
 
         <div class="grid gap-6 xl:grid-cols-3">
 
@@ -130,35 +21,21 @@
                         </h2>
 
                         <p class="text-sm text-muted">
-                            Choose the academic information and filters.
+                            Choose the class and term to generate report cards for.
                         </p>
                     </div>
                 </template>
 
                 <div class="grid gap-5 md:grid-cols-2">
 
-                    <UFormField label="Academic Year">
-                        <USelectMenu v-model="form.academicYearId" :items="academicYears" value-key="value"
-                            label-key="label" placeholder="Select academic year" />
-                    </UFormField>
-                    <UFormField label="Term">
-                        <USelectMenu v-model="form.termId" :items="terms" value-key="value" label-key="label"
-                            placeholder="Select term" />
+                    <UFormField label="Class" required>
+                        <USelectMenu v-model="form.classId" :items="classes" :loading="classStore.loading"
+                            value-key="value" label-key="label" placeholder="Select class" />
                     </UFormField>
 
-                    <UFormField label="Class">
-                        <USelectMenu v-model="form.classId" :items="classes" value-key="value" label-key="label"
-                            placeholder="Select class" />
-                    </UFormField>
-
-                    <UFormField label="Section">
-                        <USelectMenu v-model="form.sectionId" :items="sections" value-key="value" label-key="label"
-                            placeholder="Select section" />
-                    </UFormField>
-
-                    <UFormField label="Stream">
-                        <USelectMenu v-model="form.streamId" :items="streams" value-key="value" label-key="label"
-                            placeholder="Select stream" />
+                    <UFormField label="Term" required>
+                        <USelectMenu v-model="form.termId" :items="terms" :loading="termStore.loading"
+                            value-key="value" label-key="label" placeholder="Select term" />
                     </UFormField>
 
                 </div>
@@ -176,17 +53,11 @@
 
                 <div class="space-y-5">
 
-                    <UCheckbox v-model="form.includeRemarks" label="Teacher Remarks" />
+                    <UCheckbox v-model="form.includeAttendance" label="Attendance"
+                        description="Attendance percentage for the term" />
 
-                    <UCheckbox v-model="form.includeAttendance" label="Attendance" />
-
-                    <UCheckbox v-model="form.includeRanking" label="Ranking" />
-
-                    <UCheckbox label="Principal Signature" />
-
-                    <UCheckbox label="School Stamp" />
-
-                    <UCheckbox label="QR Verification" />
+                    <UCheckbox v-model="form.includeRanking" label="Class Ranking"
+                        description="Each student's position in class" />
 
                 </div>
 
@@ -194,8 +65,8 @@
 
         </div>
 
-        <!-- Preview -->
-        <UCard class="rounded-3xl">
+        <!-- Result -->
+        <UCard v-if="result" class="rounded-3xl">
 
             <template #header>
                 <div class="flex items-center justify-between">
@@ -205,102 +76,62 @@
                         </h2>
 
                         <p class="text-sm text-muted">
-                            Preview the report card configuration.
+                            {{ result.generated }} report card{{ result.generated === 1 ? '' : 's' }} generated for this
+                            class and term.
                         </p>
                     </div>
 
                     <UBadge color="primary">
-                        {{ students.length }} Students
+                        {{ result.generated }} Students
                     </UBadge>
                 </div>
             </template>
 
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
                 <div class="rounded-2xl bg-muted/40 p-4">
-                    <p class="text-xs text-muted">
-                        Academic Year
-                    </p>
-
-                    <p class="mt-1 font-medium">
-                        Selected Year
-                    </p>
+                    <p class="text-xs text-muted">Generated</p>
+                    <p class="mt-1 text-2xl font-bold">{{ result.generated }}</p>
                 </div>
 
                 <div class="rounded-2xl bg-muted/40 p-4">
-                    <p class="text-xs text-muted">
-                        Term
-                    </p>
-
-                    <p class="mt-1 font-medium">
-                        Selected Term
-                    </p>
+                    <p class="text-xs text-muted">Passed</p>
+                    <p class="mt-1 text-2xl font-bold text-green-600">{{ result.passed }}</p>
                 </div>
 
                 <div class="rounded-2xl bg-muted/40 p-4">
-                    <p class="text-xs text-muted">
-                        Class
-                    </p>
-
-                    <p class="mt-1 font-medium">
-                        Selected Class
-                    </p>
+                    <p class="text-xs text-muted">Needs Attention</p>
+                    <p class="mt-1 text-2xl font-bold text-red-600">{{ result.failed }}</p>
                 </div>
 
                 <div class="rounded-2xl bg-muted/40 p-4">
-                    <p class="text-xs text-muted">
-                        Students
-                    </p>
-
-                    <p class="mt-1 font-medium">
-                        {{ students.length }}
-                    </p>
+                    <p class="text-xs text-muted">Class Average</p>
+                    <p class="mt-1 text-2xl font-bold">{{ result.classAverage.toFixed(1) }}%</p>
                 </div>
 
             </div>
 
             <div class="mt-8 flex flex-wrap gap-3">
-                <UButton icon="i-lucide-file-text" color="primary" size="lg" :loading="generating"
-                    @click="generateReportCards">
-                    Generate Report Cards
-                </UButton>
-
-                <UButton icon="i-lucide-download" variant="outline" size="lg" @click="downloadPdf">
-                    Download PDF
+                <UButton icon="i-lucide-eye" color="primary" size="lg" to="/report-cards">
+                    View Report Cards
                 </UButton>
             </div>
 
         </UCard>
-   
-        <UModal v-model:open="openPreview">
-            <template #content>
-                <div class="p-6 space-y-5">
 
-                    <div>
-                        <h2 class="text-xl font-bold">
-                            Report Cards Generated
-                        </h2>
-
-                        <p class="text-sm text-muted mt-1">
-                            {{ totalStudents }} report cards are ready.
-                        </p>
-                    </div>
-
-                    <div class="flex flex-wrap gap-3">
-
-                        <UButton icon="i-lucide-eye" color="primary" to="/report-cards">
-                            View Report Cards
-                        </UButton>
-
-                        <UButton icon="i-lucide-download" variant="outline" @click="downloadPdf">
-                            Download PDF
-                        </UButton>
-
-                    </div>
-
+        <UCard v-else-if="!generating" class="rounded-3xl">
+            <div class="flex flex-col items-center justify-center py-14 text-center">
+                <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+                    <UIcon name="i-lucide-file-text" class="size-6 text-primary-500" />
                 </div>
-            </template>
-        </UModal>
+                <h3 class="text-sm font-semibold text-highlighted">No report cards generated yet</h3>
+                <p class="mt-1 max-w-sm text-xs text-muted">
+                    Choose a class and term above, then generate report cards for every student with grades recorded
+                    that term.
+                </p>
+            </div>
+        </UCard>
+
     </div>
 </template>
 
@@ -308,256 +139,59 @@
 <script setup lang="ts">
 const appStore = useAppStore()
 const { success, error } = useNotify()
+const reportCardStore = useReportCardStore()
+const classStore = useClassStore()
+const termStore = useTermStore()
 
-const loading = ref(false)
 const generating = ref(false)
-const openPreview = ref(false)
 
 const form = reactive({
-    academicYearId: '',
-    termId: '',
     classId: '',
-    sectionId: '',
-    streamId: '',
-    studentIds: [] as string[],
-    includeRemarks: true,
+    termId: '',
     includeAttendance: true,
     includeRanking: true
 })
 
-/*
-|--------------------------------------------------------------------------
-| Dummy Select Data
-|--------------------------------------------------------------------------
-*/
+const result = ref<{ generated: number, passed: number, failed: number, classAverage: number } | null>(null)
 
-const academicYears = ref([
-    {
-        label: '2025 / 2026',
-        value: '1'
-    },
-    {
-        label: '2026 / 2027',
-        value: '2'
-    }
-])
-
-const terms = ref([
-    {
-        label: 'First Term',
-        value: '1'
-    },
-    {
-        label: 'Second Term',
-        value: '2'
-    },
-    {
-        label: 'Third Term',
-        value: '3'
-    }
-])
-
-const classes = ref([
-    {
-        label: 'JSS1',
-        value: '1'
-    },
-    {
-        label: 'JSS2',
-        value: '2'
-    },
-    {
-        label: 'JSS3',
-        value: '3'
-    }
-])
-
-const sections = ref([
-    {
-        label: 'A',
-        value: '1'
-    },
-    {
-        label: 'B',
-        value: '2'
-    }
-])
-
-const streams = ref([
-    {
-        label: 'Science',
-        value: '1'
-    },
-    {
-        label: 'Arts',
-        value: '2'
-    },
-    {
-        label: 'Commercial',
-        value: '3'
-    }
-])
-
-/*
-|--------------------------------------------------------------------------
-| Students
-|--------------------------------------------------------------------------
-*/
-
-const students = ref([
-    {
-        id: '1',
-        admissionNo: 'KWIS001',
-        name: 'John Kamara',
-        average: 81,
-        position: 1,
-        status: 'Passed'
-    },
-    {
-        id: '2',
-        admissionNo: 'KWIS002',
-        name: 'Mariama Sesay',
-        average: 76,
-        position: 2,
-        status: 'Passed'
-    },
-    {
-        id: '3',
-        admissionNo: 'KWIS003',
-        name: 'Mohamed Koroma',
-        average: 58,
-        position: 12,
-        status: 'Passed'
-    },
-    {
-        id: '4',
-        admissionNo: 'KWIS004',
-        name: 'Fatmata Bangura',
-        average: 42,
-        position: 30,
-        status: 'Failed'
-    },
-    {
-        id: '5',
-        admissionNo: 'KWIS005',
-        name: 'Abdul Kargbo',
-        average: 67,
-        position: 8,
-        status: 'Passed'
-    }
-])
-
-/*
-|--------------------------------------------------------------------------
-| Statistics
-|--------------------------------------------------------------------------
-*/
-
-const totalStudents = computed(() => students.value.length)
-
-const passedStudents = computed(() =>
-    students.value.filter(
-        student => student.status === 'Passed'
-    ).length
-)
-
-const failedStudents = computed(() =>
-    students.value.filter(
-        student => student.status === 'Failed'
-    ).length
-)
-
-const classAverage = computed(() => {
-    if (!students.value.length) return 0
-
-    const total = students.value.reduce(
-        (sum, student) => sum + student.average,
-        0
-    )
-
-    return Math.round(total / students.value.length)
-})
-
-/*
-|--------------------------------------------------------------------------
-| Generate Report Cards
-|--------------------------------------------------------------------------
-*/
+const classes = computed(() => classStore.records.map(e => ({ label: e.name, value: e.id })))
+const terms = computed(() => termStore.records.map(e => ({ label: e.name, value: e.id })))
 
 async function generateReportCards() {
-    if (
-        !form.academicYearId ||
-        !form.termId ||
-        !form.classId
-    ) {
-        error(
-            'Please select Academic Year, Term and Class'
-        )
-
+    if (!form.classId || !form.termId) {
+        error('Please select a Class and Term')
         return
     }
 
     generating.value = true
-
     try {
-        await new Promise(resolve =>
-            setTimeout(resolve, 1500)
-        )
+        const res = await reportCardStore.generate({
+            classId: form.classId,
+            termId: form.termId,
+            includeAttendance: form.includeAttendance,
+            includeRanking: form.includeRanking
+        })
 
-        success(
-            `${students.value.length} report cards generated successfully`
-        )
+        if (!res) return
 
-        openPreview.value = true
-    }
-    catch (err: any) {
-        error(
-            err?.message ||
-            'Failed to generate report cards'
-        )
-    }
-    finally {
+        result.value = res
+
+        if (res.generated > 0) {
+            success(`${res.generated} report card${res.generated === 1 ? '' : 's'} generated successfully`)
+        } else {
+            error('No students with recorded grades were found for this class and term')
+        }
+    } catch (err: any) {
+        error(err?.message || 'Failed to generate report cards')
+    } finally {
         generating.value = false
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Download PDF
-|--------------------------------------------------------------------------
-*/
-
-async function downloadPdf() {
-    success(
-        'Downloading report cards PDF...'
-    )
-}
-
-/*
-|--------------------------------------------------------------------------
-| Reset
-|--------------------------------------------------------------------------
-*/
-
-function resetFilters() {
-    form.academicYearId = ''
-    form.termId = ''
-    form.classId = ''
-    form.sectionId = ''
-    form.streamId = ''
-    form.studentIds = []
-}
-
-/*
-|--------------------------------------------------------------------------
-| Mounted
-|--------------------------------------------------------------------------
-*/
-
 onMounted(() => {
-    appStore.setTitle(
-        'Generate Report Cards'
-    )
+    appStore.setTitle('Generate Report Cards')
+    classStore.fetchAll(1, 100)
+    termStore.fetchAll(1, 100)
 })
 
 definePageMeta({
@@ -568,4 +202,3 @@ definePageMeta({
     ]
 })
 </script>
-```

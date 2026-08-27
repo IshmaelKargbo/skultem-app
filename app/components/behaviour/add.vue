@@ -2,8 +2,8 @@
   <USlideover :dismissible="false" :open="open" @update:open="open = $event">
 
     <!-- Trigger -->
-    <UButton color="primary" label="Add Behaviour" :disabled="!clazz" icon="prime:plus" @click="open = true" />
-
+    <UButton color="primary" label="Add Behaviour" class="hidden lg:flex" :disabled="!clazz" icon="prime:plus" @click="open = true" />
+    <UButton color="primary" class="md:hidden" :disabled="!clazz" icon="prime:plus" @click="open = true" />
     <!-- Header -->
     <template #header>
       <div class="flex justify-between w-full items-center">

@@ -29,9 +29,12 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number) => {
+    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number, status?: string) => {
       try {
-        const res = await $api(`/assessment/approval/${teacherId}?page=${page}&size=${size}`) as any
+        const query = new URLSearchParams({ page: String(page), size: String(size) })
+        if (status) query.set('status', status)
+
+        const res = await $api(`/assessment/approval/${teacherId}?${query.toString()}`) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment approval requests')
@@ -44,9 +47,24 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllMeAssessmentApprovalRequest: async (page: number, size: number) => {
+    getAssessmentApprovalSummary: async (teacherId: string) => {
       try {
-        const res = await $api(`/assessment/approval/me?page=${page}&size=${size}`) as any
+        const res = await $api(`/assessment/approval/${teacherId}/summary`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch assessment approval summary')
+
+        return res.data as AssessmentApprovalSummary
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getAllMeAssessmentApprovalRequest: async (page: number, size: number, status?: string) => {
+      try {
+        const query = new URLSearchParams({ page: String(page), size: String(size) })
+        if (status) query.set('status', status)
+
+        const res = await $api(`/assessment/approval/me?${query.toString()}`) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment approval requests')
@@ -55,6 +73,18 @@ export const AssessmentApi = () => {
         const meta = useMeta(res.meta)
         return { data, meta }
 
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getMeAssessmentApprovalSummary: async () => {
+      try {
+        const res = await $api('/assessment/approval/me/summary') as any
+
+        if (!res)
+          throw new Error('Failed to fetch assessment approval summary')
+
+        return res.data as AssessmentApprovalSummary
       } catch (err: any) {
         useHandleError(err)
       }
@@ -98,9 +128,13 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getActiveCycle: async (classId?: string) => {
+    getActiveCycle: async (classId?: string, academicYearId?: string) => {
       try {
-        const query = classId ? `?classId=${encodeURIComponent(classId)}` : ''
+        const params = new URLSearchParams()
+        if (classId) params.set('classId', classId)
+        if (academicYearId) params.set('academicYearId', academicYearId)
+        const query = params.toString() ? `?${params.toString()}` : ''
+
         const res = await $api(`/assessment/cycle/active${query}`) as any
 
         if (!res)
@@ -111,9 +145,10 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getCycleOverview: async () => {
+    getCycleOverview: async (academicYearId?: string) => {
       try {
-        const res = await $api('/assessment/cycle/overview') as any
+        const query = academicYearId ? `?academicYearId=${encodeURIComponent(academicYearId)}` : ''
+        const res = await $api(`/assessment/cycle/overview${query}`) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment cycle overview')
@@ -220,6 +255,21 @@ export const AssessmentApi = () => {
           method: 'POST',
           body: { note }
         })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    reopen: async (teacherSubjectId: string, payload: ReopenAssessmentDto) => {
+      try {
+        const res = await $api(`/assessment/reopen/${teacherSubjectId}`, {
+          method: 'POST',
+          body: payload
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to reopen assessment')
+
+        return res.data
       } catch (err: any) {
         useHandleError(err)
       }

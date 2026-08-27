@@ -127,7 +127,7 @@ const parseBatchStatusColor: Record<string, string> = {
     </div>
 
     <div v-else class="space-y-2 md:hidden">
-      <UCard v-for="item in records" :key="item.id" class="rounded-2xl border border-gray-200 dark:border-gray-800"
+      <UCard v-for="item in records" :key="item.id" variant="outline"
         :ui="{ body: 'p-4' }">
         <div class="space-y-3">
           <div class="flex items-start justify-between gap-3">
@@ -170,7 +170,8 @@ const parseBatchStatusColor: Record<string, string> = {
       </UCard>
     </div>
 
-    <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
+   <div class="hidden md:block">
+    <UTable :columns="columns" :data="records" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -202,5 +203,6 @@ const parseBatchStatusColor: Record<string, string> = {
         <p class="text-purple-400">{{ format(row.original.discount || 0) }}</p>
       </template>
     </UTable>
+   </div>
   </div>
 </template>

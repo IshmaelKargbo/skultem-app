@@ -2,27 +2,27 @@
     <div class="space-y-2">
 
         <!-- BAR -->
-        <div :class="`flex h-${height} rounded overflow-hidden`">
+        <div :class="`flex h-${height} rounded-full overflow-hidden bg-elevated`">
 
-            <div v-if="passPercent" class="bg-green-500" :style="{ width: passPercent + '%' }" />
+            <div v-if="passPercent" class="bg-success" :style="{ width: passPercent + '%' }" />
 
-            <div v-if="averagePercent" class="bg-yellow-400" :style="{ width: averagePercent + '%' }" />
+            <div v-if="averagePercent" class="bg-warning" :style="{ width: averagePercent + '%' }" />
 
-            <div v-if="failPercent" class="bg-red-500" :style="{ width: failPercent + '%' }" />
+            <div v-if="failPercent" class="bg-error" :style="{ width: failPercent + '%' }" />
 
         </div>
 
         <!-- LEGEND -->
         <div v-if="showLabel" class="flex justify-between text-xs">
-            <span class="text-green-600">
+            <span class="text-success">
                 Pass ({{ pass }})
             </span>
 
-            <span class="text-yellow-500">
+            <span class="text-warning">
                 Average ({{ average }})
             </span>
 
-            <span class="text-red-500">
+            <span class="text-error">
                 Fail ({{ fail }})
             </span>
         </div>

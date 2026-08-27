@@ -9,17 +9,19 @@
             <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
           </p>
 
-          <div class="grid gap-5 grid-cols-1 md:grid-cols-2 w-full md:w-[450px]">
+             <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
             <UFormField name="classId" class="w-full">
-              <USelect v-model="state.classId" :items="classes" placeholder="Select class" @change="fetchRecords" />
+              <USelect v-model="state.classId" :items="classes" placeholder="Select class" class="w-full"
+                @change="fetchRecords" />
             </UFormField>
 
             <UFormField name="date" class="w-full">
-              <UInput v-model="state.date" type="date" @change="fetchRecords" />
+              <UInput v-model="state.date" type="date" class="w-full" @change="fetchRecords" />
             </UFormField>
           </div>
         </div>
       </template>
+
       <div>
         <!-- Actions -->
         <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 dark:bg-gray-950 dark:border-gray-800 bg-gray-50/40 px-3">
@@ -34,8 +36,7 @@
           </div>
         </div>
 
-        <!-- Desktop Table -->
-        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+        <UTable  class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
@@ -87,7 +88,7 @@
         </UTable>
 
         <!-- Mobile Cards -->
-        <div class="md:hidden divide-y divide-gray-200">
+        <div class="divide-y divide-gray-200 md:hidden">
           <!-- Mobile Skeleton -->
           <div v-if="isLoading" v-for="i in skeletonRows.length" :key="i" class="p-3 space-y-3">
             <div class="flex items-center space-x-2">
@@ -151,6 +152,7 @@
 import * as yup from 'yup'
 import type { FormSubmitEvent, TableColumn } from '#ui/types'
 
+const view = ref<'table' | 'card'>('table')
 const skeletonRows = Array(runtimeConf().limit).fill({})
 const classStore = useClassSessionStore()
 const store = useAttendanceStore()

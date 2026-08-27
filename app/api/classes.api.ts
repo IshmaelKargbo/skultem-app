@@ -45,9 +45,10 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
-    getAllClassSessions: async (page: number = 1, size: number = 6) => {
+    getAllClassSessions: async (page: number = 1, size: number = 6, academicYearId?: string) => {
       try {
-        const res = await $api(`/class-session?page=${page}&size=${size}`) as any
+        const query = academicYearId ? `&academicYearId=${academicYearId}` : ''
+        const res = await $api(`/class-session?page=${page}&size=${size}${query}`) as any
 
         if (!res)
           throw new Error('Failed to fetch class sessions')
@@ -97,6 +98,30 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    createSession: async (payload: CreateClassSessionDto) => {
+      try {
+        return await $api('/class-session', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    setupAllSessions: async (academicYearId: string) => {
+      try {
+        const res = await $api(`/class-session/setup-all?academicYearId=${academicYearId}`, {
+          method: 'POST'
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to set up class sessions')
+
+        return res.data as { created: number }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     assignStudentToClass: async (payload: AssignStudentsDto) => {
       try {
         return await $api('/enrollment/class', {
@@ -125,6 +150,19 @@ export const ClassApi = () => {
           throw new Error('Failed to fetch class')
 
         return res.data
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getOverview: async (id: string) => {
+      try {
+        const res = await $api(`/class/${id}/overview`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class overview')
+
+        return res.data as ClassOverview
 
       } catch (err: any) {
         useHandleError(err)
@@ -162,6 +200,36 @@ export const ClassApi = () => {
           method: 'PUT',
           body: { templateId }
         })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    setNextClass: async (id: string, nextClass: string) => {
+      try {
+        const res = await $api('/class/next', {
+          method: 'PUT',
+          body: { id, nextClass }
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to set next class')
+
+        return res.data as Clazz
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    setTerminal: async (id: string, terminal: boolean) => {
+      try {
+        const res = await $api(`/class/${id}/terminal`, {
+          method: 'PUT',
+          body: { terminal }
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update class')
+
+        return res.data as Clazz
       } catch (err: any) {
         useHandleError(err)
       }

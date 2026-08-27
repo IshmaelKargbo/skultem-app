@@ -6,6 +6,8 @@ export const useStudentStore = defineStore('student', {
     record: undefined as Student | undefined,
     activeCycle: null as ActiveCycle | null,
     meta: {} as Meta,
+    classRecords: [] as Student[],
+    classMeta: {} as Meta,
     loading: true,
     error: null as string | null
   }),
@@ -104,6 +106,19 @@ export const useStudentStore = defineStore('student', {
         return { records: response }
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch student fees'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchByClass(classId: string, page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await StudentApi().getByClass(classId, page, size) as any
+        this.classRecords = response.data || []
+        this.classMeta = response.meta || {} as Meta
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch students for class'
       } finally {
         this.loading = false
       }

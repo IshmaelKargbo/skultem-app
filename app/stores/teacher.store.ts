@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useTeacherStore = defineStore('teacher', {
   state: () => ({
     records: [] as Teacher[],
+    record: undefined as Teacher | undefined,
     meta: {} as Meta,
     loading: false,
     error: null as string | null
@@ -27,6 +28,18 @@ export const useTeacherStore = defineStore('teacher', {
       this.error = null
       try {
         return await TeacherApi().getOne(id) as Teacher
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch teacher'
+      } finally {
+        this.loading = false
+      }
+    },
+    async viewTeacher(id: string) {
+      this.loading = true
+      this.error = null
+      this.record = undefined
+      try {
+        this.record = await TeacherApi().getOne(id) as Teacher
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch teacher'
       } finally {

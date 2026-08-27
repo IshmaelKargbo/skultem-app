@@ -14,4 +14,3 @@ onMounted(() => {
     document.title = 'Students | Skultem'
 })
 </script>
-``
