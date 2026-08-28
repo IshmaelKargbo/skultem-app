@@ -280,7 +280,7 @@ onBeforeUnmount(() => {
 
         <!-- Data -->
         <template v-else-if="data?.length">
-          <UCard v-for="item in data" :key="item.id" class="group" :ui="{ body: 'sm:p-0 p-0' }">
+          <UCard v-for="item in data" :key="item.id"  class="group cursor-pointer hover:ring-secondary-300" :ui="{ body: 'sm:p-0 p-0' }">
             <!-- Header -->
             <div class="border-b border-gray-200 p-3 dark:border-gray-800">
               <div class="flex items-start justify-between gap-3">
