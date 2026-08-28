@@ -1,8 +1,8 @@
 <template>
-    <div class=" md:space-y-5 p-4 md:px-6 py-2 md:py-4 space-y-3">
+    <div class="px-4 md:px-6 space-y-4">
         <DashboardAdminReport />
         <UCard>
-            <div class="grid md:gap-5 gap-3 md:grid-cols-4 grid-cols-2">
+            <div class="grid gap-3 md:grid-cols-4 grid-cols-2">
                 <UButton to="/students" color="info" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
                     <div class="flex flex-col items-center space-y-2">
@@ -33,7 +33,7 @@
                 </UButton>
             </div>
         </UCard>
-        <div class="grid md:gap-5 gap-3 md:grid-cols-2">
+        <div class="grid gap-3 md:grid-cols-2">
             <UCard>
                 <DashboardAdminRevenue />
             </UCard>
@@ -41,7 +41,7 @@
                 <DashboardAdminWeeklyAttendance />
             </UCard>
         </div>
-        <div class="grid md:gap-5 md:grid-cols-2 gap-3">
+        <div class="grid md:grid-cols-2 gap-3">
             <UCard>
                 <WidgetClassPerformance />
             </UCard>

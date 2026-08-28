@@ -2,22 +2,16 @@
   <div class="px-4 md:px-6 space-y-4">
     <Heading title="Assessment Cycle"
       subtitle="Monitor assessment progress and control transitions between assessment stages">
-      <div class="flex flex-wrap items-center gap-2">
-        <USelectMenu v-model="viewingYearId" value-key="value" :items="yearOptions" class="w-full sm:w-52">
-          <template #leading>
-            <UIcon name="i-lucide-history" class="text-muted" />
-          </template>
-        </USelectMenu>
+      <UBadge v-if="allTermsCompleted" variant="soft" color="success" size="lg">
+        All terms completed for this year
+      </UBadge>
+      <UTooltip v-else text="Advances every class on the selected term at once - not just the class you're viewing.">
         <UButton icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
-          :disabled="!selectedTermId || isViewingPastYear" @click="advanceAssessmentStage">
+          :disabled="!selectedTermId || isRefreshing" @click="advanceAssessmentStage">
           Move To Next Assessment
         </UButton>
-      </div>
+      </UTooltip>
     </Heading>
-
-    <UAlert v-if="isViewingPastYear" color="info" variant="soft" icon="i-lucide-history"
-      title="Viewing a different academic year"
-      description="This is a personal view for your account only - it doesn't change what's active for the rest of the school, and stage transitions are disabled while browsing another year." />
 
     <UAlert v-if="loadError" color="error" variant="soft" icon="i-lucide-alert-circle" :description="loadError" />
 
@@ -38,10 +32,12 @@
         isReady: !loading
       }" />
       <Metric :record="{
-        color: 'success',
-        icon: 'i-lucide-chart-pie',
-        label: 'Total Weight',
-        value: `${totalWeight}%`,
+        color: notReadyClasses > 0 ? 'warning' : 'success',
+        icon: 'i-lucide-list-checks',
+        label: 'Classes Ready',
+        value: `${readyClasses}/${totalClasses}`,
+        subtle: notReadyClasses > 0 ? `${notReadyClasses} need attention` : undefined,
+        subtileColor: 'warning',
         isReady: !loading
       }" />
     </div>
@@ -83,11 +79,11 @@
           </div>
 
           <!-- Classes -->
-          <div v-else class="space-y-3 max-h-[700px] overflow-y-auto pr-1">
+          <div v-else class="space-y-3 max-h-175 overflow-y-auto pr-1">
             <button v-for="item in filteredClasses" :key="item.classId"
-              class="group w-full rounded-xl border p-4 text-left transition-all duration-200" :class="selectedClassId === item.classId
-                ? 'border-primary bg-primary/5 shadow-sm'
-                : 'border-default hover:border-primary/40 hover:bg-muted/30'
+              class="group w-full rounded-xl border-2 p-4 text-left transition-all duration-200" :class="selectedClassId === item.classId
+                ? 'border-secondary bg-seborder-secondary/5 shadow-sm'
+                : 'border-default hover:border-secondary/40 hover:bg-muted/30'
                 " @click="selectClass(item.classId)">
 
               <!-- Top -->
@@ -95,8 +91,8 @@
 
                 <div class="flex gap-3">
 
-                  <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10">
-                    <UIcon :name="CLASS_ICON" class="size-5 text-primary" />
+                  <div class="flex size-10 items-center justify-center rounded-xl bg-secondary/10">
+                    <UIcon :name="CLASS_ICON" class="size-5 text-secbg-secondary" />
                   </div>
 
                   <div>
@@ -113,11 +109,18 @@
 
                 </div>
 
-                <UBadge :color="item.ready ? 'success' : 'warning'" variant="soft">
+                <UBadge :color="item.ready ? 'success' : 'warning'" variant="soft"
+                  :icon="item.templateLocked ? 'i-lucide-lock' : undefined">
                   {{ item.ready ? 'Ready' : 'Attention' }}
                 </UBadge>
 
               </div>
+
+              <!-- Why it needs attention -->
+              <p v-if="!item.ready" class="mt-3 flex items-start gap-1.5 text-xs text-warning">
+                <UIcon name="i-lucide-alert-triangle" class="mt-0.5 shrink-0" />
+                {{ item.note }}
+              </p>
 
             </button>
 
@@ -189,12 +192,11 @@
           <!-- Timeline -->
           <div v-else-if="assessmentItems.length" class="space-y-4">
             <div v-for="(assessment, index) in assessmentItems" :key="assessment.id"
-              class="group relative overflow-hidden rounded-xl border border-default bg-elevated/40 p-4 transition hover:border-primary/40 hover:shadow-sm">
-              <div class="flex items-start justify-between gap-4">
+              class="group relative overflow-hidden rounded-xl border border-default bg-elevated/40 p-3">
+              <div class="flex items-center justify-between gap-3">
 
-                <div class="flex gap-4">
-
-                  <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <div class="flex gap-3">
+                  <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 border border-primary-200 text-primary">
                     {{ index + 1 }}
                   </div>
 
@@ -205,25 +207,23 @@
                       Assessment
                     </h4>
 
-                    <p class="mt-1 text-sm text-muted">
-                      {{ assessment.name }}
+                    <p class="text-xs text-muted">
+                      <span>{{ assessment.name }}</span> <span>-</span> <span>
+                        Weight:
+                        <strong>({{ assessment.weight }}%)</strong>
+                      </span>
                     </p>
 
                     <div class="mt-3 flex items-center gap-2">
-                      <UIcon name="i-lucide-percent" class="text-muted" />
 
-                      <span class="text-sm">
-                        Weight:
-                        <strong>{{ assessment.weight }}%</strong>
-                      </span>
                     </div>
 
                   </div>
 
                 </div>
 
-                <UBadge variant="soft" size="lg" :color="parseAssessmentStatusColor[assessment.status]">
-                  {{ parseAssessmentStatus[assessment.status] }}
+                <UBadge variant="soft" size="lg" :color="assessmentStatusColor(assessment.status)">
+                  {{ assessmentStatusLabel(assessment.status) }}
                 </UBadge>
 
               </div>
@@ -256,31 +256,9 @@
 const appStore = useAppStore()
 const assessmentStore = useAssessmentStore()
 const termStore = useTermStore()
-const academicYearStore = useAcademicYearStore()
 const route = useRoute()
 const router = useRouter()
 const { error: toastError, success: toastSuccess, warning } = useNotify()
-
-// Personal "viewing year" - lets this admin browse a past academic year's assessment cycle
-// without touching what's active for the rest of the school. Stored per-browser only, so it
-// really is just for this account, not a school-wide setting.
-const VIEWING_YEAR_KEY = 'skultem-viewing-academic-year'
-const viewingYearId = ref(localStorage.getItem(VIEWING_YEAR_KEY) || '')
-
-const yearOptions = computed(() => [
-  { label: 'Current Year (Active)', value: '' },
-  ...academicYearStore.list
-])
-
-const isViewingPastYear = computed(() => !!viewingYearId.value)
-
-// Only fires on a change after mount - the initial value above is read directly, not via this
-// watcher, so restoring it on load doesn't trigger a duplicate fetch alongside onMounted's own.
-watch(viewingYearId, (value) => {
-  if (value) localStorage.setItem(VIEWING_YEAR_KEY, value)
-  else localStorage.removeItem(VIEWING_YEAR_KEY)
-  refreshAll()
-})
 
 const overview = ref<AssessmentCycleOverview | null>(null)
 const cycle = ref<ActiveAssessmentCycle | null>(null)
@@ -293,8 +271,6 @@ const isLoadingCycle = ref(false)
 const isAdvancingAssessment = ref(false)
 
 const selectedTermId = ref('')
-const selectedTemplateId = ref('')
-const gradingBands = ref<GradeBand[]>([])
 
 const parseAssessmentStatus: Record<string, string> = {
   COMPLETED: "Completed",
@@ -306,6 +282,16 @@ const parseAssessmentStatusColor: Record<string, string> = {
   COMPLETED: "success",
   ACTIVE: "info",
   INACTIVE: "neutral"
+}
+
+// Statuses the cycle endpoint doesn't currently send fall back to a neutral "Pending" badge
+// instead of rendering blank, so an unrecognised value can't disappear from the timeline.
+function assessmentStatusLabel(status: string) {
+  return parseAssessmentStatus[status] || 'Pending'
+}
+
+function assessmentStatusColor(status: string) {
+  return parseAssessmentStatusColor[status] || 'neutral'
 }
 
 const selectedClassId = computed(() => {
@@ -327,6 +313,15 @@ const activeTerm = computed(() => cycle.value?.activeTerm || overview.value?.act
 const assessmentItems = computed(() => cycle.value?.assessments || [])
 const totalWeight = computed(() => cycle.value?.totalWeight || 0)
 
+// ResolveActiveTermUseCase (backend) only ever hands back a CLOSED term as "active" once every
+// term in the academic year has been closed out - so this is the signal that there's nothing
+// left to advance, school-wide.
+const allTermsCompleted = computed(() => activeTerm.value?.status === 'CLOSED')
+
+const totalClasses = computed(() => overview.value?.totalClasses ?? 0)
+const readyClasses = computed(() => overview.value?.readyClasses ?? 0)
+const notReadyClasses = computed(() => overview.value?.notReadyClasses ?? 0)
+
 function toOrdinal(index: number) {
   const remainder = index % 100
   if (remainder >= 11 && remainder <= 13) return `${index}th`
@@ -344,7 +339,7 @@ function toOrdinal(index: number) {
 }
 
 function selectClass(classId: string) {
-  router.replace({
+  return router.replace({
     query: {
       ...route.query,
       classId
@@ -356,12 +351,6 @@ function syncSelectionsFromData() {
   if (overview.value?.activeTerm?.id) {
     selectedTermId.value = overview.value.activeTerm.id
   }
-
-  if (selectedClass.value?.templateId) {
-    selectedTemplateId.value = selectedClass.value.templateId
-  } else {
-    selectedTemplateId.value = ''
-  }
 }
 
 async function loadOverview() {
@@ -369,14 +358,17 @@ async function loadOverview() {
   loadError.value = ''
 
   try {
-    overview.value = await assessmentStore.fetchCycleOverview(viewingYearId.value || undefined) || null
+    overview.value = await assessmentStore.fetchCycleOverview() || null
 
     if (!overview.value) {
       throw new Error(assessmentStore.error || 'Failed to load assessment overview')
     }
 
     if (!selectedClassId.value && overview.value?.classes?.length) {
-      selectClass(overview.value.classes[0].classId)
+      // Awaited so the class query param lands before loadCycle() (called right after this in
+      // refreshAll) reads selectedClassId - otherwise the very first cycle fetch races the
+      // still-pending navigation and silently loads nothing.
+      await selectClass(overview.value.classes[0].classId)
     }
 
     syncSelectionsFromData()
@@ -387,7 +379,13 @@ async function loadOverview() {
   }
 }
 
+// Bumped on every call so a slower, now-stale request can't overwrite the screen with data for
+// a class the user has since clicked away from.
+let cycleRequestId = 0
+
 async function loadCycle() {
+  const requestId = ++cycleRequestId
+
   if (!selectedClassId.value) {
     cycle.value = null
     return
@@ -397,15 +395,21 @@ async function loadCycle() {
   loadError.value = ''
 
   try {
-    cycle.value = await assessmentStore.fetchActiveCycle(selectedClassId.value, viewingYearId.value || undefined) || null
+    const result = await assessmentStore.fetchActiveCycle(selectedClassId.value) || null
+    if (requestId !== cycleRequestId) return
+
+    cycle.value = result
 
     if (!cycle.value) {
       throw new Error(assessmentStore.error || 'Failed to load class assessment cycle')
     }
   } catch (error: any) {
+    if (requestId !== cycleRequestId) return
     loadError.value = error?.message || 'Failed to load class assessment cycle'
   } finally {
-    isLoadingCycle.value = false
+    if (requestId === cycleRequestId) {
+      isLoadingCycle.value = false
+    }
   }
 }
 
@@ -415,17 +419,6 @@ async function loadSupportData() {
     assessmentStore.fetchAll(1, 0)
   ])
 }
-
-async function loadGradingScale() {
-  try {
-    const res = await assessmentStore.fetchGradingScale()
-    gradingBands.value = (res?.bands || []).map(band => ({ ...band }))
-  } catch (error: any) {
-    gradingBands.value = []
-    toastError(error?.message || 'Failed to load grading scale')
-  }
-}
-
 
 async function advanceAssessmentStage() {
   if (!selectedTermId.value) return
@@ -438,7 +431,12 @@ async function advanceAssessmentStage() {
       throw new Error(assessmentStore.error || 'Failed to advance assessment stage')
     }
 
-    toastSuccess(res.message || 'Assessment stage updated')
+    if (res.advanced) {
+      toastSuccess(res.message || 'Assessment stage updated')
+    } else {
+      // e.g. "All assessments are already completed for this term" - nothing actually moved.
+      warning(res.message || 'Nothing to advance')
+    }
 
     await refreshAll()
   } catch (error: any) {
@@ -453,8 +451,7 @@ async function refreshAll() {
   try {
     await Promise.all([
       loadSupportData(),
-      loadOverview(),
-      loadGradingScale()
+      loadOverview()
     ])
     await loadCycle()
   } finally {
@@ -466,7 +463,7 @@ onMounted(async () => {
   appStore.setTitle('Assessment Cycle')
   document.title = 'Assessment Cycle | Academics | Skultem'
   loading.value = true
-  await Promise.all([academicYearStore.fetchAll(1, 100), refreshAll()])
+  await refreshAll()
   loading.value = false
 })
 
