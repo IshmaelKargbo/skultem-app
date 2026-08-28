@@ -102,7 +102,7 @@ onMounted(async () => {
         <TableViewToggle v-model="view" />
       </div>
     </template>
-    <UTable v-if="view === 'table'" :columns="columns" :data="data" :loading="loading">
+    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />

@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-full space-y-4 p-4 pb-0 md:space-y-6 md:px-6 md:py-5">
+    <div class="min-h-full space-y-4 px-4 md:px-6">
         <!-- Profile banner -->
         <UCard :ui="{
             body: 'p-0 sm:p-0'
@@ -74,16 +74,16 @@
                 </div>
 
                 <!-- Quick facts -->
-                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     <div v-for="item in quickFacts" :key="item.label"
-                        class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
+                        class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 p-3">
                         <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <UIcon :name="item.icon" class="size-4" />
                         </div>
 
                         <div class="min-w-0">
-                            <p class="text-xs text-muted">
+                            <p class="text-xs-base text-muted">
                                 {{ item.label }}
                             </p>
 
@@ -185,16 +185,6 @@ const photo = computed(() => {
 
 const quickFacts = computed(() => [
     {
-        label: 'Admission',
-        value: record.value?.admissionNumber || '—',
-        icon: 'i-lucide-badge-check'
-    },
-    {
-        label: 'Class',
-        value: record.value?.className || '—',
-        icon: 'i-lucide-school'
-    },
-    {
         label: 'Nationality',
         value: clean(record.value?.nationality || '') || '—',
         icon: 'i-lucide-globe-2'
@@ -203,11 +193,6 @@ const quickFacts = computed(() => [
         label: 'Gender',
         value: clean(record.value?.gender || '') || '—',
         icon: 'i-lucide-user'
-    },
-    {
-        label: 'Religion',
-        value: clean(record.value?.religion || '') || '—',
-        icon: 'i-lucide-heart'
     }
 ])
 

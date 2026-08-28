@@ -17,7 +17,6 @@
                 <StudentViewAttendanceCycle :student="student" />
             </div>
         </UCard>
-
     </StudentView>
 </template>
 

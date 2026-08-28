@@ -76,7 +76,6 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit);
 
-
 onMounted(async () => {
   updateQuery({
     page: page.value
@@ -106,7 +105,7 @@ definePageMeta({
           <TableViewToggle v-model="view" />
         </div>
       </template>
-      <UTable v-if="view === 'table'" :columns="columns" :data="data" :loading="loading">
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -219,7 +218,7 @@ definePageMeta({
 
       <template #footer>
         <!-- Footer -->
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex gap-3 items-center justify-between">
           <Showing :meta="meta" />
 
           <div class="overflow-x-auto">

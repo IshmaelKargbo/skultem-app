@@ -73,9 +73,6 @@ const visibleItems = computed(() =>
   navItems.filter((item) => !item.roles || can(item.roles))
 )
 
-// `startsWith(to)` with no boundary would let '/fees' match '/fees-payment/pay'.
-// Require an exact match or a '/' right after `to` so sibling routes that
-// merely share a prefix (e.g. /fees vs /fees-payment) don't both light up.
 function isActive(to: string, exact = false) {
   if (exact) return route.path === to
   return route.path === to || route.path.startsWith(`${to}/`)

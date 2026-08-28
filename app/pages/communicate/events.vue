@@ -16,12 +16,6 @@ const size = ref(runtimeConf().limit)
 
 watch([page, size], () => store.fetchCalendar(page.value, size.value), { immediate: true })
 
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-  if (merged.page === route.query.page) return
-  router.replace({ query: merged })
-}
-
 onMounted(() => {
   updateQuery({ page: page.value })
   useAppStore().setTitle('Events & Holidays')
@@ -72,7 +66,7 @@ function remove(entry: CalendarEntry) {
   <div class="space-y-4 px-4 md:px-6">
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-between space-x-3">
+        <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search events & holidays..."
               class="w-full sm:w-72" />

@@ -36,9 +36,8 @@
                     <span class="hidden text-xs-base text-muted md:block">{{ date }}</span>
                 </div>
                 <div class="flex shrink-0 items-center gap-3 pr-5">
-                    <div class="flex border-r border-default pr-3">
-                        <USelectMenu v-if="canSwitchYear" v-model="viewingYearId" value-key="value" :items="yearOptions"
-                            class="w-50" />
+                    <div class="md:block border-r border-default pr-3 hidden">
+                        <AccountSwitch />
                     </div>
                     <div class="flex items-center gap-3">
                         <UButton v-if="canManageSettings" :icon="SETTINGS_ICON" variant="ghost" color="neutral"

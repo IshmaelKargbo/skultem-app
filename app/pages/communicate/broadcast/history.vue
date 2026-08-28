@@ -58,12 +58,12 @@ const columns = [
   <div class="space-y-4 px-4 md:px-6">
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-between space-x-3">
+        <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search broadcasts..." class="w-full sm:w-72" />
             <USelectMenu v-model="statusFilter" value-key="value" :items="statusOptions" class="w-full sm:w-48" />
           </div>
-          <UButton to="/communicate/broadcast" label="Compose Broadcast" :icon="BROADCAST_ICON" />
+          <UButton to="/communicate/broadcast" class="flex justify-center" label="Compose Broadcast" :icon="BROADCAST_ICON" />
         </div>
       </template>
       <UTable :columns="columns" :data="data" :loading="loading">

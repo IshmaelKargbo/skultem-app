@@ -78,7 +78,7 @@ async function togglePin(notice: Notice) {
   <div class="px-4 md:px-6 space-y-4">
     <UCard>
       <template #header>
-        <div class="flex justify-between">
+        <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search notices..." class="w-full sm:w-72" />
             <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions" class="w-full sm:w-52" />

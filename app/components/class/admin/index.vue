@@ -11,7 +11,7 @@
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
-            <UTable v-if="view === 'table'" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -34,7 +34,8 @@
                     <p>{{ parseLevel[row.original.classLevel] }}</p>
                 </template>
                 <template #totalStudent-cell="{ row }">
-                    <UBadge variant="subtle" color="secondary" size="lg" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} -`" />
+                    <UBadge variant="subtle" color="secondary" size="lg" :trailing-icon="STUDENT_ICON"
+                        :label="`${row.original.totalStudent} -`" />
                 </template>
                 <template #teacherName-cell="{ row }">
                     <p>{{ row.original.teacherName || 'No Teacher Assigned' }}</p>
@@ -51,7 +52,8 @@
                 :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <UCard v-for="i in 6" :key="i" variant="outline" class="overflow-hidden" :ui="{ body: 'sm:p-0 p-0' }">
+                    <UCard v-for="i in 6" :key="i" variant="outline" class="overflow-hidden"
+                        :ui="{ body: 'sm:p-0 p-0' }">
                         <!-- Header -->
                         <div class="border-b border-default p-5">
                             <div class="flex items-start justify-between">
@@ -238,7 +240,8 @@
                                 </div>
                             </div>
                             <UButton icon="i-lucide-arrow-right" color="neutral" variant="soft" square
-                                class="rounded-xl transition-all group-hover:bg-secondary hover:bg-secondary cursor-pointer group-hover:text-white group-hover:translate-x-1" @click="viewClass(item)" />
+                                class="rounded-xl transition-all group-hover:bg-secondary hover:bg-secondary cursor-pointer group-hover:text-white group-hover:translate-x-1"
+                                @click="viewClass(item)" />
                         </div>
                     </UCard>
                 </template>

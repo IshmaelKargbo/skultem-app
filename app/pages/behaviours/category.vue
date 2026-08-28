@@ -134,7 +134,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div class="p-4 bg-gray-100 dark:bg-neutral-950 min-h-[300px]" :class="{ 'md:hidden': view === 'table' }">
+            <div class="p-4 space-y-4" :class="{ 'md:hidden': view === 'table' }">
                 <!-- Loading -->
                 <div v-if="loading">
                     <div class="space-y-4" :class="{
@@ -216,11 +216,9 @@ definePageMeta({
 
                 <div class="space-y-4"
                     :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }">
-                    <UCard v-for="item in data" :key="item.id"
-                        class="group overflow-hidden rounded-2xl border border-default shadow transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-sm active:scale-[0.99]"
-                        :ui="{ body: 'p-0' }">
+                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }">
                         <!-- Header -->
-                        <div class="border-b border-default p-3 md:p-0 md:pb-3 ">
+                        <template #header>
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex min-w-0 items-center gap-4">
                                     <div
@@ -239,61 +237,16 @@ definePageMeta({
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- <UButton
-              icon="i-lucide-ellipsis"
-              color="neutral"
-              variant="ghost"
-              square
-              class="rounded-xl"
-            /> -->
                             </div>
-                        </div>
+                        </template>
 
                         <!-- Description -->
                         <div class="p-5">
-                            <div class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800">
-                                <div class="mb-3 flex items-center gap-2">
-                                    <div class="flex size-8 items-center justify-center rounded-lg bg-primary/10">
-                                        <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
-                                    </div>
-
-                                    <span class="text-[11px] font-medium uppercase tracking-wide text-muted">
-                                        Description
-                                    </span>
-                                </div>
-
+                            <div class="rounded-2xl border border-default bg-gray-50 p-4 dark:bg-neutral-800">
                                 <p class="text-sm leading-6 text-toned">
                                     {{ item.description || "No description available." }}
                                 </p>
                             </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3 ">
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/15">
-                                    <UIcon name="i-lucide-check-circle-2"
-                                        class="size-4 text-emerald-600 dark:text-emerald-400" />
-                                </div>
-
-                                <div>
-                                    <p class="text-xs font-medium">Active Category</p>
-
-                                    <p class="text-[11px] text-muted">Available for behaviour records</p>
-                                </div>
-                            </div>
-
-                            <!-- <UButton
-            icon="i-lucide-pencil"
-            color="primary"
-            variant="soft"
-            size="sm"
-            class="rounded-xl"
-          >
-            Edit
-          </UButton> -->
                         </div>
                         <div v-if="!loading && data?.length"
                             class="flex flex-col md:flex-row md:justify-between md:w-full items-center gap-3 pt-2 col-span-full">

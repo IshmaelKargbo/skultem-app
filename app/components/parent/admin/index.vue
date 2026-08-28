@@ -112,7 +112,7 @@ watch(
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
-            <UTable v-if="view === 'table'" :columns="columns" :data="data" :loading="loading" class="min-w-full">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty-state>
                     <div class="flex flex-col items-center justify-center py-14">
                         <UIcon name="i-lucide-users" class="mb-3 size-10 text-gray-400" />
@@ -137,7 +137,7 @@ watch(
                     <TableLoading :size="columns.length" />
                 </template>
             </UTable>
-            <div class="p-5"
+            <div class="space-y-4 p-4"
                 :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
                 <!-- Loading -->
                 <template v-if="loading">

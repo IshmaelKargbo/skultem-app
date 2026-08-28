@@ -38,7 +38,7 @@ const emit = defineEmits<{
           </div>
         </div>
 
-        <div class="rounded-xl bg-primary/10 px-4 py-2 text-center">
+        <div class="rounded-xl bg-gray-50 border border-default px-4 py-2 text-center">
           <p class="text-lg font-bold text-primary">{{ total }}</p>
         </div>
       </div>

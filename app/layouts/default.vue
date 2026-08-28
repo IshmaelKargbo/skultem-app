@@ -44,15 +44,15 @@ watch(
       <!-- Scroll Container -->
       <main
         ref="scrollContainer"
-        class="min-h-0 flex-1 mt-1 overflow-y-auto overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
+        class="min-h-0 flex-1 md:mt-1 overflow-y-auto overflow-x-hidden"
       >
         <div class="py-4">
           <slot />
         </div>
-
-        <!-- Mobile Navigation -->
-        <MenuMobile class="sticky bottom-0 z-20 lg:hidden" />
       </main>
+
+      <!-- Mobile Navigation -->
+      <MenuMobile class="shrink-0 z-20 pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:hidden" />
     </div>
   </div>
 </template>

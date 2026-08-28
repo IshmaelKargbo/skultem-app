@@ -1,5 +1,5 @@
 <template>
-    <div class="px-4 sm:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-4">
         <TransactionReport />
         <TransactionFilters :selected="selected" />
         <TransactionTable class="hidden md:block" />

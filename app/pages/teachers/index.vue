@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
       </template>
 
       <!-- Desktop Table -->
-      <UTable v-if="view === 'table'" :columns="columns" :data="data" :loading="loading">
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
           </div>
         </template>
       </UTable>
-      <div v-else class="p-5 grid sm:grid-cols-2 gap-4 lg:grid-cols-3">
+      <div class="space-y-4 p-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="item in 4" :key="item" variant="outline">

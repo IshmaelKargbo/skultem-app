@@ -86,7 +86,7 @@ async function onSubmit() {
       variant="ghost"
       @click="open = true"
     />
-    <UButton v-else color="primary" label="Add Event / Holiday" :icon="ADD_ICON" @click="open = true" />
+    <UButton v-else color="primary" class="flex justify-center" label="Add Event / Holiday" :icon="ADD_ICON" @click="open = true" />
 
     <template #header>
       <div class="flex w-full items-center justify-between">

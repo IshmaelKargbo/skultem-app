@@ -25,7 +25,7 @@
                 />
             </div>
 
-            <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="mb-6 grid gap-4 grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-xl border-2 border-primary-300 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950">
                     <p class="text-[11px] uppercase text-muted">
                         Subjects
@@ -200,7 +200,7 @@
             </div>
 
             <template #footer>
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="flex items-center justify-between">
                     <Showing :meta="meta" />
 
                     <UPagination

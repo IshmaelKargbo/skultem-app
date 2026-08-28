@@ -15,7 +15,7 @@
             </template>
 
             <!-- Summary -->
-            <div class="mb-6 grid gap-4 sm:grid-cols-3">
+            <div class="mb-6 grid gap-4 grid-cols-2">
                 <div class="rounded-xl border-2 border-primary-300 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950">
                     <p class="text-[11px] uppercase text-muted">
                         Total Records
@@ -36,7 +36,7 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-error-300 bg-error-50 p-4 dark:border-error-800 dark:bg-error-950">
+                <div class="col-span-2 md:col-span-1 rounded-xl border-2 border-error-300 bg-error-50 p-4 dark:border-error-800 dark:bg-error-950">
                     <p class="text-[11px] uppercase text-muted">
                         Negative
                     </p>

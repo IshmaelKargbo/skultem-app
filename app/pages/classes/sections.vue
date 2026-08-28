@@ -54,7 +54,7 @@ onMounted(async () => {
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -152,8 +152,7 @@ onMounted(async () => {
 
                 <!-- Cards -->
                 <template v-else>
-                    <UCard v-for="item in data" :key="item.id"
-                        :ui="{ body: 'sm:p-0 p-0' }">
+                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }">
                         <!-- Header -->
                         <div class="border-b border-default p-3">
                             <div class="flex items-start justify-between gap-4">
@@ -191,9 +190,8 @@ onMounted(async () => {
             </div>
             <template #footer>
                 <!-- Footer -->
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-3 justify-between">
                     <Showing :meta="meta" />
-
                     <div class="overflow-x-auto">
                         <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                             :total="meta.total" show-edges />

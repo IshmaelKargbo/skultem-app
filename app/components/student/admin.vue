@@ -67,20 +67,7 @@ const search = computed<string>({
   set: (val) => updateQuery({ search: val }),
 });
 
-const size = computed<number>({
-  get: () => Number(route.query.size ?? runtimeConf().limit),
-  set: (val) => updateQuery({ size: val }),
-});
-
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery };
-
-  if (merged.page === route.query.page && merged.size === route.query.size) {
-    return;
-  }
-
-  router.replace({ query: merged });
-}
+const size = ref(runtimeConf().limit);
 
 async function fetchRecord() {
   await store.fetchAll(page.value, size.value, search.value);
@@ -89,13 +76,12 @@ async function fetchRecord() {
 watch(
   () => page.value,
   () => {
-    router.replace({
-      query: {
-        page: page.value,
-      },
-    });
+    updateQuery({
+      page: page.value,
+      search: search.value || undefined
+    })
 
-    fetchRecord();
+    fetchRecord()
   },
   { immediate: true }
 );
@@ -107,11 +93,9 @@ watch(value, (search) => {
   clearTimeout(timeout)
 
   timeout = setTimeout(() => {
-    router.replace({
-      query: {
-        ...route.query,
-        search: search || undefined
-      }
+    updateQuery({
+      page: page.value,
+      search: search || undefined
     })
   }, 500)
 })
@@ -131,12 +115,10 @@ watch(
 
 onMounted(async () => {
   if (!route.query.page || !route.query.size) {
-    router.replace({
-      query: {
-        page: page.value,
-        search: search.value || undefined,
-      },
-    });
+    updateQuery({
+      page: page.value,
+      search: search.value || undefined
+    })
   }
 
   fetchRecord();
@@ -187,10 +169,10 @@ onMounted(async () => {
           </div>
         </template>
       </UTable>
-      <div class="p-5"
+      <div class="p-4  space-y-4"
         :class="tableView === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <template v-if="loading">
-          <UCard v-for="i in 6" :key="i" :ui="{ body: 'p-0' }">
+          <UCard v-for="i in 6" :key="i" :ui="{ body: 'sm:p-0 p-0' }">
             <div class="animate-pulse">
               <!-- Header -->
               <div class="border-b border-default p-4">
@@ -242,7 +224,8 @@ onMounted(async () => {
 
         <!-- Data -->
         <template v-else-if="data?.length">
-          <UCard v-for="item in data" :key="item.id" class="group cursor-pointer hover:ring-secondary-300" :ui="{ body: 'sm:p-0' }">
+          <UCard v-for="item in data" :key="item.id" class="group cursor-pointer hover:ring-secondary-300"
+            :ui="{ body: 'sm:p-0 p-0' }">
             <!-- Header -->
             <div class="border-b border-default p-4">
               <div class="flex items-start justify-between gap-3">
