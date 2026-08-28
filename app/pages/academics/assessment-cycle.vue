@@ -82,7 +82,7 @@
           <div v-else class="space-y-3 max-h-175 overflow-y-auto pr-1">
             <button v-for="item in filteredClasses" :key="item.classId"
               class="group w-full rounded-xl border-2 p-4 text-left transition-all duration-200" :class="selectedClassId === item.classId
-                ? 'border-secondary bg-seborder-secondary/5 shadow-sm'
+                ? 'border-secondary bg-secondary/5 shadow-sm'
                 : 'border-default hover:border-secondary/40 hover:bg-muted/30'
                 " @click="selectClass(item.classId)">
 
@@ -92,7 +92,7 @@
                 <div class="flex gap-3">
 
                   <div class="flex size-10 items-center justify-center rounded-xl bg-secondary/10">
-                    <UIcon :name="CLASS_ICON" class="size-5 text-secbg-secondary" />
+                    <UIcon :name="CLASS_ICON" class="size-5 text-secondary" />
                   </div>
 
                   <div>
