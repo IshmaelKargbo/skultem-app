@@ -16,12 +16,6 @@ const size = ref(runtimeConf().limit)
 
 watch([page, size], () => store.fetchNotices(page.value, size.value), { immediate: true })
 
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-  if (merged.page === route.query.page) return
-  router.replace({ query: merged })
-}
-
 onMounted(() => {
   updateQuery({ page: page.value })
   useAppStore().setTitle('Notice Board')

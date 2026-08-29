@@ -1,9 +1,5 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
-    <Heading title="Scheme of Work" subtitle="Manage subjects, weekly topics, lesson notes, and curriculum coverage.">
-      <UButton v-if="isAdmin" icon="i-lucide-book-plus" label="Create Scheme" to="/curriculums/add" />
-    </Heading>
-
     <!-- Main Grid -->
     <div class="grid gap-4 xl:grid-cols-3">
       <!-- Left column -->
