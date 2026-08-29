@@ -1,5 +1,6 @@
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+// jsPDF and html2canvas are loaded lazily inside generatePdf() below, not imported here at the
+// top - this file is a Nuxt plugin, so a static import here would pull both (sizeable) libraries
+// into every page's initial bundle even though only report cards/receipts ever call $generatePdf.
 
 // html2canvas can't parse oklch()/color-mix() — the color functions Tailwind
 // v4's default palette (gray, white, etc.) compiles to — and throws instead
@@ -222,6 +223,11 @@ export default defineNuxtPlugin(() => {
       generatePdf: async (selector: string, name = "receipt") => {
         const element = document.querySelector(selector) as HTMLElement;
         if (!element) return;
+
+        const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+          import("jspdf"),
+          import("html2canvas"),
+        ]);
 
         await document.fonts.ready;
 

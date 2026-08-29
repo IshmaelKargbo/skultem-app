@@ -255,7 +255,6 @@
 <script setup lang="ts">
 const appStore = useAppStore()
 const assessmentStore = useAssessmentStore()
-const termStore = useTermStore()
 const route = useRoute()
 const router = useRouter()
 const { error: toastError, success: toastSuccess, warning } = useNotify()
@@ -298,8 +297,6 @@ const selectedClassId = computed(() => {
   const value = route.query.classId
   return typeof value === 'string' && value.trim().length ? value : ''
 })
-
-const selectedClass = computed(() => (overview.value?.classes || []).find((item) => item.classId === selectedClassId.value) || null)
 
 const filteredClasses = computed(() => {
   const all = overview.value?.classes || []
@@ -413,13 +410,6 @@ async function loadCycle() {
   }
 }
 
-async function loadSupportData() {
-  await Promise.all([
-    termStore.fetchAll(1, 0),
-    assessmentStore.fetchAll(1, 0)
-  ])
-}
-
 async function advanceAssessmentStage() {
   if (!selectedTermId.value) return
 
@@ -449,10 +439,7 @@ async function advanceAssessmentStage() {
 async function refreshAll() {
   isRefreshing.value = true
   try {
-    await Promise.all([
-      loadSupportData(),
-      loadOverview()
-    ])
+    await loadOverview()
     await loadCycle()
   } finally {
     isRefreshing.value = false

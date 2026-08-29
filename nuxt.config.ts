@@ -16,7 +16,13 @@ const appleSplashScreens = [
   { width: 2048, height: 2732, media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)' }
 ]
 
+// Light matches the app's light theme background; dark matches --app-bg in
+// assets/css/main.css. splashBackgroundColor stays the manifest's single value (the Web App
+// Manifest spec has no light/dark variant for background_color/theme_color) - everything that
+// *can* respond to prefers-color-scheme (the theme-color meta tags, the apple-touch-startup-image
+// links below) uses both.
 const splashBackgroundColor = '#f7fbff'
+const splashBackgroundColorDark = '#0f121f'
 
 export default defineNuxtConfig({
   ssr: false,
@@ -34,7 +40,11 @@ export default defineNuxtConfig({
   app: {
     head: {
       meta: [
-        { name: 'theme-color', content: splashBackgroundColor },
+        // Two theme-color tags (not one) so the browser/OS chrome (Android status bar, Safari's
+        // tab bar) tints itself to match whichever scheme is actually active instead of always
+        // showing the light splash color.
+        { name: 'theme-color', content: splashBackgroundColor, media: '(prefers-color-scheme: light)' },
+        { name: 'theme-color', content: splashBackgroundColorDark, media: '(prefers-color-scheme: dark)' },
 
         // ✅ iOS/PWA improvements
         { name: 'mobile-web-app-capable', content: 'yes' },
@@ -52,11 +62,21 @@ export default defineNuxtConfig({
 
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
 
-        ...appleSplashScreens.map(({ width, height, media }) => ({
-          rel: 'apple-touch-startup-image',
-          href: `/splash/apple-splash-${width}x${height}.png`,
-          media
-        })),
+        // Two links per size (not one) - iOS 16.4+ picks the one whose prefers-color-scheme
+        // clause matches the device's active appearance; older iOS just takes the first match per
+        // device size, which is the light one here, so falls back sanely rather than erroring.
+        ...appleSplashScreens.flatMap(({ width, height, media }) => [
+          {
+            rel: 'apple-touch-startup-image',
+            href: `/splash/apple-splash-${width}x${height}-light.png`,
+            media: `${media} and (prefers-color-scheme: light)`
+          },
+          {
+            rel: 'apple-touch-startup-image',
+            href: `/splash/apple-splash-${width}x${height}-dark.png`,
+            media: `${media} and (prefers-color-scheme: dark)`
+          }
+        ]),
 
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://api.fontshare.com' },

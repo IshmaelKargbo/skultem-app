@@ -783,10 +783,12 @@ onMounted(async () => {
   loadingClass.value = true;
   loadingSubject.value = true;
 
-  await teacherStore.fetchAll(0, 0);
-  await classSessionStore.fetchAll(0, 0);
-  await termStore.fetchAll(0, 0);
-  await store.fetchGradingScale().catch(() => null);
+  await Promise.all([
+    teacherStore.fetchAll(0, 0),
+    classSessionStore.fetchAll(0, 0),
+    termStore.fetchAll(0, 0),
+    store.fetchGradingScale().catch(() => null)
+  ]);
 
   loadingTerm.value = false;
   loadingSubject.value = false;

@@ -20,7 +20,8 @@ const parseStateColor: Record<string, string> = {
             </div>
         </template>
         <div>
-            <div v-for="value in data" class="border-b border-gray-100 px-3 py-2 flex justify-between">
+            <div v-for="value in data" :key="`${value.studentId}-${value.clazz}-${value.date}`"
+                class="border-b border-gray-100 px-3 py-2 flex justify-between">
                 <div class="flex items-center space-x-3">
                     <div :class="`w-2 h-2 rounded-full bg-${parseStateColor[value.state]}`"></div>
                     <div>

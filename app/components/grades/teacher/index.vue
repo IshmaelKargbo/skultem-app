@@ -600,10 +600,12 @@ onMounted(async () => {
   useAppStore().setTitle('Grade Assignment')
   document.title = 'Grade Assignment | Grades | Skultem'
 
-  await teacherStore.fetchAllByTeacher(0, 0)
-  await classSessionStore.fetchAll(0, 0)
-  await termStore.fetchAll(0, 0)
-  await store.fetchGradingScale().catch(() => null)
+  await Promise.all([
+    teacherStore.fetchAllByTeacher(0, 0),
+    classSessionStore.fetchAll(0, 0),
+    termStore.fetchAll(0, 0),
+    store.fetchGradingScale().catch(() => null)
+  ])
 
   // default select first class and trigger teacher fetch
   if (classSessionStore.records.length) {

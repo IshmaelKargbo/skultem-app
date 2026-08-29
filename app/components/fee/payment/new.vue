@@ -10,6 +10,7 @@
                             <!-- STUDENT -->
                             <UFormField required label="Student" name="studentId">
                                 <USelectMenu value-key="value" :items="students" v-model="state.studentId"
+                                    v-model:search-term="studentSearchTerm" :loading="studentsLoading" ignore-filter
                                     @change="onStudentSelect" placeholder="Select student" />
                                 <template #help>
                                     Select the student you are recording this payment for.
@@ -462,20 +463,9 @@ const methodOptions = [
     { label: 'Mobile Money', value: 'MOBILE_MONEY' }
 ]
 
-const studentStore = useStudentStore()
-
-const students = computed(() =>
-    studentStore.records.map(s => ({
-        label: `${s.givenNames} ${s.familyName}`,
-        value: s.id
-    }))
-)
+const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch()
 
 const selectedStudentName = computed(() =>
     students.value.find(s => s.value === state.studentId)?.label
 )
-
-onMounted(() => {
-    studentStore.fetchAll(0, 0)
-})
 </script>

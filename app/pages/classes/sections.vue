@@ -82,7 +82,7 @@ onMounted(async () => {
             </UTable>
 
             <!-- Mobile -->
-            <div class="p-4"
+            <div class="p-4 space-y-4"
                 :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
                 <!-- Loading -->
                 <template v-if="loading">

@@ -35,14 +35,21 @@ watch(
 )
 
 async function fetchStudents() {
-    await store.fetchAll(page.value, 7)
+    await store.fetchAll(page.value, 7, search.value)
 }
 
 watch(page, fetchStudents)
 
+let searchTimeout: ReturnType<typeof setTimeout>
+
 watch(search, () => {
-    page.value = 1
-    fetchStudents()
+    clearTimeout(searchTimeout)
+
+    // Debounced so typing doesn't fire a request per keystroke - only once things settle.
+    searchTimeout = setTimeout(() => {
+        page.value = 1
+        fetchStudents()
+    }, 400)
 })
 
 onMounted(fetchStudents)

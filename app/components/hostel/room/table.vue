@@ -6,7 +6,7 @@ const occupancy = store.roomOccupancy
 const search = ref('')
 const hostelFilter = ref('')
 const deleteModal = ref(false)
-const selected = ref<Room>()
+const selected = ref<HostelRoom>()
 
 const hostelOptions = computed(() => [
   { label: 'All hostels', value: '' },
@@ -28,14 +28,14 @@ const data = computed(() => {
 })
 
 const columns = [
-  { accessorKey: 'name', header: 'Room' },
+  { accessorKey: 'name', header: 'HostelRoom' },
   { accessorKey: 'hostel.name', header: 'Hostel' },
   { accessorKey: 'type.name', header: 'Type' },
   { id: 'occupancy', header: 'Occupancy' },
   { id: 'actions', meta: { class: { td: 'text-right' } } }
 ]
 
-function remove(room: Room) {
+function remove(room: HostelRoom) {
   selected.value = room
   deleteModal.value = true
 }
@@ -62,7 +62,7 @@ function remove(room: Room) {
               </h3>
 
               <p class="mt-1 text-sm text-muted">
-                Rooms added to a hostel will appear here.
+                HostelRooms added to a hostel will appear here.
               </p>
             </div>
           </div>
@@ -75,7 +75,7 @@ function remove(room: Room) {
             </div>
 
             <p class="font-medium text-highlighted">
-              Room {{ row.original.name }}
+              HostelRoom {{ row.original.name }}
             </p>
           </div>
         </template>
@@ -88,7 +88,7 @@ function remove(room: Room) {
 
         <template #actions-cell="{ row }">
           <div class="flex justify-end gap-1">
-            <HostelRoomAdd :room="row.original" />
+            <HostelHostelRoomAdd :room="row.original" />
 
             <UButton
               :icon="DELETE_ICON"
@@ -102,7 +102,7 @@ function remove(room: Room) {
       </UTable>
     </UCard>
 
-    <HostelRoomDeletePrompt
+    <HostelHostelRoomDeletePrompt
       v-model:open="deleteModal"
       :room-id="selected?.id || ''"
       :room-name="selected?.name || ''"

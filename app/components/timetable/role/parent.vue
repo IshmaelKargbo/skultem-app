@@ -82,10 +82,12 @@ watch(list, syncGrade, { immediate: true })
 onMounted(async () => {
     document.title = 'Timetable | Skultem'
     try {
-        await teacherStore.allByTeacher()
-        await parentStore.fetchAllStudents(0, 0)
-        await store.getWorkingDays()
-        await store.searchRoom(0, 0)
+        await Promise.all([
+            teacherStore.allByTeacher(),
+            parentStore.fetchAllStudents(0, 0),
+            store.getWorkingDays(),
+            store.searchRoom(0, 0)
+        ])
     } catch (error: any) {
         useNotify().error(error)
     }

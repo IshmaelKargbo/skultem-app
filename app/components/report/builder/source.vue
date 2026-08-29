@@ -376,14 +376,16 @@ function onSelect(index: number) {
 }
 
 onMounted(async () => {
-    await sessionStore.fetchAll(0, 0)
-    await sectionStore.fetchAll(0, 0)
-    await teacherStore.fetchAll(0, 0)
-    await studentStore.fetchAll(0, 0)
-    await termStore.fetchAll(0, 0)
-    await subjectStore.fetchAll(0, 0)
-    await assessmentStore.fetchAssessments()
-    await feeStore.fetchAll(0, 0)
+    await Promise.all([
+        sessionStore.fetchAll(0, 0),
+        sectionStore.fetchAll(0, 0),
+        teacherStore.fetchAll(0, 0),
+        studentStore.fetchAll(0, 0),
+        termStore.fetchAll(0, 0),
+        subjectStore.fetchAll(0, 0),
+        assessmentStore.fetchAssessments(),
+        feeStore.fetchAll(0, 0)
+    ])
 
     const selected = datasource[active.value]
     if (selected) {

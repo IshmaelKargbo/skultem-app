@@ -58,7 +58,10 @@ export type UpdateRoomTypeDto = CreateRoomTypeDto & {
     id: string
 }
 
-export type Room = {
+// Named HostelRoom, not Room - utils/timetable.ts has its own, unrelated Room type (a scheduling
+// venue) and Nuxt auto-imports both files' exports into the same global namespace, so a bare
+// "Room" here would silently collide with (and lose to) timetable's.
+export type HostelRoom = {
     id: string
     name: string
     hostel: Hostel
@@ -81,7 +84,7 @@ export type AllocationStatus = 'ACTIVE' | 'VACATED'
 
 export type Allocation = {
     id: string
-    room: Room
+    room: HostelRoom
     studentName: string
     admissionNo: string
     className: string

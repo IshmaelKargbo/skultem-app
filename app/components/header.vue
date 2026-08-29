@@ -18,16 +18,16 @@
 
                         <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span class="text-xs font-medium text-muted">{{ displayYearName }}</span>
-                            <UBadge :color="yearStatus.color" variant="subtle" size="sm" class="gap-1">
+                            <UBadge :color="yearStatus.color" variant="subtle" size="sm" class="gap-1 hidden md:flex">
                                 <UIcon :name="yearStatus.icon" class="size-3" />
                                 {{ yearStatus.label }}
                             </UBadge>
-                            <template v-if="termSubtitle">
+                            <div class="hidden md:flex items-center space-x-2" v-if="termSubtitle">
                                 <span class="text-muted">&middot;</span>
                                 <p class="text-xs text-muted">
                                     {{ termSubtitle }}
                                 </p>
-                            </template>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -167,9 +167,11 @@ watch(list, syncGrade, { immediate: true });
 onMounted(async () => {
   document.title = "Timetable | Skultem";
   try {
-    await classStore.fetchAll(0, 0);
-    await store.getWorkingDays();
-    await store.searchRoom(0, 0);
+    await Promise.all([
+      classStore.fetchAll(0, 0),
+      store.getWorkingDays(),
+      store.searchRoom(0, 0)
+    ]);
   } catch (error: any) {
     useNotify().error(error);
   }

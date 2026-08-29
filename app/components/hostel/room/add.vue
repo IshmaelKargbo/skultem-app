@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 
-const { room } = defineProps<{ room?: Room }>()
+const { room } = defineProps<{ room?: HostelRoom }>()
 
 const store = useHostelStore()
 const { hostels, roomTypes } = storeToRefs(store)

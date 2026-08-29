@@ -332,8 +332,10 @@ async function randomizeHouses() {
 onMounted(async () => {
     useAppStore().setTitle('Athletic Management')
     document.title = 'Athletic House Management | Skultem'
-    await classStore.fetchAll(0, 0)
-    await houseStore.fetchAll(0, 0)
+    await Promise.all([
+        classStore.fetchAll(0, 0),
+        houseStore.fetchAll(0, 0)
+    ])
 })
 
 definePageMeta({

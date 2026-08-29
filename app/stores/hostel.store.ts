@@ -24,7 +24,7 @@ const seedHostels: Hostel[] = [
     { id: 'hs-4', name: 'Staff Residence', type: 'STAFF', capacity: 40, rooms: 12, supervisor: 'Mr. Jalloh', createdAt: daysFromNow(-170), updatedAt: daysFromNow(-4) }
 ]
 
-const seedRooms: Room[] = [
+const seedRooms: HostelRoom[] = [
     { id: 'rm-1', name: '12A', hostel: seedHostels[1]!, type: seedRoomTypes[3]!, createdAt: daysFromNow(-90), updatedAt: daysFromNow(-5) },
     { id: 'rm-2', name: '09C', hostel: seedHostels[2]!, type: seedRoomTypes[3]!, createdAt: daysFromNow(-90), updatedAt: daysFromNow(-5) },
     { id: 'rm-3', name: '21D', hostel: seedHostels[0]!, type: seedRoomTypes[1]!, createdAt: daysFromNow(-90), updatedAt: daysFromNow(-5) },
@@ -49,7 +49,7 @@ export const useHostelStore = defineStore('hostel', {
     state: () => ({
         hostels: [...seedHostels] as Hostel[],
         roomTypes: [...seedRoomTypes] as RoomType[],
-        rooms: [...seedRooms] as Room[],
+        rooms: [...seedRooms] as HostelRoom[],
         allocations: [...seedAllocations] as Allocation[]
     }),
 
@@ -69,9 +69,9 @@ export const useHostelStore = defineStore('hostel', {
         listRoomTypes(state): { label: string, value: string }[] {
             return state.roomTypes.map(e => ({ label: `${e.name} (${e.capacity} bed${e.capacity > 1 ? 's' : ''})`, value: e.id }))
         },
-        roomsByType: state => (typeId: string): Room[] => state.rooms.filter(r => r.type.id === typeId),
+        roomsByType: state => (typeId: string): HostelRoom[] => state.rooms.filter(r => r.type.id === typeId),
 
-        getRoom: state => (id: string): Room | undefined => state.rooms.find(e => e.id === id),
+        getRoom: state => (id: string): HostelRoom | undefined => state.rooms.find(e => e.id === id),
         roomOccupants: state => (roomId: string): Allocation[] => state.allocations
             .filter(a => a.room.id === roomId && a.status === 'ACTIVE')
             .sort((a, b) => new Date(b.allocatedAt).getTime() - new Date(a.allocatedAt).getTime()),
@@ -81,13 +81,13 @@ export const useHostelStore = defineStore('hostel', {
                 return { occupied: this.roomOccupants(roomId).length, capacity: room?.type.capacity || 0 }
             }
         },
-        fullRooms(): Room[] {
-            return this.rooms.filter((room: Room) => this.roomOccupancy(room.id).occupied >= room.type.capacity)
+        fullRooms(): HostelRoom[] {
+            return this.rooms.filter((room: HostelRoom) => this.roomOccupancy(room.id).occupied >= room.type.capacity)
         },
         listAvailableRooms(): { label: string, value: string }[] {
             return this.rooms
-                .filter((room: Room) => this.roomOccupancy(room.id).occupied < room.type.capacity)
-                .map((room: Room) => {
+                .filter((room: HostelRoom) => this.roomOccupancy(room.id).occupied < room.type.capacity)
+                .map((room: HostelRoom) => {
                     const { occupied, capacity } = this.roomOccupancy(room.id)
                     return { label: `${room.hostel.name} · Room ${room.name} (${capacity - occupied} of ${capacity} free)`, value: room.id }
                 })

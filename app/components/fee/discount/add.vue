@@ -26,7 +26,8 @@
         <!-- Assign to Student -->
         <UFormField v-if="showStudentSelect" label="Assign to Student" name="studentId" required>
           <!-- Student -->
-          <USelect v-model="state.studentId" :items="students" placeholder="Select student" leading-icon="i-lucide-user"
+          <USelectMenu v-model="state.studentId" value-key="value" :items="students" v-model:search-term="studentSearchTerm"
+            :loading="studentsLoading" ignore-filter placeholder="Select student" icon="i-lucide-user"
             @change="fetchRecords" :disabled="isLoading" />
           <template #help>
             <p class="text-xs text-mute">Select a specific student for this discount.</p>
@@ -111,10 +112,9 @@
 
 <script setup lang="ts">
 import * as yup from "yup";
-import { reactive, ref, computed, onMounted } from "vue";
+import { reactive, ref, computed } from "vue";
 import type { FormSubmitEvent } from "#ui/types";
 const { format } = useMoney();
-const studentStore = useStudentStore();
 const store = useFeeDiscountStore();
 const toast = useToast();
 const props = defineProps<{
@@ -243,12 +243,7 @@ function changeFee() {
   fee.value = selected;
 }
 
-const students = computed(() =>
-  studentStore.records.map((s) => ({
-    label: `${s.givenNames} ${s.familyName}`,
-    value: s.id,
-  }))
-);
+const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch();
 
 type FeeDiscountForm = {
   studentId: string;
@@ -336,12 +331,6 @@ const onSubmit = async (_event: FormSubmitEvent<FeeDiscountForm>) => {
     isLoading.value = false;
   }
 };
-
-onMounted(() => {
-  if (showStudentSelect.value) {
-    studentStore.fetchAll(0, 0);
-  }
-});
 
 watch(
   () => props.studentId,
