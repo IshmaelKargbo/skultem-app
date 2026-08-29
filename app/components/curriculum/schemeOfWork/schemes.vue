@@ -15,6 +15,7 @@ const { records: subjectRecords } = storeToRefs(subjectStore)
 const { termList: terms } = storeToRefs(academicYearStore)
 
 const loadingFilters = ref(false)
+const fetchError = ref('')
 
 const subjectOptions = computed(() => subjectRecords.value.map(s => ({ label: s.name, value: s.id })))
 const classOptions = computed(() => classStore.list)
@@ -69,12 +70,12 @@ watch(() => page.value, (value) => {
 })
 
 watch([subjectId, sessionId, termId, progress], () => {
-    // Setting a filter also resets the page to 1: if the page was already 1
-    // that query change won't fire the page watcher above, so fetch here.
     if (page.value === 1) fetchRecord()
 })
 
-function fetchRecord() {
+async function fetchRecord() {
+    fetchError.value = ''
+
     const filter: SchemeOfWorkFilter = {
         subjectId: subjectId.value,
         sessionId: sessionId.value,
@@ -82,10 +83,14 @@ function fetchRecord() {
         progress: progress.value as LessonState || undefined,
     }
 
-    if (props.mine)
-        store.fetchMine(page.value, size.value, filter)
-    else
-        store.fetchAll(page.value, size.value, filter)
+    try {
+        if (props.mine)
+            await store.fetchMine(page.value, size.value, filter)
+        else
+            await store.fetchAll(page.value, size.value, filter)
+    } catch (err: any) {
+        fetchError.value = typeof err === 'string' ? err : (err?.message || 'Failed to load schemes of work.')
+    }
 }
 
 async function loadFilterOptions() {
@@ -126,7 +131,7 @@ onMounted(() => {
                         </h3>
 
                         <p class="text-sm text-muted">
-                            {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of work.' }}
+                            {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of                            work.' }}
                         </p>
                     </div>
                     <div>
@@ -136,22 +141,27 @@ onMounted(() => {
                 </div>
             </template>
 
+            <UAlert v-if="fetchError" color="error" variant="soft" icon="i-lucide-alert-circle"
+                title="Couldn't load schemes" :description="fetchError" />
+
             <!-- Filters -->
-            <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+            <div class="grid gap-2 sm:grid-cols-2">
                 <USelectMenu v-model="subjectId" :items="subjectOptions" :loading="loadingFilters" value-key="value"
-                    label-key="label" icon="i-lucide-book-open" placeholder="All subjects" class="w-full" />
+                    label-key="label" :icon="SUBJECT_ICON" placeholder="All subjects" class="w-full" />
 
                 <USelectMenu v-model="sessionId" :items="classOptions" :loading="loadingFilters" value-key="value"
-                    label-key="label" icon="i-lucide-school" placeholder="All classes" class="w-full" />
+                    label-key="label" :icon="CLASS_ICON" placeholder="All classes" class="w-full" />
 
-                <USelectMenu v-model="termId" :items="terms" :loading="loadingFilters" value-key="value"
-                    label-key="label" icon="i-lucide-calendar-range" placeholder="All terms" class="w-full" />
+                <div class="flex col-span-2 space-x-2">
+                    <USelectMenu v-model="termId" :items="terms" :loading="loadingFilters" value-key="value"
+                        label-key="label" :icon="CALENDAR_ICON" placeholder="All terms" class="w-full" />
 
-                <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label"
-                    icon="i-lucide-activity" placeholder="All statuses" class="w-full" />
+                    <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label"
+                        icon="i-lucide-activity" placeholder="All statuses" class="w-full" />
 
-                <UButton v-if="hasFilters" variant="outline" color="neutral" icon="i-lucide-x" label="Clear filters"
-                    @click="clearFilters" />
+                    <UButton v-if="hasFilters" variant="outline" color="neutral" icon="i-lucide-x" label="Clear filters"
+                        @click="clearFilters" />
+                </div>
             </div>
 
             <NuxtLink v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
@@ -191,7 +201,7 @@ onMounted(() => {
                     </h4>
 
                     <p class="mt-1 text-sm text-muted">
-                        {{ hasFilters ? 'Try clearing a filter to see more schemes.' : 'Create your first scheme of work to get started.' }}
+                        {{ hasFilters ? 'Try clearing a filter to see more schemes.' : 'Create your first scheme of work                        to get                        started.' }}
                     </p>
                 </div>
             </div>

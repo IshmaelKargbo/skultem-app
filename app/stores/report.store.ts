@@ -35,13 +35,19 @@ export const useReportStore = defineStore('report', {
       this.loading = true
       this.run = true
 
+      // Set before the request resolves, not after: the transaction table components watch
+      // route.query.page and re-fetch using this.report as soon as it changes, so if a filter
+      // change lands here at the same moment (report.store.ts's caller resets the page query to
+      // 1 right after calling this), that re-fetch needs the new filters already in place -
+      // reading a still-stale report from before this call would refetch the *old* filter set.
+      this.report = query
+      this.entity = query.entity.toLowerCase()
+
       this.error = null
       try {
         const response = await ReportApi().runReport(query, page, size)
         if (response == null) return
         this.meta = response.meta
-        this.report = query
-        this.entity = query.entity.toLowerCase()
 
         switch (query.entity.toLowerCase()) {
           case "students":

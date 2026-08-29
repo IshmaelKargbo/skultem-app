@@ -228,6 +228,10 @@ const navItems: NavItem[] = [
       { label: 'Discounts', to: '/fees-payment/discounts', icon: DISCOUNT_ICON },
       { label: 'Structures', to: '/fees-payment/structure', icon: FEE_STRUCTURE_ICON },
       { label: 'Category', to: '/fees-payment/category', icon: CATEGORY_ICON },
+      {
+        label: 'Receipt Design', to: '/fees-payment/receipt-design', icon: SETTINGS_ICON,
+        roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+      },
     ]
   },
 

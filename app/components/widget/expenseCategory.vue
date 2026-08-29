@@ -1,6 +1,10 @@
 <template>
   <div>
     <div v-if="!isReady" class="skeleton-loader">Loading Expenses by Category...</div>
+    <div v-else-if="!labels.length" class="empty-state">
+      <UIcon name="i-lucide-bar-chart-3" class="text-4xl text-muted" />
+      <p class="mt-2 text-sm text-muted">No expense data for this period yet.</p>
+    </div>
 
     <client-only v-else>
       <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
@@ -12,8 +16,9 @@
 const { format } = useMoney()
 const store = useWidgetStore()
 
-const { title } = defineProps<{
+const { title, dateFilter } = defineProps<{
   title?: string
+  dateFilter?: any
 }>()
 
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
@@ -74,10 +79,12 @@ const chartOptions = computed(() => ({
 }))
 
 async function fetchRecord() {
+  isReady.value = false
+
   const res = await store.runAnalytic({
     entity: "expenses",
     title: title || "Expenses by Category",
-    filters: [],
+    filters: dateFilter ? [dateFilter] : [],
     metrics: [
       {
         field: "amount",
@@ -124,6 +131,8 @@ defineExpose({
   fetchRecord
 })
 
+watch(() => dateFilter, fetchRecord)
+
 onMounted(async () => {
   await fetchRecord()
 })
@@ -140,6 +149,15 @@ onMounted(async () => {
   background: var(--app-border);
   border-radius: 0.5rem;
   animation: pulse 1.5s infinite;
+}
+
+.empty-state {
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 @keyframes pulse {

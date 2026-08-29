@@ -13,10 +13,11 @@
 const receipt = {
   name: 'King\'s Way International School',
   referenceNo: "SKL-2026-00021",
+  externalReference: "TXN-88213",
   paidAt: "2026-06-18T10:30:00Z",
   student: "Alieu Kamara",
   term: "Second Term 2025/2026",
-  paymentMethod: "cash",
+  paymentMethod: "BANK",
   total: 450000,
   outstandingBalance: 0,
   payments: [
@@ -27,9 +28,9 @@ const receipt = {
 }
 
 const parsePaymentMethod = {
-  cash: "Cash",
-  bank: "Bank Transfer",
-  mobile: "Mobile Money"
+  CASH: "Cash",
+  BANK: "Bank Transfer",
+  MOBILE_MONEY: "Mobile Money"
 }
 </script>
 

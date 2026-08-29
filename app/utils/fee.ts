@@ -94,6 +94,7 @@ export type FeePayment = {
     paymentMethod: string
     paidAt: string
     referenceNo: string
+    externalReference: string | null
     note: string
     createdAt: string
     updatedAt: string
@@ -107,9 +108,44 @@ export type Payment = {
     paymentMethod: string
     paidAt: string
     referenceNo: string
+    externalReference: string | null
     note: string
     createdAt: string
     updatedAt: string
+}
+
+export type ReceiptSetting = {
+    accentColor: string
+    logoUrl: string
+    footerNote: string
+    showWatermark: boolean
+    showAmountInWords: boolean
+}
+
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    CASH: 'Cash',
+    BANK: 'Bank Transfer',
+    MOBILE_MONEY: 'Mobile Money'
+}
+
+// Shared by the "record payment" flow (which just got a fresh batch of PaymentDTOs back from the
+// API) and the "view/download a past receipt" flow (which re-fetched every PaymentDTO sharing a
+// receipt number) - both need the same {header fields + line items + total} shape to hand to
+// <ReceiptPayment>.
+export function buildPaymentReceipt(payments: (Payment | FeePayment)[], fallback?: { method?: string, studentName?: string }) {
+    const first = (payments[0] || {}) as Partial<FeePayment>
+    const fallbackReference = (first as any).id || Date.now().toString()
+
+    return {
+        referenceNo: first.referenceNo || fallbackReference,
+        externalReference: first.externalReference || null,
+        student: first.student || fallback?.studentName || 'Student',
+        term: first.term || 'N/A',
+        paymentMethod: first.paymentMethod || fallback?.method || '',
+        paidAt: first.paidAt,
+        payments,
+        total: payments.reduce((sum, p: any) => sum + Number(p.amount || 0), 0),
+    }
 }
 
 export type CreateFeeCategoryDto = {

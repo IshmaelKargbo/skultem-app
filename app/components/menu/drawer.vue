@@ -553,6 +553,11 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
       },
       { label: "Discounts", icon: DISCOUNT_ICON, to: "/fees-payment/discounts" },
       { label: "Category", icon: CATEGORY_ICON, to: "/fees-payment/category" },
+      can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]) && {
+        label: "Receipt Design",
+        icon: SETTINGS_ICON,
+        to: "/fees-payment/receipt-design",
+      },
     ],
   },
   {

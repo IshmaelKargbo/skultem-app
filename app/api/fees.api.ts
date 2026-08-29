@@ -175,6 +175,18 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
+    getReceipt: async (referenceNo: string) => {
+      try {
+        const res = await $api(`/payment/receipt/${referenceNo}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch receipt')
+
+        return res.data as FeePayment[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     createStructure: async (payload: CreateFeeStructureDto) => {
       try {
         return await $api('/fee/structure', {

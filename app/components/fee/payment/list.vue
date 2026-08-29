@@ -9,10 +9,20 @@
                     <p class="text-gray-500">No students found.</p>
                 </div>
             </template>
+            <template #actions-cell="{ row }">
+                <div class="flex justify-end gap-1">
+                    <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-eye"
+                        @click="receiptViewer?.view(row.original.referenceNo)" />
+                    <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-download"
+                        @click="receiptViewer?.download(row.original.referenceNo)" />
+                </div>
+            </template>
             <template #loading>
                 <TableLoading :size="columns.length" />
             </template>
         </UTable>
+
+        <ReceiptViewer ref="receiptViewer" />
         <template #footer>
             <div class="flex justify-between items-center">
                 <Showing :meta="meta" />

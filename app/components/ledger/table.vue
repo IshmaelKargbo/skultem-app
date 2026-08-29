@@ -5,10 +5,11 @@ const router = useRouter()
 
 const store = useReportStore()
 const ledgerStore = useLedgerStore()
-const loading = ref(true)
+const academicYearStore = useAcademicYearStore()
 const { format } = useMoney()
-const { ledger: data, meta, report } = storeToRefs(store)
+const { ledger: data, meta, loading, report } = storeToRefs(store)
 const { total } = storeToRefs(ledgerStore)
+const { termList } = storeToRefs(academicYearStore)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
@@ -97,6 +98,11 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   if (report.value == null) return
+  // LedgerTableMobile (rendered alongside this one, self-hiding by breakpoint) watches this same
+  // route query and reacts to page changes identically - without this guard, every page change
+  // fires two concurrent runReport calls for the two of them, and whichever resolves last
+  // silently wins even if it was the stale one.
+  if (loading.value) return
 
   loading.value = true
   await store.runReport(report.value, page.value, size.value)
@@ -111,12 +117,6 @@ watch(() => page.value, () => {
     })
   })
 
-  router.replace({
-    query: {
-      page: page.value
-    }
-  })
-
   fetchRecord()
 }, { immediate: true })
 
@@ -124,15 +124,42 @@ onMounted(() => {
   if (!route.query.page) {
     router.replace({
       query: {
+        ...route.query,
         page: page.value
       }
     })
   }
+
+  if (!termList.value.length) academicYearStore.getTerms()
 })
+
+const equalSelectOperators = (options: Option[] = []): ReportOperator[] => [
+  { name: "Equals (=)", operator: "EQUALS", type: "select", input: "select", options },
+  { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "select", input: "select", options }
+]
+
+const instantOperators: ReportOperator[] = [
+  { name: "Equals (=)", operator: "EQUALS", type: "instant", input: "date" },
+  { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "instant", input: "date" },
+  { name: "After (>)", operator: "GREATER_THAN", type: "instant", input: "date" },
+  { name: "Before (<)", operator: "LESS_THAN", type: "instant", input: "date" },
+  { name: "Between (↔)", operator: "BETWEEN", type: "instant", input: "date-range" },
+]
+
+const selected = computed<ReportSelectPayload>(() => ({
+  entity: "ledger",
+  filters: [
+    { field: "paidAt", label: "Date", operators: instantOperators },
+    { field: "transactionType", label: "Type", operators: equalSelectOperators(ledgerTypeOptions) },
+    { field: "direction", label: "Direction", operators: equalSelectOperators(directionOptions) },
+    { field: "termId", label: "Term", operators: equalSelectOperators(termList.value) }
+  ]
+}))
 </script>
 
 <template>
   <div class="space-y-4">
+    <TransactionFilters :selected="selected" />
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-end">

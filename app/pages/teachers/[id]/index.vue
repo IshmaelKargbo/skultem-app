@@ -65,7 +65,7 @@ const personalDetails = computed(() => ([
 
 onMounted(() => {
     useAppStore().setTitle('View Teacher')
-    useAppStore().setBack(true)
+    useAppStore().setBack('/teachers')
 
     document.title = 'View Teacher | Teachers | Skultem'
 })

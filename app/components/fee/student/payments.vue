@@ -91,6 +91,13 @@
                   </p>
                 </div>
               </div>
+
+              <div class="flex gap-2">
+                <UButton size="xs" variant="outline" color="neutral" icon="i-lucide-eye" label="View"
+                  class="flex-1 justify-center" @click="receiptViewer?.view(item.referenceNo)" />
+                <UButton size="xs" variant="outline" color="neutral" icon="i-lucide-download" label="Download"
+                  class="flex-1 justify-center" @click="receiptViewer?.download(item.referenceNo)" />
+              </div>
             </div>
           </UCard>
         </div>
@@ -133,6 +140,14 @@
             <template #referenceNo-cell="{ row }">
               <p class="font-medium">{{ row.original.referenceNo || "-" }}</p>
             </template>
+            <template #actions-cell="{ row }">
+              <div class="flex justify-end gap-1">
+                <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-eye"
+                  @click="receiptViewer?.view(row.original.referenceNo)" />
+                <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-download"
+                  @click="receiptViewer?.download(row.original.referenceNo)" />
+              </div>
+            </template>
             <template #loading>
               <TableLoading :size="columns.length" />
             </template>
@@ -140,6 +155,9 @@
         </div>
       </div>
     </div>
+
+    <ReceiptViewer ref="receiptViewer" />
+
     <template #footer>
       <div class="flex justify-between items-center">
         <Showing :meta="meta" />
@@ -166,6 +184,7 @@ const props = defineProps<{
 const store = useStudentStore();
 const { format } = useMoney();
 const isLoading = ref(false);
+const receiptViewer = ref();
 
 const page = ref(1);
 
@@ -187,6 +206,10 @@ const columns = [
     accessorKey: "referenceNo",
     header: "Reference No",
     cell: ({ row }: any) => row.original.referenceNo || "-",
+  },
+  {
+    id: "actions",
+    header: "",
   },
 ];
 

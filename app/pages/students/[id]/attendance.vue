@@ -31,7 +31,7 @@ const student = computed(() => record.value)
 
 onMounted(() => {
     useAppStore().setTitle('View Student')
-    useAppStore().setBack(true)
+    useAppStore().setBack('/students')
 
     document.title = 'Attendance | View Student | Students | Skultem'
 })

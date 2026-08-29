@@ -4,14 +4,18 @@ export const useAppStore = defineStore('app', {
   state: () => ({
     title: '',
     tenant: undefined as School | undefined,
-    back: false,
+    // false: no back button. true: show it, browser-history back (router.back()).
+    // A string: show it, but go straight to that path instead - for pages reached via a tab
+    // strip (e.g. a student's Personal/Attendance/Fees tabs), where history-back just steps
+    // back one tab at a time rather than returning to the list the user actually came from.
+    back: false as boolean | string,
     notifications: 0 as number
   }),
   actions: {
     setTitle(newTitle: string) {
       this.title = newTitle
     },
-    setBack(back: boolean) {
+    setBack(back: boolean | string) {
       this.back = back
     },
     async checkTenant(domain: string) {

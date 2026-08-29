@@ -5,7 +5,7 @@
                 <div class="flex space-x-2 px-5 py-3 items-center">
                     <div>
                         <UButton v-if="back" :icon="BACK_ICON" color="neutral" variant="ghost" class="shrink-0 -ml-1"
-                            aria-label="Go back" @click="router.back()" />
+                            aria-label="Go back" @click="goBack" />
                         <MenuDrawer v-else class="md:hidden block shrink-0" />
                     </div>
                     <div class="min-w-0 flex-1">
@@ -57,6 +57,13 @@ const { title, back } = storeToRefs(store)
 
 const router = useRouter()
 const route = useRoute()
+
+// `back` is either `true` (plain history back) or a path a page has asked to return to
+// explicitly - see app.store.ts.
+function goBack() {
+    if (typeof back.value === 'string') router.push(back.value)
+    else router.back()
+}
 
 const { can, activeRole } = useAuth()
 

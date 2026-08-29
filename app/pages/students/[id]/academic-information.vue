@@ -398,7 +398,7 @@ watch(
 
 onMounted(() => {
     useAppStore().setTitle('View Student')
-    useAppStore().setBack(true)
+    useAppStore().setBack('/students')
 
     document.title = 'Academic Information | View Student | Students | Skultem'
 })

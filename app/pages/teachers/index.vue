@@ -146,6 +146,7 @@ onMounted(async () => {
 
   await fetchRecords()
   useAppStore().setTitle('All Teachers')
+  useAppStore().setBack(false)
   document.title = 'Teachers | Skultem'
 })
 

@@ -120,11 +120,6 @@ watch(() => page.value, () => {
       behavior: 'smooth',
     })
   })
-  router.replace({
-    query: {
-      page: page.value
-    }
-  })
 
   fetchRecord()
 }, { immediate: true })
@@ -143,10 +138,26 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   if (report.value == null) return
+  // TransactionTableMobile (always mounted alongside this one, just CSS-hidden by breakpoint)
+  // watches this same route query and reacts to page changes identically - without this guard,
+  // every page change fires two concurrent runReport calls for the two of them, and whichever
+  // resolves last silently wins even if it was the stale one.
+  if (loading.value) return
   loading.value = true
   await store.runReport(report.value, page.value, size.value)
   loading.value = false
 }
+
+onMounted(async () => {
+  if (!route.query.page) {
+    router.replace({
+      query: {
+        ...route.query,
+        page: page.value
+      }
+    })
+  }
+})
 
 const equalSelectOperators = (options: Option[] = []): ReportOperator[] => [
   { name: "Equals (=)", operator: "EQUALS", type: "select", input: "select", options },
@@ -169,16 +180,6 @@ const selected = ref<ReportSelectPayload>({
     { field: "type", label: "Type", operators: equalSelectOperators(typeOptions) },
     { field: "referenceType", label: "Reference", operators: equalSelectOperators(referenceTypeOptions) }
   ]
-})
-
-onMounted(async () => {
-  if (!route.query.page) {
-    router.replace({
-      query: {
-        page: page.value
-      }
-    })
-  }
 })
 </script>
 

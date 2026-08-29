@@ -359,6 +359,7 @@ watch(
 
 onMounted(() => {
   useAppStore().setTitle('Write Lesson Note')
+  useAppStore().setBack(`/curriculums/weeks/${weekId.value}`)
   document.title = 'Write Lesson Note | Skultem'
 })
 

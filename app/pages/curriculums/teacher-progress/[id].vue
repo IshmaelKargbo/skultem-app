@@ -53,14 +53,14 @@
         <Metric :record="{
           icon: CLASS_ICON,
           label: 'Classes',
-          value: teacher.subjects,
+          value: teacher.classes,
           isReady: !loading,
           color: 'info'
         }" />
         <Metric :record="{
           icon: WEEKS_ICON,
           label: 'Pending Weeks',
-          value: teacher.subjects,
+          value: teacher.totalWeeks - teacher.completedWeeks,
           isReady: !loading,
           color: 'error'
         }" />
@@ -229,7 +229,7 @@ watch(
     }
 
     useAppStore().setTitle('Teacher Progress')
-    useAppStore().setBack(true)
+    useAppStore().setBack('/curriculums/teacher-progress')
 
     document.title = 'Teacher Progress | Skultem'
   },

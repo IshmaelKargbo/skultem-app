@@ -11,6 +11,7 @@ definePageMeta({
 
 onMounted(() => {
     useAppStore().setTitle('All Students');
+    useAppStore().setBack(false)
     document.title = 'Students | Skultem'
 })
 </script>

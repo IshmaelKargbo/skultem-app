@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-full space-y-4 p-4 pb-0 md:space-y-6 md:px-6 md:py-5">
+    <div class="space-y-4 px-4 md:px-5">
         <!-- Profile banner -->
         <UCard :ui="{
             body: 'p-0 sm:p-0'
@@ -44,7 +44,7 @@
                                 <span class="size-1 rounded-full bg-dimmed" />
 
                                 <UBadge :color="statusColor" variant="subtle" size="xs" class="rounded-full">
-                                    <span class="mr-1.5 size-1.5 rounded-full" :class="`bg-${statusColor}`" />
+                                    <span class="mr-0.5 size-1.5 rounded-full" :class="`bg-${statusColor}`" />
                                     {{ clean(record?.status || '') }}
                                 </UBadge>
                             </div>
@@ -61,9 +61,6 @@
 
                     <!-- Actions -->
                     <div class="flex shrink-0 items-center gap-2">
-                        <UButton to="/teachers" variant="outline" size="sm" color="neutral" icon="i-lucide-arrow-left"
-                            label="Teachers" />
-
                         <UButton v-if="record && !loading" :to="`/teachers/edit/${record.id}`" size="sm" color="primary"
                             :icon="EDIT_ICON" label="Edit Teacher" />
                     </div>
@@ -167,11 +164,6 @@ const statusColor = computed(() => {
 })
 
 const quickFacts = computed(() => [
-    {
-        label: 'Staff ID',
-        value: record.value?.staffId || '—',
-        icon: 'i-lucide-id-card'
-    },
     {
         label: 'Phone',
         value: record.value?.phone || '—',

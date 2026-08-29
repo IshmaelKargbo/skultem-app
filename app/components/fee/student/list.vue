@@ -1,9 +1,11 @@
 <template>
     <UCard class="sticky top-4" :ui="{ body: 'p-3 md:p-4' }">
-        <div class="space-y-4">
-            <UInput ref="searchInput" v-model="search" placeholder="Search students..." :leading-icon="SEARCH_ICON"
-                :disabled="isLoading" size="lg" />
-        </div>
+        <template #header>
+            <div class="space-y-4">
+                <UInput ref="searchInput" v-model="search" placeholder="Search students..." :leading-icon="SEARCH_ICON"
+                    :disabled="isLoading" size="lg" />
+            </div>
+        </template>
         <div class="space-y-3">
             <div v-if="isLoading" class="space-y-3">
                 <div v-for="n in 7" :key="n"

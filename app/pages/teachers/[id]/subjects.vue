@@ -84,7 +84,7 @@ watch(
         }
 
         useAppStore().setTitle('Teacher Subjects')
-        useAppStore().setBack(true)
+        useAppStore().setBack('/teachers')
 
         document.title = 'Subjects & Classes | Teachers | Skultem'
     },

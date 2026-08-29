@@ -1,5 +1,5 @@
 <template>
-    <USelectMenu v-if="canSwitchYear" v-model="viewingYearId" value-key="value" :items="yearOptions" />
+    <USelectMenu class="md:min-w-60" v-if="canSwitchYear" v-model="viewingYearId" value-key="value" :items="yearOptions" />
 </template>
 
 <script lang="ts" setup>

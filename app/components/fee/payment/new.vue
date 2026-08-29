@@ -226,7 +226,7 @@
                     </div>
                     <div class="mt-1 flex justify-between gap-3">
                         <span class="text-muted">Total Paid</span>
-                        <strong>{{ format(receipt.total) }} SLE</strong>
+                        <strong>{{ format(receipt.total) }}</strong>
                     </div>
                     <div class="mt-1 flex justify-between gap-3">
                         <span class="text-muted">Reference</span>
@@ -248,7 +248,9 @@
     </UModal>
 
     <div v-if="receipt" class="pointer-events-none fixed left-0 top-0 -z-10 h-[1123px] w-[794px] overflow-hidden opacity-0">
-        <ReceiptPayment id="payment-receipt" :receipt="receipt" :parse-payment-method="parsePaymentMethod" />
+        <ReceiptPayment id="payment-receipt" :receipt="receipt" :parse-payment-method="PAYMENT_METHOD_LABELS"
+            :logo="pdfLogo || settings.logoUrl" :accent-color="settings.accentColor" :footer-note="settings.footerNote"
+            :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
     </div>
 </template>
 
@@ -259,6 +261,9 @@ const emit = defineEmits(['complete'])
 const { $generatePdf } = useNuxtApp()
 const notify = useNotify()
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
+
+const settingStore = useReceiptSettingStore()
+const { settings } = storeToRefs(settingStore)
 
 const state = reactive({
     studentId: '',
@@ -274,11 +279,11 @@ const isLoading = ref(false)
 const receipt = ref<any | null>(null)
 const receiptModalOpen = ref(false)
 const isDownloadingReceipt = ref(false)
-const parsePaymentMethod = {
-    CASH: 'Cash',
-    BANK: 'Bank',
-    MOBILE_MONEY: 'Mobile Money'
-}
+// The receipt setting's logoUrl is the school's raw R2 URL (see GetReceiptSettingUseCase) - fine
+// for on-screen display, but R2's public bucket sends no CORS headers, which taints the canvas
+// html2canvas draws it into and silently drops the image from the exported PDF. This resolves it
+// to a same-origin data: URI first, same fix already used for ID cards/report cards.
+const pdfLogo = ref<string | null>(null)
 
 async function onStudentSelect() {
     allocations.value = []
@@ -377,7 +382,8 @@ async function onSubmit() {
 
         const payments = response?.data || []
         if (payments.length) {
-            receipt.value = buildReceipt(payments)
+            receipt.value = buildPaymentReceipt(payments, { method: state.method, studentName: selectedStudentName.value })
+            await loadReceiptSettings()
             receiptModalOpen.value = true
         }
 
@@ -410,6 +416,29 @@ async function downloadReceipt() {
     }
 }
 
+async function loadReceiptSettings() {
+    const tasks: Promise<any>[] = []
+
+    if (!settingStore.loaded) tasks.push(settingStore.fetch())
+    if (pdfLogo.value === null) tasks.push(loadPdfLogo())
+
+    try {
+        await Promise.all(tasks)
+    } catch {
+        // The receipt design is a decorative touch - failing to load it shouldn't
+        // block the payment flow, so the receipt just falls back to the defaults.
+    }
+}
+
+async function loadPdfLogo() {
+    try {
+        const assets = await SchoolApi().getBrandingAssets()
+        pdfLogo.value = assets?.logo || ''
+    } catch {
+        pdfLogo.value = ''
+    }
+}
+
 function skipReceipt() {
     receiptModalOpen.value = false
     receipt.value = null
@@ -426,22 +455,6 @@ function reset() {
 
 function format(v: number) {
     return new Intl.NumberFormat().format(v || 0)
-}
-
-function buildReceipt(payments: any[]) {
-    const first = payments[0] || {}
-    const fallbackReference = first.id || Date.now().toString()
-    const referenceNo = first.referenceNo || fallbackReference
-
-    return {
-        referenceNo,
-        student: first.student || selectedStudentName.value || 'Student',
-        term: first.term || 'N/A',
-        paymentMethod: first.paymentMethod || state.method,
-        paidAt: first.paidAt,
-        payments,
-        total: payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0),
-    }
 }
 
 function sanitizeFilename(value: string) {

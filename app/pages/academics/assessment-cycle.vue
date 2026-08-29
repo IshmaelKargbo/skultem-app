@@ -80,7 +80,7 @@
 
           <!-- Classes -->
           <div v-else class="space-y-3 max-h-175 overflow-y-auto pr-1">
-            <button v-for="item in filteredClasses" :key="item.classId"
+            <button v-for="item in paginatedClasses" :key="item.classId"
               class="group w-full rounded-xl border-2 p-4 text-left transition-all duration-200" :class="selectedClassId === item.classId
                 ? 'border-secondary bg-secondary/5 shadow-sm'
                 : 'border-default hover:border-secondary/40 hover:bg-muted/30'
@@ -137,6 +137,14 @@
             </div>
 
           </div>
+
+          <template v-if="!isLoadingOverview && filteredClasses.length" #footer>
+            <div class="flex items-center justify-between gap-3">
+              <Showing :meta="classesMeta" />
+              <UPagination v-model:page="classesPage" size="sm" :page-size="CLASSES_PAGE_SIZE"
+                :items-per-page="CLASSES_PAGE_SIZE" :total="filteredClasses.length" show-edges />
+            </div>
+          </template>
 
         </UCard>
 
@@ -271,6 +279,9 @@ const isAdvancingAssessment = ref(false)
 
 const selectedTermId = ref('')
 
+const CLASSES_PAGE_SIZE = 5
+const classesPage = ref(1)
+
 const parseAssessmentStatus: Record<string, string> = {
   COMPLETED: "Completed",
   ACTIVE: "Active",
@@ -304,6 +315,33 @@ const filteredClasses = computed(() => {
 
   const q = search.value.toLowerCase().trim()
   return all.filter((item) => item.className.toLowerCase().includes(q) || (item.templateName || '').toLowerCase().includes(q))
+})
+
+// Client-side pagination - the overview endpoint already hands back every class in one shot,
+// so there's no server page to request; slice the (already search-filtered) list instead.
+const paginatedClasses = computed(() => {
+  const start = (classesPage.value - 1) * CLASSES_PAGE_SIZE
+  return filteredClasses.value.slice(start, start + CLASSES_PAGE_SIZE)
+})
+
+const classesMeta = computed(() => useMeta({
+  page: classesPage.value,
+  size: CLASSES_PAGE_SIZE,
+  count: filteredClasses.value.length
+}))
+
+// A new search query means a different set of results - always jump back to page 1 rather than
+// staying on, say, page 2 of what is now a completely different filtered list.
+watch(search, () => {
+  classesPage.value = 1
+})
+
+// The overview can also reload with fewer classes for other reasons (a template unassigned,
+// etc.) - if that leaves the current page past the end, snap back rather than rendering an
+// empty page with visible pagination.
+watch(filteredClasses, () => {
+  const maxPage = Math.max(1, Math.ceil(filteredClasses.value.length / CLASSES_PAGE_SIZE))
+  if (classesPage.value > maxPage) classesPage.value = maxPage
 })
 
 const activeTerm = computed(() => cycle.value?.activeTerm || overview.value?.activeTerm || null)

@@ -310,7 +310,7 @@ async function loadWeek(weekId: string) {
   const title = `Week ${week.value?.week ?? ''}`
 
   appStore.setTitle(title)
-  appStore.setBack(true)
+  appStore.setBack(result?.schemeId ? `/curriculums/${result.schemeId}` : '/curriculums')
   document.title = `${title} | Scheme of Work | Skultem`
 }
 

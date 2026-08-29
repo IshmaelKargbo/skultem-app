@@ -83,7 +83,7 @@
                                     <div>
                                         <p class="font-medium">{{ subject.subject }} <span class="text-xs text-muted">( {{ subject.classes }} )</span>
                                         </p>
-                                        <p class="text-sm text-muted">{{ }}</p>
+                                        <p class="text-sm text-muted">{{ subject.completedWeeks }} of {{ subject.totalWeeks }} weeks covered</p>
                                     </div>
                                     <span class="font-semibold">{{ subject.coverage }}%</span>
                                 </div>
@@ -132,7 +132,7 @@ watch(
         }
 
         useAppStore().setTitle('Teacher Curriculum Progress')
-        useAppStore().setBack(true)
+        useAppStore().setBack('/teachers')
 
         document.title = 'Curriculum Progress | Teachers | Skultem'
     },

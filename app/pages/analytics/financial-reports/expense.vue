@@ -1,6 +1,6 @@
 <template>
-  <div class="p-4 sm:p-6 lg:p-7 h-full space-y-4 sm:space-y-5 overflow-y-auto">
-    <ReportHeader />
+  <div class="px-4 md:px-6 space-y-4">
+    <ReportHeader :show-filter="false" />
     <UCard>
       <WidgetExpenseCategory />
     </UCard>

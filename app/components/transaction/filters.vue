@@ -112,6 +112,7 @@
 import * as yup from 'yup'
 
 const route = useRoute()
+const router = useRouter()
 
 type FilterState = {
     field: string
@@ -130,9 +131,16 @@ type ReportBuilder = {
     filters: FilterState[]
 }
 
-const { selected: entity } = defineProps<{
+const { selected: entity, emitOnly } = defineProps<{
     selected: ReportSelectPayload
+    // A widget-driven page (e.g. financial-reports analytics, which runs its own aggregation
+    // queries rather than the generic paginated report list) just wants the filter values via
+    // the `apply` event below - set this so the filter bar doesn't also fire its own unused
+    // report-store fetch, page-reset, etc. on every apply.
+    emitOnly?: boolean
 }>()
+
+const emit = defineEmits<{ apply: [{ entity: string, filters: FilterState[] }] }>()
 
 const store = useReportStore()
 const { loading, run: isRun } = storeToRefs(store)
@@ -178,11 +186,30 @@ const schema = computed(() =>
 )
 
 async function run() {
+    if (emitOnly) {
+        emit('apply', { entity: state.entity, filters: state.filters })
+        return
+    }
+
+    // Every apply always fetches page 1 of the new result set - if the table's own pagination
+    // (bound to the page query param, not to this store) was left on a later page from before
+    // the filter changed, it would keep showing that page number selected while the page-1 data
+    // this just fetched sits underneath it. Reset the query in step so they can't drift apart.
+    if (route.query.page && route.query.page !== '1') {
+        // Claim the table components' fetch mutex first - the page reset below is what makes
+        // their own page watcher fire, and without this they'd react to it by re-fetching with
+        // whatever filters were active *before* this function's own runReport call below lands.
+        store.loading = true
+        await router.replace({ query: { ...route.query, page: 1 } })
+    }
+
     await store.runReport({
         name: state.name,
         entity: state.entity.toLowerCase(),
         filters: state.filters
     }, 1, runtimeConf().limit)
+
+    emit('apply', { entity: state.entity, filters: state.filters })
 }
 
 function fieldChange(index: number) {
@@ -283,12 +310,14 @@ watch(
         if (route.query.id) return
 
         initDefaultFilters()
-        store.clear()
+        if (!emitOnly) store.clear()
     },
     { immediate: true }
 )
 
-onUnmounted(() => store.clear())
+onUnmounted(() => {
+    if (!emitOnly) store.clear()
+})
 
 onMounted(async () => await run())
 </script>

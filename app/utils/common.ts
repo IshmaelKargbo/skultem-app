@@ -635,3 +635,31 @@ export const parsePaymentMethod: Record<string, string> = {
     "BANK": "Bank",
     "MOBILE_MONEY": "Mobile Money"
 }
+
+// Client-side CSV download - for reports built from data already fetched for a chart/widget
+// (a stat broken down by category, etc.) rather than a dedicated backend export endpoint.
+// Escapes per RFC 4180: any value containing a comma, quote or newline gets quoted, with
+// internal quotes doubled.
+export function downloadCsv(filename: string, headers: string[], rows: (string | number)[][]) {
+    if (!import.meta.client) return
+
+    const escape = (value: string | number) => {
+        const str = String(value ?? '')
+        return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+    }
+
+    const csv = [headers, ...rows]
+        .map(row => row.map(escape).join(','))
+        .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename.endsWith('.csv') ? filename : `${filename}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+}

@@ -136,7 +136,7 @@ watch(
 
 onMounted(() => {
   useAppStore().setTitle('Weekly Topics & Objectives')
-  useAppStore().setBack(true)
+  useAppStore().setBack('/curriculums')
   document.title = 'Weeks | Scheme of Work | Skultem'
 
 })

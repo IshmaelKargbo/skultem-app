@@ -172,7 +172,7 @@ const motherDetails = computed(() => ([
 
 onMounted(() => {
     useAppStore().setTitle('View Student')
-    useAppStore().setBack(true)
+    useAppStore().setBack('/students')
 
     document.title = 'View Student | Students | Skultem'
 })

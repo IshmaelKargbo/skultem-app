@@ -138,6 +138,8 @@ watch(
 )
 
 onMounted(() => {
+    useAppStore().setTitle('Add Week')
+    useAppStore().setBack(`/curriculums/${id.value}`)
     document.title = "Add Week | Scheme of Work | Skultem"
 })
 </script>

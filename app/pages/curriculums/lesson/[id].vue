@@ -278,7 +278,7 @@ watch(
     }
 
     useAppStore().setTitle('Lesson Note')
-    useAppStore().setBack(true)
+    useAppStore().setBack(result?.weekId ? `/curriculums/weeks/${result.weekId}` : '/curriculums')
 
     document.title = `${lesson.value?.title ?? 'Lesson Note'} | Skultem`
   },

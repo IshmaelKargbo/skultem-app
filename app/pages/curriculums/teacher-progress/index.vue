@@ -204,6 +204,7 @@ onMounted(() => {
   load()
 
   useAppStore().setTitle('Teacher Progress')
+  useAppStore().setBack(false)
   document.title = 'Teacher Progress | Skultem'
 })
 

@@ -17,11 +17,11 @@
           <div class="grid gap-5 lg:grid-cols-2">
             <UFormField label="Class" name="classId" required>
               <USelectMenu v-model="state.classId" :items="classes" :loading="loadingClasses" value-key="value"
-                label-key="label" leading-icon="i-lucide-school" placeholder="Select class" class="w-full" />
+                label-key="label" :leading-icon="CLASS_ICON" placeholder="Select class" class="w-full" />
             </UFormField>
             <UFormField label="Subject" name="subjectId" required>
               <USelectMenu v-model="state.subjectId" :items="subjects" :loading="loadingSubjects" value-key="value"
-                label-key="label" leading-icon="i-lucide-book-open" placeholder="Select subject" class="w-full" />
+                label-key="label" :leading-icon="SUBJECT_ICON" placeholder="Select subject" class="w-full" />
             </UFormField>
             <UFormField label="Term" name="term" required>
               <USelectMenu v-model="state.term" :items="terms" value-key="value" label-key="label"
@@ -298,7 +298,7 @@ onMounted(async () => {
   classStore.fetchAll(0, 0)
   academicYearStore.getTerms()
   useAppStore().setTitle('Create Scheme of Work')
-  useAppStore().setBack(true)
+  useAppStore().setBack('/curriculums')
 })
 
 definePageMeta({

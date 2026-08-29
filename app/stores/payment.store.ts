@@ -25,5 +25,8 @@ export const useFeePaymentStore = defineStore('feePayment', {
     recordPayment(payload: RecordPaymentDto) {
       return FeeApi().recordPayment(payload)
     },
+    getReceipt(referenceNo: string) {
+      return FeeApi().getReceipt(referenceNo)
+    },
   }
 })

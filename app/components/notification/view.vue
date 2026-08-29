@@ -69,21 +69,32 @@ const filteredMeta = computed(() => {
     return Object.fromEntries(entries);
 });
 
+const typeColor = computed(() => notificationTypeColor(record?.type))
+const typeIcon = computed(() => notificationTypeIcon(record?.type))
+
+// Unread + priority together decide the accent strip: an unread urgent/high notification
+// should read as visually different from a routine read-out one, matching the color coding
+// already used for it in the list row.
+const accentColor = computed(() => {
+    if (!record) return 'neutral'
+    if (!record.read && record.priority) return notificationPriorityColor(record.priority)
+    return typeColor.value
+})
+
 watch(() => record, () => {
     state.value = record ? true : false
 }, { immediate: true })
 </script>
 
 <template>
-    <UCard v-if="state && record" class="h-full flex flex-col sticky top-0 z-10">
+    <UCard v-if="state && record" class="h-full flex flex-col sticky top-0 z-10 overflow-hidden" :ui="{ root: 'p-0 gap-0', body: 'p-0 sm:p-0' }">
+        <!-- Accent strip -->
+        <div class="h-1 shrink-0" :class="`bg-${accentColor}`" />
+
         <!-- Header -->
         <div class="border-b border-default bg-default">
             <div class="flex items-start gap-3 p-4 sm:p-5">
-                <!-- Notification Icon -->
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
-                    <UIcon name="i-lucide-bell" class="size-5 text-primary" />
-                </div>
-
+           
                 <!-- Header Content -->
                 <div class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-3">
@@ -93,7 +104,7 @@ watch(() => record, () => {
                             </h2>
 
                             <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                <UBadge :color="notificationTypeColor(record.type)" variant="soft" size="md">
+                                <UBadge :color="typeColor" variant="soft" size="md">
                                     {{ clean(record.type) }}
                                 </UBadge>
 
@@ -101,10 +112,20 @@ watch(() => record, () => {
                                     variant="outline" size="md">
                                     {{ clean(record.priority) }}
                                 </UBadge>
+
+                                <UBadge v-if="!record.read" color="neutral" variant="subtle" size="md">
+                                    Unread
+                                </UBadge>
                             </div>
 
                             <div class="mt-2 flex items-center gap-1.5 text-xs text-muted">
                                 <UIcon name="i-lucide-clock-3" class="size-3.5" />
+
+                                <span>
+                                    {{ notificationTimeAgo(record.createdAt) }}
+                                </span>
+
+                                <span class="text-dimmed">&middot;</span>
 
                                 <span>
                                     {{ formatDate(record.createdAt) }}
@@ -125,10 +146,10 @@ watch(() => record, () => {
             <div class="space-y-4 p-4 sm:p-5">
 
                 <!-- Message -->
-                <div class="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+                <div class="rounded-2xl border p-4" :class="[`border-${typeColor}/10`, `bg-${typeColor}/[0.03]`]">
                     <div class="mb-3 flex items-center gap-2">
-                        <div class="flex size-8 items-center justify-center rounded-xl bg-primary/10">
-                            <UIcon name="i-lucide-message-square-text" class="size-4 text-primary" />
+                        <div class="flex size-8 items-center justify-center rounded-xl" :class="`bg-${typeColor}/10`">
+                            <UIcon name="i-lucide-message-square-text" class="size-4" :class="`text-${typeColor}`" />
                         </div>
 
                         <div>
