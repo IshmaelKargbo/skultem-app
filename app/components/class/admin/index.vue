@@ -266,9 +266,6 @@
                 </div>
             </template>
         </UCard>
-
-        <!-- Mobile -->
-
     </div>
 </template>
 <script setup lang="ts">
@@ -292,7 +289,7 @@ const columns = [
 ];
 
 function viewClass(row: ClassSession) {
-    router.push(`/classes/${row.clazzId}`);
+    router.push(`/classes/${row.clazzId}?stream=${row.streamId}`);
 }
 
 const page = computed<number>({
@@ -300,19 +297,7 @@ const page = computed<number>({
     set: (value) => updateQuery({ page: value }),
 });
 
-const size = computed<number>({
-    get: () => Number(route.query.size ?? runtimeConf().limit),
-    set: (value) => updateQuery({ size: value }),
-});
-
-function updateQuery(query: Record<string, any>) {
-    router.replace({
-        query: {
-            ...route.query,
-            ...query,
-        },
-    });
-}
+const size = ref(runtimeConf().limit);
 
 async function fetchRecords() {
     try {

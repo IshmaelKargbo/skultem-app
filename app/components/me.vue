@@ -9,7 +9,7 @@
 
         <div class="flex group cursor-pointer space-x-3" v-if="compact && user && user.email && !loading">
           <div class="relative" :aria-label="`Account menu for ${name}`">
-            <UAvatar :alt="name" size="md" class="ring-2 ring-default transition group-hover:ring-primary-300" />
+            <UAvatar :src="user?.photo || undefined" :alt="name" size="md" class="ring-2 ring-default transition group-hover:ring-primary-300" />
 
             <div
               class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
@@ -25,7 +25,7 @@
           class="group w-full rounded-xl border border-default px-4 py-2 hover:border-primary-300 cursor-pointer transition-all duration-300">
           <div class="flex items-center gap-3 w-full">
             <div class="relative">
-              <UAvatar :alt="name" size="xl" />
+              <UAvatar :src="user?.photo || undefined" :alt="name" size="xl" />
 
               <div
                 class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />
@@ -62,7 +62,7 @@
           <div class="relative overflow-hidden w-full">
             <div class="flex justify-between items-center gap-3">
               <div class="relative shrink-0">
-                <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900 shadow-lg" />
+                <UAvatar :src="user?.photo || undefined" :alt="name" size="lg" class="ring-2 ring-white dark:ring-neutral-900 shadow-lg" />
 
                 <span
                   class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-neutral-950 bg-emerald-500" />

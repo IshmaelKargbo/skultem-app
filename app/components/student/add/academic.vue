@@ -151,9 +151,36 @@ async function fetchSubjects(classId: string) {
     if (!classId) return
 
     const clazz: any = classSession.records.find(e => e.id === classId)
+    
     if (!clazz) return
 
-    const res = await subjectStore.fetchAllByClass(clazz.clazzId, 0, 0)
+    if (clazz.streamId) {
+        const res = await subjectStore.fetchAllByClassAndStream(clazz.clazzId, clazz.streamId, 0, 0)
+        const { core, groups } = splitSubjects(res)
+
+        coreSubjects.value = core
+        optionalGroups.value = groups
+
+        for (const group of groups) {
+            if (!selectedOptional[group.id]) {
+                selectedOptional[group.id] = ''
+            }
+        }
+    } else {
+        const res = await subjectStore.fetchAllByClass(clazz.clazzId, 0, 0)
+        const { core, groups } = splitSubjects(res)
+
+        coreSubjects.value = core
+        optionalGroups.value = groups
+
+        for (const group of groups) {
+            if (!selectedOptional[group.id]) {
+                selectedOptional[group.id] = ''
+            }
+        }
+    }
+
+    const res = await subjectStore.fetchAllByClassAndStream(clazz.clazzId, clazz.streamId, 0, 0)
     const { core, groups } = splitSubjects(res)
 
     coreSubjects.value = core

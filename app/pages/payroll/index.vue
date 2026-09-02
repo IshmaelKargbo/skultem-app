@@ -1,351 +1,169 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4 px-4 md:px-6">
 
-    <!-- Header -->
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
-      <div>
-        <h1 class="text-2xl font-bold">
-          Payroll Dashboard
-        </h1>
-
-        <p class="text-sm text-muted">
-          Manage salaries, payments, and payroll activities.
-        </p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-
-        <UButton
-          icon="i-lucide-play" to="/payroll/run"
-        >
-          Run Payroll
-        </UButton>
-
-        <UButton
-          variant="soft"
-          icon="i-lucide-file-text"
-        >
-          Payslips
-        </UButton>
-
-        <UButton
-          variant="soft"
-          icon="i-lucide-download"
-        >
-          Export
-        </UButton>
-
-      </div>
-
-    </div>
+    <Heading title="Payroll" subtitle="Staff compensation, payroll runs, and payslips.">
+      <UButton icon="i-lucide-play" to="/payroll/runs/new" label="Start Payroll Run" />
+      <UButton variant="soft" icon="i-lucide-user-plus" to="/payroll/salaries/add" label="Add Salary" />
+    </Heading>
 
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-      <UCard
-        v-for="stat in stats"
-        :key="stat.label"
-        class="rounded-3xl"
-      >
-        <div class="flex items-center justify-between">
-
-          <div>
-
-            <p class="text-sm text-muted">
-              {{ stat.label }}
-            </p>
-
-            <h2 class="mt-2 text-3xl font-bold">
-              {{ stat.value }}
-            </h2>
-
-            <p class="mt-1 text-xs text-green-500">
-              {{ stat.change }}
-            </p>
-
-          </div>
-
-          <div
-            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-500/10"
-          >
-            <UIcon
-              :name="stat.icon"
-              class="text-xl text-primary"
-            />
-          </div>
-
-        </div>
-      </UCard>
-
+      <Metric :record="{
+        icon: 'i-lucide-users',
+        label: 'Employees on Payroll',
+        value: summary?.teacherCount ?? 0,
+        isReady: !loadingSummary,
+        color: 'primary'
+      }" />
+      <Metric :record="{
+        icon: 'i-lucide-bar-chart-3',
+        label: 'Average Salary',
+        value: formatCurrency(summary?.averageSalary),
+        isReady: !loadingSummary,
+        color: 'info'
+      }" />
+      <Metric :record="{
+        icon: 'i-lucide-trending-up',
+        label: 'Highest Salary',
+        value: formatCurrency(summary?.highestSalary),
+        isReady: !loadingSummary,
+        color: 'success'
+      }" />
+      <Metric :record="{
+        icon: 'i-lucide-wallet',
+        label: 'Total Gross Payroll',
+        value: formatCurrency(summary?.totalGross),
+        isReady: !loadingSummary,
+        color: 'warning'
+      }" />
     </div>
 
-    <!-- Recent Runs + Upcoming -->
-    <div class="grid gap-6 lg:grid-cols-3">
-
-      <UCard class="rounded-3xl lg:col-span-2">
-
-        <template #header>
-          <h2 class="font-semibold">
-            Recent Payroll Runs
-          </h2>
-        </template>
-
-        <div class="space-y-4">
-
-          <div
-            v-for="run in payrollRuns"
-            :key="run.month"
-            class="flex items-center justify-between rounded-2xl border border-default p-4"
-          >
-
-            <div>
-              <h3 class="font-medium">
-                {{ run.month }}
-              </h3>
-
-              <p class="text-xs text-muted">
-                Processed {{ run.date }}
-              </p>
-            </div>
-
-            <div class="text-right">
-
-              <p class="font-semibold">
-                {{ run.amount }}
-              </p>
-
-              <UBadge
-                color="success"
-                variant="soft"
-              >
-                {{ run.status }}
-              </UBadge>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </UCard>
-
-      <UCard class="rounded-3xl">
-
-        <template #header>
-          <h2 class="font-semibold">
-            Upcoming Payroll
-          </h2>
-        </template>
-
-        <div class="space-y-5">
-
-          <div>
-            <p class="text-xs text-muted">
-              Payday
-            </p>
-
-            <p class="text-2xl font-bold">
-              30 June 2026
-            </p>
-          </div>
-
-          <div>
-            <p class="text-xs text-muted">
-              Employees
-            </p>
-
-            <p class="font-semibold">
-              90 Staff
-            </p>
-          </div>
-
-          <div>
-            <p class="text-xs text-muted">
-              Estimated Cost
-            </p>
-
-            <p class="text-xl font-bold text-primary">
-              Le 338,000
-            </p>
-          </div>
-
-        </div>
-
-      </UCard>
-
-    </div>
-
-    <!-- Departments -->
-    <UCard class="rounded-3xl">
-
+    <!-- Quick Actions -->
+    <UCard>
       <template #header>
-        <h2 class="font-semibold">
-          Department Payroll Breakdown
-        </h2>
+        <div>
+          <h3 class="font-semibold">Quick Actions</h3>
+          <p class="text-sm text-muted">Frequently used actions.</p>
+        </div>
       </template>
 
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-        <div
-          v-for="department in departments"
-          :key="department.name"
-          class="rounded-2xl bg-muted/40 p-5"
-        >
-          <p class="text-sm text-muted">
-            {{ department.name }}
-          </p>
-
-          <h3 class="mt-2 text-xl font-bold">
-            {{ department.amount }}
-          </h3>
-        </div>
-
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+        <NuxtLink v-for="action in quickActions" :key="action.label" :to="action.to"
+          class="flex flex-col items-center gap-2 rounded-xl border border-default px-3 py-4 text-center transition-colors hover:border-primary/40 hover:bg-primary/5">
+          <span class="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
+            <UIcon :name="action.icon" class="size-5" />
+          </span>
+          <span class="text-xs font-medium leading-tight">{{ action.label }}</span>
+        </NuxtLink>
       </div>
-
     </UCard>
 
-    <!-- Recent Payslips -->
-    <UCard class="rounded-3xl">
+    <!-- Latest run + recent salaries -->
+    <div class="grid gap-4 xl:grid-cols-3">
 
-      <template #header>
-        <h2 class="font-semibold">
-          Recent Payslips
-        </h2>
-      </template>
+      <UCard class="xl:col-span-2">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold">Latest Payroll Run</h3>
+            <UButton to="/payroll/runs" variant="ghost" color="neutral" size="sm" label="View all" />
+          </div>
+        </template>
 
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div v-if="loadingSummary" class="space-y-3">
+          <USkeleton class="h-24 w-full rounded-xl" />
+        </div>
 
-        <div
-          v-for="slip in payslips"
-          :key="slip.employee"
-          class="rounded-2xl border border-default p-5"
-        >
+        <div v-else-if="summary?.latestRun"
+          class="flex flex-col gap-4 rounded-xl border border-default p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h4 class="font-semibold">{{ summary.latestRun.period }}</h4>
+            <p class="text-xs text-muted">Pay date {{ formatDate(summary.latestRun.payDate) }}</p>
+          </div>
 
           <div class="flex items-center gap-3">
+            <UBadge :color="payrollRunStatusColor(summary.latestRun.status)" variant="soft">
+              {{ clean(summary.latestRun.status) }}
+            </UBadge>
 
-            <UAvatar :alt="slip.employee" />
-
-            <div>
-
-              <h3 class="font-medium">
-                {{ slip.employee }}
-              </h3>
-
-              <p class="text-xs text-muted">
-                {{ slip.position }}
-              </p>
-
-            </div>
-
+            <UButton size="sm" variant="soft" trailing-icon="i-lucide-arrow-right"
+              :to="`/payroll/runs/${summary.latestRun.id}`">
+              View Run
+            </UButton>
           </div>
-
-          <div class="mt-4">
-
-            <p class="text-xs text-muted">
-              Net Salary
-            </p>
-
-            <h2 class="text-xl font-bold">
-              {{ slip.salary }}
-            </h2>
-
-          </div>
-
-          <UButton
-            block
-            variant="soft"
-            class="mt-4"
-            trailing-icon="i-lucide-arrow-right"
-          >
-            View Payslip
-          </UButton>
-
         </div>
 
-      </div>
+        <div v-else class="flex flex-col items-center gap-3 py-10 text-center">
+          <UIcon name="i-lucide-play-circle" class="text-4xl text-muted" />
+          <p class="text-sm text-muted">No payroll runs yet.</p>
+          <UButton size="sm" icon="i-lucide-play" to="/payroll/runs/new">Start the first run</UButton>
+        </div>
+      </UCard>
 
-    </UCard>
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold">Recently Added</h3>
+            <UButton to="/payroll/salaries" variant="ghost" color="neutral" size="sm" label="View all" />
+          </div>
+        </template>
+
+        <div v-if="loadingSalaries" class="space-y-3">
+          <USkeleton v-for="i in 3" :key="i" class="h-12 w-full rounded-lg" />
+        </div>
+
+        <ul v-else-if="salaries.length" class="divide-y divide-default">
+          <li v-for="s in salaries" :key="s.id" class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <UAvatar :src="s.teacher?.user?.photo || undefined" :alt="teacherName(s.teacher)" size="sm" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium">{{ teacherName(s.teacher) }}</p>
+              <p class="truncate text-xs text-muted">{{ s.teacher?.staffId }}</p>
+            </div>
+            <span class="shrink-0 text-xs font-semibold text-primary">{{ formatCurrency(s.netSalary) }}</span>
+          </li>
+        </ul>
+
+        <div v-else class="flex flex-col items-center gap-2 py-8 text-center">
+          <UIcon name="i-lucide-wallet" class="text-3xl text-muted" />
+          <p class="text-sm text-muted">No salary structures yet.</p>
+        </div>
+      </UCard>
+
+    </div>
 
   </div>
 </template>
+
 <script setup lang="ts">
-const stats = [
-  {
-    label: "Total Payroll",
-    value: "Le 325,000",
-    change: "+8.2%",
-    icon: "i-lucide-wallet"
-  },
-  {
-    label: "Employees Paid",
-    value: "84",
-    change: "90 total",
-    icon: "i-lucide-users"
-  },
-  {
-    label: "Pending Payments",
-    value: "6",
-    change: "Awaiting",
-    icon: "i-lucide-clock-3"
-  },
-  {
-    label: "Bonuses",
-    value: "Le 12,500",
-    change: "This month",
-    icon: "i-lucide-gift"
-  }
+const store = usePayrollStore()
+const { summary, loadingSummary, salaries, loadingSalaries } = storeToRefs(store)
+
+const quickActions = [
+  { label: 'Add Salary', icon: 'i-lucide-user-plus', to: '/payroll/salaries/add' },
+  { label: 'Start Payroll Run', icon: 'i-lucide-play', to: '/payroll/runs/new' },
+  { label: 'Salary Structures', icon: 'i-lucide-wallet', to: '/payroll/salaries' },
+  { label: 'Payroll Runs', icon: 'i-lucide-history', to: '/payroll/runs' },
+  { label: 'Teacher Attendance', icon: ATTENDANCE_ICON, to: '/hr/teacher-attendance' },
 ]
 
-const payrollRuns = [
-  {
-    month: "May 2026",
-    date: "31 May",
-    amount: "Le 325,000",
-    status: "Completed"
-  },
-  {
-    month: "April 2026",
-    date: "30 Apr",
-    amount: "Le 320,000",
-    status: "Completed"
-  }
-]
+function teacherName(teacher?: Teacher) {
+  if (!teacher) return ''
+  return `${teacher.user?.givenNames || ''} ${teacher.user?.familyName || ''}`.trim()
+}
 
-const departments = [
-  {
-    name: "Teaching",
-    amount: "Le 150,000"
-  },
-  {
-    name: "Administration",
-    amount: "Le 80,000"
-  },
-  {
-    name: "Finance",
-    amount: "Le 45,000"
-  },
-  {
-    name: "ICT",
-    amount: "Le 50,000"
-  }
-]
+function formatCurrency(value?: number | null) {
+  return `Le ${Number(value || 0).toLocaleString()}`
+}
 
-const payslips = [
-  {
-    employee: "Mary Kamara",
-    position: "Teacher",
-    salary: "Le 8,200"
-  },
-  {
-    employee: "John Doe",
-    position: "Accountant",
-    salary: "Le 7,600"
-  },
-  {
-    employee: "Peter Sesay",
-    position: "ICT Officer",
-    salary: "Le 9,100"
-  }
-]
+onMounted(() => {
+  useAppStore().setTitle('Payroll')
+  useAppStore().setBack(false)
+  document.title = 'Payroll | Skultem'
+
+  store.fetchSummary()
+  store.fetchSalaries(1, 5)
+})
+
+definePageMeta({
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+})
 </script>

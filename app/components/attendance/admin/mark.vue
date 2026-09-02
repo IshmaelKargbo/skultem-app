@@ -9,7 +9,7 @@
             <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
           </p>
 
-             <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+          <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
             <UFormField name="classId" class="w-full">
               <USelect v-model="state.classId" :items="classes" placeholder="Select class" class="w-full"
                 @change="fetchRecords" />
@@ -24,7 +24,8 @@
 
       <div>
         <!-- Actions -->
-        <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 dark:bg-gray-950 dark:border-gray-800 bg-gray-50/40 px-3">
+        <div v-if="state.classId"
+          class="flex space-x-3 border-b border-gray-200 py-4 dark:bg-gray-950 dark:border-gray-800 bg-gray-50/40 px-3">
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 
@@ -36,16 +37,12 @@
           </div>
         </div>
 
-        <UTable  class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
-              <UAvatar
-                size="md"
-                :src="row.original.photo || '/avatar-placeholder.svg'"
-                :alt="row.original.studentName"
-                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0"
-              />
+              <UAvatar size="md" :src="row.original.photo || '/avatar-placeholder.svg'" :alt="row.original.studentName"
+                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
               <div class="min-w-0">
                 <p class="text-sm font-medium truncate">{{ row.original.studentName }}</p>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ row.original.admissionNumber }}</p>
@@ -109,12 +106,8 @@
           <!-- Mobile Records -->
           <div v-else v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
             <div class="flex items-center space-x-2">
-              <UAvatar
-                :src="row.photo || '/avatar-placeholder.svg'"
-                :alt="row.studentName"
-                size="xl"
-                class="ring-1 ring-gray-200 dark:ring-gray-700"
-              />
+              <UAvatar :src="row.photo || '/avatar-placeholder.svg'" :alt="row.studentName" size="xl"
+                class="ring-1 ring-gray-200 dark:ring-gray-700" />
               <div>
                 <p class="text-sm font-medium">{{ row.studentName }}</p>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ row.admissionNumber }}</p>
@@ -141,7 +134,7 @@
       <!-- Footer -->
       <template #footer>
         <div class="flex justify-end">
-          <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
+          <UButton type="submit" :icon="SAVE_ICON" label="Save Attendance" :loading="isLoading" />
         </div>
       </template>
     </UCard>
@@ -206,7 +199,7 @@ const classes = computed(() =>
 
     return {
       label,
-      value: e.clazzId
+      value: e.id
     }
   })
 )
@@ -301,7 +294,7 @@ function clearAll() {
 
 async function fetchRecords() {
   selectedClass.value = classStore.records.find(
-    e => e.clazzId === state.classId
+    e => e.id === state.classId
   )
 
   if (!selectedClass.value) return
@@ -388,8 +381,7 @@ onMounted(async () => {
     classStore.records[0]?.clazzId ||
     ''
 
-  state.date =
-    (route.query.date as string) ||
+  state.date = (route.query.date as string) ||
     todayISO()
 
   if (state.classId) {

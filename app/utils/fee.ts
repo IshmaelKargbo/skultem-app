@@ -59,6 +59,9 @@ export type FeeStructure = {
     // The platform fee the system seeds automatically - see the backend's FeeStructure.system.
     // Locked against edit/delete regardless of role.
     isSystem: boolean
+    // Only ever charged the first time a student enrolls (e.g. Uniform Fee) - never to a student
+    // who's simply continuing/being promoted/re-enrolled into what this fee targets.
+    newStudentsOnly: boolean
     createdAt: string
     updatedAt: string
 }
@@ -166,6 +169,10 @@ export type CreateFeeStructureDto = {
     allowInstallment: boolean,
     description?: string
     dueDate: string
+    // Only ever charged the first time a student enrolls (e.g. Uniform Fee) - never to a student
+    // who's simply continuing/being promoted/re-enrolled into what this fee targets. Not allowed
+    // when type is SELECTION - an explicit student list is already a deliberate assignment.
+    newStudentsOnly?: boolean
 }
 
 // What a fee structure applies to (academic year, class, type) can't be changed after

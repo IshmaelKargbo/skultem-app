@@ -174,7 +174,7 @@ watch(() => page.value, async () => {
           <div class="border-b border-default p-4">
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <UAvatar size="2xl" icon="i-lucide-user-round"
+                <UAvatar size="2xl" icon="i-lucide-user-round" :src="item.user?.photo || undefined"
                   :alt="`${item.user?.givenNames} ${item.user?.familyName}`" />
 
                 <div class="min-w-0">

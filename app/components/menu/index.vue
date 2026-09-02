@@ -274,19 +274,20 @@ const navItems: NavItem[] = [
     roles: [Role.SYSTEM_ADMIN]
   },
   {
-    label: 'Human Resources', icon: CLASS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR],
+    // HR and Payroll used to be two separate nav sections with a lot of overlap (staff,
+    // payroll summary, leave). Merged into one "Payroll" section - Teacher Attendance and
+    // Leave still live at their original /hr/* routes, just grouped here now.
+    // Top-level group is visible to teachers too (for self-service Leave below), but most
+    // sub-items are still admin-only - each one carries its own roles override for that.
+    label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER],
     subNavs: [
-      { label: 'Human Resources', to: '/hr', icon: CLASS_ICON, exact: true },
-      { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON },
+      { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.TEACHER] },
       { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON },
-    ]
-  },
-  {
-    label: 'Payroll', icon: CLASS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR],
-    subNavs: [
-      { label: 'Payroll Dashboard', to: '/payroll', icon: CURRICULUM_STREAM_ICON, exact: true },
-      { label: 'Employees', to: '/payroll/employees', icon: CURRICULUM_STREAM_ICON },
-      { label: 'Payroll Run', to: '/payroll/run', icon: CURRICULUM_STREAM_ICON },
     ]
   },
   {

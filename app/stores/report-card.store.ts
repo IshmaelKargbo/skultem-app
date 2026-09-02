@@ -78,10 +78,24 @@ export const useReportCardStore = defineStore('reportCard', {
         meta: { total: 0, size: 12, page: 1, showingFrom: 0, showingTo: 0, totalPages: 0 },
         stats: null as ReportCardStats | null,
         loading: false,
-        generating: false
+        generating: false,
+
+        // A single student's own report cards (all terms/years) - the Report Card tab on their
+        // profile, kept separate from the admin list page's paginated `records` above.
+        studentRecords: [] as ReportCardSummary[],
+        loadingStudent: false
     }),
 
     actions: {
+        async fetchByStudent(studentId: string) {
+            this.loadingStudent = true
+            try {
+                this.studentRecords = await ReportCardApi().byStudent(studentId) || []
+            } finally {
+                this.loadingStudent = false
+            }
+        },
+
         async fetchAll(page: number, size: number, filters?: { classId?: string, termId?: string, search?: string }) {
             this.loading = true
             try {

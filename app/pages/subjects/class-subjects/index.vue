@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const view = ref<'table' | 'card'>('table')
 const route = useRoute();
-const router = useRouter();
 const store = useClassSubjectStore();
 const { records: data, meta, loading } = storeToRefs(store);
 
@@ -10,6 +9,10 @@ const columns = [
   {
     accessorKey: "className",
     header: "Class",
+  },
+  {
+    accessorKey: "streamName",
+    header: "Stream",
   },
   {
     accessorKey: "subjectName",
@@ -94,6 +97,10 @@ definePageMeta({
 
             <UBadge v-if="row.original.locked" variant="soft" color="error" label="Locked" />
           </div>
+        </template>
+
+        <template #streamName-cell="{ row }">
+          <p>{{ row.original.streamName || '' }}</p>
         </template>
 
         <template #loading>

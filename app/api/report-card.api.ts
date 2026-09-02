@@ -14,6 +14,15 @@ export const ReportCardApi = () => {
       }
     },
 
+    byStudent: async (studentId: string) => {
+      try {
+        const res = await $api(`/report-card/student/${studentId}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     fetchAll: async (page: number, size: number, filters?: { classId?: string, termId?: string, search?: string }) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })

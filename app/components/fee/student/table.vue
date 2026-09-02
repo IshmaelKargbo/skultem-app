@@ -8,7 +8,7 @@ const { format } = useMoney()
 const store = useStudentStore()
 
 const loading = ref(true)
-const records = ref<StudentFee[]>([])
+const records = ref<any[]>([])
 
 let requestId = 0
 
@@ -60,12 +60,12 @@ const columns = [
   {
     accessorKey: 'total',
     header: 'Amount',
-    cell: ({ row }: any) => format(row.original.total)
+    cell: ({ row }: any) => format(row.original.amount)
   },
   {
     accessorKey: 'paid',
     header: 'Paid',
-    cell: ({ row }: any) => format(row.original.paid)
+    cell: ({ row }: any) => format(row.original.amountPaid || 0)
   },
   {
     accessorKey: 'outstanding',
@@ -127,13 +127,12 @@ const parseBatchStatusColor: Record<string, string> = {
     </div>
 
     <div v-else class="space-y-2 md:hidden">
-      <UCard v-for="item in records" :key="item.id" variant="outline"
-        :ui="{ body: 'p-4' }">
+      <UCard v-for="item in records" :key="item.id" variant="outline" :ui="{ body: 'p-4' }">
         <div class="space-y-3">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <p class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                {{ item.feeName }}
+                {{ item.fee }}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 {{ item.term }}
@@ -149,11 +148,11 @@ const parseBatchStatusColor: Record<string, string> = {
             </div>
             <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
               <p class="text-gray-500">Paid</p>
-              <p class="mt-0.5 font-semibold text-success-500">{{ format(item.paid) }}</p>
+              <p class="mt-0.5 font-semibold text-success-500">{{ format(item.amountPaid || 0) }}</p>
             </div>
             <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
               <p class="text-gray-500">Outstanding</p>
-              <p class="mt-0.5 font-semibold text-orange-500">{{ format(item.outstanding) }}</p>
+              <p class="mt-0.5 font-semibold text-orange-500">{{ format(item.outstanding || 0) }}</p>
             </div>
             <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
               <p class="text-gray-500">Discount</p>
@@ -170,39 +169,39 @@ const parseBatchStatusColor: Record<string, string> = {
       </UCard>
     </div>
 
-   <div class="hidden md:block">
-    <UTable :columns="columns" :data="records" :loading="loading">
-      <template #empty-state>
-        <div class="flex flex-col items-center gap-2 py-10">
-          <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
-          <p class="text-gray-500 dark:text-gray-400">No fee found.</p>
-        </div>
-      </template>
-      <template #feeName-cell="{ row }">
-        <div>
-          <p>{{ row.original.feeName }}</p>
-          <p class="text-muted text-xs">{{ row.original.term }}</p>
-        </div>
-      </template>
-      <template #loading>
-        <TableLoading :size="columns.length" />
-      </template>
-      <template #dueDate-cell="{ row }">
-        <div>
-          <p class="text-right">{{ formatDate(row.original.dueDate) }}</p>
-          <p class="text-xs text-right" :class="[parseStatusColor[row.original.status]]">{{ row.original.status }}</p>
-        </div>
-      </template>
-      <template #paid-cell="{ row }">
-        <p class="text-success-400">{{ format(row.original.paid) }}</p>
-      </template>
-      <template #outstanding-cell="{ row }">
-        <p class="text-orange-400">{{ format(row.original.outstanding) }}</p>
-      </template>
-      <template #discount-cell="{ row }">
-        <p class="text-purple-400">{{ format(row.original.discount || 0) }}</p>
-      </template>
-    </UTable>
-   </div>
+    <div class="hidden md:block">
+      <UTable :columns="columns" :data="records" :loading="loading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+            <p class="text-gray-500 dark:text-gray-400">No fee found.</p>
+          </div>
+        </template>
+        <template #feeName-cell="{ row }">
+          <div>
+            <p>{{ row.original.fee }}</p>
+            <p class="text-muted text-xs">{{ row.original.term }}</p>
+          </div>
+        </template>
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+        <template #dueDate-cell="{ row }">
+          <div>
+            <p class="text-right">{{ formatDate(row.original.dueDate) }}</p>
+            <p class="text-xs text-right" :class="[parseStatusColor[row.original.status]]">{{ row.original.status }}</p>
+          </div>
+        </template>
+        <template #paid-cell="{ row }">
+          <p class="text-success-400">{{ format(row.original.amountPaid || 0) }}</p>
+        </template>
+        <template #outstanding-cell="{ row }">
+          <p class="text-orange-400">{{ format(row.original.outstanding || 0) }}</p>
+        </template>
+        <template #discount-cell="{ row }">
+          <p class="text-purple-400">{{ format(row.original.discount || 0) }}</p>
+        </template>
+      </UTable>
+    </div>
   </div>
 </template>

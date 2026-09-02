@@ -9,6 +9,8 @@ export type Teacher = {
     phone: string
     classes: string[]
     status: string
+    designation: string | null
+    teaching: boolean
     createdAt: string
     updatedAt: string
 }
@@ -64,6 +66,13 @@ export type CreateTeacherDto = {
     street: string
     phone: string
     email: string
+    designation?: string
+    // Defaults to true when omitted. The Add Staff form passes false for staff who won't use the
+    // portal - their account still gets created, they just never get emailed the credentials.
+    sendWelcomeEmail?: boolean
+    // Defaults to true when omitted. The Add Staff form passes false - drives whether the
+    // Subjects/Curriculum tabs show on their profile.
+    teaching?: boolean
 }
 
 export type EditTeacherDTO = {
@@ -75,4 +84,5 @@ export type EditTeacherDTO = {
     city: string
     street: string
     phone: string
+    designation?: string
 }

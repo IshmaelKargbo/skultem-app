@@ -180,7 +180,12 @@ onMounted(async () => {
         </template>
 
         <template #actions-cell="{ row }">
-          <div class="flex justify-end">
+          <div class="flex justify-end gap-1.5">
+            <UTooltip :delay-duration="0" arrow text="View Profile">
+              <UButton size="sm" variant="soft" color="neutral" icon="i-lucide-eye" class="rounded-xl"
+                :to="`/auth/${row.original.id}`" />
+            </UTooltip>
+
             <UTooltip :delay-duration="0" arrow text="Assign Role">
               <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding" class="rounded-xl"
                 @click="openAssignRole(row.original.id)" />
@@ -238,8 +243,8 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-settings-2" class="rounded-xl"
-                @click="openAssignRole(item.id)" />
+              <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-eye" class="rounded-xl"
+                :to="`/auth/${item.id}`" />
             </div>
           </div>
 

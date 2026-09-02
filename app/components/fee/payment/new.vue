@@ -219,21 +219,6 @@
                     </div>
                 </div>
 
-                <div v-if="receipt" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
-                    <div class="flex justify-between gap-3">
-                        <span class="text-muted">Student</span>
-                        <strong class="text-right">{{ receipt.student }}</strong>
-                    </div>
-                    <div class="mt-1 flex justify-between gap-3">
-                        <span class="text-muted">Total Paid</span>
-                        <strong>{{ format(receipt.total) }}</strong>
-                    </div>
-                    <div class="mt-1 flex justify-between gap-3">
-                        <span class="text-muted">Reference</span>
-                        <strong class="text-right">{{ receipt.referenceNo }}</strong>
-                    </div>
-                </div>
-
                 <div class="flex justify-end gap-3">
                     <UButton color="neutral" variant="subtle" :disabled="isDownloadingReceipt" @click="skipReceipt">
                         No, thanks
@@ -482,3 +467,22 @@ const selectedStudentName = computed(() =>
     students.value.find(s => s.value === state.studentId)?.label
 )
 </script>
+
+<style scoped>
+/* Scales the full-size receipt down to fit the confirmation modal - same trick used by the
+   receipt design settings page's Live Preview, so what's shown here matches what gets printed. */
+.preview-card {
+    overflow: hidden;
+}
+
+.preview-viewport {
+    overflow: hidden;
+    height: 320px;
+}
+
+.preview-scale {
+    transform: scale(0.4);
+    transform-origin: top left;
+    width: 794px;
+}
+</style>

@@ -108,6 +108,33 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    payrollStatus: async (id: string) => {
+      try {
+        const res = await $api(`/user/${id}/payroll-status`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    includeInPayroll: async (id: string, payload: IncludeUserInPayrollDto) => {
+      try {
+        const res = await $api(`/user/${id}/include-in-payroll`, { method: 'POST', body: payload }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    updatePhoto: async (id: string, photo: File) => {
+      try {
+        const formData = new FormData()
+        formData.append('photo', photo)
+
+        const res = await $api(`/user/${id}/photo`, { method: 'PATCH', body: formData }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     me: async () => {
       try {
         const res = await $api('/user/me') as any
@@ -115,6 +142,18 @@ export const UserApi = () => {
         if (!res)
           throw new Error('Failed to fetch user')
 
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Self-service - the signed-in user uploading their own photo, from My Profile.
+    updateMyPhoto: async (photo: File) => {
+      try {
+        const formData = new FormData()
+        formData.append('photo', photo)
+
+        const res = await $api('/user/me/photo', { method: 'PATCH', body: formData }) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)

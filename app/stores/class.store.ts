@@ -4,6 +4,7 @@ export const useClassStore = defineStore('class', {
   state: () => ({
     records: [] as Clazz[],
     record: undefined as Clazz | undefined,
+    session: undefined as ClassSession | undefined,
     overview: undefined as ClassOverview | undefined,
     meta: {} as Meta,
     loading: false,
@@ -30,12 +31,26 @@ export const useClassStore = defineStore('class', {
       this.record = undefined
       this.overview = undefined
       try {
-        const [record, overview] = await Promise.all([
-          ClassApi().getOne(id),
-          ClassApi().getOverview(id)
-        ])
+        const record = await ClassApi().getOne(id)
         this.record = record
-        this.overview = overview
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class'
+      } finally {
+        this.loading = false
+      }
+    },
+    async viewClassByClassAndStream(id: string, stream: string, academicYearId: string) {
+      this.loading = true
+      this.error = null
+      this.record = undefined
+      try {
+        if (stream) {
+          const res = await ClassApi().getOneByClassAndStream(id, stream, academicYearId)
+          this.session = res
+        } else {
+          const res = await ClassApi().getOneByClass(id, academicYearId)
+          this.session = res
+        }
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch class'
       } finally {
@@ -52,17 +67,17 @@ export const useClassStore = defineStore('class', {
       return ClassApi().assignClassMaster(id, payload)
     },
     findOne(id: string) {
-      return ClassApi().getOne(id) 
+      return ClassApi().getOne(id)
     },
     findAllStreams(id: string) {
-      return ClassApi().getAllStreams(id) 
+      return ClassApi().getAllStreams(id)
     },
     async findAllSections(id: string) {
-      const res = await ClassApi().getAllSections(id) 
+      const res = await ClassApi().getAllSections(id)
       if (res) return res
     },
     findClassMaster(id: string) {
-      return ClassApi().getCurrentClassMaster(id) 
+      return ClassApi().getCurrentClassMaster(id)
     },
     updateTemplate(classId: string, templateId: string) {
       return ClassApi().updateTemplate(classId, templateId)

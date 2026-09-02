@@ -290,11 +290,6 @@ async function submit(param: any) {
         photo: param.data.photo
     })
 
-    if (profile.photo === null) {
-        useNotify().error('Student photo is required')
-        return
-    }
-
     try {
         loading.value = true
         const formData = new FormData()

@@ -17,6 +17,11 @@ const parseStatus: Record<string, string> = {
   DELETED: 'Deleted',
 }
 
+const addItems = [[
+  { label: 'Add Teacher', icon: ADD_ICON, to: '/teachers/add' },
+  { label: 'Add Staff', icon: 'i-lucide-briefcase', to: '/teachers/add-staff' }
+]]
+
 const columns = [
   {
     accessorKey: 'name',
@@ -166,7 +171,12 @@ onBeforeUnmount(() => {
 
             <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" :icon="ADD_ICON" />
 
-            <UButton to="/teachers/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
+            <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral"
+              class="hidden md:flex" icon="i-lucide-briefcase" />
+
+            <UDropdownMenu :items="addItems" :content="{ align: 'end' }" class="md:hidden">
+              <UButton color="primary" :icon="ADD_ICON" />
+            </UDropdownMenu>
           </div>
 
           <TableViewToggle v-model="view" />
@@ -191,13 +201,13 @@ onBeforeUnmount(() => {
 
         <template #name-cell="{ row }">
           <div class="flex items-center space-x-5">
-            <UAvatar :alt="teacherFullName(row.original)" />
+            <UAvatar :src="row.original.user?.photo || undefined" :alt="teacherFullName(row.original)" />
 
             <div>
               <p>{{ teacherName(row.original) }}</p>
 
               <p class="text-xs text-muted">
-                {{ row.original.staffId }}
+                {{ row.original.staffId }}<template v-if="row.original.designation"> &middot; {{ row.original.designation }}</template>
               </p>
             </div>
           </div>
@@ -286,7 +296,7 @@ onBeforeUnmount(() => {
             <div class="border-b border-gray-200 p-3 dark:border-gray-800">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
-                  <UAvatar size="xl" :alt="teacherName(item)" />
+                  <UAvatar size="xl" :src="item.user?.photo || undefined" :alt="teacherName(item)" />
 
                   <div class="min-w-0">
                     <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">

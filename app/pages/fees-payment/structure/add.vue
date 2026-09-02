@@ -55,6 +55,7 @@ type FeeStructureForm = {
   totalSupply: number;
   material: string;
   description?: string;
+  newStudentsOnly: boolean;
 };
 
 const state = reactive<FeeStructureForm>({
@@ -69,6 +70,7 @@ const state = reactive<FeeStructureForm>({
   totalSupply: 0,
   material: "",
   description: "",
+  newStudentsOnly: false,
 });
 
 const schema = yup.object({
@@ -136,6 +138,7 @@ async function onSubmit() {
       totalSupply: state.hasSupply ? state.totalSupply : 0,
       materialId: state.material,
       description: state.description,
+      newStudentsOnly: state.classId !== "SELECTION" && state.newStudentsOnly,
     });
 
     await feeStructureStore.fetchAll();
@@ -294,6 +297,21 @@ definePageMeta({
                   <USwitch v-model="state.hasSupply" :disabled="isLoading" />
                 </div>
               </UFormField>
+              <!-- New Students Only -->
+              <UFormField v-if="state.classId !== 'SELECTION'" name="newStudentsOnly">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-medium">New Students Only</p>
+                    <p class="text-xs text-muted">
+                      Only charge students on their first-ever enrollment - not existing students
+                      being promoted or re-enrolled. Use this for one-off fees like a Uniform Fee.
+                    </p>
+                  </div>
+
+                  <USwitch v-model="state.newStudentsOnly" :disabled="isLoading" />
+                </div>
+              </UFormField>
+
               <!-- Assign -->
               <UFormField label="Assign To" name="classId" required>
                 <USelectMenu v-model="state.classId" value-key="value" :items="classes" placeholder="Select assignment"

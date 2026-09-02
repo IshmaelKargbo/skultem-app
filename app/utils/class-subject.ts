@@ -3,6 +3,8 @@ export type ClassSubject = {
     className: string
     classId: string
     subjectName: string
+    streamName: string
+    streamId: string
     subjectId: string
     mandatory: boolean
     teacherName: string

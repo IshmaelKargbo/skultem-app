@@ -114,7 +114,20 @@ export const useStudentStore = defineStore('student', {
       this.loading = true
       this.error = null
       try {
-        const response = await StudentApi().getByClass(classId, page, size) as any
+        const response = await StudentApi().getByClass(classId, undefined, page, size) as any
+        this.classRecords = response.data || []
+        this.classMeta = response.meta || {} as Meta
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch students for class'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchByClassAndStream(classId: string, streamId: string | undefined, page: number = 1, size: number = 6) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await StudentApi().getByClass(classId, streamId, page, size) as any
         this.classRecords = response.data || []
         this.classMeta = response.meta || {} as Meta
       } catch (err: any) {
@@ -149,6 +162,11 @@ export const useStudentStore = defineStore('student', {
     },
     create(payload: FormData) {
       return StudentApi().create(payload)
+    },
+    async updatePhoto(id: string, photo: File) {
+      const res = await StudentApi().updatePhoto(id, photo)
+      if (res && this.record?.id === id) this.record = res
+      return res
     },
     findEnrollmentByStudent(id: string) {
       return StudentApi().getCurrentEnrollment(id)

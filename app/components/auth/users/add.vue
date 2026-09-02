@@ -91,6 +91,52 @@
             class="w-full"
           />
         </UFormField>
+
+        <UDivider />
+
+        <!-- Payroll toggle -->
+        <UFormField name="includeInPayroll">
+          <UCheckbox
+            v-model="state.includeInPayroll"
+            :disabled="isLoading"
+            label="Include this user in payroll"
+            help="An account role alone doesn't put someone on payroll - turn this on if they're also paid staff (e.g. an Accountant who works at the school)."
+          />
+        </UFormField>
+
+        <template v-if="state.includeInPayroll">
+          <UFormField required label="Staff ID" name="staffId" help="A unique staff ID for their payroll record.">
+            <UInput v-model="state.staffId" :disabled="isLoading" placeholder="STAFF001" class="w-full" />
+          </UFormField>
+
+          <UFormField required label="Designation" name="designation" help="Their job title or role.">
+            <UInput v-model="state.designation" :disabled="isLoading" placeholder="e.g. Accountant, Bursar"
+              class="w-full" />
+          </UFormField>
+
+          <UFormField required label="Title" name="title">
+            <USelectMenu v-model="state.title" :items="titles" value-key="value" :disabled="isLoading"
+              placeholder="Select title" class="w-full" />
+          </UFormField>
+
+          <UFormField required label="Gender" name="gender">
+            <URadioGroup v-model="state.gender" variant="card" :items="genders" :disabled="isLoading" :ui="{
+              fieldset: 'grid grid-cols-2 gap-3'
+            }" />
+          </UFormField>
+
+          <UFormField required label="Phone Number" name="phone">
+            <UInput v-model="state.phone" :disabled="isLoading" placeholder="+1234567890" class="w-full" />
+          </UFormField>
+
+          <UFormField required label="City" name="city">
+            <UInput v-model="state.city" :disabled="isLoading" placeholder="Freetown" class="w-full" />
+          </UFormField>
+
+          <UFormField required label="Street Address" name="street">
+            <UInput v-model="state.street" :disabled="isLoading" placeholder="123 Main Street" class="w-full" />
+          </UFormField>
+        </template>
       </UForm>
     </template>
 
@@ -126,11 +172,33 @@ const submitted = ref(false)
 const store = useUserStore()
 const formRef = ref()
 
+const titles = [
+  { label: 'Mr', value: 'MR' },
+  { label: 'Mrs', value: 'MRS' },
+  { label: 'Miss', value: 'MISS' },
+  { label: 'Ms', value: 'MS' },
+  { label: 'Dr', value: 'DR' },
+  { label: 'Prof', value: 'PROF' }
+]
+
+const genders = [
+  { label: 'Male', value: 'MALE' },
+  { label: 'Female', value: 'FEMALE' }
+]
+
 const initialState = {
   givenNames: '',
   familyName: '',
   email: '',
-  role: ''
+  role: '',
+  includeInPayroll: false,
+  staffId: '',
+  designation: '',
+  title: '',
+  gender: '',
+  phone: '',
+  city: '',
+  street: ''
 }
 
 const state = reactive({ ...initialState })
@@ -139,7 +207,36 @@ const schema = yup.object({
   givenNames: yup.string().required('Given names are required'),
   familyName: yup.string().required('Family name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
-  role: yup.string().required('Role is required')
+  role: yup.string().required('Role is required'),
+
+  staffId: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('Staff ID is required')
+  }),
+  designation: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('Designation is required')
+  }),
+  title: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('Title is required')
+  }),
+  gender: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('Gender is required')
+  }),
+  phone: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('Phone number is required').matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format')
+  }),
+  city: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('City is required')
+  }),
+  street: yup.string().when('includeInPayroll', {
+    is: true,
+    then: s => s.required('Street address is required')
+  })
 })
 
 function openSlider() {
@@ -156,7 +253,7 @@ async function onSubmit() {
   try {
     isLoading.value = true
 
-    await store.create(state)
+    await store.create({ ...state })
 
     toastSuccess('User created successfully')
     store.fetchAll(1, runtimeConf().limit)

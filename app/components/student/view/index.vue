@@ -14,11 +14,28 @@
                     <div class="flex min-w-0 items-end gap-4">
                         <!-- Avatar -->
                         <div
-                            class="shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
+                            class="relative shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
-                            <img v-else :src="photo" :alt="name"
-                                class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24" />
+                            <template v-else>
+                                <img :src="photo" :alt="name"
+                                    class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24"
+                                    :class="{ 'opacity-50': uploadingPhoto }" />
+
+                                <div v-if="uploadingPhoto"
+                                    class="absolute inset-1.5 flex items-center justify-center rounded-xl">
+                                    <UIcon name="i-lucide-loader-circle" class="animate-spin text-lg text-primary" />
+                                </div>
+
+                                <UTooltip v-else :delay-duration="0" arrow text="Upload photo">
+                                    <label
+                                        class="absolute -bottom-1 -right-1 flex size-7 cursor-pointer items-center justify-center rounded-full border-2 border-default bg-primary text-white shadow-md hover:bg-primary-600">
+                                        <UIcon name="i-lucide-camera" class="size-3.5" />
+                                        <input class="hidden" type="file" accept="image/png,image/jpeg,image/jpg"
+                                            @change="onPhotoChange">
+                                    </label>
+                                </UTooltip>
+                            </template>
                         </div>
 
                         <!-- Identity -->
@@ -99,62 +116,10 @@
         </UCard>
 
         <!-- Mobile tabs -->
-        <TabMobile class="md:hidden" :tabs="[
-            {
-                label: 'Personal',
-                to: personalInfo,
-                exact: true
-            },
-            {
-                label: 'Attendance',
-                to: attendanceInfo,
-                exact: true
-            },
-            {
-                label: 'Fees',
-                to: feeStructureInfo,
-                exact: true
-            },
-            {
-                label: 'Academics',
-                to: academicInfo,
-                exact: true
-            },
-            {
-                label: 'Behaviours',
-                to: behavioursInfo,
-                exact: true
-            }
-        ]" />
+        <TabMobile class="md:hidden" :tabs="mobileTabs" />
 
         <!-- Desktop tabs -->
-        <Tab class="hidden md:block" :tabs="[
-            {
-                label: 'Personal Information',
-                to: personalInfo,
-                exact: true
-            },
-            {
-                label: 'Attendance',
-                to: attendanceInfo,
-                exact: true
-            },
-            {
-                label: 'Fee Structure',
-                to: feeStructureInfo,
-                exact: true
-            },
-            {
-                label: 'Academic Information',
-                to: academicInfo,
-                exact: true
-            },
-            {
-                label: 'Behaviours',
-                to: behavioursInfo,
-                exact: true
-            }
-        ]" />
+        <Tab class="hidden md:block" :tabs="desktopTabs" />
 
         <!-- Page content -->
         <div class="min-w-0">
@@ -168,6 +133,11 @@ const store = useStudentStore()
 
 const { record, loading } = storeToRefs(store)
 const route = useRoute()
+const { can } = useAuth()
+
+// Report cards are ADMIN/OWNER/PROPRIETOR only server-side - Accountant can view a student's
+// profile but not their report cards, so the tab only shows for roles that can actually open it.
+const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
 definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
@@ -182,6 +152,32 @@ const name = computed(() => {
 const photo = computed(() => {
     return record.value?.photo || '/avatar-placeholder.svg'
 })
+
+const uploadingPhoto = ref(false)
+
+async function onPhotoChange(event: Event) {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = ''
+
+    if (!file || !record.value) return
+
+    if (file.size > 2 * 1024 * 1024) {
+        useNotify().error('Photo must be 2MB or less')
+        return
+    }
+
+    uploadingPhoto.value = true
+
+    try {
+        await store.updatePhoto(record.value.id, file)
+        useNotify().success('Photo updated')
+    } catch (err: any) {
+        useNotify().error(err?.message || 'Failed to upload photo')
+    } finally {
+        uploadingPhoto.value = false
+    }
+}
 
 const quickFacts = computed(() => [
     {
@@ -201,6 +197,25 @@ const attendanceInfo = `/students/${route.params.id}/attendance`
 const feeStructureInfo = `/students/${route.params.id}/fee-structure`
 const academicInfo = `/students/${route.params.id}/academic-information`
 const behavioursInfo = `/students/${route.params.id}/behaviours`
+const reportCardInfo = `/students/${route.params.id}/report-card`
+
+const mobileTabs = computed(() => [
+    { label: 'Personal', to: personalInfo, exact: true },
+    { label: 'Attendance', to: attendanceInfo, exact: true },
+    { label: 'Fees', to: feeStructureInfo, exact: true },
+    { label: 'Academics', to: academicInfo, exact: true },
+    { label: 'Behaviours', to: behavioursInfo, exact: true },
+    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, exact: true }] : [])
+])
+
+const desktopTabs = computed(() => [
+    { label: 'Personal Information', to: personalInfo, exact: true },
+    { label: 'Attendance', to: attendanceInfo, exact: true },
+    { label: 'Fee Structure', to: feeStructureInfo, exact: true },
+    { label: 'Academic Information', to: academicInfo, exact: true },
+    { label: 'Behaviours', to: behavioursInfo, exact: true },
+    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, exact: true }] : [])
+])
 
 async function fetchStudent() {
     await store.viewStudent(route.params.id as string)

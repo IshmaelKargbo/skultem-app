@@ -167,6 +167,16 @@
             </template>
           </UFormField>
 
+          <UFormField label="Designation" name="designation" required>
+            <UInput v-model="state.designation" placeholder="e.g. Mathematics Teacher, Class Teacher, Head of Department"
+              leading-icon="i-lucide-briefcase" />
+            <template #help>
+              <p class="text-sm text-muted">
+                What they teach or their role on staff. Adding someone who won't be teaching a class? Use
+                <NuxtLink to="/teachers/add-staff" class="text-primary underline">Add Staff</NuxtLink> instead.
+              </p>
+            </template>
+          </UFormField>
 
           <UFormField label="Class Master" name="classMaster">
             <USelectMenu v-model="state.classMaster" :items="classes" value-key="value" placeholder="Select class"
@@ -217,6 +227,7 @@ type TeacherForm = {
   street: string
   staffId: string
   classMaster: string
+  designation: string
 }
 
 const state = reactive<TeacherForm>({
@@ -229,7 +240,8 @@ const state = reactive<TeacherForm>({
   city: '',
   street: '',
   staffId: '',
-  classMaster: ''
+  classMaster: '',
+  designation: ''
 })
 
 const titles = [
@@ -286,7 +298,11 @@ const schema = yup.object({
 
   staffId: yup
     .string()
-    .required('Staff ID is required')
+    .required('Staff ID is required'),
+
+  designation: yup
+    .string()
+    .required('Designation is required')
 })
 
 async function onSubmit(
@@ -296,7 +312,8 @@ async function onSubmit(
 
   try {
     await teacherStore.create({
-      ...state
+      ...state,
+      teaching: true
     })
 
     success('Teacher created successfully')

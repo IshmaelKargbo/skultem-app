@@ -56,7 +56,7 @@ export const StudentApi = () => {
     },
     getAllStudentFeesById: async (id: string) => {
       try {
-        const res = await $api(`/report/finance/outstanding?studentId=${id}`) as any
+        const res = await $api(`/student/fee/${id}`) as any
 
         if (!res)
           throw new Error('Failed to fetch student fees')
@@ -125,9 +125,9 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
-    getByClass: async (classId: string, page: number, size: number) => {
+    getByClass: async (classId: string, streamId: string | undefined, page: number, size: number) => {
       try {
-        const res = await $api(`/enrollment/class/${classId}?page=${page}&size=${size}`) as any
+        const res = await $api(`/enrollment/class/${classId}?page=${page}&size=${size}${streamId ? `&stream=${streamId}` : ''}`) as any
 
         if (!res)
           throw new Error('Failed to fetch students by class')
@@ -157,6 +157,21 @@ export const StudentApi = () => {
         const res: { data: any } = await $api('/student', {
           method: 'POST',
           body: payload
+        })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Enrollment doesn't require a photo - this adds or replaces one afterwards.
+    updatePhoto: async (id: string, photo: File) => {
+      try {
+        const formData = new FormData()
+        formData.append('photo', photo)
+
+        const res: { data: any } = await $api(`/student/${id}/photo`, {
+          method: 'PATCH',
+          body: formData
         })
         return res.data
       } catch (err: any) {

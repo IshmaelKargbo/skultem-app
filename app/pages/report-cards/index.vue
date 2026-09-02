@@ -1,69 +1,44 @@
 <template>
-  <div class="space-y-6 mt-6 p-4 md:px-6">
+  <div class="space-y-4 px-4 md:px-6">
 
     <!-- Header -->
     <Heading title="Report Cards" subtitle="Generate, preview and export student report cards.">
       <UButton icon="i-lucide-plus" label="Generate Report Cards" class="justify-center" to="/report-cards/generate" />
-
       <UButton icon="i-lucide-settings-2" variant="outline" label="Design" class="justify-center"
         to="/report-cards/templates" />
     </Heading>
 
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-4">
+      <Metric :record="{
+        color: 'info',
+        icon: 'i-lucide-file-text',
+        label: 'Total Reports',
+        value: stats?.total ?? 0,
+        isReady: !loading
+      }" />
+      <Metric :record="{
+        color: 'success',
+        icon: 'i-lucide-check-circle',
+        label: 'Passed',
+        value: stats?.passed ?? 0,
+        isReady: !loading
+      }" />
+      <Metric :record="{
+        color: 'warning',
+        icon: 'i-lucide-alert-circle',
+        label: 'Needs Attention',
+        value: stats?.failed ?? 0,
+        isReady: !loading
+      }" />
 
-      <UCard>
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-            <UIcon name="i-lucide-file-text" class="text-xl text-primary-500" />
-          </div>
-
-          <div>
-            <p class="text-xs text-muted">Total Reports</p>
-            <h3 class="text-2xl font-bold">{{ stats?.total ?? 0 }}</h3>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10">
-            <UIcon name="i-lucide-check-circle" class="text-xl text-emerald-600" />
-          </div>
-
-          <div>
-            <p class="text-xs text-muted">Passed</p>
-            <h3 class="text-2xl font-bold">{{ stats?.passed ?? 0 }}</h3>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 items-center justify-center rounded-2xl bg-amber-500/10">
-            <UIcon name="i-lucide-alert-circle" class="text-xl text-amber-600" />
-          </div>
-
-          <div>
-            <p class="text-xs text-muted">Needs Attention</p>
-            <h3 class="text-2xl font-bold">{{ stats?.failed ?? 0 }}</h3>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center gap-4">
-          <div class="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10">
-            <UIcon name="i-lucide-download" class="text-xl text-blue-600" />
-          </div>
-
-          <div>
-            <p class="text-xs text-muted">Downloads</p>
-            <h3 class="text-2xl font-bold">{{ stats?.downloads ?? 0 }}</h3>
-          </div>
-        </div>
-      </UCard>
-
+      <Metric :record="{
+        color: 'primary',
+        icon: 'i-lucide-download',
+        label: 'Downloads',
+        value: stats?.downloads ?? 0,
+        isReady: !loading
+      }" />
     </div>
 
     <!-- Filters -->
@@ -160,14 +135,15 @@
       <div class="flex flex-col items-center justify-center py-16 text-center">
         <UIcon name="i-lucide-file-text" class="mb-3 size-12 text-muted" />
         <h3 class="text-base font-semibold">No report cards match these filters</h3>
-        <p class="mt-1 text-sm text-muted">Try adjusting your search, clearing the filters, or generating new report cards.</p>
+        <p class="mt-1 text-sm text-muted">Try adjusting your search, clearing the filters, or generating new report
+          cards.</p>
       </div>
     </UCard>
 
     <div v-if="meta.total" class="flex items-center justify-between">
       <Showing :meta="meta" />
-      <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-        :total="meta.total" show-edges />
+      <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
+        show-edges />
     </div>
 
   </div>

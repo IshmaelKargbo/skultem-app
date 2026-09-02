@@ -150,7 +150,14 @@ definePageMeta({
 
         <template #category-cell="{ row }">
           <div class="space-y-1">
-            <p>{{ clean(row.original.category.name) }}</p>
+            <div class="flex items-center gap-1.5">
+              <p>{{ clean(row.original.category.name) }}</p>
+
+              <UTooltip v-if="row.original.newStudentsOnly" :delay-duration="0" arrow
+                text="Only charged on a student's first-ever enrollment">
+                <UBadge size="xs" variant="subtle" color="info" icon="i-lucide-user-plus" label="New Students" />
+              </UTooltip>
+            </div>
 
             <p class="text-xs text-muted">
               {{ row.original.term.name || "-" }}
@@ -278,6 +285,9 @@ definePageMeta({
                     <p class="truncate text-xs-base text-muted">
                       {{ clean(item.type) }} · {{ item.clazz?.name || 'All Classes' }}
                     </p>
+
+                    <UBadge v-if="item.newStudentsOnly" size="xs" variant="subtle" color="info"
+                      icon="i-lucide-user-plus" label="New Students Only" class="mt-1" />
                   </div>
                 </div>
 

@@ -62,6 +62,20 @@ export const useUserStore = defineStore('user', {
     },
     findOne(id: string) {
       return UserApi().getOne(id)
+    },
+    payrollStatus(id: string) {
+      return UserApi().payrollStatus(id)
+    },
+    includeInPayroll(id: string, payload: IncludeUserInPayrollDto) {
+      return UserApi().includeInPayroll(id, payload)
+    },
+    updatePhoto(id: string, photo: File) {
+      return UserApi().updatePhoto(id, photo)
+    },
+    async updateMyPhoto(photo: File) {
+      const res = await UserApi().updateMyPhoto(photo)
+      if (res) this.user = res
+      return res
     }
   }
 })

@@ -1,27 +1,12 @@
 <template>
-  <UForm class="p-4 sm:p-6 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
-    <Heading
-      title="Assign Class Subjects to Teacher"
-      subtitle="Define the curriculum structure for this class."
-    >
-      <UFormField class="w-full md:w-auto md:min-w-sm" name="classId">
-        <USelectMenu
-          value-key="value"
-          :loading="classStore.loading"
-          v-model="state.classId"
-          @change="fetchRecord"
-          :items="classes"
-          placeholder="Choose a class"
-          class="w-full"
-        />
-      </UFormField>
+  <UForm class="px-4 md:px-6 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
+    <Heading title="Assign Class Subjects to Teacher" subtitle="Define the curriculum structure for this class.">
+      <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
+        :items="classes" placeholder="Choose a class" class="w-56" />
     </Heading>
-    <UCard
-      v-if="state.classId"
-      :ui="{
-        body: 'sm:p-0',
-      }"
-    >
+    <UCard v-if="state.classId" :ui="{
+      body: 'sm:p-0',
+    }">
       <template #header>
         <div>
           <!-- Section Header -->
@@ -32,10 +17,8 @@
           </div>
 
           <!-- Empty State -->
-          <div
-            v-if="!state.assignments.length"
-            class="border border-dashed border-gray-300 rounded-lg p-10 text-center"
-          >
+          <div v-if="!state.assignments.length"
+            class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
             <p class="text-sm text-gray-500 mb-4">No subjects assigned yet.</p>
           </div>
         </div>
@@ -44,48 +27,28 @@
 
 
       <!-- Desktop / tablet: table -->
-      <div  class="hidden md:block">
+      <div class="hidden md:block">
         <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
           <!-- Subject -->
           <template #subjectId-cell="{ row }">
             <UFormField :name="`assignments.${row.index}.subjectId`">
-              <USelectMenu
-                value-key="value"
-                disabled
-                :items="subjects"
-                :loading="subjectStore.loading"
-                placeholder="Select Subject"
-                class="w-full"
-                v-model="row.original.subjectId"
-              />
+              <USelectMenu value-key="value" disabled :items="subjects" :loading="subjectStore.loading"
+                placeholder="Select Subject" class="w-full" v-model="row.original.subjectId" />
             </UFormField>
           </template>
           <!-- Teacher -->
           <template #teacherId-cell="{ row }">
             <UFormField :name="`assignments.${row.index}.teacherId`">
-              <USelectMenu
-                value-key="value"
-                :loading="teacherStore.loading"
-                :items="teachers"
-                placeholder="Select Teacher"
-                class="w-full"
-                v-model="row.original.teacherId"
-              />
+              <USelectMenu value-key="value" :loading="teacherStore.loading" :items="teachers"
+                placeholder="Select Teacher" class="w-full" v-model="row.original.teacherId" />
             </UFormField>
           </template>
         </UTable>
       </div>
 
       <!-- Mobile: stacked cards, one per assignment -->
-      <div
-        v-if="state.assignments.length"
-        class="divide-y md:hidden divide-gray-200 dark:divide-gray-800"
-      >
-        <div
-          v-for="(assignment, index) in state.assignments"
-          :key="assignment.id ?? index"
-          class="p-4 space-y-3"
-        >
+      <div v-if="state.assignments.length" class="divide-y md:hidden divide-gray-200 dark:divide-gray-800">
+        <div v-for="(assignment, index) in state.assignments" :key="assignment.id ?? index" class="p-4 space-y-3">
           <div>
             <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
               Subject {{ index + 1 }}
@@ -93,27 +56,14 @@
           </div>
           <div>
             <UFormField :name="`assignments.${index}.subjectId`" label="Subject">
-              <USelectMenu
-                value-key="value"
-                disabled
-                :items="subjects"
-                :loading="subjectStore.loading"
-                placeholder="Select Subject"
-                class="w-full"
-                v-model="assignment.subjectId"
-              />
+              <USelectMenu value-key="value" disabled :items="subjects" :loading="subjectStore.loading"
+                placeholder="Select Subject" class="w-full" v-model="assignment.subjectId" />
             </UFormField>
           </div>
           <div>
             <UFormField :name="`assignments.${index}.teacherId`" label="Teacher">
-              <USelectMenu
-                value-key="value"
-                :loading="teacherStore.loading"
-                :items="teachers"
-                placeholder="Select Teacher"
-                class="w-full"
-                v-model="assignment.teacherId"
-              />
+              <USelectMenu value-key="value" :loading="teacherStore.loading" :items="teachers"
+                placeholder="Select Teacher" class="w-full" v-model="assignment.teacherId" />
             </UFormField>
           </div>
         </div>
@@ -121,29 +71,16 @@
 
       <template #footer>
         <div class="flex flex-col gap-3 sm:flex-row">
-          <UButton
-            type="submit"
-            color="primary"
-            icon="lucide:save"
-            label="Save Changes"
-            :loading="saving"
-            class="w-full justify-center sm:w-auto"
-          />
-          <UButton
-            color="neutral"
-            variant="outline"
-            label="Cancel"
-            @click="resetForm"
-            class="w-full justify-center sm:w-auto"
-          />
+          <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
+            class="w-full justify-center sm:w-auto" />
+          <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm"
+            class="w-full justify-center sm:w-auto" />
         </div>
       </template>
     </UCard>
     <UCard v-else>
       <div class="h-56 flex flex-col items-center justify-center gap-3 px-4 text-center">
-        <div
-          class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800"
-        >
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800">
           <UIcon name="lucide:layout-list" class="w-6 h-6 text-gray-400" />
         </div>
         <div class="space-y-1">

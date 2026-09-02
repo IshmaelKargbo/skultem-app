@@ -103,7 +103,8 @@
                 <TransitionGroup v-else tag="div" name="row" class="divide-y divide-gray-200 dark:divide-gray-800">
                     <div v-for="(assignment, index) in state.assignments" :key="index" class="py-4 space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                            <span
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
                                 <UIcon v-if="assignment.locked" name="lucide:lock" class="size-3" />
                                 Subject {{ index + 1 }}
                             </span>
@@ -135,9 +136,12 @@
 
             <div v-if="state.assignments.length"
                 class="flex flex-wrap items-center gap-x-4 gap-y-1 p-4 bg-gray-50 dark:bg-gray-950 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400">
-                <span>Total Subjects: <strong class="text-gray-800 dark:text-gray-200">{{ state.assignments.length }}</strong></span>
-                <span>Core: <strong class="text-gray-800 dark:text-gray-200">{{state.assignments.filter(a => a.mandatory).length}}</strong></span>
-                <span>Optional: <strong class="text-gray-800 dark:text-gray-200">{{state.assignments.filter(a => !a.mandatory).length}}</strong></span>
+                <span>Total Subjects: <strong class="text-gray-800 dark:text-gray-200">{{ state.assignments.length
+                        }}</strong></span>
+                <span>Core: <strong class="text-gray-800 dark:text-gray-200">{{state.assignments.filter(a =>
+                        a.mandatory).length}}</strong></span>
+                <span>Optional: <strong class="text-gray-800 dark:text-gray-200">{{state.assignments.filter(a =>
+                        !a.mandatory).length}}</strong></span>
             </div>
 
             <template #footer>
@@ -167,7 +171,8 @@
         <div v-if="state.classId"
             class="fixed inset-x-0 bottom-0 z-10 flex gap-3 border-t border-gray-200 bg-white/95 p-4 backdrop-blur-sm md:hidden dark:border-gray-800 dark:bg-gray-950/95"
             style="padding-bottom: max(1rem, env(safe-area-inset-bottom));">
-            <UButton color="neutral" variant="outline" label="Cancel" class="flex-1 justify-center" @click="resetForm" />
+            <UButton color="neutral" variant="outline" label="Cancel" class="flex-1 justify-center"
+                @click="resetForm" />
             <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
                 class="flex-1 justify-center" @click="onSubmit" />
         </div>
@@ -219,9 +224,18 @@ const lockedCount = computed(() =>
 )
 
 const classes = computed(() =>
-    classStore.records
-        .filter(e => e.classLevel !== 'SSS')
-        .map(e => ({ label: e.clazz, value: e.clazzId }))
+    classStore.records.map(e => {
+        let section = e.sectionName
+
+        if (e.streamName) {
+            section = section ? `${section} - ${e.streamName}` : e.streamName
+        }
+        
+        return {
+            label: `${e.clazz} ${section ? `(${section})` : ''}`,
+            value: e.id
+        }
+    })
 )
 
 const schema = yup.object({

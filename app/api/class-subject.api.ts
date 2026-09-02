@@ -18,10 +18,9 @@ export const ClassSubjectApi = () => {
         useHandleError(err)
       }
     },
-    getAllByClass: async (id: string, page: number, size: number) => {
+    getAllByClass: async (id: string, stream: string, page: number, size: number) => {
       try {
-        const res = await $api(`/class-subject/${id}?page=${page}&size=${size}`) as any
-
+        const res = await $api(`/class-subject/${id}?stream=${stream}&page=${page}&size=${size}`) as any
         if (!res)
           throw new Error('Failed to fetch class subjects by class')
 

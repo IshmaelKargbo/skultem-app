@@ -3,7 +3,8 @@
         <template #header>
             <div>
                 <p class="text-xl font-semibold">Student Photo Upload</p>
-                <p class="text-sm text-muted">Upload a clear profile photo for the student record.</p>
+                <p class="text-sm text-muted">Optional - upload a clear profile photo, or add one later from the
+                    student's profile.</p>
             </div>
         </template>
 
@@ -43,8 +44,8 @@
                             </div>
                         </div>
 
-                        <UAlert v-else color="neutral" variant="subtle" title="ID photo crop"
-                            description="Choose a photo, then align the face inside the ID frame before enrollment." />
+                        <UAlert v-else color="neutral" variant="subtle" title="Photo is optional"
+                            description="You can enroll the student without a photo and add one later from their profile." />
                     </div>
 
                     <!-- Right: Guidelines -->
@@ -131,7 +132,7 @@ function back() {
 }
 
 const schema = yup.object({
-    photo: yup.mixed().required('Student photo is required')
+    photo: yup.mixed().nullable()
 })
 
 const form = reactive({

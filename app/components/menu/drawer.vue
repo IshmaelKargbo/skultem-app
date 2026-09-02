@@ -12,7 +12,7 @@
       <div class="w-full">
         <div class="flex items-center justify-between gap-3">
           <div class="relative shrink-0">
-            <UAvatar :alt="name" size="lg" class="ring-2 ring-white dark:ring-gray-900" />
+            <UAvatar :src="user?.photo || undefined" :alt="name" size="lg" class="ring-2 ring-white dark:ring-gray-900" />
             <span
               class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-gray-950 bg-emerald-500"
               aria-hidden="true" />

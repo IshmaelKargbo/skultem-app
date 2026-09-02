@@ -154,6 +154,17 @@
               </p>
             </template>
           </UFormField>
+
+          <UFormField label="Designation" name="designation">
+            <UInput v-model="state.designation" placeholder="e.g. Mathematics Teacher, Cleaner, Security Guard, Cook"
+              leading-icon="i-lucide-briefcase" />
+            <template #help>
+              <p class="text-sm text-muted">
+                Their job title or role. Covers all staff, not just classroom teachers.
+              </p>
+            </template>
+          </UFormField>
+
           <UFormField label="Classes">
             <USelectMenu disabled multiple v-model="state.classes" :items="classes" value-key="value"
               placeholder="Select class" leading-icon="i-lucide-school" />
@@ -202,6 +213,7 @@ type TeacherForm = {
   street: string
   staffId: string
   classes: string[]
+  designation: string
 }
 
 const state = reactive<TeacherForm>({
@@ -214,7 +226,8 @@ const state = reactive<TeacherForm>({
   city: '',
   street: '',
   staffId: '',
-  classes: []
+  classes: [],
+  designation: ''
 })
 
 const titles = [
@@ -311,6 +324,7 @@ async function fetchRecord() {
     state.street = res.street
     state.staffId = res.staffId
     state.classes = res.classes || []
+    state.designation = res.designation || ''
   } catch (err: any) {
     useNotify().error(err?.message || err)
     navigateTo("/teachers")
