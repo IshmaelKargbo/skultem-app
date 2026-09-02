@@ -18,7 +18,10 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
-        throw err.data?.message || 'Failed to fetch scheme of work'
+        // CurriculumsApi() funnels failures through useHandleError, which re-throws a plain
+        // Error (message on `.message`) rather than the raw ofetch error (message on
+        // `.data.message`) - check both so the real reason surfaces instead of the fallback.
+        throw err.data?.message || err.message || 'Failed to fetch scheme of work'
       } finally {
         this.loading = false
       }
@@ -31,7 +34,7 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
-        throw err.data?.message || 'Failed to fetch my schemes of work'
+        throw err.data?.message || err.message || 'Failed to fetch my schemes of work'
       } finally {
         this.loading = false
       }
@@ -42,7 +45,7 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
         const response = await CurriculumsApi().getSchemeProgress(id) as any
         this.progress = response
       } catch (err: any) {
-        throw err.data?.message || 'Failed to fetch scheme progress'
+        throw err.data?.message || err.message || 'Failed to fetch scheme progress'
       } finally {
         this.loading = false
       }
@@ -51,7 +54,7 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
       try {
         return CurriculumsApi().createSchemeOfWork(payload)
       } catch (err: any) {
-        throw err.data?.message || 'Failed to create scheme of work'
+        throw err.data?.message || err.message || 'Failed to create scheme of work'
       }
     },
   },

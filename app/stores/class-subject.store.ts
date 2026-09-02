@@ -48,11 +48,14 @@ export const useClassSubjectStore = defineStore('classSubject', {
         this.loading = false
       }
     },
-    async allByClass(id: string, page: number = 1, size: number = 6) {
+    // `stream` matters for classes like SSS that split into separate streams (Science, Art, ...)
+    // - each stream carries its own subject set, so leaving it blank would merge every stream's
+    // subjects together instead of scoping to the one the caller actually means.
+    async allByClass(id: string, stream: string = '', page: number = 1, size: number = 6) {
       this.loading = true
       this.error = null
       try {
-        const response = await ClassSubjectApi().getAllByClass(id, '', page, size) as any
+        const response = await ClassSubjectApi().getAllByClass(id, stream, page, size) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
 

@@ -49,10 +49,9 @@ async function fetchRecord() {
     })
 
     const widget = res?.data ?? res
-    if (!widget?.datasets) return
 
-    const present = Number(widget.datasets[0]?.data?.[0] ?? 0)
-    const late = Number(widget.datasets[1]?.data?.[0] ?? 0)
+    const present = Number(widget?.datasets?.[0]?.data?.[0] ?? 0)
+    const late = Number(widget?.datasets?.[1]?.data?.[0] ?? 0)
 
     attendanceRate.value = Math.min(present + late, 100).toFixed(1)
 
@@ -60,6 +59,7 @@ async function fetchRecord() {
 }
 
 watch(() => classId, async () => {
+    isReady.value = false
     await fetchRecord()
 }, { immediate: true })
 </script>

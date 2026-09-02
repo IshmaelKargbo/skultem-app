@@ -22,7 +22,7 @@
         </UFormField>
       </div>
 
-      <div class="flex flex-row flex-wrap gap-2 lg:flex-col lg:flex-nowrap">
+      <div class="flex gap-1">
         <UButton :loading="isLoading" type="submit" :icon="SAVE_ICON" v-if="canSave" variant="ghost" color="primary"
           square class="justify-center" />
         <UButton @click="mode = 'edit'" v-if="mode == 'created'" :icon="EDIT_ICON" variant="ghost" color="warning"

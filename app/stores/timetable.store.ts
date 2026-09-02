@@ -127,7 +127,10 @@ export const useTimetableStore = defineStore('timetable', {
 
     },
     async setTiming(payload: CreateTimingDTO) {
-      await TimetableApi().setTiming(payload)
+      // Same reasoning as setWorkingDay: pick up the server-persisted record (real id) instead
+      // of leaving the client-only default (id: null) in place after a successful first save.
+      const response = await TimetableApi().setTiming(payload) as any
+      if (response?.data) this.timing = response.data
     },
     async deletePeriod(id: string) {
       await TimetableApi().deletePeriod(id)
@@ -138,7 +141,11 @@ export const useTimetableStore = defineStore('timetable', {
       this.rooms.splice(Number.parseInt(index), 1)
     },
     async setWorkingDay(payload: SetWorkingDTO) {
-      await TimetableApi().setWorkingDay(payload)
+      // Sync local state with what the server actually persisted (this used to discard the
+      // response entirely) - matters most on a first save, which turns the client-only default
+      // rows (id: null) into real ones with server-assigned ids and timestamps.
+      const response = await TimetableApi().setWorkingDay(payload) as any
+      if (response?.data) this.workingDays = response.data
     },
     addRoom() {
       this.rooms.unshift({

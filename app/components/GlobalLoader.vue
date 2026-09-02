@@ -1,7 +1,12 @@
 <template>
     <Teleport to="body">
         <Transition name="loader">
-            <div v-if="visible" class="loader-backdrop">
+            <!-- v-show (not v-if): keeps the card mounted so its CSS animations (spinning
+                 rings, bouncing pencil, shimmering line) keep running continuously instead of
+                 restarting from frame zero every time the loader toggles - back-to-back
+                 navigations were unmounting/remounting it fast enough that the icon visibly
+                 jumped/flickered on each re-show. -->
+            <div v-show="visible" class="loader-backdrop">
                 <div class="loader-card">
 
                     <!-- Dot grid bg -->

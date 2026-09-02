@@ -140,7 +140,7 @@ const { can } = useAuth()
 const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
 const name = computed(() => {

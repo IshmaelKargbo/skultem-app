@@ -1,19 +1,18 @@
 <template>
-    <div class="md:p-7 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
-        <Heading title="Behaviour Notes" subtitle="Record and manage behaviour observations for students in your class">
-            <div class="flex space-x-3 md:w-1/3">
-                <USelectMenu :items="classes" v-model="state.id" placeholder="Select class" value-key="value" />
-                <BehaviourAdd @refresh="refreshReport" :clazz="clazzId" />
-            </div>
+    <div class="md:px-6 px-4 space-y-4">
+        <Heading title="Behaviours" subtitle="Track and record behaviour notes for your classes">
+            <USelectMenu :loading="loading" :items="classes" v-model="state.id" placeholder="Select class"
+                value-key="value" class="w-full md:w-72" />
         </Heading>
-        <BehaviourReport ref="reportRef" :clazz="state.id" />
-        <BehaviourTable :state="{ classId: clazzId }" />
+        <BehaviourReport ref="reportRef" :clazz="clazzId" />
+        <BehaviourTable :state="{ classId: clazzId }" :selectable="false" />
     </div>
 </template>
 
 <script setup lang="ts">
 const classSession = useTeacherSubjectStore()
 const reportRef = ref()
+const loading = ref(true)
 
 function refreshReport() {
     reportRef.value?.fetchRecord()
@@ -45,8 +44,10 @@ watch(() => state.id, () => {
 onMounted(async () => {
     useAppStore().setTitle('Behaviours')
     document.title = 'Behaviours | Skultem'
+    loading.value = true
     const res = await classSession.fetchAllByTeacher(0, 0)
     records.value = res
+    loading.value = false
 })
 
 definePageMeta({

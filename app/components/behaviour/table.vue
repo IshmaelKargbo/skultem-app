@@ -3,10 +3,13 @@ const classSession = useClassSessionStore()
 const route = useRoute();
 const router = useRouter();
 
-const { state } = defineProps<{
+const { state, selectable = true } = defineProps<{
   state: {
     classId: string
   }
+  // Set to false when the parent already scopes and picks the class (e.g. a teacher
+  // restricted to their own classes) so this component doesn't offer every class in the school.
+  selectable?: boolean
 }>();
 const store = useBehaviourStore();
 const { records: data, meta, loading } = storeToRefs(store);
@@ -86,7 +89,7 @@ onMounted(async () => {
   }
 
   fetchRecords();
-  await classSession.fetchAll(0, 0)
+  if (selectable) await classSession.fetchAll(0, 0)
 });
 </script>
 
@@ -95,7 +98,8 @@ onMounted(async () => {
     <template #header>
       <div class="flex justify-between">
         <div class="flex space-x-3 w-full">
-          <USelectMenu :items="classes" v-model="state.classId" placeholder="Select class" value-key="value" />
+          <USelectMenu v-if="selectable" :items="classes" v-model="state.classId" placeholder="Select class"
+            value-key="value" />
           <BehaviourAdd @refresh="refreshReport" :clazz="state.classId" />
         </div>
 

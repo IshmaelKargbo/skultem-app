@@ -60,7 +60,7 @@ async function save() {
     await store.setTiming({ ...settings.value })
     state.value = 'created'
   } catch (error: any) {
-    useNotify().error(error)
+    useNotify().error(error?.message || error)
   } finally {
     isLoading.value = false
   }
@@ -75,7 +75,7 @@ async function fetchRecord() {
     loading.value = true
     await store.getTiming()
   } catch (error: any) {
-    useNotify().error(error)
+    useNotify().error(error?.message || error)
   } finally {
     loading.value = false
   }

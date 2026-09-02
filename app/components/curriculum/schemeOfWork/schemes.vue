@@ -5,6 +5,7 @@ const props = defineProps<{
 
 const store = useSchemeOfWorkStore()
 const subjectStore = useSubjectStore()
+const teacherSubjectStore = useTeacherSubjectStore()
 const classStore = useClassSessionStore()
 const academicYearStore = useAcademicYearStore()
 
@@ -12,12 +13,24 @@ const router = useRouter()
 const route = useRoute()
 const { records, meta } = storeToRefs(store)
 const { records: subjectRecords } = storeToRefs(subjectStore)
+const { records: teacherSubjectRecords } = storeToRefs(teacherSubjectStore)
 const { termList: terms } = storeToRefs(academicYearStore)
 
 const loadingFilters = ref(false)
 const fetchError = ref('')
 
-const subjectOptions = computed(() => subjectRecords.value.map(s => ({ label: s.name, value: s.id })))
+// A teacher only picks among the subjects they actually teach - the full school subject list
+// (used for the admin "Recent Schemes" view) would mostly return no results for them.
+const subjectOptions = computed(() => {
+    if (!props.mine) return subjectRecords.value.map(s => ({ label: s.name, value: s.id }))
+
+    const seen = new Set<string>()
+    return teacherSubjectRecords.value.filter(s => {
+        if (seen.has(s.subjectId)) return false
+        seen.add(s.subjectId)
+        return true
+    }).map(s => ({ label: s.subjectName, value: s.subjectId }))
+})
 const classOptions = computed(() => classStore.list)
 const progressOptions = [
     { label: 'Not Started', value: 'NOT_STARTED' },
@@ -97,7 +110,7 @@ async function loadFilterOptions() {
     loadingFilters.value = true
     try {
         await Promise.all([
-            subjectStore.fetchAll(0, 0),
+            props.mine ? teacherSubjectStore.allByTeacher() : subjectStore.fetchAll(0, 0),
             classStore.fetchAll(0, 0),
             academicYearStore.getTerms()
         ])

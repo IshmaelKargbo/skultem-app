@@ -137,7 +137,7 @@ const store = useStudentStore()
 const { record, loading } = storeToRefs(store)
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
 const personalDetails = computed(() => ([

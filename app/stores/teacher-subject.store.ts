@@ -83,13 +83,13 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
       const seen = new Set<string>()
 
       return state.records.filter(record => {
-        if (seen.has(record.className)) {
+        if (seen.has(record.sessionId)) {
           return false
         }
 
-        seen.add(record.className)
+        seen.add(record.sessionId)
         return true
-      }).map(e => ({ label: e.className, value: e.sessionId }))
+      }).map(e => ({ label: `${e.className} (${e.sectionName})`, value: e.sessionId }))
     },
     getClass: (state) => {
       return (id: string): TeacherSubject | undefined => {

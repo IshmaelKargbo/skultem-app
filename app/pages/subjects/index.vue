@@ -24,7 +24,7 @@
             </UTable>
             <!-- Mobile -->
             <div
-                :class="view === 'table' ? 'md:hidden' : 'p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+                :class="view === 'table' ? 'md:hidden' : 'p-4 grid grid-cols-1 space-y-4 gap-x-4 md:grid-cols-2 lg:grid-cols-3'">
                 <UCard v-for="value in data" :key="value.id" :ui="{ body: 'sm:p-0 p-0' }">
                     <!-- Header -->
                     <div class="border-b border-default p-3">

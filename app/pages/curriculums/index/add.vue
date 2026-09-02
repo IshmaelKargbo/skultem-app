@@ -214,7 +214,10 @@ const classStore = useClassSessionStore()
 const academicYearStore = useAcademicYearStore()
 const store = useSchemeOfWorkStore()
 
-const { listByClass: classes } = storeToRefs(classStore)
+// `list` (not `listByClass`) - a class with streams (e.g. SSS 1's Science/Art) has one session
+// per stream sharing the same class id, and each stream has its own subject set, so they need to
+// be picked as separate options here rather than collapsed into one "SSS 1" entry.
+const { list: classes } = storeToRefs(classStore)
 const { listBySubject: subjects } = storeToRefs(classSubjectStore)
 const { termList: terms } = storeToRefs(academicYearStore)
 const { error } = useNotify()
@@ -251,8 +254,11 @@ const selectedClassLabel = computed(
   () => classes.value.find(c => c.value === state.classId)?.label || 'Not selected'
 )
 
+// `classes` now lists sessions, so state.classId is a session id - look it up directly rather
+// than by clazz id (getByClazz would resolve to whichever of a class's streams happens to come
+// back first, silently mixing up e.g. SSS 1 Science with SSS 1 Art).
 const selectedClass = computed(
-  () => classStore.getByClazz(state.classId)
+  () => classStore.get(state.classId)
 )
 
 const selectedTerm = computed(
@@ -316,6 +322,10 @@ watch(() => selectedTerm.value, (value) => {
 
 watch(() => state.classId, async (value) => {
   if (value == "") return
-  await classSubjectStore.allByClass(value, 0, 0)
+  const session = classStore.get(value)
+  if (!session) return
+  // Scope subjects to this session's specific stream (empty string for a streamless class,
+  // e.g. JSS) so a stream class's subject list doesn't bleed into another stream's.
+  await classSubjectStore.allByClass(session.clazzId, session.streamId || '', 0, 0)
 })
 </script>

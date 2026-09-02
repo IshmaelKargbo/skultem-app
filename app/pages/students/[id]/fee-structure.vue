@@ -157,7 +157,7 @@ const { record } = storeToRefs(store)
 const { format } = useMoney()
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
 type FeeGroup = {

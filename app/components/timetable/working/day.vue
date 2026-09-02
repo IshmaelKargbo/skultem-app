@@ -53,7 +53,7 @@ async function save() {
     })
     mode.value = 'created'
   } catch (error: any) {
-    useNotify().error(error)
+    useNotify().error(error?.message || error)
   } finally {
     isLoading.value = false
   }
@@ -64,7 +64,7 @@ onMounted(async () => {
     await store.getWorkingDays()
     mode.value = store.isWorkingDaysEmpty ? 'init' : 'created'
   } catch (error: any) {
-    useNotify().error(error)
+    useNotify().error(error?.message || error)
   }
 })
 </script>

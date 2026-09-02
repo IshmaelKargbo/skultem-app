@@ -58,6 +58,8 @@ const chartOptions = computed(() => ({
 }))
 
 async function fetchRecord() {
+  if (classId == null) return
+
   const res = await store.runAnalytic({
     entity: "attendances",
     title: "Attendance Trend",
@@ -114,15 +116,11 @@ async function fetchRecord() {
     chartType: "line"
   })
 
-  if (!res) return
-
   const widget = res?.data ?? res
 
-  if (!widget?.labels) return
+  labels.value = widget?.labels ?? []
 
-  labels.value = widget.labels
-
-  chartSeries.value = widget.datasets.map((d: any) => ({
+  chartSeries.value = (widget?.datasets ?? []).map((d: any) => ({
     name: d.label,
     data: d.data
   }))
@@ -131,8 +129,9 @@ async function fetchRecord() {
 }
 
 watch(() => classId, async () => {
+  isReady.value = false
   await fetchRecord()
-})
+}, { immediate: true })
 </script>
 
 <style scoped>

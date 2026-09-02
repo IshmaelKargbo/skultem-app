@@ -8,7 +8,7 @@ const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const columns = [
   { accessorKey: 'name', header: 'Student' },
-  { accessorKey: 'admission', header: 'Admission No' },
+  { accessorKey: 'admissionNo', header: 'Admission No' },
   { accessorKey: 'status', header: '' },
 ]
 
@@ -68,7 +68,8 @@ watch(
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="feeDetails.records" :loading="loading">
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="feeDetails.records"
+        :loading="loading">
 
         <!-- Empty State -->
         <template #empty-state>
@@ -93,51 +94,50 @@ watch(
 
       </UTable>
 
-      <div class="p-4"
+      <div class="p-4 space-y-4"
         :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
-      <!-- Loading -->
-      <template v-if="loading">
-        <UCard v-for="i in 6" :key="i" :ui="{ body: 'p-0' }" class="overflow-hidden">
-          <div class="flex items-center justify-between p-3">
-            <div class="flex items-center space-x-2">
-              <USkeleton class="size-10 shrink-0 rounded-full" />
-              <div class="space-y-2">
-                <USkeleton class="h-3 w-24 rounded-md" />
-                <USkeleton class="h-2 w-16 rounded-md" />
+        <!-- Loading -->
+        <template v-if="loading">
+          <UCard v-for="i in 6" :key="i" :ui="{ body: 'p-0' }" class="overflow-hidden">
+            <div class="flex items-center justify-between p-3">
+              <div class="flex items-center space-x-2">
+                <USkeleton class="size-10 shrink-0 rounded-full" />
+                <div class="space-y-2">
+                  <USkeleton class="h-3 w-24 rounded-md" />
+                  <USkeleton class="h-2 w-16 rounded-md" />
+                </div>
               </div>
+              <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
             </div>
-            <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
-          </div>
-        </UCard>
-      </template>
+          </UCard>
+        </template>
 
-      <!-- Data -->
-      <template v-else-if="feeDetails.records?.length">
-        <UCard v-for="item in feeDetails.records" :key="item.id" :ui="{ body: 'p-0' }"
-          class="overflow-hidden transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700">
-          <div class="flex items-center justify-between gap-3 p-3">
-            <div class="flex min-w-0 items-center gap-3">
-              <UAvatar size="2xl" :alt="item.name" class="shrink-0 ring-1 ring-gray-200 dark:ring-gray-700" />
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-highlighted">{{ item.name }}</p>
-                <p class="truncate text-[11px] text-muted">{{ item.admission || 'No Admission No' }}</p>
+        <!-- Data -->
+        <template v-else-if="feeDetails.records?.length">
+          <UCard v-for="item in feeDetails.records" :key="item.id" :ui="{ body: 'p-0 sm:p-0' }">
+            <div class="flex items-center justify-between gap-3 p-3">
+              <div class="flex min-w-0 items-center gap-3">
+                <UAvatar size="2xl" :alt="item.name" class="shrink-0 ring-1 ring-gray-200 dark:ring-gray-700" />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-highlighted">{{ item.name }}</p>
+                  <p class="truncate text-[11px] text-muted">{{ item.admission || 'No Admission No' }}</p>
+                </div>
               </div>
+              <UBadge :label="item.status" variant="outline" :color="parseFeeStatusColor[item.status]"
+                :icon="parseFeeStatusIcon[item.status]" class="shrink-0" />
             </div>
-            <UBadge :label="item.status" variant="outline" :color="parseFeeStatusColor[item.status]"
-              :icon="parseFeeStatusIcon[item.status]" class="shrink-0" />
-          </div>
-        </UCard>
-      </template>
+          </UCard>
+        </template>
 
-      <!-- Empty -->
-      <template v-else>
-        <UCard class="col-span-full">
-          <div class="flex flex-col items-center justify-center py-10">
-            <UIcon name="ph:wallet-light" class="mb-2 text-4xl text-gray-400 dark:text-gray-500" />
-            <p class="text-xs text-gray-500 dark:text-gray-400">No fee records found.</p>
-          </div>
-        </UCard>
-      </template>
+        <!-- Empty -->
+        <template v-else>
+          <UCard class="col-span-full">
+            <div class="flex flex-col items-center justify-center py-10">
+              <UIcon name="ph:wallet-light" class="mb-2 text-4xl text-gray-400 dark:text-gray-500" />
+              <p class="text-xs text-gray-500 dark:text-gray-400">No fee records found.</p>
+            </div>
+          </UCard>
+        </template>
       </div>
 
       <template v-if="feeDetails.meta" #footer>

@@ -1,74 +1,77 @@
 <template>
-  <div class=" space-y-4 px-4 md:px-6">
-
-    <Heading title="Clock In / Out" subtitle="You must be at the school to clock in or out." />
-
-    <div v-if="loadingMyToday" class="flex justify-center py-10">
-      <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-    </div>
+  <div class="space-y-4 px-4 md:px-6">
+    <!-- LOADING -->
+    <UCard v-if="loadingMyToday">
+      <div class="flex items-center gap-3">
+        <USkeleton class="size-10 shrink-0 rounded-xl" />
+        <div class="min-w-0 flex-1 space-y-2">
+          <USkeleton class="h-4 w-40" />
+          <USkeleton class="h-3 w-56" />
+        </div>
+      </div>
+    </UCard>
 
     <template v-else>
-      <!-- Day complete: clocked in and out -->
-      <UCard v-if="myToday?.clockedInAt && myToday?.clockedOutAt" class="overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
-        <div class="flex flex-col items-center gap-3 bg-success/10 p-10 text-center">
-          <div class="grid size-16 place-items-center rounded-full bg-success/15">
-            <UIcon name="i-lucide-check-check" class="size-8 text-success" />
+      <UCard :ui="{ body: 'space-y-5' }">
+        <div class="flex items-center gap-3">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-xl" :class="stateIconBg">
+            <UIcon :name="stateIcon" class="size-5" :class="stateIconColor" />
           </div>
-          <div>
-            <p class="font-semibold">Your day is complete</p>
-            <p class="text-sm text-muted">In at {{ formatTime(myToday.clockedInAt) }} · Out at {{ formatTime(myToday.clockedOutAt) }}</p>
+
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-semibold text-highlighted">{{ stateTitle }}</p>
+            <p class="text-sm text-muted">{{ stateSubtitle }}</p>
           </div>
-          <UBadge :color="teacherAttendanceStatusColor(myToday.status)" variant="soft">
+
+          <UBadge v-if="myToday?.status" :color="teacherAttendanceStatusColor(myToday.status)" variant="subtle" class="shrink-0">
             {{ clean(myToday.status) }}
           </UBadge>
         </div>
-      </UCard>
 
-      <!-- Clocked in, not yet out -->
-      <UCard v-else-if="myToday?.clockedInAt" class="overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
-        <div class="flex flex-col items-center gap-4 bg-primary/5 p-10 text-center">
-          <div class="grid size-16 place-items-center rounded-full bg-primary/10">
-            <UIcon name="i-lucide-check" class="size-8 text-primary" />
+        <template v-if="myToday?.clockedInAt">
+          <USeparator />
+
+          <div class="grid gap-3" :class="myToday?.clockedOutAt ? 'sm:grid-cols-2' : ''">
+            <div class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
+              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <UIcon name="i-lucide-log-in" class="size-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs text-muted">Clocked In</p>
+                <p class="text-sm font-semibold text-highlighted">{{ formatTime(myToday.clockedInAt) }}</p>
+              </div>
+            </div>
+
+            <div v-if="myToday?.clockedOutAt" class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
+              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <UIcon name="i-lucide-log-out" class="size-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs text-muted">Clocked Out</p>
+                <p class="text-sm font-semibold text-highlighted">{{ formatTime(myToday.clockedOutAt) }}</p>
+              </div>
+            </div>
           </div>
+        </template>
 
-          <div>
-            <p class="font-semibold">You clocked in at {{ formatTime(myToday.clockedInAt) }}</p>
-            <p class="mt-1 text-sm text-muted">Press below when you're ready to clock out.</p>
-          </div>
+        <UButton
+          v-if="!myToday?.clockedInAt" block size="lg" icon="i-lucide-log-in"
+          :loading="locating || clockingIn" @click="onClockIn"
+        >
+          {{ locating ? 'Locating…' : clockingIn ? 'Clocking in…' : 'Clock In' }}
+        </UButton>
 
-          <UBadge :color="teacherAttendanceStatusColor(myToday.status)" variant="soft">
-            {{ clean(myToday.status) }}
-          </UBadge>
-
-          <UButton size="xl" color="neutral" icon="i-lucide-log-out" :loading="locating || clockingOut" class="px-8"
-            @click="onClockOut">
-            {{ locating ? 'Locating…' : clockingOut ? 'Clocking out…' : 'Clock Out' }}
-          </UButton>
-        </div>
-      </UCard>
-
-      <!-- Not yet clocked in -->
-      <UCard v-else class="overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
-        <div class="flex flex-col items-center gap-4 p-10 text-center">
-          <div class="grid size-16 place-items-center rounded-full bg-primary/10">
-            <UIcon name="i-lucide-map-pin" class="size-8 text-primary" />
-          </div>
-
-          <div>
-            <p class="font-semibold">You haven't clocked in yet</p>
-            <p class="mt-1 text-sm text-muted">{{ statusMessage }}</p>
-          </div>
-
-          <UButton size="xl" icon="i-lucide-log-in" :loading="locating || clockingIn" class="px-8" @click="onClockIn">
-            {{ locating ? 'Locating…' : clockingIn ? 'Clocking in…' : 'Clock In' }}
-          </UButton>
-        </div>
+        <UButton
+          v-else-if="!myToday?.clockedOutAt" block size="lg" color="neutral" icon="i-lucide-log-out"
+          :loading="locating || clockingOut" @click="onClockOut"
+        >
+          {{ locating ? 'Locating…' : clockingOut ? 'Clocking out…' : 'Clock Out' }}
+        </UButton>
       </UCard>
 
       <UAlert v-if="lastError" color="error" variant="soft" icon="i-lucide-alert-circle"
         :title="lastErrorTitle" :description="lastError" />
     </template>
-
   </div>
 </template>
 
@@ -77,10 +80,33 @@ const store = useTeacherAttendanceStore()
 const { myToday, loadingMyToday, clockingIn, clockingOut } = storeToRefs(store)
 const notify = useNotify()
 
-const statusMessage = 'Press the button below and allow location access when your browser asks.'
 const lastError = ref('')
 const lastErrorTitle = ref("Couldn't clock in")
 const locating = ref(false)
+
+const dayComplete = computed(() => !!(myToday.value?.clockedInAt && myToday.value?.clockedOutAt))
+const clockedInOnly = computed(() => !!(myToday.value?.clockedInAt && !myToday.value?.clockedOutAt))
+
+const stateIcon = computed(() => {
+  if (dayComplete.value) return 'i-lucide-check-check'
+  if (clockedInOnly.value) return 'i-lucide-check'
+  return 'i-lucide-map-pin'
+})
+
+const stateIconBg = computed(() => dayComplete.value ? 'bg-success/10' : 'bg-primary/10')
+const stateIconColor = computed(() => dayComplete.value ? 'text-success' : 'text-primary')
+
+const stateTitle = computed(() => {
+  if (dayComplete.value) return 'Your day is complete'
+  if (clockedInOnly.value) return `Clocked in at ${formatTime(myToday.value!.clockedInAt!)}`
+  return "You haven't clocked in yet"
+})
+
+const stateSubtitle = computed(() => {
+  if (dayComplete.value) return 'See you tomorrow.'
+  if (clockedInOnly.value) return "Press below when you're ready to clock out."
+  return 'Press the button below and allow location access when your browser asks.'
+})
 
 function formatTime(value: string) {
   return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -153,15 +179,19 @@ async function onClockOut() {
   }
 }
 
+const { can } = useAuth()
+
 onMounted(() => {
   useAppStore().setTitle('Clock In / Out')
-  useAppStore().setBack('/payroll')
+  // Reached from the teacher's own dashboard widget - take them back there. Reached via
+  // HR/payroll (admin, accountant, etc. checking a staff member) - back to payroll instead.
+  useAppStore().setBack(can(Role.TEACHER) ? '/' : '/payroll')
   document.title = 'Clock In / Out | Skultem'
 
   store.fetchMyToday()
 })
 
 definePageMeta({
-  role: [Role.TEACHER]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER]
 })
 </script>

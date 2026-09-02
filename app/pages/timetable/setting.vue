@@ -15,4 +15,8 @@ onMounted(() => {
     useAppStore().setTitle('Timetable');
     document.title = 'Timetable Seetings | Skultem'
 })
+
+definePageMeta({
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+})
 </script>

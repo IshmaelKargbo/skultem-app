@@ -1,18 +1,15 @@
 <template>
   <div id="attendance-scroll" class="px-4 md:px-6 space-y-4">
     <Heading title="Teacher Attendance" subtitle="Clock staff in/out and review past days.">
-      <UButton variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance" label="Location Settings" />
+      <div class="flex w-100 items-center gap-2">
+          <UInput v-model="date" type="date" :max="today" />
+        <UButton variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance"
+          label="Location Settings" />
+      </div>
     </Heading>
 
-    <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle"
-      title="Couldn't load attendance" :description="error" />
-
-    <!-- Date -->
-    <UCard>
-      <UFormField label="Date">
-        <UInput v-model="date" type="date" :max="today" class="w-full sm:w-56" />
-      </UFormField>
-    </UCard>
+    <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle" title="Couldn't load attendance"
+      :description="error" />
 
     <!-- Summary -->
     <div class="grid md:grid-cols-5 grid-cols-2 md:gap-5 gap-3">
@@ -91,7 +88,8 @@
             <p class="truncate text-sm font-medium">{{ teacherName(row.teacher) }}</p>
             <p class="truncate text-[11px] text-gray-500 dark:text-gray-400">{{ row.teacher.staffId }}</p>
 
-            <p v-if="row.clockedInAt" class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+            <p v-if="row.clockedInAt"
+              class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-gray-500 dark:text-gray-400">
               <span class="inline-flex items-center gap-1">
                 <UIcon name="i-lucide-log-in" class="size-3" />
                 {{ row.clockInByAdmin ? 'Clocked in by admin' : 'Self clocked in' }} {{ formatTime(row.clockedInAt) }}
@@ -175,8 +173,10 @@
         </div>
       </div>
 
-      <div v-if="!loadingHistory && historyMeta.total > historyMeta.size" class="flex justify-center border-t border-gray-200 py-4 dark:border-gray-800">
-        <UPagination v-model:page="historyPage" size="sm" :page-size="historyMeta.size" :items-per-page="historyMeta.size" :total="historyMeta.total" show-edges />
+      <div v-if="!loadingHistory && historyMeta.total > historyMeta.size"
+        class="flex justify-center border-t border-gray-200 py-4 dark:border-gray-800">
+        <UPagination v-model:page="historyPage" size="sm" :page-size="historyMeta.size"
+          :items-per-page="historyMeta.size" :total="historyMeta.total" show-edges />
       </div>
     </UCard>
   </div>

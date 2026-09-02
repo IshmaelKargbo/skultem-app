@@ -55,10 +55,12 @@
 <script setup lang="ts">
 const store = useTimetableStore()
 const teacherSubjectStore = useTeacherSubjectStore()
+const route = useRoute()
 
 const { periods } = storeToRefs(store)
 const { classes: list, loading: classLoading } = storeToRefs(teacherSubjectStore)
-const grade = ref('')
+// Pre-selected from a dashboard class card's "Timetable" link (?session=<id>) when present.
+const grade = ref(String(route.query.session ?? ''))
 
 const session = computed(() => teacherSubjectStore.getClass(grade.value))
 
@@ -77,7 +79,7 @@ watch(() => grade.value, async (value: string) => {
     try {
         await store.getTimetable(value)
     } catch (error: any) {
-        useNotify().error(error)
+        useNotify().error(error?.message || error)
     }
 }, { immediate: true })
 
@@ -90,7 +92,7 @@ onMounted(async () => {
         await teacherSubjectStore.allByTeacher()
         await store.getWorkingDays()
     } catch (error: any) {
-        useNotify().error(error)
+        useNotify().error(error?.message || error)
     }
 })
 

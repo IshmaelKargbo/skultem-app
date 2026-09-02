@@ -277,17 +277,19 @@ const navItems: NavItem[] = [
     // HR and Payroll used to be two separate nav sections with a lot of overlap (staff,
     // payroll summary, leave). Merged into one "Payroll" section - Teacher Attendance and
     // Leave still live at their original /hr/* routes, just grouped here now.
-    // Top-level group is visible to teachers too (for self-service Leave below), but most
-    // sub-items are still admin-only - each one carries its own roles override for that.
-    label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER],
+    // Top-level group is visible to teachers/accountants too (for self-service Clock In/Out and
+    // Leave below), but most sub-items are still admin-only - each one carries its own roles
+    // override for that. Leave gets an explicit override now too, so adding Accountant up here
+    // for Clock In/Out doesn't also silently change who could already see Leave.
+    label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER],
     subNavs: [
       { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
       { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
       { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
       { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
       { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-      { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.TEACHER] },
-      { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON },
+      { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER] },
+      { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
     ]
   },
   {

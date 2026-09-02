@@ -1,54 +1,135 @@
 <template>
     <div class="px-4 space-y-4 md:px-6">
+        <!-- GREETING -->
+        <UCard :ui="{ body: 'flex items-center gap-4 sm:gap-5' }">
+            <UAvatar :src="user?.photo || undefined" :alt="user?.givenNames" size="xl"
+                class="shrink-0 ring-2 ring-primary/15" />
+
+            <div class="min-w-0 flex-1">
+                <p class="truncate text-xl font-semibold text-highlighted">
+                    {{ greeting }}, {{ user?.givenNames || 'there' }} <span aria-hidden="true">👋</span>
+                </p>
+                <p class="mt-0.5 text-xs text-muted">{{ today }}</p>
+            </div>
+
+            <div class="hidden shrink-0 size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary sm:flex">
+                <UIcon :name="greetingIcon" class="size-6" />
+            </div>
+        </UCard>
+
+        <!-- CLOCK IN / OUT -->
+        <DashboardTeacherClockInOut />
+
         <!-- MY CLASS (class master) -->
         <template v-if="hasClassMaster">
-            <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-shield-check" class="size-4 text-primary" />
+            <div class="flex items-center gap-3">
+                <UIcon name="i-lucide-shield-check" class="size-4" />
                 <h3 class="text-sm font-semibold text-highlighted">My Class</h3>
             </div>
 
             <div class="grid gap-3 md:grid-cols-2">
-                <UCard v-for="a in classMasterAssignments" :key="a.sessionId" :ui="{ body: 'space-y-3' }">
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="min-w-0">
-                            <p class="truncate font-semibold text-highlighted">{{ a.sessionName }}</p>
-                            <p class="text-xs text-muted">{{ a.studentCount }} student{{ a.studentCount === 1 ? '' : 's' }}</p>
+                <UCard v-for="a in classMasterAssignments" :key="a.sessionId" :ui="{
+                    root: needsAttention(a.promotionStatus) ? 'ring-1 ring-warning/40' : '',
+                    body: 'p-0 sm:p-0'
+                }">
+                    <div class="flex items-start justify-between gap-3 p-3">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div
+                                class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <UIcon name="i-lucide-graduation-cap" class="size-5" />
+                            </div>
+                            <div class="min-w-0">
+                                <p class="truncate font-semibold text-highlighted">{{ a.sessionName }}</p>
+                                <p class="flex items-center gap-1 text-xs text-muted">
+                                    <UIcon name="i-lucide-users" class="size-3.5" />
+                                    {{ a.studentCount }} student{{ a.studentCount === 1 ? '' : 's' }}
+                                </p>
+                            </div>
                         </div>
 
-                        <UBadge :color="classMasterBadge(a.promotionStatus).color" variant="subtle" size="sm" class="shrink-0">
+                        <UBadge :color="classMasterBadge(a.promotionStatus).color" variant="subtle" size="sm"
+                            class="shrink-0">
                             {{ classMasterBadge(a.promotionStatus).label }}
                         </UBadge>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2">
-                        <UButton :to="`/classes/${a.classId}`" size="xs" variant="soft" color="neutral" label="View Class" icon="i-lucide-school" />
+                    <USeparator />
 
-                        <UButton
-                            v-if="a.promotionStatus === 'READY' || a.promotionStatus === 'RETURNED'"
-                            :to="`/promotion/${a.sessionId}`" size="xs" variant="soft" color="primary"
+                    <div class="flex flex-wrap items-center gap-2 p-3">
+                        <UButton :to="`/classes/${a.classId}`" size="sm" variant="soft" color="neutral"
+                            label="View Class" :icon="CLASS_ICON" />
+
+                        <UButton :to="`/timetable?session=${a.sessionId}`" size="sm" variant="soft" color="neutral"
+                            label="Timetable" icon="i-lucide-calendar-days" />
+
+                        <UButton v-if="a.promotionStatus === 'READY' || a.promotionStatus === 'RETURNED'"
+                            :to="`/promotion/${a.sessionId}`" size="sm" variant="solid"
+                            :color="a.promotionStatus === 'RETURNED' ? 'error' : 'primary'"
                             :icon="PROMOTE_STUDENTS_ICON"
                             :label="a.promotionStatus === 'RETURNED' ? 'Review & Resubmit' : 'Promote Class'"
-                        />
+                            class="ml-auto" />
                     </div>
                 </UCard>
             </div>
         </template>
 
-        <div v-if="hasClassMaster && hasSubjects" class="flex items-center gap-2 pt-1">
-            <UIcon name="i-lucide-book-open" class="size-4 text-primary" />
-            <h3 class="text-sm font-semibold text-highlighted">Teaching</h3>
+        <!-- MY CLASSES (all classes taught) -->
+        <template v-if="hasSubjects">
+            <div class="flex items-center gap-3" :class="hasClassMaster ? 'pt-1' : ''">
+                <UIcon :name="CLASS_ICON" class="size-4 text-primary" />
+                <h3 class="text-sm font-semibold text-highlighted">My Classes</h3>
+            </div>
+            <div class="grid gap-3 md:grid-cols-2">
+                <UCard v-for="c in myClasses" :key="c.sessionId" :ui="{ body: 'p-0 sm:p-0' }">
+                    <div class="p-3 space-y-2">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div
+                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <UIcon name="i-lucide-users-round" class="size-5" />
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="truncate font-semibold text-highlighted">{{ c.className }}{{ c.sectionName
+                                        ? `(${c.sectionName})` : '' }}</p>
+                                    <p class="text-xs text-muted">{{ c.subjects.length }} subject{{ c.subjects.length
+                                        === 1 ? '' : 's' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1.5">
+                            <UBadge v-for="s in c.subjects" :key="s" variant="subtle" color="neutral" size="sm">{{ s }}
+                            </UBadge>
+                        </div>
+                    </div>
+                    <USeparator />
+                    <div class="flex flex-wrap gap-3 p-3">
+                        <UButton v-if="isClassMaster(c.sessionId)" :to="`/classes/${c.classId}`" size="sm"
+                            variant="soft" color="neutral" label="View Class" icon="i-lucide-school" />
+                        <UButton v-else to="/curriculums" size="sm" variant="soft" color="neutral"
+                            label="View Curriculum" icon="i-lucide-book-open" />
+                        <UButton :to="`/timetable?session=${c.sessionId}`" size="sm" variant="soft" color="neutral"
+                            label="Timetable" icon="i-lucide-calendar-days" />
+                    </div>
+                </UCard>
+            </div>
+        </template>
+
+        <div v-if="hasSubjects" class="flex items-center gap-2 pt-1">
+            <UIcon name="i-lucide-bar-chart-3" class="size-4 text-primary" />
+            <h3 class="text-sm font-semibold text-highlighted">Performance</h3>
         </div>
 
         <!-- SUBJECT TEACHING DASHBOARD -->
         <template v-if="hasSubjects">
             <UCard>
                 <div class="flex space-x-3">
-                    <USelectMenu value-key="value" v-model="state.clazz" @change="change" :loading="loading"
-                        :items="subjects" placeholder="Select Subject" />
+                    <USelectMenu value-key="value" v-model="state.clazz" :loading="loading" :items="subjects"
+                        placeholder="Select Subject" />
                     <USelectMenu value-key="value" v-model="state.term" :loading="loading" :items="terms"
                         placeholder="Select Term" />
-                    <USelectMenu value-key="value" v-model="state.assessment" :loading="loading" :items="assessmentItems"
-                        placeholder="Select Assessment" />
+                    <USelectMenu value-key="value" v-model="state.assessment" :loading="loading"
+                        :items="assessmentItems" placeholder="Select Assessment" />
                 </div>
             </UCard>
             <div class="grid md:grid-cols-3 grid-cols-2 md:gap-5 gap-3">
@@ -67,8 +148,8 @@
         <!-- QUICK ACTIONS -->
         <UCard v-if="hasSubjects || hasClassMaster">
             <div class="grid gap-3" :class="hasSubjects ? 'md:grid-cols-4 grid-cols-2' : 'md:grid-cols-3 grid-cols-3'">
-                <UButton v-if="hasSubjects" to="/grades" color="primary" class="w-full flex justify-center py-4 rounded-xl"
-                    variant="subtle">
+                <UButton v-if="hasSubjects" to="/grades" color="primary"
+                    class="w-full flex justify-center py-4 rounded-xl" variant="subtle">
                     <div class="flex flex-col items-center space-y-2">
                         <UIcon class="text-xl" :name="GRADES_ICON" />
                         <p>Mark Grade</p>
@@ -109,11 +190,14 @@
         <!-- EMPTY STATE -->
         <UCard v-else-if="!hasSubjects && !hasClassMaster">
             <div class="flex flex-col items-center gap-3 py-10 text-center">
-                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
                     <UIcon name="i-lucide-inbox" class="text-3xl text-primary-500" />
                 </div>
                 <p class="text-sm font-semibold text-highlighted">Nothing assigned yet</p>
-                <p class="max-w-xs text-xs text-muted">You're not currently a class master or teaching any subject. Once your school assigns you one, it'll show up here.</p>
+                <p class="max-w-xs text-xs text-muted">You're not currently a class master or teaching any subject. Once
+                    your
+                    school assigns you one, it'll show up here.</p>
             </div>
         </UCard>
     </div>
@@ -122,9 +206,27 @@
 const store = useTeacherSubjectStore()
 const studentStore = useStudentStore()
 const assessmentStore = useAssessmentStore()
+const userStore = useUserStore()
 const { assessments } = storeToRefs(assessmentStore)
 const { activeCycle } = storeToRefs(studentStore)
 const { loading } = storeToRefs(store)
+const { user } = storeToRefs(userStore)
+
+const hour = new Date().getHours()
+
+const greeting = computed(() => {
+    if (hour < 12) return 'Good morning'
+    if (hour < 17) return 'Good afternoon'
+    return 'Good evening'
+})
+
+const greetingIcon = computed(() => {
+    if (hour < 12) return 'i-lucide-sunrise'
+    if (hour < 17) return 'i-lucide-sun'
+    return 'i-lucide-moon-star'
+})
+
+const today = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
 
 const records = ref<TeacherSubject[]>([])
 const state = reactive<{ clazz: string, term: string, assessment: string }>({
@@ -150,12 +252,40 @@ const subjects = computed(() =>
 
 const hasSubjects = computed(() => records.value.length > 0)
 
+const myClasses = computed(() => {
+    const map = new Map<string, { sessionId: string, classId: string, className: string, sectionName: string, subjects: string[] }>()
+
+    for (const r of records.value) {
+        if (!map.has(r.sessionId)) {
+            map.set(r.sessionId, {
+                sessionId: r.sessionId,
+                classId: r.classId,
+                className: r.className,
+                sectionName: r.sectionName,
+                subjects: []
+            })
+        }
+        map.get(r.sessionId)!.subjects.push(r.subjectName)
+    }
+
+    return Array.from(map.values())
+})
+
 // --- Class master ---
 const classMasterAssignments = ref<TeacherClassMaster[]>([])
 const loadingAssignments = ref(true)
 const loadingSubjects = ref(true)
 const hasClassMaster = computed(() => classMasterAssignments.value.length > 0)
 const initialLoading = computed(() => loadingAssignments.value || loadingSubjects.value)
+
+// A subject teacher only sees the full roster for a class they're also the class
+// master of - otherwise "View Class" would open the students list of a class they
+// have no oversight of, so those cards link to Curriculum instead.
+const classMasterSessionIds = computed(() => new Set(classMasterAssignments.value.map(a => a.sessionId)))
+
+function isClassMaster(sessionId: string) {
+    return classMasterSessionIds.value.has(sessionId)
+}
 
 const classMasterBadgeStyles: Record<string, { label: string, color: 'neutral' | 'warning' | 'success' | 'error' }> = {
     READY: { label: 'Ready to promote', color: 'warning' },
@@ -166,6 +296,10 @@ const classMasterBadgeStyles: Record<string, { label: string, color: 'neutral' |
 
 function classMasterBadge(status: TeacherClassMasterPromotionStatus) {
     return status ? classMasterBadgeStyles[status] || { label: 'On track', color: 'neutral' } : { label: 'On track', color: 'neutral' }
+}
+
+function needsAttention(status: TeacherClassMasterPromotionStatus) {
+    return status === 'READY' || status === 'RETURNED'
 }
 
 async function fetchClassMasterAssignments() {
@@ -197,9 +331,10 @@ function change() {
 watch(() => subjects.value, (val: any) => {
     if (val.length && !state.clazz) {
         state.clazz = val[0].value
-        change()
     }
 }, { immediate: true })
+
+watch(() => state.clazz, change, { immediate: true })
 
 async function fetchRecord() {
     loadingSubjects.value = true

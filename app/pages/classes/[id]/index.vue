@@ -79,8 +79,9 @@
 
         <ClassPromotionSetting :id="session?.clazzId || ''" />
 
-        <!-- Students -->
-        <UCard :ui="{ body: 'sm:p-0' }">
+        <!-- Students - a teacher only sees the roster for a class they're the class
+             master of; a subject-only teacher is pointed to Curriculum instead. -->
+        <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0' }">
             <template #header>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -338,6 +339,17 @@
                 </div>
             </template>
         </UCard>
+
+        <UCard v-else-if="isTeacherViewer">
+            <div class="flex flex-col items-center gap-3 py-10 text-center">
+                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+                    <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
+                </div>
+                <p class="text-sm font-semibold text-highlighted">Student list is only visible to the class master</p>
+                <p class="max-w-xs text-xs text-muted">You teach a subject in this class rather than oversee it. Head to Curriculum to manage your scheme of work.</p>
+                <UButton to="/curriculums" label="View Curriculum" icon="i-lucide-book-open" color="primary" variant="soft" />
+            </div>
+        </UCard>
     </div>
 </template>
 
@@ -401,6 +413,12 @@ const classTeachers = computed(() => {
 
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
+const isTeacherViewer = computed(() => can(Role.TEACHER))
+const isMasterOfThisClass = computed(() => classTeachers.value.some(t => t.isMe))
+// Non-teacher roles always see the roster; a teacher only sees it for a class
+// they're the class master of - a subject-only assignment doesn't grant it.
+const canViewRoster = computed(() => !isTeacherViewer.value || isMasterOfThisClass.value)
+
 const promotionRequests = ref<Record<string, PromotionRequest | null>>({})
 const promotionStatusLoading = ref(false)
 
@@ -448,15 +466,21 @@ async function fetchClass() {
 }
 
 async function fetchStudents() {
+    if (!canViewRoster.value) return
     await studentStore.fetchByClassAndStream(classId.value, stream, page.value, size.value)
 }
 
 watch([classId, viewingYear], fetchClass, { immediate: true })
-watch([page, size, classId], fetchStudents, { immediate: true })
+// canViewRoster starts false for a teacher until the class-master check above resolves
+// (overview loads async) - included here so the fetch fires once it settles true.
+watch([page, size, classId, canViewRoster], fetchStudents, { immediate: true })
 
 onMounted(() => {
     useAppStore().setTitle('View Class')
-    useAppStore().setBack(true)
+    // Teachers reach this page from cards on their dashboard rather than the admin
+    // /classes list, so send their back button straight to the dashboard instead of
+    // a plain history-back (which could land somewhere unexpected, e.g. after a reload).
+    useAppStore().setBack(can(Role.TEACHER) ? '/' : true)
 
     if (!route.query.page || !route.query.size) {
         updateQuery({ page: page.value })

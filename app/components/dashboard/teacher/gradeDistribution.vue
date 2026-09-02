@@ -132,11 +132,9 @@ async function loadData() {
     const res = await store.runAnalytic(payload)
     const widget = res?.data ?? res
 
-    if (!widget?.labels || !widget?.datasets) return
+    labels.value = widget?.labels ?? []
 
-    labels.value = widget.labels
-
-    chartSeries.value = widget.datasets.map((d: any) => ({
+    chartSeries.value = (widget?.datasets ?? []).map((d: any) => ({
       name: d.label,
       data: d.data
     }))
@@ -146,6 +144,7 @@ async function loadData() {
     isReady.value = true
   } catch (err) {
     console.error("Failed to load grade distribution", err)
+    isReady.value = true
   }
 }
 
