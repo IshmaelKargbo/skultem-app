@@ -3,6 +3,11 @@ onMounted(async () => {
     useAppStore().setTitle('All Materials')
     document.title = 'Categroies | Materials | Skultem'
 })
+
+// Missing entirely before - see material/index.vue's guard for why.
+definePageMeta({
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+})
 </script>
 
 <template>

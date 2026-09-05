@@ -495,18 +495,6 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     ],
   },
   {
-    id: "library",
-    title: "Library",
-    icon: LIBRARY_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      { label: "Library Dashboard", icon: LIBRARY_ICON, to: "/library" },
-      { label: "Issue/Return Book", icon: ISSUE_BOOK_ICON, to: "/library/issue" },
-      { label: "Manage Books", icon: BOOK_ICON, to: "/library/books" },
-      { label: "Book Categories", icon: BOOK_CATEGORY_ICON, to: "/library/categories" },
-    ],
-  },
-  {
     id: "communicate",
     title: "Communicate",
     icon: COMMUNICATE_ICON,

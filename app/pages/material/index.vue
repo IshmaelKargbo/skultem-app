@@ -3,6 +3,13 @@ onMounted(async () => {
     useAppStore().setTitle('All Materials')
     document.title = 'Materials | Skultem'
 })
+
+// Missing entirely before - the nav only links here for Admin/Proprietor/Owner (see
+// components/menu/index.vue's "Materials & Supplies" group), but with no guard here, any role
+// could reach /material directly and use the full materials management UI.
+definePageMeta({
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+})
 </script>
 
 <template>

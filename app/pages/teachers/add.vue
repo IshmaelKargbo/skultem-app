@@ -353,4 +353,9 @@ onMounted(() => {
   useAppStore().setTitle('Add Teachers');
   document.title = 'Teachers | Skultem'
 })
+
+// Missing entirely before - see teachers/index.vue's guard for why.
+definePageMeta({
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+})
 </script>

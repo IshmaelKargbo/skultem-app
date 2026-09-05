@@ -125,10 +125,10 @@ definePageMeta({
 </script>
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <UCard :ui="{ body: 'sm:p-0 p-0' }">
+        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="space-y-3">
-                    <div class="flex items-center">
+                <div>
+                    <div class="flex px-4 py-3 items-center">
                         <div class="flex items-center space-x-2 flex-1">
                             <UButton to="/subjects/stream-subjects/add" class="md:flex hidden" color="primary"
                                 label="Assign Subject" :icon="TEACHER_ICON" />
@@ -139,7 +139,7 @@ definePageMeta({
                         <TableViewToggle v-model="view" />
                     </div>
 
-                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
                         <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
                                 placeholder="All Streams" clear />

@@ -1,6 +1,5 @@
 <template>
     <div id="attendance-scroll" class="px-4 space-y-4 md:space-x-6">
-        <Heading title="Attendance" subtitle="Track class attendance and export reports" />
         <AttendanceReport />
         <AttendanceTeacherMark class="hidden md:block" />
         <AttendanceHistory class="hidden md:block" />

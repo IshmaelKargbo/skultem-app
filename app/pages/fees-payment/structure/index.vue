@@ -178,8 +178,8 @@ definePageMeta({
   <div class="px-4 md:px-6">
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="space-y-3">
-          <div class="flex px-4 py-2 flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
             <h2 class="text-sm font-semibold text-highlighted">Fee Structures</h2>
 
             <div class="flex flex-wrap items-center gap-2">

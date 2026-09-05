@@ -6,4 +6,8 @@
 
 <script setup lang="ts">
 const { can } = useAuth()
+
+definePageMeta({
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]
+})
 </script>

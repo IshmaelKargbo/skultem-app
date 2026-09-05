@@ -161,6 +161,34 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    getAttention: async (id: string, academicYearId?: string) => {
+      try {
+        const params = academicYearId ? `?academicYearId=${academicYearId}` : ''
+        const res = await $api(`/class/${id}/attention${params}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class attention')
+
+        return res.data as ClassAttention
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getAttentionSummary: async (academicYearId?: string) => {
+      try {
+        const params = academicYearId ? `?academicYearId=${academicYearId}` : ''
+        const res = await $api(`/class/attention-summary${params}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class attention summary')
+
+        return res.data as ClassAttentionSummary
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getOneByClassAndStream: async (id: string, stream: string, academicYearId: string) => {
       try {
         const res = await $api(`/class-session/${id}/stream/${stream}?academicYearId=${academicYearId}`) as any

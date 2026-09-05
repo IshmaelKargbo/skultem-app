@@ -10,11 +10,11 @@ export const useParentStore = defineStore('parent', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, query?: string) {
+    async fetchAll(page: number = 1, size: number = 6, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await ParentApi().getAll(page, size, query) as any
+        const response = await ParentApi().getAll(page, size, query, sortBy, direction) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

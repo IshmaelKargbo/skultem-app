@@ -42,7 +42,7 @@
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
               <UAvatar size="md" :src="row.original.photo || '/avatar-placeholder.svg'" :alt="row.original.studentName"
-                class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
+                loading="lazy" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
               <div class="min-w-0">
                 <p class="text-sm font-medium truncate">{{ row.original.studentName }}</p>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ row.original.admissionNumber }}</p>
@@ -106,7 +106,7 @@
           <!-- Mobile Records -->
           <div v-else v-for="(row, i) in state.records" :key="row.studentId" class="p-3 space-y-2">
             <div class="flex items-center space-x-2">
-              <UAvatar :src="row.photo || '/avatar-placeholder.svg'" :alt="row.studentName" size="xl"
+              <UAvatar :src="row.photo || '/avatar-placeholder.svg'" :alt="row.studentName" size="xl" loading="lazy"
                 class="ring-1 ring-gray-200 dark:ring-gray-700" />
               <div>
                 <p class="text-sm font-medium">{{ row.studentName }}</p>
@@ -378,7 +378,7 @@ onMounted(async () => {
 
   state.classId =
     (route.query.class as string) ||
-    classStore.records[0]?.clazzId ||
+    classStore.records[0]?.id ||
     ''
 
   state.date = (route.query.date as string) ||

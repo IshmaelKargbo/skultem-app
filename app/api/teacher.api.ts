@@ -14,9 +14,14 @@ export const TeacherApi = () => {
         useHandleError(err)
       }
     },
-    getAll: async (search: string, page: number, size: number) => {
+    getAll: async (search: string, page: number, size: number, sortBy?: string, direction?: string) => {
       try {
-        const res = await $api(`/teacher?page=${page}&size=${size}&search=${search}`) as any
+        const params = new URLSearchParams({ page: String(page), size: String(size) })
+        if (search) params.set('search', search)
+        if (sortBy) params.set('sortBy', sortBy)
+        if (direction) params.set('direction', direction)
+
+        const res = await $api(`/teacher?${params}`) as any
 
         if (!res)
           throw new Error('Failed to fetch teachers')

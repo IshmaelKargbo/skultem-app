@@ -1,18 +1,43 @@
 <script setup lang="ts">
 const route = useRoute()
+const router = useRouter()
 
 const view = ref<"table" | "card">("table")
+
+// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
+// page/size and silently drops any other query key when neither changed, which is exactly why
+// search here never made it into the URL (or triggered a refetch) whenever it was set while
+// already on page 1.
+function updateQuery(newQuery: Record<string, any>) {
+    router.replace({ query: { ...route.query, ...newQuery } })
+}
 
 const search = computed<string>({
     get: () => String(route.query.search ?? ''),
     set: (value) => updateQuery({ search: value || undefined, page: 1 }),
 })
 
-const hasActiveFilters = computed(() => !!search.value)
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+    { label: "Name (A-Z)", value: "user.givenName:asc" },
+    { label: "Name (Z-A)", value: "user.givenName:desc" },
+    { label: "Newest First", value: "createdAt:desc" },
+    { label: "Oldest First", value: "createdAt:asc" },
+]
+const DEFAULT_SORT = "createdAt:desc"
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
+const sortBy = computed(() => sort.value.split(":")[0])
+const sortDirection = computed(() => sort.value.split(":")[1])
+
+const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT)
 
 function resetFilters() {
     searchInput.value = ''
-    updateQuery({ search: undefined, page: 1 })
+    sort.value = DEFAULT_SORT
+    updateQuery({ search: undefined, sort: undefined, page: 1 })
 }
 
 // Debounced so every keystroke doesn't fire a request - the search box writes to this local ref,
@@ -24,6 +49,10 @@ watch(searchInput, (val) => {
     searchTimer = setTimeout(() => {
         search.value = val
     }, 350)
+})
+
+watch(sort, () => {
+    updateQuery({ sort: sort.value === DEFAULT_SORT ? undefined : sort.value, page: 1 })
 })
 
 const store = useParentStore();
@@ -83,7 +112,7 @@ async function fetchRecords() {
     try {
         loading.value = true;
 
-        await store.fetchAll(page.value, size.value, search.value || undefined);
+        await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value);
     } catch (error) {
         console.error("Failed to fetch parents:", error);
     } finally {
@@ -113,7 +142,7 @@ onMounted(() => {
 });
 
 watch(
-    () => search.value,
+    [() => search.value, () => sort.value],
     async () => {
         await fetchRecords()
     },
@@ -123,16 +152,18 @@ watch(
     <div class="px-4 sm:px-6">
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="space-y-3">
-                    <div class="flex px-4 py-2 flex-wrap items-center justify-between gap-3">
+                <div>
+                    <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
                         <h2 class="text-sm font-semibold text-highlighted">Parents</h2>
                         <TableViewToggle v-model="view" />
                     </div>
 
                     <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1">
+                        <div class="flex-1 flex flex-wrap gap-2">
                             <UInput v-model="searchInput" icon="i-lucide-search"
-                                placeholder="Search by name, email or phone" class="w-full sm:max-w-sm" />
+                                placeholder="Search by name, email or phone" class="flex-1 max-w-sm" />
+                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                                placeholder="Sort by" class="w-40" />
                         </div>
                         <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                             :disabled="!hasActiveFilters" @click="resetFilters" />

@@ -1,8 +1,8 @@
 <template>
     <div class="px-4 pt-4 md:px-6">
         <UCard :ui="{ body: 'sm:p-0 p-0' }">
-            <div class="flex items-center justify-between">
-                <div class="flex space-x-2 px-5 py-3 items-center">
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center">
+                <div class="flex space-x-2 px-5 py-3 items-center min-w-0">
                     <div>
                         <UButton v-if="back" :icon="BACK_ICON" color="neutral" variant="ghost" class="shrink-0 -ml-1"
                             aria-label="Go back" @click="goBack" />
@@ -31,11 +31,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="hidden sm:flex flex-col items-center leading-tight py-1">
+                <div class="hidden sm:flex flex-col items-center leading-tight py-1 justify-self-center">
                     <span class="text-sm font-semibold tabular-nums text-toned">{{ time }}</span>
                     <span class="hidden text-xs-base text-muted md:block">{{ date }}</span>
                 </div>
-                <div class="flex shrink-0 items-center gap-3 pr-5">
+                <div class="flex shrink-0 items-center gap-3 pr-5 justify-self-end">
                     <div class="md:block border-r border-default pr-3 hidden">
                         <AccountSwitch />
                     </div>

@@ -1,9 +1,22 @@
 <script setup lang="ts">
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
+const router = useRouter()
 const store = useParentStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
+
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+  { label: 'Name (A-Z)', value: 'user.givenName:asc' },
+  { label: 'Name (Z-A)', value: 'user.givenName:desc' },
+  { label: 'Newest First', value: 'createdAt:desc' },
+  { label: 'Oldest First', value: 'createdAt:asc' },
+]
+const DEFAULT_SORT = 'createdAt:desc'
 
 const columns = [
   { accessorKey: 'name', header: 'Guardian', pin: 'left' },
@@ -29,6 +42,41 @@ const page = computed<number>({
 // SIZE (URL synced)
 const size = ref(runtimeConf().limit)
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "picking an option/typing does nothing". These still seed from the URL on load and push back
+// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
+// mirror, not the source of truth.
+const searchInput = ref(String(route.query.search ?? ''))
+const search = ref(searchInput.value)
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
+const sortBy = computed(() => sort.value.split(':')[0])
+const sortDirection = computed(() => sort.value.split(':')[1])
+
+const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT)
+
+function resetFilters() {
+  searchInput.value = ''
+  search.value = ''
+  sort.value = DEFAULT_SORT
+}
+
+// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
+// page/size and silently drops any other query key when neither changed, which would swallow
+// these filter updates whenever a filter is set while already on page 1.
+function updateQuery(newQuery: Record<string, any>) {
+  router.replace({ query: { ...route.query, ...newQuery } })
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    search.value = val
+  }, 350)
+})
+
 // FETCH whenever query changes
 watch(
   () => [page.value, size.value],
@@ -38,10 +86,22 @@ watch(
   { immediate: true }
 )
 
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([search, sort], () => {
+  updateQuery({
+    search: search.value || undefined,
+    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    page: 1,
+  })
+
+  if (page.value === 1) fetchRecord()
+})
+
 async function fetchRecord() {
   loading.value = true
   try {
-    await store.fetchAll(page.value, size.value)
+    await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value)
   } finally {
     loading.value = false
   }
@@ -57,10 +117,25 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-end">
-          <TableViewToggle v-model="view" />
+        <div>
+          <div class="flex px-4 py-3 justify-end">
+            <TableViewToggle v-model="view" />
+          </div>
+
+          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                placeholder="Sort by" />
+              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, email or phone"
+                class="col-span-2" />
+            </div>
+            <div>
+              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
+          </div>
         </div>
       </template>
 

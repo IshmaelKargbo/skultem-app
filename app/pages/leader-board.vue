@@ -5,4 +5,10 @@
 
 <script setup lang="ts">
 const { can } = useAuth()
+
+// Missing entirely before - matches the LeaderboardTeacher/LeaderboardAdmin branches
+// above, so any other role landed here with no guard at all.
+definePageMeta({
+  role: [Role.TEACHER, Role.PROPRIETOR, Role.ADMIN, Role.OWNER]
+})
 </script>

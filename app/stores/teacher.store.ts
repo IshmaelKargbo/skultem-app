@@ -10,11 +10,11 @@ export const useTeacherStore = defineStore('teacher', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, search: string = "") {
+    async fetchAll(page: number = 1, size: number = 6, search: string = "", sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await TeacherApi().getAll(search, page, size) as any
+        const response = await TeacherApi().getAll(search, page, size, sortBy, direction) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

@@ -11,6 +11,21 @@ const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 const searchInput = ref((route.query.search as string) || '')
 let searchTimeout: ReturnType<typeof setTimeout>
 
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+  { label: 'Name (A-Z)', value: 'user.givenName:asc' },
+  { label: 'Name (Z-A)', value: 'user.givenName:desc' },
+  { label: 'Newest First', value: 'createdAt:desc' },
+  { label: 'Oldest First', value: 'createdAt:asc' },
+]
+const DEFAULT_SORT = 'createdAt:desc'
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
+const sortBy = computed(() => sort.value.split(':')[0])
+const sortDirection = computed(() => sort.value.split(':')[1])
+
 const parseStatus: Record<string, string> = {
   ACTIVE: 'Active',
   INACTIVE: 'Inactive',
@@ -83,6 +98,14 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query })
 }
 
+const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT)
+
+function resetFilters() {
+  searchInput.value = ''
+  sort.value = DEFAULT_SORT
+  updateQuery({ search: undefined, sort: undefined, page: 1 })
+}
+
 async function fetchRecords() {
   loading.value = true
 
@@ -91,6 +114,8 @@ async function fetchRecords() {
       page.value,
       size.value,
       search.value,
+      sortBy.value,
+      sortDirection.value,
     )
   } finally {
     loading.value = false
@@ -117,6 +142,11 @@ watch(
     await fetchRecords()
   },
 )
+
+watch(sort, async () => {
+  updateQuery({ sort: sort.value === DEFAULT_SORT ? undefined : sort.value, page: 1 })
+  await fetchRecords()
+})
 
 watch(searchInput, (value) => {
   clearTimeout(searchTimeout)
@@ -158,6 +188,13 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   clearTimeout(searchTimeout)
 })
+
+// Missing entirely before - the nav only links here for Admin/Owner/Proprietor (see
+// components/menu/index.vue's "Teachers" entry), but with no guard here, any role could reach
+// /teachers directly and use the full teacher management UI (add/edit included).
+definePageMeta({
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+})
 </script>
 
 <template>
@@ -165,9 +202,15 @@ onBeforeUnmount(() => {
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex items-center justify-between gap-4">
-          <div class="flex flex-1 gap-3">
+          <div class="flex flex-1 flex-wrap gap-3">
             <UInput v-model="searchInput" icon="i-lucide-search"
-              placeholder="Search by name, staff ID, email or phone" />
+              placeholder="Search by name, staff ID, email or phone" class="flex-1 max-w-sm" />
+
+            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+              placeholder="Sort by" class="w-40" />
+
+            <UButton v-if="hasActiveFilters" :trailing-icon="DELETE_ICON" variant="outline" color="error"
+              label="Clear" @click="resetFilters" />
 
             <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" :icon="ADD_ICON" />
 
@@ -201,7 +244,7 @@ onBeforeUnmount(() => {
 
         <template #name-cell="{ row }">
           <div class="flex items-center space-x-5">
-            <UAvatar :src="row.original.user?.photo || undefined" :alt="teacherFullName(row.original)" />
+            <UAvatar :src="row.original.user?.photo || undefined" :alt="teacherFullName(row.original)" loading="lazy" />
 
             <div>
               <p>{{ teacherName(row.original) }}</p>
@@ -296,7 +339,7 @@ onBeforeUnmount(() => {
             <div class="border-b border-gray-200 p-3 dark:border-gray-800">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
-                  <UAvatar size="xl" :src="item.user?.photo || undefined" :alt="teacherName(item)" />
+                  <UAvatar size="xl" :src="item.user?.photo || undefined" :alt="teacherName(item)" loading="lazy" />
 
                   <div class="min-w-0">
                     <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">

@@ -1,9 +1,9 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <UCard :ui="{ body: 'sm:p-0 p-0' }">
+        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center gap-3">
+                <div>
+                    <div class="flex px-4 py-3 justify-between items-center gap-3">
                         <div class="flex space-x-3 flex-1">
                             <SubjectAdd />
                         </div>
@@ -11,7 +11,7 @@
                         <TableViewToggle v-model="view" />
                     </div>
 
-                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
                         <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-3">
                             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
                                 class="col-span-2" />

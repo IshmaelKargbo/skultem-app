@@ -2,9 +2,15 @@ export const StudentApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (search: string, page: number, size: number) => {
+    getAll: async (search: string, page: number, size: number, classId?: string, sortBy?: string, direction?: string) => {
       try {
-        const res = await $api(`/student?page=${page}&size=${size}&search=${search}`) as any
+        const params = new URLSearchParams({ page: String(page), size: String(size) })
+        if (search) params.set('search', search)
+        if (classId) params.set('classId', classId)
+        if (sortBy) params.set('sortBy', sortBy)
+        if (direction) params.set('direction', direction)
+
+        const res = await $api(`/student?${params}`) as any
 
         if (!res)
           throw new Error('Failed to fetch students')

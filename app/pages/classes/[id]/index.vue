@@ -104,7 +104,7 @@
             <!-- Desktop Table -->
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="displayStudents"
                 :loading="studentsLoading"
-                :meta="{ class: { tr: (row: any) => needsAttendanceFollowUp(row.original) ? 'border-l-4 border-l-warning' : '' } }">
+                :meta="{ class: { tr: (row: any) => needsAttention(row.original) ? 'border-l-4 border-l-warning' : '' } }">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -117,8 +117,7 @@
                             :family-name="row.original.familyName" :photo="row.original.photo"
                             :subtitle="row.original.admissionNumber || 'No Admission No'" />
 
-                        <UTooltip v-if="needsAttendanceFollowUp(row.original)"
-                            :text="`Attendance ${attendanceOf(row.original)}% - needs follow-up`">
+                        <UTooltip v-if="needsAttention(row.original)" :text="attentionReason(row.original)">
                             <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
                         </UTooltip>
                     </div>
@@ -191,20 +190,19 @@
 
                 <template v-else-if="displayStudents.length">
                     <UCard v-for="student in displayStudents" :key="student.id" class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
-                        :class="needsAttendanceFollowUp(student) ? 'border-l-4 border-l-warning' : ''"
+                        :class="needsAttention(student) ? 'border-l-4 border-l-warning' : ''"
                         :ui="{ body: 'p-0' }">
                         <!-- Header -->
                         <div class="border-b border-default p-4">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex min-w-0 items-center gap-3">
                                     <UAvatar class="size-10" :src="student.photo || '/avatar-placeholder.svg'"
-                                        :alt="`${student.givenNames} ${student.familyName}`" />
+                                        :alt="`${student.givenNames} ${student.familyName}`" loading="lazy" />
 
                                     <div class="min-w-0">
                                         <h3 class="flex items-center gap-1.5 truncate text-base font-bold text-highlighted">
                                             {{ student.givenNames }} {{ student.familyName }}
-                                            <UTooltip v-if="needsAttendanceFollowUp(student)"
-                                                :text="`Attendance ${attendanceOf(student)}% - needs follow-up`">
+                                            <UTooltip v-if="needsAttention(student)" :text="attentionReason(student)">
                                                 <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
                                             </UTooltip>
                                         </h3>
@@ -408,18 +406,18 @@ const { classRecords: students, classMeta: meta, loading: studentsLoading } = st
 
 const view = ref<'table' | 'card'>('table')
 
-// --- Roster insights: performance sort + attendance flag ---
-// Neither the average score nor the attendance rate lives on the student
-// record itself, so both are pulled from the same analytics engine the
-// dashboard widgets use (class-wide, not paginated with the roster) and
-// matched back onto each row by full name - the report entities only expose
-// a "student" name field, not the student id, so an exact `givenNames
-// familyName` match is the best we can do (same trade-off the "at risk
-// students" widget already makes).
+// --- Roster insights: performance sort + needs-attention flag ---
+// The average score used for "Sort by Performance" doesn't live on the student record itself, so
+// it's pulled from the same analytics engine the dashboard widgets use (class-wide, not paginated
+// with the roster) and matched back onto each row by full name - the report entities only expose a
+// "student" name field, not the student id, so an exact `givenNames familyName` match is the best
+// we can do here (same trade-off the "at risk students" widget already makes). The needs-attention
+// flag itself is a different, id-keyed call (ComputeClassAttentionUseCase via /class/{id}/attention)
+// combining attendance and academic average against the class's pass mark, so it doesn't inherit
+// that name-matching fragility.
 const widgetStore = useWidgetStore()
-const ATTENDANCE_ALERT_THRESHOLD = 75
 const performanceByName = ref<Record<string, number>>({})
-const attendanceByName = ref<Record<string, number>>({})
+const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const sortByPerformance = ref(false)
 
 function studentFullName(s: Student) {
@@ -430,13 +428,37 @@ function performanceOf(s: Student) {
     return performanceByName.value[studentFullName(s)]
 }
 
-function attendanceOf(s: Student) {
-    return attendanceByName.value[studentFullName(s)]
+function attentionOf(s: Student) {
+    return attentionByStudentId.value[s.id]
 }
 
-function needsAttendanceFollowUp(s: Student) {
-    const rate = attendanceOf(s)
-    return rate !== undefined && rate < ATTENDANCE_ALERT_THRESHOLD
+// The endpoint only returns students who were actually flagged, so being present in the map at
+// all (for either reason) is exactly what "needs attention" means here.
+function needsAttention(s: Student) {
+    return !!attentionOf(s)
+}
+
+function attentionReason(s: Student) {
+    const a = attentionOf(s)
+    if (!a) return ''
+
+    const parts: string[] = []
+    if (a.attendanceFlag) parts.push(`Attendance ${a.attendanceRate}%`)
+    if (a.academicFlag) parts.push(`Average ${a.academicAverage}%`)
+
+    return `${parts.join(' · ')} - needs follow-up`
+}
+
+async function fetchAttention() {
+    if (!canViewRoster.value || !classId.value) return
+    try {
+        const res = await ClassApi().getAttention(classId.value)
+        const map: Record<string, StudentAttention> = {}
+        res?.students?.forEach((s: StudentAttention) => { map[s.studentId] = s })
+        attentionByStudentId.value = map
+    } catch (err) {
+        console.error('Failed to load class attention', err)
+    }
 }
 
 const displayStudents = computed(() => {
@@ -556,7 +578,7 @@ const canViewRoster = computed(() => {
     return !isTeacherViewer.value || isMasterOfThisClass.value
 })
 
-watch(canViewRoster, (val) => { if (val) fetchRosterInsights() }, { immediate: true })
+watch(canViewRoster, (val) => { if (val) { fetchRosterInsights(); fetchAttention() } }, { immediate: true })
 
 const promotionRequests = ref<Record<string, PromotionRequest | null>>({})
 const promotionStatusLoading = ref(false)

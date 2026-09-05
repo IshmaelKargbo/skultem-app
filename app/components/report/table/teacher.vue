@@ -175,7 +175,7 @@ watch(() => page.value, async () => {
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
                 <UAvatar size="2xl" icon="i-lucide-user-round" :src="item.user?.photo || undefined"
-                  :alt="`${item.user?.givenNames} ${item.user?.familyName}`" />
+                  :alt="`${item.user?.givenNames} ${item.user?.familyName}`" loading="lazy" />
 
                 <div class="min-w-0">
                   <h3 class="truncate text-base font-bold text-highlighted">

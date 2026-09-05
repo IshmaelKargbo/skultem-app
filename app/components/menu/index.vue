@@ -50,8 +50,6 @@
 </template>
 
 <script setup lang="ts">
-import { ROOM_ICON } from '~/utils/icons'
-
 interface SubNavItem {
   label: string
   to: string
@@ -179,16 +177,6 @@ const navItems: NavItem[] = [
   },
 
   {
-    label: 'Library', icon: LIBRARY_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
-    subNavs: [
-      { label: 'Library Dashboard', to: '/library', icon: LIBRARY_ICON, exact: true },
-      { label: 'Issue/Return Book', to: '/library/issue', icon: ISSUE_BOOK_ICON },
-      { label: 'Manage Books', to: '/library/books', icon: BOOK_ICON },
-      { label: 'Book Categories', to: '/library/categories', icon: BOOK_CATEGORY_ICON },
-    ]
-  },
-
-  {
     label: 'Communicate', icon: COMMUNICATE_ICON,
     roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT],
     subNavs: [
@@ -310,17 +298,6 @@ const navItems: NavItem[] = [
     subNavs: [
       { label: 'Management', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true },
       { label: 'House', to: '/athletic-house/house', icon: CATEGORY_ICON },
-    ]
-  },
-  {
-    label: 'Hostel', icon: HOSTEL_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
-    subNavs: [
-      { label: 'Hostel Dashboard', to: '/hostel', icon: HOSTEL_ICON, exact: true },
-      { label: 'Student Allocation', to: '/hostel/allocation', icon: STUDENT_ICON },
-      { label: 'Manage Rooms', to: '/hostel/rooms', icon: ROOM_ICON },
-      { label: 'Room Types', to: '/hostel/room-types', icon: CATEGORY_ICON },
-      { label: 'Manage Hostels', to: '/hostel/hostels', icon: SCHOOL_ICON },
     ]
   },
   {

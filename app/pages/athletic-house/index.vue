@@ -134,7 +134,7 @@
                             <div class="flex space-x-4 items-center">
                                 <div>
                                     <UAvatar size="xl" :src="row.original.photo || '/avatar-placeholder.svg'"
-                                        :alt="`${row.original.givenNames} ${row.original.familyName}`" />
+                                        :alt="`${row.original.givenNames} ${row.original.familyName}`" loading="lazy" />
                                 </div>
                                 <div class="min-w-0">
                                     <p class="space-x-2 truncate">

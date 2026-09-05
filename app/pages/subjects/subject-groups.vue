@@ -191,17 +191,17 @@ definePageMeta({
 
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="space-y-3">
-                    <div class="flex justify-between">
+                <div>
+                    <div class="flex px-4 py-3 justify-between">
                         <div class="space-x-2 flex flex-1 items-center">
                             <SubjectGroupAdd />
                         </div>
                         <TableViewToggle v-model="view" />
                     </div>
 
-                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
                         <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
                                 placeholder="All Classes" clear />

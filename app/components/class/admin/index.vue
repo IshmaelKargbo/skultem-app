@@ -1,9 +1,9 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <UCard :ui="{ body: 'sm:p-0 p-0' }">
+        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="space-y-3">
-                    <div class="flex justify-between space-x-3">
+                <div>
+                    <div class="flex px-4 py-3 justify-between space-x-3">
                         <div class="flex space-x-3 flex-1">
                             <ClassAssignMaster />
                             <ClassAdd />
@@ -11,7 +11,7 @@
                         <TableViewToggle v-model="view" />
                     </div>
 
-                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
                         <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             <USelectMenu v-model="sectionId" value-key="value" label-key="label" :items="sectionOptions"
                                 placeholder="All Sections" clear />
@@ -41,7 +41,15 @@
                             <UIcon :name="CLASS_ICON" class="size-4 text-primary" />
                         </div>
                         <div>
-                            <p class="font-medium text-highlighted">{{ row.original.clazz }}</p>
+                            <div class="flex items-center gap-1.5">
+                                <p class="font-medium text-highlighted">{{ row.original.clazz }}</p>
+
+                                <UTooltip v-if="row.original.needsAttention" :delay-duration="0" arrow
+                                    text="At least one student here has low attendance or is below the pass mark">
+                                    <UBadge size="xs" variant="subtle" color="warning" icon="i-lucide-alert-triangle"
+                                        label="Needs Attention" />
+                                </UTooltip>
+                            </div>
                             <p class="text-xs text-muted">{{ row.original.grade }}</p>
                         </div>
                     </div>
@@ -133,9 +141,16 @@
                                     </div>
 
                                     <div>
-                                        <h3 class="text-base font-bold">
-                                            {{ item.clazz }}
-                                        </h3>
+                                        <div class="flex items-center gap-1.5">
+                                            <h3 class="text-base font-bold">
+                                                {{ item.clazz }}
+                                            </h3>
+
+                                            <UTooltip v-if="item.needsAttention" :delay-duration="0" arrow
+                                                text="At least one student here has low attendance or is below the pass mark">
+                                                <UIcon name="i-lucide-alert-triangle" class="size-4 text-warning" />
+                                            </UTooltip>
+                                        </div>
 
                                         <div class=" flex items-center gap-2 text-xs-base text-muted">
                                             <span>{{ item.grade }}</span>

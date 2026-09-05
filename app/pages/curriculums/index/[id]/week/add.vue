@@ -142,4 +142,10 @@ onMounted(() => {
     useAppStore().setBack(`/curriculums/${id.value}`)
     document.title = "Add Week | Scheme of Work | Skultem"
 })
+
+// Missing entirely before - matches its parent curriculum page and the top-level "add
+// curriculum" page (curriculums/index/[id]/index.vue, curriculums/index/add.vue).
+definePageMeta({
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+})
 </script>

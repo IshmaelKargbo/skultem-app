@@ -46,6 +46,41 @@ export type ClassSession = {
         paid: number
         status: string
     }
+    needsAttention: boolean
+}
+
+export type StudentAttention = {
+    studentId: string
+    enrollmentId: string
+    givenNames: string
+    familyName: string
+    photo: string | null
+    attendanceRate: number | null
+    academicAverage: number | null
+    attendanceFlag: boolean
+    academicFlag: boolean
+}
+
+export type ClassAttention = {
+    totalStudents: number
+    flaggedCount: number
+    students: StudentAttention[]
+}
+
+export type FlaggedClass = {
+    classId: string
+    className: string
+    sectionName: string
+    streamName: string
+    flaggedCount: number
+    totalStudents: number
+}
+
+export type ClassAttentionSummary = {
+    totalClasses: number
+    flaggedClasses: number
+    flaggedStudents: number
+    classes: FlaggedClass[]
 }
 
 export type ClassTeacher = {

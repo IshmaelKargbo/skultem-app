@@ -3,8 +3,25 @@ const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
+const clazzStore = useClassStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
+
+const classOptions = computed(() =>
+  clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
+)
+
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+  { label: 'Name (A-Z)', value: 'givenNames:asc' },
+  { label: 'Name (Z-A)', value: 'givenNames:desc' },
+  { label: 'Newest First', value: 'createdAt:desc' },
+  { label: 'Oldest First', value: 'createdAt:asc' },
+]
+const DEFAULT_SORT = 'createdAt:desc'
 
 const columns = [
   {
@@ -63,9 +80,48 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit)
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "picking an option/typing does nothing". These still seed from the URL on load and push back
+// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
+// mirror, not the source of truth.
+const classId = ref(String(route.query.classId ?? ''))
+const searchInput = ref(String(route.query.search ?? ''))
+const search = ref(searchInput.value)
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
+const sortBy = computed(() => sort.value.split(':')[0])
+const sortDirection = computed(() => sort.value.split(':')[1])
+
+const hasActiveFilters = computed(
+  () => !!classId.value || !!search.value || sort.value !== DEFAULT_SORT
+)
+
+function resetFilters() {
+  classId.value = ''
+  searchInput.value = ''
+  search.value = ''
+  sort.value = DEFAULT_SORT
+}
+
+// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
+// page/size and silently drops any other query key when neither changed, which would swallow
+// these filter updates whenever a filter is set while already on page 1.
+function updateQuery(newQuery: Record<string, any>) {
+  router.replace({ query: { ...route.query, ...newQuery } })
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    search.value = val
+  }, 350)
+})
+
 async function fetchRecord() {
   loading.value = true
-  await store.fetchAll(page.value, size.value)
+  await store.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value)
   loading.value = false
 }
 
@@ -74,24 +130,53 @@ function viewStudent(row: Student) {
 }
 
 watch(() => page.value, () => {
-  updateQuery({
-    page: page.value
-  })
   fetchRecord()
 }, { immediate: true })
+
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([classId, search, sort], () => {
+  updateQuery({
+    classId: classId.value || undefined,
+    search: search.value || undefined,
+    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    page: 1,
+  })
+
+  if (page.value === 1) fetchRecord()
+})
 
 onMounted(() => {
   updateQuery({
     page: page.value
   })
+
+  clazzStore.fetchAll(0, 0)
 })
 </script>
 
 <template>
-  <UCard :ui="{ body: 'p-0 sm:p-0' }">
+  <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
     <template #header>
-      <div class="flex justify-end">
-        <TableViewToggle v-model="view" />
+      <div>
+        <div class="flex px-4 py-3 justify-end">
+          <TableViewToggle v-model="view" />
+        </div>
+
+        <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
+          <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
+              placeholder="All Classes" clear />
+            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+              placeholder="Sort by" />
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
+              class="col-span-2" />
+          </div>
+          <div>
+            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+              :disabled="!hasActiveFilters" @click="resetFilters" />
+          </div>
+        </div>
       </div>
     </template>
 
@@ -190,7 +275,7 @@ onMounted(() => {
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
                 <UAvatar size="2xl" :src="item.photo || '/avatar-placeholder.svg'"
-                  :alt="`${item.givenNames} ${item.familyName}`" />
+                  :alt="`${item.givenNames} ${item.familyName}`" loading="lazy" />
 
                 <div class="min-w-0">
                   <h3 class="truncate text-base font-bold text-highlighted">

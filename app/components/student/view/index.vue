@@ -65,6 +65,13 @@
                                     <span class="mr-1.5 size-1.5 rounded-full bg-success" />
                                     Active
                                 </UBadge>
+
+                                <UTooltip v-if="attentionReason" :delay-duration="0" arrow :text="attentionReason">
+                                    <UBadge color="warning" variant="subtle" size="xs" class="rounded-full"
+                                        icon="i-lucide-alert-triangle">
+                                        Needs Attention
+                                    </UBadge>
+                                </UTooltip>
                             </div>
 
                             <!-- Admission -->
@@ -229,5 +236,33 @@ watch(
     {
         immediate: true
     }
+)
+
+// Same "needs attention" computation as the class detail page and dashboards (attendance rate
+// over the last 30 days, or average score below the pass mark) - the class-wide endpoint is the
+// only one that exists, so this just checks whether this one student happens to be in its
+// flagged list.
+const attentionReason = ref('')
+
+watch(
+    () => record.value?.classId,
+    async (classId) => {
+        attentionReason.value = ''
+        if (!classId || !record.value?.id) return
+
+        try {
+            const res = await ClassApi().getAttention(classId)
+            const flagged = res?.students?.find((s: StudentAttention) => s.studentId === record.value?.id)
+            if (!flagged) return
+
+            const parts: string[] = []
+            if (flagged.attendanceFlag) parts.push(`Attendance ${flagged.attendanceRate}%`)
+            if (flagged.academicFlag) parts.push(`Average ${flagged.academicAverage}%`)
+            attentionReason.value = parts.join(' · ')
+        } catch (err) {
+            console.error('Failed to load student attention status', err)
+        }
+    },
+    { immediate: true }
 )
 </script>

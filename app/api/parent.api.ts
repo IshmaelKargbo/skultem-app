@@ -2,10 +2,14 @@ export const ParentApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (page: number, size: number, query?: string) => {
+    getAll: async (page: number, size: number, query?: string, sortBy?: string, direction?: string) => {
       try {
-        const params = query ? `&query=${encodeURIComponent(query)}` : ''
-        const res = await $api(`/parent?page=${page}&size=${size}${params}`) as any
+        const params = new URLSearchParams({ page: String(page), size: String(size) })
+        if (query) params.set('query', query)
+        if (sortBy) params.set('sortBy', sortBy)
+        if (direction) params.set('direction', direction)
+
+        const res = await $api(`/parent?${params}`) as any
 
         if (!res)
           throw new Error('Failed to fetch parents')

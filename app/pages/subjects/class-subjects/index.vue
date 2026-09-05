@@ -156,10 +156,10 @@ definePageMeta({
 </script>
 <template>
   <div class="space-y-4 px-4 md:px-6">
-    <UCard :ui="{ body: 'sm:p-0 p-0' }">
+    <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="space-y-3">
-          <div class="flex">
+        <div>
+          <div class="flex px-4 py-3">
             <div class="flex flex-1 space-x-2">
               <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject"
                 :icon="ASSIGN_ICON" />
@@ -168,7 +168,7 @@ definePageMeta({
             <TableViewToggle v-model="view" />
           </div>
 
-          <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
             <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-5">
               <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
                 placeholder="All Classes" clear />

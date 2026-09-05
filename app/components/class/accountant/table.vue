@@ -142,14 +142,14 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="space-y-3">
-          <div class="flex justify-end">
+        <div>
+          <div class="flex px-4 py-3 justify-end">
             <TableViewToggle v-model="view" />
           </div>
 
-          <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
             <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <USelectMenu v-model="sectionId" value-key="value" label-key="label" :items="sectionOptions"
                 placeholder="All Sections" clear />
@@ -255,9 +255,16 @@ onMounted(async () => {
                   </div>
 
                   <div class="min-w-0">
-                    <h3 class="truncate text-base font-bold text-highlighted">
-                      {{ item.clazz }}
-                    </h3>
+                    <div class="flex items-center gap-1.5">
+                      <h3 class="truncate text-base font-bold text-highlighted">
+                        {{ item.clazz }}
+                      </h3>
+
+                      <UTooltip v-if="item.needsAttention" :delay-duration="0" arrow
+                        text="At least one student here has low attendance or is below the pass mark">
+                        <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
+                      </UTooltip>
+                    </div>
 
                     <p class="mt-1 truncate text-xs text-muted">
                       {{ item.sectionName }}<template v-if="item.streamName && item.streamName !== 'N/A'"> - {{
