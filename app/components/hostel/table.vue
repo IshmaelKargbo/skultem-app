@@ -7,10 +7,11 @@ const typeFilter = ref('')
 const deleteOpen = ref(false)
 const selected = ref<Hostel>()
 
-const typeOptions = computed(() => [
-  { label: 'All types', value: '' },
-  ...hostelTypeOptions
-])
+// No "All types" entry - a Reka UI Combobox item's value can't be an empty string (it throws
+// "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the list
+// renders, breaking every item in it). The placeholder below covers "nothing selected", and the
+// select's own :clear button gets back to it.
+const typeOptions = computed(() => hostelTypeOptions)
 
 const data = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -44,7 +45,8 @@ function remove(hostel: Hostel) {
   <div class="space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
       <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search name or supervisor..." class="w-full sm:w-72" />
-      <USelectMenu v-model="typeFilter" value-key="value" :items="typeOptions" placeholder="All types" class="w-full sm:w-48" />
+      <USelectMenu v-model="typeFilter" value-key="value" :items="typeOptions" placeholder="All types" clear
+        class="w-full sm:w-48" />
     </div>
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">

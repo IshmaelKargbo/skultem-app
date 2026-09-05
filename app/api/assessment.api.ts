@@ -29,10 +29,44 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number, status?: string) => {
+    // School-wide - unlike getAllAssessmentApprovalRequest below (scoped to one teacher's class),
+    // this is the admin approval view's default list.
+    getAllSchoolAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (status) query.set('status', status)
+        if (search) query.set('query', search)
+
+        const res = await $api(`/assessment/approval?${query.toString()}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch assessment approval requests')
+
+        const data = res.data
+        const meta = useMeta(res.meta)
+
+        return { data, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getSchoolAssessmentApprovalSummary: async () => {
+      try {
+        const res = await $api('/assessment/approval/summary') as any
+
+        if (!res)
+          throw new Error('Failed to fetch assessment approval summary')
+
+        return res.data as AssessmentApprovalSummary
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number, status?: string, search?: string) => {
+      try {
+        const query = new URLSearchParams({ page: String(page), size: String(size) })
+        if (status) query.set('status', status)
+        if (search) query.set('query', search)
 
         const res = await $api(`/assessment/approval/${teacherId}?${query.toString()}`) as any
 
@@ -43,6 +77,18 @@ export const AssessmentApi = () => {
         const meta = useMeta(res.meta)
 
         return { data, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getAssessmentApprovalRequest: async (approvalRequestId: string) => {
+      try {
+        const res = await $api(`/assessment/approval/request/${approvalRequestId}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch assessment approval request')
+
+        return res.data as AssessmentApprovalRequest
       } catch (err: any) {
         useHandleError(err)
       }
@@ -59,10 +105,11 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllMeAssessmentApprovalRequest: async (page: number, size: number, status?: string) => {
+    getAllMeAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (status) query.set('status', status)
+        if (search) query.set('query', search)
 
         const res = await $api(`/assessment/approval/me?${query.toString()}`) as any
 

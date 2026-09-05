@@ -51,6 +51,15 @@ export const useUserStore = defineStore('user', {
 
       return res
     },
+    async systemAdminLogin(payload: SystemAdminLoginDto) {
+      const res = await UserApi().systemAdminLogin(payload)
+      const { accessToken, refreshToken } = useAuthCookies()
+
+      accessToken.value = res.accessToken
+      refreshToken.value = res.refreshToken
+
+      return res
+    },
     async logout() {
       await UserApi().logout()
 

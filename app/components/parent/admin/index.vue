@@ -8,6 +8,24 @@ const search = computed<string>({
     set: (value) => updateQuery({ search: value || undefined, page: 1 }),
 })
 
+const hasActiveFilters = computed(() => !!search.value)
+
+function resetFilters() {
+    searchInput.value = ''
+    updateQuery({ search: undefined, page: 1 })
+}
+
+// Debounced so every keystroke doesn't fire a request - the search box writes to this local ref,
+// which settles into the URL-synced `search` above after a short pause.
+const searchInput = ref(search.value)
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => {
+        search.value = val
+    }, 350)
+})
+
 const store = useParentStore();
 const { records: data, meta, loading } = storeToRefs(store);
 
@@ -65,7 +83,7 @@ async function fetchRecords() {
     try {
         loading.value = true;
 
-        await store.fetchAll(page.value, size.value);
+        await store.fetchAll(page.value, size.value, search.value || undefined);
     } catch (error) {
         console.error("Failed to fetch parents:", error);
     } finally {
@@ -103,13 +121,22 @@ watch(
 </script>
 <template>
     <div class="px-4 sm:px-6">
-        <UCard :ui="{ body: 'sm:p-0 p-0' }">
+        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="flex justify-between space-x-3">
-                    <div class="flex flex-1 gap-3">
-                        <UInput v-model="search" icon="i-lucide-search" placeholder="Search by name, email or phone" />
+                <div class="space-y-3">
+                    <div class="flex px-4 py-2 flex-wrap items-center justify-between gap-3">
+                        <h2 class="text-sm font-semibold text-highlighted">Parents</h2>
+                        <TableViewToggle v-model="view" />
                     </div>
-                    <TableViewToggle v-model="view" />
+
+                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1">
+                            <UInput v-model="searchInput" icon="i-lucide-search"
+                                placeholder="Search by name, email or phone" class="w-full sm:max-w-sm" />
+                        </div>
+                        <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                            :disabled="!hasActiveFilters" @click="resetFilters" />
+                    </div>
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">

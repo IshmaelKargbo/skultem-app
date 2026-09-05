@@ -8,10 +8,11 @@ const categoryFilter = ref('')
 const deleteModal = ref(false)
 const selected = ref<Book>()
 
-const categoryOptions = computed(() => [
-  { label: 'All categories', value: '' },
-  ...categories.value.map(e => ({ label: e.name, value: e.id }))
-])
+// No "All categories" entry - a Reka UI Combobox item's value can't be an empty string (it
+// throws "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the
+// list renders, breaking every item in it). The placeholder below covers "nothing selected", and
+// the select's own :clear button gets back to it.
+const categoryOptions = computed(() => categories.value.map(e => ({ label: e.name, value: e.id })))
 
 const data = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -49,7 +50,8 @@ function remove(book: Book) {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
             <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search title, author or ISBN..." class="w-full sm:w-72" />
-            <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions" placeholder="All categories" class="w-full sm:w-56" />
+            <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions"
+              placeholder="All categories" clear class="w-full sm:w-56" />
           </div>
           <TableViewToggle v-model="view" />
         </div>

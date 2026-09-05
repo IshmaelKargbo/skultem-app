@@ -9,11 +9,11 @@ export const useStreamSubjectStore = defineStore('streamSubject', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 6, streamId?: string, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await StreamSubjectApi().getAll(page, size) as any
+        const response = await StreamSubjectApi().getAll(page, size, streamId, query, sortBy, direction) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

@@ -57,6 +57,18 @@ export const useClassStore = defineStore('class', {
         this.loading = false
       }
     },
+    // Powers the class-master check on the class detail page (classTeachers /
+    // isMasterOfThisClass) - without this, `overview` never gets populated and a
+    // class master can never pass canViewRoster, so "View Class" from their
+    // dashboard card would always render the locked/no-roster state.
+    async fetchOverview(id: string) {
+      this.overview = undefined
+      try {
+        this.overview = await ClassApi().getOverview(id)
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class overview'
+      }
+    },
     create(payload: CreateClassDto) {
       return ClassApi().create(payload)
     },

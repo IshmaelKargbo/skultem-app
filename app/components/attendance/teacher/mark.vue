@@ -199,10 +199,10 @@ const state = reactive<AttendanceForm>({
 
 const classes = computed(() =>
   records.value.map((e: ClassSession) => {
-    let label = `${e.clazz} (${e.sectionName}) - ${e.totalStudent}`
+    let label = `${e.clazz} (${e.sectionName})`
 
     if (e.streamName !== 'N/A') {
-      label = `${e.clazz} (${e.sectionName} - ${e.streamName}) - ${e.totalStudent}`
+      label = `${e.clazz} (${e.sectionName} - ${e.streamName})`
     }
 
     return {

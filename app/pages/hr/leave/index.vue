@@ -18,10 +18,12 @@
 
         <!-- Filters - admin only -->
         <UCard v-if="isAdmin">
-            <div class="grid gap-3 md:grid-cols-4">
+            <div class="grid gap-3 md:grid-cols-5">
                 <UInput v-model="search" icon="i-lucide-search" placeholder="Search employee..." class="md:col-span-2" />
                 <USelect v-model="status" :items="statusOptions" value-key="value" placeholder="Status" />
                 <USelect v-model="type" :items="typeOptions" value-key="value" placeholder="Leave Type" />
+                <UButton icon="i-lucide-x" variant="outline" color="neutral" label="Clear"
+                    :disabled="!hasActiveFilters" @click="resetFilters" />
             </div>
         </UCard>
 
@@ -102,20 +104,29 @@ const { records, meta, loading, summary, error } = storeToRefs(store)
 const route = useRoute()
 const router = useRouter()
 
+// Neither list below has an "All ..." entry - a Reka UI Select/Combobox item's value can't be an
+// empty string (it throws "must have a value prop that is not an empty string" the moment the
+// list renders, breaking every item in it). The placeholders cover "nothing selected", and each
+// select's own :clear button gets back to it.
 const statusOptions = [
-    { label: 'All Statuses', value: '' },
     { label: 'Pending', value: 'PENDING' },
     { label: 'Approved', value: 'APPROVED' },
     { label: 'Rejected', value: 'REJECTED' },
 ]
 
-// LEAVE_TYPE_OPTIONS (from utils/leave.ts) has no "clear filter" entry - it's also used for the
-// add-request form, where every option should be a real type. Add one just for this filter.
-const typeOptions = [{ label: 'All Types', value: '' }, ...LEAVE_TYPE_OPTIONS]
+const typeOptions = LEAVE_TYPE_OPTIONS
 
 const search = ref(String(route.query.search ?? ''))
 const status = ref(String(route.query.status ?? ''))
 const type = ref(String(route.query.type ?? ''))
+
+const hasActiveFilters = computed(() => !!search.value || !!status.value || !!type.value)
+
+function resetFilters() {
+    search.value = ''
+    status.value = ''
+    type.value = ''
+}
 
 const page = computed<number>({
     get: () => Number(route.query.page ?? 1),

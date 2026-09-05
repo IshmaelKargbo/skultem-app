@@ -3,8 +3,13 @@ const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
 const store = useTeacherSubjectStore();
+const clazzStore = useClassStore();
 const { records: data, meta, loading } = storeToRefs(store);
 const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
+
+const classOptions = computed(() =>
+  clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
 
 const columns = [
   {
@@ -43,9 +48,56 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit);
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "picking an option/typing does nothing". These still seed from the URL on load and push back
+// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
+// mirror, not the source of truth.
+const classId = ref(String(route.query.classId ?? ""));
+const searchInput = ref(String(route.query.search ?? ""));
+const search = ref(searchInput.value);
+
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+  { label: "Newest First", value: "assignedAt:desc" },
+  { label: "Oldest First", value: "assignedAt:asc" },
+  { label: "Teacher (A-Z)", value: "teacher.user.givenName:asc" },
+  { label: "Subject (A-Z)", value: "subject.name:asc" },
+];
+const DEFAULT_SORT = "assignedAt:desc";
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
+const sortBy = computed(() => sort.value.split(":")[0]);
+const sortDirection = computed(() => sort.value.split(":")[1]);
+
+const hasActiveFilters = computed(() => !!classId.value || !!search.value || sort.value !== DEFAULT_SORT);
+
+function resetFilters() {
+  classId.value = "";
+  searchInput.value = "";
+  search.value = "";
+  sort.value = DEFAULT_SORT;
+}
+
+function updateQuery(newQuery: Record<string, any>) {
+  router.replace({ query: { ...route.query, ...newQuery } });
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    search.value = val;
+  }, 350);
+});
+
 async function fetchRecord() {
   loading.value = true;
-  await store.fetchAll(page.value, size.value);
+  await store.fetchAll(page.value, size.value, classId.value || undefined, search.value || undefined,
+    sortBy.value, sortDirection.value);
   loading.value = false;
 }
 
@@ -58,22 +110,31 @@ watch(
         behavior: "smooth",
       });
     });
-    router.replace({
-      query: {
-        page: page.value,
-      },
-    });
 
     fetchRecord();
   },
   { immediate: true }
 )
 
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([classId, search, sort], () => {
+  updateQuery({
+    classId: classId.value || undefined,
+    search: search.value || undefined,
+    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    page: 1,
+  })
+
+  if (page.value === 1) fetchRecord();
+});
+
 onMounted(async () => {
   updateQuery({
     page: page.value
   })
 
+  clazzStore.fetchAll(0, 0);
   fetchRecord();
   useAppStore().setTitle('Teacher Assignment')
   document.title = 'Teacher Assignment | Subjects | Skultem'
@@ -87,14 +148,30 @@ definePageMeta({
   <div class="space-y-4 px-4 md:px-6">
     <UCard :ui="{ body: 'sm:p-0 p-0' }">
       <template #header>
-        <div class="flex justify-between">
-          <div class="flex items-center  flex-1 space-x-2">
-            <UInput placeholder="Search by teacher name" />
-            <UButton to="/subjects/teacher-assignment/add" class="md:flex hidden justify-center" color="primary"
-              label="Assign Subject" :icon="TEACHER_ICON" />
-            <UButton to="/subjects/teacher-assignment/add" class="md:hidden" color="primary" :icon="ASSIGN_ICON" />
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <div class="flex items-center  flex-1 space-x-2">
+              <UButton to="/subjects/teacher-assignment/add" class="md:flex hidden justify-center" color="primary"
+                label="Assign Subject" :icon="TEACHER_ICON" />
+              <UButton to="/subjects/teacher-assignment/add" class="md:hidden" color="primary" :icon="ASSIGN_ICON" />
+            </div>
+            <TableViewToggle v-model="view" />
           </div>
-          <TableViewToggle v-model="view" />
+
+          <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
+                placeholder="All Classes" clear />
+              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                placeholder="Sort by" />
+              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by teacher or subject..."
+                class="col-span-2" />
+            </div>
+            <div>
+              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
+          </div>
         </div>
       </template>
       <UTable v-if="view === 'table'" class="md:block hidden" :columns="columns" :data="data" :loading="loading">

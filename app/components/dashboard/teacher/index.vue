@@ -29,7 +29,7 @@
 
             <div class="grid gap-3 md:grid-cols-2">
                 <UCard v-for="a in classMasterAssignments" :key="a.sessionId" :ui="{
-                    root: needsAttention(a.promotionStatus) ? 'ring-1 ring-warning/40' : '',
+                    root: needsAttention(a.promotionStatus) || attentionCount(a.sessionId) > 0 ? 'ring-1 ring-warning/40' : '',
                     body: 'p-0 sm:p-0'
                 }">
                     <div class="flex items-start justify-between gap-3 p-3">
@@ -44,6 +44,10 @@
                                     <UIcon name="i-lucide-users" class="size-3.5" />
                                     {{ a.studentCount }} student{{ a.studentCount === 1 ? '' : 's' }}
                                 </p>
+                                <p v-if="attentionCount(a.sessionId) > 0" class="flex items-center gap-1 text-xs text-warning">
+                                    <UIcon name="i-lucide-alert-triangle" class="size-3.5" />
+                                    {{ attentionCount(a.sessionId) }} need{{ attentionCount(a.sessionId) === 1 ? 's' : '' }} attention
+                                </p>
                             </div>
                         </div>
 
@@ -56,8 +60,14 @@
                     <USeparator />
 
                     <div class="flex flex-wrap items-center gap-2 p-3">
-                        <UButton :to="`/classes/${a.classId}`" size="sm" variant="soft" color="neutral"
+                        <UButton :to="classRosterUrl(a.classId, a.streamId)" size="sm" variant="soft" color="neutral"
                             label="View Class" :icon="CLASS_ICON" />
+
+                        <UButton :to="`/curriculums?sessionId=${a.sessionId}`" size="sm" variant="soft" color="neutral"
+                            label="View Curriculum" icon="i-lucide-book-open" />
+
+                        <UButton to="/grades/approval" size="sm" variant="soft" color="neutral"
+                            label="Grade Approval" :icon="GRADES_APPROVAL_ICON" />
 
                         <UButton :to="`/timetable?session=${a.sessionId}`" size="sm" variant="soft" color="neutral"
                             label="Timetable" icon="i-lucide-calendar-days" />
@@ -104,10 +114,10 @@
                     </div>
                     <USeparator />
                     <div class="flex flex-wrap gap-3 p-3">
-                        <UButton v-if="isClassMaster(c.sessionId)" :to="`/classes/${c.classId}`" size="sm"
-                            variant="soft" color="neutral" label="View Class" icon="i-lucide-school" />
-                        <UButton v-else to="/curriculums" size="sm" variant="soft" color="neutral"
-                            label="View Curriculum" icon="i-lucide-book-open" />
+                        <UButton v-if="isClassMaster(c.sessionId)" :to="classRosterUrl(c.classId, c.streamId)"
+                            size="sm" variant="soft" color="neutral" label="View Class" icon="i-lucide-school" />
+                        <UButton v-else :to="`/curriculums?sessionId=${c.sessionId}`" size="sm" variant="soft"
+                            color="neutral" label="View Curriculum" icon="i-lucide-book-open" />
                         <UButton :to="`/timetable?session=${c.sessionId}`" size="sm" variant="soft" color="neutral"
                             label="Timetable" icon="i-lucide-calendar-days" />
                     </div>
@@ -253,13 +263,14 @@ const subjects = computed(() =>
 const hasSubjects = computed(() => records.value.length > 0)
 
 const myClasses = computed(() => {
-    const map = new Map<string, { sessionId: string, classId: string, className: string, sectionName: string, subjects: string[] }>()
+    const map = new Map<string, { sessionId: string, classId: string, streamId: string, className: string, sectionName: string, subjects: string[] }>()
 
     for (const r of records.value) {
         if (!map.has(r.sessionId)) {
             map.set(r.sessionId, {
                 sessionId: r.sessionId,
                 classId: r.classId,
+                streamId: r.streamId,
                 className: r.className,
                 sectionName: r.sectionName,
                 subjects: []
@@ -277,6 +288,63 @@ const loadingAssignments = ref(true)
 const loadingSubjects = ref(true)
 const hasClassMaster = computed(() => classMasterAssignments.value.length > 0)
 const initialLoading = computed(() => loadingAssignments.value || loadingSubjects.value)
+
+// How many students in each class-master session are below the attendance
+// threshold - same threshold and per-student computation as the class roster
+// page, just rolled up to a count so a card can flag it without listing names.
+// Keyed by sessionId (not classId) and stream-scoped when the assignment has a
+// stream: a class split into streams (e.g. SSS2 Science/Art) reuses the same
+// stream records across every class that has them, so `enrollment.clazz.id`
+// alone pulls in every stream's students - filtering by class alone would mix
+// another stream's attendance into this session's count, and keying by classId
+// alone would let two streams of the same class overwrite each other's count.
+const widgetStore = useWidgetStore()
+const ATTENDANCE_ALERT_THRESHOLD = 75
+const attentionBySessionId = ref<Record<string, number>>({})
+
+function attentionCount(sessionId: string) {
+    return attentionBySessionId.value[sessionId] ?? 0
+}
+
+async function fetchAttentionCounts(sessions: { sessionId: string, classId: string, streamId?: string | null }[]) {
+    const unique = new Map(sessions.filter(s => s.sessionId && s.classId).map(s => [s.sessionId, s]))
+    if (!unique.size) return
+
+    const entries = await Promise.all([...unique.values()].map(async ({ sessionId, classId, streamId }) => {
+        try {
+            const filters = [
+                { field: 'enrollment.clazz.id', value: classId, operator: 'EQUALS', type: 'select' }
+            ]
+            if (streamId) filters.push({ field: 'enrollment.stream.id', value: streamId, operator: 'EQUALS', type: 'select' })
+
+            const res = await widgetStore.runAnalytic({
+                entity: 'attendances',
+                title: 'Class Attendance',
+                filters,
+                metrics: [
+                    { name: 'Present', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Present' } },
+                    { name: 'Total', aggregation: 'count', field: 'state', tags: { groupBy: 'student' } }
+                ],
+                chartType: 'bar'
+            })
+
+            const widget = res?.data ?? res
+            let count = 0
+            widget?.labels?.forEach((_: string, i: number) => {
+                const present = Number(widget.datasets?.[0]?.data?.[i] ?? 0)
+                const total = Number(widget.datasets?.[1]?.data?.[i] ?? 0)
+                if (total > 0 && (present / total) * 100 < ATTENDANCE_ALERT_THRESHOLD) count++
+            })
+
+            return [sessionId, count] as const
+        } catch (err) {
+            console.error('Failed to load attendance status for session', sessionId, err)
+            return [sessionId, 0] as const
+        }
+    }))
+
+    attentionBySessionId.value = { ...attentionBySessionId.value, ...Object.fromEntries(entries) }
+}
 
 // A subject teacher only sees the full roster for a class they're also the class
 // master of - otherwise "View Class" would open the students list of a class they
@@ -306,6 +374,7 @@ async function fetchClassMasterAssignments() {
     loadingAssignments.value = true
     try {
         classMasterAssignments.value = await TeacherApi().getMyClassMasterAssignments() || []
+        fetchAttentionCounts(classMasterAssignments.value)
     } finally {
         loadingAssignments.value = false
     }

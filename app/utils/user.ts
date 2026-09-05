@@ -60,6 +60,13 @@ export type LoginDto = {
     password: string
 }
 
+// No domain - see the backend's SystemAdminLoginUseCase for why a SYSTEM_ADMIN sign-in isn't
+// scoped to a school the way LoginDto is.
+export type SystemAdminLoginDto = {
+    email: string
+    password: string
+}
+
 export type RefreshDto = {
     refreshToken: string
 }

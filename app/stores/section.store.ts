@@ -9,11 +9,11 @@ export const useSectionStore = defineStore('section', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 6, query?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await SectionApi().getAll(page, size) as any
+        const response = await SectionApi().getAll(page, size, query) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

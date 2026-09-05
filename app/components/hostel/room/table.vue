@@ -8,10 +8,11 @@ const hostelFilter = ref('')
 const deleteModal = ref(false)
 const selected = ref<HostelRoom>()
 
-const hostelOptions = computed(() => [
-  { label: 'All hostels', value: '' },
-  ...hostels.value.map(e => ({ label: e.name, value: e.id }))
-])
+// No "All hostels" entry - a Reka UI Combobox item's value can't be an empty string (it throws
+// "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the list
+// renders, breaking every item in it). The placeholder below covers "nothing selected", and the
+// select's own :clear button gets back to it.
+const hostelOptions = computed(() => hostels.value.map(e => ({ label: e.name, value: e.id })))
 
 const data = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -45,7 +46,8 @@ function remove(room: HostelRoom) {
   <div class="space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
       <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search room or hostel..." class="w-full sm:w-72" />
-      <USelectMenu v-model="hostelFilter" value-key="value" :items="hostelOptions" placeholder="All hostels" class="w-full sm:w-56" />
+      <USelectMenu v-model="hostelFilter" value-key="value" :items="hostelOptions" placeholder="All hostels" clear
+        class="w-full sm:w-56" />
     </div>
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">

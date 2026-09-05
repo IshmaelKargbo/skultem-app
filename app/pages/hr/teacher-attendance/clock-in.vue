@@ -71,6 +71,13 @@
 
       <UAlert v-if="lastError" color="error" variant="soft" icon="i-lucide-alert-circle"
         :title="lastErrorTitle" :description="lastError" />
+
+      <div class="flex items-center gap-2 pt-1">
+        <UIcon name="i-lucide-history" class="size-4 text-primary" />
+        <h3 class="text-sm font-semibold text-highlighted">Attendance History</h3>
+      </div>
+
+      <TeacherViewAttendanceCycle mine />
     </template>
   </div>
 </template>

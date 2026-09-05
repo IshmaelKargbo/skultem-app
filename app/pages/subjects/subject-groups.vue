@@ -5,8 +5,13 @@ const view = ref<'table' | 'card'>('table')
 const route = useRoute();
 const router = useRouter();
 const store = useSubjectGroupStore();
+const clazzStore = useClassStore();
 const { records: data, meta, loading } = storeToRefs(store);
 const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
+
+const classOptions = computed(() =>
+  clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
 
 const editRcord = ref<SubjectGroup | null>(null);
 const editState = ref(false);
@@ -88,6 +93,48 @@ const size = computed<number>({
     set: (val) => updateQuery({ size: val }),
 });
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "picking an option/typing does nothing". These still seed from the URL on load and push back
+// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
+// mirror, not the source of truth.
+const classId = ref(String(route.query.classId ?? ""));
+const searchInput = ref(String(route.query.search ?? ""));
+const search = ref(searchInput.value);
+
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+    { label: "Name (A-Z)", value: "name:asc" },
+    { label: "Name (Z-A)", value: "name:desc" },
+    { label: "Newest First", value: "createdAt:desc" },
+    { label: "Oldest First", value: "createdAt:asc" },
+];
+const DEFAULT_SORT = "name:asc";
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
+const sortBy = computed(() => sort.value.split(":")[0]);
+const sortDirection = computed(() => sort.value.split(":")[1]);
+
+const hasActiveFilters = computed(() => !!classId.value || !!search.value || sort.value !== DEFAULT_SORT);
+
+function resetFilters() {
+    classId.value = "";
+    searchInput.value = "";
+    search.value = "";
+    sort.value = DEFAULT_SORT;
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(searchInput, (val) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        search.value = val;
+    }, 350);
+});
+
 watch(
     () => page.value,
     () => {
@@ -97,31 +144,33 @@ watch(
                 behavior: "smooth",
             });
         });
-        router.replace({
-            query: {
-                page: page.value,
-                size: size.value,
-            },
-        });
 
         fetchRecord();
     },
     { immediate: true }
 );
 
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([classId, search, sort], () => {
+    updateQuery({
+        classId: classId.value || undefined,
+        search: search.value || undefined,
+        sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+        page: 1,
+    })
+
+    if (page.value === 1) fetchRecord();
+});
+
 function updateQuery(newQuery: Record<string, any>) {
-    const merged = { ...route.query, ...newQuery };
-
-    if (merged.page === route.query.page && merged.size === route.query.size) {
-        return;
-    }
-
-    router.replace({ query: merged });
+    router.replace({ query: { ...route.query, ...newQuery } });
 }
 
 async function fetchRecord() {
     loading.value = true;
-    await store.fetchAll(page.value, size.value);
+    await store.fetchAll(page.value, size.value, classId.value || undefined, search.value || undefined,
+        sortBy.value, sortDirection.value);
     loading.value = false;
 }
 
@@ -130,6 +179,7 @@ onMounted(async () => {
         page: page.value
     })
 
+    clazzStore.fetchAll(0, 0);
     useAppStore().setTitle('Subject Groups');
     document.title = 'Subject Groups | Skultem'
 })
@@ -143,12 +193,28 @@ definePageMeta({
     <div class="space-y-4 px-4 md:px-6">
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="flex justify-between">
-                    <div class="space-x-2 flex flex-1 items-center">
-                        <UInput placeholder="Search by name. . ." />
-                        <SubjectGroupAdd />
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <div class="space-x-2 flex flex-1 items-center">
+                            <SubjectGroupAdd />
+                        </div>
+                        <TableViewToggle v-model="view" />
                     </div>
-                    <TableViewToggle v-model="view" />
+
+                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
+                                placeholder="All Classes" clear />
+                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                                placeholder="Sort by" />
+                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..."
+                                class="col-span-2" />
+                        </div>
+                        <div>
+                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                                :disabled="!hasActiveFilters" @click="resetFilters" />
+                        </div>
+                    </div>
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="md:block hidden" :columns="columns" :data="data" :loading="loading">

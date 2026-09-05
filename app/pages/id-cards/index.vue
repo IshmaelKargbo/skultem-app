@@ -7,7 +7,7 @@
           <div class="grid flex-1 gap-3 lg:grid-cols-2">
             <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or admission no..." />
             <USelectMenu v-model="selectedClass" value-key="value" :items="classOptions" placeholder="Class"
-              :loading="classLoading" />
+              :loading="classLoading" clear />
           </div>
           <div class="space-x-3">
             <UButton icon="i-lucide-x" variant="outline" label="Clear" @click="resetFilters" />
@@ -94,10 +94,11 @@ const { records: classes, loading: classLoading } = storeToRefs(classStore)
 const search = ref('')
 const selectedClass = ref('')
 
-const classOptions = computed(() => [
-  { label: 'All Classes', value: '' },
-  ...classes.value.map(c => ({ label: c.name, value: c.id }))
-])
+// No "All Classes" entry - a Reka UI Combobox item's value can't be an empty string (it throws
+// "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the list
+// renders, breaking every item in it). The placeholder below already covers "nothing selected",
+// and the select's own :clear button gets back to it.
+const classOptions = computed(() => classes.value.map(c => ({ label: c.name, value: c.id })))
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),

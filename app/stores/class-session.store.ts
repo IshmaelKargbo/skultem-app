@@ -9,11 +9,13 @@ export const useClassSessionStore = defineStore('classSession', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, academicYearId?: string) {
+    async fetchAll(page: number = 1, size: number = 6, academicYearId?: string, sectionId?: string, streamId?: string,
+      query?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await ClassApi().getAllClassSessions(page, size, academicYearId) as any
+        const response = await ClassApi().getAllClassSessions(page, size, academicYearId, sectionId, streamId,
+          query) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

@@ -62,6 +62,9 @@ export type FeeStructure = {
     // Only ever charged the first time a student enrolls (e.g. Uniform Fee) - never to a student
     // who's simply continuing/being promoted/re-enrolled into what this fee targets.
     newStudentsOnly: boolean
+    // Mirror image of newStudentsOnly - only ever charged to a student who is re-enrolling
+    // (a returning student), never a first-time NEW/TRANSFER admission.
+    oldStudentsOnly: boolean
     createdAt: string
     updatedAt: string
 }
@@ -173,6 +176,10 @@ export type CreateFeeStructureDto = {
     // who's simply continuing/being promoted/re-enrolled into what this fee targets. Not allowed
     // when type is SELECTION - an explicit student list is already a deliberate assignment.
     newStudentsOnly?: boolean
+    // Mirror image of newStudentsOnly - only ever charged to a student who is re-enrolling (a
+    // returning student). Mutually exclusive with newStudentsOnly, and not allowed when type is
+    // SELECTION for the same reason newStudentsOnly isn't.
+    oldStudentsOnly?: boolean
 }
 
 // What a fee structure applies to (academic year, class, type) can't be changed after

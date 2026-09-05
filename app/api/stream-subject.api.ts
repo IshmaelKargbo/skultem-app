@@ -2,9 +2,15 @@ export const StreamSubjectApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (page: number, size: number) => {
+    getAll: async (page: number, size: number, streamId?: string, query?: string, sortBy?: string, direction?: string) => {
       try {
-        const res = await $api(`/stream/subject?page=${page}&size=${size}`) as any
+        const params = new URLSearchParams({ page: String(page), size: String(size) })
+        if (streamId) params.set('streamId', streamId)
+        if (query) params.set('query', query)
+        if (sortBy) params.set('sortBy', sortBy)
+        if (direction) params.set('direction', direction)
+
+        const res = await $api(`/stream/subject?${params}`) as any
 
         if (!res)
           throw new Error('Failed to fetch stream subjects')

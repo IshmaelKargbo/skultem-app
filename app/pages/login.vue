@@ -190,7 +190,7 @@ const showPassword = ref(false)
 const loading = ref(false)
 
 const userStore = useUserStore()
-const { initializeActiveRole, setAuthResolved } = useAuth()
+const { initializeActiveRole, setAuthResolved, activeRole } = useAuth()
 const { show, hide } = useGlobalLoader()
 
 const slides = [
@@ -266,8 +266,7 @@ const handleLogin = async () => {
     loading.value = true
     setAuthResolved(false)
 
-    const hostname = useRequestURL().hostname
-    const domain = hostname.includes('localhost') ? runtimeConf().domain : hostname.split('.')[0]
+    const domain = resolveTenantSlug(useRequestURL().hostname)
 
     await userStore.login({
       domain: domain || '',
@@ -285,7 +284,10 @@ const handleLogin = async () => {
     initializeActiveRole()
     setAuthResolved(true)
 
-    await navigateTo('/')
+    // SYSTEM_ADMIN has no page at "/" - index.vue's role list doesn't include it (it's a
+    // per-school dashboard, and a system admin isn't scoped to one) - send them to their own
+    // dashboard instead.
+    await navigateTo(activeRole.value === Role.SYSTEM_ADMIN ? '/system-admin' : '/')
   } catch (err: any) {
     loading.value = false
     setAuthResolved(true)

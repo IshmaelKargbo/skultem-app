@@ -10,11 +10,11 @@ export const useFeeStructureStore = defineStore('fee_structure', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, termId?: string) {
+    async fetchAll(page: number = 1, size: number = 6, termId?: string, classId?: string, studentType?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await FeeApi().getAllStructures(page, size, termId) as any
+        const response = await FeeApi().getAllStructures(page, size, termId, classId, studentType, sortBy, direction) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

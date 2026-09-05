@@ -453,7 +453,11 @@ export type AssignmentTeacherSubject = {
 }
 
 export const runtimeConf = () => {
-    return { limit: Number.parseInt(useRuntimeConfig().public.limit), domain: useRuntimeConfig().public.domain }
+    return {
+        limit: Number.parseInt(useRuntimeConfig().public.limit),
+        domain: useRuntimeConfig().public.domain,
+        adminSubdomain: useRuntimeConfig().public.adminSubdomain
+    }
 }
 
 export function updateQuery(newQuery: Record<string, any>) {

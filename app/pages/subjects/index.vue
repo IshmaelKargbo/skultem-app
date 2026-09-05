@@ -2,13 +2,27 @@
     <div class="space-y-4 px-4 md:px-6">
         <UCard :ui="{ body: 'sm:p-0 p-0' }">
             <template #header>
-                <div class="flex justify-between items-center">
-                    <div class="flex space-x-3 flex-1">
-                        <UInput placeholder="Search by name or code" />
-                        <SubjectAdd />
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center gap-3">
+                        <div class="flex space-x-3 flex-1">
+                            <SubjectAdd />
+                        </div>
+
+                        <TableViewToggle v-model="view" />
                     </div>
 
-                    <TableViewToggle v-model="view" />
+                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
+                                class="col-span-2" />
+                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                                placeholder="Sort by" />
+                        </div>
+                        <div>
+                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                                :disabled="!hasActiveFilters" @click="resetFilters" />
+                        </div>
+                    </div>
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
@@ -121,6 +135,48 @@ const size = computed<number>({
     },
 });
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "typing does nothing". These still seed from the URL on load and push back to it (see the
+// watch below) so a direct link/refresh keeps the search, but the URL is a mirror, not the
+// source of truth.
+const searchInput = ref(String(route.query.search ?? ""));
+const search = ref(searchInput.value);
+
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+    { label: "Name (A-Z)", value: "name:asc" },
+    { label: "Name (Z-A)", value: "name:desc" },
+    { label: "Code (A-Z)", value: "code:asc" },
+    { label: "Code (Z-A)", value: "code:desc" },
+    { label: "Newest First", value: "createdAt:desc" },
+    { label: "Oldest First", value: "createdAt:asc" },
+];
+const DEFAULT_SORT = "name:asc";
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
+const sortBy = computed(() => sort.value.split(":")[0]);
+const sortDirection = computed(() => sort.value.split(":")[1]);
+
+const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT);
+
+function resetFilters() {
+    searchInput.value = "";
+    search.value = "";
+    sort.value = DEFAULT_SORT;
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(searchInput, (val) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        search.value = val;
+    }, 350);
+});
+
 function updateQuery(query: Record<string, any>) {
     router.replace({
         query: {
@@ -134,7 +190,7 @@ async function fetchRecords() {
     try {
         loading.value = true;
 
-        await store.fetchAll(page.value, size.value);
+        await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value);
     } finally {
         loading.value = false;
     }
@@ -156,6 +212,18 @@ watch(
         immediate: true,
     }
 )
+
+// Setting a filter also resets the page to 1 and mirrors it into the URL (for a shareable
+// link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([search, sort], () => {
+    updateQuery({
+        search: search.value || undefined,
+        sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+        page: 1,
+    });
+
+    if (page.value === 1) fetchRecords();
+});
 
 onMounted(() => {
     if (!route.query.page || !route.query.size) {

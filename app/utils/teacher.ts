@@ -27,6 +27,9 @@ export type TeacherClassMaster = {
     classMasterId: string
     sessionId: string
     classId: string
+    // Null when the class has no streams - see the roster link builder (classRosterUrl)
+    // for why that must stay distinct from an empty string.
+    streamId: string | null
     sessionName: string
     className: string
     studentCount: number

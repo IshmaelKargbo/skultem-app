@@ -4,6 +4,7 @@ const router = useRouter();
 const { format } = useMoney();
 const store = useFeeStructureStore();
 const termStore = useTermStore();
+const clazzStore = useClassStore();
 const loading = ref(true);
 const { records: data, meta } = storeToRefs(store);
 const view = ref<"table" | "card">("table");
@@ -14,6 +15,30 @@ const selected = ref<FeeStructure>();
 const termOptions = computed(() =>
   termStore.records.map((e) => ({ label: e.name, value: e.id }))
 );
+
+const classOptions = computed(() =>
+  clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
+
+// No "All Students" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). Nothing selected already shows the "All students" placeholder, and
+// the select's own clear button (:clear below) gets back to it.
+const studentTypeOptions = [
+  { label: "New Students Only", value: "NEW" },
+  { label: "Old Students Only", value: "OLD" },
+];
+
+const sortOptions = [
+  { label: "Newest First", value: "createdAt:desc" },
+  { label: "Oldest First", value: "createdAt:asc" },
+  { label: "Amount: High to Low", value: "amount:desc" },
+  { label: "Amount: Low to High", value: "amount:asc" },
+  { label: "Due Date: Soonest", value: "dueDate:asc" },
+  { label: "Due Date: Latest", value: "dueDate:desc" },
+];
+const DEFAULT_SORT = "createdAt:desc";
 
 function remove(fee: FeeStructure) {
   selected.value = fee;
@@ -72,6 +97,39 @@ const termId = computed<string>({
   set: (val) => updateQuery({ termId: val || undefined, page: 1 }),
 });
 
+const classId = computed<string>({
+  get: () => String(route.query.classId ?? ""),
+  set: (val) => updateQuery({ classId: val || undefined, page: 1 }),
+});
+
+const studentType = computed<string>({
+  get: () => String(route.query.studentType ?? ""),
+  set: (val) => updateQuery({ studentType: val || undefined, page: 1 }),
+});
+
+const sort = computed<string>({
+  get: () => String(route.query.sort ?? DEFAULT_SORT),
+  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val, page: 1 }),
+});
+
+const sortBy = computed(() => sort.value.split(":")[0]);
+const sortDirection = computed(() => sort.value.split(":")[1]);
+
+// Whether any filter/sort differs from its default - drives whether "Clear" is enabled.
+const hasActiveFilters = computed(
+  () => !!termId.value || !!classId.value || !!studentType.value || sort.value !== DEFAULT_SORT
+);
+
+function resetFilters() {
+  updateQuery({
+    termId: undefined,
+    classId: undefined,
+    studentType: undefined,
+    sort: undefined,
+    page: 1,
+  });
+}
+
 const size = ref(runtimeConf().limit);
 
 function updateQuery(newQuery: Record<string, any>) {
@@ -80,15 +138,23 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   loading.value = true;
-  await store.fetchAll(page.value, size.value, termId.value || undefined);
+  await store.fetchAll(
+    page.value,
+    size.value,
+    termId.value || undefined,
+    classId.value || undefined,
+    studentType.value || undefined,
+    sortBy.value,
+    sortDirection.value
+  );
   loading.value = false;
 }
 
 watch(() => page.value, () => fetchRecord());
 
-watch(() => termId.value, () => {
-  // Setting the filter also resets the page to 1: if the page was already 1
-  // that query change won't fire the page watcher above, so fetch here.
+// Setting a filter also resets the page to 1: if the page was already 1 that query change
+// won't fire the page watcher above, so fetch here too.
+watch([() => termId.value, () => classId.value, () => studentType.value, () => sort.value], () => {
   if (page.value === 1) fetchRecord();
 });
 
@@ -100,6 +166,7 @@ onMounted(async () => {
   document.title = 'Fees Structures | Fees Payment | Skultem'
 
   termStore.fetchAll(0, 0);
+  clazzStore.fetchAll(0, 0);
   await fetchRecord();
 })
 
@@ -109,15 +176,34 @@ definePageMeta({
 </script>
 <template>
   <div class="px-4 md:px-6">
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-between space-x-3">
-          <div class="space-x-3 flex flex-1">
-            <USelectMenu v-model="termId" class="w-full" value-key="value" label-key="label" :items="termOptions"
-              placeholder="All terms" />
-            <UButton color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
+        <div class="space-y-3">
+          <div class="flex px-4 py-2 flex-wrap items-center justify-between gap-3">
+            <h2 class="text-sm font-semibold text-highlighted">Fee Structures</h2>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <UButton color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
+              <TableViewToggle v-model="view" />
+            </div>
           </div>
-          <TableViewToggle v-model="view" />
+
+          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 col-span-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <USelectMenu v-model="termId" value-key="value" label-key="label" :items="termOptions"
+                placeholder="All terms" />
+              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
+                placeholder="All classes" />
+              <USelectMenu v-model="studentType" value-key="value" label-key="label" :items="studentTypeOptions"
+                placeholder="All students" clear />
+              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                placeholder="Sort by" />
+            </div>
+            <div>
+              <UButton class="col-span-2 justify-center sm:col-span-1" :trailing-icon="DELETE_ICON" variant="outline"
+                color="error" label="Clear" :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
+          </div>
         </div>
       </template>
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
@@ -157,6 +243,11 @@ definePageMeta({
                 text="Only charged on a student's first-ever enrollment">
                 <UBadge size="xs" variant="subtle" color="info" icon="i-lucide-user-plus" label="New Students" />
               </UTooltip>
+
+              <UTooltip v-if="row.original.oldStudentsOnly" :delay-duration="0" arrow
+                text="Only charged to students who are re-enrolling">
+                <UBadge size="xs" variant="subtle" color="warning" icon="i-lucide-user-check" label="Old Students" />
+              </UTooltip>
             </div>
 
             <p class="text-xs text-muted">
@@ -181,7 +272,8 @@ definePageMeta({
           <FeeStructureCount :id="row.original.id">
             <template #default="{ value }">
               <div class="flex space-x-2">
-                <UBadge size="lg" variant="subtle" color="secondary" :trailing-icon="STUDENT_ICON" :label="`${value} -`" />
+                <UBadge size="lg" variant="subtle" color="secondary" :trailing-icon="STUDENT_ICON"
+                  :label="`${value} -`" />
               </div>
             </template>
           </FeeStructureCount>
@@ -193,21 +285,10 @@ definePageMeta({
           </div>
 
           <div v-else class="flex justify-end gap-1">
-            <UButton
-              :to="`/fees-payment/structure/edit/${row.original.id}`"
-              :icon="EDIT_ICON"
-              size="xs"
-              color="neutral"
-              variant="ghost"
-            />
+            <UButton :to="`/fees-payment/structure/edit/${row.original.id}`" :icon="EDIT_ICON" size="xs" color="neutral"
+              variant="ghost" />
 
-            <UButton
-              :icon="DELETE_ICON"
-              size="xs"
-              color="error"
-              variant="ghost"
-              @click="remove(row.original)"
-            />
+            <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(row.original)" />
           </div>
         </template>
       </UTable>
@@ -288,6 +369,9 @@ definePageMeta({
 
                     <UBadge v-if="item.newStudentsOnly" size="xs" variant="subtle" color="info"
                       icon="i-lucide-user-plus" label="New Students Only" class="mt-1" />
+
+                    <UBadge v-if="item.oldStudentsOnly" size="xs" variant="subtle" color="warning"
+                      icon="i-lucide-user-check" label="Old Students Only" class="mt-1" />
                   </div>
                 </div>
 
@@ -384,34 +468,18 @@ definePageMeta({
             </div>
 
             <div v-else class="flex items-center justify-end gap-1 border-t border-default p-2">
-              <UButton
-                :to="`/fees-payment/structure/edit/${item.id}`"
-                label="Edit"
-                :icon="EDIT_ICON"
-                size="xs"
-                color="neutral"
-                variant="ghost"
-              />
+              <UButton :to="`/fees-payment/structure/edit/${item.id}`" label="Edit" :icon="EDIT_ICON" size="xs"
+                color="neutral" variant="ghost" />
 
-              <UButton
-                label="Delete"
-                :icon="DELETE_ICON"
-                size="xs"
-                color="error"
-                variant="ghost"
-                @click="remove(item)"
-              />
+              <UButton label="Delete" :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
+                @click="remove(item)" />
             </div>
           </UCard>
         </template>
       </div>
 
-      <FeeStructureDeletePrompt
-        v-if="selected"
-        v-model:open="deleteModal"
-        :fee-id="selected.id"
-        :fee-name="`${clean(selected.category.name)} - ${selected.term.name}`"
-      />
+      <FeeStructureDeletePrompt v-if="selected" v-model:open="deleteModal" :fee-id="selected.id"
+        :fee-name="`${clean(selected.category.name)} - ${selected.term.name}`" />
 
       <template #footer>
         <div class="flex justify-between items-center">

@@ -31,8 +31,11 @@ const categoryFilter = ref('')
 const deleteModal = ref(false)
 const selected = ref<Notice>()
 
+// No "All categories" entry - a Reka UI Combobox item's value can't be an empty string (it
+// throws "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the
+// list renders, breaking every item in it). The placeholder covers "nothing selected", and the
+// select's own :clear button gets back to it.
 const categoryOptions = [
-  { label: 'All categories', value: '' },
   { label: 'General', value: 'GENERAL' },
   { label: 'Academic', value: 'ACADEMIC' },
   { label: 'Fee', value: 'FEE' },
@@ -75,7 +78,8 @@ async function togglePin(notice: Notice) {
         <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search notices..." class="w-full sm:w-72" />
-            <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions" class="w-full sm:w-52" />
+            <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions"
+              placeholder="All categories" clear class="w-full sm:w-52" />
           </div>
           <CommunicateNoticeAdd v-if="canManage" />
         </div>

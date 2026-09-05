@@ -110,6 +110,25 @@ export const PayrollApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    // Self-service versions - the signed-in teacher's own history/payslip.
+    getMySalaryHistory: async () => {
+      try {
+        const res = await $api('/payroll/me/history') as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    getMyPayslip: async (runId: string) => {
+      try {
+        const res = await $api(`/payroll/me/payslip/${runId}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

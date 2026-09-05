@@ -70,6 +70,12 @@ interface NavItem {
 }
 
 const { can } = useAuth()
+const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
+
+onMounted(() => {
+  ensureClassMasterLoaded()
+})
+
 const navItems: NavItem[] = [
   { label: 'Dashboard', to: '/', exact: true, icon: DASHBOARD_ICON },
 
@@ -270,8 +276,13 @@ const navItems: NavItem[] = [
   },
 
   {
-    label: 'Platform', to: '/platform/fee-setting', icon: 'i-lucide-shield',
-    roles: [Role.SYSTEM_ADMIN]
+    label: 'System Admin', icon: 'i-lucide-shield-check', roles: [Role.SYSTEM_ADMIN],
+    subNavs: [
+      // Each school's platform fee is set from its row in the Dashboard's schools table now
+      // (see SystemAdminPlatformFeeModal) - no longer a single global amount with its own page.
+      { label: 'Dashboard', to: '/system-admin', icon: 'i-lucide-layout-dashboard', exact: true },
+      { label: 'Users', to: '/system-admin/users', icon: USERS_ICON },
+    ]
   },
   {
     // HR and Payroll used to be two separate nav sections with a lot of overlap (staff,
@@ -290,6 +301,7 @@ const navItems: NavItem[] = [
       { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
       { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER] },
       { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
+      { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
     ]
   },
   {
@@ -344,6 +356,23 @@ const navItems: NavItem[] = [
 ]
 
 const visibleNavItems = computed(() =>
-  navItems.filter((item) => !item.roles || can(item.roles))
+  navItems
+    .filter((item) => !item.roles || can(item.roles))
+    .map((item) => {
+      // Only a class master has anything to approve - a subject-only teacher's "Grade" link
+      // stays a single shortcut to grade entry, not a group with an always-empty approval list.
+      if (item.label === 'Grade' && item.to === '/grades' && can(Role.TEACHER) && isClassMaster.value) {
+        return {
+          label: 'Grade',
+          icon: item.icon,
+          roles: item.roles,
+          subNavs: [
+            { label: 'Grade Assignment', to: '/grades', icon: GRADES_ICON, exact: true },
+            { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
+          ]
+        }
+      }
+      return item
+    })
 )
 </script>

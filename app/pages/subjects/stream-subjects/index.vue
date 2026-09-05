@@ -3,7 +3,12 @@ const view = ref<'table' | 'card'>('table')
 const route = useRoute();
 const router = useRouter();
 const store = useStreamSubjectStore();
+const streamStore = useStreamStore();
 const { records: data, meta, loading } = storeToRefs(store);
+
+const streamOptions = computed(() =>
+  streamStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
 
 const columns = [
     {
@@ -27,32 +32,89 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit);
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "picking an option/typing does nothing". These still seed from the URL on load and push back
+// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
+// mirror, not the source of truth.
+const streamId = ref(String(route.query.streamId ?? ""));
+const searchInput = ref(String(route.query.search ?? ""));
+const search = ref(searchInput.value);
+
+// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
+const sortOptions = [
+    { label: "Oldest First", value: "createdAt:asc" },
+    { label: "Newest First", value: "createdAt:desc" },
+    { label: "Stream (A-Z)", value: "stream.name:asc" },
+    { label: "Subject (A-Z)", value: "subject.name:asc" },
+];
+const DEFAULT_SORT = "createdAt:asc";
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
+const sortBy = computed(() => sort.value.split(":")[0]);
+const sortDirection = computed(() => sort.value.split(":")[1]);
+
+const hasActiveFilters = computed(() => !!streamId.value || !!search.value || sort.value !== DEFAULT_SORT);
+
+function resetFilters() {
+    streamId.value = "";
+    searchInput.value = "";
+    search.value = "";
+    sort.value = DEFAULT_SORT;
+}
+
+// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
+// page/size and silently drops any other query key when neither changed, which would swallow
+// these filter updates whenever a filter is set while already on page 1.
+function updateQuery(newQuery: Record<string, any>) {
+    router.replace({ query: { ...route.query, ...newQuery } });
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(searchInput, (val) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        search.value = val;
+    }, 350);
+});
+
 async function fetchRecord() {
     loading.value = true;
-    await store.fetchAll(page.value, size.value);
+    await store.fetchAll(page.value, size.value, streamId.value || undefined, search.value || undefined,
+        sortBy.value, sortDirection.value);
     loading.value = false;
 }
 
 watch(
     () => page.value,
     () => {
-        router.replace({
-            query: {
-                page: page.value,
-            },
-        });
-
         fetchRecord();
     },
     { immediate: true }
 );
+
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([streamId, search, sort], () => {
+    updateQuery({
+        streamId: streamId.value || undefined,
+        search: search.value || undefined,
+        sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+        page: 1,
+    })
+
+    if (page.value === 1) fetchRecord();
+});
 
 onMounted(async () => {
     updateQuery({
         page: page.value
     })
 
-    fetchRecord();
+    streamStore.fetchAll(0, 0);
     useAppStore().setTitle('Stream Subjects')
     document.title = 'Stream Subjects | Subject | Skultem'
 })
@@ -65,16 +127,32 @@ definePageMeta({
     <div class="space-y-4 px-4 md:px-6">
         <UCard :ui="{ body: 'sm:p-0 p-0' }">
             <template #header>
-                <div class="flex items-center">
-                    <div class="flex items-center space-x-2 flex-1">
-                        <UInput placeholder="Search by stream. . ." />
-                        <UButton to="/subjects/stream-subjects/add" class="md:flex hidden" color="primary"
-                            label="Assign Subject" :icon="TEACHER_ICON" />
-                        <UButton to="/subjects/stream-subjects/add" color="primary" class="md:hidden"
-                            :icon="ASSIGN_ICON" />
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <div class="flex items-center space-x-2 flex-1">
+                            <UButton to="/subjects/stream-subjects/add" class="md:flex hidden" color="primary"
+                                label="Assign Subject" :icon="TEACHER_ICON" />
+                            <UButton to="/subjects/stream-subjects/add" color="primary" class="md:hidden"
+                                :icon="ASSIGN_ICON" />
+                        </div>
+
+                        <TableViewToggle v-model="view" />
                     </div>
 
-                    <TableViewToggle v-model="view" />
+                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
+                                placeholder="All Streams" clear />
+                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                                placeholder="Sort by" />
+                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by stream or subject..."
+                                class="col-span-2" />
+                        </div>
+                        <div>
+                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                                :disabled="!hasActiveFilters" @click="resetFilters" />
+                        </div>
+                    </div>
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">

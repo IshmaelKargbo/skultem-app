@@ -11,9 +11,33 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const { activeRole } = useAuth()
     const store = useUserStore()
 
-    const tenant = await checkTenant()
-    if (tenant == null) {
-        return abortNavigation(createError({ statusCode: 404, message: 'School not found' }))
+    const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
+
+    // The system-admin portal isn't any school's subdomain - there's no tenant to resolve here,
+    // and school-scoped pages (everything outside /system-admin) simply don't exist on this host.
+    if (onAdminPortal) {
+        if (!token.value && to.path !== '/system-admin/login') {
+            return navigateTo('/system-admin/login')
+        }
+
+        if (token.value && to.path === '/system-admin/login') {
+            return navigateTo('/system-admin')
+        }
+
+        if (token.value && !to.path.startsWith('/system-admin')) {
+            return navigateTo('/system-admin')
+        }
+    } else {
+        const tenant = await checkTenant()
+        if (tenant == null) {
+            return abortNavigation(createError({ statusCode: 404, message: 'School not found' }))
+        }
+
+        // The portal login lives at this same path on every host (see system-admin/login.vue),
+        // but a real school subdomain has a tenant to send an unauthenticated visitor to instead.
+        if (!token.value && to.path === '/system-admin/login') {
+            return navigateTo('/login')
+        }
     }
 
     const { user } = storeToRefs(store)
@@ -27,7 +51,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return navigateTo("/")
     }
 
-    if (!token.value && to.path !== "/login") {
+    if (!token.value && to.path !== "/login" && to.path !== "/system-admin/login") {
         if (import.meta.client) {
             const { show } = useGlobalLoader()
             show({ title: 'Redirecting...' })
@@ -48,14 +72,8 @@ async function checkTenant() {
     try {
         const store = useAppStore()
         const { tenant } = storeToRefs(store)
-        const hostname = useRequestURL().hostname
 
-        const domain =
-            hostname.includes('localhost')
-                ? runtimeConf().domain
-                : hostname.split('.')[0]
-
-        await store.checkTenant(domain || '')
+        await store.checkTenant(resolveTenantSlug(useRequestURL().hostname))
         return tenant
     } catch (error) {
         return

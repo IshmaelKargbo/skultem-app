@@ -202,6 +202,20 @@ export const CurriculumsApi = () => {
         useHandleError(err)
       }
     },
+    // Self-service version of getTeacherProgress - the signed-in teacher's own coverage.
+    getMyTeacherProgress: async () => {
+      try {
+        const res = await $api('/curriculum/teacher-progress/me') as any
+
+        if (!res)
+          throw new Error('Failed to fetch teacher progress')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     getTeacherProgressDetail: async (teacherId: string) => {
       try {
         const res = await $api(`/curriculum/teacher-progress/${teacherId}`) as any

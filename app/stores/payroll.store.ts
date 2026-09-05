@@ -136,6 +136,30 @@ export const usePayrollStore = defineStore('payroll', {
       } catch (err: any) {
         this.error = err?.message || 'Failed to fetch payslip'
       }
+    },
+
+    // Self-service versions of fetchSalaryByTeacher/fetchPayslip above.
+    async fetchMySalaryHistory() {
+      this.loadingSalary = true
+      this.error = null
+      this.salaryHistory = []
+      try {
+        this.salaryHistory = await PayrollApi().getMySalaryHistory() || []
+      } catch (err: any) {
+        this.error = err?.message || 'Failed to fetch payslip history'
+      } finally {
+        this.loadingSalary = false
+      }
+    },
+
+    async fetchMyPayslip(runId: string) {
+      this.error = null
+      this.currentPayslip = null
+      try {
+        this.currentPayslip = await PayrollApi().getMyPayslip(runId)
+      } catch (err: any) {
+        this.error = err?.message || 'Failed to fetch payslip'
+      }
     }
   }
 })

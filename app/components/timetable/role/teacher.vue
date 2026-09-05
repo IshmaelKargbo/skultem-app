@@ -58,11 +58,40 @@ const teacherSubjectStore = useTeacherSubjectStore()
 const route = useRoute()
 
 const { periods } = storeToRefs(store)
-const { classes: list, loading: classLoading } = storeToRefs(teacherSubjectStore)
+const { records: teacherSubjectRecords } = storeToRefs(teacherSubjectStore)
 // Pre-selected from a dashboard class card's "Timetable" link (?session=<id>) when present.
 const grade = ref(String(route.query.session ?? ''))
 
-const session = computed(() => teacherSubjectStore.getClass(grade.value))
+const classLoading = ref(true)
+
+// A class master with no subject assigned in their own class never shows up in
+// teacherSubjectStore's records (subject-teaching sessions only), so their own class was
+// missing from this dropdown entirely - merge in their class-master sessions too, deduped by
+// session, same as the curriculum/roster fixes elsewhere in this app.
+const classMasterAssignments = ref<TeacherClassMaster[]>([])
+
+const sessionsById = computed(() => {
+    const map = new Map<string, { className: string, sectionName: string }>()
+
+    for (const r of teacherSubjectRecords.value) {
+        if (!map.has(r.sessionId)) map.set(r.sessionId, { className: r.className, sectionName: r.sectionName })
+    }
+
+    for (const a of classMasterAssignments.value) {
+        if (!map.has(a.sessionId)) map.set(a.sessionId, { className: a.className, sectionName: '' })
+    }
+
+    return map
+})
+
+const list = computed(() =>
+    Array.from(sessionsById.value.entries()).map(([sessionId, info]) => ({
+        label: info.sectionName ? `${info.className} (${info.sectionName})` : info.className,
+        value: sessionId
+    }))
+)
+
+const session = computed(() => sessionsById.value.get(grade.value))
 
 function syncGrade(items: { value: string }[]) {
     if (!items.length) return
@@ -88,11 +117,19 @@ watch(list, syncGrade, { immediate: true })
 onMounted(async () => {
     useAppStore().setTitle('My Timetable')
     document.title = 'My Timetable | Skultem'
+    classLoading.value = true
     try {
-        await teacherSubjectStore.allByTeacher()
+        await Promise.all([
+            teacherSubjectStore.allByTeacher(),
+            TeacherApi().getMyClassMasterAssignments().then(res => {
+                classMasterAssignments.value = res || []
+            })
+        ])
         await store.getWorkingDays()
     } catch (error: any) {
         useNotify().error(error?.message || error)
+    } finally {
+        classLoading.value = false
     }
 })
 

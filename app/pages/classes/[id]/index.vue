@@ -89,13 +89,22 @@
                         <h3 class="text-sm font-semibold">Students</h3>
                     </div>
 
-                    <TableViewToggle v-model="view" />
+                    <div class="flex items-center gap-2">
+                        <UTooltip text="Rank this page highest average score first">
+                            <UButton :icon="PERFORMANCE_ICON" size="sm" :variant="sortByPerformance ? 'solid' : 'soft'"
+                                :color="sortByPerformance ? 'primary' : 'neutral'" label="Sort by Performance"
+                                @click="sortByPerformance = !sortByPerformance" />
+                        </UTooltip>
+
+                        <TableViewToggle v-model="view" />
+                    </div>
                 </div>
             </template>
 
             <!-- Desktop Table -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="students"
-                :loading="studentsLoading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="displayStudents"
+                :loading="studentsLoading"
+                :meta="{ class: { tr: (row: any) => needsAttendanceFollowUp(row.original) ? 'border-l-4 border-l-warning' : '' } }">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -103,8 +112,16 @@
                     </div>
                 </template>
                 <template #name-cell="{ row }">
-                    <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
-                        :photo="row.original.photo" :subtitle="row.original.admissionNumber || 'No Admission No'" />
+                    <div class="flex items-center gap-2">
+                        <StudentIdentityCell :given-names="row.original.givenNames"
+                            :family-name="row.original.familyName" :photo="row.original.photo"
+                            :subtitle="row.original.admissionNumber || 'No Admission No'" />
+
+                        <UTooltip v-if="needsAttendanceFollowUp(row.original)"
+                            :text="`Attendance ${attendanceOf(row.original)}% - needs follow-up`">
+                            <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
+                        </UTooltip>
+                    </div>
                 </template>
                 <template #dateOfBirth-cell="{ row }">
                     <p>{{ formatDate(row.original.dateOfBirth) || 'N/A' }}</p>
@@ -172,9 +189,9 @@
                     </UCard>
                 </template>
 
-                <template v-else-if="students.length">
-                    <UCard v-for="student in students" :key="student.id"
-                        class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+                <template v-else-if="displayStudents.length">
+                    <UCard v-for="student in displayStudents" :key="student.id" class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+                        :class="needsAttendanceFollowUp(student) ? 'border-l-4 border-l-warning' : ''"
                         :ui="{ body: 'p-0' }">
                         <!-- Header -->
                         <div class="border-b border-default p-4">
@@ -184,8 +201,12 @@
                                         :alt="`${student.givenNames} ${student.familyName}`" />
 
                                     <div class="min-w-0">
-                                        <h3 class="truncate text-base font-bold text-highlighted">
+                                        <h3 class="flex items-center gap-1.5 truncate text-base font-bold text-highlighted">
                                             {{ student.givenNames }} {{ student.familyName }}
+                                            <UTooltip v-if="needsAttendanceFollowUp(student)"
+                                                :text="`Attendance ${attendanceOf(student)}% - needs follow-up`">
+                                                <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
+                                            </UTooltip>
                                         </h3>
 
                                         <p class="truncate text-xs-base text-muted">
@@ -350,6 +371,21 @@
                 <UButton to="/curriculums" label="View Curriculum" icon="i-lucide-book-open" color="primary" variant="soft" />
             </div>
         </UCard>
+
+        <!-- A parent can look up any class in the school this way (the same broad
+             access other class-level info already has), but the roster lists other
+             families' children - given only the class-scoped view, not their own
+             child's page, so it stays hidden here rather than leaking that. -->
+        <UCard v-else-if="isParentViewer">
+            <div class="flex flex-col items-center gap-3 py-10 text-center">
+                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+                    <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
+                </div>
+                <p class="text-sm font-semibold text-highlighted">Student list is only visible to school staff</p>
+                <p class="max-w-xs text-xs text-muted">You can see your own child's details from your dashboard.</p>
+                <UButton to="/" label="Back to Dashboard" icon="i-lucide-arrow-left" color="primary" variant="soft" />
+            </div>
+        </UCard>
     </div>
 </template>
 
@@ -371,6 +407,99 @@ const { record, session, overview, loading } = storeToRefs(classStore)
 const { classRecords: students, classMeta: meta, loading: studentsLoading } = storeToRefs(studentStore)
 
 const view = ref<'table' | 'card'>('table')
+
+// --- Roster insights: performance sort + attendance flag ---
+// Neither the average score nor the attendance rate lives on the student
+// record itself, so both are pulled from the same analytics engine the
+// dashboard widgets use (class-wide, not paginated with the roster) and
+// matched back onto each row by full name - the report entities only expose
+// a "student" name field, not the student id, so an exact `givenNames
+// familyName` match is the best we can do (same trade-off the "at risk
+// students" widget already makes).
+const widgetStore = useWidgetStore()
+const ATTENDANCE_ALERT_THRESHOLD = 75
+const performanceByName = ref<Record<string, number>>({})
+const attendanceByName = ref<Record<string, number>>({})
+const sortByPerformance = ref(false)
+
+function studentFullName(s: Student) {
+    return `${s.givenNames} ${s.familyName}`.trim()
+}
+
+function performanceOf(s: Student) {
+    return performanceByName.value[studentFullName(s)]
+}
+
+function attendanceOf(s: Student) {
+    return attendanceByName.value[studentFullName(s)]
+}
+
+function needsAttendanceFollowUp(s: Student) {
+    const rate = attendanceOf(s)
+    return rate !== undefined && rate < ATTENDANCE_ALERT_THRESHOLD
+}
+
+const displayStudents = computed(() => {
+    if (!sortByPerformance.value) return students.value
+
+    return [...students.value].sort((a, b) => {
+        const pa = performanceOf(a)
+        const pb = performanceOf(b)
+        if (pa == null && pb == null) return 0
+        if (pa == null) return 1
+        if (pb == null) return -1
+        return pb - pa
+    })
+})
+
+async function fetchRosterInsights() {
+    if (!canViewRoster.value || !classId.value) return
+    try {
+        const [performance, attendance] = await Promise.all([
+            widgetStore.runAnalytic({
+                entity: 'assessments',
+                title: 'Student Performance',
+                filters: [
+                    { field: 'studentAssessment.enrollment.clazz.id', value: classId.value, operator: 'EQUALS', type: 'select' }
+                ],
+                metrics: [
+                    { name: 'Average Score', aggregation: 'avg', field: 'weightScore', tags: { groupBy: 'student' } }
+                ],
+                chartType: 'bar'
+            }),
+            widgetStore.runAnalytic({
+                entity: 'attendances',
+                title: 'Student Attendance',
+                filters: [
+                    { field: 'enrollment.clazz.id', value: classId.value, operator: 'EQUALS', type: 'select' }
+                ],
+                metrics: [
+                    { name: 'Present', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Present' } },
+                    { name: 'Total', aggregation: 'count', field: 'state', tags: { groupBy: 'student' } }
+                ],
+                chartType: 'bar'
+            })
+        ])
+
+        const performanceWidget = performance?.data ?? performance
+        const performanceMap: Record<string, number> = {}
+        performanceWidget?.labels?.forEach((label: string, i: number) => {
+            performanceMap[label] = Number(performanceWidget.datasets?.[0]?.data?.[i] ?? 0)
+        })
+        performanceByName.value = performanceMap
+
+        const attendanceWidget = attendance?.data ?? attendance
+        const attendanceMap: Record<string, number> = {}
+        attendanceWidget?.labels?.forEach((label: string, i: number) => {
+            const present = Number(attendanceWidget.datasets?.[0]?.data?.[i] ?? 0)
+            const total = Number(attendanceWidget.datasets?.[1]?.data?.[i] ?? 0)
+            if (total > 0) attendanceMap[label] = Math.round((present / total) * 1000) / 10
+        })
+        attendanceByName.value = attendanceMap
+    } catch (err) {
+        console.error('Failed to load roster insights', err)
+    }
+}
 
 const parseStatus: Record<string, string> = {
     ACTIVE: 'Active',
@@ -394,7 +523,10 @@ const columns = [
 ]
 
 const quickFacts = computed(() => [
-    { label: 'Total Students', value: meta.value?.total ?? 0, icon: STUDENT_ICON },
+    // Pulled from the session, not the roster's page meta - the roster is only
+    // ever fetched for a class master, so a subject teacher or parent viewing
+    // this page would otherwise always see "0" here.
+    { label: 'Total Students', value: session.value?.totalStudent ?? 0, icon: STUDENT_ICON },
     { label: 'Class Teachers', value: session.value?.teacherName ?? 0, icon: 'i-lucide-user-round-check' }
 ])
 
@@ -414,10 +546,17 @@ const classTeachers = computed(() => {
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
 const isTeacherViewer = computed(() => can(Role.TEACHER))
+const isParentViewer = computed(() => can(Role.PARENT))
 const isMasterOfThisClass = computed(() => classTeachers.value.some(t => t.isMe))
-// Non-teacher roles always see the roster; a teacher only sees it for a class
-// they're the class master of - a subject-only assignment doesn't grant it.
-const canViewRoster = computed(() => !isTeacherViewer.value || isMasterOfThisClass.value)
+// A teacher only sees the roster for a class they're the class master of, and
+// a parent never sees it here - the roster is every family's child in that
+// class, not just their own, so it stays off-limits regardless of who they are.
+const canViewRoster = computed(() => {
+    if (isParentViewer.value) return false
+    return !isTeacherViewer.value || isMasterOfThisClass.value
+})
+
+watch(canViewRoster, (val) => { if (val) fetchRosterInsights() }, { immediate: true })
 
 const promotionRequests = ref<Record<string, PromotionRequest | null>>({})
 const promotionStatusLoading = ref(false)
@@ -462,7 +601,11 @@ const size = ref(runtimeConf().limit)
 
 async function fetchClass() {
     if (!viewingYear.value) return
-    await classStore.viewClassByClassAndStream(classId.value, stream, viewingYear.value?.id || '')
+    const tasks = [classStore.viewClassByClassAndStream(classId.value, stream, viewingYear.value?.id || '')]
+    // Overview backs the class-master/promotion checks below - a parent has no
+    // use for it and isn't authorized to fetch it, so skip the call entirely.
+    if (!isParentViewer.value) tasks.push(classStore.fetchOverview(classId.value))
+    await Promise.all(tasks)
 }
 
 async function fetchStudents() {
@@ -477,10 +620,11 @@ watch([page, size, classId, canViewRoster], fetchStudents, { immediate: true })
 
 onMounted(() => {
     useAppStore().setTitle('View Class')
-    // Teachers reach this page from cards on their dashboard rather than the admin
-    // /classes list, so send their back button straight to the dashboard instead of
-    // a plain history-back (which could land somewhere unexpected, e.g. after a reload).
-    useAppStore().setBack(can(Role.TEACHER) ? '/' : true)
+    // Teachers and parents reach this page from a card on their own dashboard
+    // rather than the admin /classes list, so send their back button straight
+    // to the dashboard instead of a plain history-back (which could land
+    // somewhere unexpected, e.g. after a reload).
+    useAppStore().setBack(can([Role.TEACHER, Role.PARENT]) ? '/' : true)
 
     if (!route.query.page || !route.query.size) {
         updateQuery({ page: page.value })
@@ -492,6 +636,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]
 })
 </script>

@@ -109,7 +109,10 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
       limit: process.env.NUXT_PUBLIC_LIMIT,
-      domain: process.env.NUXT_PUBLIC_DOMAIN
+      domain: process.env.NUXT_PUBLIC_DOMAIN,
+      // The reserved subdomain the system-admin portal lives on (e.g. admin.skultem.space) -
+      // never a real school's domain. See utils/tenant.ts.
+      adminSubdomain: process.env.NUXT_PUBLIC_ADMIN_SUBDOMAIN || 'admin'
     }
   },
 

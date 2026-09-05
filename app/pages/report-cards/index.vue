@@ -47,10 +47,10 @@
         <UInput v-model="search" icon="i-lucide-search" placeholder="Search student..." class="lg:col-span-2" />
 
         <USelectMenu v-model="selectedTerm" value-key="value" :items="terms" :loading="termStore.loading"
-          placeholder="Term" />
+          placeholder="Term" clear />
 
         <USelectMenu v-model="selectedClass" value-key="value" :items="classes" :loading="classStore.loading"
-          placeholder="Class" />
+          placeholder="Class" clear />
 
         <UButton icon="i-lucide-x" variant="outline" label="Clear" @click="resetFilters" />
       </div>
@@ -161,8 +161,12 @@ const search = ref('')
 const selectedTerm = ref('')
 const selectedClass = ref('')
 
-const classes = computed(() => [{ label: 'All Classes', value: '' }, ...classStore.records.map(e => ({ label: e.name, value: e.id }))])
-const terms = computed(() => [{ label: 'All Terms', value: '' }, ...termStore.records.map(e => ({ label: e.name, value: e.id }))])
+// No "All Classes"/"All Terms" entries - a Reka UI Combobox item's value can't be an empty
+// string (it throws "A <ComboboxItem /> must have a value prop that is not an empty string" the
+// moment the list renders, breaking every item in it). The placeholders below already cover
+// "nothing selected", and each select's :clear button gets back to it.
+const classes = computed(() => classStore.records.map(e => ({ label: e.name, value: e.id })))
+const terms = computed(() => termStore.records.map(e => ({ label: e.name, value: e.id })))
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),

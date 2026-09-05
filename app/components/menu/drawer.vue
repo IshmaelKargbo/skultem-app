@@ -249,11 +249,16 @@ const { user } = storeToRefs(userStore);
 
 const { activeRole, can, setActiveRole } = useAuth();
 const { canInstall, install } = usePwaInstall();
+const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster();
 
 const route = useRoute();
 const open = ref(false);
 const expanded = ref<string[]>(["grades"]);
 const colorMode = useColorMode();
+
+onMounted(() => {
+  ensureClassMasterLoaded();
+});
 
 function matchesRoute(to: string) {
   return route.path === to || route.path.startsWith(`${to}/`);
@@ -379,7 +384,14 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     icon: GRADES_ICON,
     roles: [Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER],
     items: [
-      { label: "Grade Approval", icon: GRADES_APPROVAL_ICON, to: "/grades/approval" },
+      // Grading is submit (subject teacher) / approve (class master) - only a class master has
+      // anything to approve, so the link is hidden rather than opening to an empty list. Always
+      // shown for admin/owner/proprietor, who approve on every class's behalf.
+      (!can(Role.TEACHER) || isClassMaster.value) && {
+        label: "Grade Approval",
+        icon: GRADES_APPROVAL_ICON,
+        to: "/grades/approval",
+      },
       { label: "Grade Assignment", icon: "lucide:clipboard-check", to: "/grades" },
     ],
   },
@@ -437,6 +449,49 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     items: [
       { label: "Timetable", icon: TIMETABLE_ICON, to: "/timetable" },
       { label: "Settings", icon: TIMETABLE_SETTINGS_ICON, to: "/timetable/setting" },
+    ],
+  },
+  {
+    // Mirrors the desktop sidebar's "Payroll" group (components/menu/index.vue) - this drawer
+    // never had it at all, so a mobile-only teacher had no way to clock in/out, request leave,
+    // or (now) see their payslips. Section-level roles matches the desktop group's top-level
+    // gate; each admin-only item is still individually gated below it.
+    id: "payroll",
+    title: "Payroll",
+    icon: "lucide:wallet",
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT, Role.TEACHER],
+    items: [
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Overview",
+        icon: "lucide:layout-dashboard",
+        to: "/payroll",
+      },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Salary Structure",
+        icon: "lucide:banknote",
+        to: "/payroll/salaries",
+      },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Payroll Runs",
+        icon: "lucide:history",
+        to: "/payroll/runs",
+      },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Teacher Attendance",
+        icon: ATTENDANCE_ICON,
+        to: "/hr/teacher-attendance",
+      },
+      { label: "Clock In / Out", icon: "lucide:log-in", to: "/hr/teacher-attendance/clock-in" },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
+        label: "Leave",
+        icon: LAYERS_ICON,
+        to: "/hr/leave",
+      },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
+        label: "Payslips",
+        icon: "lucide:receipt",
+        to: "/payroll/history",
+      },
     ],
   },
   {

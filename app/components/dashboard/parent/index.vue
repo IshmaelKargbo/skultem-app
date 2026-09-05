@@ -19,7 +19,11 @@
             <DashboardParentSubjectPerformance :term="state.term" :id="state.student" />
             <UCard>
                 <template #header>
-                    <p>Student Information</p>
+                    <div class="flex items-center justify-between">
+                        <p>Student Information</p>
+                        <UButton v-if="selected?.classId" :to="`/classes/${selected.classId}`" size="sm"
+                            variant="soft" color="neutral" label="View Class" :icon="CLASS_ICON" />
+                    </div>
                 </template>
                 <div v-if="selected">
                     <div class="justify-between flex border-b py-3.5 border-gray-200 dark:border-gray-800">

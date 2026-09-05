@@ -72,6 +72,18 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    systemAdminLogin: async (payload: SystemAdminLoginDto) => {
+      try {
+        const res = await $api('/auth/system-admin-login', {
+          method: 'POST',
+          body: payload
+        })
+        if (res == null) return
+        return (res as any).data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     logout: async () => {
       try {
         const res = await $api('/auth/logout', {

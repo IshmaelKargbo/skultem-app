@@ -1,6 +1,10 @@
 <script lang="ts" setup>
-const { teacher } = defineProps<{
-    teacher: Teacher | undefined
+// `mine` powers this same calendar on the teacher's own clock-in page (self-service history);
+// without it, it's the admin-facing view of a specific teacher's profile - `teacher` is only
+// needed in that case, since the "mine" API call resolves the teacher from the signed-in user.
+const { teacher, mine = false } = defineProps<{
+    teacher?: Teacher | undefined
+    mine?: boolean
 }>()
 
 const loading = ref(true)
@@ -163,12 +167,16 @@ async function fetchMonth() {
     loading.value = true
     recordsByDate.value = {}
 
-    if (!teacher?.id) {
+    if (!mine && !teacher?.id) {
         loading.value = false
         return
     }
 
-    const days = await TeacherAttendanceApi().byTeacher(teacher.id, dateKey(cursor.value), dateKey(monthEnd.value)) as TeacherAttendanceDay[] | undefined
+    const from = dateKey(cursor.value)
+    const to = dateKey(monthEnd.value)
+    const days = await (mine
+        ? TeacherAttendanceApi().myHistory(from, to)
+        : TeacherAttendanceApi().byTeacher(teacher!.id, from, to)) as TeacherAttendanceDay[] | undefined
 
     const map: Record<string, TeacherAttendanceDay> = {}
 
@@ -180,7 +188,7 @@ async function fetchMonth() {
     loading.value = false
 }
 
-watch(() => [teacher?.id, cursor.value], fetchMonth, { immediate: true })
+watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
 </script>
 
 <template>

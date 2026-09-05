@@ -31,7 +31,31 @@ const subjectOptions = computed(() => {
         return true
     }).map(s => ({ label: s.subjectName, value: s.subjectId }))
 })
-const classOptions = computed(() => classStore.list)
+
+// Same reasoning for the class filter - a teacher should only be able to filter down to a class
+// they actually have business with, as either the class master or a subject teacher there, not
+// every class in the school. Built from data already loaded for subjectOptions/classMasterAssignments
+// rather than a class-wide session list.
+const classMasterAssignments = ref<TeacherClassMaster[]>([])
+
+const classOptions = computed(() => {
+    if (!props.mine) return classStore.list
+
+    const map = new Map<string, { label: string, value: string }>()
+
+    for (const s of teacherSubjectRecords.value) {
+        if (map.has(s.sessionId)) continue
+        let label = `${s.className} (${s.sectionName})`
+        if (s.streamName && s.streamName !== 'N/A') label += ` - ${s.streamName}`
+        map.set(s.sessionId, { label, value: s.sessionId })
+    }
+
+    for (const a of classMasterAssignments.value) {
+        if (!map.has(a.sessionId)) map.set(a.sessionId, { label: a.sessionName, value: a.sessionId })
+    }
+
+    return Array.from(map.values())
+})
 const progressOptions = [
     { label: 'Not Started', value: 'NOT_STARTED' },
     { label: 'In Progress', value: 'IN_PROGRESS' },
@@ -109,23 +133,30 @@ async function fetchRecord() {
 async function loadFilterOptions() {
     loadingFilters.value = true
     try {
-        await Promise.all([
-            props.mine ? teacherSubjectStore.allByTeacher() : subjectStore.fetchAll(0, 0),
-            classStore.fetchAll(0, 0),
-            academicYearStore.getTerms()
-        ])
+        const tasks = [academicYearStore.getTerms()]
+
+        if (props.mine) {
+            tasks.push(teacherSubjectStore.allByTeacher())
+            tasks.push(TeacherApi().getMyClassMasterAssignments().then(res => {
+                classMasterAssignments.value = res || []
+            }))
+        } else {
+            tasks.push(subjectStore.fetchAll(0, 0))
+            tasks.push(classStore.fetchAll(0, 0))
+        }
+
+        await Promise.all(tasks)
     } finally {
         loadingFilters.value = false
     }
 }
 
 onMounted(() => {
+    // Defaulting page must merge into the existing query, not replace it wholesale -
+    // a link into this page with e.g. ?sessionId=... (the dashboard's "View Curriculum"
+    // button) would otherwise have that filter wiped out right after landing here.
     if (!route.query.page || !route.query.size) {
-        router.replace({
-            query: {
-                page: page.value
-            }
-        })
+        updateQuery({ page: page.value })
     }
 
     loadFilterOptions()

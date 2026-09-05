@@ -1,43 +1,179 @@
+<script setup lang="ts">
+type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
+
+// No "All Statuses" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). Nothing selected already shows the "All Statuses" placeholder, and
+// the select's own clear button (:clear below) gets back to it.
+const filterOptions: { label: string, value: ApprovalRequestStatusFilter }[] = [
+  { label: 'Pending', value: 'PENDING_REVIEW' },
+  { label: 'Approved', value: 'APPROVED' },
+  { label: 'Returned', value: 'RETURNED' }
+]
+
+const route = useRoute()
+const router = useRouter()
+
+const sessionStore = useTeacherStore()
+const store = useAssessmentStore()
+
+const { records: teacherRecords } = storeToRefs(sessionStore)
+const { requests, meta } = storeToRefs(store)
+
+const isLoading = ref(false)
+const loadingSession = ref(true)
+const summary = ref<AssessmentApprovalSummary | null>(null)
+
+// "" (All Teachers) is the default - see fetchRecords/fetchSummary, which route to the
+// school-wide endpoints when nothing more specific is picked. No "All Teachers" entry in the
+// list itself - see the note on filterOptions above; the placeholder covers it.
+const teachers = computed(() =>
+  teacherRecords.value.map(e => ({
+    label: `${e.user.givenNames} ${e.user.familyName}`,
+    value: e.id
+  }))
+)
+
+// Plain local refs, not URL-bound computed getters/setters - a USelectMenu's v-model needs to
+// read back the value it was just given synchronously. Routing the write through
+// router.replace()'s async round trip first (as a computed setter would) left the dropdown
+// showing its old selection until the navigation resolved, which read as "picking an option does
+// nothing". These still seed from the URL on load and push back to it (see the watch below) so a
+// direct link/refresh keeps the filter, but the URL is a mirror now, not the source of truth.
+const teacherId = ref(String(route.query.teacherId ?? ''))
+const status = ref<ApprovalRequestStatusFilter>((route.query.status as ApprovalRequestStatusFilter) ?? '')
+const searchInput = ref(String(route.query.search ?? ''))
+const search = ref(searchInput.value)
+
+const page = computed<number>({
+  get: () => Number(route.query.page ?? 1),
+  set: (val) => updateQuery({ page: val }),
+})
+
+const size = ref(10)
+
+const hasActiveFilters = computed(
+  () => !!teacherId.value || !!status.value || !!search.value
+)
+
+function resetFilters() {
+  teacherId.value = ''
+  status.value = ''
+  searchInput.value = ''
+  search.value = ''
+}
+
+function updateQuery(newQuery: Record<string, any>) {
+  router.replace({ query: { ...route.query, ...newQuery } })
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    search.value = val
+  }, 350)
+})
+
+// "" (All Teachers, the default) means school-wide - see the teachers computed above.
+async function fetchSummary() {
+  summary.value = teacherId.value
+    ? await store.fetchAssessmentApprovalSummary(teacherId.value)
+    : await store.fetchSchoolAssessmentApprovalSummary()
+}
+
+async function fetchRecords() {
+  isLoading.value = true
+
+  try {
+    if (teacherId.value) {
+      await store.fetchAllAssessmentApprovalRequest(
+        teacherId.value, page.value, size.value, status.value || undefined, search.value || undefined
+      )
+    } else {
+      await store.fetchAllSchoolAssessmentApprovalRequest(
+        page.value, size.value, status.value || undefined, search.value || undefined
+      )
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+watch(() => page.value, () => fetchRecords())
+watch(teacherId, fetchSummary, { immediate: true })
+
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([teacherId, status, search], () => {
+  updateQuery({
+    teacherId: teacherId.value || undefined,
+    status: status.value || undefined,
+    search: search.value || undefined,
+    page: 1,
+  })
+
+  if (page.value === 1) fetchRecords()
+})
+
+onMounted(async () => {
+  useAppStore().setTitle('Grade Approval Requests')
+  document.title = 'Grade Approval Requests | Grades | Skultem'
+
+  loadingSession.value = true
+  await sessionStore.fetchAll(0, 0)
+  loadingSession.value = false
+
+  await fetchRecords()
+})
+
+definePageMeta({
+  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR]
+})
+</script>
+
 <template>
   <div class="px-4 md:px-6 space-y-4">
-    <UCard>
+    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <USelectMenu v-model="state.teacherId" value-key="value" :items="teachers" :loading="loadingSession"
-              placeholder="Select teacher" class="w-full sm:w-56" @change="fetchRecords" />
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
-              class="w-full sm:w-64" />
-            <USelectMenu v-model="filter" value-key="value" :items="filterOptions" class="w-full sm:w-40"
-              @change="onFilterChange" />
+        <div class="space-y-3">
+          <div class="flex px-4 py-2 flex-wrap items-center justify-between gap-3">
+            <h2 class="text-sm font-semibold text-highlighted">Grade Approval</h2>
+
+            <div class="flex items-center gap-2">
+              <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
+              <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
+              <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>
+            </div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
-            <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
-            <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>
+          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <USelectMenu v-model="teacherId" value-key="value" label-key="label" :items="teachers"
+                :loading="loadingSession" placeholder="All Teachers" clear />
+              <USelectMenu v-model="status" value-key="value" label-key="label" :items="filterOptions"
+                placeholder="All Statuses" clear />
+              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
+                class="col-span-2 sm:col-span-2" />
+            </div>
+            <div>
+              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
           </div>
         </div>
       </template>
 
-      <div class="space-y-4">
-        <!-- NO TEACHER SELECTED -->
-        <div v-if="!state.teacherId"
-          class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-16 text-center">
-          <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
-            <UIcon name="lucide:user-search" class="text-3xl text-primary-500" />
-          </div>
-          <h3 class="font-semibold text-highlighted">Select a teacher</h3>
-          <p class="text-sm text-muted">Choose a teacher to review submitted grades and approval requests.</p>
-        </div>
-
+      <div class="space-y-4 p-4">
         <!-- LOADING -->
-        <div v-else-if="isLoading" class="space-y-3">
+        <div v-if="isLoading" class="space-y-3">
           <GradesRecordLoading v-for="(_, index) in 6" :key="index" />
         </div>
 
         <!-- EMPTY -->
-        <div v-else-if="!filteredRequests.length"
+        <div v-else-if="!requests.length"
           class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-16 text-center">
           <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-elevated">
             <UIcon name="lucide:inbox" class="text-3xl text-muted" />
@@ -48,8 +184,8 @@
 
         <!-- LIST -->
         <div v-else class="space-y-3">
-          <GradesRecord v-for="req in filteredRequests" :key="req.id" :selected="selected" :record="req"
-            @click="selected = req" />
+          <GradesRecord v-for="req in requests" :key="req.id" :record="req"
+            @click="router.push(`/grades/approval/${req.id}`)" />
         </div>
       </div>
 
@@ -61,157 +197,5 @@
         </div>
       </template>
     </UCard>
-
-    <USlideover :open="!!selected" side="right" :ui="{ content: 'bg-default' }" @update:open="close">
-      <template #content>
-        <div class="flex h-screen flex-col">
-          <div
-            class="sticky top-0 z-10 flex items-center justify-between border-b border-default bg-default/95 p-4 backdrop-blur">
-            <div>
-              <h2 class="text-sm font-semibold text-highlighted">Approval Details</h2>
-              <p class="text-xs text-muted">Review submission</p>
-            </div>
-            <UButton icon="lucide:x" color="neutral" variant="ghost" class="rounded-full" @click="close" />
-          </div>
-
-          <div class="flex-1 overflow-y-auto p-3">
-            <GradesViewRequest :record="selected" @refresh="fetchRecordAndUpdate" @close="close" />
-          </div>
-        </div>
-      </template>
-    </USlideover>
   </div>
 </template>
-
-<script setup lang="ts">
-type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
-
-type ApprovalRequestForm = {
-  teacherId: string
-}
-
-const filterOptions: { label: string, value: ApprovalRequestStatusFilter }[] = [
-  { label: 'All', value: '' },
-  { label: 'Pending', value: 'PENDING_REVIEW' },
-  { label: 'Approved', value: 'APPROVED' },
-  { label: 'Returned', value: 'RETURNED' }
-]
-
-const sessionStore = useTeacherStore()
-const store = useAssessmentStore()
-
-const { records: teacherRecords } = storeToRefs(sessionStore)
-
-const isLoading = ref(false)
-const loadingSession = ref(true)
-
-const teachers = computed(() =>
-  teacherRecords.value.map(e => ({
-    label: `${e.user.givenNames} ${e.user.familyName}`,
-    value: e.id
-  }))
-)
-
-const router = useRouter()
-const route = useRoute()
-
-const search = ref('')
-const filter = ref<ApprovalRequestStatusFilter>('')
-const { requests, meta } = storeToRefs(store)
-const summary = ref<AssessmentApprovalSummary | null>(null)
-
-const selected = ref<AssessmentApprovalRequest | null>(null)
-
-function close() {
-  selected.value = null
-}
-
-// Backend already filters by status - search narrows further within the current page.
-const filteredRequests = computed(() => {
-  if (!search.value) return requests.value
-
-  const q = search.value.toLowerCase()
-
-  return requests.value.filter(i =>
-    `${i.teacher} ${i.subject}`.toLowerCase().includes(q)
-  )
-})
-
-async function fetchRecords() {
-  await loadRequests(false)
-}
-
-async function fetchRecordAndUpdate() {
-  await Promise.all([loadRequests(true), fetchSummary()])
-}
-
-async function fetchSummary() {
-  summary.value = await store.fetchAssessmentApprovalSummary(state.teacherId)
-}
-
-async function loadRequests(keepSelection: boolean) {
-  if (!state.teacherId) return
-
-  isLoading.value = true
-
-  try {
-    await store.fetchAllAssessmentApprovalRequest(state.teacherId, page.value, size.value, filter.value || undefined)
-    if (!keepSelection) return
-    selected.value = requests.value.find(e => e.id === selected.value?.id) || null
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const state = reactive<ApprovalRequestForm>({
-  teacherId: ''
-})
-
-watch(() => state.teacherId, fetchSummary)
-
-function onFilterChange() {
-  updateQuery({ page: 1 })
-  fetchRecords()
-}
-
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: val => updateQuery({ page: val })
-})
-
-const size = ref(5)
-
-function updateQuery(newQuery: Record<string, any>) {
-  router.replace({ query: { ...route.query, ...newQuery } })
-}
-
-watch(
-  () => page.value,
-  () => {
-    router.replace({
-      query: {
-        page: page.value
-      }
-    })
-
-    fetchRecords()
-  },
-  { immediate: true }
-)
-
-onMounted(async () => {
-  useAppStore().setTitle('Grade Approval Requests')
-
-  document.title = 'Grade Approval Requests | Grades | Skultem'
-
-  loadingSession.value = true
-
-  await sessionStore.fetchAll(0, 0)
-
-  loadingSession.value = false
-})
-
-definePageMeta({
-  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR]
-})
-</script>

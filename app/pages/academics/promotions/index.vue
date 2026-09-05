@@ -29,8 +29,12 @@ const requests = ref<PromotionRequest[]>([])
 const meta = ref<Meta>({} as Meta)
 const requestsLoading = ref(true)
 
+// No "All statuses" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
+// have a value prop that is not an empty string" the moment the list renders, breaking every item
+// in it, not just that one). Nothing selected already shows the placeholder below, and the
+// select's own clear button (:clear) gets back to it.
 const statusOptions = [
-    { label: 'All statuses', value: '' },
     { label: 'Pending Review', value: 'PENDING_REVIEW' },
     { label: 'Returned', value: 'RETURNED' },
     { label: 'Approved', value: 'APPROVED' }
@@ -230,7 +234,8 @@ async function saveConfig() {
             <template #header>
                 <div class="flex items-center justify-between gap-3">
                     <h3 class="text-sm font-semibold">Promotion Requests</h3>
-                    <USelectMenu v-model="status" value-key="value" :items="statusOptions" class="w-48" />
+                    <USelectMenu v-model="status" value-key="value" :items="statusOptions" placeholder="All statuses"
+                        clear class="w-48" />
                 </div>
             </template>
 

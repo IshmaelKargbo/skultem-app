@@ -56,6 +56,7 @@ type FeeStructureForm = {
   material: string;
   description?: string;
   newStudentsOnly: boolean;
+  oldStudentsOnly: boolean;
 };
 
 const state = reactive<FeeStructureForm>({
@@ -71,7 +72,23 @@ const state = reactive<FeeStructureForm>({
   material: "",
   description: "",
   newStudentsOnly: false,
+  oldStudentsOnly: false,
 });
+
+// Mutually exclusive - a fee can only target one side of the new/old student split.
+watch(
+  () => state.newStudentsOnly,
+  (value) => {
+    if (value) state.oldStudentsOnly = false;
+  }
+);
+
+watch(
+  () => state.oldStudentsOnly,
+  (value) => {
+    if (value) state.newStudentsOnly = false;
+  }
+);
 
 const schema = yup.object({
   termId: yup.string().required("Term is required"),
@@ -139,6 +156,7 @@ async function onSubmit() {
       materialId: state.material,
       description: state.description,
       newStudentsOnly: state.classId !== "SELECTION" && state.newStudentsOnly,
+      oldStudentsOnly: state.classId !== "SELECTION" && state.oldStudentsOnly,
     });
 
     await feeStructureStore.fetchAll();
@@ -312,6 +330,21 @@ definePageMeta({
                 </div>
               </UFormField>
 
+              <!-- Old Students Only -->
+              <UFormField v-if="state.classId !== 'SELECTION'" name="oldStudentsOnly">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-medium">Old Students Only</p>
+                    <p class="text-xs text-muted">
+                      Only charge students who are re-enrolling - not students on their
+                      first-ever enrollment. Use this for a returning-student fee.
+                    </p>
+                  </div>
+
+                  <USwitch v-model="state.oldStudentsOnly" :disabled="isLoading" />
+                </div>
+              </UFormField>
+
               <!-- Assign -->
               <UFormField label="Assign To" name="classId" required>
                 <USelectMenu v-model="state.classId" value-key="value" :items="classes" placeholder="Select assignment"
@@ -329,7 +362,7 @@ definePageMeta({
 
               <!-- Info -->
               <div v-else
-                class="h-72 border-2 rounded-xl border-gray-200 p-5 flex flex-col text-muted space-y-3 items-center justify-center border-dashed">
+                class="h-56 border-2 rounded-xl border-gray-200 p-5 flex flex-col text-muted space-y-3 items-center justify-center border-dashed">
                 <UIcon :name="FEE_STRUCTURE_ICON" class="w-12 h-12" />
 
                 <p v-if="state.classId === 'ALL'" class="text-center">

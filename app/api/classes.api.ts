@@ -45,10 +45,16 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
-    getAllClassSessions: async (page: number = 1, size: number = 6, academicYearId?: string) => {
+    getAllClassSessions: async (page: number = 1, size: number = 6, academicYearId?: string, sectionId?: string,
+      streamId?: string, query?: string) => {
       try {
-        const query = academicYearId ? `&academicYearId=${academicYearId}` : ''
-        const res = await $api(`/class-session?page=${page}&size=${size}${query}`) as any
+        const params = new URLSearchParams({ page: String(page), size: String(size) })
+        if (academicYearId) params.set('academicYearId', academicYearId)
+        if (sectionId) params.set('sectionId', sectionId)
+        if (streamId) params.set('streamId', streamId)
+        if (query) params.set('query', query)
+
+        const res = await $api(`/class-session?${params}`) as any
 
         if (!res)
           throw new Error('Failed to fetch class sessions')

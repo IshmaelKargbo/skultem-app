@@ -102,9 +102,13 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
-    getAllStructures: async (page: number, size: number, termId?: string) => {
+    getAllStructures: async (page: number, size: number, termId?: string, classId?: string, studentType?: string, sortBy?: string, direction?: string) => {
       try {
-        const query = termId ? `&termId=${termId}` : ''
+        let query = termId ? `&termId=${termId}` : ''
+        if (classId) query += `&classId=${classId}`
+        if (studentType) query += `&studentType=${studentType}`
+        if (sortBy) query += `&sortBy=${sortBy}`
+        if (direction) query += `&direction=${direction}`
         const res = await $api(`/fee/structure?page=${page}&size=${size}${query}`) as any
 
         if (!res)

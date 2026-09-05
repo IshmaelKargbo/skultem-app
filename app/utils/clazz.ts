@@ -126,3 +126,15 @@ export type Address = {
     city: string
     street: string
 }
+
+// The class detail page (pages/classes/[id]/index.vue) shows every student in the
+// class when no stream is given, and just that stream's roster when one is - e.g.
+// SSS1 Art and SSS1 Science are different rosters under the same class. Admin's
+// class list already builds this correctly (components/class/admin/index.vue); use
+// this everywhere else that links into a class so a streamed class doesn't end up
+// showing every stream's students mixed together. streamId must stay nullish (not
+// an empty string) for a class with no streams, or `?stream=` would round-trip as a
+// non-empty "stream" query value and the page would (wrongly) try to filter by it.
+export function classRosterUrl(classId: string, streamId?: string | null) {
+    return streamId ? `/classes/${classId}?stream=${streamId}` : `/classes/${classId}`
+}

@@ -9,11 +9,11 @@ export const useSubjectGroupStore = defineStore('subjectGroup', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = 6, classId?: string, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await SubjectGroupApi().getAll(page, size) as any
+        const response = await SubjectGroupApi().getAll(page, size, classId, query, sortBy, direction) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

@@ -1,9 +1,27 @@
 <script setup lang="ts">
 const view = ref<'table' | 'card'>('table');
 const route = useRoute();
+const router = useRouter();
 const store = useSectionStore();
 const loading = ref(true);
 const { records: data, meta } = storeToRefs(store);
+
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "typing does nothing". These still seed from the URL on load and push back to it (see the
+// watch below) so a direct link/refresh keeps the search, but the URL is a mirror, not the
+// source of truth.
+const searchInput = ref(String(route.query.search ?? ""));
+const search = ref(searchInput.value);
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(searchInput, (val) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        search.value = val;
+    }, 350);
+});
 
 const columns = [
     {
@@ -26,6 +44,36 @@ const size = computed<number>({
     set: (val) => updateQuery({ size: val }),
 })
 
+const hasActiveFilters = computed(() => !!search.value);
+
+function resetFilters() {
+    searchInput.value = "";
+    search.value = "";
+}
+
+// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
+// page/size and silently drops any other query key when neither changed, which would swallow a
+// search update whenever it's set while already on page 1.
+function updateQuery(newQuery: Record<string, any>) {
+    router.replace({ query: { ...route.query, ...newQuery } });
+}
+
+async function fetchRecord() {
+    loading.value = true;
+    await store.fetchAll(page.value, size.value, search.value || undefined);
+    loading.value = false;
+}
+
+watch(() => page.value, () => fetchRecord());
+
+// Setting the search also resets the page to 1 and mirrors it into the URL (for a shareable
+// link/refresh) - the fetch itself is keyed off the local ref above, not the URL.
+watch(search, () => {
+    updateQuery({ search: search.value || undefined, page: 1 });
+
+    if (page.value === 1) fetchRecord();
+});
+
 onMounted(async () => {
     updateQuery({
         page: page.value
@@ -34,9 +82,7 @@ onMounted(async () => {
     useAppStore().setTitle('Sections')
     document.title = 'Sections | Classes | Skultem'
 
-    loading.value = true;
-    await store.fetchAll(page.value, size.value);
-    loading.value = false;
+    await fetchRecord();
 });
 </script>
 <template>
@@ -45,12 +91,20 @@ onMounted(async () => {
             body: 'sm:p-0 p-0',
         }">
             <template #header>
-                <div class="flex justify-between">
-                    <div class="flex space-x-3 flex-1">
-                        <UInput placeholder="Search by name. . ." />
-                        <ClassSectionAdd />
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <div class="flex space-x-3 flex-1">
+                            <ClassSectionAdd />
+                        </div>
+                        <TableViewToggle v-model="view" />
                     </div>
-                    <TableViewToggle v-model="view" />
+
+                    <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+                        <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ."
+                            class="flex-1 max-w-sm" />
+                        <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                            :disabled="!hasActiveFilters" @click="resetFilters" />
+                    </div>
                 </div>
             </template>
 

@@ -73,14 +73,37 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number, status?: string) {
+    // School-wide - unlike fetchAllAssessmentApprovalRequest below (scoped to one teacher's
+    // class), this is the admin approval view's default list.
+    async fetchAllSchoolAssessmentApprovalRequest(page: number, size: number, status?: string, search?: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const { data, meta } = await AssessmentApi().getAllSchoolAssessmentApprovalRequest(page, size, status, search) as any
+        this.meta = meta
+        this.requests = data
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch approval requests'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchSchoolAssessmentApprovalSummary() {
+      try {
+        return await AssessmentApi().getSchoolAssessmentApprovalSummary() || null
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch approval summary'
+        return null
+      }
+    },
+    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number, status?: string, search?: string) {
       if (!teacherId)
         return []
 
       this.loading = true
       this.error = null
       try {
-        const { data, meta } = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size, status) as any
+        const { data, meta } = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size, status, search) as any
         this.meta = meta
         this.requests = data
       } catch (err: any) {
@@ -100,11 +123,11 @@ export const useAssessmentStore = defineStore('assessment', {
         return null
       }
     },
-    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12, status?: string) {
+    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12, status?: string, search?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size, status) as any
+        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size, status, search) as any
         return response || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch approval requests'

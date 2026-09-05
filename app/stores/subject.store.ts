@@ -9,11 +9,11 @@ export const useSubjectStore = defineStore('subject', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 11) {
+    async fetchAll(page: number = 1, size: number = 11, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await SubjectApi().getAll(page, size) as any
+        const response = await SubjectApi().getAll(page, size, query, sortBy, direction) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

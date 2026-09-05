@@ -3,8 +3,18 @@ const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useClassSessionStore()
+const sectionStore = useSectionStore()
+const streamStore = useStreamStore()
 const { records: data, meta, loading } = storeToRefs(store)
 const { format } = useMoney()
+
+const sectionOptions = computed(() =>
+  sectionStore.records.map((e) => ({ label: e.name, value: e.id }))
+)
+
+const streamOptions = computed(() =>
+  streamStore.records.map((e) => ({ label: e.name, value: e.id }))
+)
 
 const columns = [
   {
@@ -60,16 +70,62 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit)
 
+// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
+// why a v-model bound straight to a computed setter that triggers router.replace() reads as
+// "picking an option/typing does nothing". These still seed from the URL on load and push back
+// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
+// mirror, not the source of truth.
+const sectionId = ref(String(route.query.sectionId ?? ""))
+const streamId = ref(String(route.query.streamId ?? ""))
+const searchInput = ref(String(route.query.search ?? ""))
+const search = ref(searchInput.value)
+
+const hasActiveFilters = computed(() => !!sectionId.value || !!streamId.value || !!search.value)
+
+function resetFilters() {
+  sectionId.value = ""
+  streamId.value = ""
+  searchInput.value = ""
+  search.value = ""
+}
+
+// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
+// page/size and silently drops any other query key when neither changed, which would swallow
+// these filter updates whenever a filter is set while already on page 1.
+function updateQuery(newQuery: Record<string, any>) {
+  router.replace({ query: { ...route.query, ...newQuery } })
+}
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    search.value = val
+  }, 350)
+})
+
 watch(() => page.value, () => {
-  updateQuery({
-    page: page.value
-  })
   fetchRecords()
 }, { immediate: true })
 
+// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
+// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+watch([sectionId, streamId, search], () => {
+  updateQuery({
+    sectionId: sectionId.value || undefined,
+    streamId: streamId.value || undefined,
+    search: search.value || undefined,
+    page: 1,
+  })
+
+  if (page.value === 1) fetchRecords()
+})
+
 async function fetchRecords() {
   loading.value = true
-  await store.fetchAll(page.value, size.value)
+  await store.fetchAll(page.value, size.value, undefined, sectionId.value || undefined, streamId.value || undefined,
+    search.value || undefined)
   loading.value = false
 }
 
@@ -78,6 +134,8 @@ onMounted(async () => {
     page: page.value
   })
 
+  sectionStore.fetchAll(0, 0)
+  streamStore.fetchAll(0, 0)
   fetchRecords()
 })
 </script>
@@ -86,8 +144,24 @@ onMounted(async () => {
   <div class="space-y-4">
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-end">
-          <TableViewToggle v-model="view" />
+        <div class="space-y-3">
+          <div class="flex justify-end">
+            <TableViewToggle v-model="view" />
+          </div>
+
+          <div class="border-t pt-3 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <USelectMenu v-model="sectionId" value-key="value" label-key="label" :items="sectionOptions"
+                placeholder="All Sections" clear />
+              <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
+                placeholder="All Streams" clear />
+              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name" class="col-span-2" />
+            </div>
+            <div>
+              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
+          </div>
         </div>
       </template>
 

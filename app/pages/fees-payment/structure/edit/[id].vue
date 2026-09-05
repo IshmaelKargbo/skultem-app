@@ -14,6 +14,7 @@ const isFetching = ref(true);
 // Display-only - not editable, so it's kept out of the submitted form state entirely (see the
 // locked "Assignment can't be changed" alert below).
 const newStudentsOnly = ref(false);
+const oldStudentsOnly = ref(false);
 
 const categories = computed(() =>
   feeCategoryStore.records
@@ -149,6 +150,7 @@ onMounted(async () => {
     state.material = fee.material?.id || "";
     state.description = fee.description;
     newStudentsOnly.value = fee.newStudentsOnly;
+    oldStudentsOnly.value = fee.oldStudentsOnly;
   } catch (err: any) {
     toastError(err?.message || "Failed to load fee structure");
     navigateTo("/fees-payment/structure");
@@ -298,11 +300,14 @@ definePageMeta({
                 variant="soft"
                 icon="i-lucide-lock"
                 title="Assignment can't be changed"
-                :description="`Who this fee applies to (class or students), its type, and whether it's new-students-only were set when it was created and can't be edited. Delete and recreate it instead if that needs to change.`"
+                :description="`Who this fee applies to (class or students), its type, and whether it's new-students-only or old-students-only were set when it was created and can't be edited. Delete and recreate it instead if that needs to change.`"
               />
 
               <UBadge v-if="newStudentsOnly" size="sm" variant="subtle" color="info"
                 icon="i-lucide-user-plus" label="New Students Only" />
+
+              <UBadge v-if="oldStudentsOnly" size="sm" variant="subtle" color="warning"
+                icon="i-lucide-user-check" label="Old Students Only" />
             </div>
             <template #footer>
               <div class="flex justify-end gap-3">

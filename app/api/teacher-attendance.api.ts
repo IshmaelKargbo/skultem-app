@@ -48,6 +48,16 @@ export const TeacherAttendanceApi = () => {
       }
     },
 
+    // Self-service version of byTeacher - the signed-in teacher's own history, for their clock-in page.
+    myHistory: async (from: string, to: string) => {
+      try {
+        const res = await $api(`/teacher-attendance/me/history?from=${from}&to=${to}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     // Admin clocking a teacher in/out on their behalf - for staff who can't reliably self-service
     // (internet/GPS issues, or no portal access at all). No location required.
     adminClockIn: async (teacherId: string) => {

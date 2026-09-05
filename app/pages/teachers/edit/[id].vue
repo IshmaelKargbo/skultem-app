@@ -353,6 +353,7 @@ onMounted(async () => {
 
 onMounted(() => {
   useAppStore().setTitle('Edit Teacher');
+  useAppStore().setBack('/teachers')
   document.title = 'Edit Teacher | Teachers | Skultem'
 })
 </script>
