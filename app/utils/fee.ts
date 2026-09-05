@@ -43,14 +43,20 @@ export type Fee = {
 }
 
 
+// One material bundled into a supply fee - e.g. a Uniform fee carrying the Uniform itself, a
+// House Colour, and a Necktie, each its own line with its own quantity.
+export type FeeStructureSupplyItem = {
+    material: Material
+    quantity: number
+}
+
 export type FeeStructure = {
     id: string
     term: Term
     clazz?: Clazz
     type: string
     hasSupply: boolean
-    totalSupply: number
-    material?: Material
+    supplyItems: FeeStructureSupplyItem[]
     category: FeeCategory
     allowInstallment: boolean
     amount: number
@@ -65,6 +71,9 @@ export type FeeStructure = {
     // Mirror image of newStudentsOnly - only ever charged to a student who is re-enrolling
     // (a returning student), never a first-time NEW/TRANSFER admission.
     oldStudentsOnly: boolean
+    // Null/undefined reaches every gender. Set when a fee only applies to one - most commonly a
+    // supply fee (hasSupply) priced differently for boys vs girls.
+    gender?: 'MALE' | 'FEMALE' | null
     createdAt: string
     updatedAt: string
 }
@@ -159,16 +168,25 @@ export type CreateFeeCategoryDto = {
     description: string
 }
 
+// One material line submitted when creating/editing a supply fee - e.g. Uniform + House Colour +
+// Necktie, each its own materialId/quantity pair.
+export type FeeStructureSupplyItemInput = {
+    materialId: string
+    quantity: number
+}
+
 export type CreateFeeStructureDto = {
     termId: string
-    classId?: string | null,
+    // A CLASS-type fee can target several classes at once - e.g. Class 1 and Class 2 sharing the
+    // same Tuition amount - creating one independent FeeStructure per class (see
+    // CreateFeeStructureUseCase on the backend). Ignored for ALL/SELECTION.
+    classIds?: string[] | null,
     feeCategory: string
     amount: number,
     type: string
     studentIds: string[]
     hasSupply: boolean
-    totalSupply: number
-    materialId: string
+    supplyItems: FeeStructureSupplyItemInput[]
     allowInstallment: boolean,
     description?: string
     dueDate: string
@@ -180,6 +198,9 @@ export type CreateFeeStructureDto = {
     // returning student). Mutually exclusive with newStudentsOnly, and not allowed when type is
     // SELECTION for the same reason newStudentsOnly isn't.
     oldStudentsOnly?: boolean
+    // Null/undefined reaches every gender - most useful for a supply fee (hasSupply) priced
+    // differently for boys vs girls (two fees, same category/term/class, one MALE and one FEMALE).
+    gender?: 'MALE' | 'FEMALE' | null
 }
 
 // What a fee structure applies to (academic year, class, type) can't be changed after
@@ -191,9 +212,11 @@ export type UpdateFeeStructureDto = {
     dueDate: string
     allowInstallment: boolean
     hasSupply: boolean
-    totalSupply: number
-    materialId: string
+    supplyItems: FeeStructureSupplyItemInput[]
     description?: string
+    newStudentsOnly: boolean
+    oldStudentsOnly: boolean
+    gender?: 'MALE' | 'FEMALE' | null
 }
 
 export type CreateFeeDiscountDto = {

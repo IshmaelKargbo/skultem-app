@@ -34,17 +34,37 @@ const terms = computed(() =>
   }))
 );
 
-const classes = computed(() => [
-  { label: "All Classes", value: "ALL" },
+// Who this fee is assigned to is now a mode pick (assignMode) separate from which classes -
+// letting "Specific Classes" be a genuine multi-select instead of squeezing ALL/SELECTION
+// sentinels and real class ids into one flat list, which couldn't support picking more than one
+// class at a time.
+const assignModes = [
+  { label: "All Students", value: "ALL" },
+  { label: "Specific Classes", value: "CLASS" },
   { label: "Select Students", value: "SELECTION" },
-  ...clazzStore.records.map((e) => ({
+];
+
+const classes = computed(() =>
+  clazzStore.records.map((e) => ({
     label: e.name,
     value: e.id,
-  })),
-]);
+  }))
+);
+
+// No "All Genders" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared"), same reason the student-type filter on the fee
+// structures list has no "All Students" entry either. Nothing selected already shows the "All
+// Genders" placeholder, and the select's own clear button (:clear below) gets back to it.
+const genderOptions = [
+  { label: "Boys Only", value: "MALE" },
+  { label: "Girls Only", value: "FEMALE" },
+];
+
+type SupplyItemRow = { key: string, materialId: string, quantity: number };
 
 type FeeStructureForm = {
-  classId: string;
+  assignMode: "ALL" | "CLASS" | "SELECTION" | "";
+  classIds: string[];
   termId: string;
   feeCategory: string;
   amount: number | null;
@@ -52,15 +72,16 @@ type FeeStructureForm = {
   studentIds: string[];
   allowInstallment: boolean;
   hasSupply: boolean;
-  totalSupply: number;
-  material: string;
+  supplyItems: SupplyItemRow[];
   description?: string;
   newStudentsOnly: boolean;
   oldStudentsOnly: boolean;
+  gender: "" | "MALE" | "FEMALE";
 };
 
 const state = reactive<FeeStructureForm>({
-  classId: "",
+  assignMode: "",
+  classIds: [],
   termId: "",
   feeCategory: "",
   amount: null,
@@ -68,11 +89,11 @@ const state = reactive<FeeStructureForm>({
   studentIds: [],
   allowInstallment: false,
   hasSupply: false,
-  totalSupply: 0,
-  material: "",
+  supplyItems: [],
   description: "",
   newStudentsOnly: false,
   oldStudentsOnly: false,
+  gender: "",
 });
 
 // Mutually exclusive - a fee can only target one side of the new/old student split.
@@ -93,7 +114,13 @@ watch(
 const schema = yup.object({
   termId: yup.string().required("Term is required"),
 
-  classId: yup.string().required("Assignment is required"),
+  assignMode: yup.string().required("Assignment is required"),
+
+  classIds: yup.array().when("assignMode", {
+    is: "CLASS",
+    then: (schema) => schema.min(1, "Select at least one class"),
+    otherwise: (schema) => schema,
+  }),
 
   feeCategory: yup.string().required("Fee category is required"),
 
@@ -109,15 +136,14 @@ const schema = yup.object({
 
   hasSupply: yup.boolean(),
 
-  totalSupply: yup.number().when("hasSupply", {
+  supplyItems: yup.array().when("hasSupply", {
     is: true,
-    then: (schema) =>
-      schema.required("Total supply is required").min(1, "Supply must be greater than 0"),
-    otherwise: (schema) => schema.default(0),
+    then: (schema) => schema.min(1, "Add at least one supply item"),
+    otherwise: (schema) => schema,
   }),
 
-  studentIds: yup.array().when("classId", {
-    is: "STUDENT",
+  studentIds: yup.array().when("assignMode", {
+    is: "SELECTION",
     then: (schema) => schema.min(1, "Select at least one student"),
     otherwise: (schema) => schema,
   }),
@@ -133,35 +159,43 @@ async function onSubmit() {
       abortEarly: false,
     });
 
-    const feeType =
-      state.classId == "ALL"
-        ? "ALL"
-        : state.classId == "SELECTION"
-          ? "SELECTION"
-          : "CLASS";
+    const isSelection = state.assignMode === "SELECTION";
 
-    await feeStructureStore.create({
-      classId:
-        state.classId !== "ALL" && state.classId !== "SELECTION" ? state.classId : null,
+    const supplyItems = state.supplyItems
+      .filter((row) => row.materialId)
+      .map((row) => ({ materialId: row.materialId, quantity: row.quantity || 1 }));
 
-      studentIds: state.classId === "SELECTION" ? state.studentIds : [],
-      type: feeType,
+    if (state.hasSupply && !supplyItems.length) {
+      toastError("Select a material for each supply item.");
+      isLoading.value = false;
+      return;
+    }
+
+    const res: any = await feeStructureStore.create({
+      classIds: state.assignMode === "CLASS" ? state.classIds : null,
+      studentIds: isSelection ? state.studentIds : [],
+      type: state.assignMode,
       termId: state.termId,
       feeCategory: state.feeCategory,
       amount: state.amount || 0,
       dueDate: state.dueDate,
       allowInstallment: state.allowInstallment,
       hasSupply: state.hasSupply,
-      totalSupply: state.hasSupply ? state.totalSupply : 0,
-      materialId: state.material,
+      supplyItems: state.hasSupply ? supplyItems : [],
       description: state.description,
-      newStudentsOnly: state.classId !== "SELECTION" && state.newStudentsOnly,
-      oldStudentsOnly: state.classId !== "SELECTION" && state.oldStudentsOnly,
+      newStudentsOnly: !isSelection && state.newStudentsOnly,
+      oldStudentsOnly: !isSelection && state.oldStudentsOnly,
+      gender: !isSelection && state.gender ? state.gender : null,
     });
 
     await feeStructureStore.fetchAll();
 
-    toastSuccess("Fee structure created successfully");
+    const created = res?.data?.length ?? 1;
+    toastSuccess(
+      created > 1
+        ? `Fee structure created for ${created} classes successfully`
+        : "Fee structure created successfully"
+    );
 
     navigateTo("/fees-payment/structure");
   } catch (err: any) {
@@ -183,7 +217,7 @@ onMounted(() => {
 watch(
   () => state.hasSupply,
   (value) => {
-    if (!value) state.material = "";
+    if (!value) state.supplyItems = [];
   },
   { immediate: true }
 );
@@ -246,31 +280,8 @@ definePageMeta({
                 </template>
               </UFormField>
 
-              <div class="grid grid-cols-2 gap-3">
-                <!-- Material -->
-                <UFormField v-if="state.hasSupply" label="Material" name="material" required>
-                  <USelectMenu v-model="state.material" value-key="value" :items="materials"
-                    placeholder="Select material" :disabled="isLoading" />
-
-                  <template #help>
-                    <p class="text-xs text-muted">
-                      Select the type of material or supply item.
-                    </p>
-                  </template>
-                </UFormField>
-
-                <!-- Total Supply -->
-                <UFormField v-if="state.hasSupply" label="Total Supply" name="totalSupply" required>
-                  <UInput v-model.number="state.totalSupply" type="number" min="1" placeholder="Enter quantity"
-                    :disabled="isLoading" />
-
-                  <template #help>
-                    <p class="text-xs text-muted">
-                      Number of items each student will receive.
-                    </p>
-                  </template>
-                </UFormField>
-              </div>
+              <!-- Supply Items -->
+              <FeeStructureSupplyItemEditor v-if="state.hasSupply" v-model="state.supplyItems" :materials="materials" />
 
               <!-- Description -->
               <UFormField label="Description" name="description">
@@ -315,8 +326,50 @@ definePageMeta({
                   <USwitch v-model="state.hasSupply" :disabled="isLoading" />
                 </div>
               </UFormField>
+              <!-- Assign Mode -->
+              <UFormField label="Assign To" name="assignMode" required>
+                <USelectMenu v-model="state.assignMode" value-key="value" :items="assignModes"
+                  placeholder="Select assignment" :disabled="isLoading" />
+
+                <template #help>
+                  <p class="text-xs text-muted">
+                    Assign this fee to all students, one or more classes, or selected students.
+                  </p>
+                </template>
+              </UFormField>
+
+              <!-- Classes Selector -->
+              <UFormField v-if="state.assignMode === 'CLASS'" label="Classes" name="classIds" required>
+                <USelectMenu v-model="state.classIds" value-key="value" :items="classes" multiple
+                  placeholder="Select one or more classes" :disabled="isLoading" />
+
+                <template #help>
+                  <p class="text-xs text-muted">
+                    Picking more than one class (e.g. Class 1 and Class 2) creates the same fee
+                    independently for each - editing or deleting one later never touches the others.
+                  </p>
+                </template>
+              </UFormField>
+
+              <!-- Student Selector -->
+              <FeeStructureStudents v-if="state.assignMode === 'SELECTION'" v-model="state.studentIds" />
+
+              <!-- Info -->
+              <div v-if="state.assignMode !== 'SELECTION' && state.assignMode !== 'CLASS'"
+                class="h-56 border-2 rounded-xl border-gray-200 p-5 flex flex-col text-muted space-y-3 items-center justify-center border-dashed">
+                <UIcon :name="FEE_STRUCTURE_ICON" class="w-12 h-12" />
+
+                <p v-if="state.assignMode === 'ALL'" class="text-center">
+                  This fee structure will be assigned to all enrolled students.
+                </p>
+
+                <p v-else class="text-center">
+                  Select how you want to assign this fee structure.
+                </p>
+              </div>
+
               <!-- New Students Only -->
-              <UFormField v-if="state.classId !== 'SELECTION'" name="newStudentsOnly">
+              <UFormField v-if="state.assignMode !== 'SELECTION'" name="newStudentsOnly">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">New Students Only</p>
@@ -331,7 +384,7 @@ definePageMeta({
               </UFormField>
 
               <!-- Old Students Only -->
-              <UFormField v-if="state.classId !== 'SELECTION'" name="oldStudentsOnly">
+              <UFormField v-if="state.assignMode !== 'SELECTION'" name="oldStudentsOnly">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Old Students Only</p>
@@ -345,38 +398,18 @@ definePageMeta({
                 </div>
               </UFormField>
 
-              <!-- Assign -->
-              <UFormField label="Assign To" name="classId" required>
-                <USelectMenu v-model="state.classId" value-key="value" :items="classes" placeholder="Select assignment"
-                  :disabled="isLoading" />
+              <!-- Gender -->
+              <UFormField v-if="state.assignMode !== 'SELECTION'" label="Gender" name="gender">
+                <USelectMenu v-model="state.gender" value-key="value" :items="genderOptions" placeholder="All Genders"
+                  clear :disabled="isLoading" />
 
                 <template #help>
                   <p class="text-xs text-muted">
-                    Assign this fee to all students, a class, or selected students.
+                    Restrict this fee to one gender - e.g. a boys' vs girls' uniform priced
+                    differently under two separate fees for the same class/term.
                   </p>
                 </template>
               </UFormField>
-
-              <!-- Student Selector -->
-              <FeeStructureStudents v-if="state.classId === 'SELECTION'" v-model="state.studentIds" />
-
-              <!-- Info -->
-              <div v-else
-                class="h-56 border-2 rounded-xl border-gray-200 p-5 flex flex-col text-muted space-y-3 items-center justify-center border-dashed">
-                <UIcon :name="FEE_STRUCTURE_ICON" class="w-12 h-12" />
-
-                <p v-if="state.classId === 'ALL'" class="text-center">
-                  This fee structure will be assigned to all enrolled students.
-                </p>
-
-                <p v-else-if="state.classId" class="text-center">
-                  This fee structure will apply to the selected class.
-                </p>
-
-                <p v-else class="text-center">
-                  Select how you want to assign this fee structure.
-                </p>
-              </div>
             </div>
             <template #footer>
               <div class="flex justify-end gap-3">

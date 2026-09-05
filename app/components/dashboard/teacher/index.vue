@@ -103,6 +103,28 @@
                         :class-id="selected?.classId" :teacher="selected?.id" />
                     <DashboardTeacherAttendanceTrend :class-id="selected?.classId" />
                 </template>
+
+                <!-- A class master with no subject of their own has nothing to power the
+                     Performance section (it's built around "your subject in your class") - this
+                     used to just leave the space blank, which reads like something's broken.
+                     Explain the gap instead of hiding it. -->
+                <template v-else>
+                    <SectionHeading title="Performance" subtitle="Subject performance for the classes you teach." accent="secondary" />
+
+                    <UCard>
+                        <div class="flex flex-col items-center gap-3 py-10 text-center">
+                            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10">
+                                <UIcon name="i-lucide-bar-chart-3" class="text-2xl text-secondary-500" />
+                            </div>
+                            <p class="text-sm font-semibold text-highlighted">No subject performance to show</p>
+                            <p class="max-w-sm text-xs text-muted">
+                                You're set up as a class master but you're not currently teaching a subject, so
+                                there's no assessment data to track here. Once your school assigns you a subject,
+                                class averages and grade trends will show up in this space.
+                            </p>
+                        </div>
+                    </UCard>
+                </template>
             </div>
 
             <div class="space-y-4 lg:sticky lg:top-4 lg:self-start">
@@ -110,7 +132,7 @@
                 <UCard>
                     <SectionHeading title="Quick Actions" subtitle="Jump straight to the thing you came here to do." class="mb-3" />
 
-                    <div class="grid gap-3" :class="hasSubjects ? 'grid-cols-2' : 'grid-cols-3'">
+                    <div class="grid gap-3" :class="hasSubjects ? 'grid-cols-2' : 'grid-cols-2'">
                         <NuxtLink v-if="hasSubjects" to="/grades"
                             class="group flex flex-col items-center gap-2 rounded-2xl border border-default bg-elevated/30 px-3 py-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
                             <div

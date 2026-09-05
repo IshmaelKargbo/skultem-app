@@ -148,6 +148,7 @@
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
 const { can } = useAuth()
 const store = useStudentStore()
 const reportStore = useReportStore()
@@ -247,7 +248,7 @@ watch(
 
 onMounted(() => {
     useAppStore().setTitle('View Student')
-    useAppStore().setBack('/students')
+    useAppStore().setBack((route.query.back as string) || '/students')
 
     document.title = 'Fee Structure | View Student | Students | Skultem'
 })

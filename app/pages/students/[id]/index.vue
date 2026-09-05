@@ -133,6 +133,7 @@
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
 const store = useStudentStore()
 const { record, loading } = storeToRefs(store)
 
@@ -172,7 +173,7 @@ const motherDetails = computed(() => ([
 
 onMounted(() => {
     useAppStore().setTitle('View Student')
-    useAppStore().setBack('/students')
+    useAppStore().setBack((route.query.back as string) || '/students')
 
     document.title = 'View Student | Students | Skultem'
 })

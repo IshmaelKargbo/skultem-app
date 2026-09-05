@@ -11,10 +11,9 @@ const { error: toastError, success: toastSuccess } = useNotify();
 
 const isLoading = ref(false);
 const isFetching = ref(true);
-// Display-only - not editable, so it's kept out of the submitted form state entirely (see the
-// locked "Assignment can't be changed" alert below).
-const newStudentsOnly = ref(false);
-const oldStudentsOnly = ref(false);
+// Only editable for a CLASS/ALL fee - a SELECTION fee (specific students picked by hand) can't
+// carry either flag, same rule the backend enforces (see FeeStructure#update).
+const isSelectionType = ref(false);
 
 const categories = computed(() =>
   feeCategoryStore.records
@@ -39,6 +38,8 @@ const terms = computed(() =>
   }))
 );
 
+type SupplyItemRow = { key: string, materialId: string, quantity: number };
+
 type FeeStructureForm = {
   termId: string;
   feeCategory: string;
@@ -46,9 +47,11 @@ type FeeStructureForm = {
   dueDate: string;
   allowInstallment: boolean;
   hasSupply: boolean;
-  totalSupply: number;
-  material: string;
+  supplyItems: SupplyItemRow[];
   description?: string;
+  newStudentsOnly: boolean;
+  oldStudentsOnly: boolean;
+  gender: "" | "MALE" | "FEMALE";
 };
 
 const state = reactive<FeeStructureForm>({
@@ -58,9 +61,28 @@ const state = reactive<FeeStructureForm>({
   dueDate: "",
   allowInstallment: false,
   hasSupply: false,
-  totalSupply: 0,
-  material: "",
+  supplyItems: [],
   description: "",
+  newStudentsOnly: false,
+  oldStudentsOnly: false,
+  gender: "",
+});
+
+// No "All Genders" entry here - a Reka UI Combobox item's value can't be an empty string (it's
+// reserved internally to mean "cleared"). Nothing selected already shows the "All Genders"
+// placeholder, and the select's own clear button (:clear below) gets back to it.
+const genderOptions = [
+  { label: "Boys Only", value: "MALE" },
+  { label: "Girls Only", value: "FEMALE" },
+];
+
+// Turning one on turns the other off - the backend rejects both being true at once, and a radio
+// pair reads more clearly here than two independent switches that can silently conflict.
+watch(() => state.newStudentsOnly, (value) => {
+  if (value) state.oldStudentsOnly = false;
+});
+watch(() => state.oldStudentsOnly, (value) => {
+  if (value) state.newStudentsOnly = false;
 });
 
 const schema = yup.object({
@@ -80,11 +102,10 @@ const schema = yup.object({
 
   hasSupply: yup.boolean(),
 
-  totalSupply: yup.number().when("hasSupply", {
+  supplyItems: yup.array().when("hasSupply", {
     is: true,
-    then: (schema) =>
-      schema.required("Total supply is required").min(1, "Supply must be greater than 0"),
-    otherwise: (schema) => schema.default(0),
+    then: (schema) => schema.min(1, "Add at least one supply item"),
+    otherwise: (schema) => schema,
   }),
 
   description: yup.string().nullable(),
@@ -98,6 +119,16 @@ async function onSubmit() {
       abortEarly: false,
     });
 
+    const supplyItems = state.supplyItems
+      .filter((row) => row.materialId)
+      .map((row) => ({ materialId: row.materialId, quantity: row.quantity || 1 }));
+
+    if (state.hasSupply && !supplyItems.length) {
+      toastError("Select a material for each supply item.");
+      isLoading.value = false;
+      return;
+    }
+
     await feeStructureStore.update(route.params.id as string, {
       feeCategory: state.feeCategory,
       termId: state.termId,
@@ -105,9 +136,11 @@ async function onSubmit() {
       dueDate: state.dueDate,
       allowInstallment: state.allowInstallment,
       hasSupply: state.hasSupply,
-      totalSupply: state.hasSupply ? state.totalSupply : 0,
-      materialId: state.material,
+      supplyItems: state.hasSupply ? supplyItems : [],
       description: state.description,
+      newStudentsOnly: isSelectionType.value ? false : state.newStudentsOnly,
+      oldStudentsOnly: isSelectionType.value ? false : state.oldStudentsOnly,
+      gender: isSelectionType.value ? null : (state.gender || null),
     });
 
     toastSuccess("Fee structure updated successfully");
@@ -146,11 +179,16 @@ onMounted(async () => {
     state.dueDate = fee.dueDate;
     state.allowInstallment = fee.allowInstallment;
     state.hasSupply = fee.hasSupply;
-    state.totalSupply = fee.totalSupply;
-    state.material = fee.material?.id || "";
+    state.supplyItems = (fee.supplyItems || []).map((item: FeeStructureSupplyItem) => ({
+      key: crypto.randomUUID(),
+      materialId: item.material.id,
+      quantity: item.quantity,
+    }));
     state.description = fee.description;
-    newStudentsOnly.value = fee.newStudentsOnly;
-    oldStudentsOnly.value = fee.oldStudentsOnly;
+    state.newStudentsOnly = fee.newStudentsOnly;
+    state.oldStudentsOnly = fee.oldStudentsOnly;
+    state.gender = fee.gender || "";
+    isSelectionType.value = fee.type === "SELECTION";
   } catch (err: any) {
     toastError(err?.message || "Failed to load fee structure");
     navigateTo("/fees-payment/structure");
@@ -162,7 +200,7 @@ onMounted(async () => {
 watch(
   () => state.hasSupply,
   (value) => {
-    if (!value) state.material = "";
+    if (!value) state.supplyItems = [];
   }
 );
 
@@ -224,31 +262,8 @@ definePageMeta({
                 </template>
               </UFormField>
 
-              <div class="grid grid-cols-2 gap-3">
-                <!-- Material -->
-                <UFormField v-if="state.hasSupply" label="Material" name="material" required>
-                  <USelectMenu v-model="state.material" value-key="value" :items="materials"
-                    placeholder="Select material" :disabled="isLoading" />
-
-                  <template #help>
-                    <p class="text-xs text-muted">
-                      Select the type of material or supply item.
-                    </p>
-                  </template>
-                </UFormField>
-
-                <!-- Total Supply -->
-                <UFormField v-if="state.hasSupply" label="Total Supply" name="totalSupply" required>
-                  <UInput v-model.number="state.totalSupply" type="number" min="1" placeholder="Enter quantity"
-                    :disabled="isLoading" />
-
-                  <template #help>
-                    <p class="text-xs text-muted">
-                      Number of items each student will receive.
-                    </p>
-                  </template>
-                </UFormField>
-              </div>
+              <!-- Supply Items -->
+              <FeeStructureSupplyItemEditor v-if="state.hasSupply" v-model="state.supplyItems" :materials="materials" />
 
               <!-- Description -->
               <UFormField label="Description" name="description">
@@ -299,15 +314,47 @@ definePageMeta({
                 color="neutral"
                 variant="soft"
                 icon="i-lucide-lock"
-                title="Assignment can't be changed"
-                :description="`Who this fee applies to (class or students), its type, and whether it's new-students-only or old-students-only were set when it was created and can't be edited. Delete and recreate it instead if that needs to change.`"
+                title="Who this applies to can't be changed"
+                description="Whether this fee targets a class, a hand-picked selection of students, or everyone was set when it was created and can't be edited - delete and recreate it instead if that needs to change. New/Old Students Only and Gender below can still be adjusted, but only affect enrollments from this point on - it won't add or remove the fee for students already enrolled."
               />
 
-              <UBadge v-if="newStudentsOnly" size="sm" variant="subtle" color="info"
-                icon="i-lucide-user-plus" label="New Students Only" />
+              <!-- New/Old Students Only - not available for a hand-picked selection of students,
+                   same rule the backend enforces (see FeeStructure#update). -->
+              <template v-if="!isSelectionType">
+                <UFormField name="newStudentsOnly">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="font-medium">New Students Only</p>
+                      <p class="text-xs text-muted">Only charged on a student's first-ever enrollment.</p>
+                    </div>
 
-              <UBadge v-if="oldStudentsOnly" size="sm" variant="subtle" color="warning"
-                icon="i-lucide-user-check" label="Old Students Only" />
+                    <USwitch v-model="state.newStudentsOnly" :disabled="isLoading" />
+                  </div>
+                </UFormField>
+
+                <UFormField name="oldStudentsOnly">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="font-medium">Old Students Only</p>
+                      <p class="text-xs text-muted">Only charged to students who are re-enrolling.</p>
+                    </div>
+
+                    <USwitch v-model="state.oldStudentsOnly" :disabled="isLoading" />
+                  </div>
+                </UFormField>
+
+                <UFormField label="Gender" name="gender">
+                  <USelectMenu v-model="state.gender" value-key="value" :items="genderOptions"
+                    placeholder="All Genders" clear :disabled="isLoading" />
+
+                  <template #help>
+                    <p class="text-xs text-muted">
+                      Restrict this fee to one gender - e.g. a boys' vs girls' uniform priced
+                      differently under two separate fees for the same class/term.
+                    </p>
+                  </template>
+                </UFormField>
+              </template>
             </div>
             <template #footer>
               <div class="flex justify-end gap-3">

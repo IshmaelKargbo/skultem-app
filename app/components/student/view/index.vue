@@ -199,12 +199,17 @@ const quickFacts = computed(() => [
     }
 ])
 
-const personalInfo = `/students/${route.params.id}`
-const attendanceInfo = `/students/${route.params.id}/attendance`
-const feeStructureInfo = `/students/${route.params.id}/fee-structure`
-const academicInfo = `/students/${route.params.id}/academic-information`
-const behavioursInfo = `/students/${route.params.id}/behaviours`
-const reportCardInfo = `/students/${route.params.id}/report-card`
+// Carries a "?back=" through every tab switch, not just the link that first landed here - a
+// class master opening a student from /classes/{id} should still land back on that class after
+// hopping between Attendance/Fees/Academics/etc, not lose that context the moment they change tab.
+const backQuery = typeof route.query.back === 'string' && route.query.back ? `?back=${route.query.back}` : ''
+
+const personalInfo = `/students/${route.params.id}${backQuery}`
+const attendanceInfo = `/students/${route.params.id}/attendance${backQuery}`
+const feeStructureInfo = `/students/${route.params.id}/fee-structure${backQuery}`
+const academicInfo = `/students/${route.params.id}/academic-information${backQuery}`
+const behavioursInfo = `/students/${route.params.id}/behaviours${backQuery}`
+const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
 const mobileTabs = computed(() => [
     { label: 'Personal', to: personalInfo, exact: true },

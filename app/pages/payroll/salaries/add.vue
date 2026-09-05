@@ -37,30 +37,48 @@
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-wallet" class="text-primary" />
-              <span class="font-semibold">Compensation</span>
+              <UIcon name="i-lucide-layout-template" class="text-primary" />
+              <span class="font-semibold">Start from a Template</span>
             </div>
           </template>
 
-          <div class="grid gap-5 md:grid-cols-3">
-            <UFormField label="Basic Salary" name="basicSalary" required>
-              <UInput v-model.number="state.basicSalary" type="number" min="0" placeholder="0" class="w-full">
-                <template #leading><span class="text-sm text-muted">Le</span></template>
-              </UInput>
-            </UFormField>
+          <UFormField name="templateId">
+            <USelectMenu v-model="state.templateId" :items="templateOptions" :loading="loadingTemplates"
+              value-key="value" label-key="label" placeholder="No template - build from scratch" class="w-full"
+              clear @update:model-value="onPickTemplate" />
 
-            <UFormField label="Allowances" name="allowances">
-              <UInput v-model.number="state.allowances" type="number" min="0" placeholder="0" class="w-full">
-                <template #leading><span class="text-sm text-muted">Le</span></template>
-              </UInput>
-            </UFormField>
+            <template #help>
+              <p class="text-xs text-muted">
+                Picking a template fills in the basic salary and every allowance/deduction line below -
+                you can still tweak any of it before saving. Leave this blank to build the list entirely by hand.
+              </p>
+            </template>
+          </UFormField>
+        </UCard>
 
-            <UFormField label="Deductions" name="deductions">
-              <UInput v-model.number="state.deductions" type="number" min="0" placeholder="0" class="w-full">
-                <template #leading><span class="text-sm text-muted">Le</span></template>
-              </UInput>
-            </UFormField>
-          </div>
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-wallet" class="text-primary" />
+              <span class="font-semibold">Basic Salary</span>
+            </div>
+          </template>
+
+          <UFormField label="Basic Salary" name="basicSalary" required>
+            <UInput v-model.number="state.basicSalary" type="number" min="0" placeholder="0" class="w-full">
+              <template #leading><span class="text-sm text-muted">Le</span></template>
+            </UInput>
+          </UFormField>
+        </UCard>
+
+        <UCard>
+          <PayrollPayComponentEditor v-model="state.allowances" label="Allowances" color="success"
+            :basic-salary="state.basicSalary || 0" />
+        </UCard>
+
+        <UCard>
+          <PayrollPayComponentEditor v-model="state.deductions" label="Deductions" color="error"
+            :basic-salary="state.basicSalary || 0" />
         </UCard>
 
       </div>
@@ -72,7 +90,7 @@
             <p class="text-sm opacity-80">Net Salary (preview)</p>
             <h1 class="mt-3 text-4xl font-bold">{{ formatCurrency(netSalary) }}</h1>
             <p class="mt-2 text-xs opacity-75">
-              {{ formatCurrency(grossSalary) }} gross − {{ formatCurrency(state.deductions) }} deductions
+              {{ formatCurrency(grossSalary) }} gross − {{ formatCurrency(totalDeductions) }} deductions
             </p>
           </div>
 
@@ -82,16 +100,16 @@
               <span class="font-medium">{{ formatCurrency(state.basicSalary) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-muted">Allowances</span>
-              <span class="font-medium text-success">+ {{ formatCurrency(state.allowances) }}</span>
+              <span class="text-muted">Allowances ({{ state.allowances.length }})</span>
+              <span class="font-medium text-success">+ {{ formatCurrency(totalAllowances) }}</span>
             </div>
             <div class="flex justify-between border-t border-default pt-2">
               <span class="text-muted">Gross Salary</span>
               <span class="font-medium">{{ formatCurrency(grossSalary) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-muted">Deductions</span>
-              <span class="font-medium text-error">- {{ formatCurrency(state.deductions) }}</span>
+              <span class="text-muted">Deductions ({{ state.deductions.length }})</span>
+              <span class="font-medium text-error">- {{ formatCurrency(totalDeductions) }}</span>
             </div>
           </div>
         </UCard>
@@ -115,6 +133,8 @@ const { records: teachers } = storeToRefs(teacherStore)
 const loadingTeachers = ref(false)
 
 const payrollStore = usePayrollStore()
+const { templates } = storeToRefs(payrollStore)
+const loadingTemplates = ref(false)
 
 // Preset via ?teacherId= when arriving from a teacher's salary page ("Edit Salary").
 const isEdit = computed(() => !!route.query.teacherId)
@@ -122,18 +142,23 @@ const isEdit = computed(() => !!route.query.teacherId)
 const formRef = ref()
 const saving = ref(false)
 
-const state = reactive({
+const state = reactive<{
+  teacherId: string
+  templateId: string
+  basicSalary: number
+  allowances: PayComponentRow[]
+  deductions: PayComponentRow[]
+}>({
   teacherId: String(route.query.teacherId ?? ''),
+  templateId: '',
   basicSalary: 0,
-  allowances: 0,
-  deductions: 0
+  allowances: [],
+  deductions: []
 })
 
 const schema = yup.object({
   teacherId: yup.string().required('Teacher is required'),
-  basicSalary: yup.number().min(0, 'Basic salary cannot be negative').required('Basic salary is required'),
-  allowances: yup.number().min(0, 'Allowances cannot be negative'),
-  deductions: yup.number().min(0, 'Deductions cannot be negative'),
+  basicSalary: yup.number().min(0, 'Basic salary cannot be negative').required('Basic salary is required')
 })
 
 const teacherOptions = computed(() => teachers.value.map(t => ({
@@ -142,13 +167,37 @@ const teacherOptions = computed(() => teachers.value.map(t => ({
   staffId: t.staffId
 })))
 
+const templateOptions = computed(() => templates.value.map(t => ({ label: t.name, value: t.id })))
+
 const selectedTeacher = computed(() => teacherOptions.value.find(t => t.value === state.teacherId))
 
-const grossSalary = computed(() => (Number(state.basicSalary) || 0) + (Number(state.allowances) || 0))
-const netSalary = computed(() => grossSalary.value - (Number(state.deductions) || 0))
+function toRows(items: PayComponent[]): PayComponentRow[] {
+  return items.map(item => ({ ...item, key: crypto.randomUUID() }))
+}
+
+async function onPickTemplate(templateId: string) {
+  if (!templateId) return
+
+  const template = await payrollStore.fetchSalaryTemplate(templateId)
+  if (!template) return
+
+  state.basicSalary = template.basicSalary
+  state.allowances = toRows(template.allowances)
+  state.deductions = toRows(template.deductions)
+}
+
+const totalAllowances = computed(() => state.allowances.reduce((sum, a) => sum + resolvePayComponent(a, state.basicSalary || 0), 0))
+const totalDeductions = computed(() => state.deductions.reduce((sum, d) => sum + resolvePayComponent(d, state.basicSalary || 0), 0))
+const grossSalary = computed(() => (Number(state.basicSalary) || 0) + totalAllowances.value)
+const netSalary = computed(() => grossSalary.value - totalDeductions.value)
 
 function formatCurrency(value?: number | null) {
   return `Le ${Number(value || 0).toLocaleString()}`
+}
+
+function stripRow(row: PayComponentRow): PayComponent {
+  const { key, resolvedAmount, ...rest } = row
+  return rest
 }
 
 async function onSubmit(event: FormSubmitEvent<typeof state>) {
@@ -156,9 +205,10 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
   try {
     await payrollStore.setSalary({
       teacherId: state.teacherId,
+      templateId: state.templateId || null,
       basicSalary: state.basicSalary,
-      allowances: state.allowances || 0,
-      deductions: state.deductions || 0
+      allowances: state.allowances.map(stripRow),
+      deductions: state.deductions.map(stripRow)
     })
     notify.success('Salary structure saved.')
     await router.push(`/payroll/salaries/${state.teacherId}`)
@@ -175,18 +225,24 @@ onMounted(async () => {
   document.title = `${isEdit.value ? 'Edit' : 'Add'} Salary | Payroll | Skultem`
 
   loadingTeachers.value = true
+  loadingTemplates.value = true
   try {
-    await teacherStore.fetchAll(1, 0)
+    await Promise.all([
+      teacherStore.fetchAll(1, 0),
+      payrollStore.fetchSalaryTemplates(1, 0)
+    ])
   } finally {
     loadingTeachers.value = false
+    loadingTemplates.value = false
   }
 
   if (isEdit.value) {
     const existing = await PayrollApi().getSalaryByTeacher(state.teacherId)
     if (existing) {
+      state.templateId = existing.templateId || ''
       state.basicSalary = existing.basicSalary
-      state.allowances = existing.allowances
-      state.deductions = existing.deductions
+      state.allowances = toRows(existing.allowances)
+      state.deductions = toRows(existing.deductions)
     }
   }
 })

@@ -141,8 +141,8 @@
                     <TableLoading :size="columns.length" />
                 </template>
                 <template #actions-cell="{ row }">
-                    <UButton :to="`/students/${row.original.id}`" size="sm" variant="ghost" color="success"
-                        class="cursor-pointer" :icon="VIEW_ICON" />
+                    <UButton :to="`/students/${row.original.id}?back=/classes/${route.params.id}`" size="sm"
+                        variant="ghost" color="success" class="cursor-pointer" :icon="VIEW_ICON" />
                 </template>
             </UTable>
 
@@ -336,8 +336,9 @@
                                 </div>
                             </div>
 
-                            <UButton :to="`/students/${student.id}`" label="View" trailing-icon="i-lucide-chevron-right"
-                                color="neutral" variant="ghost" size="lg" class="shrink-0 rounded-xl" />
+                            <UButton :to="`/students/${student.id}?back=/classes/${route.params.id}`" label="View"
+                                trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="lg"
+                                class="shrink-0 rounded-xl" />
                         </div>
                     </UCard>
                 </template>

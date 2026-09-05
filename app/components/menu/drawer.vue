@@ -472,6 +472,11 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
         to: "/payroll/salaries",
       },
       can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Salary Templates",
+        icon: "lucide:layout-template",
+        to: "/payroll/salary-templates",
+      },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
         label: "Payroll Runs",
         icon: "lucide:history",
         to: "/payroll/runs",

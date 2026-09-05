@@ -11,7 +11,7 @@ export const PayrollApi = () => {
       }
     },
 
-    setSalary: async (payload: { teacherId: string, basicSalary: number, allowances: number, deductions: number }) => {
+    setSalary: async (payload: SetSalaryStructureDto) => {
       try {
         const res = await $api('/payroll/salary', { method: 'POST', body: payload }) as any
         return res.data
@@ -20,11 +20,57 @@ export const PayrollApi = () => {
       }
     },
 
-    listSalaries: async (page: number, size: number, search: string = '') => {
+    listSalaries: async (page: number, size: number, search: string = '', sortBy: string = '', direction: string = '') => {
       try {
-        const res = await $api(`/payroll/salary?page=${page}&size=${size}&search=${search}`) as any
+        const res = await $api(`/payroll/salary?page=${page}&size=${size}&search=${search}&sortBy=${sortBy}&direction=${direction}`) as any
         const meta = useMeta(res.meta)
         return { ...res, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    createSalaryTemplate: async (payload: SaveSalaryTemplateDto) => {
+      try {
+        const res = await $api('/payroll/salary-template', { method: 'POST', body: payload }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    updateSalaryTemplate: async (id: string, payload: SaveSalaryTemplateDto) => {
+      try {
+        const res = await $api(`/payroll/salary-template/${id}`, { method: 'PUT', body: payload }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    listSalaryTemplates: async (page: number, size: number, search: string = '', sortBy: string = '', direction: string = '') => {
+      try {
+        const res = await $api(`/payroll/salary-template?page=${page}&size=${size}&search=${search}&sortBy=${sortBy}&direction=${direction}`) as any
+        const meta = useMeta(res.meta)
+        return { ...res, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    getSalaryTemplate: async (id: string) => {
+      try {
+        const res = await $api(`/payroll/salary-template/${id}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    deleteSalaryTemplate: async (id: string) => {
+      try {
+        const res = await $api(`/payroll/salary-template/${id}`, { method: 'DELETE' }) as any
+        return res.data
       } catch (err: any) {
         useHandleError(err)
       }
@@ -57,9 +103,9 @@ export const PayrollApi = () => {
       }
     },
 
-    listRuns: async (page: number, size: number) => {
+    listRuns: async (page: number, size: number, search: string = '', status: string = '', sortBy: string = '', direction: string = '') => {
       try {
-        const res = await $api(`/payroll/run?page=${page}&size=${size}`) as any
+        const res = await $api(`/payroll/run?page=${page}&size=${size}&search=${search}&status=${status}&sortBy=${sortBy}&direction=${direction}`) as any
         const meta = useMeta(res.meta)
         return { ...res, meta }
       } catch (err: any) {

@@ -25,13 +25,14 @@ definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
+const route = useRoute()
 const store = useStudentStore()
 const { record } = storeToRefs(store)
 const student = computed(() => record.value)
 
 onMounted(() => {
     useAppStore().setTitle('View Student')
-    useAppStore().setBack('/students')
+    useAppStore().setBack((route.query.back as string) || '/students')
 
     document.title = 'Attendance | View Student | Students | Skultem'
 })

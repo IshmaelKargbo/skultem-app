@@ -30,6 +30,11 @@ const studentTypeOptions = [
   { label: "Old Students Only", value: "OLD" },
 ];
 
+const genderOptions = [
+  { label: "Boys Only", value: "MALE" },
+  { label: "Girls Only", value: "FEMALE" },
+];
+
 const sortOptions = [
   { label: "Newest First", value: "createdAt:desc" },
   { label: "Oldest First", value: "createdAt:asc" },
@@ -107,6 +112,11 @@ const studentType = computed<string>({
   set: (val) => updateQuery({ studentType: val || undefined, page: 1 }),
 });
 
+const gender = computed<string>({
+  get: () => String(route.query.gender ?? ""),
+  set: (val) => updateQuery({ gender: val || undefined, page: 1 }),
+});
+
 const sort = computed<string>({
   get: () => String(route.query.sort ?? DEFAULT_SORT),
   set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val, page: 1 }),
@@ -117,7 +127,7 @@ const sortDirection = computed(() => sort.value.split(":")[1]);
 
 // Whether any filter/sort differs from its default - drives whether "Clear" is enabled.
 const hasActiveFilters = computed(
-  () => !!termId.value || !!classId.value || !!studentType.value || sort.value !== DEFAULT_SORT
+  () => !!termId.value || !!classId.value || !!studentType.value || !!gender.value || sort.value !== DEFAULT_SORT
 );
 
 function resetFilters() {
@@ -125,6 +135,7 @@ function resetFilters() {
     termId: undefined,
     classId: undefined,
     studentType: undefined,
+    gender: undefined,
     sort: undefined,
     page: 1,
   });
@@ -145,7 +156,8 @@ async function fetchRecord() {
     classId.value || undefined,
     studentType.value || undefined,
     sortBy.value,
-    sortDirection.value
+    sortDirection.value,
+    gender.value || undefined
   );
   loading.value = false;
 }
@@ -154,7 +166,7 @@ watch(() => page.value, () => fetchRecord());
 
 // Setting a filter also resets the page to 1: if the page was already 1 that query change
 // won't fire the page watcher above, so fetch here too.
-watch([() => termId.value, () => classId.value, () => studentType.value, () => sort.value], () => {
+watch([() => termId.value, () => classId.value, () => studentType.value, () => gender.value, () => sort.value], () => {
   if (page.value === 1) fetchRecord();
 });
 
@@ -189,13 +201,15 @@ definePageMeta({
           </div>
 
           <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 col-span-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="flex-1 col-span-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
               <USelectMenu v-model="termId" value-key="value" label-key="label" :items="termOptions"
                 placeholder="All terms" />
               <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
                 placeholder="All classes" />
               <USelectMenu v-model="studentType" value-key="value" label-key="label" :items="studentTypeOptions"
                 placeholder="All students" clear />
+              <USelectMenu v-model="gender" value-key="value" label-key="label" :items="genderOptions"
+                placeholder="All genders" clear />
               <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
                 placeholder="Sort by" />
             </div>
@@ -248,6 +262,10 @@ definePageMeta({
                 text="Only charged to students who are re-enrolling">
                 <UBadge size="xs" variant="subtle" color="warning" icon="i-lucide-user-check" label="Old Students" />
               </UTooltip>
+
+              <UBadge v-if="row.original.gender" size="xs" variant="subtle" color="secondary"
+                :icon="row.original.gender === 'MALE' ? 'i-lucide-mars' : 'i-lucide-venus'"
+                :label="row.original.gender === 'MALE' ? 'Boys Only' : 'Girls Only'" />
             </div>
 
             <p class="text-xs text-muted">
@@ -258,10 +276,10 @@ definePageMeta({
 
         <template #hasSupply-cell="{ row }">
           <div class="space-y-1">
-            <p v-if="row.original.hasSupply">
-              <span>{{ row.original.material?.name }}</span>
-
-              <span> ({{ row.original.totalSupply || "0" }}) </span>
+            <p v-if="row.original.hasSupply && row.original.supplyItems?.length">
+              <span v-for="(item, i) in row.original.supplyItems" :key="item.material.id">
+                {{ item.material.name }} ({{ item.quantity }}){{ i < row.original.supplyItems.length - 1 ? ', ' : '' }}
+              </span>
             </p>
 
             <p v-else class="text-muted">-</p>
@@ -372,6 +390,10 @@ definePageMeta({
 
                     <UBadge v-if="item.oldStudentsOnly" size="xs" variant="subtle" color="warning"
                       icon="i-lucide-user-check" label="Old Students Only" class="mt-1" />
+
+                    <UBadge v-if="item.gender" size="xs" variant="subtle" color="secondary"
+                      :icon="item.gender === 'MALE' ? 'i-lucide-mars' : 'i-lucide-venus'"
+                      :label="item.gender === 'MALE' ? 'Boys Only' : 'Girls Only'" class="mt-1" />
                   </div>
                 </div>
 
@@ -456,8 +478,10 @@ definePageMeta({
             <!-- Supply -->
             <div class="flex items-center justify-between gap-3 border-t border-default p-3 text-xs text-muted">
               <span>Material Supply</span>
-              <span v-if="item.hasSupply" class="truncate font-medium text-highlighted">
-                {{ item.material?.name }} ({{ item.totalSupply || 0 }})
+              <span v-if="item.hasSupply && item.supplyItems?.length" class="truncate font-medium text-highlighted">
+                <span v-for="(supplyItem, i) in item.supplyItems" :key="supplyItem.material.id">
+                  {{ supplyItem.material.name }} ({{ supplyItem.quantity }}){{ i < item.supplyItems.length - 1 ? ', ' : '' }}
+                </span>
               </span>
               <span v-else class="text-muted">No supply attached</span>
             </div>

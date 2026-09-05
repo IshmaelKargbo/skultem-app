@@ -14,25 +14,36 @@
       <div class="grid gap-4 lg:grid-cols-3">
 
         <!-- Left -->
-           <div class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <div class="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <UCard class="overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
             <div class="bg-primary p-6 text-center text-inverted">
               <p class="text-sm opacity-80">Net Salary</p>
               <h1 class="mt-3 text-4xl font-bold">{{ formatCurrency(salary.netSalary) }}</h1>
               <p class="mt-2 text-xs opacity-75">
-                {{ formatCurrency(salary.grossSalary) }} gross − {{ formatCurrency(salary.deductions) }} deductions
+                {{ formatCurrency(salary.grossSalary) }} gross − {{ formatCurrency(salary.totalDeductions) }} deductions
               </p>
+            </div>
+          </UCard>
+
+          <UCard v-if="salary.templateName">
+            <div class="flex items-center gap-3">
+              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <UIcon name="i-lucide-layout-template" class="size-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs text-muted">Built from template</p>
+                <p class="truncate text-sm font-medium text-highlighted">{{ salary.templateName }}</p>
+              </div>
             </div>
           </UCard>
         </div>
 
-       
         <!-- Right -->
-       <div class="space-y-4 lg:col-span-2">
+        <div class="space-y-4 lg:col-span-2">
 
           <UCard>
             <div class="flex items-center gap-4">
-              <UAvatar size="2xl" :src="salary.teacher?.user?.photo || undefined" :alt="teacherName" />
+              <UAvatar size="2xl" :src="salary.teacher?.user?.photo || undefined" :alt="teacherName" loading="lazy" />
               <div class="flex w-full items-center justify-between">
                 <div>
                   <h2 class="text-lg font-bold">{{ teacherName }}</h2>
@@ -72,7 +83,21 @@
                   <span class="font-semibold">Allowances</span>
                 </div>
               </template>
-              <p class="text-2xl font-bold text-success">+ {{ formatCurrency(salary.allowances) }}</p>
+
+              <div v-if="salary.allowances.length" class="space-y-2">
+                <div v-for="a in salary.allowances" :key="a.name" class="flex items-center justify-between text-sm">
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-highlighted">{{ a.name }}</p>
+                    <p class="text-xs text-muted">{{ a.type === 'PERCENTAGE' ? `${a.value}% of basic` : 'Fixed' }}</p>
+                  </div>
+                  <span class="shrink-0 font-semibold text-success">+ {{ formatCurrency(a.resolvedAmount ?? a.value) }}</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-default pt-2 text-sm font-semibold">
+                  <span>Total</span>
+                  <span class="text-success">+ {{ formatCurrency(salary.totalAllowances) }}</span>
+                </div>
+              </div>
+              <p v-else class="text-sm text-muted">No allowances.</p>
             </UCard>
 
             <UCard>
@@ -82,7 +107,21 @@
                   <span class="font-semibold">Deductions</span>
                 </div>
               </template>
-              <p class="text-2xl font-bold text-error">- {{ formatCurrency(salary.deductions) }}</p>
+
+              <div v-if="salary.deductions.length" class="space-y-2">
+                <div v-for="d in salary.deductions" :key="d.name" class="flex items-center justify-between text-sm">
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-highlighted">{{ d.name }}</p>
+                    <p class="text-xs text-muted">{{ d.type === 'PERCENTAGE' ? `${d.value}% of basic` : 'Fixed' }}</p>
+                  </div>
+                  <span class="shrink-0 font-semibold text-error">- {{ formatCurrency(d.resolvedAmount ?? d.value) }}</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-default pt-2 text-sm font-semibold">
+                  <span>Total</span>
+                  <span class="text-error">- {{ formatCurrency(salary.totalDeductions) }}</span>
+                </div>
+              </div>
+              <p v-else class="text-sm text-muted">No deductions.</p>
             </UCard>
           </div>
 
