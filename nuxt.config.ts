@@ -134,7 +134,13 @@ export default defineNuxtConfig({
       navigateFallback: '/',
       maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
 
-      globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
+      // navigateFallback: '/' registers a NavigationRoute that calls
+      // createHandlerBoundToURL('/') at runtime - that throws "non-precached-url" unless the
+      // precache manifest actually has an entry whose url is '/'. In this ssr:false build that
+      // entry comes from index.html (vite-plugin-pwa rewrites its precached url to '/'), so
+      // 'html' must be in globPatterns or the fallback route is registered against a URL that
+      // was never cached.
+      globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
 
       globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
 
