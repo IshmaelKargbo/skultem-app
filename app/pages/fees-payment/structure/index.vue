@@ -45,6 +45,13 @@ const sortOptions = [
 ];
 const DEFAULT_SORT = "createdAt:desc";
 
+// A supply fee can bundle several materials (e.g. Uniform + House Colour + Necktie) - joined into
+// one line, that's what was pushing the table wider than the viewport and forcing it to scroll.
+// Used with a truncating span + tooltip below instead, same as elsewhere in this table.
+function supplyItemsLabel(fee: FeeStructure) {
+  return fee.supplyItems.map((item) => `${item.material.name} (${item.quantity})`).join(', ');
+}
+
 function remove(fee: FeeStructure) {
   selected.value = fee;
   deleteModal.value = true;
@@ -275,14 +282,14 @@ definePageMeta({
         </template>
 
         <template #hasSupply-cell="{ row }">
-          <div class="space-y-1">
-            <p v-if="row.original.hasSupply && row.original.supplyItems?.length">
-              <span v-for="(item, i) in row.original.supplyItems" :key="item.material.id">
-                {{ item.material.name }} ({{ item.quantity }}){{ i < row.original.supplyItems.length - 1 ? ', ' : '' }}
-              </span>
-            </p>
+          <div v-if="row.original.hasSupply && row.original.supplyItems?.length" class="max-w-48">
+            <UTooltip :delay-duration="0" arrow :text="supplyItemsLabel(row.original)">
+              <p class="truncate">{{ supplyItemsLabel(row.original) }}</p>
+            </UTooltip>
+          </div>
 
-            <p v-else class="text-muted">-</p>
+          <div v-else>
+            <p class="text-muted">-</p>
           </div>
         </template>
 
@@ -477,12 +484,11 @@ definePageMeta({
 
             <!-- Supply -->
             <div class="flex items-center justify-between gap-3 border-t border-default p-3 text-xs text-muted">
-              <span>Material Supply</span>
-              <span v-if="item.hasSupply && item.supplyItems?.length" class="truncate font-medium text-highlighted">
-                <span v-for="(supplyItem, i) in item.supplyItems" :key="supplyItem.material.id">
-                  {{ supplyItem.material.name }} ({{ supplyItem.quantity }}){{ i < item.supplyItems.length - 1 ? ', ' : '' }}
-                </span>
-              </span>
+              <span class="shrink-0">Material Supply</span>
+              <UTooltip v-if="item.hasSupply && item.supplyItems?.length" :delay-duration="0" arrow
+                :text="supplyItemsLabel(item)" class="min-w-0">
+                <span class="block truncate font-medium text-highlighted">{{ supplyItemsLabel(item) }}</span>
+              </UTooltip>
               <span v-else class="text-muted">No supply attached</span>
             </div>
 
