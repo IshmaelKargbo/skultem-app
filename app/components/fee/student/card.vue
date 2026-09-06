@@ -7,7 +7,7 @@
         <div class="flex justify-between items-center">
             <div class="flex items-center gap-3 ">
                 <UAvatar size="md" :src="student.photo || '/avatar-placeholder.svg'"
-                    :alt="`${student.givenNames} ${student.familyName}`"
+                    :alt="`${student.givenNames} ${student.familyName}`" loading="lazy"
                     class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
                 <div class="min-w-0 space-y-0.5">
                     <p class="text-sm font-semibold truncate">

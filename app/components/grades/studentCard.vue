@@ -23,6 +23,7 @@ const emit = defineEmits<{
             size="xl"
             :src="record.photo"
             :alt="record.name"
+            loading="lazy"
             class="ring-2 ring-primary/20"
           />
 

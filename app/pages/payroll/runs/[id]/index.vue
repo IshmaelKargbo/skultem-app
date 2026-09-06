@@ -43,7 +43,7 @@
 
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-3">
-                <UAvatar size="lg" :src="slip.teacher?.user?.photo || undefined" :alt="teacherName(slip.teacher)" />
+                <UAvatar size="lg" :src="slip.teacher?.user?.photo || undefined" :alt="teacherName(slip.teacher)" loading="lazy" />
                 <div>
                   <h3 class="font-semibold leading-tight">{{ teacherName(slip.teacher) }}</h3>
                   <p class="text-xs text-muted">{{ slip.teacher?.staffId }}</p>

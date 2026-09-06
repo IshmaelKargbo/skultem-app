@@ -76,7 +76,7 @@
         <!-- Header -->
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
-            <UAvatar :src="item.photo" :alt="item.studentName" size="lg" class="ring-2 ring-primary/20" />
+            <UAvatar :src="item.photo" :alt="item.studentName" size="lg" loading="lazy" class="ring-2 ring-primary/20" />
 
             <div>
               <h3 class="font-semibold text-base">{{ item.studentName }}</h3>

@@ -65,10 +65,14 @@ interface NavItem {
   exact?: boolean
   roles?: Role[]
   subNavs?: SubNavItem[]
+  // Only reachable on the admin subdomain (see ADMIN_PORTAL_PATHS in auth.global.ts) - without
+  // this, a SYSTEM_ADMIN browsing a tenant subdomain still saw the link and hit a 404 on click.
+  adminPortalOnly?: boolean
 }
 
 const { can } = useAuth()
 const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
+const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
 onMounted(() => {
   ensureClassMasterLoaded()
@@ -264,22 +268,14 @@ const navItems: NavItem[] = [
   },
 
   {
-    label: 'System Admin', icon: 'i-lucide-shield-check', roles: [Role.SYSTEM_ADMIN],
-    subNavs: [
-      // Each school's platform fee is set from its row in the Dashboard's schools table now
-      // (see SystemAdminPlatformFeeModal) - no longer a single global amount with its own page.
-      { label: 'Dashboard', to: '/system-admin', icon: 'i-lucide-layout-dashboard', exact: true },
-      { label: 'Users', to: '/system-admin/users', icon: USERS_ICON },
-    ]
+    label: 'Schools', to: '/schools', icon: SCHOOL_ICON,
+    roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
   },
   {
-    // HR and Payroll used to be two separate nav sections with a lot of overlap (staff,
-    // payroll summary, leave). Merged into one "Payroll" section - Teacher Attendance and
-    // Leave still live at their original /hr/* routes, just grouped here now.
-    // Top-level group is visible to teachers/accountants too (for self-service Clock In/Out and
-    // Leave below), but most sub-items are still admin-only - each one carries its own roles
-    // override for that. Leave gets an explicit override now too, so adding Accountant up here
-    // for Clock In/Out doesn't also silently change who could already see Leave.
+    label: 'Admins', to: '/users', icon: USERS_ICON,
+    roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+  },
+  {
     label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER],
     subNavs: [
       { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
@@ -336,6 +332,7 @@ const navItems: NavItem[] = [
 const visibleNavItems = computed(() =>
   navItems
     .filter((item) => !item.roles || can(item.roles))
+    .filter((item) => !item.adminPortalOnly || onAdminPortal)
     .map((item) => {
       // Only a class master has anything to approve - a subject-only teacher's "Grade" link
       // stays a single shortcut to grade entry, not a group with an always-empty approval list.

@@ -116,6 +116,7 @@
                   <UAvatar
                     :src="row.original.student.photo"
                     :alt="row.original.student"
+                    loading="lazy"
                   />
                 </div>
                 <div class="space-y-0.5">

@@ -2,7 +2,7 @@
 const route = useRoute();
 const router = useRouter();
 const store = useSystemStore();
-const { stats, statsLoading, schools, schoolsMeta } = storeToRefs(store);
+const { schools, schoolsMeta } = storeToRefs(store);
 const platformStore = usePlatformStore();
 const { success: toastSuccess, error: toastError } = useNotify();
 const { format } = useMoney();
@@ -16,6 +16,14 @@ const platformFeeTarget = ref<SystemSchool>();
 function openPlatformFeeModal(school: SystemSchool) {
   platformFeeTarget.value = school;
   platformFeeModal.value = true;
+}
+
+const editModal = ref(false);
+const editTarget = ref<SystemSchool>();
+
+function openEditModal(school: SystemSchool) {
+  editTarget.value = school;
+  editModal.value = true;
 }
 
 const STATUS_COLOR: Record<string, "success" | "neutral" | "error"> = {
@@ -65,9 +73,6 @@ watch(() => query.value, () => {
   if (page.value === 1) fetchSchools();
 });
 
-// Debounced so every keystroke in the search box doesn't fire a request - same intent as every
-// other list filter in the app, just applied at the input instead of the computed setter since
-// this one is free text.
 const searchInput = ref(query.value);
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 watch(searchInput, (val) => {
@@ -97,17 +102,21 @@ function rowActions(school: SystemSchool) {
     }));
 
   return [
-    [{ label: "Set Platform Fee", icon: "i-lucide-shield", onClick: () => openPlatformFeeModal(school) }],
+    [
+      { label: "Edit School", icon: "i-lucide-pencil", onClick: () => openEditModal(school) },
+      { label: "Set Platform Fee", icon: "i-lucide-shield", onClick: () => openPlatformFeeModal(school) },
+    ],
     statusItems,
   ];
 }
 
 onMounted(async () => {
-  useAppStore().setTitle("System Admin");
-  document.title = "System Admin | Skultem";
+  useAppStore().setTitle("System Admin · Schools");
+  useAppStore().setBack(false);
+  document.title = "Schools | System Admin | Skultem";
   searchInput.value = query.value;
 
-  await Promise.all([store.fetchStats(), fetchSchools(), platformStore.fetchFeeSettings()]);
+  await Promise.all([fetchSchools(), platformStore.fetchFeeSettings()]);
 });
 
 definePageMeta({
@@ -117,40 +126,9 @@ definePageMeta({
 
 <template>
   <div class="px-4 md:px-6 space-y-4">
-    <UAlert
-      color="warning"
-      variant="soft"
-      icon="i-lucide-shield-check"
-      title="System-admin only"
-      description="Cross-tenant view of every school on the platform. Nothing here is scoped to your own school."
-    />
-
-    <!-- Stats -->
-    <div class="grid gap-4 sm:grid-cols-3">
-      <Metric :record="{
-        color: 'primary',
-        icon: SCHOOL_ICON,
-        label: 'Schools',
-        value: stats.totalSchools,
-        isReady: !statsLoading,
-      }" />
-      <Metric :record="{
-        color: 'info',
-        icon: USERS_ICON,
-        label: 'Users',
-        value: stats.totalUsers,
-        isReady: !statsLoading,
-      }" />
-      <Metric :record="{
-        color: 'success',
-        icon: STUDENT_ICON,
-        label: 'Students',
-        value: stats.totalStudents,
-        isReady: !statsLoading,
-      }" />
-    </div>
-
-    <!-- Schools -->
+    <Heading title="Schools" subtitle="Onboard, edit and manage every school on the platform.">
+      <UButton label="Onboard School" icon="i-lucide-plus" to="/schools/add" />
+    </Heading>
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="space-y-3">
@@ -286,6 +264,12 @@ definePageMeta({
       v-model:open="platformFeeModal"
       :school-id="platformFeeTarget.id"
       :school-name="platformFeeTarget.name"
+    />
+
+    <SystemAdminEditSchoolModal
+      v-if="editTarget"
+      v-model:open="editModal"
+      :school="editTarget"
     />
   </div>
 </template>

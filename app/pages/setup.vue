@@ -109,7 +109,7 @@
         </UForm>
 
         <p class="mt-5 text-center text-xs text-gray-400 dark:text-white/25">
-          Already set up? <NuxtLink to="/system-admin/login" class="font-medium text-primary hover:underline">Sign in
+          Already set up? <NuxtLink to="/login" class="font-medium text-primary hover:underline">Sign in
             instead</NuxtLink>
         </p>
 
@@ -149,7 +149,7 @@ async function onSubmit() {
   try {
     await SystemApi().bootstrap({ ...state })
     useNotify().success('System admin created - sign in to continue.')
-    await navigateTo('/system-admin/login')
+    await navigateTo('/login')
   } catch (err: any) {
     useNotify().error(err?.message || 'Unable to create the system admin.')
   } finally {

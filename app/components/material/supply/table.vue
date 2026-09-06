@@ -100,7 +100,7 @@ onMounted(async () => {
 
         <template #student-cell="{ row }">
           <div class="flex items-center gap-3">
-            <UAvatar size="lg" :src="row.original.student.photo" />
+            <UAvatar size="lg" :src="row.original.student.photo" loading="lazy" />
 
             <div class="space-y-0.5">
               <p class="font-medium">
@@ -202,7 +202,7 @@ onMounted(async () => {
               class="flex items-center justify-between gap-3 border-b border-gray-200 p-3 md:p-0 md:pb-3  dark:border-gray-800">
               <div class="flex min-w-0 items-center gap-3">
                 <UAvatar size="lg" :src="item.student.photo"
-                  :alt="`${item.student.givenNames} ${item.student.familyName}`"
+                  :alt="`${item.student.givenNames} ${item.student.familyName}`" loading="lazy"
                   class="shrink-0 ring-2 ring-primary/10" />
 
                 <div class="min-w-0">

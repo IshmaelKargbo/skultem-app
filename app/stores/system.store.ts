@@ -45,6 +45,24 @@ export const useSystemStore = defineStore('system', {
       return response
     },
 
+    async createSchool(payload: OnboardSchoolPayload) {
+      const response = await SystemApi().createSchool(payload) as any
+      if (response) {
+        this.schools.unshift(response)
+        this.stats.totalSchools += 1
+      }
+      return response
+    },
+
+    async updateSchool(schoolId: string, payload: EditSchoolPayload) {
+      const response = await SystemApi().updateSchool(schoolId, payload) as any
+      const index = this.schools.findIndex(s => s.id === schoolId)
+      if (index !== -1 && response) {
+        this.schools[index] = response
+      }
+      return response
+    },
+
     async searchUsers(query: string, page: number = 1, size: number = 10) {
       this.usersLoading = true
       try {
@@ -54,6 +72,19 @@ export const useSystemStore = defineStore('system', {
       } finally {
         this.usersLoading = false
       }
+    },
+
+    async updateSchoolUserStatus(schoolId: string, userId: string, status: string) {
+      const response = await SystemApi().updateSchoolUserStatus(schoolId, userId, status) as any
+      if (!response) return response
+
+      // Patch just that one membership in place, on that one user - a full re-fetch would lose
+      // the caller's current page/search position for a change this small.
+      const user = this.users.find(u => u.id === userId)
+      const membership = user?.schools.find(s => s.schoolId === schoolId)
+      if (membership) membership.status = response.status
+
+      return response
     }
   }
 })

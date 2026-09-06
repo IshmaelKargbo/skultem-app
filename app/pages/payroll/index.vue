@@ -113,7 +113,7 @@
 
         <ul v-else-if="salaries.length" class="divide-y divide-default">
           <li v-for="s in salaries" :key="s.id" class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-            <UAvatar :src="s.teacher?.user?.photo || undefined" :alt="teacherName(s.teacher)" size="sm" />
+            <UAvatar :src="s.teacher?.user?.photo || undefined" :alt="teacherName(s.teacher)" size="sm" loading="lazy" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium">{{ teacherName(s.teacher) }}</p>
               <p class="truncate text-xs text-muted">{{ s.teacher?.staffId }}</p>

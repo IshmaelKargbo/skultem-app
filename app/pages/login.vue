@@ -73,7 +73,7 @@
 
         <!-- Bottom tagline -->
         <div class="text-xs text-white/20 font-medium tracking-wide shrink-0">
-          Trusted by 500+ schools worldwide
+          {{ isAdminPortal ? 'Platform administration · every school, one console' : 'Trusted by 500+ schools worldwide' }}
         </div>
 
       </div>
@@ -98,7 +98,9 @@
 
           <div>
             <h2 class="text-base font-bold text-gray-900 dark:text-white tracking-tight">Skultem</h2>
-            <p class="text-[11px] text-gray-400 dark:text-white/30">School Management Platform</p>
+            <p class="text-[11px] text-gray-400 dark:text-white/30">
+              {{ isAdminPortal ? 'System Admin Console' : 'School Management Platform' }}
+            </p>
           </div>
         </div>
 
@@ -111,7 +113,7 @@
               Welcome back
             </h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-white/40">
-              Sign in to continue to your dashboard
+              {{ isAdminPortal ? 'Sign in to continue to the system console' : 'Sign in to continue to your dashboard' }}
             </p>
           </div>
 
@@ -122,7 +124,8 @@
             <UFormField name="email" label="Email Address" :ui="{
               label: 'text-[10px] font-bold tracking-[0.12em] uppercase text-gray-400 dark:text-white/30 mb-1.5'
             }">
-              <UInput v-model="state.email" type="email" size="lg" placeholder="you@school.edu" icon="lucide:mail"
+              <UInput v-model="state.email" type="email" size="lg"
+                :placeholder="isAdminPortal ? 'you@skultem.com' : 'you@school.edu'" icon="lucide:mail"
                 class="w-full" :ui="{ base: 'w-full rounded-xl' }" />
             </UFormField>
 
@@ -145,7 +148,7 @@
               <UCheckbox v-model="state.rememberMe" label="Remember me" :ui="{
                 label: 'text-sm text-gray-600 dark:text-white/50 cursor-pointer'
               }" />
-              <UButton variant="link" to="#" class="p-0 text-sm font-semibold">
+              <UButton v-if="!isAdminPortal" variant="link" to="#" class="p-0 text-sm font-semibold">
                 Forgot password?
               </UButton>
             </div>
@@ -159,7 +162,16 @@
           </UForm>
 
           <!-- Footer note -->
-          <p class="mt-5 text-center text-xs text-gray-400 dark:text-white/25">
+          <template v-if="isAdminPortal">
+            <p class="mt-5 text-center text-xs text-gray-400 dark:text-white/25">
+              Not a school login - contact the platform owner if you need access.
+            </p>
+            <p class="mt-1.5 text-center text-xs text-gray-400 dark:text-white/25">
+              No system admin yet? <NuxtLink to="/setup" class="font-medium text-primary hover:underline">
+                Set one up</NuxtLink>
+            </p>
+          </template>
+          <p v-else class="mt-5 text-center text-xs text-gray-400 dark:text-white/25">
             Having trouble? Contact your
             <UButton variant="link" to="#" class="p-0 text-xs font-semibold inline">school admin</UButton>
           </p>
@@ -180,6 +192,11 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 
+// The admin portal (admin.skultem.space) and every school's own subdomain share this same "/login"
+// route now (see auth.global.ts) - this branches the copy, slides and submit handler on which host
+// this is, rather than the two nearly-identical pages this used to be.
+const isAdminPortal = isAdminPortalHost(useRequestURL().hostname)
+
 const state = reactive({
   email: '',
   password: '',
@@ -193,7 +210,7 @@ const userStore = useUserStore()
 const { initializeActiveRole, setAuthResolved, activeRole } = useAuth()
 const { show, hide } = useGlobalLoader()
 
-const slides = [
+const schoolSlides = [
   {
     badge: 'Smart School Platform',
     icon: 'lucide:graduation-cap',
@@ -256,9 +273,76 @@ const slides = [
   }
 ]
 
+const adminSlides = [
+  {
+    badge: 'Platform Console',
+    icon: 'lucide:shield-check',
+    title: 'Manage the',
+    highlight: 'entire platform',
+    description:
+      'Every school on Skultem, one console - onboarding, status, platform fees, and cross-tenant support.',
+    features: [
+      {
+        icon: 'lucide:building',
+        title: 'Every School',
+        description: 'View, search, and manage schools platform-wide'
+      },
+      {
+        icon: 'lucide:users',
+        title: 'Cross-Tenant Users',
+        description: 'Look up any account, across any school'
+      }
+    ]
+  },
+  {
+    badge: 'Platform Health',
+    icon: 'lucide:activity',
+    title: 'Real-time',
+    highlight: 'platform stats',
+    description:
+      'Schools, users, and students at a glance - the numbers behind the whole platform, not just one tenant.',
+    features: [
+      {
+        icon: 'lucide:bar-chart-3',
+        title: 'Live Stats',
+        description: 'Schools, users, and students, updated live'
+      },
+      {
+        icon: 'lucide:circle-check',
+        title: 'School Status',
+        description: 'Activate, pause, or remove a school in one click'
+      }
+    ]
+  },
+  {
+    badge: 'Platform Settings',
+    icon: 'lucide:shield',
+    title: 'Set the',
+    highlight: 'platform fee',
+    description:
+      'Configure the fee seeded for every school\'s students, once per academic year, from a single place.',
+    features: [
+      {
+        icon: 'lucide:wallet',
+        title: 'Platform Fee',
+        description: 'One amount, applied automatically everywhere'
+      },
+      {
+        icon: 'lucide:lock',
+        title: 'Locked by Design',
+        description: 'No school can edit or delete it themselves'
+      }
+    ]
+  }
+]
+
+const slides = computed(() => isAdminPortal ? adminSlides : schoolSlides)
+
 const schema = yup.object({
   email: yup.string().email('Enter a valid email').required('Email is required'),
-  password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required')
+  password: isAdminPortal
+    ? yup.string().required('Password is required')
+    : yup.string().min(6, 'Password must be at least 6 characters').required('Password is required')
 })
 
 const handleLogin = async () => {
@@ -266,28 +350,46 @@ const handleLogin = async () => {
     loading.value = true
     setAuthResolved(false)
 
-    const domain = resolveTenantSlug(useRequestURL().hostname)
+    if (isAdminPortal) {
+      await userStore.systemAdminLogin({
+        email: state.email,
+        password: state.password
+      })
+    } else {
+      const domain = resolveTenantSlug(useRequestURL().hostname)
 
-    await userStore.login({
-      domain: domain || '',
-      email: state.email,
-      password: state.password
-    })
+      await userStore.login({
+        domain: domain || '',
+        email: state.email,
+        password: state.password
+      })
+    }
 
     show({
       title: 'Signing you in...',
-      subtitle: 'Preparing your dashboard',
-      hint: 'Loading your workspace'
+      subtitle: isAdminPortal ? 'Preparing the system console' : 'Preparing your dashboard',
+      hint: isAdminPortal ? undefined : 'Loading your workspace'
     })
-    
+
     await userStore.me()
     initializeActiveRole()
     setAuthResolved(true)
 
-    // SYSTEM_ADMIN has no page at "/" - index.vue's role list doesn't include it (it's a
-    // per-school dashboard, and a system admin isn't scoped to one) - send them to their own
-    // dashboard instead.
-    await navigateTo(activeRole.value === Role.SYSTEM_ADMIN ? '/system-admin' : '/')
+    if (isAdminPortal) {
+      await navigateTo('/')
+      return
+    }
+
+    // SYSTEM_ADMIN has no page at "/" here - index.vue's role list doesn't include it (it's a
+    // per-school dashboard, and a system admin isn't scoped to one). This only happens when a
+    // SYSTEM_ADMIN logs in through their anchor school's own tenant login instead of the admin
+    // subdomain (see LoginUseCase) - bounce them to the real admin portal.
+    if (activeRole.value === Role.SYSTEM_ADMIN) {
+      await navigateTo(adminPortalUrl(useRequestURL()), { external: true })
+      return
+    }
+
+    await navigateTo('/')
   } catch (err: any) {
     loading.value = false
     setAuthResolved(true)
@@ -302,7 +404,7 @@ definePageMeta({
 })
 
 onMounted(() => {
-  document.title = 'Login | Skultem'
+  document.title = isAdminPortal ? 'System Admin | Skultem' : 'Login | Skultem'
 })
 </script>
 

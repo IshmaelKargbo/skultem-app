@@ -69,6 +69,7 @@ defineExpose({
             <UAvatar
               :src="row.original.photo"
               :alt="row.original.student"
+              loading="lazy"
             />
             <div>
               <p class="font-medium">{{ row.original.student }}</p>
@@ -149,6 +150,7 @@ defineExpose({
                 :src="record.student.photo"
                 :alt="record.student"
                 size="lg"
+                loading="lazy"
               />
 
               <div class="min-w-0 flex-1 space-y-1">

@@ -2,6 +2,16 @@
 // session - e.g. linked directly from the corporate site.
 const PUBLIC_PATHS = ['/request-demo']
 
+// Every route that exists on the admin subdomain - see isAdminPortalHost(). No "/system-admin"
+// prefix: since the subdomain itself already says this is the admin portal, its own dashboard,
+// login and other pages just live at the same top-level paths a school's own subdomain would use
+// ("/", "/login", ...), reusing those same page components (see pages/login.vue, pages/index.vue)
+// rather than a separate page tree. /users, /schools, /schools/add and /setup have no
+// school-tenant equivalent, so they're admin-portal-only.
+const ADMIN_PORTAL_PATHS = ['/', '/login', '/users', '/schools', '/schools/add', '/setup']
+// Of those, the ones reachable without a token - signing in, and the one-time first-admin wizard.
+const ADMIN_PORTAL_PUBLIC_PATHS = ['/login', '/setup']
+
 export default defineNuxtRouteMiddleware(async (to) => {
     if (PUBLIC_PATHS.includes(to.path)) {
         return
@@ -13,30 +23,33 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
-    // The system-admin portal isn't any school's subdomain - there's no tenant to resolve here,
-    // and school-scoped pages (everything outside /system-admin) simply don't exist on this host.
+    // The admin portal isn't any school's subdomain - there's no tenant to resolve here, and
+    // every page outside ADMIN_PORTAL_PATHS simply doesn't exist on this host.
     if (onAdminPortal) {
-        if (!token.value && to.path !== '/system-admin/login') {
-            return navigateTo('/system-admin/login')
+        if (!ADMIN_PORTAL_PATHS.includes(to.path)) {
+            return abortNavigation(createError({ statusCode: 404, message: 'Page not found' }))
         }
 
-        if (token.value && to.path === '/system-admin/login') {
-            return navigateTo('/system-admin')
+        if (!token.value && !ADMIN_PORTAL_PUBLIC_PATHS.includes(to.path)) {
+            return navigateTo('/login')
         }
 
-        if (token.value && !to.path.startsWith('/system-admin')) {
-            return navigateTo('/system-admin')
+        if (token.value && to.path === '/login') {
+            return navigateTo('/')
         }
     } else {
+        // Symmetric with the admin-portal branch above: /users, /schools and /setup only exist on
+        // the admin subdomain, so they 404 here exactly like a school-scoped page would 404 there.
+        // This closes what used to be a real route - a SYSTEM_ADMIN whose anchor SchoolUser row
+        // happens to sit on some school's own subdomain could otherwise still reach the admin
+        // pages from that tenant host directly, bypassing the admin subdomain entirely.
+        if (to.path === '/users' || to.path === '/schools' || to.path === '/schools/add' || to.path === '/setup') {
+            return abortNavigation(createError({ statusCode: 404, message: 'Page not found' }))
+        }
+
         const tenant = await checkTenant()
         if (tenant == null) {
             return abortNavigation(createError({ statusCode: 404, message: 'School not found' }))
-        }
-
-        // The portal login lives at this same path on every host (see system-admin/login.vue),
-        // but a real school subdomain has a tenant to send an unauthenticated visitor to instead.
-        if (!token.value && to.path === '/system-admin/login') {
-            return navigateTo('/login')
         }
     }
 
@@ -51,7 +64,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return navigateTo("/")
     }
 
-    if (!token.value && to.path !== "/login" && to.path !== "/system-admin/login") {
+    if (!token.value && to.path !== "/login" && to.path !== "/setup") {
         if (import.meta.client) {
             const { show } = useGlobalLoader()
             show({ title: 'Redirecting...' })

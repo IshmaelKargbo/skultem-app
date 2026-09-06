@@ -95,10 +95,6 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   if (report.value == null) return
-  // LedgerTable (rendered alongside this one, self-hiding by breakpoint) watches this same route
-  // query and reacts to page changes identically - without this guard, every page change fires
-  // two concurrent runReport calls for the two of them, and whichever resolves last silently
-  // wins even if it was the stale one.
   if (loading.value) return
 
   loading.value = true

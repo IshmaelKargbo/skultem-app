@@ -207,7 +207,7 @@ onMounted(async () => {
           <div class="border-b border-default p-3">
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <UAvatar size="lg" :src="row.student?.photo" :alt="`${row.student}`" class="ring-2 ring-primary/10" />
+                <UAvatar size="lg" :src="row.student?.photo" :alt="`${row.student}`" loading="lazy" class="ring-2 ring-primary/10" />
                 <div class="min-w-0">
                   <h3 class="truncate text-base font-semibold">
                     {{ row.student }}

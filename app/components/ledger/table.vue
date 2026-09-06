@@ -98,10 +98,6 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   if (report.value == null) return
-  // LedgerTableMobile (rendered alongside this one, self-hiding by breakpoint) watches this same
-  // route query and reacts to page changes identically - without this guard, every page change
-  // fires two concurrent runReport calls for the two of them, and whichever resolves last
-  // silently wins even if it was the stale one.
   if (loading.value) return
 
   loading.value = true
@@ -202,7 +198,7 @@ const selected = computed<ReportSelectPayload>(() => ({
       </UTable>
 
       <!-- Empty -->
-      <div v-if="!loading && !data?.length" class="flex flex-col items-center justify-center py-16 col-span-full">
+      <div v-if="!loading && !data?.length" class="hidden md:flex flex-col items-center justify-center py-16 col-span-full">
         <div class="flex size-20 items-center justify-center rounded-3xl bg-muted">
           <UIcon name="ph:books-light" class="text-4xl text-muted" />
         </div>

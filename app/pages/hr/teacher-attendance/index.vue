@@ -82,7 +82,7 @@
       <div v-else-if="roster?.entries.length" class="divide-y divide-gray-200 dark:divide-gray-800">
         <div v-for="row in roster.entries" :key="row.teacher.id" class="flex flex-wrap items-center gap-3 p-3">
           <UAvatar :src="row.teacher.user?.photo || undefined" :alt="teacherName(row.teacher)" size="md"
-            class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
+            loading="lazy" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
 
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium">{{ teacherName(row.teacher) }}</p>

@@ -38,7 +38,7 @@
           <div class="flex gap-2.5 justify-between items-center">
             <div class="flex gap-2.5 items-center">
               <UAvatar size="2xl" :src="student.photo || ALT_IMAGE"
-                :alt="`${student.givenNames} ${student.familyName}`" />
+                :alt="`${student.givenNames} ${student.familyName}`" loading="lazy" />
 
               <div class="min-w-0">
                 <h3 class="truncate font-semibold">{{ student.givenNames }} {{ student.familyName }}</h3>

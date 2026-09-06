@@ -45,6 +45,37 @@ export const SystemApi = () => {
         useHandleError(err)
       }
     },
+    // Onboards a new school on a client's behalf. Hits the same public POST /school endpoint a
+    // school uses to sign itself up (see SecurityConfig) - it also creates the owner account and
+    // emails them their login, so onboarding here is otherwise identical to self-service signup.
+    createSchool: async (payload: OnboardSchoolPayload) => {
+      try {
+        const res = await $api('/school', { method: 'POST', body: payload }) as any
+
+        if (!res)
+          throw new Error('Failed to onboard school')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Edits an arbitrary school's profile by id - distinct from SchoolApi().update, which only
+    // ever edits the caller's own activeSchoolId.
+    updateSchool: async (schoolId: string, payload: EditSchoolPayload) => {
+      try {
+        const res = await $api(`/system/school/${schoolId}`, { method: 'PUT', body: payload }) as any
+
+        if (!res)
+          throw new Error('Failed to update school')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Blank query browses every user on the platform - the backend's LIKE '%%' matches
+    // everything, so this doubles as both that and the cross-tenant name/email search.
     searchUsers: async (query: string, page: number, size: number) => {
       try {
         const res = await $api(`/system/users?query=${encodeURIComponent(query)}&page=${page}&size=${size}`) as any
@@ -56,6 +87,22 @@ export const SystemApi = () => {
         const meta = useMeta(res.meta)
 
         return { ...res, data, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Activates/deactivates one user's membership at one school - not their account overall (see
+    // SetSchoolUserStatusUseCase on the backend).
+    updateSchoolUserStatus: async (schoolId: string, userId: string, status: string) => {
+      try {
+        const res = await $api(`/system/school/${schoolId}/user/${userId}/status?status=${status}`, {
+          method: 'PUT'
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update user status')
+
+        return res.data
       } catch (err: any) {
         useHandleError(err)
       }

@@ -39,7 +39,7 @@
                 <div class="space-y-4">
 
                     <div class="flex flex-col items-center justify-center gap-3">
-                        <UAvatar size="xl" :src="request.teacher?.user?.photo || undefined" :alt="teacherName(request.teacher)" />
+                        <UAvatar size="xl" :src="request.teacher?.user?.photo || undefined" :alt="teacherName(request.teacher)" loading="lazy" />
                         <div>
                             <h3 class="text-center font-semibold">{{ teacherName(request.teacher) }}</h3>
                             <p class="text-center text-xs text-muted">{{ request.teacher?.staffId }}</p>

@@ -20,3 +20,22 @@ export function resolveTenantSlug(hostname: string): string {
 export function isAdminPortalHost(hostname: string): boolean {
     return resolveTenantSlug(hostname) === runtimeConf().adminSubdomain
 }
+
+// Cross-subdomain link to the admin portal from wherever the page currently is - e.g. login.vue,
+// when a SYSTEM_ADMIN authenticates through their anchor school's own tenant login instead of
+// the admin subdomain (see BootstrapSystemAdminUseCase: which school a system admin is anchored
+// to doesn't matter for permissions, so this can happen). The admin portal's dashboard lives at
+// "/" on its own subdomain (see auth.global.ts), so this can't be a same-host navigateTo - it has
+// to swap the subdomain itself.
+export function adminPortalUrl(location: { hostname: string, protocol: string, port: string }, path = '/'): string {
+    const adminSubdomain = runtimeConf().adminSubdomain
+    const port = location.port ? `:${location.port}` : ''
+
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        return `${location.protocol}//${adminSubdomain}.localhost${port}${path}`
+    }
+
+    const labels = location.hostname.split('.')
+    labels[0] = adminSubdomain
+    return `${location.protocol}//${labels.join('.')}${port}${path}`
+}
