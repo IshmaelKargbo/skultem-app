@@ -26,17 +26,10 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } });
 }
 
-// A blank query browses every user on the platform - see SystemApi().searchUsers - so this runs
-// on every load, not just once something's been typed.
 async function runSearch() {
   await store.searchUsers(query.value.trim(), page.value, 10);
 }
 
-// A single watcher over both - rather than one watch on `page` plus an inline call from the
-// input handler below - so a new search term (which resets page to 1 as part of the same
-// router.replace) only ever fires one request. Two watchers here used to race: the input
-// handler read `page.value` before the route had actually updated, so it searched on the
-// *previous* page first and only got the right page once the route watcher fired seconds later.
 watch([query, page], () => runSearch());
 
 const searchInput = ref(query.value);
@@ -48,8 +41,6 @@ watch(searchInput, (val) => {
   }, 350);
 });
 
-// Tracks which single membership row is mid-update, so only that row's button shows a spinner
-// instead of the whole list.
 const updatingKey = ref<string | null>(null);
 const membershipKey = (userId: string, schoolId: string) => `${userId}:${schoolId}`;
 
@@ -83,16 +74,6 @@ definePageMeta({
 
 <template>
   <div class="px-4 md:px-6 space-y-4">
-    <Heading title="System Admins" subtitle="Everyone with system-admin access to the platform." />
-
-    <UAlert
-      color="warning"
-      variant="soft"
-      icon="i-lucide-shield-check"
-      title="System-admin only"
-      description="Only accounts holding the System Admin role - not the general school directory. Search by name or email, and activate or deactivate a person's access to one school right from their card, without touching their access to any other."
-    />
-
     <UCard>
       <UInput v-model="searchInput" icon="i-lucide-search" size="lg" autofocus
         placeholder="Search by name or email..." />
