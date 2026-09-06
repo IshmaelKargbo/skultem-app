@@ -153,7 +153,7 @@
             <!-- Submit -->
             <UButton type="submit" size="lg" :loading="loading" block
               class="rounded-xl font-semibold shadow-lg shadow-primary/20 tracking-wide mt-1">
-              Sign in to Skultem
+              Sign in
             </UButton>
 
           </UForm>

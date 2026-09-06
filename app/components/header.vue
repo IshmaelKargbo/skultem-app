@@ -1,8 +1,8 @@
 <template>
     <div class="px-4 pt-4 md:px-6">
         <UCard :ui="{ body: 'sm:p-0 p-0' }">
-            <div class="grid grid-cols-[1fr_auto_1fr] items-center">
-                <div class="flex space-x-2 px-5 py-3 items-center min-w-0">
+            <div class="flex justify-between items-center">
+                <div class="flex space-x-2 px-3 py-2.5 items-center min-w-0 sm:px-5 sm:py-3">
                     <div>
                         <UButton v-if="back" :icon="BACK_ICON" color="neutral" variant="ghost" class="shrink-0 -ml-1"
                             aria-label="Go back" @click="goBack" />
@@ -17,7 +17,7 @@
                         <USkeleton v-else class="h-4 w-44 max-w-full" />
 
                         <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span class="text-xs font-medium text-muted">{{ displayYearName }}</span>
+                            <span class="hidden text-xs font-medium text-muted sm:inline">{{ displayYearName }}</span>
                             <UBadge :color="yearStatus.color" variant="subtle" size="sm" class="gap-1 hidden md:flex">
                                 <UIcon :name="yearStatus.icon" class="size-3" />
                                 {{ yearStatus.label }}
@@ -35,15 +35,15 @@
                     <span class="text-sm font-semibold tabular-nums text-toned">{{ time }}</span>
                     <span class="hidden text-xs-base text-muted md:block">{{ date }}</span>
                 </div>
-                <div class="flex shrink-0 items-center gap-3 pr-5 justify-self-end">
+                <div class="flex shrink-0 items-center gap-1.5 pr-3 justify-self-end sm:gap-3 sm:pr-5">
                     <div class="md:block border-r border-default pr-3 hidden">
                         <AccountSwitch />
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 sm:gap-3">
                         <UButton v-if="canManageSettings" :icon="SETTINGS_ICON" variant="ghost" color="neutral"
                             to="/settings/school" aria-label="Settings" />
                         <Notification />
-                        <Me compact />
+                        <Me compact class="hidden sm:inline-flex" />
                     </div>
                 </div>
             </div>

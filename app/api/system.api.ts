@@ -59,6 +59,25 @@ export const SystemApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    // Reachable pre-auth - the only path onto the very first system admin account (see
+    // BootstrapSystemAdminUseCase on the backend). Self-disabling once any system admin exists, so
+    // this is safe to leave reachable rather than needing to be torn out after first use.
+    bootstrap: async (payload: {
+      token: string
+      domain: string
+      email: string
+      password: string
+      givenNames: string
+      familyName: string
+    }) => {
+      try {
+        const res = await $api('/system/bootstrap', { method: 'POST', body: payload }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

@@ -162,6 +162,10 @@
           <p class="mt-5 text-center text-xs text-gray-400 dark:text-white/25">
             Not a school login - contact the platform owner if you need access.
           </p>
+          <p class="mt-1.5 text-center text-xs text-gray-400 dark:text-white/25">
+            No system admin yet? <NuxtLink to="/system-admin/setup" class="font-medium text-primary hover:underline">
+              Set one up</NuxtLink>
+          </p>
 
         </div>
 
