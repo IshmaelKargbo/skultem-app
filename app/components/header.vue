@@ -16,7 +16,7 @@
                         </p>
                         <USkeleton v-else class="h-4 w-44 max-w-full" />
 
-                        <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <div v-if="!isSystemAdmin" class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span class="hidden text-xs font-medium text-muted sm:inline">{{ displayYearName }}</span>
                             <UBadge :color="yearStatus.color" variant="subtle" size="sm" class="gap-1 hidden md:flex">
                                 <UIcon :name="yearStatus.icon" class="size-3" />
@@ -28,6 +28,11 @@
                                     {{ termSubtitle }}
                                 </p>
                             </div>
+                        </div>
+                        <div v-if="isSystemAdmin" class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <p class="text-xs text-muted">{{ formatDate(new Date().toISOString()) }}</p>
+                            <span class="text-muted">&middot;</span>
+                            <p class="text-xs text-muted">System Admin</p>
                         </div>
                     </div>
                 </div>
@@ -69,11 +74,17 @@ const { can, activeRole } = useAuth()
 
 const canSwitchYear = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
 const canManageSettings = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+// A SYSTEM_ADMIN isn't scoped to any one school's academic calendar - their SchoolUser row is
+// anchored to an arbitrary school (see BootstrapSystemAdminUseCase), so that school's academic
+// year/term would show here with no meaning to a system admin. Skip both the fetch and the
+// display for them rather than surface some random school's term info in the platform console.
+const isSystemAdmin = computed(() => can(Role.SYSTEM_ADMIN))
 
 const academicYearStore = useAcademicYearStore()
 const { records: academicYears, terms, viewingYear } = storeToRefs(academicYearStore)
 
 onMounted(() => {
+    if (isSystemAdmin.value) return
     if (canSwitchYear.value && !academicYears.value.length) academicYearStore.fetchAll(1, 50)
     if (!terms.value.length) academicYearStore.getTerms()
 })

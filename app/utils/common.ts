@@ -407,6 +407,7 @@ export const paymentMethods = {
 export const parseRole: Record<string, string> = {
     OWNER: 'Owner',
     PROPRIETOR: 'Proprietor',
+    SYSTEM_ADMIN: 'System Admin',
     ADMIN: 'Admin',
     TEACHER: 'Teacher',
     PARENT: 'Parent',
