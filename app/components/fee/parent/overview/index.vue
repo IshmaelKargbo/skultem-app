@@ -17,11 +17,11 @@
             <template #loading>
                 <TableLoading :size="columns.length" />
             </template>
-            <template #total-cell="{ row }">
-                <p class="text-info">{{ format(row.original.total as number || 0) }}</p>
+            <template #amount-cell="{ row }">
+                <p class="text-info">{{ format(row.original.amount as number || 0) }}</p>
             </template>
-            <template #paid-cell="{ row }">
-                <p class="text-success">{{ format(row.original.paid as number || 0) }}</p>
+            <template #amountPaid-cell="{ row }">
+                <p class="text-success">{{ format(row.original.amountPaid as number || 0) }}</p>
             </template>
             <template #outstanding-cell="{ row }">
                 <p class="text-error">{{ format(row.original.outstanding as number || 0) }}</p>
@@ -49,7 +49,7 @@ const data = ref<any>([])
 
 const columns: TableColumn<any> = [
     {
-        accessorKey: 'feeName',
+        accessorKey: 'fee',
         header: 'Name'
     },
     {
@@ -57,11 +57,11 @@ const columns: TableColumn<any> = [
         header: 'Term'
     },
     {
-        accessorKey: 'total',
+        accessorKey: 'amount',
         header: 'Amount'
     },
     {
-        accessorKey: 'paid',
+        accessorKey: 'amountPaid',
         header: 'Paid'
     },
     {

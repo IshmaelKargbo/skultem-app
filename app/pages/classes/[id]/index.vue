@@ -47,6 +47,7 @@
 
                     <!-- Actions -->
                     <div class="flex shrink-0 items-center gap-2">
+                        <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
                         <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
                             :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
                     </div>

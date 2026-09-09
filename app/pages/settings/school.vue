@@ -150,7 +150,23 @@
                             <template #header>
                                 <p>Clock-In Location</p>
                             </template>
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                            <ClientOnly>
+                                <SettingsAttendanceLocationMap
+                                    ref="locationMap"
+                                    v-model:latitude="attendanceState.latitude"
+                                    v-model:longitude="attendanceState.longitude"
+                                    :radius-meters="attendanceState.radiusMeters"
+                                    :configured="locationConfigured"
+                                />
+                                <template #fallback>
+                                    <div class="flex h-72 items-center justify-center rounded-lg border border-default sm:h-96">
+                                        <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
+                                    </div>
+                                </template>
+                            </ClientOnly>
+
+                            <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <UFormField required label="Latitude">
                                     <UInput v-model.number="attendanceState.latitude" type="number" step="any"
                                         class="w-full" />
@@ -166,8 +182,8 @@
                                 @click="useCurrentLocation">
                                 Use My Current Location
                             </UButton>
-                            <p class="mt-2 text-xs text-muted">Stand at the school when you press this, or enter
-                                coordinates manually.</p>
+                            <p class="mt-2 text-xs text-muted">Search for the address, click the map, or drag the pin
+                                to set the school's location - or press this button while standing there.</p>
                         </UCard>
 
                         <UCard>
@@ -175,7 +191,7 @@
                                 <p>Allowed Radius</p>
                             </template>
                             <UFormField required label="Radius (metres)"
-                                help="How far from the school a teacher can be and still clock in.">
+                                help="How far from the school a teacher can be and still clock in. Shown as the shaded circle on the map above.">
                                 <UInput v-model.number="attendanceState.radiusMeters" type="number" min="10"
                                     class="w-full" />
                             </UFormField>
@@ -291,6 +307,7 @@ const { locationSettings, loadingLocationSettings: loadingLocation, savingLocati
 
 const locationConfigured = computed(() => !!locationSettings.value?.configured)
 const locating = ref(false)
+const locationMap = ref<{ panTo: (lat: number, lng: number) => void } | null>(null)
 
 const attendanceState = reactive({
     latitude: 0,
@@ -310,6 +327,7 @@ function useCurrentLocation() {
         (position) => {
             attendanceState.latitude = position.coords.latitude
             attendanceState.longitude = position.coords.longitude
+            locationMap.value?.panTo(position.coords.latitude, position.coords.longitude)
             locating.value = false
             success('Location captured.')
         },

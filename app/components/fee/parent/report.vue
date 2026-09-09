@@ -3,155 +3,48 @@ const { student } = defineProps<{
     student: string
 }>()
 
-const widgetStore = useWidgetStore()
-const { loading } = storeToRefs(widgetStore)
+const studentStore = useStudentStore()
 const { format } = useMoney()
 
-const report = ref<{
-    paid: string
-    total: string
-    pending: string
-    overdue: string
-}>({
-    paid: "0",
-    total: "0",
-    pending: "0",
-    overdue: "0"
+// A local flag, not studentStore.loading - that's shared across every fetch this store makes
+// (overview/history included), so reusing it here made every stat tile flip "ready" the moment
+// any one of them finished, briefly showing stale/zero values in the others.
+const loading = ref(true)
+
+const report = ref({
+    total: 0,
+    paid: 0,
+    pending: 0,
+    overdue: 0
 })
 
 async function fetchRecord() {
     if (!student) return
 
-    const today = new Date().toISOString().split("T")[0]
+    loading.value = true
+    try {
+        const res = await studentStore.getAllStudentFeesById(student)
+        const fees: any[] = res?.records ?? []
 
-    const [payments, pendingRes, overdueRes] = await Promise.all([
-        widgetStore.runAnalytic({
-            entity: "fees",
-            title: "Fee Paid",
-            filters: [
-                {
-                    field: "student.id",
-                    value: student,
-                    operator: "EQUALS",
-                    type: "select"
-                }
-            ],
-            metrics: [
-                {
-                    name: "Paid",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Paid" }
-                },
-                {
-                    name: "Partial",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Partial" }
-                },
-                {
-                    name: "Total",
-                    aggregation: "sum",
-                    field: "amount"
-                }
-            ],
-            chartType: "bar"
-        }, 1, 10),
+        // Derived from the exact same records the Fee Schedule table below shows, rather than a
+        // separate set of analytics queries - so the summary and the table can never disagree,
+        // and "Pending" vs "Due Amount" split on the same real per-fee status the table uses
+        // (Overdue = past its due date and not yet settled) instead of a date-only cutoff that
+        // missed partially-paid-but-overdue fees.
+        let total = 0, paid = 0, pending = 0, overdue = 0
+        for (const fee of fees) {
+            total += Number(fee.amount ?? 0)
+            paid += Number(fee.amountPaid ?? 0)
+            if (fee.status === 'Overdue') {
+                overdue += Number(fee.outstanding ?? 0)
+            } else if (fee.status === 'Pending' || fee.status === 'Partial') {
+                pending += Number(fee.outstanding ?? 0)
+            }
+        }
 
-        widgetStore.runAnalytic({
-            entity: "fees",
-            title: "Pending Fees",
-            filters: [
-                {
-                    field: "student.id",
-                    value: student,
-                    operator: "EQUALS",
-                    type: "select"
-                },
-                {
-                    field: "fee.dueDate",
-                    value: today,
-                    operator: "GREATER_THAN_OR_EQUAL",
-                    type: "date"
-                }
-            ],
-            metrics: [
-                {
-                    name: "Paid",
-                    aggregation: "sum",
-                    field: "amount",
-                    tags: { field: "status", value: "Paid" }
-                },
-                {
-                    name: "Partial",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Partial" }
-                },
-                {
-                    name: "Total",
-                    aggregation: "sum",
-                    field: "amount"
-                }
-            ],
-            chartType: "bar"
-        }, 1, 10),
-
-        widgetStore.runAnalytic({
-            entity: "fees",
-            title: "Overdue Fees",
-            filters: [
-                {
-                    field: "student.id",
-                    value: student,
-                    operator: "EQUALS",
-                    type: "select"
-                },
-                {
-                    field: "fee.dueDate",
-                    value: today,
-                    operator: "LESS_THAN",
-                    type: "date"
-                }
-            ],
-            metrics: [
-                {
-                    name: "Overdue",
-                    aggregation: "sum",
-                    field: "amount",
-                    tags: { field: "status", value: "Pending" }
-                }
-            ],
-            chartType: "bar"
-        }, 1, 10)
-    ])
-
-    const paidDatasets = payments?.data?.datasets ?? []
-    const pendingDatasets = pendingRes?.data?.datasets ?? []
-    const overdueDatasets = overdueRes?.data?.datasets ?? []
-
-    const paid = paidDatasets.find((e: any) => e.label === "Paid")
-    const total = paidDatasets.find((e: any) => e.label === "Total")
-    const partial = paidDatasets.find((e: any) => e.label === "Partial")
-
-    const pendingPartial = pendingDatasets.find((e: any) => e.label === "Partial")
-    const pendingPaid = pendingDatasets.find((e: any) => e.label === "Paid")
-    const pendingTotal = pendingDatasets.find((e: any) => e.label === "Total")
-
-    const pendingPaidTotal = Number(pendingPaid?.data?.[0] ?? 0) + Number(pendingPartial?.data?.[0] ?? 0)
-    const totalPending = Number(pendingTotal?.data?.[0] ?? 0) - pendingPaidTotal
-
-    const overdue = overdueDatasets.find((e: any) => e.label === "Overdue")
-
-    const totalPaid =
-        Number(paid?.data?.[0] ?? 0) +
-        Number(partial?.data?.[0] ?? 0)
-
-    report.value = {
-        paid: format(totalPaid),
-        total: format(Number(total?.data?.[0] ?? 0)),
-        pending: format(Number(totalPending)),
-        overdue: format(Number(overdue?.data?.[0] ?? 0))
+        report.value = { total, paid, pending, overdue }
+    } finally {
+        loading.value = false
     }
 }
 
@@ -162,23 +55,23 @@ watch(() => student, fetchRecord, { immediate: true })
         <Metric :record="{
             label: 'Total Fees',
             icon: DEBIT_ICON,
-            value: report?.total,
+            value: format(report.total),
             isReady: !loading,
             color: 'neutral',
             subtle: 'This academic year'
         }" />
-        <Metric  :record="{
+        <Metric :record="{
             label: 'Total Paid',
             icon: PAYMENT_ICON,
-            value: report?.paid,
+            value: format(report.paid),
             isReady: !loading,
             color: 'success',
             subtle: 'Amount received'
         }" />
-        <Metric  :record="{
+        <Metric :record="{
             label: 'Pending',
             icon: PENDING_ICON,
-            value: report?.pending,
+            value: format(report.pending),
             isReady: !loading,
             color: 'info',
             subtle: 'Upcoming payments'
@@ -186,7 +79,7 @@ watch(() => student, fetchRecord, { immediate: true })
         <Metric :record="{
             label: 'Due Amount',
             icon: OVERDUE_ICON,
-            value: report?.overdue,
+            value: format(report.overdue),
             isReady: !loading,
             color: 'error',
             subtle: 'Requires attention'

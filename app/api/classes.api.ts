@@ -254,6 +254,21 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    update: async (id: string, payload: UpdateClassDto) => {
+      try {
+        const res = await $api(`/class/${id}`, {
+          method: 'PUT',
+          body: payload
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update class')
+
+        return res.data as Clazz
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     updateTemplate: async (classId: string, templateId: string) => {
       try {
         return await $api(`/class/${classId}/template`, {

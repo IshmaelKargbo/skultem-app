@@ -19,6 +19,10 @@ const { id, sessionId, term } = defineProps<{
   term: Term | undefined
 }>()
 
+// Optional - lets a parent (e.g. the dashboard) build an at-a-glance summary out of this and the
+// other stat tiles without each one duplicating the other's fetch.
+const emit = defineEmits<{ ready: [value: number] }>()
+
 const isReady = ref(false)
 const termAverage = ref("0")
 const message = ref('')
@@ -58,6 +62,7 @@ async function fetchTermAverage() {
   termAverage.value = currentAverage.toFixed(0)
 
   isReady.value = true
+  emit('ready', currentAverage)
 }
 
 watch

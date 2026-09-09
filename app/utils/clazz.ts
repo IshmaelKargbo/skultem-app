@@ -6,6 +6,8 @@ export type Clazz = {
     nextClass: Clazz | null
     streamId: string
     terminal: boolean
+    assessmentTemplateId?: string
+    assessmentTemplateName?: string
     createdAt: string
     updatedAt: string
 }
@@ -111,6 +113,11 @@ export type CreateClassDto = {
     terminal?: boolean,
     streams: string[],
     assessmentTemplateId?: string
+}
+
+export type UpdateClassDto = {
+    name: string
+    levelOrder: number
 }
 
 export type ClassCurriculumSubject = {

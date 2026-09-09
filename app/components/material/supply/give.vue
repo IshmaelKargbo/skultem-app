@@ -123,9 +123,13 @@ const remainingQty = computed(() => {
   return selectedSupply.value.qty - selectedSupply.value.collectedQty
 })
 
+const pendingSupplies = computed(() =>
+  supplies.value.filter(s => s.qty - s.collectedQty > 0)
+)
+
 const suppliesOptions = computed(() =>
-  supplies.value.map(s => ({
-    label: `${s.student.givenNames} ${s.student.familyName} - ${s.material.name}`,
+  pendingSupplies.value.map(s => ({
+    label: `${s.student.givenNames} ${s.student.familyName} - ${s.material.name} (${s.qty - s.collectedQty} left)`,
     value: s.id
   }))
 )
@@ -174,11 +178,13 @@ async function onSubmit() {
       throw new Error(`Cannot exceed remaining quantity (${remaining})`)
     }
 
-    const newCollected = supply.collectedQty + state.qty
-
+    // The backend adds this to whatever's already been collected (and deducts it from stock) -
+    // it wants the amount being handed over right now, not the new running total. Sending the
+    // cumulative total here double-counted every second-or-later partial collection against both
+    // the supply record and the material's stock.
     await materialStore.supply({
       id: state.supplyId,
-      qty: newCollected,
+      qty: state.qty,
       note: state.note
     })
 

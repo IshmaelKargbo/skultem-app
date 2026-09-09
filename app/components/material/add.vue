@@ -3,10 +3,13 @@ import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
+const { material } = defineProps<{ material?: Material }>()
+
 const store = useMaterialStore()
 const { categories: records } = storeToRefs(store)
 const { error: toastError, success: toastSuccess } = useNotify()
 
+const isEdit = computed(() => !!material)
 const open = ref(false)
 const isLoading = ref(false)
 const formRef = ref()
@@ -26,12 +29,16 @@ type MaterialForm = {
     inStock: number
 }
 
-const state = reactive<MaterialForm>({
-    name: '',
-    categoryId: '',
-    unit: '',
-    inStock: 0
-})
+function defaultState(): MaterialForm {
+    return {
+        name: material?.name || '',
+        categoryId: material?.category.id || '',
+        unit: material?.unit || '',
+        inStock: material?.inStock || 0
+    }
+}
+
+const state = reactive<MaterialForm>(defaultState())
 
 const schema = yup.object({
     name: yup.string().required(),
@@ -42,20 +49,22 @@ const schema = yup.object({
 
 const close = () => {
     open.value = false
-    state.name = ''
-    state.categoryId = ''
-    state.unit = ''
-    state.inStock = 0
+    Object.assign(state, defaultState())
 }
 
 const onSubmit = async (event: FormSubmitEvent<MaterialForm>) => {
     isLoading.value = true
 
     try {
-        await store.create(state)
-        await store.fetchAll()
-
-        toastSuccess('Material created successfully')
+        if (isEdit.value && material) {
+            const { inStock, ...rest } = state
+            await store.update({ id: material.id, ...rest })
+            toastSuccess('Material updated successfully')
+        } else {
+            await store.create(state)
+            await store.fetchAll()
+            toastSuccess('Material created successfully')
+        }
 
         close()
     } catch (err: any) {
@@ -69,10 +78,18 @@ onMounted(() => store.fetchAllCategory(0, 0))
 </script>
 <template>
     <USlideover :dismissible="false" v-model:open="open">
-        <UButton color="primary" label="Add Material" icon="prime:plus" @click="open = true" />
+        <UButton
+            v-if="isEdit"
+            :icon="EDIT_ICON"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            @click="open = true"
+        />
+        <UButton v-else color="primary" label="Add Material" icon="prime:plus" @click="open = true" />
         <template #header>
             <div class="flex justify-between w-full items-center">
-                <p class="text-lg font-semibold">Add Material</p>
+                <p class="text-lg font-semibold">{{ isEdit ? 'Edit Material' : 'Add Material' }}</p>
                 <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
@@ -102,7 +119,12 @@ onMounted(() => store.fetchAllCategory(0, 0))
                 <!-- Stock -->
                 <UFormField label="In Stock" name="inStock" required>
                     <UInput v-model.number="state.inStock" type="number" min="0" placeholder="0"
-                        :disabled="isLoading" />
+                        :disabled="isLoading || isEdit" />
+                    <template v-if="isEdit" #help>
+                        <p class="text-xs text-muted">
+                            Stock is adjusted separately via restock or supply, not here.
+                        </p>
+                    </template>
                 </UFormField>
 
             </UForm>

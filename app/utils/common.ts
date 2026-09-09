@@ -225,14 +225,16 @@ export const nationalities = [
 
 export const parseFeeStatusColor: Record<string, string> = {
     Paid: 'success',
-    Pending: 'error',
-    Partial: 'info'
+    Pending: 'warning',
+    Partial: 'info',
+    Overdue: 'error'
 }
 
 export const parseFeeStatusIcon: Record<string, string> = {
     Pending: 'i-lucide-clock',
     Paid: 'i-lucide-check-circle',
     Partial: 'ph:circle-half-tilt-duotone',
+    Overdue: 'pajamas:calendar-overdue'
 }
 
 export enum Level {

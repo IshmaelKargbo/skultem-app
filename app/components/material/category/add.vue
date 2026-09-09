@@ -1,12 +1,20 @@
 <template>
     <USlideover :dismissible="false" v-model:open="open">
         <!-- Trigger -->
-        <UButton color="primary" label="Add Material Category" icon="prime:plus" @click="open = true" />
+        <UButton
+            v-if="isEdit"
+            :icon="EDIT_ICON"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            @click="open = true"
+        />
+        <UButton v-else color="primary" label="Add Material Category" icon="prime:plus" @click="open = true" />
 
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
-                <p class="text-lg font-semibold">Add Material Category</p>
+                <p class="text-lg font-semibold">{{ isEdit ? 'Edit Material Category' : 'Add Material Category' }}</p>
                 <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
@@ -58,9 +66,12 @@ import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
+const { category } = defineProps<{ category?: MaterialCategory }>()
+
 const store = useMaterialStore()
 const { error: toastError, success: toastSuccess } = useNotify()
 
+const isEdit = computed(() => !!category)
 const open = ref(false)
 const isLoading = ref(false)
 const formRef = ref()
@@ -70,10 +81,14 @@ type MaterialCategoryForm = {
     description: string
 }
 
-const state = reactive<MaterialCategoryForm>({
-    name: '',
-    description: ''
-})
+function defaultState(): MaterialCategoryForm {
+    return {
+        name: category?.name || '',
+        description: category?.description || ''
+    }
+}
+
+const state = reactive<MaterialCategoryForm>(defaultState())
 
 const schema = yup.object({
     name: yup.string().required('Name is required'),
@@ -82,18 +97,21 @@ const schema = yup.object({
 
 const close = () => {
     open.value = false
-    state.name = ''
-    state.description = ''
+    Object.assign(state, defaultState())
 }
 
 const onSubmit = async (event: FormSubmitEvent<MaterialCategoryForm>) => {
     isLoading.value = true
 
     try {
-        await store.createCategory(state)
-        await store.fetchAllCategory()
-
-        toastSuccess('Material category created successfully')
+        if (isEdit.value && category) {
+            await store.updateCategory({ id: category.id, ...state })
+            toastSuccess('Material category updated successfully')
+        } else {
+            await store.createCategory(state)
+            await store.fetchAllCategory()
+            toastSuccess('Material category created successfully')
+        }
 
         close()
     } catch (err: any) {

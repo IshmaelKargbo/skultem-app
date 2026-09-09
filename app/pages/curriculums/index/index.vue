@@ -1,7 +1,12 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
+    <!-- A parent has no use for the staff scheme-builder UI below (Quick Actions to create a
+         scheme, teacher coverage cards, the full school/teacher scheme list) - they get a
+         dedicated, read-only view of their own child's published curriculum instead. -->
+    <CurriculumParentView v-if="can(Role.PARENT)" />
+
     <!-- Main Grid -->
-    <div class="grid gap-4 xl:grid-cols-3">
+    <div v-else class="grid gap-4 xl:grid-cols-3">
       <!-- Left column -->
       <div class="space-y-4 xl:sticky xl:top-6 self-start">
 
@@ -192,9 +197,9 @@ async function loadMyProgress() {
 }
 
 onMounted(async () => {
-  useAppStore().setTitle('Scheme of Work')
+  useAppStore().setTitle(can(Role.PARENT) ? 'Curriculum' : 'Scheme of Work')
   useAppStore().setBack(false)
-  document.title = 'Scheme of Work | Skultem'
+  document.title = `${can(Role.PARENT) ? 'Curriculum' : 'Scheme of Work'} | Skultem`
 
   if (isAdmin.value) loadOverview()
   else if (can(Role.TEACHER)) loadMyProgress()
@@ -205,7 +210,8 @@ definePageMeta({
     Role.ADMIN,
     Role.PROPRIETOR,
     Role.OWNER,
-    Role.TEACHER
+    Role.TEACHER,
+    Role.PARENT
   ]
 })
 

@@ -91,6 +91,11 @@ export const useClassStore = defineStore('class', {
     findClassMaster(id: string) {
       return ClassApi().getCurrentClassMaster(id)
     },
+    async update(id: string, payload: UpdateClassDto) {
+      const res = await ClassApi().update(id, payload)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
     updateTemplate(classId: string, templateId: string) {
       return ClassApi().updateTemplate(classId, templateId)
     },

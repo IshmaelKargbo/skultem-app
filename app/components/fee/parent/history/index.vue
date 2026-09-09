@@ -8,7 +8,7 @@
       </div>
     </template>
     <UTable :columns="columns" :data="data" :loading="loading">
-      <template #empty>
+      <template #empty-state>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:receipt-light" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No payment found.</p>

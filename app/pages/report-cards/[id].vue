@@ -64,7 +64,7 @@
             </dl>
           </UCard>
 
-          <UCard v-if="record.settings.showRemarks">
+          <UCard v-if="record.settings.showRemarks && !can(Role.PARENT)">
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-message-square" class="size-5 text-primary" />
@@ -78,6 +78,18 @@
               @click="saveRemark">
               Save Remark
             </UButton>
+          </UCard>
+
+          <!-- Read-only for a parent - the remark is the class teacher's, not theirs to edit. -->
+          <UCard v-else-if="record.settings.showRemarks && record.remark">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-message-square" class="size-5 text-primary" />
+                <h3 class="font-semibold">Class Teacher's Remark</h3>
+              </div>
+            </template>
+
+            <p class="text-sm text-muted">{{ record.remark }}</p>
           </UCard>
         </div>
 
@@ -270,6 +282,7 @@ const appStore = useAppStore()
 const { success, error: toastError } = useNotify()
 const store = useReportCardStore()
 const { $generatePdf } = useNuxtApp()
+const { can } = useAuth()
 
 const id = computed(() => String(route.params.id))
 const record = ref<ReportCardDetail>()
@@ -380,6 +393,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PARENT]
 })
 </script>

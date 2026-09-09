@@ -97,6 +97,8 @@ const navItems: NavItem[] = [
 
   { label: 'Performance', to: '/performance', icon: PERFORMANCE_ICON, roles: [Role.PARENT] },
 
+  { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, roles: [Role.PARENT] },
+
   {
     label: 'Students', to: '/students', icon: STUDENT_ICON,
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT]
@@ -123,7 +125,7 @@ const navItems: NavItem[] = [
   },
   {
     label: 'Curriculums', to: '/curriculums', icon: CURRICULUM_ICON,
-    roles: [Role.TEACHER]
+    roles: [Role.TEACHER, Role.PARENT]
   },
   {
     label: 'Classes', icon: CLASS_ICON,
@@ -219,7 +221,7 @@ const navItems: NavItem[] = [
 
   {
     label: 'Fees & Payments', icon: PAYMENT_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+    roles: [Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
     subNavs: [
       { label: 'Fees', to: '/fees-payment', icon: STUDENT_FEES_ICON, exact: true },
       { label: 'Payments', to: '/fees-payment/pay', icon: PAYMENT_ICON },
@@ -228,7 +230,7 @@ const navItems: NavItem[] = [
       { label: 'Category', to: '/fees-payment/category', icon: CATEGORY_ICON },
       {
         label: 'Receipt Design', to: '/fees-payment/receipt-design', icon: SETTINGS_ICON,
-        roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+        roles: [Role.PROPRIETOR, Role.OWNER]
       },
     ]
   },

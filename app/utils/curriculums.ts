@@ -135,6 +135,14 @@ export type TeacherProgressDetail = {
     subjectCoverage: SubjectCoverage[]
 }
 
+// A subject's published scheme of work, as a parent sees it - the scheme summary, its rolled-up
+// progress/coverage, and the week-by-week topic list. See GetChildCurriculumUseCase.
+export type ChildSchemeOfWork = {
+    scheme: SchemeOfWork
+    progress: SchemeProgress
+    weeks: Week[]
+}
+
 export type CreateLesson = {
     week: string
     title: string

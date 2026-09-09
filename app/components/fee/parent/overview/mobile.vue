@@ -28,11 +28,11 @@
 
             <!-- Data -->
             <template v-else-if="data.length">
-                <div v-for="(value, i) in data" :key="value.feeName + i" class="flex justify-between py-2 px-3" :class="{
+                <div v-for="(value, i) in data" :key="value.fee + i" class="flex justify-between py-2 px-3" :class="{
                     'border-b border-gray-100 dark:border-gray-800': (i + 1) < data.length
                 }">
                     <div class="space-y-0.5">
-                        <p>{{ value.feeName }}</p>
+                        <p>{{ value.fee }}</p>
                         <div class="flex text-xs space-x-1 text-mute">
                             <p>{{ value.term }}</p>
                             <p>·</p>
@@ -40,7 +40,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col items-end space-y-0.5">
-                        <p class="text-info font-medium">{{ format(value.total) }}</p>
+                        <p class="text-info font-medium">{{ format(value.amount) }}</p>
                         <div class="flex space-x-2">
                             <p class="text-error font-semibold" v-if="value.outstanding">{{ format(value.outstanding) }}</p>
                             <UBadge size="sm" :label="value.status" variant="outline"

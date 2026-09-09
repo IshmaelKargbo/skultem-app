@@ -75,6 +75,9 @@ export type Breakdown = {
     show: boolean
     trend: string
     grade: string
+    // Whether the subject's cumulative weighted score clears the pass mark it was graded
+    // against - undefined for older cached data fetched before this field existed.
+    passed?: boolean
 }
 
 export type ApprovalRequestDTO = {

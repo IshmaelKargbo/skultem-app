@@ -41,7 +41,7 @@
                         </div>
                         <div class="space-y-0.5">
                             <p class="text-sm">{{ row.fee }}</p>
-                            <p class="text-[11px] text-mute">{{ formatDateString(row.createdAt) }}</p>
+                            <p class="text-[11px] text-mute">{{ formatDateString(row.paidAt) }}</p>
                         </div>
                     </div>
                     <div class="flex flex-col items-end space-y-0.5">

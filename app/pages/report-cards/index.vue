@@ -1,6 +1,12 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
 
+    <!-- A parent has no use for the admin tooling below (whole-school stats, generate/design
+         actions, a class/term filtered list of every student) - they get their own child's
+         report cards instead, the same split as Curriculum and Performance. -->
+    <ReportCardParentView v-if="can(Role.PARENT)" />
+
+    <template v-else>
     <!-- Header -->
     <Heading title="Report Cards" subtitle="Generate, preview and export student report cards.">
       <UButton icon="i-lucide-plus" label="Generate Report Cards" class="justify-center" to="/report-cards/generate" />
@@ -145,10 +151,12 @@
       <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
         show-edges />
     </div>
+    </template>
 
   </div>
 </template>
 <script setup lang="ts">
+const { can } = useAuth()
 const route = useRoute()
 const router = useRouter()
 const reportCardStore = useReportCardStore()
@@ -182,6 +190,7 @@ function ordinal(n: number) {
 }
 
 async function fetchRecords() {
+  if (can(Role.PARENT)) return
   await reportCardStore.fetchAll(page.value, size.value, {
     classId: selectedClass.value || undefined,
     termId: selectedTerm.value || undefined,
@@ -200,12 +209,17 @@ function resetFilters() {
 onMounted(() => {
   useAppStore().setTitle('Report Cards')
   document.title = 'Report Cards | Skultem'
+
+  // ReportCardParentView fetches its own child-scoped data above - the admin list/filters/stats
+  // calls below are staff-only endpoints a parent isn't authorized to hit.
+  if (can(Role.PARENT)) return
+
   classStore.fetchAll(1, 100)
   termStore.fetchAll(1, 100)
   reportCardStore.fetchStats()
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PARENT]
 })
 </script>

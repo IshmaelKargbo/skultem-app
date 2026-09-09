@@ -15,6 +15,8 @@ const { id } = defineProps<{
     id: string
 }>()
 
+const emit = defineEmits<{ ready: [value: number] }>()
+
 const { format } = useMoney()
 const isReady = ref(false)
 const balance = ref("0.0")
@@ -67,9 +69,11 @@ async function fetchRecord() {
         Number(paid?.data?.[0] ?? 0) +
         Number(partial?.data?.[0] ?? 0)
 
-    balance.value = format(Number(total?.data?.[0] ?? 0) - totalPaid)
+    const outstanding = Number(total?.data?.[0] ?? 0) - totalPaid
+    balance.value = format(outstanding)
 
     isReady.value = true
+    emit('ready', outstanding)
 }
 
 watch(() => id, async () => {

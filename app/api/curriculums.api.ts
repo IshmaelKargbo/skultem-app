@@ -113,6 +113,19 @@ export const CurriculumsApi = () => {
         useHandleError(err)
       }
     },
+    getChildCurriculum: async (studentId: string, termId?: string) => {
+      try {
+        const query = termId ? `?termId=${termId}` : ''
+        const res = await $api(`/curriculum/scheme/child/${studentId}${query}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch curriculum')
+
+        return res.data as ChildSchemeOfWork[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getMySchemes: async (page: number, size: number, filter?: SchemeOfWorkFilter) => {
       try {
         const query = buildSchemeFilterQuery(filter)
