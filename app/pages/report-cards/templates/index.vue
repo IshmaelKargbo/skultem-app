@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 mt-6 p-4 md:px-6">
+  <div class="space-y-4 px-4 md:px-6">
 
     <!-- Header -->
     <Heading title="Report Card Design" subtitle="Configure the report card layout used across your school.">

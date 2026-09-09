@@ -229,9 +229,12 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <UBadge :color="getLessonStateColor(scheme.progressState)" variant="subtle">
-                    {{ clean(scheme.progressState) }}
-                </UBadge>
+                <div class="flex shrink-0 items-center gap-2">
+                    <UBadge v-if="scheme.state === 'DRAFT'" color="neutral" variant="subtle">Draft</UBadge>
+                    <UBadge :color="getLessonStateColor(scheme.progressState)" variant="subtle">
+                        {{ clean(scheme.progressState) }}
+                    </UBadge>
+                </div>
             </NuxtLink>
 
             <div v-if="!records.length" class="flex flex-col items-center gap-3 py-10 text-center">

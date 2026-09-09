@@ -5,14 +5,14 @@
         placeholder="Select Student" />
     </Heading>
 
-    <div v-if="cardsLoading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div v-if="cardsLoading" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       <UCard v-for="i in 3" :key="i" variant="outline">
         <USkeleton class="h-4 w-2/3" />
-        <USkeleton class="mt-4 h-20 w-full rounded-2xl" />
+        <USkeleton class="mt-5 h-20 w-full rounded-2xl" />
       </UCard>
     </div>
 
-    <div v-else-if="records.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div v-else-if="records.length" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       <UCard v-for="item in records" :key="item.id" variant="outline"
         class="overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
 
@@ -26,30 +26,30 @@
             variant="soft" />
         </div>
 
-        <div class="mt-4 rounded-2xl border border-primary/10 bg-primary/5 p-5 text-center">
+        <div class="mt-5 rounded-2xl border border-primary/10 bg-primary/5 p-5 text-center">
           <p class="text-xs uppercase tracking-wide text-muted">Average Score</p>
           <h2 class="mt-2 text-3xl font-bold text-primary">{{ item.average.toFixed(1) }}%</h2>
         </div>
 
-        <div class="mt-4 grid grid-cols-2 gap-3">
-          <div class="rounded-xl border border-default p-3">
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <div class="rounded-2xl border border-default p-4">
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-award" class="text-primary" />
               <span class="text-xs text-muted">Grade</span>
             </div>
-            <p class="mt-1 font-semibold">{{ item.overallGrade || 'N/A' }}</p>
+            <p class="mt-2 font-semibold">{{ item.overallGrade || 'N/A' }}</p>
           </div>
 
-          <div class="rounded-xl border border-default p-3">
+          <div class="rounded-2xl border border-default p-4">
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-trophy" class="text-warning" />
               <span class="text-xs text-muted">Position</span>
             </div>
-            <p class="mt-1 font-semibold">{{ item.position ? ordinal(item.position) : 'N/A' }}</p>
+            <p class="mt-2 font-semibold">{{ item.position ? ordinal(item.position) : 'N/A' }}</p>
           </div>
         </div>
 
-        <UButton block class="mt-4" icon="i-lucide-eye" variant="soft" :to="`/report-cards/${item.id}`">
+        <UButton block class="mt-6" icon="i-lucide-eye" variant="soft" :to="`/report-cards/${item.id}`">
           View Report Card
         </UButton>
       </UCard>

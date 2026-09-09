@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 mt-6 p-4 md:px-6">
+  <div class="space-y-4 px-4 md:px-6">
 
     <Heading :title="record?.studentName || 'Report Card'"
       subtitle="Preview, print or download this student's report card.">
@@ -393,6 +393,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PARENT]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]
 })
 </script>

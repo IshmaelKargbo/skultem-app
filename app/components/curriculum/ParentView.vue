@@ -80,7 +80,9 @@
           </p>
           <p class="max-w-sm text-sm text-muted">
             {{ studentFirstName ? `${studentFirstName}'s` : "Your child's" }} teachers haven't published a scheme of
-            work for the selected term yet - check back once it's up.
+            work for {{ term?.name || 'the selected term' }} yet.
+            <template v-if="terms.length > 1">Try a different term above, or check back once it's up.</template>
+            <template v-else>Check back once it's up.</template>
           </p>
         </div>
       </div>

@@ -209,6 +209,7 @@ const attendanceInfo = `/students/${route.params.id}/attendance${backQuery}`
 const feeStructureInfo = `/students/${route.params.id}/fee-structure${backQuery}`
 const academicInfo = `/students/${route.params.id}/academic-information${backQuery}`
 const behavioursInfo = `/students/${route.params.id}/behaviours${backQuery}`
+const performanceInfo = `/students/${route.params.id}/performance${backQuery}`
 const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
 const mobileTabs = computed(() => [
@@ -217,6 +218,7 @@ const mobileTabs = computed(() => [
     { label: 'Fees', to: feeStructureInfo, exact: true },
     { label: 'Academics', to: academicInfo, exact: true },
     { label: 'Behaviours', to: behavioursInfo, exact: true },
+    { label: 'Performance', to: performanceInfo, exact: true },
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, exact: true }] : [])
 ])
 
@@ -226,6 +228,7 @@ const desktopTabs = computed(() => [
     { label: 'Fee Structure', to: feeStructureInfo, exact: true },
     { label: 'Academic Information', to: academicInfo, exact: true },
     { label: 'Behaviours', to: behavioursInfo, exact: true },
+    { label: 'Performance', to: performanceInfo, exact: true },
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, exact: true }] : [])
 ])
 

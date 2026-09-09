@@ -1,7 +1,21 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
-    <Heading title="Weekly Topics & Objectives" subtitle="Manage weekly curriculum coverage and lesson objectives.">
-      <UButton v-if="isAdmin" icon="i-lucide-plus" label="Add Week" @click="add" />
+    <Heading :title="scheme ? `${scheme.subject} (${scheme.session})` : 'Weekly Topics & Objectives'"
+      :subtitle="scheme ? `${scheme.term} · Manage weekly curriculum coverage and lesson objectives.` : 'Manage weekly curriculum coverage and lesson objectives.'">
+      <div class="flex flex-wrap items-center gap-3">
+        <UBadge v-if="scheme" :label="scheme.state === 'PUBLISH' ? 'Published' : 'Draft'"
+          :color="scheme.state === 'PUBLISH' ? 'success' : 'neutral'" variant="subtle" size="lg" />
+
+        <!-- Publish makes the scheme visible on a parent's Curriculum page (draft schemes are
+             hidden there - a family has no use for a still-being-built plan); a teacher keeps
+             full access to their own scheme either way via GET /scheme/me. -->
+        <UButton v-if="scheme && scheme.state === 'DRAFT'" icon="i-lucide-upload" color="primary" label="Publish"
+          :loading="updatingState" @click="onPublish" />
+        <UButton v-else-if="scheme" icon="i-lucide-corner-up-left" variant="outline" color="neutral"
+          label="Move to Draft" :loading="updatingState" @click="onUnpublish" />
+
+        <UButton v-if="isAdmin" icon="i-lucide-plus" label="Add Week" @click="add" />
+      </div>
     </Heading>
 
     <!-- Statistics -->
@@ -90,11 +104,39 @@
 const store = useWeekStore()
 const schemeStore = useSchemeOfWorkStore()
 const { records } = storeToRefs(store)
+const { record: scheme } = storeToRefs(schemeStore)
 const { can } = useAuth()
 const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const { success, error: toastError } = useNotify()
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
+
+const updatingState = ref(false)
+
+async function onPublish() {
+  updatingState.value = true
+  try {
+    await schemeStore.updateState(id.value, 'PUBLISH')
+    success('Scheme of work published - it now shows on the parent portal.')
+  } catch (err: any) {
+    toastError(err?.message || err || 'Unable to publish scheme.')
+  } finally {
+    updatingState.value = false
+  }
+}
+
+async function onUnpublish() {
+  updatingState.value = true
+  try {
+    await schemeStore.updateState(id.value, 'DRAFT')
+    success('Scheme of work moved back to draft.')
+  } catch (err: any) {
+    toastError(err?.message || err || 'Unable to update scheme.')
+  } finally {
+    updatingState.value = false
+  }
+}
 
 function weekStateItems(week: Week) {
   const options: { label: string, value: LessonState, icon: string }[] = [
@@ -129,7 +171,10 @@ function add() {
 watch(
   () => route.params.id,
   (schemeId) => {
-    if (schemeId) store.fetchAll(schemeId as string)
+    if (schemeId) {
+      store.fetchAll(schemeId as string)
+      schemeStore.fetchOne(schemeId as string)
+    }
   },
   { immediate: true }
 )

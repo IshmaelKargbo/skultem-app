@@ -15,7 +15,7 @@
     </Heading>
 
     <!-- Stats -->
-    <div class="grid gap-4 md:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
       <Metric :record="{
         color: 'info',
         icon: 'i-lucide-file-text',
@@ -64,7 +64,7 @@
 
     <!-- Loading -->
     <div v-if="loading && !records.length" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      <UCard v-for="i in 6" :key="i" variant="outline" class="rounded-3xl">
+      <UCard v-for="i in 6" :key="i" variant="outline">
         <div class="flex items-center gap-3">
           <USkeleton class="size-12 rounded-full" />
           <div class="flex-1 space-y-2">
@@ -78,7 +78,7 @@
 
     <div v-else-if="records.length" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       <UCard v-for="item in records" :key="item.id" variant="outline"
-        class="overflow-hidden rounded-3xl transition hover:-translate-y-0.5 hover:shadow-lg">
+        class="overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
         <!-- Header -->
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
@@ -220,6 +220,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PARENT]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]
 })
 </script>

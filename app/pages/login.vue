@@ -73,7 +73,7 @@
 
         <!-- Bottom tagline -->
         <div class="text-xs text-white/20 font-medium tracking-wide shrink-0">
-          {{ isAdminPortal ? 'Platform administration · every school, one console' : 'Trusted by 500+ schools worldwide' }}
+          {{ isAdminPortal ? 'Platform administration · every school, one console' : trustedByTagline }}
         </div>
 
       </div>
@@ -403,8 +403,23 @@ definePageMeta({
   middleware: 'guest'
 })
 
-onMounted(() => {
+// Real count instead of a hardcoded "500+" - public/unauthenticated (see SchoolController#count),
+// since this page is rendered before anyone has signed in. Falls back to hiding the tagline
+// entirely rather than showing a stale/wrong number if the request fails.
+const schoolCount = ref<number>()
+
+const trustedByTagline = computed(() => {
+  if (!schoolCount.value) return 'Trusted by schools around Sierra Leone'
+  return `Trusted by ${schoolCount.value.toLocaleString()} school${schoolCount.value === 1 ? '' : 's'} around Sierra Leone`
+})
+
+onMounted(async () => {
   document.title = isAdminPortal ? 'System Admin | Skultem' : 'Login | Skultem'
+
+  if (!isAdminPortal) {
+    const res = await SchoolApi().getCount()
+    if (res) schoolCount.value = res.count
+  }
 })
 </script>
 

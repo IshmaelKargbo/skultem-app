@@ -35,36 +35,38 @@ function setActive(key: string) {
 
 <template>
   <div class="space-y-3">
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-2 grid gap-1 rounded-3xl shadow-sm"
-         :style="{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }">
+    <!-- Scrolls horizontally instead of squeezing every tab into an equal-width column - a
+         short list (2-3 tabs) still reads as evenly spaced since the row only fills the space
+         it needs, while a long one (6+, e.g. a student's full profile tabs) scrolls smoothly
+         instead of truncating every label. -->
+    <div class="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        class="inline-flex min-w-full gap-1 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <template v-for="tab in tabs" :key="tab.key || tab.to || tab.label">
+          <NuxtLink
+            v-if="tab.to"
+            :to="tab.to"
+            class="shrink-0 rounded-xl px-3.5 py-2 text-center text-xs font-medium whitespace-nowrap transition-all"
+            :class="isRouteActive(tab)
+              ? 'bg-secondary-500 text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-300'"
+          >
+            {{ tab.label }}
+          </NuxtLink>
 
-      <template v-for="tab in tabs" :key="tab.key || tab.to || tab.label">
-        <NuxtLink
-          v-if="tab.to"
-          :to="tab.to"
-          class="flex justify-center px-2 py-1.5 text-center cursor-pointer transition-all"
-          :class="{
-            'bg-secondary-500 rounded-3xl text-white': isRouteActive(tab),
-            'text-gray-700 dark:text-gray-200': !isRouteActive(tab)
-          }"
-        >
-          <p class="text-xs font-medium"> {{ tab.label }}</p>
-        </NuxtLink>
-
-        <button
-          v-else
-          type="button"
-          class="flex justify-center px-2 py-1.5 text-center cursor-pointer transition-all"
-          :class="{
-            'bg-secondary-950 rounded-3xl text-white': tab.key === isActive,
-            'text-gray-700 dark:text-gray-200': tab.key !== isActive
-          }"
-          @click="setActive(tab.key || '')"
-        >
-          <p class="text-xs font-medium">{{ tab.label }}</p>
-        </button>
-      </template>
-
+          <button
+            v-else
+            type="button"
+            class="shrink-0 rounded-xl px-3.5 py-2 text-center text-xs font-medium whitespace-nowrap transition-all"
+            :class="tab.key === isActive
+              ? 'bg-secondary-950 text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-300'"
+            @click="setActive(tab.key || '')"
+          >
+            {{ tab.label }}
+          </button>
+        </template>
+      </div>
     </div>
 
     <!-- Active Slot -->

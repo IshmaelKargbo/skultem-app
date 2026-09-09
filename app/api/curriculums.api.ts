@@ -50,6 +50,17 @@ export const CurriculumsApi = () => {
         useHandleError(err)
       }
     },
+    updateSchemeState: async (id: string, state: 'DRAFT' | 'PUBLISH') => {
+      try {
+        const res = await $api(`/curriculum/scheme/${id}/state`, {
+          method: 'PATCH',
+          body: { state }
+        }) as any
+        return res.data as SchemeOfWork
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     updateWeekState: async (id: string, state: LessonState) => {
       try {
         const res = await $api(`/curriculum/scheme/week/${id}/state`, {

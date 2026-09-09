@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
   state: () => ({
     records: [] as SchemeOfWork[],
+    record: undefined as SchemeOfWork | undefined,
     meta: {} as Meta,
     progress: undefined as SchemeProgress | undefined,
     filter: {} as SchemeOfWorkFilter,
@@ -10,6 +11,21 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
   }),
 
   actions: {
+    async fetchOne(id: string) {
+      this.loading = true
+      try {
+        this.record = await CurriculumsApi().getScheme(id)
+      } catch (err: any) {
+        throw err.data?.message || err.message || 'Failed to fetch scheme of work'
+      } finally {
+        this.loading = false
+      }
+    },
+    async updateState(id: string, state: 'DRAFT' | 'PUBLISH') {
+      const res = await CurriculumsApi().updateSchemeState(id, state)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
     async fetchAll(page: number = 1, size: number = 6, filter?: SchemeOfWorkFilter) {
       this.loading = true
       if (filter) this.filter = filter

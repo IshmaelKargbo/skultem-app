@@ -14,6 +14,18 @@ export const SchoolApi = () => {
         useHandleError(err)
       }
     },
+    getCount: async () => {
+      try {
+        const res = await $api('/school/count') as any
+
+        if (!res)
+          throw new Error('Failed to fetch school count')
+
+        return res.data as { count: number }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     get: async (id: string) => {
       try {
         const res = await $api(`/school/${id}`) as any

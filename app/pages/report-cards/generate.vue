@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-6 mt-6 p-4 md:px-6">
+    <div class="space-y-4 px-4 md:px-6">
 
         <!-- Header -->
         <Heading title="Generate Report Cards" subtitle="Generate report cards for every student in a class and term.">
@@ -12,7 +12,7 @@
         <div class="grid gap-6 xl:grid-cols-3">
 
             <!-- Form -->
-            <UCard class="xl:col-span-2 rounded-3xl">
+            <UCard class="xl:col-span-2">
 
                 <template #header>
                     <div>
@@ -43,7 +43,7 @@
             </UCard>
 
             <!-- Options -->
-            <UCard class="rounded-3xl">
+            <UCard>
 
                 <template #header>
                     <h2 class="font-semibold">
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Result -->
-        <UCard v-if="result" class="rounded-3xl">
+        <UCard v-if="result">
 
             <template #header>
                 <div class="flex items-center justify-between">
@@ -119,7 +119,7 @@
 
         </UCard>
 
-        <UCard v-else-if="!generating" class="rounded-3xl">
+        <UCard v-else-if="!generating">
             <div class="flex flex-col items-center justify-center py-14 text-center">
                 <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
                     <UIcon name="i-lucide-file-text" class="size-6 text-primary-500" />
@@ -198,7 +198,8 @@ definePageMeta({
     role: [
         Role.ADMIN,
         Role.PROPRIETOR,
-        Role.OWNER
+        Role.OWNER,
+        Role.TEACHER
     ]
 })
 </script>
