@@ -24,7 +24,7 @@
 
       <div>
         <!-- Actions -->
-        <div v-if="state.classId" class="flex space-x-3 border-b border-gray-200 py-4 bg-gray-50/40 px-3">
+        <div v-if="state.classId" class="flex space-x-3 border-b border-default py-4 bg-gray-50/40 dark:bg-gray-800 px-3">
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 
@@ -85,7 +85,7 @@
         </UTable>
 
         <!-- Mobile Cards -->
-        <div class="divide-y divide-gray-100 md:hidden">
+        <div class="divide-y divide-default md:hidden">
 
           <!-- Mobile Skeleton -->
           <template v-if="isLoading">
@@ -207,7 +207,7 @@ const classes = computed(() =>
 
     return {
       label,
-      value: e.clazzId
+      value: e.id
     }
   })
 )
@@ -300,7 +300,7 @@ function clearAll() {
 
 async function fetchRecords() {
   selectedClass.value = records.value.find(
-    e => e.clazzId === state.classId
+    e => e.id === state.classId
   )
 
   if (!selectedClass.value) return
@@ -385,7 +385,7 @@ onMounted(async () => {
 
   state.classId =
     (route.query.class as string) ||
-    records.value[0]?.clazzId ||
+    records.value[0]?.id ||
     ''
 
   state.date =

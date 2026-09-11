@@ -7,7 +7,7 @@
                 <div class="-mt-12 flex min-w-0 items-end gap-4 md:-mt-14">
                     <div class="relative shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
                         <UAvatar :src="user?.photo || undefined" :alt="user?.givenNames" size="3xl"
-                            class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
+                            class="h-16 w-16 rounded-xl md:h-24 md:w-24" />
                     </div>
 
                     <div class="min-w-0 pb-0.5 md:pb-1">

@@ -7,6 +7,11 @@
         <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
           :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments"
           @click="completeAssessment" />
+
+      </div>
+      <div v-else class="grid grid-cols-2 gap-2 md:hidden col-span-2">
+        <USkeleton class="h-10 w-full rounded-2xl" />
+        <USkeleton class="h-10 w-full rounded-2xl" />
       </div>
     </Heading>
 
