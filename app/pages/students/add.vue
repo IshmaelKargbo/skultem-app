@@ -1,6 +1,5 @@
 <template>
-    <div class="p-4 sm:p-6 lg:p-7 overflow-y-auto h-full space-y-4 sm:space-y-5 pb-0">
-        <Heading title="Enroll Student" subtitle="Add a new student to the system and assign their academic details." />
+    <div class="px-4 md:px-6 space-y-4">
         <div class="md:hidden">
             <UCard :ui="{ body: 'p-4' }">
                 <div class="flex items-start justify-between gap-3">
