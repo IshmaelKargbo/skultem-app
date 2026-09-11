@@ -12,7 +12,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="border-b border-default">
+  <div class="border-b border-default md:rounded-xl md:border">
     <div class="flex items-center justify-between border-b border-default p-4">
       <div class="flex items-center gap-3 min-w-0">
         <UAvatar size="xl" :src="record.photo" :alt="record.name" loading="lazy" class="ring-2 ring-primary/20" />

@@ -63,7 +63,7 @@
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-between items-center">
+        <div class="hidden md:flex justify-between items-center">
           <p>Students: <span class="font-semibold">{{ rows.length }}</span></p>
           <TableViewToggle v-model="view" />
         </div>
@@ -86,7 +86,7 @@
       </UTable>
 
       <div v-if="state.teacherSubjectId && rows.length" class="grid"
-        :class="view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'">
+        :class="view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 md:p-4 md:gap-3'">
         <GradesStudentCard v-for="student in rows" :key="student.id" :record="student" :assessments="assessments"
           :total="calculateTotal(student)" :position="hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A'"
           @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)" />
