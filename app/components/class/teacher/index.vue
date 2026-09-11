@@ -1,9 +1,7 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <Heading title="My Classes" subtitle="Every class you're a class master or subject teacher for." />
-
         <!-- At a glance -->
-        <div class="grid grid-cols-3 gap-3 md:gap-5">
+        <div class="grid md:grid-cols-3 grid-cols-2 gap-3 md:gap-5">
             <Metric :record="{
                 label: 'Total Classes', color: 'primary', value: classes.length, isReady: !loading,
                 icon: CLASS_ICON, subtle: classMasterCount ? `${classMasterCount} as class master` : undefined
@@ -12,7 +10,7 @@
                 label: 'Class Master Of', color: 'info', value: classMasterCount, isReady: !loading,
                 icon: 'i-lucide-graduation-cap', subtle: 'Full roster oversight'
             }" />
-            <Metric :record="{
+            <Metric class="col-span-2 md:col-span-1" :record="{
                 label: 'Needs Attention', color: totalAttentionCount > 0 ? 'warning' : 'success',
                 value: totalAttentionCount, isReady: !loading, icon: 'i-lucide-alert-triangle',
                 subtle: 'Attendance or academic flags'

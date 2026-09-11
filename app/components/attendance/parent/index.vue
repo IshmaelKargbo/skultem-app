@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 p-4 md:px-6">
+    <div class="space-y-4 px-4 md:px-6">
         <Heading title="Attendance" subtitle="Track class attendance and export reports">
             <div class="grid w-full gap-3 sm:grid-cols-2 md:w-auto md:min-w-105">
                 <USelectMenu

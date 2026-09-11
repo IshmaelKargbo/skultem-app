@@ -6,9 +6,6 @@ const { student } = defineProps<{
 const studentStore = useStudentStore()
 const { format } = useMoney()
 
-// A local flag, not studentStore.loading - that's shared across every fetch this store makes
-// (overview/history included), so reusing it here made every stat tile flip "ready" the moment
-// any one of them finished, briefly showing stale/zero values in the others.
 const loading = ref(true)
 
 const report = ref({
@@ -26,11 +23,6 @@ async function fetchRecord() {
         const res = await studentStore.getAllStudentFeesById(student)
         const fees: any[] = res?.records ?? []
 
-        // Derived from the exact same records the Fee Schedule table below shows, rather than a
-        // separate set of analytics queries - so the summary and the table can never disagree,
-        // and "Pending" vs "Due Amount" split on the same real per-fee status the table uses
-        // (Overdue = past its due date and not yet settled) instead of a date-only cutoff that
-        // missed partially-paid-but-overdue fees.
         let total = 0, paid = 0, pending = 0, overdue = 0
         for (const fee of fees) {
             total += Number(fee.amount ?? 0)

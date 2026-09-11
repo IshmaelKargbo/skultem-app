@@ -131,7 +131,7 @@ function deletePeriodRecord(periodItem: Period) {
             class="rounded-full border px-4 py-2 text-sm font-medium transition-colors"
             :class="selectedDayIndex === dayIndex
               ? 'border-primary bg-primary text-white'
-              : 'border-default  bg-white text-muted hover:border-primary/40 hover:bg-primary/5 hover:text-primary'"
+              : 'border-default  bg-white dark:bg-gray-900 text-muted hover:border-primary/40 hover:bg-primary/5 hover:text-primary'"
             @click="selectedDayIndex = dayIndex"
           >
             {{ clean(dayName) }}

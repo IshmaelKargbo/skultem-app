@@ -15,8 +15,8 @@
                 <FeeParentHistoryMobile :student="state.student" />
             </template>
         </TabMobile>
-        <FeeParentOverview :student="state.student" />
-        <FeeParentHistory :student="state.student" />
+        <FeeParentOverview class="hidden md:block" :student="state.student" />
+        <FeeParentHistory class="hidden md:block" :student="state.student" />
     </div>
 </template>
 

@@ -63,7 +63,10 @@ watch(
   <div class="space-y-4">
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-end">
+        <div class="flex justify-between items-center">
+          <p class="hidden md:block">Students: <span>{{ feeDetails.records?.length || 0 }}</span></p>
+          <p class="md:hidden">Students:</p>
+          <p class="md:hidden">{{ feeDetails.records?.length || 0 }}</p>
           <TableViewToggle v-model="view" />
         </div>
       </template>
@@ -94,7 +97,7 @@ watch(
 
       </UTable>
 
-      <div class="p-4 space-y-4"
+      <div class="md:p-4 md:space-y-4"
         :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <!-- Loading -->
         <template v-if="loading">
@@ -114,7 +117,7 @@ watch(
 
         <!-- Data -->
         <template v-else-if="feeDetails.records?.length">
-          <UCard v-for="item in feeDetails.records" :key="item.id" :ui="{ body: 'p-0 sm:p-0' }">
+          <div v-for="item in feeDetails.records" :key="item.id" class="border-b border-default md:rounded-xl md:border">
             <div class="flex items-center justify-between gap-3 p-3">
               <div class="flex min-w-0 items-center gap-3">
                 <UAvatar size="2xl" :alt="item.name" class="shrink-0 ring-1 ring-gray-200 dark:ring-gray-700" />
@@ -126,7 +129,7 @@ watch(
               <UBadge :label="item.status" variant="outline" :color="parseFeeStatusColor[item.status]"
                 :icon="parseFeeStatusIcon[item.status]" class="shrink-0" />
             </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Empty -->

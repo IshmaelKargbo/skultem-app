@@ -3,22 +3,23 @@
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div>
-                    <div class="flex px-4 py-3 justify-between items-center gap-3">
+                    <div class="md:flex hidden px-4 py-3 justify-between items-center gap-3">
                         <div class="flex space-x-3 flex-1">
+                            <p>Subjects</p>
                             <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
                         </div>
 
                         <TableViewToggle v-model="view" />
                     </div>
 
-                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div class="border-t border-b p-4 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid md:gap-2 gap-y-2 grid-cols-1 md:grid-cols-3">
                             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
                                 class="col-span-2" />
                             <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
                                 placeholder="Sort by" />
                         </div>
-                        <div>
+                        <div class="hidden md:block">
                             <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                                 :disabled="!hasActiveFilters" @click="resetFilters" />
                         </div>
@@ -38,7 +39,7 @@
             </UTable>
             <!-- Mobile -->
             <div
-                :class="view === 'table' ? 'md:hidden' : 'p-4 grid grid-cols-1 space-y-4 gap-x-4 md:grid-cols-2 lg:grid-cols-3'">
+                :class="view === 'table' ? 'md:hidden p-4 space-y-4' : 'p-4 grid grid-cols-1 space-y-4 gap-4 md:grid-cols-2 lg:grid-cols-3'">
                 <UCard v-for="value in data" :key="value.id" :ui="{ body: 'sm:p-0 p-0' }">
                     <!-- Header -->
                     <div class="border-b border-default p-3">
@@ -80,9 +81,8 @@
             </template>
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col space-y-2 md:flex-row items-center justify-between">
                     <Showing :meta="meta" />
-
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />
                 </div>

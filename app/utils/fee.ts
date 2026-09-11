@@ -20,8 +20,6 @@ export type FeeCategory = {
     id: string
     name: string
     description: string
-    // Seeded by the platform itself (see SeedPlatformFeeForAcademicYearUseCase) - never something a
-    // school creates by hand, so it's kept out of pickers and locked against edit/delete.
     system: boolean
     createdAt: string
     updatedAt: string
@@ -62,17 +60,9 @@ export type FeeStructure = {
     amount: number
     dueDate: string
     description: string
-    // The platform fee the system seeds automatically - see the backend's FeeStructure.system.
-    // Locked against edit/delete regardless of role.
     isSystem: boolean
-    // Only ever charged the first time a student enrolls (e.g. Uniform Fee) - never to a student
-    // who's simply continuing/being promoted/re-enrolled into what this fee targets.
     newStudentsOnly: boolean
-    // Mirror image of newStudentsOnly - only ever charged to a student who is re-enrolling
-    // (a returning student), never a first-time NEW/TRANSFER admission.
     oldStudentsOnly: boolean
-    // Null/undefined reaches every gender. Set when a fee only applies to one - most commonly a
-    // supply fee (hasSupply) priced differently for boys vs girls.
     gender?: 'MALE' | 'FEMALE' | null
     createdAt: string
     updatedAt: string

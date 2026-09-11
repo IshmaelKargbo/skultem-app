@@ -328,12 +328,12 @@ const allQuickLinks: QuickLink[] = [
     label: "Classes",
     to: "/classes",
     icon: CLASS_ICON,
-    roles: [Role.ACCOUNTANT,],
+    roles: [Role.ACCOUNTANT, Role.TEACHER],
   },
   {
     label: "Subjects",
     to: "/subjects",
-    icon: CURRICULUM_SUBJECT_ICON,
+    icon: SUBJECT_ICON,
     roles: [Role.TEACHER,],
   },
   {
@@ -342,42 +342,22 @@ const allQuickLinks: QuickLink[] = [
     icon: STUDENT_ICON,
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT],
   },
-  { label: "Grades", to: "/grades", icon: GRADES_ICON, roles: [Role.PARENT] },
+  { label: "Timetable", to: "/timetable", icon: TIMETABLE_ICON, roles: [Role.TEACHER, Role.PARENT] },
+
+  { label: "Behaviours", to: "/behaviours", icon:BEHAVIOUR_ICON, roles: [Role.TEACHER] },
+
+   { label: "Grades", to: "/grades", icon: GRADES_ICON, roles: [Role.PARENT] },
   {
     label: "Notifications", to: "/communicate/notifications", icon: BELL_ICON,
     roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT]
   },
-  { label: "Fees", to: "/fees", icon: PAYMENT_ICON, roles: [Role.PARENT] },
+  { label: "Fees", to: "/fees", icon: PAYMENT_ICON, roles: [Role.PARENT, Role.TEACHER] },
 ];
 
 const quickLinks = computed(() => allQuickLinks.filter((link) => can(link.roles)));
 
-// Each raw section declares the roles that can see it AND its items, in one
-// place. Visibility is then *derived* — a section only renders if it has at
-// least one item left after filtering — instead of being a second, hand-kept
-// `visible` flag that can drift out of sync with the item-level `can()`
-// checks (previously possible to end up with an expandable section with a
-// chevron and no content underneath).
 const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
-  {
-    id: "general",
-    title: "General",
-    icon: "lucide:settings-2",
-    roles: [],
-    items: [
-      can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]) && {
-        label: "Settings",
-        icon: "lucide:settings-2",
-        to: "/settings/school",
-      },
-      { label: "Notifications", icon: BELL_ICON, to: "/communicate/notifications" },
-      canInstall.value && {
-        label: "Install App",
-        icon: "lucide:download",
-        action: installApp,
-      },
-    ],
-  },
+ 
   {
     id: "grades",
     title: "Grades",
@@ -412,6 +392,7 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
         icon: CURRICULUM_GROUP_ICON,
         to: "/subjects/subject-groups",
       },
+      
       { label: "Class Subjects", icon: BOOK_OPEN_ICON, to: "/subjects/class-subjects" },
       {
         label: "Streams Subjects",
@@ -435,7 +416,7 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     id: "behaviours",
     title: "Behaviours",
     icon: BEHAVIOUR_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER],
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
     items: [
       { label: "Behaviours", icon: BEHAVIOUR_ICON, to: "/behaviours" },
       { label: "Category", icon: CATEGORY_ICON, to: "/behaviours/category" },
@@ -445,7 +426,7 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     id: "timetable",
     title: "Timetable",
     icon: TIMETABLE_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER],
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
     items: [
       { label: "Timetable", icon: TIMETABLE_ICON, to: "/timetable" },
       { label: "Settings", icon: TIMETABLE_SETTINGS_ICON, to: "/timetable/setting" },

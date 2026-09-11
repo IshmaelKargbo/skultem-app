@@ -51,11 +51,9 @@
                         <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
                             :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
 
-                        <!-- Same "improve the class" shortcuts a class master/subject teacher already gets
-                             from My Classes, kept here too since this page is where they end up next. -->
                         <template v-if="isTeacherViewer && (isMasterOfThisClass || isSubjectTeacherOfThisClass)">
-                            <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm" color="neutral"
-                                label="Curriculum" icon="i-lucide-book-open" />
+                            <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm"
+                                color="neutral" label="Curriculum" icon="i-lucide-book-open" />
                             <UButton :to="`/timetable?session=${session?.id}`" variant="soft" size="sm" color="neutral"
                                 label="Timetable" icon="i-lucide-calendar-days" />
                         </template>
@@ -157,11 +155,10 @@
             </UTable>
 
             <!-- Mobile / Card -->
-            <div class="p-4"
+            <div class="md:p-4 space-y-4"
                 :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'">
                 <template v-if="studentsLoading">
-                    <UCard v-for="i in 4" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm"
-                        :ui="{ body: 'p-0' }">
+                    <div v-for="i in 4" :key="i">
                         <div class="animate-pulse">
                             <div class="border-b border-default p-4">
                                 <div class="flex items-center justify-between gap-3">
@@ -195,160 +192,42 @@
                                 <USkeleton class="h-9 w-20 shrink-0 rounded-xl" />
                             </div>
                         </div>
-                    </UCard>
+                    </div>
                 </template>
 
                 <template v-else-if="displayStudents.length">
-                    <UCard v-for="student in displayStudents" :key="student.id" class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
-                        :class="needsAttention(student) ? 'border-l-4 border-l-warning' : ''"
-                        :ui="{ body: 'p-0' }">
+                    <UCard v-for="student in displayStudents" :key="student.id"
+                        :class="needsAttention(student) ? 'md:border-l-4 border-l-2 border-l-warning' : ''"
+                        :ui="{ body: 'sm:p-0 p-0' }">
                         <!-- Header -->
                         <div class="border-b border-default p-4">
-                            <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center justify-between gap-3">
                                 <div class="flex min-w-0 items-center gap-3">
-                                    <UAvatar class="size-10" :src="student.photo || '/avatar-placeholder.svg'"
+                                    <UAvatar class="size-10" :src="student.photo"
                                         :alt="`${student.givenNames} ${student.familyName}`" loading="lazy" />
 
                                     <div class="min-w-0">
-                                        <h3 class="flex items-center gap-1.5 truncate text-base font-bold text-highlighted">
+                                        <h3
+                                            class="flex items-center gap-1.5 truncate text-base font-bold text-highlighted">
                                             {{ student.givenNames }} {{ student.familyName }}
                                             <UTooltip v-if="needsAttention(student)" :text="attentionReason(student)">
-                                                <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
+                                                <UIcon name="i-lucide-alert-triangle"
+                                                    class="size-4 shrink-0 text-warning" />
                                             </UTooltip>
                                         </h3>
 
-                                        <p class="truncate text-xs-base text-muted">
+                                        <p class="truncate mt-0.5 text-xs-base text-muted">
                                             {{ student.admissionNumber || 'No Admission No' }}
                                         </p>
                                     </div>
                                 </div>
 
-                                <UBadge :label="parseStatus[student.status] || student.status"
-                                    :color="parseStatusColor[student.status]" variant="soft" />
-                            </div>
-                        </div>
-
-                        <!-- Stats -->
-                        <div class="grid grid-cols-2 gap-3 p-4">
-                            <!-- Gender -->
-                            <div class="min-w-0 rounded-2xl border p-3" :class="student.gender === 'MALE'
-                                ? 'border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10'
-                                : student.gender === 'FEMALE'
-                                    ? 'border-pink-200 bg-pink-50 dark:border-pink-500/20 dark:bg-pink-500/10'
-                                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-                                ">
-                                <div class="mb-2 flex items-center gap-2">
-                                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg" :class="student.gender === 'MALE'
-                                        ? 'bg-blue-100 dark:bg-blue-500/20'
-                                        : student.gender === 'FEMALE'
-                                            ? 'bg-pink-100 dark:bg-pink-500/20'
-                                            : 'bg-gray-200 dark:bg-gray-700'
-                                        ">
-                                        <UIcon name="i-lucide-users" class="size-4" :class="student.gender === 'MALE'
-                                            ? 'text-blue-600 dark:text-blue-400'
-                                            : student.gender === 'FEMALE'
-                                                ? 'text-pink-600 dark:text-pink-400'
-                                                : 'text-gray-600 dark:text-gray-400'
-                                            " />
-                                    </div>
-
-                                    <p class="text-[10px] font-medium uppercase tracking-wide" :class="student.gender === 'MALE'
-                                        ? 'text-blue-700 dark:text-blue-300'
-                                        : student.gender === 'FEMALE'
-                                            ? 'text-pink-700 dark:text-pink-300'
-                                            : 'text-gray-600 dark:text-gray-400'
-                                        ">
-                                        Gender
-                                    </p>
-                                </div>
-
-                                <p class="truncate text-sm font-medium text-highlighted">
-                                    {{ parseGender[student.gender] || 'N/A' }}
-                                </p>
-                            </div>
-
-                            <!-- Date of Birth -->
-                            <div
-                                class="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-                                <div class="mb-2 flex items-center gap-2">
-                                    <div
-                                        class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20">
-                                        <UIcon name="i-lucide-calendar-days"
-                                            class="size-4 text-amber-600 dark:text-amber-400" />
-                                    </div>
-
-                                    <p
-                                        class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
-                                        Date of Birth
-                                    </p>
-                                </div>
-
-                                <p class="truncate text-sm font-medium text-highlighted">
-                                    {{ formatDate(student.dateOfBirth) || 'N/A' }}
-                                </p>
-                            </div>
-
-                            <!-- Guardian -->
-                            <div
-                                class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-                                <div class="mb-2 flex items-center gap-2">
-                                    <div
-                                        class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
-                                        <UIcon name="i-lucide-user-round"
-                                            class="size-4 text-emerald-600 dark:text-emerald-400" />
-                                    </div>
-
-                                    <p
-                                        class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-                                        Guardian
-                                    </p>
-                                </div>
-
-                                <p class="truncate text-sm font-medium text-highlighted">
-                                    {{ student.guardian?.givenNames }} {{ student.guardian?.familyName }}
-                                </p>
-                            </div>
-
-                            <!-- Admission No -->
-                            <div
-                                class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
-                                <div class="mb-2 flex items-center gap-2">
-                                    <div
-                                        class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
-                                        <UIcon name="i-lucide-id-card"
-                                            class="size-4 text-violet-600 dark:text-violet-400" />
-                                    </div>
-
-                                    <p
-                                        class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">
-                                        Admission No
-                                    </p>
-                                </div>
-
-                                <p class="truncate text-sm font-medium text-highlighted">
-                                    {{ student.admissionNumber || 'N/A' }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="flex items-center justify-between gap-3 border-t border-default p-4">
-                            <div class="flex min-w-0 items-center gap-3">
-                                <UAvatar size="xl" icon="i-lucide-users" />
-
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-medium text-highlighted">
-                                        {{ student.family?.fatherName || 'No Father Name' }}
-                                    </p>
-                                    <p class="truncate text-xs-base text-muted">
-                                        {{ student.family?.motherName || 'No Mother Name' }}
-                                    </p>
+                                <div class="flex shrink-0 flex-col items-end gap-1">
+                                    <UButton size="xs" :to="`/students/${student.id}?back=/classes/${route.params.id}`" trailing-icon="i-lucide-chevron-right" color="neutral"
+                                        variant="ghost" class="shrink-0 rounded-xl" />
+                                    <p class="text-[10px] text-mute">{{ attentionReason(student) }}</p>
                                 </div>
                             </div>
-
-                            <UButton :to="`/students/${student.id}?back=/classes/${route.params.id}`" label="View"
-                                trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="lg"
-                                class="shrink-0 rounded-xl" />
                         </div>
                     </UCard>
                 </template>
@@ -362,7 +241,8 @@
             </div>
 
             <template #footer>
-                <div v-if="students.length" class="flex items-center justify-between">
+                <div v-if="students.length"
+                    class="flex flex-col md:flex-row space-y-2 md:space-y-0 items-center justify-between">
                     <Showing :meta="meta" />
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />
@@ -372,22 +252,23 @@
 
         <UCard v-else-if="isTeacherViewer">
             <div class="flex flex-col items-center gap-3 py-10 text-center">
-                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
                     <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
                 </div>
-                <p class="text-sm font-semibold text-highlighted">Student list is only visible to staff of this class</p>
-                <p class="max-w-xs text-xs text-muted">You're not the class master or a subject teacher here. Head to My Classes to see the ones you teach.</p>
+                <p class="text-sm font-semibold text-highlighted">Student list is only visible to staff of this class
+                </p>
+                <p class="max-w-xs text-xs text-muted">You're not the class master or a subject teacher here. Head to My
+                    Classes
+                    to see the ones you teach.</p>
                 <UButton to="/classes" label="My Classes" :icon="CLASS_ICON" color="primary" variant="soft" />
             </div>
         </UCard>
 
-        <!-- A parent can look up any class in the school this way (the same broad
-             access other class-level info already has), but the roster lists other
-             families' children - given only the class-scoped view, not their own
-             child's page, so it stays hidden here rather than leaking that. -->
         <UCard v-else-if="isParentViewer">
             <div class="flex flex-col items-center gap-3 py-10 text-center">
-                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
                     <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
                 </div>
                 <p class="text-sm font-semibold text-highlighted">Student list is only visible to school staff</p>

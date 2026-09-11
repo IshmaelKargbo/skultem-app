@@ -37,7 +37,7 @@
                     class="border-b px-4 py-3 border-gray-200 last:border-0 dark:border-gray-800">
                     <div class="flex items-center justify-between gap-3">
                         <div class="flex gap-3 min-w-0 items-center">
-                            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                            <div class="md:flex size-9 shrink-0 hidden items-center justify-center rounded-xl bg-primary/10">
                                 <UIcon name="ph:wallet-light" class="size-4 text-primary" />
                             </div>
                             <div class="min-w-0 space-y-0.5">

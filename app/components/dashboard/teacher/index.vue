@@ -73,8 +73,8 @@
                     <SectionHeading title="Performance" subtitle="Pick a subject to see how that class is doing." accent="secondary" />
 
                     <UCard>
-                        <div class="grid gap-3 sm:grid-cols-3">
-                            <div>
+                        <div class="grid gap-3 grid-cols-2 md:grid-cols-3">
+                            <div class="col-span-2 md:col-span-1">
                                 <p class="mb-1 text-xs font-medium text-muted">Subject</p>
                                 <USelectMenu value-key="value" v-model="state.clazz" :loading="loading" :items="subjects"
                                     placeholder="Select Subject" class="w-full" />
@@ -92,11 +92,11 @@
                         </div>
                     </UCard>
 
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         <DashboardTeacherTotal :term="term" :session-id="selected?.classId" />
                         <DashboardTeacherClassAvarage :assessment="state.assessment" :class-id="selected?.classId"
                             :teacher="selected?.id" :term="term" :session-id="selected?.classId" />
-                        <DashboardTeacherAttendance :classId="selected?.classId" />
+                        <DashboardTeacherAttendance class="col-span-2 md:col-span-1"  :classId="selected?.classId" />
                     </div>
 
                     <DashboardTeacherGradeDistribution :assessment="state.assessment" :term="state.term"
@@ -104,10 +104,6 @@
                     <DashboardTeacherAttendanceTrend :class-id="selected?.classId" />
                 </template>
 
-                <!-- A class master with no subject of their own has nothing to power the
-                     Performance section (it's built around "your subject in your class") - this
-                     used to just leave the space blank, which reads like something's broken.
-                     Explain the gap instead of hiding it. -->
                 <template v-else>
                     <SectionHeading title="Performance" subtitle="Subject performance for the classes you teach." accent="secondary" />
 

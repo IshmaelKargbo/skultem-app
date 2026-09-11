@@ -35,10 +35,6 @@ function setActive(key: string) {
 
 <template>
   <div class="space-y-3">
-    <!-- Scrolls horizontally instead of squeezing every tab into an equal-width column - a
-         short list (2-3 tabs) still reads as evenly spaced since the row only fills the space
-         it needs, while a long one (6+, e.g. a student's full profile tabs) scrolls smoothly
-         instead of truncating every label. -->
     <div class="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div
         class="inline-flex min-w-full gap-1 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
