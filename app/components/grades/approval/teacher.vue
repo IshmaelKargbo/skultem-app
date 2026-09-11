@@ -1,11 +1,6 @@
 <script setup lang="ts">
 type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
 
-// No "All Statuses" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). Nothing selected already shows the "All Statuses" placeholder, and
-// the select's own clear button (:clear below) gets back to it.
 const filterOptions: { label: string, value: ApprovalRequestStatusFilter }[] = [
   { label: 'Pending', value: 'PENDING_REVIEW' },
   { label: 'Approved', value: 'APPROVED' },
@@ -26,12 +21,6 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val }),
 })
 
-// Plain local refs, not URL-bound computed getters/setters - a USelectMenu's v-model needs to
-// read back the value it was just given synchronously. Routing the write through
-// router.replace()'s async round trip first (as a computed setter would) left the dropdown
-// showing its old selection until the navigation resolved, which read as "picking an option does
-// nothing". These still seed from the URL on load and push back to it (see the watch below) so a
-// direct link/refresh keeps the filter, but the URL is a mirror now, not the source of truth.
 const status = ref<ApprovalRequestStatusFilter>((route.query.status as ApprovalRequestStatusFilter) ?? '')
 const searchInput = ref(String(route.query.search ?? ''))
 const search = ref(searchInput.value)
@@ -80,8 +69,6 @@ async function fetchSummary() {
 
 watch(() => page.value, () => fetchRecords())
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
 watch([status, search], () => {
   updateQuery({ status: status.value || undefined, search: search.value || undefined, page: 1 })
 
@@ -114,14 +101,14 @@ definePageMeta({
             </div>
           </div>
 
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div class="border-t p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
               <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
-                class="col-span-2 sm:col-span-2" />
+                class="sm:col-span-2" />
               <USelectMenu v-model="status" value-key="value" label-key="label" :items="filterOptions"
                 placeholder="All Statuses" clear />
             </div>
-            <div>
+            <div class="md:block hidden">
               <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                 :disabled="!hasActiveFilters" @click="resetFilters" />
             </div>
