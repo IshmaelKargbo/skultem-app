@@ -7,8 +7,6 @@
 <script setup lang="ts">
 const {can} = useAuth()
 
-// Missing entirely before - matches the GradesAdmin/GradesTeacher/GradesParent branches
-// above, so any other role landed here with no guard at all.
 definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]
 })
