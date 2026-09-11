@@ -36,6 +36,27 @@ export type CreateSchemeOfWork = {
     term: string
 }
 
+// One row's outcome from a bulk CSV upload - one row is one week. CREATED, SKIPPED (that week
+// already existed), or FAILED (with a reason), so the upload result can list exactly what
+// happened per row.
+export type BulkSchemeRowResult = {
+    row: number
+    className: string
+    subjectName: string
+    termName: string
+    week: number | null
+    topic: string | null
+    outcome: 'CREATED' | 'SKIPPED' | 'FAILED'
+    message: string | null
+}
+
+export type BulkSchemeOfWorkResult = {
+    created: number
+    skipped: number
+    failed: number
+    rows: BulkSchemeRowResult[]
+}
+
 export type Week = {
     id: string
     schemeId: string

@@ -65,7 +65,7 @@
                     <div v-for="item in quickFacts" :key="item.label"
                         class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
                         <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            class="hidden md:flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <UIcon :name="item.icon" class="size-4" />
                         </div>
 
@@ -87,8 +87,6 @@
 
         <ClassPromotionSetting :id="session?.clazzId || ''" />
 
-        <!-- Students - a teacher only sees the roster for a class they're the class
-             master of; a subject-only teacher is pointed to Curriculum instead. -->
         <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0' }">
             <template #header>
                 <div class="flex items-center justify-between">
@@ -196,7 +194,7 @@
                 </template>
 
                 <template v-else-if="displayStudents.length">
-                    <UCard v-for="student in displayStudents" :key="student.id"
+                    <UCard v-for="student in displayStudents" :key="student.id" class="shadow-none"
                         :class="needsAttention(student) ? 'md:border-l-4 border-l-2 border-l-warning' : ''"
                         :ui="{ body: 'sm:p-0 p-0' }">
                         <!-- Header -->
@@ -223,8 +221,9 @@
                                 </div>
 
                                 <div class="flex shrink-0 flex-col items-end gap-1">
-                                    <UButton size="xs" :to="`/students/${student.id}?back=/classes/${route.params.id}`" trailing-icon="i-lucide-chevron-right" color="neutral"
-                                        variant="ghost" class="shrink-0 rounded-xl" />
+                                    <UButton size="xs" :to="`/students/${student.id}?back=/classes/${route.params.id}`"
+                                        trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost"
+                                        class="shrink-0 rounded-xl" />
                                     <p class="text-[10px] text-mute">{{ attentionReason(student) }}</p>
                                 </div>
                             </div>
@@ -298,21 +297,8 @@ const { classRecords: students, classMeta: meta, loading: studentsLoading } = st
 
 const view = ref<'table' | 'card'>('table')
 
-// --- Roster insights: performance sort + needs-attention flag ---
-// The average score used for "Sort by Performance" doesn't live on the student record itself, so
-// it's pulled from the same analytics engine the dashboard widgets use (class-wide, not paginated
-// with the roster) and matched back onto each row by full name - the report entities only expose a
-// "student" name field, not the student id, so an exact `givenNames familyName` match is the best
-// we can do here (same trade-off the "at risk students" widget already makes). The needs-attention
-// flag itself is a different, id-keyed call (ComputeClassAttentionUseCase via /class/{id}/attention)
-// combining attendance and academic average against the class's pass mark, so it doesn't inherit
-// that name-matching fragility.
 const widgetStore = useWidgetStore()
 const performanceByName = ref<Record<string, number>>({})
-// Computed in fetchRosterInsights alongside performanceByName but not surfaced in the roster yet
-// (no per-student attendance % column/tooltip currently reads it) - kept as a ref so that
-// computation doesn't throw a ReferenceError on every load; a future attendance-rate display
-// can read it the same way performanceOf() reads performanceByName.
 const attendanceByName = ref<Record<string, number>>({})
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const sortByPerformance = ref(false)
@@ -329,8 +315,6 @@ function attentionOf(s: Student) {
     return attentionByStudentId.value[s.id]
 }
 
-// The endpoint only returns students who were actually flagged, so being present in the map at
-// all (for either reason) is exactly what "needs attention" means here.
 function needsAttention(s: Student) {
     return !!attentionOf(s)
 }
@@ -442,9 +426,6 @@ const columns = [
 ]
 
 const quickFacts = computed(() => [
-    // Pulled from the session, not the roster's page meta - the roster is only
-    // ever fetched for a class master, so a subject teacher or parent viewing
-    // this page would otherwise always see "0" here.
     { label: 'Total Students', value: session.value?.totalStudent ?? 0, icon: STUDENT_ICON },
     { label: 'Class Teachers', value: session.value?.teacherName ?? 0, icon: 'i-lucide-user-round-check' }
 ])

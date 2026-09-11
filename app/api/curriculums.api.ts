@@ -27,6 +27,20 @@ export const CurriculumsApi = () => {
         useHandleError(err)
       }
     },
+    bulkCreateSchemeOfWork: async (file: File) => {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const res = await $api('/curriculum/scheme/bulk', {
+          method: 'POST',
+          body: formData
+        }) as any
+        return res as { message: string; data: BulkSchemeOfWorkResult }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     createWeek: async (payload: CreateWeek) => {
       try {
         const res = await $api('/curriculum/scheme/week', {

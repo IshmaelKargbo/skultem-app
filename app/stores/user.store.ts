@@ -32,6 +32,22 @@ export const useUserStore = defineStore('user', {
     assignRole(payload: AssignRoleDTO) {
       return UserApi().assign(payload)
     },
+    async setAccess(id: string, active: boolean) {
+      const res = await UserApi().setAccess(id, active)
+      if (res) {
+        const idx = this.records.findIndex(r => r.id === id)
+        if (idx !== -1) this.records[idx] = res
+      }
+      return res
+    },
+    async removeRole(id: string, role: string) {
+      const res = await UserApi().removeRole(id, role)
+      if (res) {
+        const idx = this.records.findIndex(r => r.id === id)
+        if (idx !== -1) this.records[idx] = res
+      }
+      return res
+    },
     async me() {
       try {
         this.meLoading = true

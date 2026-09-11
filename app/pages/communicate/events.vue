@@ -75,7 +75,7 @@ function remove(entry: CalendarEntry) {
           <CommunicateEventAdd v-if="canManage" />
         </div>
       </template>
-      <UTable :columns="columns" :data="data" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-3 py-16">
             <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
@@ -127,6 +127,54 @@ function remove(entry: CalendarEntry) {
           </div>
         </template>
       </UTable>
+
+      <!-- Mobile - the table above is column-heavy (title/dates/location/actions), so it just
+           gets hidden below md rather than squeezed; this card list carries the same data. -->
+      <div class="divide-y divide-default md:hidden">
+        <div v-if="loading" class="space-y-3 p-4">
+          <USkeleton v-for="i in 4" :key="i" class="h-20 w-full rounded-xl" />
+        </div>
+
+        <div v-else-if="!data.length" class="flex flex-col items-center gap-3 py-16">
+          <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
+            <UIcon :name="EVENT_ICON" class="text-4xl text-primary-500" />
+          </div>
+          <div class="text-center">
+            <h3 class="font-semibold text-highlighted">No events or holidays found</h3>
+            <p class="mt-1 text-sm text-muted">Upcoming events and holidays will appear here.</p>
+          </div>
+        </div>
+
+        <div v-else v-for="entry in data" :key="entry.id" class="flex items-start gap-3 p-4">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-xl"
+            :class="entry.type === 'HOLIDAY' ? 'bg-warning-50 dark:bg-warning-500/10' : 'bg-primary-50 dark:bg-primary-500/10'">
+            <UIcon class="size-5" :name="entry.type === 'HOLIDAY' ? HOLIDAY_ICON : EVENT_ICON"
+              :class="entry.type === 'HOLIDAY' ? 'text-warning-500' : 'text-primary-500'" />
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-highlighted">{{ entry.title }}</p>
+            <p v-if="entry.description" class="truncate text-xs text-muted">{{ entry.description }}</p>
+
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <UBadge :color="entry.type === 'HOLIDAY' ? 'warning' : 'info'" variant="subtle">
+                {{ entry.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
+              </UBadge>
+              <p class="text-sm text-muted">
+                {{ formatDate(entry.startDate) }}
+                <template v-if="entry.endDate !== entry.startDate"> — {{ formatDate(entry.endDate) }}</template>
+              </p>
+            </div>
+
+            <p v-if="entry.location" class="mt-1 text-xs text-muted">{{ entry.location }}</p>
+          </div>
+
+          <div v-if="canManage" class="flex shrink-0 gap-1">
+            <CommunicateEventAdd :entry="entry" />
+            <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(entry)" />
+          </div>
+        </div>
+      </div>
 
       <template v-if="meta.total" #footer>
         <div class="flex items-center justify-between">

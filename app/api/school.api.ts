@@ -85,6 +85,21 @@ export const SchoolApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    // Same reason as getBrandingAssets above (R2's public bucket sends no CORS headers, which
+    // breaks html2canvas's PDF/print capture) but for any single R2 URL - a student/staff photo
+    // on the ID card, say, rather than only the school's logo/signature.
+    getAssetDataUri: async (url: string) => {
+      try {
+        const res = await $api(`/school/asset-as-data-uri?url=${encodeURIComponent(url)}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch asset')
+
+        return res.data?.dataUri as string | null
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

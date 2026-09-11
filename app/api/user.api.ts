@@ -60,6 +60,22 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    setAccess: async (id: string, active: boolean) => {
+      try {
+        const res = await $api(`/user/${id}/access?active=${active}`, { method: 'PATCH' }) as any
+        return res.data as User
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    removeRole: async (id: string, role: string) => {
+      try {
+        const res = await $api(`/user/${id}/role?role=${role}`, { method: 'DELETE' }) as any
+        return res.data as User
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     login: async (payload: LoginDto) => {
       try {
         const res = await $api('/auth/login', {

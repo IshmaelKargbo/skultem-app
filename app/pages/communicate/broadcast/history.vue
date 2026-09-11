@@ -66,7 +66,7 @@ const columns = [
           <UButton to="/communicate/broadcast" class="flex justify-center" label="Compose Broadcast" :icon="BROADCAST_ICON" />
         </div>
       </template>
-      <UTable :columns="columns" :data="data" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-3 py-16">
             <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
@@ -116,6 +116,49 @@ const columns = [
           </p>
         </template>
       </UTable>
+
+      <!-- Mobile - same data as the table above, which gets hidden below md rather than
+           squeezed into 5 columns on a phone screen. -->
+      <div class="divide-y divide-default md:hidden">
+        <div v-if="loading" class="space-y-3 p-4">
+          <USkeleton v-for="i in 4" :key="i" class="h-24 w-full rounded-xl" />
+        </div>
+
+        <div v-else-if="!data.length" class="flex flex-col items-center gap-3 py-16">
+          <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
+            <UIcon :name="BROADCAST_HISTORY_ICON" class="text-4xl text-primary-500" />
+          </div>
+          <div class="text-center">
+            <h3 class="font-semibold text-highlighted">No broadcasts yet</h3>
+            <p class="mt-1 text-sm text-muted">Broadcasts you send or schedule will appear here.</p>
+          </div>
+        </div>
+
+        <div v-else v-for="broadcast in data" :key="broadcast.id" class="space-y-2 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium text-highlighted">{{ broadcast.title }}</p>
+              <p class="mt-0.5 truncate text-xs text-muted">{{ broadcast.message }}</p>
+            </div>
+            <UBadge :color="broadcastStatusStyle[broadcast.status].color" variant="soft" class="shrink-0">
+              {{ broadcastStatusStyle[broadcast.status].label }}
+            </UBadge>
+          </div>
+
+          <div class="flex flex-wrap gap-1">
+            <UBadge v-for="channel in broadcast.channels" :key="channel" color="neutral" variant="subtle" size="sm">
+              {{ channel }}
+            </UBadge>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+            <UBadge color="neutral" variant="subtle">{{ audienceLabel(broadcast.audience) }}</UBadge>
+            <p><span class="font-medium text-highlighted">{{ broadcast.deliveredCount }}</span> / {{
+              broadcast.recipientsCount }} delivered</p>
+            <p>{{ formatDateTime(broadcast.sentAt || broadcast.scheduledAt || broadcast.createdAt) }}</p>
+          </div>
+        </div>
+      </div>
 
       <template v-if="meta.total" #footer>
         <div class="flex items-center justify-between">

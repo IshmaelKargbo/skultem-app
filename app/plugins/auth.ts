@@ -5,6 +5,7 @@ export default defineNuxtPlugin(async () => {
 
     const userStore = useUserStore()
     const { initializeActiveRole, clearRole, setAuthResolved } = useAuth()
+    const { applyBrandColorsForCurrentSchool } = useBranding()
     const { hide } = useGlobalLoader()
 
     setAuthResolved(false)
@@ -12,6 +13,9 @@ export default defineNuxtPlugin(async () => {
     try {
         await userStore.me()
         initializeActiveRole()
+        // Best-effort inside itself (never throws) - a branding fetch failure must not be
+        // mistaken for an auth failure and clear the user's session below.
+        await applyBrandColorsForCurrentSchool()
     } catch (error) {
         token.value = null
         refreshToken.value = null

@@ -1,24 +1,35 @@
 <template>
   <UCard class="h-full flex flex-col" :ui="{
     body: 'flex-1 overflow-y-auto sm:p-0',
-    footer: 'sm:p-5',
-    header: 'sm:p-5'
+    footer: 'sm:p-3',
+    header: 'sm:p-3'
   }">
     <!-- Header (fixed height) -->
     <template #header>
-      <div class="flex items-center">
-        <NuxtLink to="/" class="block dark:hidden">
-          <img src="/menu-dark.svg" alt="Skultem" class="h-7" />
-        </NuxtLink>
+      <NuxtLink to="/" class="flex min-w-0 items-center gap-2">
+        <!-- The school's own logo when known (see useSchoolInfo), falling back to Skultem's -
+             this is the one piece of "Skultem" branding shown on every single authenticated page. -->
+        <img v-if="school?.logo" :src="school.logo" :alt="school.name || 'School logo'"
+          class="h-9 w-9 shrink-0 rounded-lg object-contain" />
 
-        <NuxtLink to="/" class="hidden dark:block">
-          <img src="/menu-light.svg" alt="Skultem" class="h-7" />
-        </NuxtLink>
-      </div>
+        <template v-else>
+          <img src="/menu-dark.svg" alt="Skultem" class="h-7 shrink-0 block dark:hidden" />
+          <img src="/menu-light.svg" alt="Skultem" class="h-7 shrink-0 hidden dark:block" />
+        </template>
+
+        <div v-if="school?.name" class="min-w-0">
+          <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
+            {{ school.name }}
+          </p>
+          <p v-if="school?.motto" class="truncate text-xs italic leading-tight text-muted">
+            {{ school.motto }}
+          </p>
+        </div>
+      </NuxtLink>
     </template>
 
     <!-- Scrollable Body -->
-    <div class="h-full overflow-y-auto p-5">
+    <div class="h-full overflow-y-auto p-4">
       <ul class="space-y-2">
         <li v-for="item in visibleNavItems" :key="item.label + (item.to ?? '')">
           <MenuItem :label="item.label" :to="item.to" :exact="item.exact" :subNavs="item.subNavs">
@@ -50,6 +61,13 @@
 </template>
 
 <script setup lang="ts">
+// Reactive, app-wide school info (see useSchoolInfo) - hydrated from the offline cache
+// immediately, and kept current whenever plugins/auth.ts (or the login page) fetches fresh data,
+// even on a first-ever visit where the cache started out empty and this would otherwise have been
+// stuck showing Skultem's own logo for the rest of the session.
+const { school, hydrateFromCache } = useSchoolInfo()
+hydrateFromCache()
+
 interface SubNavItem {
   label: string
   to: string

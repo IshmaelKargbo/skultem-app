@@ -211,8 +211,10 @@ const state = reactive<ClassSubjectForm>({
     assignments: []
 })
 
+// state.classId holds the class *session* id (see `classes` below, value: e.id) - match on e.id,
+// not e.clazzId, or this never finds a record and disableByLevel/fetchRecord silently no-op.
 const selectedClass = computed(() =>
-    classStore.records.find(e => e.clazzId === state.classId)
+    classStore.records.find(e => e.id === state.classId)
 )
 
 const disableByLevel = computed(
@@ -295,7 +297,18 @@ function resetForm() {
 async function fetchRecord() {
     if (!state.classId) return
 
-    const list = await store.fetchAllByClass(state.classId, 0, 0)
+    // The subjects/groups endpoints are keyed by the class itself (and, for a streamed class, by
+    // stream too), not by the session id state.classId holds - passing the session id here always
+    // came back empty, so re-opening an already-configured class silently looked unconfigured and
+    // saving would re-create every subject as a duplicate row instead of updating it.
+    const clazzId = selectedClass.value?.clazzId
+    const streamId = selectedClass.value?.streamId
+
+    if (!clazzId) return
+
+    const list = streamId
+        ? await store.fetchAllByClassAndStream(clazzId, streamId, 0, 0)
+        : await store.fetchAllByClass(clazzId, 0, 0)
 
     if (list?.length) {
         state.assignments = list.map((e: ClassSubject) => ({
@@ -309,7 +322,7 @@ async function fetchRecord() {
         add()
     }
 
-    const groupRes = await subjectGroupStore.fetchAllByClass(state.classId)
+    const groupRes = await subjectGroupStore.fetchAllByClass(clazzId)
 
     if (groupRes) {
         groups.value = groupRes.map((e: SubjectGroup) => ({

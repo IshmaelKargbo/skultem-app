@@ -6,8 +6,20 @@ const store = useUserStore()
 
 const { records: data, meta, loading } = storeToRefs(store)
 
+const { user: me } = storeToRefs(store)
+
 const showAssign = ref(false)
 const selectedUserId = ref('')
+
+const statusTarget = ref<User | null>(null)
+const showStatus = computed<boolean>({
+  get: () => statusTarget.value !== null,
+  set: (v) => { if (!v) statusTarget.value = null }
+})
+
+function openStatusPrompt(user: User) {
+  statusTarget.value = user
+}
 
 const UButton = resolveComponent('UButton')
 
@@ -175,8 +187,8 @@ onMounted(async () => {
         </template>
 
         <template #status-cell="{ row }">
-          <UBadge :label="parseStatus[row.original.status]" variant="soft"
-            :color="parseStatusColor[row.original.status]" />
+          <UBadge :label="parseStatus[row.original.schoolStatus ?? row.original.status]" variant="soft"
+            :color="parseStatusColor[row.original.schoolStatus ?? row.original.status]" />
         </template>
 
         <template #actions-cell="{ row }">
@@ -189,6 +201,13 @@ onMounted(async () => {
             <UTooltip :delay-duration="0" arrow text="Assign Role">
               <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding" class="rounded-xl"
                 @click="openAssignRole(row.original.id)" />
+            </UTooltip>
+
+            <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow
+              :text="row.original.schoolStatus === 'ACTIVE' ? 'Deactivate' : 'Reactivate'">
+              <UButton size="sm" variant="soft" :color="row.original.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
+                :icon="row.original.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
+                class="rounded-xl" @click="openStatusPrompt(row.original)" />
             </UTooltip>
           </div>
         </template>
@@ -264,7 +283,7 @@ onMounted(async () => {
               </div>
 
               <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                {{ item.status }}
+                {{ parseStatus[item.schoolStatus ?? item.status] }}
               </p>
             </div>
 
@@ -307,8 +326,14 @@ onMounted(async () => {
               </p>
             </div>
 
-            <UButton label="Assign Role" size="sm" color="primary" variant="soft" icon="eos-icons:cluster-role-binding"
-              class="rounded-xl" @click="openAssignRole(item.id)" />
+            <div class="flex gap-2">
+              <UButton v-if="me?.id !== item.id" size="sm" :color="item.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
+                variant="soft" :icon="item.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
+                class="rounded-xl" @click="openStatusPrompt(item)" />
+
+              <UButton label="Assign Role" size="sm" color="primary" variant="soft" icon="eos-icons:cluster-role-binding"
+                class="rounded-xl" @click="openAssignRole(item.id)" />
+            </div>
           </div>
         </UCard>
       </template>
@@ -343,5 +368,8 @@ onMounted(async () => {
     </UCard>
 
     <AuthUsersAssign v-model="showAssign" :user-id="selectedUserId" @success="fetchRecord" />
+
+    <AuthUsersStatusPrompt v-if="statusTarget" v-model:open="showStatus" :user-id="statusTarget.id"
+      :user-name="`${statusTarget.givenNames} ${statusTarget.familyName}`" :active="statusTarget.schoolStatus === 'ACTIVE'" />
   </div>
 </template>

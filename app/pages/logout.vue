@@ -81,6 +81,7 @@
 <script setup lang="ts">
 const store = useUserStore()
 const { user } = storeToRefs(store)
+const { clearBrandColors } = useBranding()
 
 const isLoading = ref(false)
 
@@ -92,6 +93,7 @@ async function logout() {
     isLoading.value = true
 
     await store.logout()
+    clearBrandColors()
 
     isLoading.value = false
 

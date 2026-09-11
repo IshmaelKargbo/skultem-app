@@ -68,6 +68,9 @@ export const useClassSubjectStore = defineStore('classSubject', {
     },
     create(id: string, payload: CreateClassSubjectDto) {
       return ClassSubjectApi().create(id, payload)
+    },
+    duplicate(sourceClassId: string, targetClassIds: string[]) {
+      return ClassSubjectApi().duplicate(sourceClassId, targetClassIds)
     }
   },
   getters: {

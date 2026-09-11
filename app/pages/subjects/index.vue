@@ -5,7 +5,7 @@
                 <div>
                     <div class="md:flex hidden px-4 py-3 justify-between items-center gap-3">
                         <div class="flex space-x-3 flex-1">
-                            <p>Subjects</p>
+                            <p class="md:hidden">Subjects</p>
                             <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
                         </div>
 

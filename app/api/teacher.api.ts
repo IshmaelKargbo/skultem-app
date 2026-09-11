@@ -79,6 +79,16 @@ export const TeacherApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    setStatus: async (id: string, active: boolean) => {
+      try {
+        const res = await $api(`/teacher/${id}/status?active=${active}`, {
+          method: 'PATCH'
+        }) as any
+        return res.data as Teacher
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

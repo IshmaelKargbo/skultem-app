@@ -12,11 +12,11 @@
 
       <div class="auth-splash__brand">
         <div class="auth-splash__brand-mark">
-          <img src="/icon.svg" alt="Skultem" class="auth-splash__logo" />
+          <img :src="brandLogo" :alt="brandName" class="auth-splash__logo">
         </div>
         <div class="auth-splash__brand-copy">
-          <p class="auth-splash__brand-name">Skultem</p>
-          <p class="auth-splash__brand-sub">School management platform</p>
+          <p class="auth-splash__brand-name">{{ brandName }}</p>
+          <p class="auth-splash__brand-sub">{{ brandMotto || 'School management platform' }}</p>
         </div>
       </div>
 
@@ -26,7 +26,7 @@
           <span class="auth-splash__ring auth-splash__ring--middle" />
           <span class="auth-splash__ring auth-splash__ring--inner" />
           <div class="auth-splash__orbital-core">
-            <img src="/icon.svg" alt="" class="auth-splash__orbital-icon" />
+            <img :src="brandLogo" alt="" class="auth-splash__orbital-icon">
           </div>
         </div>
 
@@ -51,15 +51,42 @@
   </section>
 </template>
 
+<script setup lang="ts">
+// The school own logo/name (see useSchoolInfo) - this splash is the very first thing a
+// returning, already-logged-in user sees while their session is validated, worth looking like
+// their school, not Skultem, the moment it is known. Reactive (not just read once from cache),
+// since plugins/auth.ts fetches fresh data during exactly this window and this component needs
+// to pick that up while it is still showing, not only on the next mount.
+const { school, hydrateFromCache } = useSchoolInfo()
+hydrateFromCache()
+
+const brandLogo = computed(() => school.value?.logo || '/icon.svg')
+const brandName = computed(() => school.value?.name || 'Skultem')
+const brandMotto = computed(() => school.value?.motto || '')
+</script>
+
 <style scoped>
 .auth-splash {
-  --splash-navy: #081225;
-  --splash-ink: #10213f;
-  --splash-slate: #53657f;
-  --splash-line: rgba(134, 154, 181, 0.18);
-  --splash-soft: rgba(255, 255, 255, 0.72);
-  --splash-accent: #1d9e75;
-  --splash-sky: #5ea7ff;
+  /* Brand colors (see utils/theme.ts) drive the accents; everything else rides the app
+     light/dark text & surface tokens (assets/css/main.css) so this needs no separate dark block
+     for anything but the two gradient washes below. */
+  --splash-navy: var(--app-text-strong);
+  --splash-ink: var(--app-text-strong);
+  --splash-slate: var(--app-text-soft);
+  --splash-line: color-mix(in oklab, var(--app-text-faint) 32%, transparent);
+  --splash-soft: color-mix(in oklab, var(--app-card) 88%, transparent);
+  --splash-accent: var(--color-secondary-500);
+  --splash-sky: var(--color-primary-500);
+  --splash-wash-a: color-mix(in oklab, var(--color-primary-500) 16%, transparent);
+  --splash-wash-b: color-mix(in oklab, var(--color-secondary-500) 16%, transparent);
+  --splash-shell-bg-a: color-mix(in oklab, var(--app-card) 85%, transparent);
+  --splash-shell-bg-b: color-mix(in oklab, var(--app-card) 65%, transparent);
+  --splash-shell-border: color-mix(in oklab, var(--app-text-faint) 25%, transparent);
+  --splash-hero-bg-a: color-mix(in oklab, var(--app-card) 92%, transparent);
+  --splash-hero-bg-b: color-mix(in oklab, var(--app-card) 78%, transparent);
+  --splash-eyebrow-bg: color-mix(in oklab, var(--app-text-strong) 6%, transparent);
+  --splash-core-bg-a: var(--app-card);
+  --splash-core-bg-b: color-mix(in oklab, var(--color-primary-500) 8%, var(--app-card));
 
   position: relative;
   min-height: 100dvh;
@@ -69,9 +96,9 @@
   overflow: hidden;
   padding: 1.5rem;
   background:
-    radial-gradient(circle at 18% 20%, rgba(94, 167, 255, 0.18), transparent 24%),
-    radial-gradient(circle at 82% 78%, rgba(29, 158, 117, 0.16), transparent 22%),
-    linear-gradient(145deg, #f7fbff 0%, #edf3fb 48%, #f5f7fb 100%);
+    radial-gradient(circle at 18% 20%, var(--splash-wash-a), transparent 24%),
+    radial-gradient(circle at 82% 78%, var(--splash-wash-b), transparent 22%),
+    var(--app-bg);
 }
 
 .auth-splash__aurora {
@@ -87,7 +114,7 @@
   height: 18rem;
   top: -5rem;
   left: -4rem;
-  background: rgba(94, 167, 255, 0.24);
+  background: color-mix(in oklab, var(--color-primary-500) 24%, transparent);
 }
 
 .auth-splash__aurora--right {
@@ -95,15 +122,15 @@
   height: 16rem;
   right: -3rem;
   bottom: -3rem;
-  background: rgba(29, 158, 117, 0.2);
+  background: color-mix(in oklab, var(--color-secondary-500) 22%, transparent);
 }
 
 .auth-splash__grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(16, 33, 63, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 33, 63, 0.035) 1px, transparent 1px);
+    linear-gradient(color-mix(in oklab, var(--app-text-strong) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--app-text-strong) 4%, transparent) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(circle at center, black 38%, transparent 100%);
   pointer-events: none;
@@ -115,11 +142,11 @@
   width: min(100%, 37rem);
   padding: 1.3rem;
   border-radius: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.52));
+  border: 1px solid var(--splash-shell-border);
+  background: linear-gradient(180deg, var(--splash-shell-bg-a), var(--splash-shell-bg-b));
   box-shadow:
     0 30px 90px rgba(10, 18, 37, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    inset 0 1px 0 color-mix(in oklab, var(--app-card) 90%, transparent);
   backdrop-filter: blur(22px);
 }
 
@@ -129,7 +156,7 @@
   gap: 0.55rem;
   padding: 0.45rem 0.85rem;
   border-radius: 9999px;
-  background: rgba(8, 18, 37, 0.055);
+  background: var(--splash-eyebrow-bg);
   color: var(--splash-ink);
   font-size: 0.76rem;
   font-weight: 700;
@@ -140,8 +167,8 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, var(--splash-accent), #8de3c6);
-  box-shadow: 0 0 0 6px rgba(29, 158, 117, 0.12);
+  background: linear-gradient(135deg, var(--splash-accent), var(--color-secondary-300));
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-secondary-500) 14%, transparent);
   animation: splash-pulse 1.5s ease-in-out infinite;
 }
 
@@ -162,13 +189,14 @@
   display: grid;
   place-items: center;
   border-radius: 1rem;
-  background: linear-gradient(145deg, #0d1b34, #16335f);
+  background: linear-gradient(145deg, var(--color-primary-700), var(--color-primary-500));
   box-shadow: 0 16px 28px rgba(8, 18, 37, 0.16);
 }
 
 .auth-splash__logo {
   width: 1.85rem;
   height: 1.85rem;
+  object-fit: contain;
 }
 
 .auth-splash__brand-copy {
@@ -196,8 +224,8 @@
   border-radius: 1.5rem;
   border: 1px solid var(--splash-line);
   background:
-    radial-gradient(circle at top, rgba(94, 167, 255, 0.11), transparent 36%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(250, 252, 255, 0.72));
+    radial-gradient(circle at top, color-mix(in oklab, var(--color-primary-500) 11%, transparent), transparent 36%),
+    linear-gradient(180deg, var(--splash-hero-bg-a), var(--splash-hero-bg-b));
   text-align: center;
 }
 
@@ -217,7 +245,7 @@
 
 .auth-splash__ring--outer {
   inset: 0;
-  border: 1.5px solid rgba(16, 33, 63, 0.12);
+  border: 1.5px solid var(--splash-line);
 }
 
 .auth-splash__ring--middle {
@@ -230,7 +258,7 @@
 
 .auth-splash__ring--inner {
   inset: 1.3rem;
-  border: 2px dashed rgba(29, 158, 117, 0.9);
+  border: 2px dashed color-mix(in oklab, var(--splash-accent) 90%, transparent);
   animation: splash-spin-reverse 1.8s linear infinite;
 }
 
@@ -240,15 +268,16 @@
   display: grid;
   place-items: center;
   border-radius: 1.2rem;
-  background: linear-gradient(145deg, #ffffff, #edf4ff);
+  background: linear-gradient(145deg, var(--splash-core-bg-a), var(--splash-core-bg-b));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 1px 0 color-mix(in oklab, var(--app-card) 95%, transparent),
     0 10px 24px rgba(16, 33, 63, 0.12);
 }
 
 .auth-splash__orbital-icon {
   width: 1.75rem;
   height: 1.75rem;
+  object-fit: contain;
 }
 
 .auth-splash__copy {
@@ -268,7 +297,7 @@
 .auth-splash__subtitle {
   margin: 0.8rem auto 0;
   max-width: 27rem;
-  color: #42546f;
+  color: var(--splash-slate);
   font-size: 0.98rem;
   line-height: 1.72;
   font-weight: 500;
@@ -280,7 +309,7 @@
   height: 0.4rem;
   overflow: hidden;
   border-radius: 9999px;
-  background: rgba(134, 154, 181, 0.18);
+  background: color-mix(in oklab, var(--app-text-faint) 22%, transparent);
 }
 
 .auth-splash__progress-bar {
@@ -288,7 +317,7 @@
   width: 38%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #143159, #1d9e75 52%, #7fc1ff 100%);
+  background: linear-gradient(90deg, var(--splash-ink), var(--splash-accent) 52%, var(--splash-sky) 100%);
   animation: splash-progress 1.75s ease-in-out infinite;
 }
 
@@ -303,13 +332,13 @@
 .auth-splash__status-item {
   padding: 0.55rem 0.9rem;
   border-radius: 9999px;
-  border: 1px solid rgba(134, 154, 181, 0.18);
-  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid var(--splash-line);
+  background: color-mix(in oklab, var(--app-card) 90%, transparent);
   color: var(--splash-ink);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--app-card) 95%, transparent);
 }
 
 @keyframes splash-spin {

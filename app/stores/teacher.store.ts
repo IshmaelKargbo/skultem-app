@@ -52,6 +52,11 @@ export const useTeacherStore = defineStore('teacher', {
     update(id: string, payload: EditTeacherDTO) {
       return TeacherApi().edit(id, payload)
     },
+    async setStatus(id: string, active: boolean) {
+      const res = await TeacherApi().setStatus(id, active)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
     fetchSubjects(id: string) {
       return TeacherApi().getAllSubjects(id)
     }

@@ -50,7 +50,7 @@
               <p class="mt-1.5 text-[10px] font-medium uppercase tracking-[0.2em]"
                 :style="{ color: settings.headerTextColor, opacity: 0.8 }">
                 {{
-                  template.school.tagline || 'Student Identification'
+                  template.school.tagline || `${cardTypeLabel} Identification`
                 }}
               </p>
             </div>
@@ -60,24 +60,29 @@
           <div class="absolute -bottom-10 left-1/2 h-16 w-[135%] -translate-x-1/2 rounded-[50%] bg-white" />
         </div>
 
-        <div v-if="settings.layout !== 'vertical'" class="absolute z-50 top-5 right-5 bg-white pt-1.5 items-center rounded-full"
+        <div v-if="settings.layout !== 'vertical'"
+          class="absolute z-50 top-3 right-3 sm:top-5 sm:right-5 bg-white pt-1 sm:pt-1.5 items-center rounded-full"
           :style="{ '--tw-ring-color': settings.headerTextColor + '30' }">
-          <img :src="template.school.logo" class="w-35 h-37 rounded-full object-fill" alt="School crest">
+          <img :src="template.school.logo" class="w-20 h-21 sm:w-35 sm:h-37 rounded-full object-fill" alt="School crest">
         </div>
-        <div :class="['relative z-10 px-5', settings.layout === 'horizontal' ? 'flex gap-4 pt-1' : 'pt-1 text-center']">
-
-          <img v-if="template.school.logo" :src="template.school.logo" alt=""
-            class="pointer-events-none absolute inset-0 -z-10 m-auto h-56 w-56 object-contain opacity-[0.05] grayscale" />
+        <div :class="['relative z-10 px-4 sm:px-5', settings.layout === 'horizontal' ? 'flex gap-3 sm:gap-4 pt-1' : 'pt-1 text-center']">
 
           <!-- Photo -->
-          <div :class="settings.layout === 'horizontal' ? 'shrink-0 pt-2 pr-3' : 'flex justify-center'">
+          <div :class="settings.layout === 'horizontal' ? 'shrink-0 pt-2 pr-2 sm:pr-3' : 'flex justify-center'">
             <div :class="[
               'overflow-hidden border-[3px] shadow-md',
-              settings.layout === 'horizontal' ? 'h-40 w-34' : 'mx-auto h-24 w-24',
+              settings.layout === 'horizontal' ? 'h-28 w-24 sm:h-40 sm:w-34' : 'mx-auto h-24 w-24',
               settings.profileShape === 'round' ? 'rounded-full' : 'rounded-xl'
             ]" :style="{ borderColor: settings.headerColor }">
-              <img v-if="template.student.photo" :src="template.student.photo" alt="" class="h-full w-full object-cover"
-                crossorigin="anonymous" />
+              <!-- No crossorigin attribute - R2's public bucket URL sends no CORS headers (see
+                   R2StorageService.downloadAsDataUri), so tagging this crossorigin="anonymous"
+                   makes the browser refuse to load it at all rather than just tainting a canvas
+                   capture. The logo/signature images on this card already load the same way for
+                   the same reason - PDF/print capture separately swaps those two to a same-origin
+                   data: URI right before capturing (see getBrandingAssets() in pages/id-cards/[id].vue);
+                   the photo isn't part of that swap yet, so it may still be missing from exported
+                   PDFs even though it now displays correctly on screen. -->
+              <img v-if="person.photo" :src="person.photo" alt="" class="h-full w-full object-cover" />
               <div v-else class="flex h-full w-full items-center justify-center"
                 :style="{ backgroundImage: `linear-gradient(to bottom right, ${settings.headerColor}22, ${settings.headerColor}44)` }">
                 <span class="text-xl font-bold" :style="{ color: settings.headerColor }">{{
@@ -92,7 +97,7 @@
             <h2 class="truncate text-lg font-black uppercase tracking-wide" style="line-height: 45px;"
               :style="{ color: settings.primaryTextColor }">
               {{
-                template.student.name
+                person.name
               }}
             </h2>
 
@@ -100,14 +105,14 @@
               <template v-for="field in activeFields" :key="field.key">
                 <div v-if="field.enabled && field.cardSlot === 'front'"
                   class="flex gap-2 text-[11.5px] leading-6 items-center">
-                  <span class="w-24 shrink-0 font-medium text-gray-500">{{
+                  <span class="w-16 sm:w-24 shrink-0 font-medium text-gray-500">{{
                     field.label
                   }}</span>
                   <span class="shrink-0 text-gray-300">:</span>
-                  <span class="truncate font-bold" style="line-height: 26px;"
+                  <span class="min-w-0 truncate font-bold" style="line-height: 26px;"
                     :style="{ color: settings.primaryTextColor }">
                     {{
-                      (template.student as any)[field.key as keyof typeof template.student] ?? '—'
+                      person[field.key] ?? '—'
                     }}
                   </span>
                 </div>
@@ -121,7 +126,7 @@
           <div class="-skew-x-12  px-4 py-2" :style="{ backgroundColor: settings.headerColor }">
             <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-white">
               <span class="inline-block skew-x-12"
-                style="line-height: 16px; position: relative; top: -5px;">Student</span>
+                style="line-height: 16px; position: relative; top: -5px;">{{ cardTypeLabel }}</span>
             </span>
           </div>
           <div class="flex h-8 items-end gap-0.5">
@@ -185,31 +190,45 @@
         class="id-card-face relative w-full overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgb(0_0_0_/_0.25)] ring-1 ring-black/5"
         :class="[settings.layout === 'vertical' ? 'max-w-[340px]' : 'max-w-[560px]', isPdfCapture && 'pdf-capture']">
 
+        <!-- Background image layer - same configurable image as the front (Background section in
+             settings), instead of the fixed faint school-crest watermark this used to show. -->
+        <div v-if="settings.bgImageUrl" class="pointer-events-none absolute inset-0 z-0" :style="{
+          backgroundImage: `url(${settings.bgImageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: settings.bgOpacity / 100
+        }" />
+
         <!-- ═════════ HEADER ═════════ -->
         <div class="relative overflow-hidden px-5 pb-11 pt-5 text-center"
           :style="{ backgroundColor: settings.headerColor }">
           <p class="relative mt-2.5 text-xs font-bold uppercase tracking-[0.3em]"
             :style="{ color: settings.headerTextColor }">
-            Student
-            Information
+            {{ cardTypeLabel }} Information
           </p>
           <div class="absolute -bottom-10 left-1/2 h-16 w-[135%] -translate-x-1/2 rounded-[50%] bg-white" />
         </div>
 
         <!-- ═════════ BODY ═════════ -->
-        <div :class="['relative z-10 px-5 pb-4 pt-1', settings.layout === 'horizontal' && 'grid grid-cols-2 gap-x-5']">
+        <div :class="['relative z-10 px-4 sm:px-5 pb-4 pt-1', settings.layout === 'horizontal' && 'grid grid-cols-1 sm:grid-cols-2 gap-x-5']">
 
-          <!-- Watermark — same faint crest treatment as the front, sitting
-               behind the back details. -->
-          <img v-if="template.school.logo" :src="template.school.logo" alt=""
-            class="pointer-events-none absolute inset-0 -z-10 m-auto h-48 w-48 object-contain opacity-[0.05] grayscale" />
-
-          <div>
+          <div v-if="cardType === 'staff'">
+            <div class="flex gap-2 items-center text-[11px] leading-5">
+              <span class="w-20 shrink-0 font-medium text-gray-400">Phone</span>
+              <span class="shrink-0 text-gray-300">:</span>
+              <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
+                person.phone
+                ||
+                '—'
+              }}</span>
+            </div>
+          </div>
+          <div v-else>
             <div class="flex gap-2 items-center text-[11px] leading-5">
               <span class="w-20 shrink-0 font-medium text-gray-400">Parent</span>
               <span class="shrink-0 text-gray-300">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
-                template.student.parentContact
+                person.parentContact
                 ||
                 '—'
               }}</span>
@@ -218,7 +237,7 @@
               <span class="w-20 shrink-0 font-medium text-gray-400">Emergency</span>
               <span class="shrink-0 text-gray-300">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
-                template.student.emergencyContact
+                person.emergencyContact
                 ||
                 '—'
               }}</span>
@@ -240,7 +259,7 @@
           </div>
 
           <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3"
-            :class="settings.layout === 'horizontal' && 'col-span-2'">
+            :class="settings.layout === 'horizontal' && 'sm:col-span-2'">
             <div class="flex items-center gap-1.5">
               <svg class="size-3.5 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -281,7 +300,7 @@
           </div>
 
           <div class="mt-3 flex items-end justify-between gap-3"
-            :class="settings.layout === 'horizontal' && 'col-span-2'">
+            :class="settings.layout === 'horizontal' && 'sm:col-span-2'">
             <div class="flex h-8 items-end gap-[1.5px]">
               <span v-for="(w, i) in barcodeBars" :key="i" class="bg-black"
                 :style="{ width: `${w}px`, height: '100%' }" />
@@ -383,7 +402,7 @@ interface Template {
     address: string
     tagline?: string
   }
-  student: {
+  student?: {
     name: string
     admissionNo: string
     class: string
@@ -394,15 +413,37 @@ interface Template {
     parentContact: string
     photo?: string
   }
+  staff?: {
+    name: string
+    staffId: string
+    designation: string
+    gender: string
+    expiryDate: string
+    phone: string
+    photo?: string
+  }
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   template: Template
   settings: Settings
   isPdfCapture?: boolean
   activeFields: FieldDef[]
   side?: 'front' | 'back'
-}>()
+  // Same card design either way (colours/layout come from `settings`) - this only picks which of
+  // `template.student` / `template.staff` supplies the data and a couple of type-specific labels
+  // ("Student"/"Staff" ribbon, back-side contact rows).
+  cardType?: 'student' | 'staff'
+}>(), {
+  cardType: 'student'
+})
+
+// The one field every caller of this component used to reach for directly as `template.student`
+// - now resolved from whichever half of the template applies. Kept as `any` since the two shapes
+// diverge (admissionNo/class vs staffId/designation) and activeFields already looks keys up
+// dynamically the same way.
+const person = computed<any>(() => (props.cardType === 'staff' ? props.template.staff : props.template.student) || {})
+const cardTypeLabel = computed(() => (props.cardType === 'staff' ? 'Staff' : 'Student'))
 
 const emit = defineEmits<{ 'update:side': [value: 'front' | 'back'] }>()
 
@@ -422,12 +463,12 @@ const side = computed({
 // Fallback avatar for when there's no photo yet — initials read better than a
 // generic person icon and still feel intentional rather than "missing".
 const initials = computed(() => {
-  const parts = props.template.student.name.trim().split(/\s+/)
+  const parts = (person.value.name || '').trim().split(/\s+/)
   return ((parts[0]?.[0] ?? '') + (parts[parts.length - 1]?.[0] ?? '')).toUpperCase()
 })
 
 const barcodeBars = computed(() => {
-  const seed = props.template.student.admissionNo || props.template.student.name
+  const seed = person.value.admissionNo || person.value.staffId || person.value.name || 'id'
   const bars: number[] = []
   for (let i = 0; i < 34; i++) {
     const code = seed.charCodeAt(i % seed.length) + i

@@ -51,18 +51,21 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 
 <style scoped>
 /* ── Backdrop ───────────────────────────────────────────── */
+/* Rides the app own light/dark surface tokens (assets/css/main.css) and the school brand
+   colors (--color-primary- and --color-secondary- shades, see utils/theme.ts) - both already
+   flip/update on their own, so this needs no separate .dark block for any of it. */
 .loader-backdrop {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255, 255, 255, 0.85);
+    background: color-mix(in oklab, var(--app-bg) 85%, transparent);
     backdrop-filter: blur(6px);
 }
 
 /* ── Card ───────────────────────────────────────────────── */
 .loader-card {
     position: relative;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--app-card);
+    border: 1px solid var(--app-border);
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     padding: 36px 40px;
@@ -74,7 +77,7 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 /* ── Dot background ─────────────────────────────────────── */
 .loader-dots {
     position: absolute; inset: 0; pointer-events: none;
-    background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-image: radial-gradient(circle, color-mix(in oklab, var(--app-text-faint) 60%, transparent) 1px, transparent 1px);
     background-size: 24px 24px;
     opacity: 0.4;
 }
@@ -88,15 +91,15 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 .cap-ring {
     position: absolute; inset: 0; border-radius: 50%;
     border: 2px solid transparent;
-    border-top-color: #6366f1;
-    border-right-color: #6366f1;
+    border-top-color: var(--color-primary-500);
+    border-right-color: var(--color-primary-500);
     animation: spin 1.2s linear infinite;
 }
 .cap-ring-2 {
     position: absolute; inset: 7px; border-radius: 50%;
     border: 2px dashed transparent;
-    border-bottom-color: #1D9E75;
-    border-left-color: #1D9E75;
+    border-bottom-color: var(--color-secondary-500);
+    border-left-color: var(--color-secondary-500);
     animation: spin 1.8s linear infinite reverse;
 }
 .cap-emoji { font-size: 28px; line-height: 1; }
@@ -105,10 +108,10 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 .loader-text { text-align: center; z-index: 1; }
 .loader-title {
     font-size: 1rem; font-weight: 600;
-    color: #111827; margin: 0;
+    color: var(--app-text-strong); margin: 0;
 }
 .loader-sub {
-    font-size: 0.78rem; color: #6b7280;
+    font-size: 0.78rem; color: var(--app-text-soft);
     margin: 4px 0 0;
 }
 
@@ -117,12 +120,12 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 .pencil { font-size: 14px; animation: pencil-bounce 0.5s ease-in-out infinite alternate; }
 .writing-line {
     height: 2px; width: 120px;
-    background: #f3f4f6;
+    background: color-mix(in oklab, var(--app-border) 80%, transparent);
     border-radius: 99px; overflow: hidden; position: relative;
 }
 .writing-fill {
     position: absolute; top: 0; left: -50%; height: 100%; width: 50%;
-    background: linear-gradient(90deg, transparent, #6366f1, transparent);
+    background: linear-gradient(90deg, transparent, var(--color-primary-500), transparent);
     animation: shimmer 1.2s linear infinite;
 }
 
@@ -131,9 +134,9 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 .chip {
     font-size: 0.68rem; padding: 3px 10px;
     border-radius: 99px;
-    border: 1px solid #e5e7eb;
-    color: #6b7280;
-    background: #f9fafb;
+    border: 1px solid var(--app-border);
+    color: var(--app-text-soft);
+    background: color-mix(in oklab, var(--app-bg) 92%, transparent);
     animation: chip-fade 2.4s ease-in-out infinite;
 }
 .chip:nth-child(2) { animation-delay: 0.3s; }
@@ -147,34 +150,14 @@ const roles = ['Student', 'Teacher', 'Admin', 'Parent']
 .loader-leave-to { opacity: 0; }
 
 /* ── Dark mode ──────────────────────────────────────────── */
-.dark .loader-backdrop {
-    background: var(--color-gray-950);
-}
-
-.dark .loader-card {
-    background: #0f172a;
-    border-color: #1e293b;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
+/* Everything else above already rides tokens that flip on their own (app and brand color
+   variables) - the dot pattern is the one thing that still needs a dark-specific tweak, since
+   it would read too harsh at the same opacity against a dark surface. */
 .dark .loader-dots {
     opacity: 0.12;
-    background-image: radial-gradient(circle, #334155 1px, transparent 1px);
 }
-.dark .loader-title { color: #f8fafc; }
-.dark .loader-sub   { color: #94a3b8; }
-.dark .writing-line { background: #1e293b; }
-.dark .writing-fill {
-    background: linear-gradient(90deg, transparent, #818cf8, transparent);
-}
-.dark .chip {
-    background: #1e293b;
-    border-color: #334155;
-    color: #94a3b8;
-}
-
-.dark .cap-ring {
-    border-top-color: #818cf8;
-    border-right-color: #818cf8;
+.dark .loader-card {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Keyframes ──────────────────────────────────────────── */

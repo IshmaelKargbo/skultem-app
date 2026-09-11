@@ -1,8 +1,10 @@
 <template>
     <div class="px-4 md:px-6 space-y-4">
-        <Heading title="School Settings"
+        <Heading class="hidden md:block" title="School Settings"
             subtitle="Manage your school's profile, contact details and academic preferences">
-            <div class="flex gap-3">
+            <!-- Hidden below lg - on mobile the same actions live in the drawer's footer instead,
+                 next to the section they actually apply to (see the USlideover below). -->
+            <div class="hidden gap-3 lg:flex">
                 <UButton v-if="active === 'profile'" label="Save Settings" icon="lucide:save" :loading="saving"
                     :disabled="loading" @click="save" />
                 <UButton v-else-if="active === 'attendance'" label="Save Location" icon="lucide:save"
@@ -22,10 +24,9 @@
                         <button v-for="item in sections" :key="item.key" type="button"
                             class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors"
                             :class="active === item.key ? 'bg-primary text-inverted font-medium' : 'text-toned hover:bg-muted/50'"
-                            @click="active = item.key">
+                            @click="selectSection(item.key)">
                             <UIcon :name="item.icon" class="size-4 shrink-0" />
                             <span class="flex-1">{{ item.label }}</span>
-                            <UBadge v-if="item.soon" label="Soon" size="xs" variant="subtle" color="neutral" />
                         </button>
                     </nav>
                 </UCard>
@@ -36,13 +37,11 @@
                     </p>
                     <div class="space-y-1">
                         <div v-for="channel in channels" :key="channel.label"
-                            class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm"
-                            :class="channel.to ? 'text-toned hover:bg-muted/50 cursor-pointer' : 'text-muted cursor-not-allowed opacity-70'"
-                            @click="channel.to && navigateTo(channel.to)">
+                            class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-toned hover:bg-muted/50"
+                            @click="navigateTo(channel.to)">
                             <UIcon :name="channel.icon" class="size-4 shrink-0" />
                             <span class="flex-1">{{ channel.label }}</span>
-                            <UIcon v-if="channel.to" name="lucide:arrow-up-right" class="size-3.5 shrink-0" />
-                            <UBadge v-else label="Soon" size="xs" variant="subtle" color="neutral" />
+                            <UIcon name="lucide:arrow-up-right" class="size-3.5 shrink-0" />
                         </div>
                     </div>
                 </UCard>
@@ -64,183 +63,64 @@
                 </UCard>
             </aside>
 
-            <!-- Right Content -->
-            <div class="space-y-4 min-w-0">
-                <template v-if="active === 'profile'">
-                    <UCard>
-                        <template #header>
-                            <p>General Information</p>
-                        </template>
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <UFormField required label="School Name">
-                                <UInput v-model="state.name" placeholder="e.g. King's Way International School"
-                                    class="w-full" />
-                            </UFormField>
+            <!-- Right Content - desktop only. On mobile the same section opens in the drawer
+                 below instead of stacking under the tab list. -->
+            <div class="hidden space-y-4 min-w-0 lg:block">
+                <SettingsSchoolProfileTab v-if="active === 'profile'" :state="state" :logo-preview="logoPreview"
+                    :signature-preview="signaturePreview" @select-logo="(f) => onFileChange('logo', f)"
+                    @clear-logo="clearFile('logo')" @select-signature="(f) => onFileChange('signature', f)"
+                    @clear-signature="clearFile('signature')" />
 
-                            <UFormField required label="Domain" help="Used for your school's login link">
-                                <UInput v-model="state.domain" placeholder="e.g. kingsway" class="w-full" />
-                            </UFormField>
-
-                            <UFormField label="Principal Name">
-                                <UInput v-model="state.principalName" placeholder="e.g. Dr. A. Conteh" class="w-full" />
-                            </UFormField>
-                        </div>
-                    </UCard>
-                    <UCard>
-                        <template #header>
-                            <p>Address</p>
-                        </template>
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <UFormField required label="Street">
-                                <UInput v-model="state.street" placeholder="e.g. 12 Wilkinson Road" class="w-full" />
-                            </UFormField>
-
-                            <UFormField required label="City">
-                                <UInput v-model="state.city" placeholder="e.g. Freetown" class="w-full" />
-                            </UFormField>
-
-                            <UFormField required label="Region">
-                                <UInput v-model="state.region" placeholder="e.g. Western Area" class="w-full" />
-                            </UFormField>
-
-                            <UFormField required label="District">
-                                <UInput v-model="state.district" placeholder="e.g. Freetown" class="w-full" />
-                            </UFormField>
-
-                            <UFormField required label="Chiefdom">
-                                <UInput v-model="state.chiefdom" placeholder="e.g. Freetown Municipality"
-                                    class="w-full" />
-                            </UFormField>
-                        </div>
-                    </UCard>
-
-                    <UCard>
-                        <template #header>
-                            <p>Branding & Appearance</p>
-                        </template>
-                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                            <UploadTile label="School Logo" hint="Square PNG" :src="logoPreview"
-                                @select="(f) => onFileChange('logo', f)" @clear="clearFile('logo')" />
-                            <UploadTile label="Principal Signature" hint="Transparent PNG" :src="signaturePreview" muted
-                                @select="(f) => onFileChange('signature', f)" @clear="clearFile('signature')" />
-                        </div>
-
-                        <div class="mt-5 grid grid-cols-1 gap-4 border-t border-default pt-5 sm:grid-cols-2">
-                            <UFormField label="Primary Color" help="Used for headers and accents on ID cards">
-                                <ColorPicker v-model="state.primaryColor" />
-                            </UFormField>
-
-                            <UFormField label="Secondary Color" help="Used for footers and secondary accents">
-                                <ColorPicker v-model="state.secondaryColor" />
-                            </UFormField>
-                        </div>
-                    </UCard>
-                </template>
-
-                <template v-else-if="active === 'attendance'">
-                    <div v-if="loadingLocation" class="flex justify-center py-14">
-                        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-                    </div>
-
-                    <template v-else>
-                        <UAlert v-if="!locationConfigured" color="warning" variant="subtle" icon="lucide:triangle-alert"
-                            title="Not set up yet"
-                            description="Teachers can't clock in until a location is saved here." />
-                        <UCard>
-                            <template #header>
-                                <p>Clock-In Location</p>
-                            </template>
-
-                            <ClientOnly>
-                                <SettingsAttendanceLocationMap
-                                    ref="locationMap"
-                                    v-model:latitude="attendanceState.latitude"
-                                    v-model:longitude="attendanceState.longitude"
-                                    :radius-meters="attendanceState.radiusMeters"
-                                    :configured="locationConfigured"
-                                />
-                                <template #fallback>
-                                    <div class="flex h-72 items-center justify-center rounded-lg border border-default sm:h-96">
-                                        <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
-                                    </div>
-                                </template>
-                            </ClientOnly>
-
-                            <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <UFormField required label="Latitude">
-                                    <UInput v-model.number="attendanceState.latitude" type="number" step="any"
-                                        class="w-full" />
-                                </UFormField>
-
-                                <UFormField required label="Longitude">
-                                    <UInput v-model.number="attendanceState.longitude" type="number" step="any"
-                                        class="w-full" />
-                                </UFormField>
-                            </div>
-
-                            <UButton class="mt-4" variant="soft" icon="lucide:crosshair" :loading="locating"
-                                @click="useCurrentLocation">
-                                Use My Current Location
-                            </UButton>
-                            <p class="mt-2 text-xs text-muted">Search for the address, click the map, or drag the pin
-                                to set the school's location - or press this button while standing there.</p>
-                        </UCard>
-
-                        <UCard>
-                            <template #header>
-                                <p>Allowed Radius</p>
-                            </template>
-                            <UFormField required label="Radius (metres)"
-                                help="How far from the school a teacher can be and still clock in. Shown as the shaded circle on the map above.">
-                                <UInput v-model.number="attendanceState.radiusMeters" type="number" min="10"
-                                    class="w-full" />
-                            </UFormField>
-                        </UCard>
-
-                        <UCard>
-                            <template #header>
-                                <p>Network Restriction</p>
-                            </template>
-                            <UFormField label="Allowed IP Addresses"
-                                help="Comma-separated IPs and/or ranges (e.g. 41.66.12.5, 192.168.1.0/24). Leave blank to skip this check - location alone will decide.">
-                                <UTextarea v-model="attendanceState.allowedIps" :rows="2"
-                                    placeholder="e.g. 41.66.12.5, 192.168.1.0/24" class="w-full" />
-                            </UFormField>
-
-                            <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
-                                <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
-                                When set, a clock-in must come from the school's own network as well as be within range
-                                - a second layer against someone clocking in for a colleague from elsewhere.
-                            </p>
-                        </UCard>
-                    </template>
-                </template>
-
-                <template v-else>
-                    <UCard>
-                        <template #header>
-                            <p>{{ comingSoon.label }}</p>
-                        </template>
-                        <div class="flex flex-col items-center gap-2 py-14 text-center">
-                            <UIcon :name="comingSoon.icon" class="text-4xl text-muted" />
-                            <p class="text-sm font-medium text-highlighted">{{ comingSoon.label }} settings are coming
-                                soon</p>
-                            <p class="max-w-xs text-xs text-muted">{{ comingSoon.description }}</p>
-                        </div>
-                    </UCard>
-                </template>
+                <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
+                    :loading-location="loadingLocation" :location-configured="locationConfigured" />
             </div>
         </div>
+
+        <!-- Mobile: tapping a tab above opens this full-screen modal with that section, instead
+             of the content stacking below the tab list in the single-column layout. -->
+        <UModal v-model:open="mobilePanelOpen" fullscreen :ui="{ content: 'lg:hidden' }">
+            <template #content>
+                <UCard :ui="{ root: 'flex h-full flex-col rounded-none', body: 'flex-1 overflow-y-auto' }">
+                    <template #header>
+                        <div class="flex items-center justify-between">
+                            <p class="font-semibold text-highlighted">{{ activeSectionLabel }}</p>
+                            <UButton icon="lucide:x" variant="ghost" color="neutral" size="sm"
+                                aria-label="Close" @click="mobilePanelOpen = false" />
+                        </div>
+                    </template>
+
+                    <div class="space-y-4">
+                        <SettingsSchoolProfileTab v-if="active === 'profile'" :state="state" :logo-preview="logoPreview"
+                            :signature-preview="signaturePreview" @select-logo="(f) => onFileChange('logo', f)"
+                            @clear-logo="clearFile('logo')" @select-signature="(f) => onFileChange('signature', f)"
+                            @clear-signature="clearFile('signature')" />
+
+                        <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
+                            :loading-location="loadingLocation" :location-configured="locationConfigured" />
+                    </div>
+
+                    <template #footer>
+                        <div class="flex w-full gap-3">
+                            <UButton v-if="active === 'profile'" label="Save Settings" icon="lucide:save"
+                                class="flex-1 justify-center" :loading="saving" :disabled="loading" @click="save" />
+                            <UButton v-else-if="active === 'attendance'" label="Save Location" icon="lucide:save"
+                                class="flex-1 justify-center" :loading="savingLocation" :disabled="loadingLocation"
+                                @click="saveAttendanceLocation" />
+                        </div>
+                    </template>
+                </UCard>
+            </template>
+        </UModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import ColorPicker from '~/components/id-cards/ColorPicker.vue'
-
 const { success, error: toastError } = useNotify()
+const { setCachedSchool } = useSchoolCache()
 
 type SchoolProfile = {
     name: string
+    motto: string
     domain: string
     street: string
     city: string
@@ -254,6 +134,7 @@ type SchoolProfile = {
 
 const state = reactive<SchoolProfile>({
     name: '',
+    motto: '',
     domain: '',
     street: '',
     city: '',
@@ -275,29 +156,32 @@ const signatureFile = ref<File>()
 const logoPreview = ref('')
 const signaturePreview = ref('')
 
+// Only the sections that actually do something - System & Formats/Security/Integrations were
+// permanent "Soon" placeholders with no page behind them.
 const sections = [
     { key: 'profile', label: 'School Profile', icon: SCHOOL_ICON },
-    { key: 'formats', label: 'System & Formats', icon: 'lucide:sliders-horizontal', soon: true },
-    { key: 'attendance', label: 'Attendance', icon: ATTENDANCE_ICON },
-    { key: 'security', label: 'Security', icon: 'lucide:shield', soon: true },
-    { key: 'integrations', label: 'Integrations', icon: 'lucide:plug', soon: true }
+    { key: 'attendance', label: 'Attendance', icon: ATTENDANCE_ICON }
 ]
 
 const route = useRoute()
 const initialSection = sections.some(s => s.key === route.query.section) ? String(route.query.section) : sections[0]!.key
 const active = ref(initialSection)
+const activeSectionLabel = computed(() => sections.find(s => s.key === active.value)?.label ?? '')
 
-const comingSoonCopy: Record<string, { label: string, icon: string, description: string }> = {
-    formats: { label: 'System & Formats', icon: 'lucide:sliders-horizontal', description: 'Academic year dates, language, timezone and currency preferences will be configurable here.' },
-    security: { label: 'Security', icon: 'lucide:shield', description: 'Password policy and session controls will live here.' },
-    integrations: { label: 'Integrations', icon: 'lucide:plug', description: 'Connect third-party tools and services from here.' }
+// Mobile only (see the USlideover in the template) - a tab tap both switches the active section
+// and opens the drawer showing it; on desktop the drawer stays closed and this is a no-op since
+// its content is lg:hidden regardless.
+const mobilePanelOpen = ref(false)
+function selectSection(key: string) {
+    active.value = key
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        mobilePanelOpen.value = true
+    }
 }
 
-const comingSoon = computed(() => comingSoonCopy[active.value] ?? comingSoonCopy.formats!)
-
+// Only the channel(s) actually wired up - Social Media/Telegram Bot were permanent "Soon" rows
+// with nowhere to click through to.
 const channels = [
-    { label: 'Social Media', icon: 'lucide:share-2' },
-    { label: 'Telegram Bot', icon: 'lucide:send' },
     { label: 'Notifications', icon: BELL_ICON, to: '/communicate/notifications' }
 ]
 
@@ -306,8 +190,6 @@ const attendanceStore = useTeacherAttendanceStore()
 const { locationSettings, loadingLocationSettings: loadingLocation, savingLocationSettings: savingLocation } = storeToRefs(attendanceStore)
 
 const locationConfigured = computed(() => !!locationSettings.value?.configured)
-const locating = ref(false)
-const locationMap = ref<{ panTo: (lat: number, lng: number) => void } | null>(null)
 
 const attendanceState = reactive({
     latitude: 0,
@@ -315,29 +197,6 @@ const attendanceState = reactive({
     radiusMeters: 150,
     allowedIps: ''
 })
-
-function useCurrentLocation() {
-    if (!navigator.geolocation) {
-        toastError('Your browser does not support location services.')
-        return
-    }
-
-    locating.value = true
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            attendanceState.latitude = position.coords.latitude
-            attendanceState.longitude = position.coords.longitude
-            locationMap.value?.panTo(position.coords.latitude, position.coords.longitude)
-            locating.value = false
-            success('Location captured.')
-        },
-        (err) => {
-            locating.value = false
-            toastError(err.code === 1 ? 'Location access was denied.' : 'Unable to determine your location.')
-        },
-        { enableHighAccuracy: true, timeout: 15000 }
-    )
-}
 
 async function saveAttendanceLocation() {
     try {
@@ -379,6 +238,7 @@ function clearFile(key: 'logo' | 'signature') {
 
 function applySchool(school: any) {
     state.name = school.name ?? ''
+    state.motto = school.motto ?? ''
     state.domain = school.domain ?? ''
     state.street = school.address?.street ?? ''
     state.city = school.address?.city ?? ''
@@ -410,6 +270,7 @@ async function save() {
         if (!updated) return
 
         const formData = new FormData()
+        formData.append('motto', state.motto || '')
         formData.append('principalName', state.principalName || '')
         formData.append('primaryColor', state.primaryColor || '')
         formData.append('secondaryColor', state.secondaryColor || '')
@@ -420,6 +281,13 @@ async function save() {
         if (!branded) return
 
         applySchool(branded)
+        applyBrandColors(branded.primaryColor, branded.secondaryColor)
+
+        // Keep the offline cache (see useSchoolCache) in step too, or it'd keep serving the old
+        // colors instantly on the next visit until something else happens to refetch and overwrite it.
+        const domain = resolveTenantSlug(window.location.hostname)
+        if (domain) setCachedSchool(domain, branded)
+
         logoFile.value = undefined
         signatureFile.value = undefined
         success('School settings saved')

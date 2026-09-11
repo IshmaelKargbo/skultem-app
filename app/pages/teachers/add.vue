@@ -179,11 +179,20 @@
           </UFormField>
 
           <UFormField label="Class Master" name="classMaster">
-            <USelectMenu v-model="state.classMaster" :items="classes" value-key="value" placeholder="Select class"
+            <USelectMenu v-model="state.classMaster" :items="classes" value-key="value"
+              :placeholder="classesLoading ? 'Loading classes...' : (classes.length ? 'Select class' : 'No classes available')"
+              :disabled="classesLoading || classes.length === 0" :loading="classesLoading"
               leading-icon="i-lucide-school" />
             <template #help>
               <p class="text-sm text-muted">
-                Assign the teacher as a class master for a specific class, if applicable.
+                <template v-if="!classesLoading && classes.length === 0">
+                  Every class already has a class master. To replace one, end its current
+                  assignment first from the Classes page.
+                </template>
+                <template v-else>
+                  Assign the teacher as a class master for a specific class, if applicable. Only
+                  classes without a current class master are listed here.
+                </template>
               </p>
             </template>
           </UFormField>
@@ -259,6 +268,7 @@ const genders = [
 ]
 
 const classes = ref<{ label: string; value: string }[]>([])
+const classesLoading = ref(true)
 
 const schema = yup.object({
   title: yup.string().required('Title is required'),
@@ -331,14 +341,19 @@ async function onSubmit(
 }
 
 onMounted(async () => {
+  classesLoading.value = true
+
   const res = await classStore.fetchAllUnassign(0, 0)
+
+  classesLoading.value = false
 
   if (!res) return
 
   classes.value = res.map((c: ClassSession) => {
     let name = c.clazz
 
-    if (c.streamName) {
+    // streamName is the literal string "N/A" (not empty/null) for classes without a stream.
+    if (c.streamName && c.streamName !== 'N/A') {
       name = `${name} (${c.streamName})`
     }
 

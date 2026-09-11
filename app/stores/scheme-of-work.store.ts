@@ -73,6 +73,13 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
         throw err.data?.message || err.message || 'Failed to create scheme of work'
       }
     },
+    async bulkCreate(file: File) {
+      try {
+        return await CurriculumsApi().bulkCreateSchemeOfWork(file)
+      } catch (err: any) {
+        throw err.data?.message || err.message || 'Failed to bulk-create schemes of work'
+      }
+    },
   },
   getters: {}
 })

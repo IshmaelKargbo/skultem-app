@@ -92,14 +92,14 @@
         <!-- Logo -->
         <div class="flex items-center gap-3 mb-6">
           <div
-            class="w-14 h-14 rounded-2xl bg-white dark:bg-white/5 shadow-md border border-gray-200 dark:border-white/10 flex items-center justify-center">
-            <img src="/icon.svg" alt="Skultem" class="w-9 h-10" />
+            class="w-14 h-14 rounded-2xl bg-white dark:bg-white/5 shadow-md border border-gray-200 dark:border-white/10 flex items-center justify-center overflow-hidden">
+            <img :src="brandLogo" :alt="brandName" class="w-12 h-12 object-contain" />
           </div>
 
-          <div>
-            <h2 class="text-base font-bold text-gray-900 dark:text-white tracking-tight">Skultem</h2>
-            <p class="text-[11px] text-gray-400 dark:text-white/30">
-              {{ isAdminPortal ? 'System Admin Console' : 'School Management Platform' }}
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white tracking-tight">{{ brandName }}</h2>
+            <p class="truncate text-[11px] text-gray-400 dark:text-white/30" :class="{ italic: brandMotto }">
+              {{ brandMotto || (isAdminPortal ? 'System Admin Console' : 'School Management Platform') }}
             </p>
           </div>
         </div>
@@ -208,6 +208,15 @@ const loading = ref(false)
 
 const userStore = useUserStore()
 const { initializeActiveRole, setAuthResolved, activeRole } = useAuth()
+const { applyBrandColorsForCurrentSchool, applyBrandColorsForTenant } = useBranding()
+const { school, hydrateFromCache } = useSchoolInfo()
+
+// Skultem's own mark for the admin portal (no one school to brand) and until the tenant lookup
+// below resolves - then the school's own logo/name (see useSchoolInfo), cached instantly on
+// repeat visits and shared with the sidebar/splash screen once signed in.
+const brandLogo = computed(() => school.value?.logo || '/icon.svg')
+const brandName = computed(() => school.value?.name || 'Skultem')
+const brandMotto = computed(() => school.value?.motto || '')
 const { show, hide } = useGlobalLoader()
 
 const schoolSlides = [
@@ -373,6 +382,10 @@ const handleLogin = async () => {
 
     await userStore.me()
     initializeActiveRole()
+    // Skipped for the admin portal - a SYSTEM_ADMIN isn't scoped to one school, so there's no
+    // brand color to apply (plugins/auth.ts only runs this on app boot with an existing session;
+    // a fresh login here needs it wired up separately).
+    if (!isAdminPortal) await applyBrandColorsForCurrentSchool()
     setAuthResolved(true)
 
     if (isAdminPortal) {
@@ -417,6 +430,13 @@ onMounted(async () => {
   document.title = isAdminPortal ? 'System Admin | Skultem' : 'Login | Skultem'
 
   if (!isAdminPortal) {
+    // Before anyone has signed in, the tenant is already known from the subdomain alone - apply
+    // its brand colors (cached instantly, refreshed in the background) so the login page itself
+    // looks like the school's, not just the app after signing in. brandLogo/brandName above pick
+    // up both steps on their own (they're computed off the same reactive useSchoolInfo state).
+    hydrateFromCache()
+    applyBrandColorsForTenant(resolveTenantSlug(useRequestURL().hostname))
+
     const res = await SchoolApi().getCount()
     if (res) schoolCount.value = res.count
   }

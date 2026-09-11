@@ -79,6 +79,12 @@
 
                     <!-- Actions -->
                     <div class="flex shrink-0 items-center gap-2">
+                        <UButton v-if="record && !loading && record.status !== 'DELETED'" size="sm" variant="soft"
+                            :color="record.status === 'ACTIVE' ? 'error' : 'success'"
+                            :icon="record.status === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
+                            :label="record.status === 'ACTIVE' ? 'Deactivate' : 'Reactivate'"
+                            @click="showStatusPrompt = true" />
+
                         <UButton v-if="record && !loading" :to="`/teachers/edit/${record.id}`" size="sm" color="primary"
                             :icon="EDIT_ICON" label="Edit Teacher" />
                     </div>
@@ -119,6 +125,9 @@
         <div class="min-w-0">
             <slot />
         </div>
+
+        <TeacherStatusPrompt v-if="record" v-model:open="showStatusPrompt" :teacher-id="record.id"
+            :teacher-name="name" :active="record.status === 'ACTIVE'" @changed="record = $event" />
     </div>
 </template>
 
@@ -127,6 +136,7 @@ const store = useTeacherStore()
 
 const { record, loading } = storeToRefs(store)
 const route = useRoute()
+const showStatusPrompt = ref(false)
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]

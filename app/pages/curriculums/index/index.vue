@@ -25,7 +25,7 @@
           </template>
 
           <UButton v-for="action in quickActions" :key="action.label" block variant="soft" :color="action.color"
-            :icon="action.icon" :label="action.label" :to="action.to" />
+            :icon="action.icon" :label="action.label" :to="action.to" @click="action.onClick?.()" />
         </UCard>
 
         <!-- My Progress - teacher only: their own coverage (getTeacherProgress below is the
@@ -151,14 +151,26 @@
         </UCard>
       </div>
 
-      <CurriculumSchemeOfWorkSchemes :mine="!isAdmin" />
+      <CurriculumSchemeOfWorkSchemes :key="schemesKey" :mine="!isAdmin" />
     </div>
 
+    <CurriculumBulkUploadModal v-model:open="showBulkUpload" @uploaded="onBulkUploaded" />
   </div>
 </template>
 
 <script setup lang="ts">
 const { can } = useAuth()
+
+const showBulkUpload = ref(false)
+const schemesKey = ref(0)
+
+// CurriculumSchemeOfWorkSchemes owns its own fetch on mount - bump a key to remount it (and the
+// overview cards) after a bulk upload actually created something, rather than reaching into its
+// internals.
+function onBulkUploaded() {
+  schemesKey.value++
+  if (isAdmin.value) loadOverview()
+}
 
 const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
@@ -215,17 +227,26 @@ definePageMeta({
   ]
 })
 
+type QuickAction = {
+  label: string
+  icon: string
+  color: 'neutral' | 'primary'
+  to?: string
+  onClick?: () => void
+}
+
 const quickActions = computed(() => {
-  const actions = [
-    { label: 'Subjects', icon: 'i-lucide-book-open', to: '/subjects', color: 'neutral' as const }
+  const actions: QuickAction[] = [
+    { label: 'Subjects', icon: 'i-lucide-book-open', to: '/subjects', color: 'neutral' }
   ]
 
   if (isAdmin.value) {
     // Teacher Progress is otherwise only reachable via the Coverage Overview card below, which
     // needs teacherProgress to finish loading (and have data) before its own button renders -
     // this gives admins/owners a direct, always-present way in.
-    actions.push({ label: 'Teacher Progress', icon: COVERAGE_ICON, to: '/curriculums/teacher-progress', color: 'neutral' as const })
-    actions.unshift({ label: 'Create Scheme', icon: 'i-lucide-book-plus', to: '/curriculums/add', color: 'primary' as const })
+    actions.push({ label: 'Teacher Progress', icon: COVERAGE_ICON, to: '/curriculums/teacher-progress', color: 'neutral' })
+    actions.push({ label: 'Bulk Upload', icon: 'i-lucide-upload', color: 'neutral', onClick: () => { showBulkUpload.value = true } })
+    actions.unshift({ label: 'Create Scheme', icon: 'i-lucide-book-plus', to: '/curriculums/add', color: 'primary' })
   }
 
   return actions

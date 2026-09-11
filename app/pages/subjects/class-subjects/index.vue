@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const view = ref<'table' | 'card'>('table')
+const showDuplicate = ref(false);
 const route = useRoute();
 const router = useRouter();
 const store = useClassSubjectStore();
@@ -12,11 +13,6 @@ const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
 );
 
-// No "All Types" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). Nothing selected already shows the "All Types" placeholder, and the
-// select's own clear button (:clear below) gets back to it.
 const mandatoryOptions = [
   { label: "Core", value: "true" },
   { label: "Optional", value: "false" },
@@ -51,20 +47,11 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit);
 
-// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
-// why a v-model bound straight to a computed setter that triggers router.replace() reads as
-// "picking an option/typing does nothing". These still seed from the URL on load and push back
-// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
-// mirror, not the source of truth.
 const classId = ref(String(route.query.classId ?? ""));
 const mandatory = ref(String(route.query.mandatory ?? ""));
 const searchInput = ref(String(route.query.search ?? ""));
 const search = ref(searchInput.value);
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
   { label: "Class Level", value: "clazz.levelOrder:asc" },
   { label: "Subject (A-Z)", value: "subject.name:asc" },
@@ -88,9 +75,6 @@ function resetFilters() {
   sort.value = DEFAULT_SORT;
 }
 
-// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
-// page/size and silently drops any other query key when neither changed, which would swallow
-// these filter updates whenever a filter is set while already on page 1.
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } });
 }
@@ -126,8 +110,6 @@ watch(
   { immediate: true }
 );
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
 watch([classId, mandatory, search, sort], () => {
   updateQuery({
     classId: classId.value || undefined,
@@ -164,6 +146,10 @@ definePageMeta({
               <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject"
                 :icon="ASSIGN_ICON" />
               <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
+              <UButton color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..."
+                icon="lucide:copy" @click="showDuplicate = true" />
+              <UButton color="neutral" variant="outline" class="md:hidden" icon="lucide:copy"
+                @click="showDuplicate = true" />
             </div>
             <TableViewToggle v-model="view" />
           </div>
@@ -379,5 +365,7 @@ definePageMeta({
         </template>
       </div>
     </UCard>
+
+    <SubjectClassSubjectDuplicate v-model:open="showDuplicate" @duplicated="fetchRecord" />
   </div>
 </template>

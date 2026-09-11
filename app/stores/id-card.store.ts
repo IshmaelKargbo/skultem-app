@@ -26,6 +26,18 @@ export interface IdCardVisualSettings {
     validityYears: number
 }
 
+// Mirrors GetIdCardSettingUseCase.DEFAULT_STAFF_FIELDS on the backend - used here only as a
+// fallback so this list is never empty for a school whose backend hasn't picked up the
+// staffFields column/defaults yet (e.g. a server running from before this feature shipped).
+const DEFAULT_STAFF_FIELDS: IdCardField[] = [
+    { key: 'name', label: 'Full Name', icon: 'i-lucide-user', cardSlot: 'front', enabled: true, required: true },
+    { key: 'staffId', label: 'Staff ID', icon: 'i-lucide-id-card', cardSlot: 'front', enabled: true, required: true },
+    { key: 'designation', label: 'Position', icon: 'i-lucide-briefcase', cardSlot: 'front', enabled: true },
+    { key: 'gender', label: 'Gender', icon: 'i-lucide-user-round', cardSlot: 'front', enabled: true },
+    { key: 'expiryDate', label: 'Valid Until', icon: 'i-lucide-calendar-check', cardSlot: 'front', enabled: true },
+    { key: 'phone', label: 'Phone', icon: 'i-lucide-phone', cardSlot: 'back', enabled: true }
+]
+
 const DEFAULT_SETTINGS: IdCardVisualSettings = {
     layout: 'vertical',
     profileShape: 'square',
@@ -46,7 +58,11 @@ const DEFAULT_SETTINGS: IdCardVisualSettings = {
 export const useIdCardStore = defineStore('idCard', {
     state: () => ({
         settings: { ...DEFAULT_SETTINGS },
+        // Staff cards reuse `settings` above (same colours/layout/dimensions/background) - only
+        // the field list is separate, since a staff card shows Staff ID/Position/Phone instead of
+        // Admission No/Class/Guardian.
         fields: [] as IdCardField[],
+        staffFields: [] as IdCardField[],
         loaded: false,
         loading: false
     }),
@@ -81,6 +97,18 @@ export const useIdCardStore = defineStore('idCard', {
                     this.fields = []
                 }
 
+                try {
+                    this.staffFields = JSON.parse(res.staffFields) || []
+                } catch {
+                    this.staffFields = []
+                }
+                // A school this old server doesn't know staffFields for yet would otherwise show
+                // an empty "Fields (Staff)" list - fall back to the same defaults the backend uses
+                // for a brand-new school, rather than an empty editor.
+                if (!this.staffFields.length) {
+                    this.staffFields = DEFAULT_STAFF_FIELDS.map(f => ({ ...f }))
+                }
+
                 this.loaded = true
             } finally {
                 this.loading = false
@@ -88,7 +116,7 @@ export const useIdCardStore = defineStore('idCard', {
         },
 
         async save() {
-            const payload = { ...this.settings, fields: JSON.stringify(this.fields) }
+            const payload = { ...this.settings, fields: JSON.stringify(this.fields), staffFields: JSON.stringify(this.staffFields) }
             const res = await IdCardSettingApi().save(payload)
             return res
         }

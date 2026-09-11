@@ -6,6 +6,10 @@ export type User = {
     photo: string | null
     roles: string[]
     status: string
+    // The SchoolUser membership status at the currently-active school - distinct from status
+    // above (the account itself, shared across every school it belongs to). Null wherever the
+    // backend hasn't resolved a school context for this record.
+    schoolStatus: string | null
     createdAt: string
     updatedAt: string
 }

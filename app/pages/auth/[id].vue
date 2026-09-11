@@ -45,8 +45,17 @@
                             </div>
 
                             <div v-else class="mt-2 flex flex-wrap items-center gap-2">
-                                <UBadge v-for="role in record?.roles" :key="role" :label="parseRole[role] || role"
-                                    :color="parseRoleColor[role]" variant="subtle" size="xs" class="rounded-full" />
+                                <div v-for="role in record?.roles" :key="role" class="flex items-center gap-0.5">
+                                    <UBadge :label="parseRole[role] || role" :color="parseRoleColor[role]"
+                                        variant="subtle" size="xs" class="rounded-full" />
+                                    <UButton v-if="me?.id !== record?.id" variant="ghost" color="neutral" size="xs"
+                                        icon="lucide:x" class="size-4 p-0"
+                                        :aria-label="`Remove ${parseRole[role] || role}`" @click="openRemoveRole(role)" />
+                                </div>
+
+                                <UBadge v-if="record?.schoolStatus && record.schoolStatus !== 'ACTIVE'" size="xs"
+                                    variant="outline" color="error" :label="clean(record.schoolStatus)"
+                                    class="rounded-full" />
                             </div>
 
                             <div v-if="!loading" class="mt-1.5 flex items-center gap-1.5 text-xs text-dimmed">
@@ -57,6 +66,12 @@
                     </div>
 
                     <div class="flex shrink-0 items-center gap-2">
+                        <UButton v-if="record && me?.id !== record.id" size="sm" variant="soft"
+                            :color="record.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
+                            :icon="record.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
+                            :label="record.schoolStatus === 'ACTIVE' ? 'Deactivate' : 'Reactivate'"
+                            @click="showStatusPrompt = true" />
+
                         <UButton to="/auth" variant="outline" size="sm" color="neutral" icon="i-lucide-arrow-left"
                             label="Users" />
                     </div>
@@ -143,6 +158,13 @@
                 </UForm>
             </template>
         </UCard>
+
+        <AuthUsersStatusPrompt v-if="record" v-model:open="showStatusPrompt" :user-id="record.id"
+            :user-name="name" :active="record.schoolStatus === 'ACTIVE'" @changed="record = $event" />
+
+        <AuthUsersRemoveRolePrompt v-if="record && removeRoleTarget" v-model:open="showRemoveRole" :user-id="record.id"
+            :user-name="name" :role="removeRoleTarget" :last-role="record.roles.length === 1"
+            @removed="record = $event" />
     </div>
 </template>
 
@@ -155,7 +177,19 @@ definePageMeta({
 
 const route = useRoute()
 const store = useUserStore()
+const { user: me } = storeToRefs(store)
 const notify = useNotify()
+
+const showStatusPrompt = ref(false)
+const removeRoleTarget = ref<string | null>(null)
+const showRemoveRole = computed<boolean>({
+    get: () => removeRoleTarget.value !== null,
+    set: (v) => { if (!v) removeRoleTarget.value = null }
+})
+
+function openRemoveRole(role: string) {
+    removeRoleTarget.value = role
+}
 
 const record = ref<User | undefined>()
 const loading = ref(true)

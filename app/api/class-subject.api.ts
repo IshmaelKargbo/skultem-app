@@ -49,6 +49,16 @@ export const ClassSubjectApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    duplicate: async (sourceClassId: string, targetClassIds: string[]) => {
+      try {
+        return await $api(`/subject-assignment/class/${sourceClassId}/duplicate`, {
+          method: 'POST',
+          body: { targetClassIds }
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }
