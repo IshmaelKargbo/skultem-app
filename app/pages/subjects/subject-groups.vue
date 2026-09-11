@@ -4,6 +4,7 @@ import type { Row } from "@tanstack/vue-table";
 const view = ref<'table' | 'card'>('table')
 const route = useRoute();
 const router = useRouter();
+const { can } = useAuth();
 const store = useSubjectGroupStore();
 const clazzStore = useClassStore();
 const { records: data, meta, loading } = storeToRefs(store);
@@ -196,7 +197,7 @@ definePageMeta({
                 <div>
                     <div class="flex px-4 py-3 justify-between">
                         <div class="space-x-2 flex flex-1 items-center">
-                            <SubjectGroupAdd />
+                            <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
                         </div>
                         <TableViewToggle v-model="view" />
                     </div>

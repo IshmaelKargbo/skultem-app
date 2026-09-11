@@ -46,10 +46,19 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex shrink-0 items-center gap-2">
+                    <div class="flex shrink-0 flex-wrap items-center gap-2">
                         <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
                         <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
                             :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
+
+                        <!-- Same "improve the class" shortcuts a class master/subject teacher already gets
+                             from My Classes, kept here too since this page is where they end up next. -->
+                        <template v-if="isTeacherViewer && (isMasterOfThisClass || isSubjectTeacherOfThisClass)">
+                            <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm" color="neutral"
+                                label="Curriculum" icon="i-lucide-book-open" />
+                            <UButton :to="`/timetable?session=${session?.id}`" variant="soft" size="sm" color="neutral"
+                                label="Timetable" icon="i-lucide-calendar-days" />
+                        </template>
                     </div>
                 </div>
 
@@ -366,9 +375,9 @@
                 <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
                     <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
                 </div>
-                <p class="text-sm font-semibold text-highlighted">Student list is only visible to the class master</p>
-                <p class="max-w-xs text-xs text-muted">You teach a subject in this class rather than oversee it. Head to Curriculum to manage your scheme of work.</p>
-                <UButton to="/curriculums" label="View Curriculum" icon="i-lucide-book-open" color="primary" variant="soft" />
+                <p class="text-sm font-semibold text-highlighted">Student list is only visible to staff of this class</p>
+                <p class="max-w-xs text-xs text-muted">You're not the class master or a subject teacher here. Head to My Classes to see the ones you teach.</p>
+                <UButton to="/classes" label="My Classes" :icon="CLASS_ICON" color="primary" variant="soft" />
             </div>
         </UCard>
 
@@ -419,6 +428,11 @@ const view = ref<'table' | 'card'>('table')
 // that name-matching fragility.
 const widgetStore = useWidgetStore()
 const performanceByName = ref<Record<string, number>>({})
+// Computed in fetchRosterInsights alongside performanceByName but not surfaced in the roster yet
+// (no per-student attendance % column/tooltip currently reads it) - kept as a ref so that
+// computation doesn't throw a ReferenceError on every load; a future attendance-rate display
+// can read it the same way performanceOf() reads performanceByName.
+const attendanceByName = ref<Record<string, number>>({})
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const sortByPerformance = ref(false)
 
@@ -572,12 +586,26 @@ const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role
 const isTeacherViewer = computed(() => can(Role.TEACHER))
 const isParentViewer = computed(() => can(Role.PARENT))
 const isMasterOfThisClass = computed(() => classTeachers.value.some(t => t.isMe))
-// A teacher only sees the roster for a class they're the class master of, and
-// a parent never sees it here - the roster is every family's child in that
-// class, not just their own, so it stays off-limits regardless of who they are.
+
+// A subject teacher gets the same roster/attention view as the class master, just not the
+// promotion actions (canManagePromotion stays admin/owner/proprietor-only) - they teach real
+// students in this class and need to see who's struggling just as much as the class master does.
+const teacherSubjectStore = useTeacherSubjectStore()
+const myTeacherSubjects = ref<TeacherSubject[]>([])
+const isSubjectTeacherOfThisClass = computed(() =>
+    myTeacherSubjects.value.some(s => s.classId === classId.value)
+)
+
+async function fetchMyTeacherSubjects() {
+    if (!isTeacherViewer.value) return
+    myTeacherSubjects.value = await teacherSubjectStore.fetchAllByTeacher(0, 0) || []
+}
+
+// A parent never sees the roster here - it's every family's child in that class, not just
+// their own, so it stays off-limits regardless of who they are.
 const canViewRoster = computed(() => {
     if (isParentViewer.value) return false
-    return !isTeacherViewer.value || isMasterOfThisClass.value
+    return !isTeacherViewer.value || isMasterOfThisClass.value || isSubjectTeacherOfThisClass.value
 })
 
 watch(canViewRoster, (val) => { if (val) { fetchRosterInsights(); fetchAttention() } }, { immediate: true })
@@ -654,6 +682,7 @@ onMounted(() => {
         updateQuery({ page: page.value })
     }
     fetchClass()
+    fetchMyTeacherSubjects()
     if (canManagePromotion.value) classStore.fetchAll(1, 100)
 
     document.title = 'View Class | Classes | Skultem'

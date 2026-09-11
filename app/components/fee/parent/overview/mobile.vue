@@ -1,10 +1,13 @@
 <template>
     <UCard :ui="{
-        body: 'p-0'
+        body: 'sm:p-0 p-0'
     }">
         <template #header>
             <div class="flex items-center justify-between">
-                <p>Fee Schedule</p>
+                <div>
+                    <p>Fee Schedule</p>
+                    <p class="text-xs text-muted">Fees due for the current term</p>
+                </div>
                 <UBadge v-if="!loading && data.length" :label="`${data.length} fees`" variant="subtle" color="neutral"
                     size="sm" />
             </div>
@@ -12,12 +15,14 @@
         <div>
             <!-- Loading -->
             <template v-if="loading">
-                <div v-for="i in 4" :key="i" class="flex justify-between py-2 px-3" :class="{
-                    'border-b border-gray-100 dark:border-gray-800': i < 4
-                }">
-                    <div class="space-y-1.5">
-                        <USkeleton class="h-3.5 w-28 rounded-md" />
-                        <USkeleton class="h-3 w-20 rounded-md" />
+                <div v-for="i in 4" :key="i"
+                    class="flex items-center justify-between gap-3 border-b px-4 py-3 border-gray-200 last:border-0 dark:border-gray-800">
+                    <div class="flex gap-3 items-center">
+                        <USkeleton class="size-9 shrink-0 rounded-xl" />
+                        <div class="space-y-1.5">
+                            <USkeleton class="h-3.5 w-28 rounded-md" />
+                            <USkeleton class="h-3 w-24 rounded-md" />
+                        </div>
                     </div>
                     <div class="flex flex-col items-end space-y-1.5">
                         <USkeleton class="h-3.5 w-16 rounded-md" />
@@ -28,23 +33,31 @@
 
             <!-- Data -->
             <template v-else-if="data.length">
-                <div v-for="(value, i) in data" :key="value.fee + i" class="flex justify-between py-2 px-3" :class="{
-                    'border-b border-gray-100 dark:border-gray-800': (i + 1) < data.length
-                }">
-                    <div class="space-y-0.5">
-                        <p>{{ value.fee }}</p>
-                        <div class="flex text-xs space-x-1 text-mute">
-                            <p>{{ value.term }}</p>
-                            <p>·</p>
-                            <p>{{ formatDate(value.dueDate) }}</p>
+                <div v-for="(value, i) in data" :key="value.fee + i"
+                    class="border-b px-4 py-3 border-gray-200 last:border-0 dark:border-gray-800">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex gap-3 min-w-0 items-center">
+                            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                                <UIcon name="ph:wallet-light" class="size-4 text-primary" />
+                            </div>
+                            <div class="min-w-0 space-y-0.5">
+                                <h3 class="truncate text-sm font-semibold">{{ value.fee }}</h3>
+                                <div class="flex items-center space-x-1 text-xs text-muted">
+                                    <p>{{ value.term }}</p>
+                                    <p>·</p>
+                                    <p>{{ formatDate(value.dueDate) }}</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col items-end space-y-0.5">
-                        <p class="text-info font-medium">{{ format(value.amount) }}</p>
-                        <div class="flex space-x-2">
-                            <p class="text-error font-semibold" v-if="value.outstanding">{{ format(value.outstanding) }}</p>
-                            <UBadge size="sm" :label="value.status" variant="outline"
-                                :color="parseFeeStatusColor[value.status]" :icon="parseFeeStatusIcon[value.status]" />
+                        <div class="space-y-1 text-right shrink-0">
+                            <p class="text-sm font-bold text-info">{{ format(value.amount) }}</p>
+                            <div class="flex justify-end items-center gap-2">
+                                <p v-if="value.outstanding" class="text-xs font-semibold text-error">
+                                    {{ format(value.outstanding) }}
+                                </p>
+                                <UBadge size="sm" :label="value.status" variant="subtle"
+                                    :color="parseFeeStatusColor[value.status]" :icon="parseFeeStatusIcon[value.status]" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -52,9 +65,14 @@
 
             <!-- Empty -->
             <template v-else>
-                <div class="flex flex-col items-center gap-2 py-10">
-                    <UIcon name="ph:wallet-light" class="text-4xl text-gray-400" />
-                    <p class="text-gray-500">No fee records found.</p>
+                <div class="flex flex-col items-center py-16">
+                    <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+                        <UIcon name="ph:wallet-light" class="size-10 text-muted" />
+                    </div>
+
+                    <h3 class="mt-4 text-sm font-semibold">No fee records found</h3>
+
+                    <p class="mt-1 text-sm text-muted">Fee records will appear here.</p>
                 </div>
             </template>
         </div>

@@ -111,7 +111,7 @@ const navItems: NavItem[] = [
 
   {
     label: 'Classes', to: '/classes', icon: CLASS_ICON,
-    roles: [Role.ACCOUNTANT,]
+    roles: [Role.ACCOUNTANT, Role.TEACHER,]
   },
 
   {

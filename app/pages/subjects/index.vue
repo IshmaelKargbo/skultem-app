@@ -5,7 +5,7 @@
                 <div>
                     <div class="flex px-4 py-3 justify-between items-center gap-3">
                         <div class="flex space-x-3 flex-1">
-                            <SubjectAdd />
+                            <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
                         </div>
 
                         <TableViewToggle v-model="view" />
@@ -96,6 +96,7 @@ import { nextTick } from "vue";
 const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
+const { can } = useAuth();
 
 const columns = [
     {

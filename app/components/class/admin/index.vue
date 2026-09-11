@@ -1,32 +1,32 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
-            <template #header>
-                <div>
-                    <div class="flex px-4 py-3 justify-between space-x-3">
-                        <div class="flex space-x-3 flex-1">
-                            <ClassAssignMaster />
-                            <ClassAdd />
-                        </div>
-                        <TableViewToggle v-model="view" />
-                    </div>
+        <Heading title="Classes" subtitle="Manage every class, section and stream in your school.">
+            <div class="flex flex-wrap gap-3">
+                <ClassAssignMaster />
+                <ClassAdd />
+            </div>
+        </Heading>
 
-                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            <USelectMenu v-model="sectionId" value-key="value" label-key="label" :items="sectionOptions"
-                                placeholder="All Sections" clear />
-                            <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
-                                placeholder="All Streams" clear />
-                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name"
-                                class="col-span-2" />
-                        </div>
-                        <div>
-                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                                :disabled="!hasActiveFilters" @click="resetFilters" />
-                        </div>
-                    </div>
+        <!-- Filters -->
+        <UCard>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
+                    <USelectMenu v-model="sectionId" value-key="value" label-key="label" :items="sectionOptions"
+                        placeholder="All Sections" clear />
+                    <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
+                        placeholder="All Streams" clear />
+                    <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name"
+                        class="col-span-2" />
                 </div>
-            </template>
+
+                <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                    :disabled="!hasActiveFilters" @click="resetFilters" />
+
+                <TableViewToggle v-model="view" class="ml-auto sm:ml-0" />
+            </div>
+        </UCard>
+
+        <UCard :ui="{ body: 'sm:p-0 p-0' }">
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
@@ -279,7 +279,7 @@
 
                 <!-- Empty -->
                 <template v-else>
-                    <UCard class="col-span-full rounded-3xl border border-default shadow-sm">
+                    <UCard class="col-span-full">
                         <div class="flex flex-col items-center justify-center py-14">
                             <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
 

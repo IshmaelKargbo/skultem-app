@@ -133,6 +133,15 @@
                     <SectionHeading title="Quick Actions" subtitle="Jump straight to the thing you came here to do." class="mb-3" />
 
                     <div class="grid gap-3" :class="hasSubjects ? 'grid-cols-2' : 'grid-cols-2'">
+                        <NuxtLink to="/classes"
+                            class="group flex flex-col items-center gap-2 rounded-2xl border border-default bg-elevated/30 px-3 py-4 text-center transition-all hover:-translate-y-0.5 hover:border-secondary/40 hover:shadow-md">
+                            <div
+                                class="flex size-11 items-center justify-center rounded-2xl bg-secondary/10 text-secondary transition-colors group-hover:bg-secondary group-hover:text-white">
+                                <UIcon class="size-5" :name="CLASS_ICON" />
+                            </div>
+                            <p class="text-xs font-medium text-highlighted">My Classes</p>
+                        </NuxtLink>
+
                         <NuxtLink v-if="hasSubjects" to="/grades"
                             class="group flex flex-col items-center gap-2 rounded-2xl border border-default bg-elevated/30 px-3 py-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
                             <div
@@ -171,117 +180,6 @@
                     </div>
                 </UCard>
 
-                <!-- MY CLASS (class master) -->
-                <template v-if="hasClassMaster">
-                    <SectionHeading title="My Class" subtitle="The class you're responsible for as class master." />
-
-                    <div class="space-y-3">
-                        <UCard v-for="a in visibleClassMasterAssignments" :key="a.sessionId" :ui="{
-                            root: needsAttention(a.promotionStatus) || attentionCount(a.sessionId) > 0 ? 'ring-1 ring-warning/40' : '',
-                            body: 'p-0 sm:p-0'
-                        }">
-                            <div class="flex items-start justify-between gap-3 p-3">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <div
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                        <UIcon name="i-lucide-graduation-cap" class="size-5" />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="truncate font-semibold text-highlighted">{{ a.sessionName }}</p>
-                                        <p class="flex items-center gap-1 text-xs text-muted">
-                                            <UIcon name="i-lucide-users" class="size-3.5" />
-                                            {{ a.studentCount }} student{{ a.studentCount === 1 ? '' : 's' }}
-                                        </p>
-                                        <p v-if="attentionCount(a.sessionId) > 0" class="flex items-center gap-1 text-xs text-warning">
-                                            <UIcon name="i-lucide-alert-triangle" class="size-3.5" />
-                                            {{ attentionCount(a.sessionId) }} need{{ attentionCount(a.sessionId) === 1 ? 's' : '' }} attention
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <UBadge :color="classMasterBadge(a.promotionStatus).color" variant="subtle" size="sm"
-                                    class="shrink-0">
-                                    {{ classMasterBadge(a.promotionStatus).label }}
-                                </UBadge>
-                            </div>
-
-                            <USeparator />
-
-                            <div class="flex flex-wrap items-center gap-2 p-3">
-                                <UButton :to="classRosterUrl(a.classId, a.streamId)" size="sm" variant="soft" color="neutral"
-                                    label="View Class" :icon="CLASS_ICON" />
-
-                                <UButton :to="`/curriculums?sessionId=${a.sessionId}`" size="sm" variant="soft" color="neutral"
-                                    label="View Curriculum" icon="i-lucide-book-open" />
-
-                                <UButton to="/grades/approval" size="sm" variant="soft" color="neutral"
-                                    label="Grade Approval" :icon="GRADES_APPROVAL_ICON" />
-
-                                <UButton :to="`/timetable?session=${a.sessionId}`" size="sm" variant="soft" color="neutral"
-                                    label="Timetable" icon="i-lucide-calendar-days" />
-
-                                <UButton v-if="a.promotionStatus === 'READY' || a.promotionStatus === 'RETURNED'"
-                                    :to="`/promotion/${a.sessionId}`" size="sm" variant="solid"
-                                    :color="a.promotionStatus === 'RETURNED' ? 'error' : 'primary'"
-                                    :icon="PROMOTE_STUDENTS_ICON"
-                                    :label="a.promotionStatus === 'RETURNED' ? 'Review & Resubmit' : 'Promote Class'"
-                                    class="ml-auto" />
-                            </div>
-                        </UCard>
-
-                        <UButton v-if="classMasterAssignments.length > CLASS_MASTER_PREVIEW_COUNT" block size="sm"
-                            variant="ghost" color="neutral"
-                            :trailing-icon="showAllClassMasters ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-                            :label="showAllClassMasters ? 'Show less' : `Show all (${classMasterAssignments.length})`"
-                            @click="showAllClassMasters = !showAllClassMasters" />
-                    </div>
-                </template>
-
-                <!-- MY CLASSES (all classes taught) -->
-                <template v-if="hasSubjects">
-                    <SectionHeading title="My Classes" subtitle="Every class you teach a subject in." :class="hasClassMaster ? 'pt-1' : ''" />
-
-                    <div class="space-y-3">
-                        <UCard v-for="c in visibleMyClasses" :key="c.sessionId" :ui="{ body: 'p-0 sm:p-0' }">
-                            <div class="p-3 space-y-2">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="flex min-w-0 items-center gap-3">
-                                        <div
-                                            class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                            <UIcon name="i-lucide-users-round" class="size-5" />
-                                        </div>
-                                        <div class="min-w-0">
-                                            <p class="truncate font-semibold text-highlighted">{{ c.className }}{{ c.sectionName
-                                                ? `(${c.sectionName})` : '' }}</p>
-                                            <p class="text-xs text-muted">{{ c.subjects.length }} subject{{ c.subjects.length
-                                                === 1 ? '' : 's' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-wrap gap-1.5">
-                                    <UBadge v-for="s in c.subjects" :key="s" variant="subtle" color="neutral" size="sm">{{ s }}
-                                    </UBadge>
-                                </div>
-                            </div>
-                            <USeparator />
-                            <div class="flex flex-wrap gap-3 p-3">
-                                <UButton v-if="isClassMaster(c.sessionId)" :to="classRosterUrl(c.classId, c.streamId)"
-                                    size="sm" variant="soft" color="neutral" label="View Class" icon="i-lucide-school" />
-                                <UButton v-else :to="`/curriculums?sessionId=${c.sessionId}`" size="sm" variant="soft"
-                                    color="neutral" label="View Curriculum" icon="i-lucide-book-open" />
-                                <UButton :to="`/timetable?session=${c.sessionId}`" size="sm" variant="soft" color="neutral"
-                                    label="Timetable" icon="i-lucide-calendar-days" />
-                            </div>
-                        </UCard>
-
-                        <UButton v-if="myClasses.length > MY_CLASSES_PREVIEW_COUNT" block size="sm" variant="ghost"
-                            color="neutral"
-                            :trailing-icon="showAllMyClasses ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-                            :label="showAllMyClasses ? 'Show less' : `Show all (${myClasses.length})`"
-                            @click="showAllMyClasses = !showAllMyClasses" />
-                    </div>
-                </template>
             </div>
         </div>
     </div>
@@ -380,23 +278,6 @@ const loadingSubjects = ref(true)
 const hasClassMaster = computed(() => classMasterAssignments.value.length > 0)
 const initialLoading = computed(() => loadingAssignments.value || loadingSubjects.value)
 
-// A teacher can be class master of, and/or teach a subject in, more than a handful of
-// classes - the right rail previews a few of each and expands in place on request rather
-// than paginating, since both lists are already fully loaded on the client (no extra
-// fetch to page through).
-const CLASS_MASTER_PREVIEW_COUNT = 3
-const MY_CLASSES_PREVIEW_COUNT = 3
-const showAllClassMasters = ref(false)
-const showAllMyClasses = ref(false)
-
-const visibleClassMasterAssignments = computed(() =>
-    showAllClassMasters.value ? classMasterAssignments.value : classMasterAssignments.value.slice(0, CLASS_MASTER_PREVIEW_COUNT)
-)
-
-const visibleMyClasses = computed(() =>
-    showAllMyClasses.value ? myClasses.value : myClasses.value.slice(0, MY_CLASSES_PREVIEW_COUNT)
-)
-
 // Distinct classes across "class master" and "teaches a subject in" - shown as a single
 // glanceable count in the hero banner.
 const totalClassCount = computed(() => {
@@ -423,11 +304,6 @@ const totalAttentionCount = computed(() =>
     Object.values(attentionByClassId.value).reduce((sum, n) => sum + n, 0)
 )
 
-function attentionCount(sessionId: string) {
-    const classId = classMasterAssignments.value.find(a => a.sessionId === sessionId)?.classId
-    return classId ? (attentionByClassId.value[classId] ?? 0) : 0
-}
-
 async function fetchAttentionCounts(sessions: { sessionId: string, classId: string, streamId?: string | null }[]) {
     const uniqueClassIds = [...new Set(sessions.filter(s => s.classId).map(s => s.classId))]
     if (!uniqueClassIds.length) return
@@ -443,30 +319,6 @@ async function fetchAttentionCounts(sessions: { sessionId: string, classId: stri
     }))
 
     attentionByClassId.value = { ...attentionByClassId.value, ...Object.fromEntries(entries) }
-}
-
-// A subject teacher only sees the full roster for a class they're also the class
-// master of - otherwise "View Class" would open the students list of a class they
-// have no oversight of, so those cards link to Curriculum instead.
-const classMasterSessionIds = computed(() => new Set(classMasterAssignments.value.map(a => a.sessionId)))
-
-function isClassMaster(sessionId: string) {
-    return classMasterSessionIds.value.has(sessionId)
-}
-
-const classMasterBadgeStyles: Record<string, { label: string, color: 'neutral' | 'warning' | 'success' | 'error' }> = {
-    READY: { label: 'Ready to promote', color: 'warning' },
-    PENDING_REVIEW: { label: 'Awaiting approval', color: 'warning' },
-    RETURNED: { label: 'Returned - needs changes', color: 'error' },
-    APPROVED: { label: 'Promoted', color: 'success' }
-}
-
-function classMasterBadge(status: TeacherClassMasterPromotionStatus) {
-    return status ? classMasterBadgeStyles[status] || { label: 'On track', color: 'neutral' } : { label: 'On track', color: 'neutral' }
-}
-
-function needsAttention(status: TeacherClassMasterPromotionStatus) {
-    return status === 'READY' || status === 'RETURNED'
 }
 
 async function fetchClassMasterAssignments() {
