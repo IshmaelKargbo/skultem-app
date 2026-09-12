@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
+    <ReportCardSectionNav />
 
     <!-- A parent has no use for the admin tooling below (whole-school stats, generate/design
          actions, a class/term filtered list of every student) - they get their own child's

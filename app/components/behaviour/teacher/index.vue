@@ -4,6 +4,8 @@
             <USelectMenu :loading="loading" :items="classes" v-model="state.id" placeholder="Select class"
                 value-key="value" class="w-full md:w-72" />
         </Heading>
+
+        <BehaviourSectionNav />
         <BehaviourReport ref="reportRef" :clazz="clazzId" />
         <BehaviourTable :state="{ classId: clazzId }" :selectable="false" />
     </div>

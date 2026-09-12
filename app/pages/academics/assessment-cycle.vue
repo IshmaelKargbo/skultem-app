@@ -13,6 +13,8 @@
       </UTooltip>
     </Heading>
 
+    <AcademicsSectionNav />
+
     <UAlert v-if="loadError" color="error" variant="soft" icon="i-lucide-alert-circle" :description="loadError" />
 
     <!-- Stats -->

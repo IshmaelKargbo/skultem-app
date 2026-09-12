@@ -3,6 +3,8 @@
     <Heading title="Grading scale" subtitle="Configure grade bands used for student grade and ranking calculation.">
       <UButton label="Add Band" icon="i-lucide-plus" @click="addGradeBand" />
     </Heading>
+
+    <AcademicsSectionNav />
     <UCard>
       <div class="space-y-2">
         <div v-if="isLoading" class="grid gap-3 grid-cols-3">

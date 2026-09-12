@@ -41,9 +41,6 @@
                     <span class="hidden text-xs-base text-muted md:block">{{ date }}</span>
                 </div>
                 <div class="flex shrink-0 items-center gap-1.5 pr-3 justify-self-end sm:gap-3 sm:pr-5">
-                    <div class="md:block border-r border-default pr-3 hidden">
-                        <AccountSwitch />
-                    </div>
                     <div class="flex items-center gap-1.5 sm:gap-3">
                         <UButton v-if="canManageSettings" :icon="SETTINGS_ICON" variant="ghost" color="neutral"
                             to="/settings/school" aria-label="Settings" />
@@ -87,19 +84,6 @@ onMounted(() => {
     if (isSystemAdmin.value) return
     if (canSwitchYear.value && !academicYears.value.length) academicYearStore.fetchAll(1, 50)
     if (!terms.value.length) academicYearStore.getTerms()
-})
-
-const yearOptions = computed(() =>
-    academicYears.value.map((year) => ({
-        value: year.id,
-        label: year.active ? `${year.name} (Active)` : year.name,
-        icon: year.active ? 'i-lucide-circle-check' : year.status === 'CLOSED' ? 'i-lucide-lock' : 'i-lucide-clock'
-    }))
-)
-
-const viewingYearId = computed({
-    get: () => viewingYear.value?.id ?? null,
-    set: (id: string | null) => academicYearStore.setViewingYear(id)
 })
 
 const activeTerm = computed(() => terms.value.find((term) => term.status === 'ACTIVE'))

@@ -1,5 +1,7 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
+    <IdCardsSectionNav />
+
     <!-- Design (colours/layout/dimensions/background) is shared - only the field list below
          differs per card type, so one toggle up top drives both the field editor and the preview
          rather than duplicating it in each column. -->

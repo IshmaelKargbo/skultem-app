@@ -7,7 +7,7 @@
                 <div class="space-y-4">
                     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div class="flex items-center gap-3">
-                            <UAvatar size="3xl" :src="student.photo || '/avatar-placeholder.svg'"
+                            <UAvatar size="3xl" :src="student.photo"
                                 :alt="`${student.givenNames} ${student.familyName}`"
                                 class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
                             <div>
@@ -20,6 +20,11 @@
                             </div>
                         </div>
                         <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap">
+                            <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && (feesState?.outstanding || 0) > 0"
+                                :to="`/fees-payment/pay?studentId=${student.id}`" color="primary" size="sm"
+                                icon="streamline-ultimate:cash-payment-bills" class="col-span-2 justify-center md:col-span-1">
+                                Pay Fees
+                            </UButton>
                             <FeeStudentAssign v-if="can([Role.ACCOUNTANT])" :student="student"
                                 @assigned="refreshFees" />
                             <FeeDiscountAdd v-if="can([Role.ACCOUNTANT])" :student-id="student.id"

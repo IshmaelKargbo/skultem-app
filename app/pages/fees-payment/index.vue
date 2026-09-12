@@ -1,7 +1,9 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
+        <FeeSectionNav />
+
         <div class="flex gap-4">
-            <div class="w-96" :class="mobileView === 'details' ? 'hidden md:block' : ''">
+            <div class="w-full md:w-96" :class="mobileView === 'details' ? 'hidden md:block' : ''">
                 <FeeStudentList @select="select" />
             </div>
 

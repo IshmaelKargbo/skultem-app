@@ -73,6 +73,7 @@ async function togglePin(notice: Notice) {
 
 <template>
   <div class="px-4 md:px-6 space-y-4">
+    <CommunicateSectionNav />
     <UCard>
       <template #header>
         <div class="flex justify-between flex-col gap-3 sm:flex-row">

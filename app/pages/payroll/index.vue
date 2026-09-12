@@ -6,6 +6,8 @@
       <UButton variant="soft" icon="i-lucide-user-plus" to="/payroll/salaries/add" label="Add Salary" />
     </Heading>
 
+    <PayrollSectionNav />
+
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{

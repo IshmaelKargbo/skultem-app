@@ -1,37 +1,80 @@
 <template>
-    <div class="p-4 border-2 border-gray-100 dark:border-gray-800 rounded-2xl transition-all duration-200 hover:border-primary-300 dark:hover:border-primary-700"
-        :class="{
-            'bg-primary-50 dark:bg-primary-950 border-primary-400 dark:border-primary-700': active,
-            'bg-white dark:bg-gray-900': !active
-        }">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center gap-3 ">
-                <UAvatar size="md" :src="student.photo || '/avatar-placeholder.svg'"
-                    :alt="`${student.givenNames} ${student.familyName}`" loading="lazy"
-                    class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
+    <div class="group relative overflow-hidden rounded-2xl border p-3.5 transition-all duration-200"
+        :class="active
+            ? 'border-primary-300 bg-primary-50 shadow-sm dark:border-primary-700 dark:bg-primary-500/10'
+            : 'border-default bg-default hover:border-primary-200 hover:shadow-sm dark:hover:border-primary-800'">
+
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-2.5">
+                <UAvatar size="md" :src="student.photo" :alt="`${student.givenNames} ${student.familyName}`"
+                    loading="lazy" class="shrink-0 ring-2 ring-default" />
                 <div class="min-w-0 space-y-0.5">
-                    <p class="text-sm font-semibold truncate">
+                    <p class="truncate text-sm font-semibold text-highlighted">
                         {{ student.givenNames }} {{ student.familyName }}
                     </p>
-                    <div class="text-[11px] text-muted flex space-x-1.5">
-                        <p class="truncate">{{ student.admissionNumber || 'No Admission No' }}</p>
-                        <p>·</p>
-                        <p>{{ student.className }}</p>
-                    </div>
+                    <p class="truncate text-[10px] text-muted">
+                        {{ student.admissionNumber || 'No Admission No' }} &middot; {{ student.className }}
+                    </p>
                 </div>
             </div>
-            <div class="space-y-0.5">
-                <UBadge size="sm" :color="student.feeDetail.balance == 0 ? 'success' : 'error'" variant="outline"
-                    :label="format(student.feeDetail.balance)" />
+
+            <UBadge size="sm" :color="statusStyle.color" variant="subtle" class="shrink-0">
+                {{ statusStyle.label }}
+            </UBadge>
+        </div>
+
+        <!-- Paid-of-total progress - a quicker read than the amount alone, and doubles as a status
+             signal (full green bar = settled) at a glance across a whole list. -->
+        <div class="mt-3 space-y-1.5">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div class="h-full rounded-full transition-all duration-300" :class="progressColor"
+                    :style="{ width: `${progressPct}%` }" />
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+                <span class="text-muted">Paid <span class="font-medium text-highlighted">{{
+                    format(student.feeDetail.paid) }}</span></span>
+                <span :class="student.feeDetail.balance > 0 ? 'font-medium text-error' : 'font-medium text-success'">
+                    {{ student.feeDetail.balance > 0 ? `${format(student.feeDetail.balance)} due` : 'Settled' }}
+                </span>
             </div>
         </div>
+
+        <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && student.feeDetail.balance > 0" block size="xs"
+            color="primary" variant="soft" icon="streamline-ultimate:cash-payment-bills" class="mt-3 justify-center"
+            :to="`/fees-payment/pay?studentId=${student.id}`" @click.stop>
+            Pay Fees
+        </UButton>
     </div>
 </template>
 
 <script setup lang="ts">
-const { student } = defineProps<{
+const { student, active } = defineProps<{
     student: Student,
     active?: boolean
 }>()
 const { format } = useMoney()
+const { can } = useAuth()
+
+// Matches GetFeeDetailUsecase's actual overallStatus values exactly ("Paid"/"Partial"/"Pending",
+// title case, plus "N/A" from its term-scoped overload) - not an UPPERCASE enum, which never
+// matched anything here and silently showed every student as "Unpaid" regardless of their real
+// status.
+const statusStyles: Record<string, { label: string, color: 'success' | 'warning' | 'error' | 'neutral' }> = {
+    Paid: { label: 'Paid', color: 'success' },
+    Partial: { label: 'Partial', color: 'warning' },
+    Pending: { label: 'Pending', color: 'neutral' },
+    'N/A': { label: 'N/A', color: 'neutral' }
+}
+
+const statusStyle = computed(() => statusStyles[student.feeDetail.status] ?? statusStyles.Pending)
+
+const progressPct = computed(() => {
+    if (!student.feeDetail.total) return 0
+    return Math.min(100, Math.round((student.feeDetail.paid / student.feeDetail.total) * 100))
+})
+
+const progressColor = computed(() => {
+    if (student.feeDetail.balance <= 0) return 'bg-success-500'
+    return 'bg-primary-500'
+})
 </script>

@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
+        <ReportCardSectionNav />
 
         <!-- Header -->
         <Heading title="Generate Report Cards" subtitle="Generate report cards for every student in a class and term.">

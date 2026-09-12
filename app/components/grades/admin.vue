@@ -27,6 +27,8 @@
  
     </Heading>
 
+    <GradesSectionNav />
+
     <UCard class="hidden md:block">
       <div class="flex space-x-3">
         <USelectMenu

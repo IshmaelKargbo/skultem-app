@@ -76,6 +76,7 @@ const columns = [
 
 <template>
   <div class="px-4 md:px-6 space-y-4">
+    <AthleticSectionNav />
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-between space-x-3">

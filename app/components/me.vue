@@ -140,6 +140,21 @@
               </div>
             </div>
 
+            <!-- Academic Year - moved here from the header (desktop) so switching lives in one
+                 place across breakpoints, same as MenuDrawer already does on mobile. -->
+            <div v-if="canSwitchYear" class="border-t border-gray-200/60 dark:border-white/10 pt-4">
+              <div class="mb-3 px-1">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                  Academic Year
+                </p>
+              </div>
+
+              <div
+                class="flex items-center justify-between rounded-2xl border border-gray-200/70 dark:border-white/10 bg-gray-100 dark:bg-white/5 px-4 py-3">
+                <AccountSwitch />
+              </div>
+            </div>
+
             <!-- Menu -->
             <div class="space-y-1.5 border-t border-gray-200/60 dark:border-white/10 pt-4">
               <UButton icon="lucide:user" variant="ghost" color="neutral" size="md"
@@ -253,6 +268,10 @@ const { user, meLoading: loading } = storeToRefs(userStore);
 const { activeRole, can, setActiveRole } = useAuth();
 const { show, hide } = useGlobalLoader();
 const { canInstall, install } = usePwaInstall();
+
+// Matches header.vue's own gate - academic-year switching now lives only here, not inline in
+// the header.
+const canSwitchYear = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]));
 
 const drawerOpen = ref(false);
 

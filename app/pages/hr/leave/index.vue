@@ -5,6 +5,8 @@
             <UButton icon="i-lucide-plus" to="/hr/leave/add" label="New Request" />
         </Heading>
 
+        <PayrollSectionNav />
+
         <!-- Summary Cards - admin only -->
         <div v-if="isAdmin" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Metric :record="{ icon: 'i-lucide-file-text', label: 'Total Requests', value: summary?.total ?? 0, isReady: !!summary, color: 'primary' }" />

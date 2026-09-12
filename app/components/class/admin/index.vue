@@ -7,6 +7,8 @@
             </div>
         </Heading>
 
+        <ClassSectionNav />
+
         <!-- Filters -->
         <UCard>
             <div class="flex flex-wrap items-center gap-3">

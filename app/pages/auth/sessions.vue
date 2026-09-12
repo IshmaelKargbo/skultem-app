@@ -1,10 +1,10 @@
 <template>
-    <div class="space-y-4 p-4 sm:space-y-5 md:px-6 lg:p-7 h-full overflow-y-auto">
-        <Heading title="Users Sessions" subtitle="Monitor active logins and session activity" />
-
+    <div class="space-y-4 px-4 md:px-6">
+        <AuthSectionNav />
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="flex justify-end">
+                <div class="flex justify-between items-center gap-3">
+                    <p>Sessions</p>
                     <TableViewToggle v-model="view" />
                 </div>
             </template>

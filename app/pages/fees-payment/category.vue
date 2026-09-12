@@ -87,6 +87,8 @@ definePageMeta({
 
 <template>
   <div class="space-y-4 px-4 sm:px-6">
+    <FeeSectionNav />
+
     <!-- Desktop -->
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>

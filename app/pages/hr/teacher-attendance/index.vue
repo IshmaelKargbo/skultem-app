@@ -8,6 +8,8 @@
       </div>
     </Heading>
 
+    <PayrollSectionNav />
+
     <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle" title="Couldn't load attendance"
       :description="error" />
 

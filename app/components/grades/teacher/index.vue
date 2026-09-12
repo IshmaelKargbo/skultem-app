@@ -15,6 +15,8 @@
       </div>
     </Heading>
 
+    <GradesSectionNav />
+
     <UCard class="hidden md:block">
       <div class="flex space-x-3">
         <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject"

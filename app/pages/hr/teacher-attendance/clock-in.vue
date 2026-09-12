@@ -1,5 +1,7 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
+    <PayrollSectionNav />
+
     <!-- LOADING -->
     <UCard v-if="loadingMyToday">
       <div class="flex items-center gap-3">

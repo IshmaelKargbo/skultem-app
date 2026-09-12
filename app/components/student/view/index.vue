@@ -213,23 +213,23 @@ const performanceInfo = `/students/${route.params.id}/performance${backQuery}`
 const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
 const mobileTabs = computed(() => [
-    { label: 'Personal', to: personalInfo, exact: true },
-    { label: 'Attendance', to: attendanceInfo, exact: true },
-    { label: 'Fees', to: feeStructureInfo, exact: true },
-    { label: 'Academics', to: academicInfo, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, exact: true },
-    { label: 'Performance', to: performanceInfo, exact: true },
-    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, exact: true }] : [])
+    { label: 'Personal', to: personalInfo, icon: USER_ICON, exact: true },
+    { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
+    { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
+    { label: 'Academics', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
+    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
+    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
+    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : [])
 ])
 
 const desktopTabs = computed(() => [
-    { label: 'Personal Information', to: personalInfo, exact: true },
-    { label: 'Attendance', to: attendanceInfo, exact: true },
-    { label: 'Fee Structure', to: feeStructureInfo, exact: true },
-    { label: 'Academic Information', to: academicInfo, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, exact: true },
-    { label: 'Performance', to: performanceInfo, exact: true },
-    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, exact: true }] : [])
+    { label: 'Personal Information', to: personalInfo, icon: USER_ICON, exact: true },
+    { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
+    { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
+    { label: 'Academic Information', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
+    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
+    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
+    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : [])
 ])
 
 async function fetchStudent() {

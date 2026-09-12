@@ -9,7 +9,7 @@
                         <div class="space-y-3">
                             <!-- STUDENT -->
                             <UFormField required label="Student" name="studentId">
-                                <USelectMenu value-key="value" :items="students" v-model="state.studentId"
+                                <USelectMenu value-key="value" :items="studentOptions" v-model="state.studentId"
                                     v-model:search-term="studentSearchTerm" :loading="studentsLoading" ignore-filter
                                     @change="onStudentSelect" placeholder="Select student" />
                                 <template #help>
@@ -223,7 +223,7 @@
                     <UButton color="neutral" variant="subtle" :disabled="isDownloadingReceipt" @click="skipReceipt">
                         No, thanks
                     </UButton>
-                    <UButton icon="i-lucide-download" :loading="isDownloadingReceipt" :disabled="!receipt"
+                    <UButton icon="i-lucide-download" :loading="isDownloadingReceipt" :disabled="!lastPayments.length"
                         @click="downloadReceipt">
                         Download Receipt
                     </UButton>
@@ -241,6 +241,13 @@
 
 <script setup lang="ts">
 import * as yup from 'yup'
+
+const props = defineProps<{
+    // Set by /fees-payment/pay?studentId=... - lets the "Pay Fees" shortcut on a student's fee
+    // record (or their card in the Fees list) jump straight into a prefilled payment form instead
+    // of landing empty and making the accountant search for the same student all over again.
+    initialStudentId?: string
+}>()
 
 const emit = defineEmits(['complete'])
 const { $generatePdf } = useNuxtApp()
@@ -350,6 +357,11 @@ const canSubmit = computed(() =>
     !isOverAllocated.value
 )
 
+// Raw payment records + the bits of form state the receipt needs, kept only long enough to build
+// the receipt lazily - see downloadReceipt(). Captured before reset() clears the form.
+const lastPayments = ref<any[]>([])
+const lastPaymentMeta = ref<{ method: string, studentName?: string }>()
+
 async function onSubmit() {
     isLoading.value = true
 
@@ -367,8 +379,8 @@ async function onSubmit() {
 
         const payments = response?.data || []
         if (payments.length) {
-            receipt.value = buildPaymentReceipt(payments, { method: state.method, studentName: selectedStudentName.value })
-            await loadReceiptSettings()
+            lastPayments.value = payments
+            lastPaymentMeta.value = { method: state.method, studentName: selectedStudentName.value }
             receiptModalOpen.value = true
         }
 
@@ -384,15 +396,23 @@ async function onSubmit() {
 }
 
 async function downloadReceipt() {
-    if (!receipt.value) return
+    if (!lastPayments.value.length || !lastPaymentMeta.value) return
 
     isDownloadingReceipt.value = true
-    await nextTick()
 
     try {
+        // Only built now, on request - fetching the receipt design settings and the school logo
+        // (as a same-origin data: URI, a real network round trip - see loadPdfLogo) used to run
+        // eagerly on every payment, making "Record Payment" wait on both even when nobody ended up
+        // wanting a receipt.
+        receipt.value = buildPaymentReceipt(lastPayments.value, lastPaymentMeta.value)
+        await loadReceiptSettings()
+        await nextTick()
+
         await $generatePdf('#payment-receipt', `receipt-${sanitizeFilename(receipt.value.referenceNo)}`)
         receiptModalOpen.value = false
         receipt.value = null
+        lastPayments.value = []
     } catch (error) {
         console.error('Receipt download failed:', error)
         notify.warning('Receipt download failed. Please try again.')
@@ -427,6 +447,7 @@ async function loadPdfLogo() {
 function skipReceipt() {
     receiptModalOpen.value = false
     receipt.value = null
+    lastPayments.value = []
 }
 
 function reset() {
@@ -463,9 +484,37 @@ const methodOptions = [
 
 const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch()
 
+// The select can only show a label for a value that's actually in its `items` list - normally
+// true the moment a student is picked from the dropdown itself, but the deep-link case below sets
+// state.studentId directly, before the (debounced, server-side) search has any reason to have
+// fetched that particular student. Pinning them into a synthetic entry sidesteps that race
+// entirely, rather than showing the raw id until/unless the search happens to catch up.
+const pinnedStudent = ref<{ label: string, value: string } | null>(null)
+
+const studentOptions = computed(() => {
+    if (pinnedStudent.value && !students.value.some(s => s.value === pinnedStudent.value!.value)) {
+        return [pinnedStudent.value, ...students.value]
+    }
+    return students.value
+})
+
 const selectedStudentName = computed(() =>
-    students.value.find(s => s.value === state.studentId)?.label
+    studentOptions.value.find(s => s.value === state.studentId)?.label
 )
+
+onMounted(async () => {
+    if (!props.initialStudentId) return
+
+    try {
+        const s = await useStudentStore().fetchStudent(props.initialStudentId)
+        if (s) pinnedStudent.value = { label: `${s.givenNames} ${s.familyName}`, value: s.id }
+    } catch {
+        // Non-fatal - the payment form still works with just the id, just without a friendly label.
+    }
+
+    state.studentId = props.initialStudentId
+    onStudentSelect()
+})
 </script>
 
 <style scoped>

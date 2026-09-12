@@ -15,6 +15,8 @@
         />
       </div>
     </Heading>
+
+    <TimetableSectionNav />
     <div v-if="session">
       <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>

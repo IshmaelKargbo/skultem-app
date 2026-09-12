@@ -211,6 +211,7 @@ watch(
 
 <template>
   <div class="space-y-4 px-4 sm:px-6">
+    <AcademicsSectionNav />
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex space-x-3">

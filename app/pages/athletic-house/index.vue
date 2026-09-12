@@ -7,6 +7,8 @@
             </div>
         </Heading>
 
+        <AthleticSectionNav />
+
         <div class="flex flex-col md:flex-row gap-4">
             <div class="w-full md:w-1/3 space-y-4">
                 <!-- House Placement -->

@@ -1,5 +1,7 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
+    <IdCardsSectionNav />
+
     <!-- Student / Staff toggle - same design, different record source (see [[id-cards-staff]]).
          Switching tabs resets the filters below since class/search only make sense for students. -->
     <div class="inline-flex overflow-hidden rounded-lg border border-default">

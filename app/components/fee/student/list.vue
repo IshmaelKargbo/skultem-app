@@ -1,40 +1,56 @@
 <template>
-    <UCard class="sticky top-4" :ui="{ body: 'p-3 md:p-4' }">
+    <UCard class="sticky top-4" :ui="{ body: 'p-3 md:p-4', header: 'p-0 sm:p-0' }">
         <template #header>
-            <div class="space-y-4">
-                <UInput ref="searchInput" v-model="search" placeholder="Search students..." :leading-icon="SEARCH_ICON"
-                    :disabled="isLoading" size="lg" />
+            <div>
+                <div class="flex p-3 border-b border-default items-center gap-2.5 justify-between">
+                    <p class="truncate font-semibold text-highlighted">Students:</p>
+                    <p class="truncate text-xs text-muted">{{ meta?.total ?? 0 }} enrolled</p>
+                </div>
+                <div class="px-3 py-2">
+                    <UInput ref="searchInput" v-model="search" placeholder="Search students..."
+                        :leading-icon="SEARCH_ICON" :disabled="isLoading" size="lg" />
+                </div>
             </div>
         </template>
-        <div class="space-y-3">
-            <div v-if="isLoading" class="space-y-3">
-                <div v-for="n in 7" :key="n"
-                    class="border p-3 rounded-xl border-gray-300 dark:border-gray-700 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <USkeleton class="h-8 w-8 rounded-full" />
-                            <USkeleton class="h-4 w-40" />
+        <div class="space-y-2">
+            <div v-if="isLoading" class="space-y-2">
+                <div v-for="n in 7" :key="n" class="rounded-2xl border border-default p-3.5 space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5">
+                            <USkeleton class="size-9 rounded-full" />
+                            <div class="space-y-1.5">
+                                <USkeleton class="h-3.5 w-32" />
+                                <USkeleton class="h-2.5 w-24" />
+                            </div>
                         </div>
-                        <USkeleton class="h-5 w-16 rounded-full" />
+                        <USkeleton class="h-5 w-14 rounded-full" />
                     </div>
-                    <USkeleton class="h-3 w-40" />
+                    <USkeleton class="h-1.5 w-full rounded-full" />
                 </div>
             </div>
 
             <div v-else-if="records.length === 0"
-                class="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                No students found
+                class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-14 text-center">
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-[20px] bg-primary-50 dark:bg-primary-500/10">
+                    <UIcon :name="STUDENT_FEES_ICON" class="text-2xl text-primary-500" />
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-highlighted">No students found</h3>
+                    <p class="mt-1 text-xs text-muted">Try a different search.</p>
+                </div>
             </div>
 
-            <div v-else class="space-y-1.5">
-                <button v-for="item in records" :key="item.id" type="button" class="w-full text-left"
-                    @click="select(item)">
+            <div v-else class="space-y-2">
+                <div v-for="item in records" :key="item.id" role="button" tabindex="0" class="cursor-pointer"
+                    @click="select(item)" @keydown.enter="select(item)">
                     <FeeStudentCard :active="item.id == selected?.id" :student="item" />
-                </button>
+                </div>
             </div>
         </div>
         <template #footer>
-            <div class="flex justify-center">
+            <div class="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
+                <Showing :meta="meta" />
                 <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
                     :items-per-page="meta.size" :total="meta.total" show-edges />
             </div>

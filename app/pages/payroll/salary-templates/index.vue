@@ -6,6 +6,8 @@
       <UButton icon="i-lucide-plus" to="/payroll/salary-templates/add" label="Add Template" />
     </Heading>
 
+    <PayrollSectionNav />
+
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <div class="p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-2">

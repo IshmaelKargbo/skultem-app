@@ -94,7 +94,8 @@ definePageMeta({
 })
 </script>
 <template>
-    <div class="px-4 md:px-6">
+    <div class="space-y-4 px-4 md:px-6">
+        <ClassSectionNav />
         <UCard :ui="{
             body: 'sm:p-0 p-0',
             header: 'p-0 sm:p-0',

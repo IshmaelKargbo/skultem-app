@@ -2,6 +2,8 @@
   <div class="space-y-4 px-4 md:px-6">
     <Heading title="Payroll History" subtitle="Your past payslips." />
 
+    <PayrollSectionNav />
+
     <UCard>
       <template #header>
         <div class="flex items-center gap-2">

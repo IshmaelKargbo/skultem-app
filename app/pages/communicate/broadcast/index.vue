@@ -14,6 +14,8 @@ definePageMeta({
         <Heading title="Compose Broadcast" subtitle="Send a message to students, parents, teachers or staff">
             <UButton to="/communicate/broadcast/history" label="Broadcast History" variant="outline" color="neutral" :icon="BROADCAST_HISTORY_ICON" />
         </Heading>
+
+        <CommunicateSectionNav />
         <CommunicateBroadcastCompose />
     </div>
 </template>

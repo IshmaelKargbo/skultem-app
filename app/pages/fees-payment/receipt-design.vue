@@ -1,12 +1,10 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
 
+    <FeeSectionNav />
+
     <!-- Header -->
     <Heading title="Receipt Design" subtitle="Configure the payment receipt used across your school.">
-      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/fees-payment/pay" class="justify-center">
-        Back
-      </UButton>
-
       <UButton icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
         Save Settings
       </UButton>

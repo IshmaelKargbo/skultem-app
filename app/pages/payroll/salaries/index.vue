@@ -7,6 +7,8 @@
       <UButton icon="i-lucide-plus" to="/payroll/salaries/add" label="Add Salary" />
     </Heading>
 
+    <PayrollSectionNav />
+
     <!-- Stats -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{ icon: 'i-lucide-users', label: 'Employees', value: summary?.teacherCount ?? 0, isReady: !!summary, color: 'primary' }" />

@@ -151,6 +151,8 @@ async function saveConfig() {
             <UButton to="/classes" variant="soft" color="primary" :icon="PROMOTE_STUDENTS_ICON"
                 label="Start a Promotion" />
         </Heading>
+
+        <AcademicsSectionNav />
         <UCard>
             <div v-if="progressLoading" class="space-y-3">
                 <USkeleton class="h-5 w-48" />

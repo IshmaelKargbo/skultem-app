@@ -1,16 +1,113 @@
-<template>
-  <div class="p-4 md:px-6  overflow-y-auto h-full space-y-4 sm:space-y-5">
-    <Heading title="Users Management" subtitle="Manage users and explore your school data">
-      <AuthUsersAdd />
-    </Heading>
-    <AuthUsersTable />
-  </div>
-</template>
-
 <script setup lang="ts">
+const view = ref<'table' | 'card'>('table')
+const route = useRoute()
+const router = useRouter()
+const store = useUserStore()
 const appStore = useAppStore()
 
-onMounted(() => {
+const { records: data, meta, loading } = storeToRefs(store)
+
+const { user: me } = storeToRefs(store)
+
+const showAssign = ref(false)
+const selectedUserId = ref('')
+
+const statusTarget = ref<User | null>(null)
+const showStatus = computed<boolean>({
+  get: () => statusTarget.value !== null,
+  set: (v) => { if (!v) statusTarget.value = null }
+})
+
+function openStatusPrompt(user: User) {
+  statusTarget.value = user
+}
+
+const UButton = resolveComponent('UButton')
+
+const parseStatus: Record<string, string> = {
+  ACTIVE: 'Active',
+  INACTIVE: 'Inactive',
+  RESET_PASSWORD: 'Reset Password',
+  DELETED: 'Deleted'
+}
+
+const parseStatusColor: Record<string, string> = {
+  ACTIVE: 'success',
+  INACTIVE: 'warning',
+  RESET_PASSWORD: 'neutral',
+  DELETED: 'danger'
+}
+
+const columns = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }: any) => {
+      return `${row.original.givenNames} ${row.original.familyName}`
+    }
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email'
+  },
+  {
+    accessorKey: 'roles',
+    header: 'Roles'
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status'
+  },
+  {
+    id: 'actions'
+  }
+]
+
+const page = computed<number>({
+  get: () => Number(route.query.page ?? 1),
+  set: (val) => updateQuery({ page: val })
+})
+
+const size = ref(runtimeConf().limit)
+
+function openAssignRole(userId: string) {
+  selectedUserId.value = userId
+  showAssign.value = true
+}
+
+async function fetchRecord() {
+  loading.value = true
+
+  await store.fetchAll(page.value, size.value)
+
+  loading.value = false
+}
+
+watch(
+  () => page.value,
+  () => {
+    router.replace({
+      query: {
+        page: page.value
+      }
+    })
+
+    fetchRecord()
+  },
+  { immediate: true }
+)
+
+onMounted(async () => {
+  if (!route.query.page || !route.query.size) {
+    router.replace({
+      query: {
+        page: page.value,
+        size: size.value
+      }
+    })
+  }
+
+  fetchRecord()
   appStore.setTitle('Auth Management')
   document.title = 'Users | Auth | Skultem'
 })
@@ -19,3 +116,258 @@ definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>
+
+<template>
+  <div class="space-y-4 px-4 md:px-6">
+    <AuthSectionNav />
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <div class="flex justify-between items-center gap-3">
+          <div class="flex flex-1 items-center gap-3">
+            <UInput placeholder="Search by name" />
+            <AuthUsersAdd />
+          </div>
+          <TableViewToggle v-model="view" />
+        </div>
+      </template>
+
+      <UTable v-if="view === 'table'" class="hidden md:block" :ui="{
+        loading: 'py-0'
+      }" :columns="columns" :data="data" :loading="loading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-3 py-14">
+            <div class="flex size-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
+              <UIcon name="i-lucide-users" class="size-7 text-gray-400" />
+            </div>
+
+            <div class="text-center">
+              <p class="font-medium text-gray-900 dark:text-white">
+                No users found
+              </p>
+
+              <p class="text-sm text-gray-500">
+                Users will appear here once created.
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <UAvatar :alt="`${row.original.givenNames} ${row.original.familyName}`" size="md" />
+
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ row.original.givenNames }}
+                {{ row.original.familyName }}
+              </p>
+
+              <p class="text-xs text-gray-500">
+                {{ row.original.email }}
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <template #roles-cell="{ row }">
+          <UBadge v-if="row.original.roles.length > 1" :label="`${row.original.roles.length} Roles`" color="neutral"
+            variant="soft" trailing-icon="eos-icons:role-binding-outlined" />
+
+          <UBadge v-else :label="`${parseRole[row.original.roles[0] || '']}`"
+            :color="parseRoleColor[row.original.roles[0] || '']" variant="soft"
+            :trailing-icon="parseRoleIcon[row.original.roles[0] || '']" />
+        </template>
+
+        <template #status-cell="{ row }">
+          <UBadge :label="parseStatus[row.original.schoolStatus ?? row.original.status]" variant="soft"
+            :color="parseStatusColor[row.original.schoolStatus ?? row.original.status]" />
+        </template>
+
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end gap-1.5">
+            <UTooltip :delay-duration="0" arrow text="View Profile">
+              <UButton size="sm" variant="soft" color="neutral" icon="i-lucide-eye" class="rounded-xl"
+                :to="`/auth/${row.original.id}`" />
+            </UTooltip>
+
+            <UTooltip :delay-duration="0" arrow text="Assign Role">
+              <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding" class="rounded-xl"
+                @click="openAssignRole(row.original.id)" />
+            </UTooltip>
+
+            <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow
+              :text="row.original.schoolStatus === 'ACTIVE' ? 'Deactivate' : 'Reactivate'">
+              <UButton size="sm" variant="soft" :color="row.original.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
+                :icon="row.original.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
+                class="rounded-xl" @click="openStatusPrompt(row.original)" />
+            </UTooltip>
+          </div>
+        </template>
+      </UTable>
+
+      <!-- Mobile -->
+      <div class="p-4"
+        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+        <!-- Loading -->
+        <template v-if="loading">
+          <UCard v-for="i in 4" :key="i" class="overflow-hidden ">
+            <div class="space-y-4 p-4">
+              <div class="flex items-center gap-3">
+                <USkeleton class="size-12 rounded-2xl" />
+
+                <div class="flex-1 space-y-2">
+                  <USkeleton class="h-3 w-32" />
+                  <USkeleton class="h-2 w-44" />
+                </div>
+
+                <USkeleton class="size-8 rounded-xl" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <USkeleton class="h-16 rounded-2xl" />
+                <USkeleton class="h-16 rounded-2xl" />
+              </div>
+            </div>
+          </UCard>
+        </template>
+
+        <!-- Data -->
+        <template v-else-if="data?.length">
+          <UCard v-for="item in data" :key="item.id" class="overflow-hidden " :ui="{
+            body: 'p-0'
+          }">
+            <!-- Header -->
+            <div class="border-b border-gray-100 p-3 md:p-0 md:pb-3 dark:border-gray-800">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-3">
+                  <UAvatar :alt="`${item.givenNames} ${item.familyName}`" size="2xl" />
+
+                  <div class="min-w-0">
+                    <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                      {{ item.givenNames }}
+                      {{ item.familyName }}
+                    </h3>
+
+                    <p class="truncate text-xs text-gray-500">
+                      {{ item.email }}
+                    </p>
+                  </div>
+                </div>
+
+                <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-eye" class="rounded-xl"
+                  :to="`/auth/${item.id}`" />
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="grid grid-cols-2 gap-3 p-4">
+              <!-- Status -->
+              <div
+                class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
+                    <UIcon name="i-lucide-calendar-days" class="size-4 text-primary-600 dark:text-primary-400" />
+                  </div>
+
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">
+                    Status
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                  {{ parseStatus[item.schoolStatus ?? item.status] }}
+                </p>
+              </div>
+
+              <!-- Roles -->
+              <div
+                class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                    <UIcon name="i-lucide-user-round" class="size-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                    Roles
+                  </p>
+                </div>
+
+                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+                <p v-if="item.roles.length > 1"
+                  class="inline-flex w-fit rounded-lg px-2.5 py-1  font-semibold text-gray-700  dark:text-gray-300">
+                  {{ item.roles.length }} Roles
+                </p>
+
+                <p v-else class="truncate text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                  {{ parseRole[item.roles[0] || ''] }}
+                </p>
+                </p>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div
+              class="flex items-center justify-between border-t border-gray-100 p-3 md:p-0 md:pt-3 dark:border-gray-800">
+              <div>
+                <p class="text-xs text-gray-500">
+                  User Account
+                </p>
+
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ item.roles.length }} assigned role(s)
+                </p>
+              </div>
+
+              <div class="flex gap-2">
+                <UButton v-if="me?.id !== item.id" size="sm"
+                  :color="item.schoolStatus === 'ACTIVE' ? 'error' : 'success'" variant="soft"
+                  :icon="item.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'" class="rounded-xl"
+                  @click="openStatusPrompt(item)" />
+
+                <UButton label="Assign Role" size="sm" color="primary" variant="soft"
+                  icon="eos-icons:cluster-role-binding" class="rounded-xl" @click="openAssignRole(item.id)" />
+              </div>
+            </div>
+          </UCard>
+        </template>
+
+        <!-- Empty -->
+        <template v-else>
+          <div class="flex flex-col items-center justify-center py-14 col-span-full">
+            <div class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800">
+              <UIcon name="i-lucide-users" class="size-8 text-gray-400" />
+            </div>
+
+            <p class="font-medium text-gray-900 dark:text-white">
+              No users found
+            </p>
+
+            <p class="mt-1 text-sm text-gray-500">
+              User records will appear here.
+            </p>
+          </div>
+        </template>
+      </div>
+
+      <template #footer>
+        <div class="flex items-center justify-between">
+          <Showing :meta="meta" />
+
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
+        </div>
+      </template>
+    </UCard>
+
+    <AuthUsersAssign v-model="showAssign" :user-id="selectedUserId" @success="fetchRecord" />
+
+    <AuthUsersStatusPrompt v-if="statusTarget" v-model:open="showStatus" :user-id="statusTarget.id"
+      :user-name="`${statusTarget.givenNames} ${statusTarget.familyName}`"
+      :active="statusTarget.schoolStatus === 'ACTIVE'" />
+  </div>
+</template>

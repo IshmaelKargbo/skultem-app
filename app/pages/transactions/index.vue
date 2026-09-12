@@ -1,5 +1,6 @@
 <template>
     <div class="px-4 md:px-6 space-y-4">
+        <TransactionSectionNav />
         <TransactionReport />
         <TransactionTable class="hidden md:block" />
         <TransactionTableMobile class="md:hidden" />

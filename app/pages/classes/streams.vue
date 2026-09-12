@@ -141,6 +141,7 @@ definePageMeta({
 
 <template>
   <div class="space-y-4 px-4 md:px-6">
+    <ClassSectionNav />
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
