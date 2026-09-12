@@ -27,6 +27,7 @@ type MaterialForm = {
     categoryId: string
     unit: string
     inStock: number
+    price: number
 }
 
 function defaultState(): MaterialForm {
@@ -34,7 +35,8 @@ function defaultState(): MaterialForm {
         name: material?.name || '',
         categoryId: material?.category.id || '',
         unit: material?.unit || '',
-        inStock: material?.inStock || 0
+        inStock: material?.inStock || 0,
+        price: material?.price || 0
     }
 }
 
@@ -44,7 +46,8 @@ const schema = yup.object({
     name: yup.string().required(),
     categoryId: yup.string().required(),
     unit: yup.string().required(),
-    inStock: yup.number().min(0).required()
+    inStock: yup.number().min(0).required(),
+    price: yup.number().min(0, 'Cannot be negative').required('Price is required')
 })
 
 const close = () => {
@@ -74,7 +77,12 @@ const onSubmit = async (event: FormSubmitEvent<MaterialForm>) => {
     }
 }
 
-onMounted(() => store.fetchAllCategory(0, 0))
+// Every material row renders its own instance of this component (for its "edit" trigger), plus
+// one more for the header's "Add" button - all fetching the same unpaged category list purely to
+// populate this form's dropdown. Only fetch if nothing's loaded yet, instead of once per instance.
+onMounted(() => {
+    if (!records.value.length) store.fetchAllCategory(0, 0)
+})
 </script>
 <template>
     <USlideover :dismissible="false" v-model:open="open">
@@ -123,6 +131,17 @@ onMounted(() => store.fetchAllCategory(0, 0))
                     <template v-if="isEdit" #help>
                         <p class="text-xs text-muted">
                             Stock is adjusted separately via restock or supply, not here.
+                        </p>
+                    </template>
+                </UFormField>
+
+                <!-- Price -->
+                <UFormField label="Selling Price" name="price" required>
+                    <UInput v-model.number="state.price" type="number" min="0" step="0.01" placeholder="0.00"
+                        :disabled="isLoading" />
+                    <template #help>
+                        <p class="text-xs text-muted">
+                            Price per unit - pre-fills the unit price when this item is sold.
                         </p>
                     </template>
                 </UFormField>

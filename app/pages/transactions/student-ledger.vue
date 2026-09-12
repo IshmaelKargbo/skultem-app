@@ -3,7 +3,6 @@
         <TransactionSectionNav />
         <LedgerReport />
         <LedgerTable />
-        <LedgerTableMobile />
     </div>
 </template>
 

@@ -49,7 +49,7 @@
             </div>
         </div>
         <template #footer>
-            <div class="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
+            <div class="flex flex-col items-center gap-2">
                 <Showing :meta="meta" />
                 <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
                     :items-per-page="meta.size" :total="meta.total" show-edges />

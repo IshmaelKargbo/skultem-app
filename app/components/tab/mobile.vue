@@ -55,7 +55,7 @@ watch(() => route.path, scrollActiveIntoView)
     <div ref="container"
       class="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div
-        class="inline-flex min-w-full gap-1 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        class="inline-flex min-w-full gap-1 rounded-2xl border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
         <template v-for="tab in tabs" :key="tab.key || tab.to || tab.label">
           <NuxtLink
             v-if="tab.to"

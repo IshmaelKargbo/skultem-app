@@ -3,33 +3,42 @@
         <FeeSectionNav />
 
         <div class="flex gap-4">
-            <div class="w-full md:w-96" :class="mobileView === 'details' ? 'hidden md:block' : ''">
+            <div class="w-full md:w-96">
                 <FeeStudentList @select="select" />
             </div>
 
-            <!-- Right Panel -->
-            <div class="flex-1" :class="mobileView === 'students' ? 'hidden md:block' : ''">
-                <div v-if="mobileView === 'details'" class="mb-3 flex items-center justify-between md:hidden">
-                    <UButton icon="lucide:chevron-left" color="neutral" variant="ghost" size="sm"
-                        @click="mobileView = 'students'">
-                        Students
-                    </UButton>
-
-                    <p class="max-w-[65%] truncate text-xs text-gray-500 dark:text-gray-400">
-                        {{ selectedStudent ? `${selectedStudent.givenNames} ${selectedStudent.familyName}` : NO_STUDENT
-                        }}
-                    </p>
-                </div>
-
+            <!-- Right Panel - desktop only. On mobile, tapping a student below opens the
+                 full-screen modal instead of swapping the list out for this panel in place. -->
+            <div class="hidden flex-1 md:block">
                 <FeeStudentRecord :student="selectedStudent" />
             </div>
         </div>
+
+        <!-- Mobile: tapping a student above opens this full-screen modal with their fee
+             details, instead of the list being replaced by the details panel in place. -->
+        <UModal v-model:open="mobileDetailsOpen" fullscreen :ui="{ content: 'md:hidden' }">
+            <template #content>
+                <UCard :ui="{ root: 'flex h-full flex-col rounded-none', body: 'flex-1 overflow-y-auto p-0 sm:p-0' }">
+                    <template #header>
+                        <div class="flex items-center justify-between">
+                            <p class="max-w-[80%] truncate font-semibold text-highlighted">
+                                {{ selectedStudent ? `${selectedStudent.givenNames} ${selectedStudent.familyName}` : NO_STUDENT }}
+                            </p>
+                            <UButton icon="lucide:x" variant="ghost" color="neutral" size="sm" aria-label="Close"
+                                @click="mobileDetailsOpen = false" />
+                        </div>
+                    </template>
+
+                    <FeeStudentRecord :student="selectedStudent" embedded />
+                </UCard>
+            </template>
+        </UModal>
     </div>
 </template>
 
 <script setup lang="ts">
 const selectedStudent = ref<Student>()
-const mobileView = ref<'students' | 'details'>('students')
+const mobileDetailsOpen = ref(false)
 const NO_STUDENT = 'No student selected'
 const { can } = useAuth()
 function select(row: Student) {
@@ -37,7 +46,7 @@ function select(row: Student) {
     selectedStudent.value = row
 
     if (import.meta.client && window.innerWidth < 768) {
-        mobileView.value = 'details'
+        mobileDetailsOpen.value = true
     }
 }
 

@@ -2,6 +2,7 @@
 const props = defineProps<{
   student: Student
   refreshKey?: number
+  embedded?: boolean
 }>()
 
 const { format } = useMoney()
@@ -99,73 +100,93 @@ const parseBatchStatusColor: Record<string, string> = {
 
 <template>
   <div class="space-y-3">
-    <div v-if="loading" class="space-y-2 md:hidden">
-      <UCard v-for="n in 4" :key="n" class="rounded-2xl" :ui="{ body: 'p-4' }">
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <USkeleton class="h-4 w-40" />
-            <USkeleton class="h-6 w-16 rounded-full" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <USkeleton class="h-8 w-full rounded-lg" />
-            <USkeleton class="h-8 w-full rounded-lg" />
-            <USkeleton class="h-8 w-full rounded-lg" />
-            <USkeleton class="h-8 w-full rounded-lg" />
-          </div>
-        </div>
-      </UCard>
-    </div>
+    <div class="md:hidden">
+      <UCard :ui="embedded ? {
+        root: 'ring-0 shadow-none rounded-none bg-transparent',
+        body: 'sm:p-0 p-0'
+      } : {
+        body: 'sm:p-0 p-0'
+      }">
+        <!-- Embedded (mobile modal): the parent already labels this section, so no header here. -->
+        <template v-if="!embedded" #header>
+          <p>Fees</p>
+          <p class="text-xs text-muted">Assigned fee categories and payment status</p>
+        </template>
 
-    <div v-else-if="records.length === 0"
-      class="rounded-2xl border border-dashed border-gray-200 p-10 text-center dark:border-gray-800">
-      <div class="flex flex-col items-center gap-2">
-        <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
-        <p class="text-gray-500 dark:text-gray-400">
-          No fee found.
-        </p>
-      </div>
-    </div>
-
-    <div v-else class="space-y-2 md:hidden">
-      <UCard v-for="item in records" :key="item.id" variant="outline" :ui="{ body: 'p-4' }">
-        <div class="space-y-3">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                {{ item.fee }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ item.term }}
-              </p>
-            </div>
-            <UBadge variant="soft" :color="parseBatchStatusColor[item.status]" :label="item.status" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
-              <p class="text-gray-500">Amount</p>
-              <p class="mt-0.5 font-semibold text-gray-900 dark:text-white">{{ format(item.total) }}</p>
-            </div>
-            <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
-              <p class="text-gray-500">Paid</p>
-              <p class="mt-0.5 font-semibold text-success-500">{{ format(item.amountPaid || 0) }}</p>
-            </div>
-            <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
-              <p class="text-gray-500">Outstanding</p>
-              <p class="mt-0.5 font-semibold text-orange-500">{{ format(item.outstanding || 0) }}</p>
-            </div>
-            <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
-              <p class="text-gray-500">Discount</p>
-              <p class="mt-0.5 font-semibold text-purple-500">{{ format(item.discount || 0) }}</p>
+        <!-- Loading -->
+        <template v-if="loading">
+          <div v-for="i in 4" :key="i" class="border-b px-4 py-3 border-gray-200 last:border-0">
+            <div class="flex items-center justify-between">
+              <div class="space-y-2">
+                <USkeleton class="h-4 w-32" />
+                <USkeleton class="h-3 w-24" />
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-end">
+                  <USkeleton class="h-6 w-20 rounded-full" />
+                </div>
+                <USkeleton class="h-3 w-16" />
+              </div>
             </div>
           </div>
+        </template>
 
-          <div
-            class="flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500 dark:border-gray-800">
-            <span>Due Date</span>
-            <span class="font-medium text-gray-700 dark:text-gray-300">{{ item.dueDate || '-' }}</span>
+        <!-- Records -->
+        <template v-else-if="records.length">
+          <div v-for="item in records" :key="item.id" class="border-b px-4 py-3 border-gray-200 last:border-0">
+            <div class="flex items-center justify-between">
+              <div class="min-w-0 space-y-1">
+                <h3 class="truncate text-sm font-semibold">
+                  {{ item.fee }}
+                </h3>
+                <div class="flex space-x-2 items-center text-xs text-muted">
+                  <p>{{ item.term }}</p>
+                  <p>·</p>
+                  <p>{{ item.dueDate ? formatDate(item.dueDate) : 'No due date' }}</p>
+                </div>
+              </div>
+
+              <div class="space-y-1 text-right">
+                <p class="text-sm font-bold text-info">
+                  {{ format(item.total | 0) }}
+                </p>
+                <UBadge size="sm" variant="soft" :color="parseBatchStatusColor[item.status]" :label="item.status" />
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <p class="text-muted">Paid</p>
+                <p class="font-semibold text-success">{{ format(item.amountPaid || 0) }}</p>
+              </div>
+              <div>
+                <p class="text-muted">Outstanding</p>
+                <p class="font-semibold text-warning">{{ format(item.outstanding || 0) }}</p>
+              </div>
+              <div>
+                <p class="text-muted">Discount</p>
+                <p class="font-semibold text-purple-500">{{ format(item.discount || 0) }}</p>
+              </div>
+            </div>
           </div>
-        </div>
+        </template>
+
+        <!-- Empty -->
+        <template v-else>
+          <div class="flex flex-col items-center py-16">
+            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+              <UIcon name="ph:books-light" class="size-10 text-muted" />
+            </div>
+
+            <h3 class="mt-4 text-sm font-semibold">
+              No fees found
+            </h3>
+
+            <p class="mt-1 text-sm text-muted">
+              Assigned fee records will appear here.
+            </p>
+          </div>
+        </template>
       </UCard>
     </div>
 

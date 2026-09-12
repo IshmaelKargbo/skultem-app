@@ -1,7 +1,7 @@
 <template>
   <USlideover :dismissible="false" :open="open" @update:open="open = $event">
     <UButton
-      color="info"
+      color="primary"
       label="Supply Material"
       :icon="SUPPLY_ICON"
       @click="open = true"
@@ -129,7 +129,7 @@ const pendingSupplies = computed(() =>
 
 const suppliesOptions = computed(() =>
   pendingSupplies.value.map(s => ({
-    label: `${s.student.givenNames} ${s.student.familyName} - ${s.material.name} (${s.qty - s.collectedQty} left)`,
+    label: `${s.student ? `${s.student.givenNames} ${s.student.familyName}` : s.customerName} - ${s.material.name} (${s.qty - s.collectedQty} left)`,
     value: s.id
   }))
 )

@@ -4,6 +4,7 @@ const router = useRouter()
 const store = useMaterialStore()
 const { records: data, loading, meta } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
+const { format } = useMoney()
 
 const value = ref(route.query.search as string || '')
 const search = ref(value.value)
@@ -28,6 +29,10 @@ const columns = [
     {
         accessorKey: 'inStock',
         header: 'In Stock'
+    },
+    {
+        accessorKey: 'price',
+        header: 'Price'
     },
     {
         accessorKey: 'unit',
@@ -108,9 +113,9 @@ definePageMeta({
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex space-x-3">
+                    <div class="flex-1 flex space-x-3">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or category"
-                            class="w-full sm:w-72" />
+                            class="w-full" />
                         <div class="flex space-x-3">
                             <MaterialAdd />
                             <MaterialRestock />
@@ -167,6 +172,10 @@ definePageMeta({
                     <UBadge :color="row.original.inStock > 0 ? 'success' : 'error'" variant="soft">
                         {{ row.original.inStock }}
                     </UBadge>
+                </template>
+
+                <template #price-cell="{ row }">
+                    <p class="font-medium">{{ format(row.original.price) }}</p>
                 </template>
 
                 <template #updatedAt-cell="{ row }">
@@ -300,8 +309,9 @@ definePageMeta({
                                         </div>
                                     </div>
 
-                                    <div class="flex size-11 items-center justify-center rounded-xl bg-primary/10">
-                                        <UIcon name="i-lucide-boxes" class="size-5 text-primary" />
+                                    <div class="text-right">
+                                        <p class="text-xs text-muted">Price</p>
+                                        <p class="mt-1 text-lg font-semibold text-highlighted">{{ format(item.price) }}</p>
                                     </div>
                                 </div>
 

@@ -1,9 +1,30 @@
 <template>
-    <div class="space-y-5">
-        <UCard :ui="{
-            body: 'sm:p-0'
+    <div :class="embedded ? 'flex flex-col' : 'space-y-5'">
+        <UCard :ui="embedded ? {
+            root: 'ring-0 shadow-none rounded-none bg-transparent',
+            body: 'sm:p-0 p-0',
+            header: 'p-0 sm:p-0'
+        } : {
+            body: 'sm:p-0',
         }">
-            <template v-if="student" #header>
+            <!-- Embedded (mobile full-screen modal): the modal's own header already shows the
+                 student's name, so this only surfaces the actions as a compact scrollable row. -->
+            <template v-if="student && embedded" #header>
+                <div class="flex gap-2 p-3 overflow-x-auto *:shrink-0">
+                    <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && (feesState?.outstanding || 0) > 0"
+                        :to="`/fees-payment/pay?studentId=${student.id}`" color="primary" size="sm"
+                        icon="streamline-ultimate:cash-payment-bills">
+                        Pay Fees
+                    </UButton>
+                    <p class="md:hidden uppercase text-muted font-semibold">Summery</p>
+                    <FeeStudentAssign v-if="can([Role.ACCOUNTANT])" :student="student" @assigned="refreshFees" />
+                    <FeeDiscountAdd v-if="can([Role.ACCOUNTANT])" :student-id="student.id"
+                        :refresh-report="refreshFees" trigger-label="Discount" trigger-variant="outline"
+                        trigger-size="sm" trigger-icon="mdi:discount-outline" trigger-color="neutral" />
+                </div>
+            </template>
+
+            <template v-else-if="student" #header>
                 <div class="space-y-4">
                     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div class="flex items-center gap-3">
@@ -36,8 +57,10 @@
             </template>
 
             <div v-if="student">
-                <div class="pb-5 p-0 md:p-5 grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-                    <UCard class="bg-info-100/60 dark:bg-info-900/30 ring-info-300/70 dark:ring-info-800/70">
+                <div class="grid gap-3 grid-cols-2 xl:grid-cols-4"
+                    :class="embedded ? 'px-4 py-4' : 'pb-5 p-0 md:p-5'">
+                    <UCard class="bg-info-100/60 dark:bg-info-900/30 ring-info-300/70 dark:ring-info-800/70"
+                        :ui="embedded ? { root: 'ring-0 shadow-none' } : {}">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Fees</p>
                             <USkeleton class="w-32 h-10 bg-info-300" v-if="loading" />
@@ -45,21 +68,24 @@
                         </div>
                     </UCard>
                     <UCard
-                        class="bg-success-100/60 dark:bg-success-900/25 ring-success-300/80 dark:ring-success-800/70">
+                        class="bg-success-100/60 dark:bg-success-900/25 ring-success-300/80 dark:ring-success-800/70"
+                        :ui="embedded ? { root: 'ring-0 shadow-none' } : {}">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Paid</p>
                             <USkeleton class="w-32 h-10 bg-gray-300" v-if="loading" />
                             <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.paid || 0) }}</p>
                         </div>
                     </UCard>
-                    <UCard class="bg-red-100/60 dark:bg-error-900/25 ring-error-300/80 dark:error-red-800/70">
+                    <UCard class="bg-red-100/60 dark:bg-error-900/25 ring-error-300/80 dark:error-red-800/70"
+                        :ui="embedded ? { root: 'ring-0 shadow-none' } : {}">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
                             <USkeleton class="w-32 h-10 bg-error-300" v-if="loading" />
                             <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.outstanding || 0) }}</p>
                         </div>
                     </UCard>
-                    <UCard class="bg-purple-100/60 dark:bg-purple-900/25 ring-purple-300/80 dark:ring-purple-800/70">
+                    <UCard class="bg-purple-100/60 dark:bg-purple-900/25 ring-purple-300/80 dark:ring-purple-800/70"
+                        :ui="embedded ? { root: 'ring-0 shadow-none' } : {}">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Discounts</p>
                             <USkeleton class="w-32 h-10 bg-purple-300" v-if="loading" />
@@ -67,7 +93,12 @@
                         </div>
                     </UCard>
                 </div>
-                <FeeStudentTable :student="student" :refresh-key="refreshKey" />
+                <div :class="embedded ? 'border-t border-gray-200 px-4 py-3 dark:border-gray-800' : ''">
+                    <p v-if="embedded" class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                        Fee Items
+                    </p>
+                    <FeeStudentTable :student="student" :refresh-key="refreshKey" :embedded="embedded" />
+                </div>
             </div>
            <div v-else class="p-5">
              <div
@@ -77,13 +108,14 @@
             </div>
            </div>
         </UCard>
-        <FeeStudentPayments :student="student" />
+        <FeeStudentPayments :student="student" :embedded="embedded" />
     </div>
 </template>
 
 <script setup lang="ts">
-const { student } = defineProps<{
+const { student, embedded } = defineProps<{
     student: Student | undefined
+    embedded?: boolean
 }>()
 const { can } = useAuth()
 const store = useStudentStore()

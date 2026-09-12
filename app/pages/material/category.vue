@@ -4,7 +4,7 @@ const router = useRouter()
 
 const store = useMaterialStore()
 
-const { categories: data, loading, meta } = storeToRefs(store)
+const { categories: data, categoriesLoading: loading, categoriesMeta: meta } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
 const value = ref(route.query.search as string || '')

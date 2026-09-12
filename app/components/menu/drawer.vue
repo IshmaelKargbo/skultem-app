@@ -596,10 +596,20 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     roles: [Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER],
     items: [
       { label: "Materials", icon: MATERIAL_ICON, to: "/material" },
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
+        label: "Sales",
+        icon: SALE_ICON,
+        to: "/material/sales",
+      },
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: "Supplies",
         icon: CURRICULUM_GROUP_ICON,
         to: "/material/supply",
+      },
+      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
+        label: "Pending Pickups",
+        icon: PENDING_PICKUP_ICON,
+        to: "/material/pending-pickups",
       },
       can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
         label: "Category",

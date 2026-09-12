@@ -324,6 +324,10 @@ export const typeOptions = [
     {
         label: 'Adjustment',
         value: "ADJUSTMENT"
+    },
+    {
+        label: 'Sale',
+        value: "SALE"
     }
 ]
 

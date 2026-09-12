@@ -4,7 +4,7 @@ const router = useRouter()
 
 const store = useMaterialStore()
 
-const { supplies: data, loading, meta } = storeToRefs(store)
+const { supplies: data, suppliesLoading: loading, suppliesMeta: meta } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
 const value = ref(route.query.search as string || '')
@@ -129,16 +129,18 @@ definePageMeta({
 
                 <template #student-cell="{ row }">
                     <div class="flex items-center gap-3">
-                        <UAvatar size="lg" :src="row.original.student.photo" loading="lazy" />
+                        <UAvatar v-if="row.original.student" size="lg" :src="row.original.student.photo" loading="lazy" />
+                        <UIcon v-else name="i-lucide-user-round" class="size-8 text-muted" />
 
                         <div class="space-y-0.5">
-                            <p class="font-medium">
+                            <p v-if="row.original.student" class="font-medium">
                                 {{ row.original.student.givenNames }}
                                 {{ row.original.student.familyName }}
                             </p>
+                            <p v-else class="font-medium">{{ row.original.customerName }}</p>
 
                             <p class="text-xs text-muted">
-                                {{ row.original.student.admissionNumber }}
+                                {{ row.original.student ? row.original.student.admissionNumber : 'Walk-in' }}
                             </p>
                         </div>
                     </div>
@@ -231,21 +233,25 @@ definePageMeta({
                             <div
                                 class="flex items-center justify-between gap-3 border-b border-gray-200 p-3 md:p-0 md:pb-3  dark:border-gray-800">
                                 <div class="flex min-w-0 items-center gap-3">
-                                    <UAvatar size="lg" :src="item.student.photo"
+                                    <UAvatar v-if="item.student" size="lg" :src="item.student.photo"
                                         :alt="`${item.student.givenNames} ${item.student.familyName}`" loading="lazy"
                                         class="shrink-0 ring-2 ring-primary/10" />
+                                    <UIcon v-else name="i-lucide-user-round" class="size-10 text-muted shrink-0" />
 
                                     <div class="min-w-0">
-                                        <h3 class="truncate text-sm font-semibold text-highlighted">
+                                        <h3 v-if="item.student" class="truncate text-sm font-semibold text-highlighted">
                                             {{ item.student.givenNames }}
                                             {{ item.student.familyName }}
+                                        </h3>
+                                        <h3 v-else class="truncate text-sm font-semibold text-highlighted">
+                                            {{ item.customerName }}
                                         </h3>
 
                                         <div class="mt-1 flex items-center gap-1.5">
                                             <UIcon name="i-lucide-id-card" class="size-3.5 text-muted" />
 
                                             <span class="text-xs text-muted">
-                                                {{ item.student.admissionNumber }}
+                                                {{ item.student ? item.student.admissionNumber : 'Walk-in customer' }}
                                             </span>
                                         </div>
                                     </div>

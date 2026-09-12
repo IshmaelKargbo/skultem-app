@@ -322,7 +322,9 @@ const navItems: NavItem[] = [
     roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
       { label: 'Materials', to: '/material', icon: MATERIAL_ICON, exact: true },
+      { label: 'Sales', to: '/material/sales', icon: SALE_ICON },
       { label: 'Supplies', to: '/material/supply', icon: CURRICULUM_GROUP_ICON },
+      { label: 'Pending Pickups', to: '/material/pending-pickups', icon: PENDING_PICKUP_ICON },
       { label: 'Category', to: '/material/category', icon: CATEGORY_ICON },
     ]
   },

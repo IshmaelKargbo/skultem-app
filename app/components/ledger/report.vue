@@ -1,6 +1,5 @@
 <template>
-
-    <div class="grid gap-3 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-3 md:gap-5 grid-cols-2 xl:grid-cols-3">
         <Metric :record="{
             label: 'Total Debit',
             value: format(report?.totalDebit || 0),
@@ -17,7 +16,7 @@
             subtle: 'Payments made',
             isReady: !isLoading
         }" />
-        <Metric class="sm:col-span-2 lg:col-span-1" :record="{
+        <Metric class="col-span-2 lg:col-span-1" :record="{
             label: 'Net Balance',
             value: format(report?.netBalance || 0),
             icon: NET_ICON,

@@ -121,12 +121,18 @@ export default defineNuxtConfig({
 
     includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'splash/*.png'],
 
-    // Enabled so the manifest + service worker are real in `nuxt dev` too —
-    // otherwise /manifest.webmanifest falls through to the SPA shell (served
-    // as HTML, not JSON) and a phone can never install/splash-screen a PWA
-    // pointed at the dev server.
+    // Was `enabled: true` so the manifest + service worker are real in `nuxt dev` too -
+    // otherwise /manifest.webmanifest falls through to the SPA shell (served as HTML, not JSON)
+    // and a phone can never install/splash-screen a PWA pointed at the dev server. Turned off:
+    // the dev-mode service worker's precache manifest isn't content-stable across requests the
+    // way a production build's is, so it kept flagging "an update is available" - which, combined
+    // with registerType: 'autoUpdate' + skipWaiting/clientsClaim below and the reload-on-update
+    // plugin (pwa-refresh.client.ts), turned into a genuine infinite reload loop (thousands of SW
+    // "versions" piling up, each reload re-firing every page's onMounted fetches, until the tab
+    // crashed). Re-enable only for a deliberate phone-install test against the dev server, and
+    // watch for the same symptom.
     devOptions: {
-      enabled: true,
+      enabled: false,
       type: 'module'
     },
 

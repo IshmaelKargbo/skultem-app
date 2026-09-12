@@ -1,7 +1,10 @@
 <template>
   <UCard
-    :ui="{
-      body: 'sm:p-0',
+    :ui="embedded ? {
+      root: 'ring-0 shadow-none rounded-none bg-transparent border-t border-gray-200 dark:border-gray-800',
+      body: 'sm:p-0 p-0',
+    } : {
+      body: 'sm:p-0 p-0',
     }"
   >
     <template #header>
@@ -27,22 +30,24 @@
 
     <div v-else class="space-y-4">
       <div v-if="isLoading" class="space-y-3">
-        <div
-          class="space-y-3 md:hidden grid grid-cols-1"
-        >
-          <UCard v-for="n in 3" :key="n" class="rounded-2xl" :ui="{ body: 'p-4' }">
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <USkeleton class="h-4 w-28" />
-                <USkeleton class="h-6 w-16 rounded-full" />
+        <div class="md:hidden">
+          <div v-for="n in 3" :key="n" class="border-b px-4 py-3 border-gray-200 last:border-0">
+            <div class="flex items-center justify-between">
+              <div class="space-y-2">
+                <USkeleton class="h-4 w-32" />
+                <USkeleton class="h-3 w-24" />
               </div>
-              <div class="grid grid-cols-2 gap-2">
-                <USkeleton class="h-8 w-full rounded-lg" />
-                <USkeleton class="h-8 w-full rounded-lg" />
-                <USkeleton class="h-8 w-full rounded-lg col-span-2" />
+              <div class="space-y-2">
+                <div class="flex justify-end">
+                  <USkeleton class="h-4 w-16" />
+                </div>
+                <div class="flex justify-end gap-1">
+                  <USkeleton class="h-6 w-6 rounded" />
+                  <USkeleton class="h-6 w-6 rounded" />
+                </div>
               </div>
             </div>
-          </UCard>
+          </div>
         </div>
         <div class="hidden md:block">
           <UTable :columns="columns" :data="[]" :loading="true" />
@@ -58,48 +63,37 @@
       </div>
 
       <div v-else>
-        <div class="space-y-2 md:hidden grid grid-cols-1">
-          <UCard
+        <div class="md:hidden">
+          <div
             v-for="item in records"
             :key="item.id"
-            class="rounded-2xl border border-gray-200 dark:border-gray-800"
-            :ui="{ body: 'p-4' }"
+            class="border-b px-4 py-3 border-gray-200 last:border-0"
           >
-            <div class="space-y-3">
-              <div class="flex items-center justify-between gap-2">
-                <p class="text-sm font-semibold text-gray-900 dark:text-white">
+            <div class="flex items-center justify-between">
+              <div class="min-w-0 space-y-1">
+                <h3 class="truncate text-sm font-semibold">
+                  {{ paymentMethods[item.paymentMethod]?.label || item.paymentMethod }}
+                </h3>
+                <div class="flex space-x-2 items-center text-xs text-muted">
+                  <p class="truncate">{{ item.referenceNo || "-" }}</p>
+                  <p>·</p>
+                  <p>{{ formatDateTime(item.paidAt) || "-" }}</p>
+                </div>
+              </div>
+
+              <div class="space-y-1 text-right">
+                <p class="text-sm font-bold text-info">
                   {{ format(item.amount || 0) }}
                 </p>
-                <UBadge
-                  variant="soft"
-                  :color="paymentMethods[item.paymentMethod]?.color || 'neutral'"
-                  :label="paymentMethods[item.paymentMethod]?.label || item.paymentMethod"
-                />
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
-                  <p class="text-gray-500">Date</p>
-                  <p class="mt-0.5 font-medium text-gray-800 dark:text-gray-200">
-                    {{ formatDateTime(item.paidAt) || "-" }}
-                  </p>
+                <div class="flex justify-end gap-1">
+                  <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-eye"
+                    @click="receiptViewer?.view(item.referenceNo)" />
+                  <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-download"
+                    @click="receiptViewer?.download(item.referenceNo)" />
                 </div>
-                <div class="rounded-lg bg-gray-50 p-2 dark:bg-gray-900">
-                  <p class="text-gray-500">Reference</p>
-                  <p class="mt-0.5 truncate font-medium text-gray-800  dark:text-gray-200">
-                    {{ item.referenceNo || "-" }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex gap-2">
-                <UButton size="xs" variant="outline" color="neutral" icon="i-lucide-eye" label="View"
-                  class="flex-1 justify-center" @click="receiptViewer?.view(item.referenceNo)" />
-                <UButton size="xs" variant="outline" color="neutral" icon="i-lucide-download" label="Download"
-                  class="flex-1 justify-center" @click="receiptViewer?.download(item.referenceNo)" />
               </div>
             </div>
-          </UCard>
+          </div>
         </div>
 
         <div class="hidden md:block">
@@ -180,6 +174,7 @@
 const view = ref<"table" | "card">("table");
 const props = defineProps<{
   student: Student | null | undefined;
+  embedded?: boolean;
 }>();
 
 const store = useStudentStore();
@@ -241,7 +236,7 @@ watch(
     if (!studentId) return;
     await fetchPayments();
   },
-  { immediate: false }
+  { immediate: true }
 );
 
 watch(

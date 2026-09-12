@@ -116,7 +116,7 @@ definePageMeta({
                 <div class="flex justify-between space-x-3">
                     <div class="flex space-x-3 flex-1">
                         <UInput placeholder="Search by name . . ." />
-                        <ExpensesAdd />
+                        <ExpensesCategoryAdd />
                     </div>
                     <TableViewToggle v-model="view" />
                 </div>
