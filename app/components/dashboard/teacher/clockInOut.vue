@@ -136,7 +136,7 @@ async function onClockIn() {
     if (!position) return
 
     try {
-        const result = await store.clockIn(position.coords.latitude, position.coords.longitude)
+        const result = await store.clockIn(position.coords.latitude, position.coords.longitude, position.coords.accuracy)
         if (result?.alreadyClockedIn) {
             notify.info('You already clocked in today.')
         } else {
@@ -155,7 +155,7 @@ async function onClockOut() {
     if (!position) return
 
     try {
-        const result = await store.clockOut(position.coords.latitude, position.coords.longitude)
+        const result = await store.clockOut(position.coords.latitude, position.coords.longitude, position.coords.accuracy)
         if (result?.alreadyClockedOut) {
             notify.info('You already clocked out today.')
         } else {

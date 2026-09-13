@@ -155,8 +155,11 @@ watch(
     if (!value) return;
 
     try {
-      await store.getTimetable(value);
-      await teacherSubjectStore.allByClass(value);
+      await Promise.all([
+        store.getTimetable(value),
+        store.getWorkingDays({ session: value }),
+        teacherSubjectStore.allByClass(value)
+      ]);
     } catch (error: any) {
       useNotify().error(error);
     }
@@ -171,7 +174,6 @@ onMounted(async () => {
   try {
     await Promise.all([
       classStore.fetchAll(0, 0),
-      store.getWorkingDays(),
       store.searchRoom(0, 0)
     ]);
   } catch (error: any) {

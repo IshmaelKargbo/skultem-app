@@ -99,10 +99,10 @@ export const useTeacherAttendanceStore = defineStore('teacherAttendance', {
       }
     },
 
-    async clockIn(latitude: number, longitude: number) {
+    async clockIn(latitude: number, longitude: number, accuracy?: number) {
       this.clockingIn = true
       try {
-        const result = await TeacherAttendanceApi().clockIn(latitude, longitude)
+        const result = await TeacherAttendanceApi().clockIn(latitude, longitude, accuracy)
         await this.fetchMyToday()
         return result as ClockInResult
       } finally {
@@ -110,10 +110,10 @@ export const useTeacherAttendanceStore = defineStore('teacherAttendance', {
       }
     },
 
-    async clockOut(latitude: number, longitude: number) {
+    async clockOut(latitude: number, longitude: number, accuracy?: number) {
       this.clockingOut = true
       try {
-        const result = await TeacherAttendanceApi().clockOut(latitude, longitude)
+        const result = await TeacherAttendanceApi().clockOut(latitude, longitude, accuracy)
         await this.fetchMyToday()
         return result as ClockOutResult
       } finally {

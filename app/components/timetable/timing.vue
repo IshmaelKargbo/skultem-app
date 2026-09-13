@@ -1,87 +1,45 @@
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex justify-between">
-        <div class="flex items-start gap-3">
-          <UIcon name="i-lucide-clock-3" class="size-5 text-primary" />
-          <div>
-            <h3 class="font-semibold">School Timing</h3>
-            <p class="text-sm text-muted hidden md:block">
-              Set the overall school schedule
-            </p>
+  <div class="space-y-4">
+    <UCard>
+      <template #header>
+        <div class="flex justify-between">
+          <div class="flex items-start gap-3">
+            <UIcon name="i-lucide-clock-3" class="size-5 text-primary" />
+            <div>
+              <h3 class="font-semibold">Timing Templates</h3>
+              <p class="text-sm text-muted hidden md:block">
+                Set up school-day schedules - one Default, plus one per Level if they differ (e.g. Primary vs JSS/SSS)
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div v-if="!loading" class="flex items-center gap-2">
-          <UButton v-if="state != 'created'" size="sm" :loading="isLoading" label="Save" @click="save"
-            :trailing-icon="SAVE_ICON" />
-          <UButton v-else size="sm" @click="state = 'edit'" label="Edit" variant="outline"
-            color="warning" :trailing-icon="EDIT_ICON" />
+          <UButton size="sm" icon="i-lucide-plus" @click="store.addTiming()">
+            Add Template
+          </UButton>
         </div>
+      </template>
+
+      <div class="space-y-3">
+        <USkeleton v-if="timingLoading" class="h-40 w-full bg-gray-200" />
+        <template v-else>
+          <TimetableTimingRow v-for="(record, index) in timings" :key="record.id || `new-${index}`" :record="record" :index="index" />
+        </template>
       </div>
-    </template>
+    </UCard>
 
-    <div class="grid gap-4 sm:grid-cols-1">
-      <UFormField label="School Starts">
-        <USkeleton v-if="loading" class="h-10 w-full bg-gray-200" />
-        <UInput v-else :disabled="state == 'created'" v-model="settings.startTime" type="time" class="w-full" />
-      </UFormField>
-      <UFormField label="School Ends">
-        <USkeleton v-if="loading" class="h-10 w-full bg-gray-200" />
-        <UInput v-else :disabled="state == 'created'" v-model="settings.endTime" type="time" class="w-full" />
-      </UFormField>
-      <UFormField label="Period Duration (mins)">
-        <USkeleton v-if="loading" class="h-10 w-full bg-gray-200" />
-        <UInputNumber v-else :disabled="state == 'created'" v-model="settings.periodDuration" class="w-full" />
-      </UFormField>
-      <UFormField label="Break Duration (mins)">
-        <USkeleton v-if="loading" class="h-10 w-full bg-gray-200" />
-        <UInputNumber v-else :disabled="state == 'created'" v-model="settings.breakDuration" class="w-full" />
-      </UFormField>
-      <UFormField label="Lunch Duration (mins)">
-        <USkeleton v-if="loading" class="h-10 w-full bg-gray-200" />
-        <UInputNumber v-else :disabled="state == 'created'" v-model="settings.lunchDuration" class="w-full" />
-      </UFormField>
-    </div>
-  </UCard>
+    <TimetableTimingLevels />
+  </div>
 </template>
 
 <script lang="ts" setup>
 const store = useTimetableStore()
-const { timing: settings } = storeToRefs(store)
-
-const loading = ref(true)
-const isLoading = ref(false)
-const state = ref<'init' | 'created' | 'edit'>(settings.value.id ? 'created' : 'init')
-
-async function save() {
-  try {
-    isLoading.value = true
-    await store.setTiming({ ...settings.value })
-    state.value = 'created'
-  } catch (error: any) {
-    useNotify().error(error?.message || error)
-  } finally {
-    isLoading.value = false
-  }
-}
-
-watch(() => settings.value, (val) => {
-  if (val.id) state.value = 'created'
-}, { immediate: true })
-
-async function fetchRecord() {
-  try {
-    loading.value = true
-    await store.getTiming()
-  } catch (error: any) {
-    useNotify().error(error?.message || error)
-  } finally {
-    loading.value = false
-  }
-}
+const { timings, timingLoading } = storeToRefs(store)
 
 onMounted(async () => {
-  await fetchRecord()
+  try {
+    await store.listTimings()
+  } catch (error: any) {
+    useNotify().error(error?.message || error)
+  }
 })
 </script>

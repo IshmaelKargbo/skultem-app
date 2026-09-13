@@ -79,18 +79,18 @@ export const TeacherAttendanceApi = () => {
     },
 
     // Self-service - the geofenced clock-in/out.
-    clockIn: async (latitude: number, longitude: number) => {
+    clockIn: async (latitude: number, longitude: number, accuracy?: number) => {
       try {
-        const res = await $api('/teacher-attendance/clock-in', { method: 'POST', body: { latitude, longitude } }) as any
+        const res = await $api('/teacher-attendance/clock-in', { method: 'POST', body: { latitude, longitude, accuracy } }) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)
       }
     },
 
-    clockOut: async (latitude: number, longitude: number) => {
+    clockOut: async (latitude: number, longitude: number, accuracy?: number) => {
       try {
-        const res = await $api('/teacher-attendance/clock-out', { method: 'POST', body: { latitude, longitude } }) as any
+        const res = await $api('/teacher-attendance/clock-out', { method: 'POST', body: { latitude, longitude, accuracy } }) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)

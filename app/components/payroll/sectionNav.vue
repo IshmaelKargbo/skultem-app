@@ -24,7 +24,7 @@ const allItems: NavItem[] = [
   { label: 'Salary Templates', to: '/payroll/salary-templates', icon: 'i-lucide-layout-template', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
   { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
   { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+  { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
   { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER] },
   { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
   { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] }

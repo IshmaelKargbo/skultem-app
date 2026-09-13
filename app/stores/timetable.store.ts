@@ -6,22 +6,12 @@ export const useTimetableStore = defineStore('timetable', {
     periods: [] as Period[],
     roomMeta: null as Meta | null,
     periodLoading: true,
-    timing: {
-      startTime: '09:00',
-      endTime: '15:00',
-      breakDuration: 15,
-      lunchDuration: 45,
-      periodDuration: 45
-    } as Timing,
-    workingDays: [
-      { day: 'MONDAY', state: false },
-      { day: 'TUESDAY', state: false },
-      { day: 'WEDNESDAY', state: false },
-      { day: 'THURSDAY', state: false },
-      { day: 'FRIDAY', state: false },
-      { day: 'SATURDAY', state: false },
-      { day: 'SUNDAY', state: false }
-    ] as WorkingDay[],
+    // Timing templates (Default / Primary / JSS-SSS / ...) - a school can have several, each
+    // assignable to one or more Levels. See TimetableTiming for the template manager UI.
+    timings: [] as Timing[],
+    timingLevels: [] as TimingLevel[],
+    timingLoading: true,
+    workingDays: [] as WorkingDay[],
     loading: false
   }),
   actions: {
@@ -37,15 +27,21 @@ export const useTimetableStore = defineStore('timetable', {
         this.loading = false
       }
     },
-    async getTiming() {
-      this.loading = true
+    async listTimings() {
+      this.timingLoading = true
       try {
-        const response = await TimetableApi().getTiming()
-        this.timing = response
+        this.timings = await TimetableApi().listTimings() || []
       } catch (err: any) {
-        throw err.data?.message || 'Failed to fetch timing'
+        throw err.data?.message || 'Failed to fetch timing templates'
       } finally {
-        this.loading = false
+        this.timingLoading = false
+      }
+    },
+    async listTimingLevels() {
+      try {
+        this.timingLevels = await TimetableApi().listTimingLevels() || []
+      } catch (err: any) {
+        throw err.data?.message || 'Failed to fetch timing level assignments'
       }
     },
     async getTimetable(id: string) {
@@ -59,11 +55,13 @@ export const useTimetableStore = defineStore('timetable', {
         this.periodLoading = false
       }
     },
-    async getWorkingDays() {
+    // params.session - the working days behind a class session's timetable grid (resolved
+    // server-side via that session's Level). params.timingId - one template's own days directly
+    // (the Settings page's per-template editor).
+    async getWorkingDays(params: { session?: string, timingId?: string }) {
       this.loading = true
       try {
-        const response = await TimetableApi().listWorkingDays()
-        this.workingDays = response
+        this.workingDays = await TimetableApi().listWorkingDays(params) || []
       } catch (err: any) {
         throw err.data?.message || 'Failed to fetch working days'
       } finally {
@@ -126,11 +124,50 @@ export const useTimetableStore = defineStore('timetable', {
       console.log(this.periods);
 
     },
-    async setTiming(payload: CreateTimingDTO) {
-      // Same reasoning as setWorkingDay: pick up the server-persisted record (real id) instead
-      // of leaving the client-only default (id: null) in place after a successful first save.
-      const response = await TimetableApi().setTiming(payload) as any
-      if (response?.data) this.timing = response.data
+    // id present -> update that template; absent -> create a new one. Either way, pick up the
+    // server-persisted record (real id, and - for a first-ever save - isDefault/levels) instead
+    // of leaving the client-only placeholder in place. index is the placeholder's slot (a new
+    // template has no id yet to match on, so - same reasoning as createRoom - fall back to
+    // overwriting it positionally rather than pushing a duplicate).
+    async saveTiming(payload: CreateTimingDTO, id?: string, index?: number) {
+      const response = id
+        ? await TimetableApi().updateTiming(id, payload)
+        : await TimetableApi().createTiming(payload)
+      const domain = (response as any)?.data
+      if (!domain) return
+
+      const i = this.timings.findIndex(t => t.id === domain.id)
+      if (i !== -1) {
+        this.timings[i] = domain
+      } else if (index !== undefined) {
+        this.timings[index] = domain
+      } else {
+        this.timings.push(domain)
+      }
+
+      return domain as Timing
+    },
+    async deleteTiming(id: string) {
+      await TimetableApi().deleteTiming(id)
+      this.timings = this.timings.filter(t => t.id !== id)
+      this.timingLevels = this.timingLevels.filter(l => l.timingId !== id)
+    },
+    async setDefaultTiming(id: string) {
+      const response = await TimetableApi().setDefaultTiming(id) as any
+      if (!response?.data) return
+
+      this.timings = this.timings.map(t => ({ ...t, isDefault: t.id === id }))
+    },
+    async assignTimingLevel(level: SchoolLevel, timingId: string) {
+      const response = await TimetableApi().assignTimingLevel(level, timingId) as any
+      if (!response?.data) return
+
+      const i = this.timingLevels.findIndex(l => l.level === level)
+      if (i !== -1) {
+        this.timingLevels[i] = response.data
+      } else {
+        this.timingLevels.push(response.data)
+      }
     },
     async deletePeriod(id: string) {
       await TimetableApi().deletePeriod(id)
@@ -146,6 +183,21 @@ export const useTimetableStore = defineStore('timetable', {
       // rows (id: null) into real ones with server-assigned ids and timestamps.
       const response = await TimetableApi().setWorkingDay(payload) as any
       if (response?.data) this.workingDays = response.data
+    },
+    addTiming() {
+      this.timings.push({
+        id: '',
+        name: '',
+        isDefault: this.timings.length === 0,
+        startTime: '08:00',
+        endTime: '15:00',
+        periodDuration: 40,
+        breakDuration: 15,
+        lunchDuration: 45,
+        levels: [],
+        createdAt: '',
+        updatedAt: ''
+      })
     },
     addRoom() {
       this.rooms.unshift({
@@ -186,6 +238,18 @@ export const useTimetableStore = defineStore('timetable', {
       }
 
       return `${clean(selected[0].day)} - ${clean(selected[selected.length - 1].day)}`
+    },
+    defaultTiming(state): Timing | undefined {
+      return state.timings.find(t => t.isDefault)
+    },
+    // Which Timing template currently applies to a Level - its own assignment, or the school's
+    // default template when it has none.
+    timingForLevel: (state) => {
+      return (level: SchoolLevel): Timing | undefined => {
+        const assignment = state.timingLevels.find(l => l.level === level)
+        if (assignment) return state.timings.find(t => t.id === assignment.timingId)
+        return state.timings.find(t => t.isDefault)
+      }
     }
   }
 })

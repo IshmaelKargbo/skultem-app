@@ -18,14 +18,36 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
-    getTiming: async () => {
+    listTimings: async () => {
       try {
         const res: any = await $api('/timetable/timing')
 
         if (!res)
-          throw new Error('Failed to fetch timing')
+          throw new Error('Failed to fetch timing templates')
 
         return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    listTimingLevels: async () => {
+      try {
+        const res: any = await $api('/timetable/timing/level')
+
+        if (!res)
+          throw new Error('Failed to fetch timing level assignments')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    assignTimingLevel: async (level: SchoolLevel, timingId: string) => {
+      try {
+        return await $api('/timetable/timing/level', {
+          method: 'POST',
+          body: { level, timingId }
+        })
       } catch (err: any) {
         useHandleError(err)
       }
@@ -42,9 +64,15 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
-    listWorkingDays: async () => {
+    // Either param resolves a set of working days - `session` for a class session's timetable
+    // grid (resolved server-side via that session's Level), `timingId` for editing one specific
+    // template directly (the Settings page).
+    listWorkingDays: async (params: { session?: string, timingId?: string }) => {
       try {
-        const res: any = await $api('/timetable/working-day')
+        const query = params.session
+          ? `session=${params.session}`
+          : `timingId=${params.timingId}`
+        const res: any = await $api(`/timetable/working-day?${query}`)
 
         if (!res)
           throw new Error('Failed to fetch working day')
@@ -114,11 +142,39 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
-    setTiming: async (payload: CreateTimingDTO) => {
+    createTiming: async (payload: CreateTimingDTO) => {
       try {
         return await $api('/timetable/timing', {
           method: 'POST',
           body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    updateTiming: async (id: string, payload: CreateTimingDTO) => {
+      try {
+        return await $api(`/timetable/timing/${id}`, {
+          method: 'PATCH',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    setDefaultTiming: async (id: string) => {
+      try {
+        return await $api(`/timetable/timing/${id}/default`, {
+          method: 'PATCH'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    deleteTiming: async (id: string) => {
+      try {
+        return await $api(`/timetable/timing/${id}`, {
+          method: 'DELETE'
         })
       } catch (err: any) {
         useHandleError(err)

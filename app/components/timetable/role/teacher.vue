@@ -108,7 +108,10 @@ watch(() => grade.value, async (value: string) => {
     if (!value) return
 
     try {
-        await store.getTimetable(value)
+        await Promise.all([
+            store.getTimetable(value),
+            store.getWorkingDays({ session: value })
+        ])
     } catch (error: any) {
         useNotify().error(error?.message || error)
     }
@@ -127,7 +130,6 @@ onMounted(async () => {
                 classMasterAssignments.value = res || []
             })
         ])
-        await store.getWorkingDays()
     } catch (error: any) {
         useNotify().error(error?.message || error)
     } finally {

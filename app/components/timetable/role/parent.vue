@@ -70,7 +70,10 @@ watch(() => grade.value, async (value: string) => {
     if (!value) return
 
     try {
-        await store.getTimetable(value)
+        await Promise.all([
+            store.getTimetable(value),
+            store.getWorkingDays({ session: value })
+        ])
     } catch (error: any) {
         useNotify().error(error)
     }
@@ -85,7 +88,6 @@ onMounted(async () => {
         await Promise.all([
             teacherStore.allByTeacher(),
             parentStore.fetchAllStudents(0, 0),
-            store.getWorkingDays(),
             store.searchRoom(0, 0)
         ])
     } catch (error: any) {
