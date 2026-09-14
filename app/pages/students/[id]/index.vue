@@ -5,7 +5,7 @@
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
                         <UIcon name="i-lucide-user" class="size-5 text-primary" />
-                        <h3 class="text-lg font-semibold">
+                        <h3 class="md:text-lg font-semibold">
                             Student Information
                         </h3>
                     </div>
@@ -48,7 +48,7 @@
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
                         <UIcon name="i-lucide-users" class="size-5 text-primary" />
-                        <h3 class="text-lg font-semibold">
+                        <h3 class="md:text-lg font-semibold">
                             Parent / Guardian Information
                         </h3>
                     </div>
@@ -80,7 +80,7 @@
                         </p>
                     </div>
 
-                    <p class="mt-2 break-words font-semibold">
+                    <p class="mt-2 wrap-break-word font-semibold">
                         {{ item.value || '-' }}
                     </p>
                 </div>

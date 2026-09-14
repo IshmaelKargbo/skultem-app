@@ -3,10 +3,10 @@
         <UCard>
             <template #header>
                 <div>
-                    <h3 class="text-lg font-semibold">
+                    <h3 class="md:text-lg font-semibold">
                         Report Cards
                     </h3>
-                    <p class="text-sm text-muted">
+                    <p class="text-xs-base text-muted">
                         Every report card generated for this student, across terms.
                     </p>
                 </div>

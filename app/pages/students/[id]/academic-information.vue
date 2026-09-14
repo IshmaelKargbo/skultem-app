@@ -4,7 +4,7 @@
             <template #header>
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="font-semibold text-lg">
+                        <h3 class="font-semibold md:text-lg">
                             Academic Information
                         </h3>
                         <p class="text-xs-base text-muted">
@@ -236,8 +236,6 @@ const summary = computed(() => {
     }
 })
 
-// Grouped by assessment (Test 1, Test 2, Exam, ...) rather than term - the term is already the
-// page's own filter, so within it every assessment gets its own section, in the order it runs.
 const groups = computed(() => {
     const map = new Map<string, any[]>()
 
@@ -314,8 +312,6 @@ async function fetchCycle() {
 
     if (state.term) return
 
-    // Default to the active term, falling back to the first one available - never leave the
-    // filter unset and the page empty just because nothing is ACTIVE right now.
     const activeTerm = activeCycle.value?.terms.find(term => term.status === 'ACTIVE')
     state.term = activeTerm?.id || terms.value[0]?.value || ''
 }

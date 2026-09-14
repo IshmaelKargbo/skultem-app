@@ -4,7 +4,7 @@
             <template #header>
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="font-semibold text-lg">
+                        <h3 class="font-semibold md:text-lg">
                             Behaviours
                         </h3>
                         <p class="text-xs-base text-muted">
@@ -15,7 +15,7 @@
             </template>
 
             <!-- Summary -->
-            <div class="mb-6 grid gap-4 grid-cols-2">
+            <div class="mb-6 grid md:gap-4 gap-3 grid-cols-2 md:grid-cols-3">
                 <div class="rounded-xl border-2 border-primary-300 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950">
                     <p class="text-[11px] uppercase text-muted">
                         Total Records
@@ -93,14 +93,14 @@
             </div>
 
             <div v-else
-                class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 py-10">
+                class="flex flex-col items-center space-y-2 justify-center rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 md:p-10 p-4">
                 <UIcon name="i-lucide-shield-check" class="mb-2 text-4xl text-muted" />
 
-                <p class="font-medium">
+                <p class="font-medium text-sm">
                     No behaviour records found
                 </p>
 
-                <p class="text-sm text-muted">
+                <p class="text-xs-base text-center text-muted">
                     Behaviour notes for this student will appear here.
                 </p>
             </div>

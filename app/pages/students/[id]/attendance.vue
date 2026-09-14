@@ -6,7 +6,7 @@
             <template #header>
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="font-semibold text-lg">
+                        <h3 class="font-semibold md:text-lg">
                             Attendance
                         </h3>
                         <p class="text-xs-base text-muted">

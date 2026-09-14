@@ -18,7 +18,7 @@
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
                             <template v-else>
-                                <img :src="photo" :alt="name" class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24"
+                                <img :src="photo" :alt="name" class="h-32 w-32 rounded-xl object-cover md:h-24 md:w-24"
                                     :class="{ 'opacity-50': uploadingPhoto }" />
 
                                 <div v-if="uploadingPhoto"
