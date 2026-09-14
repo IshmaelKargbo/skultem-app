@@ -3,9 +3,8 @@
         <!-- Trigger -->
         <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
         <div v-else>
-            <UButton color="primary" class="md:hidden" icon="prime:plus" @click="open = true" />
-            <UButton color="primary" class="hidden md:flex" label="Add Material Category" icon="prime:plus"
-                @click="open = true" />
+            <UButton color="primary" class="md:hidden" icon="prime:plus" />
+            <UButton color="primary" class="hidden md:flex" label="Add Material Category" icon="prime:plus" />
         </div>
 
         <!-- Header -->

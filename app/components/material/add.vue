@@ -85,8 +85,8 @@ onMounted(() => {
     <USlideover :dismissible="false" v-model:open="open">
         <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
         <div v-else>
-            <UButton color="primary" class="md:hidden" icon="prime:plus" @click="open = true" />
-            <UButton color="primary" class="hidden md:flex" label="Add Material" icon="prime:plus" @click="open = true" />
+            <UButton color="primary" class="md:hidden" icon="prime:plus" />
+            <UButton color="primary" class="hidden md:flex" label="Add Material" icon="prime:plus" />
         </div>
         <template #header>
             <div class="flex justify-between w-full items-center">

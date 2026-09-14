@@ -125,9 +125,6 @@ async function onSubmit() {
 
         await saleStore.fetchSummary()
 
-        // A sale that's handed over immediately (in stock, fully paid, collectNow) deducts stock
-        // the same way collecting a Supply does - refresh the materials list so this form's own
-        // "in stock" figures (and the next sale's pre-sale check) don't stay stale.
         if (!isPreSale.value && isFullyPaid.value && state.collectNow) {
             await materialStore.fetchAll()
         }
@@ -222,7 +219,8 @@ watch(open, (isOpen) => {
 
                     <!-- Unit Price -->
                     <UFormField label="Unit Price" name="unitPrice" required>
-                        <UInput v-model.number="state.unitPrice" type="number" min="0" step="0.01" class="w-full" />
+                        <UInput v-model.number="state.unitPrice" type="number" min="0" step="0.01" class="w-full"
+                            disabled />
                     </UFormField>
                 </div>
 
@@ -266,9 +264,6 @@ watch(open, (isOpen) => {
                         placeholder="Select payment method" class="w-full" />
                 </UFormField>
 
-                <!-- Collect now toggle - only offered once there's stock to hand over AND the
-                     balance is fully settled; a partial payment never leaves with the item no
-                     matter how eager the buyer is to "collect now" (see the alert below). -->
                 <UFormField v-if="!isPreSale && isFullyPaid" label="Collection">
                     <div class="grid grid-cols-2 gap-2">
                         <UButton

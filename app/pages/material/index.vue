@@ -147,11 +147,6 @@ definePageMeta({
 
                 <template #name-cell="{ row }">
                     <div class="flex items-center gap-3">
-                        <div
-                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-                            <UIcon name="lucide:package" class="text-primary-500" />
-                        </div>
-
                         <div>
                             <p class="font-medium text-gray-900 dark:text-white">
                                 {{ row.original.name }}
