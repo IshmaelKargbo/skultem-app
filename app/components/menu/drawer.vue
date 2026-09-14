@@ -352,6 +352,14 @@ const allQuickLinks: QuickLink[] = [
     roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT]
   },
   { label: "Fees", to: "/fees", icon: PAYMENT_ICON, roles: [Role.PARENT, Role.TEACHER] },
+  { label: 'Performance', to: '/performance', icon: PERFORMANCE_ICON, roles: [Role.PARENT] },
+    {
+    label: 'Curriculums', to: '/curriculums', icon: CURRICULUM_ICON,
+    roles: [Role.TEACHER, Role.PARENT]
+  },
+
+  { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, roles: [Role.PARENT] },
+
 ];
 
 const quickLinks = computed(() => allQuickLinks.filter((link) => can(link.roles)));
@@ -480,15 +488,22 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
       },
     ],
   },
+
+
+  
   {
     id: "communicate",
     title: "Communicate",
     icon: COMMUNICATE_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER],
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT],
     items: [
       { label: "Notice Board", icon: NOTICE_ICON, to: "/communicate" },
       { label: "Events & Holidays", icon: EVENT_ICON, to: "/communicate/events" },
-      { label: "Compose Broadcast", icon: BROADCAST_ICON, to: "/communicate/broadcast" },
+        can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
+        label: "Compose Broadcast",
+        icon: BROADCAST_ICON,
+        to: "//communicate/broadcast",
+      },
       { label: "Broadcast History", icon: BROADCAST_HISTORY_ICON, to: "/communicate/broadcast/history" },
     ],
   },

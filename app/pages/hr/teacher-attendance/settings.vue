@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Moved into the main Settings hub, alongside every other school-wide setting.
 await navigateTo('/settings/school?section=attendance', { replace: true })
 
 definePageMeta({

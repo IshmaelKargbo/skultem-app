@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
-    <PayrollSectionNav />
+    <HrSectionNav />
 
     <!-- LOADING -->
     <UCard v-if="loadingMyToday">
@@ -194,7 +194,7 @@ onMounted(() => {
   useAppStore().setTitle('Clock In / Out')
   // Reached from the teacher's own dashboard widget - take them back there. Reached via
   // HR/payroll (admin, accountant, etc. checking a staff member) - back to payroll instead.
-  useAppStore().setBack(can(Role.TEACHER) ? '/' : '/payroll')
+  useAppStore().setBack(can(Role.TEACHER) ? '/' : '/hr')
   document.title = 'Clock In / Out | Skultem'
 
   store.fetchMyToday()

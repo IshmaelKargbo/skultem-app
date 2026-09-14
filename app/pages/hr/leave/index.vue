@@ -5,94 +5,113 @@
             <UButton icon="i-lucide-plus" to="/hr/leave/add" label="New Request" />
         </Heading>
 
-        <PayrollSectionNav />
+        <HrSectionNav />
 
         <!-- Summary Cards - admin only -->
-        <div v-if="isAdmin" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Metric :record="{ icon: 'i-lucide-file-text', label: 'Total Requests', value: summary?.total ?? 0, isReady: !!summary, color: 'primary' }" />
-            <Metric :record="{ icon: 'i-lucide-clock-3', label: 'Pending', value: summary?.pending ?? 0, isReady: !!summary, color: 'warning' }" />
-            <Metric :record="{ icon: 'i-lucide-check-circle', label: 'Approved', value: summary?.approved ?? 0, isReady: !!summary, color: 'success' }" />
-            <Metric :record="{ icon: 'i-lucide-x-circle', label: 'Rejected', value: summary?.rejected ?? 0, isReady: !!summary, color: 'error' }" />
+        <div v-if="isAdmin" class="grid gap-4 grid-cols-2 md:grid-cols-4">
+            <Metric
+                :record="{ icon: 'i-lucide-file-text', label: 'Total Requests', value: summary?.total ?? 0, isReady: !!summary, color: 'primary' }" />
+            <Metric
+                :record="{ icon: 'i-lucide-clock-3', label: 'Pending', value: summary?.pending ?? 0, isReady: !!summary, color: 'warning' }" />
+            <Metric
+                :record="{ icon: 'i-lucide-check-circle', label: 'Approved', value: summary?.approved ?? 0, isReady: !!summary, color: 'success' }" />
+            <Metric
+                :record="{ icon: 'i-lucide-x-circle', label: 'Rejected', value: summary?.rejected ?? 0, isReady: !!summary, color: 'error' }" />
         </div>
 
         <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle"
             title="Couldn't load leave requests" :description="error" />
 
         <!-- Filters - admin only -->
-        <UCard v-if="isAdmin">
-            <div class="grid gap-3 md:grid-cols-5">
-                <UInput v-model="search" icon="i-lucide-search" placeholder="Search employee..." class="md:col-span-2" />
-                <USelect v-model="status" :items="statusOptions" value-key="value" placeholder="Status" />
-                <USelect v-model="type" :items="typeOptions" value-key="value" placeholder="Leave Type" />
-                <UButton icon="i-lucide-x" variant="outline" color="neutral" label="Clear"
-                    :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
-        </UCard>
-
-        <!-- Loading -->
-        <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <USkeleton v-for="i in 6" :key="i" class="h-56 w-full rounded-xl" />
-        </div>
-
-        <!-- Requests -->
-        <div v-else-if="records.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <UCard v-for="request in records" :key="request.id"
-                class="transition-colors hover:border-primary/40">
-                <div class="space-y-4">
-
-                    <div class="flex flex-col items-center justify-center gap-3">
-                        <UAvatar size="xl" :src="request.teacher?.user?.photo || undefined" :alt="teacherName(request.teacher)" loading="lazy" />
-                        <div>
-                            <h3 class="text-center font-semibold">{{ teacherName(request.teacher) }}</h3>
-                            <p class="text-center text-xs text-muted">{{ request.teacher?.staffId }}</p>
-                        </div>
+        <UCard>
+            <template v-if="isAdmin" #header>
+                <div class="flex gap-3">
+                    <div class="flex gap-3 flex-1">
+                        <UInput v-model="search" icon="i-lucide-search" placeholder="Search employee..."
+                            class="md:col-span-2" />
+                        <USelect v-model="status" :items="statusOptions" value-key="value" placeholder="Status" />
+                        <USelect v-model="type" :items="typeOptions" value-key="value" placeholder="Leave Type" />
                     </div>
-
-                    <div class="space-y-2 text-sm">
-                        <div class="flex items-center justify-between">
-                            <span class="text-muted">Leave Type</span>
-                            <span class="font-medium">{{ leaveTypeLabel(request.type) }}</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-muted">Duration</span>
-                            <span class="font-medium">{{ request.durationDays }} Day{{ request.durationDays === 1 ? '' : 's' }}</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-muted">Dates</span>
-                            <span class="font-medium">{{ formatDate(request.startDate) }} - {{ formatDate(request.endDate) }}</span>
-                        </div>
+                    <div>
+                        <UButton :icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                            :disabled="!hasActiveFilters" @click="resetFilters" />
                     </div>
-
-                    <div class="flex items-center gap-3">
-                        <UBadge :color="leaveStatusColor(request.status)" size="lg" variant="soft" class="w-full items-center justify-center">
-                            {{ clean(request.status) }}
-                        </UBadge>
-
-                        <UButton size="sm" class="w-full items-center justify-center" icon="i-lucide-eye"
-                            :to="`/hr/leave/${request.id}`">
-                            View
-                        </UButton>
-                    </div>
-
                 </div>
-            </UCard>
-        </div>
+            </template>
+            <div>
 
-        <!-- Empty -->
-        <UCard v-else class="py-16">
-            <div class="flex flex-col items-center gap-3 text-center">
-                <UIcon name="i-lucide-calendar-x" class="text-4xl text-muted" />
-                <h3 class="font-semibold">No leave requests yet</h3>
-                <p class="text-sm text-muted">{{ isAdmin ? 'No requests match your filters.' : 'You have not submitted any leave requests.' }}</p>
-                <UButton size="sm" icon="i-lucide-plus" to="/hr/leave/add">New Request</UButton>
+                <!-- Loading -->
+                <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <USkeleton v-for="i in 6" :key="i" class="h-56 w-full rounded-xl" />
+                </div>
+                <div v-else-if="records.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <UCard v-for="request in records" :key="request.id"
+                        class="transition-colors hover:border-primary/40">
+                        <div class="space-y-4">
+
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <UAvatar size="xl" :src="request.teacher?.user?.photo || undefined"
+                                    :alt="teacherName(request.teacher)" loading="lazy" />
+                                <div>
+                                    <h3 class="text-center font-semibold">{{ teacherName(request.teacher) }}</h3>
+                                    <p class="text-center text-xs text-muted">{{ request.teacher?.staffId }}</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-muted">Leave Type</span>
+                                    <span class="font-medium">{{ leaveTypeLabel(request.type) }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-muted">Duration</span>
+                                    <span class="font-medium">{{ request.durationDays }} Day{{ request.durationDays ===
+                                        1 ?
+                                        '' :
+                                        's'
+                                        }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-muted">Dates</span>
+                                    <span class="font-medium">{{ formatDate(request.startDate) }} - {{
+                                        formatDate(request.endDate)
+                                        }}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <UBadge :color="leaveStatusColor(request.status)" size="lg" variant="soft"
+                                    class="w-full items-center justify-center">
+                                    {{ clean(request.status) }}
+                                </UBadge>
+
+                                <UButton size="sm" class="w-full items-center justify-center" icon="i-lucide-eye"
+                                    :to="`/hr/leave/${request.id}`">
+                                    View
+                                </UButton>
+                            </div>
+
+                        </div>
+                    </UCard>
+                </div>
+
+
+                <div v-else class="flex flex-col items-center gap-3 text-center">
+                    <UIcon name="i-lucide-calendar-x" class="text-4xl text-muted" />
+                    <h3 class="font-semibold">No leave requests yet</h3>
+                    <p class="text-sm text-muted">{{ isAdmin ? 'No requests match your filters.' : NoLeave }}</p>
+                    <UButton size="sm" icon="i-lucide-plus" to="/hr/leave/add">New Request</UButton>
+                </div>
             </div>
+            <template #footer>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <Showing :meta="meta" />
+                    <UPagination v-if="meta.total > meta.size" v-model:page="page" size="sm" :page-size="meta.size"
+                        :items-per-page="meta.size" :total="meta.total" show-edges />
+                </div>
+
+            </template>
         </UCard>
-
-        <div v-if="!loading && records.length" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Showing :meta="meta" />
-            <UPagination v-if="meta.total > meta.size" v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
-        </div>
-
     </div>
 </template>
 
@@ -105,6 +124,7 @@ const { records, meta, loading, summary, error } = storeToRefs(store)
 
 const route = useRoute()
 const router = useRouter()
+const NoLeave = 'You have not submitted any leave requests.'
 
 // Neither list below has an "All ..." entry - a Reka UI Select/Combobox item's value can't be an
 // empty string (it throws "must have a value prop that is not an empty string" the moment the

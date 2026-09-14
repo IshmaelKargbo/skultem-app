@@ -8,7 +8,7 @@
       </div>
     </Heading>
 
-    <PayrollSectionNav />
+    <HrSectionNav />
 
     <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle" title="Couldn't load attendance"
       :description="error" />
@@ -61,14 +61,10 @@
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div>
-          <p class="text-lg font-normal">Register</p>
-          <p class="text-xs text-muted">{{ formatDateString(date) }}</p>
+          <p class="font-semibold">Register</p>
+          <p class="text-xs-base text-muted">{{ formatDateString(date) }}</p>
         </div>
       </template>
-
-      <UAlert v-if="isToday" color="primary" variant="soft" icon="i-lucide-info" class="m-3 rounded-lg"
-        title="Clock In / Clock Out is for staff who can't self-service"
-        description="Staff with portal access should clock themselves in from their own account - use these buttons for staff having internet issues, or who don't have portal access at all." />
 
       <div v-if="loadingRoster" class="space-y-3 p-3">
         <div v-for="i in 4" :key="i" class="flex items-center gap-3">
@@ -128,7 +124,7 @@
     <!-- History -->
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <p class="text-lg font-normal">History</p>
+        <p class="font-semibold">History</p>
       </template>
 
       <div v-if="loadingHistory" class="space-y-3 p-3">
@@ -236,8 +232,8 @@ watch(historyPage, () => store.fetchHistory(historyPage.value, 10))
 
 onMounted(() => {
   useAppStore().setTitle('Teacher Attendance')
-  useAppStore().setBack('/payroll')
-  document.title = 'Teacher Attendance | Payroll | Skultem'
+  useAppStore().setBack('/hr')
+  document.title = 'Teacher Attendance | HR | Skultem'
 
   store.fetchRoster(date.value)
   store.fetchHistory(1, 10)

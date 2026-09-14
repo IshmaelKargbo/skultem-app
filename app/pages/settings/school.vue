@@ -12,8 +12,33 @@
             </div>
         </Heading>
 
-        <div v-if="loading" class="flex justify-center py-20">
-            <USkeleton class="h-64 w-full max-w-3xl rounded-2xl" />
+        <!-- Skeleton mirrors the real two-column layout below (nav + content cards) rather than
+             a single placeholder blob, so the page doesn't visibly reflow once data arrives. -->
+        <div v-if="loading" class="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+            <aside class="space-y-4">
+                <UCard :ui="{ body: 'p-2' }">
+                    <div class="space-y-1">
+                        <USkeleton v-for="i in 2" :key="i" class="h-10 w-full rounded-xl" />
+                    </div>
+                </UCard>
+
+                <UCard :ui="{ body: 'p-2' }">
+                    <div class="space-y-1 p-1">
+                        <USkeleton class="h-10 w-full rounded-xl" />
+                    </div>
+                </UCard>
+            </aside>
+
+            <div class="hidden space-y-4 lg:block">
+                <UCard v-for="i in 2" :key="i">
+                    <template #header>
+                        <USkeleton class="h-4 w-32" />
+                    </template>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <USkeleton v-for="j in 4" :key="j" class="h-9 w-full rounded-lg" />
+                    </div>
+                </UCard>
+            </div>
         </div>
 
         <div v-else class="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">

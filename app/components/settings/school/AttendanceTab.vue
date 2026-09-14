@@ -1,7 +1,33 @@
 <template>
-  <div v-if="loadingLocation" class="flex justify-center py-14">
-    <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-  </div>
+  <!-- Skeleton shapes the same three cards the loaded content renders below, so the tab doesn't
+       jump around once the location settings come back. -->
+  <template v-if="loadingLocation">
+    <UCard>
+      <template #header>
+        <USkeleton class="h-4 w-32" />
+      </template>
+      <USkeleton class="h-72 w-full rounded-lg sm:h-96" />
+      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <USkeleton class="h-9 w-full rounded-lg" />
+        <USkeleton class="h-9 w-full rounded-lg" />
+      </div>
+      <USkeleton class="mt-4 h-9 w-56 rounded-lg" />
+    </UCard>
+
+    <UCard>
+      <template #header>
+        <USkeleton class="h-4 w-28" />
+      </template>
+      <USkeleton class="h-9 w-full rounded-lg" />
+    </UCard>
+
+    <UCard>
+      <template #header>
+        <USkeleton class="h-4 w-40" />
+      </template>
+      <USkeleton class="h-16 w-full rounded-lg" />
+    </UCard>
+  </template>
 
   <template v-else>
     <UAlert v-if="!locationConfigured" color="warning" variant="subtle" icon="lucide:triangle-alert"
