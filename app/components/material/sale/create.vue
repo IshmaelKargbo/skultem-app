@@ -125,6 +125,13 @@ async function onSubmit() {
 
         await saleStore.fetchSummary()
 
+        // A sale that's handed over immediately (in stock, fully paid, collectNow) deducts stock
+        // the same way collecting a Supply does - refresh the materials list so this form's own
+        // "in stock" figures (and the next sale's pre-sale check) don't stay stale.
+        if (!isPreSale.value && isFullyPaid.value && state.collectNow) {
+            await materialStore.fetchAll()
+        }
+
         let message = 'Sale recorded successfully'
         if (isPreSale.value) {
             message = 'Sale recorded as a pre-sale - settle it once the item is restocked'

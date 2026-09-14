@@ -150,7 +150,13 @@ async function onSubmit() {
       note: state.note
     })
 
-    await materialStore.fetchAllSupply()
+    // Collecting a supply deducts stock (see SupplyMaterialUseCase on the backend) - refresh the
+    // materials list too, not just supplies, so the Sales module's "in stock" figures (and its
+    // pre-sale check) reflect the new quantity instead of the stale one from page load.
+    await Promise.all([
+      materialStore.fetchAllSupply(),
+      materialStore.fetchAll()
+    ])
 
     toastSuccess('Supply updated successfully')
 

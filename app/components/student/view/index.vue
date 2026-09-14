@@ -9,17 +9,16 @@
                 class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />
 
             <div class="px-5 pb-5">
-                <div class="-mt-12 flex flex-col gap-5 md:-mt-14 md:flex-row md:items-end md:justify-between">
+                <div class="-mt-12 flex flex-col gap-2 md:-mt-14 md:flex-row md:justify-between">
                     <!-- Student Identity -->
-                    <div class="flex min-w-0 items-end gap-4">
+                    <div class="flex flex-col md:flex-row items-center min-w-0 gap-4">
                         <!-- Avatar -->
                         <div
                             class="relative shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
                             <template v-else>
-                                <img :src="photo" :alt="name"
-                                    class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24"
+                                <img :src="photo" :alt="name" class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24"
                                     :class="{ 'opacity-50': uploadingPhoto }" />
 
                                 <div v-if="uploadingPhoto"
@@ -39,33 +38,23 @@
                         </div>
 
                         <!-- Identity -->
-                        <div class="min-w-0 pb-0.5 md:pb-1">
+                        <div
+                            class="min-w-0 pb-0.5 md:pb-1 flex flex-col justify-center md:justify-baseline md:items-start items-center">
                             <!-- Name -->
                             <USkeleton v-if="loading" class="h-6 w-48 md:h-7 md:w-60" />
 
                             <h2 v-else
-                                class="max-w-[calc(100vw-150px)] truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
+                                class="truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
                                 {{ name }}
                             </h2>
 
                             <!-- Class + Status -->
-                            <div v-if="loading" class="mt-2 flex items-center gap-2">
+                            <div v-if="loading" class="mt-1 flex items-center gap-2">
                                 <USkeleton class="h-4 w-28" />
                                 <USkeleton class="h-5 w-14 rounded-full" />
                             </div>
 
-                            <div v-else class="mt-2 flex flex-wrap items-center gap-2">
-                                <span class="text-sm text-muted">
-                                    {{ record?.className || 'No class assigned' }}
-                                </span>
-
-                                <span class="size-1 rounded-full bg-dimmed" />
-
-                                <UBadge color="success" variant="subtle" size="xs" class="rounded-full">
-                                    <span class="mr-1.5 size-1.5 rounded-full bg-success" />
-                                    Active
-                                </UBadge>
-
+                            <div v-else class="mt-1 flex flex-wrap items-center gap-2">
                                 <UTooltip v-if="attentionReason" :delay-duration="0" arrow :text="attentionReason">
                                     <UBadge color="warning" variant="subtle" size="xs" class="rounded-full"
                                         icon="i-lucide-alert-triangle">
@@ -75,48 +64,29 @@
                             </div>
 
                             <!-- Admission -->
-                            <div v-if="!loading" class="mt-1.5 flex items-center gap-1.5 text-xs text-dimmed">
-                                <UIcon name="i-lucide-id-card" class="size-3.5" />
-
-                                <span>Admission</span>
-
-                                <span class="font-medium text-muted">
-                                    {{ record?.admissionNumber || 'Not assigned' }}
-                                </span>
+                            <div v-if="!loading"
+                                class="mt-1 flex items-center justify-center flex-wrap gap-1.5 text-xs text-dimmed">
+                                <p>{{ record?.admissionNumber || 'Not assigned' }}</p>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ record?.className || 'No class assigned' }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ clean(record?.gender || '') }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ clean(record?.nationality || '') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex shrink-0 items-center gap-2">
-                        <UButton to="/students" variant="outline" size="sm" color="neutral" icon="i-lucide-arrow-left"
-                            label="Students" />
-
+                    <div class="flex shrink-0 items-center gap-2 justify-center">
                         <UButton v-if="record && !loading" :to="`/students/${record.id}/edit`" size="sm" color="primary"
                             :icon="EDIT_ICON" label="Edit Student" />
-                    </div>
-                </div>
-
-                <!-- Quick facts -->
-                <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                    <div v-for="item in quickFacts" :key="item.label"
-                        class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 p-3">
-                        <div
-                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <UIcon :name="item.icon" class="size-4" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="text-xs-base text-muted">
-                                {{ item.label }}
-                            </p>
-
-                            <USkeleton v-if="loading" class="mt-1 h-4 w-16" />
-
-                            <p v-else class="truncate text-sm font-semibold text-highlighted">
-                                {{ item.value }}
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -199,9 +169,6 @@ const quickFacts = computed(() => [
     }
 ])
 
-// Carries a "?back=" through every tab switch, not just the link that first landed here - a
-// class master opening a student from /classes/{id} should still land back on that class after
-// hopping between Attendance/Fees/Academics/etc, not lose that context the moment they change tab.
 const backQuery = typeof route.query.back === 'string' && route.query.back ? `?back=${route.query.back}` : ''
 
 const personalInfo = `/students/${route.params.id}${backQuery}`

@@ -10,7 +10,7 @@
                         </h3>
                     </div>
 
-                    <p class="text-sm text-muted">
+                    <p class="text-xs-base text-muted">
                         Personal details and contact information.
                     </p>
                 </div>
@@ -53,7 +53,7 @@
                         </h3>
                     </div>
 
-                    <p class="text-sm text-muted">
+                    <p class="text-xs-base text-muted">
                         Contact and family details for the student’s parent or guardian.
                     </p>
                 </div>

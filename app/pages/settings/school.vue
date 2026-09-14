@@ -2,8 +2,6 @@
     <div class="px-4 md:px-6 space-y-4">
         <Heading class="hidden md:block" title="School Settings"
             subtitle="Manage your school's profile, contact details and academic preferences">
-            <!-- Hidden below lg - on mobile the same actions live in the drawer's footer instead,
-                 next to the section they actually apply to (see the USlideover below). -->
             <div class="hidden gap-3 lg:flex">
                 <UButton v-if="active === 'profile'" label="Save Settings" icon="lucide:save" :loading="saving"
                     :disabled="loading" @click="save" />
@@ -12,8 +10,6 @@
             </div>
         </Heading>
 
-        <!-- Skeleton mirrors the real two-column layout below (nav + content cards) rather than
-             a single placeholder blob, so the page doesn't visibly reflow once data arrives. -->
         <div v-if="loading" class="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
             <aside class="space-y-4">
                 <UCard :ui="{ body: 'p-2' }">
@@ -88,8 +84,6 @@
                 </UCard>
             </aside>
 
-            <!-- Right Content - desktop only. On mobile the same section opens in the drawer
-                 below instead of stacking under the tab list. -->
             <div class="hidden space-y-4 min-w-0 lg:block">
                 <SettingsSchoolProfileTab v-if="active === 'profile'" :state="state" :logo-preview="logoPreview"
                     :signature-preview="signaturePreview" @select-logo="(f) => onFileChange('logo', f)"
@@ -100,17 +94,14 @@
                     :loading-location="loadingLocation" :location-configured="locationConfigured" />
             </div>
         </div>
-
-        <!-- Mobile: tapping a tab above opens this full-screen modal with that section, instead
-             of the content stacking below the tab list in the single-column layout. -->
         <UModal v-model:open="mobilePanelOpen" fullscreen :ui="{ content: 'lg:hidden' }">
             <template #content>
                 <UCard :ui="{ root: 'flex h-full flex-col rounded-none', body: 'flex-1 overflow-y-auto' }">
                     <template #header>
                         <div class="flex items-center justify-between">
                             <p class="font-semibold text-highlighted">{{ activeSectionLabel }}</p>
-                            <UButton icon="lucide:x" variant="ghost" color="neutral" size="sm"
-                                aria-label="Close" @click="mobilePanelOpen = false" />
+                            <UButton icon="lucide:x" variant="ghost" color="neutral" size="sm" aria-label="Close"
+                                @click="mobilePanelOpen = false" />
                         </div>
                     </template>
 

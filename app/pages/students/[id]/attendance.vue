@@ -1,19 +1,21 @@
 <template>
     <StudentView>
-        <UCard>
+        <UCard :ui="{
+            body: 'p-0 md:p-0'
+        }">
             <template #header>
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="font-semibold text-lg">
                             Attendance
                         </h3>
-                        <p class="text-sm text-muted">
+                        <p class="text-xs-base text-muted">
                             Monthly attendance overview and daily records.
                         </p>
                     </div>
                 </div>
             </template>
-            <div class="space-y-4 md:space-y-6">
+            <div class="space-y-4">
                 <StudentViewAttendanceCycle :student="student" />
             </div>
         </UCard>

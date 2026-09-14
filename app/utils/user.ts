@@ -53,6 +53,13 @@ export type ResetPasswordDto = {
     password: string
 }
 
+// Response from an admin issuing a staff member a new temporary password - temporaryPassword
+// is plaintext, shown once so it can be copied and shared with them directly.
+export type AdminResetPasswordResult = {
+    user: User
+    temporaryPassword: string
+}
+
 export type AssignRoleDTO = {
     userId: string
     role: string

@@ -5,7 +5,7 @@
 
             <div class="px-5 pb-5">
                 <div class="-mt-12 flex min-w-0 items-end gap-4 md:-mt-14">
-                    <div class="relative shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
+                    <div class="relative shrink-0 rounded-2xl hidden md:block bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
                         <UAvatar :src="user?.photo || undefined" :alt="user?.givenNames" size="3xl"
                             class="h-16 w-16 rounded-xl md:h-24 md:w-24" />
                     </div>

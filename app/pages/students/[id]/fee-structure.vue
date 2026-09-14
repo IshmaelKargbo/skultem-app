@@ -7,7 +7,7 @@
                         <h3 class="font-semibold text-lg">
                             Fee Structure
                         </h3>
-                        <p class="text-sm text-muted">
+                        <p class="text-xs-base text-muted">
                             Breakdown of student fees, payments, and outstanding balances.
                         </p>
                     </div>
@@ -24,7 +24,8 @@
 
             <!-- Fee Groups -->
             <div v-if="loading" class="space-y-3">
-                <div v-for="i in 3" :key="i" class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950">
+                <div v-for="i in 3" :key="i"
+                    class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <USkeleton class="h-5 w-5 rounded-full" />
@@ -40,28 +41,28 @@
             <div v-else-if="groups.length" class="space-y-3">
                 <div v-for="group in groups" :key="group.key"
                     class="overflow-hidden rounded-xl border border-default border-l-4"
-                    :class="group.fullyPaid ? 'border-l-success-500' : 'border-l-error-500'"
-                >
+                    :class="group.fullyPaid ? 'border-l-success-500' : 'border-l-error-500'">
                     <!-- Group header -->
-                    <button type="button"
-                        class="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
-                        @click="toggle(group.key)"
-                    >
-                        <div class="flex min-w-0 items-center gap-2.5">
-                            <UIcon :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-                                class="size-4 shrink-0 text-muted" />
+                    <div 
+                        class="flex w-full flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+                        @click="toggle(group.key)">
+                        <div class="flex min-w-0 items-center justify-between gap-2.5">
+                            <div class="flex space-x-2.5">
+                                <UIcon
+                                    :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                                    class="size-4 shrink-0 text-muted" />
 
-                            <UIcon :name="group.fullyPaid ? 'i-lucide-check-circle-2' : 'i-lucide-folder'"
-                                class="size-4 shrink-0"
-                                :class="group.fullyPaid ? 'text-success-500' : 'text-warning-500'" />
+                                <UIcon :name="group.fullyPaid ? 'i-lucide-check-circle-2' : 'i-lucide-folder'"
+                                    class="size-4 shrink-0"
+                                    :class="group.fullyPaid ? 'text-success-500' : 'text-warning-500'" />
 
-                            <h4 class="truncate font-semibold">
-                                {{ group.title }}
-                            </h4>
+                                <h4 class="truncate font-semibold">
+                                    {{ group.title }}
+                                </h4>
+                            </div>
 
                             <UBadge :color="group.fullyPaid ? 'success' : 'error'" variant="solid" size="sm"
-                                class="shrink-0 rounded-full"
-                            >
+                                class="shrink-0 rounded-full">
                                 {{ group.fullyPaid ? 'Fully Paid' : `${group.unpaidCount} Unpaid` }}
                             </UBadge>
                         </div>
@@ -75,7 +76,7 @@
                                 Due: <span class="font-semibold">{{ format(group.due) }}</span>
                             </span>
                         </div>
-                    </button>
+                    </div>
 
                     <!-- Group items -->
                     <div v-if="expandedKeys.has(group.key)" class="overflow-x-auto border-t border-default">
@@ -96,17 +97,16 @@
                                     <td class="px-4 py-2.5">{{ fee.fee }}</td>
                                     <td class="px-4 py-2.5 text-muted">{{ formatDateString(fee.dueDate) }}</td>
                                     <td class="px-4 py-2.5 text-right">{{ format(fee.amount) }}</td>
-                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{ format(fee.amountPaid) }}</td>
+                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
+                                        format(fee.amountPaid) }}</td>
                                     <td class="px-4 py-2.5 text-right"
-                                        :class="fee.outstanding > 0 ? 'text-error-600 dark:text-error-400' : 'text-muted'"
-                                    >
+                                        :class="fee.outstanding > 0 ? 'text-error-600 dark:text-error-400' : 'text-muted'">
                                         {{ format(fee.outstanding) }}
                                     </td>
                                     <td class="px-4 py-2.5 text-right">
                                         <UBadge :color="(parseFeeStatusColor[fee.status] as any)"
                                             :icon="parseFeeStatusIcon[fee.status]" variant="solid" size="sm"
-                                            class="rounded-full"
-                                        >
+                                            class="rounded-full">
                                             {{ fee.status }}
                                         </UBadge>
                                     </td>
@@ -115,12 +115,14 @@
 
                             <tfoot>
                                 <tr class="font-semibold"
-                                    :class="group.fullyPaid ? 'bg-success-50 dark:bg-success-950/60' : 'bg-warning-50 dark:bg-warning-950/60'"
-                                >
+                                    :class="group.fullyPaid ? 'bg-success-50 dark:bg-success-950/60' : 'bg-warning-50 dark:bg-warning-950/60'">
                                     <td class="px-4 py-2.5" colspan="2">Sub-Total ({{ group.items.length }} items)</td>
                                     <td class="px-4 py-2.5 text-right">{{ format(group.total) }}</td>
-                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{ format(group.paid) }}</td>
-                                    <td class="px-4 py-2.5 text-right" :class="group.due > 0 ? 'text-error-600 dark:text-error-400' : ''">
+                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
+                                        format(group.paid)
+                                        }}</td>
+                                    <td class="px-4 py-2.5 text-right"
+                                        :class="group.due > 0 ? 'text-error-600 dark:text-error-400' : ''">
                                         {{ format(group.due) }}
                                     </td>
                                     <td />

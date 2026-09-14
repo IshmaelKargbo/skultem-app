@@ -9,6 +9,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useMaterialSaleStore()
+const materialStore = useMaterialStore()
 const { error: toastError, success: toastSuccess } = useNotify()
 
 const open = computed({
@@ -31,6 +32,11 @@ async function fulfill() {
     loading.value = true
     await store.fulfill(props.sale.id, note.value || undefined)
     await store.fetchSummary()
+
+    // Fulfilling a pre-sale collects its linked Supply under the hood, deducting stock the same
+    // way a plain supply collection does - refresh the materials list so it isn't stale elsewhere.
+    await materialStore.fetchAll()
+
     toastSuccess('Sale marked as fulfilled')
     close()
   } catch (error: any) {

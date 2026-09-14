@@ -10,10 +10,6 @@ const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
 )
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
   { label: 'Name (A-Z)', value: 'givenNames:asc' },
   { label: 'Name (Z-A)', value: 'givenNames:desc' },
@@ -91,22 +87,21 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val }),
 });
 
-// Local ref, not a URL-bound computed getter/setter - `value` above already seeds/debounces into
-// this the same way; keeping a plain `search` ref (rather than deriving it from route.query like
-// the old computed did) means the fetch below is never gated on the URL write actually landing.
 const search = ref(value.value)
+const filterState = ref(false)
 
 const size = ref(runtimeConf().limit);
 
-// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
-// page/size and silently drops any other query key (search, classId, sort) when neither changed,
-// which is exactly why none of those ever reached the URL or triggered a refetch here before.
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
 }
 
 async function fetchRecord() {
   await store.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value);
+}
+
+function toggleFilter() {
+  filterState.value = !filterState.value
 }
 
 watch(
@@ -125,8 +120,6 @@ watch(value, (val) => {
   }, 500)
 })
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
 watch([search, classId, sort], () => {
   updateQuery({
     search: search.value || undefined,
@@ -162,19 +155,46 @@ onMounted(async () => {
                 label="Enrolled Student" :icon="ADD_ICON" />
               <UButton to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
             </div>
-            <TableViewToggle v-model="tableView" />
+            <div>
+              <TableViewToggle v-model="tableView" />
+              <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
+                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+            </div>
           </div>
 
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
+          <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
+              <USelectMenu class="w-full" v-model="classId" value-key="value" label-key="label" :items="classOptions"
                 placeholder="All Classes" clear />
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+              <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
                 placeholder="Sort by" />
-              <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
-                class="col-span-2" />
+              <div class="flex space-x-1">
+                <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
+                  class="col-span-2" />
+                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                  :disabled="!hasActiveFilters" @click="resetFilters" />
+              </div>
             </div>
-            <div>
+            <div class="hidden md:block">
+              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
+          </div>
+          <div v-if="filterState"
+            class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-4">
+              <USelectMenu class="w-full" v-model="classId" value-key="value" label-key="label" :items="classOptions"
+                placeholder="All Classes" clear />
+              <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                placeholder="Sort by" />
+              <div class="flex space-x-1">
+                <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
+                  class="col-span-2" />
+                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                  :disabled="!hasActiveFilters" @click="resetFilters" />
+              </div>
+            </div>
+            <div class="hidden md:block">
               <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                 :disabled="!hasActiveFilters" @click="resetFilters" />
             </div>
@@ -211,7 +231,7 @@ onMounted(async () => {
           </div>
         </template>
       </UTable>
-      <div class="p-4  space-y-4"
+      <div class="md:p-4  md:space-y-4"
         :class="tableView === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <template v-if="loading">
           <UCard v-for="i in 6" :key="i" :ui="{ body: 'sm:p-0 p-0' }">
@@ -266,14 +286,13 @@ onMounted(async () => {
 
         <!-- Data -->
         <template v-else-if="data?.length">
-          <UCard v-for="item in data" :key="item.id" class="group cursor-pointer hover:ring-secondary-300"
-            :ui="{ body: 'sm:p-0 p-0' }">
+          <div @click="view(item)" v-for="item in data" :key="item.id">
             <!-- Header -->
-            <div class="border-b border-default p-4">
+            <div class="border-b md:border md:rounded-2xl border-default p-3">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
-                  <UAvatar class="size-10" :src="item.photo || '/avatar-placeholder.svg'"
-                    :alt="`${item.givenNames} ${item.familyName}`" loading="lazy" />
+                  <UAvatar class="size-10" :src="item.photo" :alt="`${item.givenNames} ${item.familyName}`"
+                    loading="lazy" />
 
                   <div class="min-w-0">
                     <h3 class="truncate text-base font-bold text-highlighted">
@@ -293,129 +312,9 @@ onMounted(async () => {
                     </div>
                   </div>
                 </div>
-
-                <UBadge :label="parseStaus[item.status]" :color="parseStatusColor[item.status]" variant="soft" />
               </div>
             </div>
-
-            <!-- Stats -->
-            <div class="grid grid-cols-2 gap-3 p-4">
-              <!-- Gender -->
-              <div class="min-w-0 rounded-2xl border p-3" :class="item.gender === 'MALE'
-                ? 'border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10'
-                : item.gender === 'FEMALE'
-                  ? 'border-pink-200 bg-pink-50 dark:border-pink-500/20 dark:bg-pink-500/10'
-                  : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-                ">
-                <div class="mb-2 flex items-center gap-2">
-                  <div class="flex size-7 shrink-0 items-center justify-center rounded-lg" :class="item.gender === 'MALE'
-                    ? 'bg-blue-100 dark:bg-blue-500/20'
-                    : item.gender === 'FEMALE'
-                      ? 'bg-pink-100 dark:bg-pink-500/20'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                    ">
-                    <UIcon name="i-lucide-users" class="size-4" :class="item.gender === 'MALE'
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : item.gender === 'FEMALE'
-                        ? 'text-pink-600 dark:text-pink-400'
-                        : 'text-gray-600 dark:text-gray-400'
-                      " />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide" :class="item.gender === 'MALE'
-                    ? 'text-blue-700 dark:text-blue-300'
-                    : item.gender === 'FEMALE'
-                      ? 'text-pink-700 dark:text-pink-300'
-                      : 'text-gray-600 dark:text-gray-400'
-                    ">
-                    Gender
-                  </p>
-                </div>
-
-                <p class="truncate text-sm font-medium text-highlighted">
-                  {{ parseGender[item.gender] || 'N/A' }}
-                </p>
-              </div>
-
-              <!-- Date of Birth -->
-              <div
-                class="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-                <div class="mb-2 flex items-center gap-2">
-                  <div
-                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20">
-                    <UIcon name="i-lucide-calendar-days" class="size-4 text-amber-600 dark:text-amber-400" />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
-                    Date of Birth
-                  </p>
-                </div>
-
-                <p class="truncate text-sm font-medium text-highlighted">
-                  {{ formatDate(item.dateOfBirth) || 'N/A' }}
-                </p>
-              </div>
-
-              <!-- Guardian -->
-              <div
-                class="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-                <div class="mb-2 flex items-center gap-2">
-                  <div
-                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
-                    <UIcon name="i-lucide-user-round" class="size-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-                    Guardian
-                  </p>
-                </div>
-
-                <p class="truncate text-sm font-medium text-highlighted">
-                  {{ item.guardian?.givenNames }}
-                  {{ item.guardian?.familyName }}
-                </p>
-              </div>
-
-              <!-- Class -->
-              <div
-                class="min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
-                <div class="mb-2 flex items-center gap-2">
-                  <div
-                    class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
-                    <UIcon name="i-lucide-school" class="size-4 text-violet-600 dark:text-violet-400" />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">
-                    Class
-                  </p>
-                </div>
-
-                <p class="truncate text-sm font-medium text-highlighted">
-                  {{ item.className || 'N/A' }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="flex items-center justify-between gap-3 border-t border-default p-4">
-              <div class="flex min-w-0 items-center gap-3">
-                <UAvatar size="xl" icon="i-lucide-users" />
-
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-medium text-highlighted">
-                    {{ item.family?.fatherName || 'No Father Name' }}
-                  </p>
-                  <p class="truncate text-xs-base text-muted">
-                    {{ item.family?.motherName || 'No Mother Name' }}
-                  </p>
-                </div>
-              </div>
-
-              <UButton icon="i-lucide-arrow-right" color="neutral" variant="soft" square
-                class="rounded-xl transition-all group-hover:bg-secondary hover:bg-secondary cursor-pointer group-hover:text-white group-hover:translate-x-1"
-                @click="view(item)" />
-            </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Empty -->
@@ -430,7 +329,7 @@ onMounted(async () => {
         </template>
       </div>
       <template #footer>
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
           <Showing :meta="meta" />
           <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
             :total="meta.total" show-edges />

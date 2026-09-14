@@ -11,8 +11,6 @@ const cursor = ref(startOfMonth(new Date()))
 const recordsByDate = ref<Record<string, string>>({})
 const eventsByDate = ref<Record<string, CalendarEntry[]>>({})
 
-// Deliberately off the attendance palette (success/error/warning/info) so events and
-// holidays never share a color with Present/Absent/Late/Excused.
 const eventDotClass: Record<CalendarEntryType, string> = {
     EVENT: 'bg-secondary-500',
     HOLIDAY: 'bg-purple-500'
@@ -192,8 +190,6 @@ async function fetchMonth() {
     loading.value = false
 }
 
-// Communicate's school-wide events & holidays, overlaid on the same calendar so a
-// multi-day entry (e.g. a mid-term break) marks every day it spans, not just its start.
 async function fetchEvents() {
     eventsByDate.value = {}
 
@@ -229,7 +225,7 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
 <template>
     <div class="space-y-4">
         <!-- Summary -->
-        <UCard>
+        <div class="md:border border-default p-4 md:rounded-2xl">
             <div class="flex flex-col items-center gap-6 lg:flex-row">
                 <!-- Ring -->
                 <div class="flex shrink-0 flex-col items-center">
@@ -292,17 +288,17 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                     </div>
                 </div>
             </div>
-        </UCard>
+        </div class="md:border border-default md:p-4 md:rounded-2xl">
 
         <!-- Calendar -->
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <div :ui="{ body: 'p-0 sm:p-0' }">
             <div class="flex items-center justify-between border-b border-default px-4 py-3">
                 <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-chevron-left"
                     :label="prevMonthLabel" @click="goPrevMonth" />
 
                 <div class="flex items-center gap-2 text-sm font-semibold text-highlighted">
                     <UIcon name="i-lucide-calendar" class="size-4 text-primary" />
-                    {{ monthLabel }}
+                    {{ formatDate(monthLabel) }}
                 </div>
 
                 <UButton variant="ghost" color="neutral" size="sm" trailing-icon="i-lucide-chevron-right"
@@ -327,7 +323,7 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                             {{ cell.day }}
                         </span>
 
-                        <span v-if="statusOf(cell.key)" class="text-[9px] font-semibold uppercase"
+                        <span v-if="statusOf(cell.key)" class="text-[7px] font-semibold"
                             :class="statusTextClass(cell.key)"
                         >
                             {{ statusOf(cell.key) }}
@@ -380,6 +376,6 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                     <span class="text-xs text-muted">Holiday</span>
                 </div>
             </div>
-        </UCard>
+        </div>
     </div>
 </template>

@@ -7,7 +7,7 @@
                         <h3 class="font-semibold text-lg">
                             Academic Information
                         </h3>
-                        <p class="text-sm text-muted">
+                        <p class="text-xs-base text-muted">
                             Subject results, grades and performance grouped by assessment.
                         </p>
                     </div>
@@ -15,18 +15,14 @@
             </template>
 
             <!-- Filters -->
-            <div class="mb-6 grid gap-3 md:max-w-[16rem]">
-                <USelectMenu
-                    v-model="state.term"
-                    :items="terms"
-                    value-key="value"
-                    size="lg"
-                    placeholder="Select Term"
-                />
+            <div class="mb-4 grid gap-3 md:max-w-[16rem]">
+                <USelectMenu v-model="state.term" :items="terms" value-key="value" size="lg"
+                    placeholder="Select Term" />
             </div>
 
-            <div class="mb-6 grid gap-4 grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-xl border-2 border-primary-300 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950">
+            <div class="mb-4 grid md:gap-4 gap-3 grid-cols-2 xl:grid-cols-4">
+                <div
+                    class="rounded-xl border-2 border-primary-300 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950">
                     <p class="text-[11px] uppercase text-muted">
                         Subjects
                     </p>
@@ -36,7 +32,8 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-success-300 bg-success-50 p-4 dark:border-success-800 dark:bg-success-950">
+                <div
+                    class="rounded-xl border-2 border-success-300 bg-success-50 p-4 dark:border-success-800 dark:bg-success-950">
                     <p class="text-[11px] uppercase text-muted">
                         Passed
                     </p>
@@ -46,7 +43,8 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-warning-300 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
+                <div
+                    class="rounded-xl border-2 border-warning-300 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
                     <p class="text-[11px] uppercase text-muted">
                         Average
                     </p>
@@ -56,7 +54,8 @@
                     </h2>
                 </div>
 
-                <div class="rounded-xl border-2 border-error-300 bg-error-50 p-4 dark:border-error-800 dark:bg-error-950">
+                <div
+                    class="rounded-xl border-2 border-error-300 bg-error-50 p-4 dark:border-error-800 dark:bg-error-950">
                     <p class="text-[11px] uppercase text-muted">
                         Failed
                     </p>
@@ -68,11 +67,8 @@
             </div>
 
             <div v-if="loading" class="space-y-3">
-                <div
-                    v-for="i in 3"
-                    :key="i"
-                    class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950"
-                >
+                <div v-for="i in 3" :key="i"
+                    class="rounded-xl border-2 border-gray-100 bg-gray-100 p-4 dark:border-gray-800 dark:bg-gray-950">
                     <div class="flex items-center justify-between gap-3">
                         <div class="flex min-w-0 items-center gap-3">
                             <USkeleton class="h-5 w-5 rounded-full" />
@@ -86,39 +82,30 @@
             </div>
 
             <div v-else-if="groups.length" class="space-y-3">
-                <div
-                    v-for="group in groups"
-                    :key="group.key"
+                <div v-for="group in groups" :key="group.key"
                     class="overflow-hidden rounded-xl border border-default border-l-4"
-                    :class="group.passed === group.items.length ? 'border-l-success-500' : 'border-l-warning-500'"
-                >
-                    <button
-                        type="button"
-                        class="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
-                        @click="toggle(group.key)"
-                    >
-                        <div class="flex min-w-0 items-center gap-2.5">
-                            <UIcon
-                                :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-                                class="size-4 shrink-0 text-muted"
-                            />
+                    :class="group.passed === group.items.length ? 'border-l-success-500' : 'border-l-warning-500'">
+                    <div
+                        class="flex w-full flex-col md:flex-row gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+                        @click="toggle(group.key)">
+                        <div class="flex items-center justify-between gap-2.5 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <UIcon
+                                    :name="expandedKeys.has(group.key) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                                    class="size-4 shrink-0 text-muted" />
 
-                            <UIcon
-                                :name="group.passed === group.items.length ? 'i-lucide-check-circle-2' : 'i-lucide-book-open'"
-                                class="size-4 shrink-0"
-                                :class="group.passed === group.items.length ? 'text-success-500' : 'text-primary-500'"
-                            />
+                                <UIcon
+                                    :name="group.passed === group.items.length ? 'i-lucide-check-circle-2' : 'i-lucide-book-open'"
+                                    class="size-4 shrink-0"
+                                    :class="group.passed === group.items.length ? 'text-success-500' : 'text-primary-500'" />
 
-                            <h4 class="truncate font-semibold">
-                                {{ group.title }}
-                            </h4>
+                                <h4 class="truncate font-semibold">
+                                    {{ group.title }}
+                                </h4>
+                            </div>
 
-                            <UBadge
-                                :color="group.passed === group.items.length ? 'success' : 'warning'"
-                                variant="solid"
-                                size="sm"
-                                class="shrink-0 rounded-full"
-                            >
+                            <UBadge :color="group.passed === group.items.length ? 'success' : 'warning'" variant="solid"
+                                size="sm" class="shrink-0 rounded-full">
                                 {{ group.passed === group.items.length ? 'All Passed' : `${group.failed} Attention` }}
                             </UBadge>
                         </div>
@@ -132,7 +119,7 @@
                                 Avg: <span class="font-semibold text-highlighted">{{ group.average }}%</span>
                             </span>
                         </div>
-                    </button>
+                    </div>
 
                     <div v-if="expandedKeys.has(group.key)" class="overflow-x-auto border-t border-default">
                         <table class="w-full min-w-max text-sm">
@@ -161,19 +148,15 @@
                                         {{ subject.weightScore }}%
                                     </td>
                                     <td class="px-4 py-2.5 text-right">
-                                        <UBadge
-                                            size="sm"
-                                            variant="soft"
-                                            :color="subject.grade === 'A'
-                                                ? 'success'
-                                                : subject.grade === 'B'
-                                                    ? 'primary'
-                                                    : subject.grade === 'C'
-                                                        ? 'warning'
-                                                        : subject.grade === null
-                                                            ? 'neutral'
-                                                            : 'error'"
-                                        >
+                                        <UBadge size="sm" variant="soft" :color="subject.grade === 'A'
+                                            ? 'success'
+                                            : subject.grade === 'B'
+                                                ? 'primary'
+                                                : subject.grade === 'C'
+                                                    ? 'warning'
+                                                    : subject.grade === null
+                                                        ? 'neutral'
+                                                        : 'error'">
                                             {{ subject.grade || 'N/A' }}
                                         </UBadge>
                                     </td>
@@ -184,10 +167,8 @@
                 </div>
             </div>
 
-            <div
-                v-else
-                class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-10 dark:border-gray-700"
-            >
+            <div v-else
+                class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-10 dark:border-gray-700">
                 <UIcon name="i-lucide-book-x" class="mb-2 text-4xl text-muted" />
 
                 <p class="font-medium">
@@ -200,17 +181,11 @@
             </div>
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 items-center justify-between">
                     <Showing :meta="meta" />
 
-                    <UPagination
-                        v-model:page="page"
-                        size="md"
-                        :page-size="meta?.size"
-                        :items-per-page="meta?.size"
-                        :total="meta?.total"
-                        show-edges
-                    />
+                    <UPagination v-model:page="page" size="md" :page-size="meta?.size" :items-per-page="meta?.size"
+                        :total="meta?.total" show-edges />
                 </div>
             </template>
         </UCard>

@@ -22,6 +22,16 @@ function openStatusPrompt(user: User) {
   statusTarget.value = user
 }
 
+const resetPasswordTarget = ref<User | null>(null)
+const showResetPassword = computed<boolean>({
+  get: () => resetPasswordTarget.value !== null,
+  set: (v) => { if (!v) resetPasswordTarget.value = null }
+})
+
+function openResetPasswordPrompt(user: User) {
+  resetPasswordTarget.value = user
+}
+
 const UButton = resolveComponent('UButton')
 
 const parseStatus: Record<string, string> = {
@@ -199,6 +209,11 @@ definePageMeta({
                 @click="openAssignRole(row.original.id)" />
             </UTooltip>
 
+            <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow text="Reset Password">
+              <UButton size="sm" variant="soft" color="warning" icon="lucide:key-round" class="rounded-xl"
+                @click="openResetPasswordPrompt(row.original)" />
+            </UTooltip>
+
             <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow
               :text="row.original.schoolStatus === 'ACTIVE' ? 'Deactivate' : 'Reactivate'">
               <UButton size="sm" variant="soft" :color="row.original.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
@@ -324,6 +339,9 @@ definePageMeta({
               </div>
 
               <div class="flex gap-2">
+                <UButton v-if="me?.id !== item.id" size="sm" color="warning" variant="soft" icon="lucide:key-round"
+                  class="rounded-xl" @click="openResetPasswordPrompt(item)" />
+
                 <UButton v-if="me?.id !== item.id" size="sm"
                   :color="item.schoolStatus === 'ACTIVE' ? 'error' : 'success'" variant="soft"
                   :icon="item.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'" class="rounded-xl"
@@ -369,5 +387,9 @@ definePageMeta({
     <AuthUsersStatusPrompt v-if="statusTarget" v-model:open="showStatus" :user-id="statusTarget.id"
       :user-name="`${statusTarget.givenNames} ${statusTarget.familyName}`"
       :active="statusTarget.schoolStatus === 'ACTIVE'" />
+
+    <AuthUsersResetPasswordPrompt v-if="resetPasswordTarget" v-model:open="showResetPassword"
+      :user-id="resetPasswordTarget.id"
+      :user-name="`${resetPasswordTarget.givenNames} ${resetPasswordTarget.familyName}`" />
   </div>
 </template>

@@ -5,7 +5,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 class="font-semibold">Performance</h3>
-            <p class="text-sm text-muted">{{ subtitle }}</p>
+            <p class="text-xs-base text-muted">{{ subtitle }}</p>
           </div>
           <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
             placeholder="Select Term" class="w-full sm:w-56" />
@@ -19,23 +19,22 @@
           label: 'Class Rank', color: 'primary', value: rank, isReady: rankReady, icon: LEADER_ICON,
           subtle: record ? `Out of ${record.classSize} in ${record.className}` : undefined
         }" />
-        <DashboardParentAttendance :id="studentId" />
-        <Metric :record="{
+        <DashboardParentAttendance class="md:col-span-1 col-span-2" :id="studentId" />
+        <Metric class="md:col-span-1 col-span-2" :record="{
           label: 'Best Subject', color: 'success', value: topSubject?.name || 'N/A', isReady: !assessmentLoading,
           icon: TARGET_ICON, subtle: topSubject ? `${Math.round(topSubject.score)}% this term` : 'No assessments yet'
         }" />
       </div>
 
-      <!-- Plain-language summary of the two stats above - which subject to call out, which one
-           needs a closer look - same read a teacher would otherwise have to build by scanning
-           every row of the breakdown below. -->
-      <UCard v-if="!assessmentLoading && (topSubject || bottomSubject)">
+      <UCard v-if="!assessmentLoading && (topSubject || bottomSubject)" :ui="{
+        body: 'p-1'
+      }">
         <div class="grid gap-4 sm:grid-cols-2">
           <div v-if="topSubject" class="flex items-start gap-3 rounded-xl bg-success-50 p-4 dark:bg-success-500/10">
             <UIcon name="lucide:trophy" class="mt-0.5 size-5 shrink-0 text-success" />
             <div class="space-y-0.5">
               <p class="text-sm font-semibold text-success">Strongest in {{ topSubject.name }}</p>
-              <p class="text-xs text-muted">
+              <p class="text-xs-base text-muted">
                 {{ studentFirstName }} is scoring {{ Math.round(topSubject.score) }}% ({{ topSubject.grade || '—' }})
                 - the strongest subject this term.
               </p>
@@ -73,7 +72,7 @@
 
               <div class="min-w-0">
                 <p class="truncate text-sm font-medium">{{ row.name }}</p>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 mt-0.5">
                   <UIcon :name="parseTrend[row.trend]?.icon" :class="`size-3.5 text-${parseTrend[row.trend]?.color}`" />
                   <p :class="`text-[11px] text-${parseTrend[row.trend]?.color}`">{{ parseTrend[row.trend]?.label }}</p>
                 </div>
@@ -97,13 +96,13 @@
           </div>
 
           <template v-if="expanded[row.id]" #footer>
-            <div v-if="row.scores.length" class="space-y-1.5 p-3">
+            <div v-if="row.scores.length" class="space-y-1">
               <div v-for="(score, i) in row.scores" :key="i" class="flex items-center justify-between py-1.5" :class="{
                 'border-b border-gray-100 dark:border-gray-800': i + 1 < row.scores.length
               }">
                 <p class="text-sm">{{ score.name }}</p>
                 <div class="flex items-center gap-2">
-                  <p class="text-sm font-medium">
+                  <p class="text-xs-base font-medium">
                     <span>{{ score.score ?? '-' }}</span>
                     <span class="text-muted"> ({{ score.weightScore ?? '-' }})</span>
                   </p>
@@ -175,8 +174,6 @@ const subtitle = computed(() =>
     : "A clear picture of this student's progress, term by term"
 )
 
-// Same rule as the parent Performance page - only counted once real assessments exist, so a
-// freshly-added subject with no grades yet doesn't get flagged either way.
 const assessedSubjects = computed(() => breakdown.value.filter(row => row.scores.length > 0))
 
 const topSubject = computed(() =>
@@ -185,8 +182,6 @@ const topSubject = computed(() =>
     : undefined
 )
 
-// Only an actually-failing subject counts as a flag - the lowest-scoring subject out of a
-// passing bunch isn't something a teacher needs surfaced as a problem.
 const bottomSubject = computed(() => {
   const failing = assessedSubjects.value.filter(row => row.passed === false)
   if (!failing.length) return undefined
@@ -213,9 +208,6 @@ async function fetchCycle() {
   const cycleTerms = activeCycle.value.terms
   if (!cycleTerms.length) return
 
-  // Same fallback as the parent Performance page - a cycle with no term marked ACTIVE (e.g. a
-  // class that hasn't rolled into the school's current term yet) would otherwise leave
-  // state.term blank forever and starve everything below.
   const active = cycleTerms.find(e => e.status === "ACTIVE")
     ?? cycleTerms.reduce((latest, t) => t.termNumber > latest.termNumber ? t : latest)
 
@@ -247,9 +239,6 @@ const parseTrend: Record<string, any> = {
   DROPPED: { icon: DROPPED_ICON, color: 'error', label: 'Dropped' }
 }
 
-// Local ready-flag, not studentStore.loading - that flag is shared with the term dropdown's own
-// "cycleLoading" state (and the student profile banner above), so reusing it here would flash
-// the whole page into a loading state every time the rank refetches.
 const rankReady = ref(false)
 const rank = ref('—')
 
@@ -296,6 +285,8 @@ async function loadAvarageData() {
 
 onMounted(() => {
   document.title = 'Performance | Student | Skultem'
+  useAppStore().setTitle('View Student')
+  useAppStore().setBack((route.query.back as string) || '/students')
 })
 
 definePageMeta({

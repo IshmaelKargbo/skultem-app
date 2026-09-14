@@ -90,16 +90,16 @@ watch(() => record.value, () => fetchRecord(), { immediate: true })
 </script>
 
 <template>
-    <UCard class="mb-6">
+    <div class="mb-6 md:border border-default md:p-4 md:rounded-2xl">
         <div class="flex flex-col items-center gap-6 lg:flex-row">
             <!-- Ring -->
             <div class="flex shrink-0 flex-col items-center">
                 <div class="relative h-32 w-32">
-                    <svg viewBox="0 0 120 120" class="h-32 w-32 -rotate-90">
-                        <circle cx="60" cy="60" r="52" fill="none" stroke-width="14"
+                    <svg viewBox="0 0 100 100" class="h-32 w-32 -rotate-90">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke-width="14"
                             class="stroke-warning-100 dark:stroke-warning-950" />
 
-                        <circle cx="60" cy="60" r="52" fill="none" stroke-width="14" stroke-linecap="round"
+                        <circle cx="50" cy="50" r="42" fill="none" stroke-width="14" stroke-linecap="round"
                             :stroke-dasharray="CIRCUMFERENCE" :stroke-dashoffset="dashOffset"
                             class="stroke-success-500 transition-all duration-700 ease-out" />
                     </svg>
@@ -107,11 +107,11 @@ watch(() => record.value, () => fetchRecord(), { immediate: true })
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
                         <USkeleton v-if="loading" class="h-7 w-12" />
 
-                        <span v-else class="text-2xl font-bold text-highlighted">
+                        <span v-else class="md:text-2xl text-xl font-bold text-highlighted">
                             {{ percentPaid }}%
                         </span>
 
-                        <span class="text-[10px] font-semibold uppercase tracking-wide text-muted">
+                        <span class="md:text-[10px] text-[8px] font-semibold uppercase tracking-wide text-muted">
                             Paid
                         </span>
                     </div>
@@ -131,21 +131,21 @@ watch(() => record.value, () => fetchRecord(), { immediate: true })
             </div>
 
             <!-- Stat tiles -->
-            <div class="grid w-full flex-1 grid-cols-1 gap-3 md:grid-cols-3">
-                <div v-for="tile in tiles" :key="tile.key" class="rounded-xl border-2 p-4 text-center"
+            <div class="grid w-full flex-1 grid-cols-2 gap-3 md:grid-cols-3">
+                <div v-for="tile in tiles" :key="tile.key" class="rounded-xl border-2 p-4 text-center last:col-span-2 last:md:col-span-1"
                     :class="tile.border"
                 >
                     <USkeleton v-if="loading" class="mx-auto h-7 w-20" />
 
-                    <h2 v-else class="text-2xl font-bold" :class="tile.text">
+                    <h2 v-else class="md:text-2xl font-bold" :class="tile.text">
                         {{ tile.value }}
                     </h2>
 
-                    <p class="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+                    <p class="md:mt-1 md:text-[11px] text-[8px] font-semibold uppercase tracking-wide text-muted">
                         {{ tile.key }}
                     </p>
                 </div>
             </div>
         </div>
-    </UCard>
+    </div>
 </template>

@@ -7,7 +7,7 @@
                         <h3 class="font-semibold text-lg">
                             Behaviours
                         </h3>
-                        <p class="text-sm text-muted">
+                        <p class="text-xs-base text-muted">
                             Behaviour notes and observations recorded for this student.
                         </p>
                     </div>

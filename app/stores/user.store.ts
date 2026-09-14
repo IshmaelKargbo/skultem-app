@@ -29,6 +29,14 @@ export const useUserStore = defineStore('user', {
     resetPassword(payload: ResetPasswordDto) {
       return UserApi().resetPassword(payload)
     },
+    async adminResetPassword(id: string) {
+      const res = await UserApi().adminResetPassword(id)
+      if (res) {
+        const idx = this.records.findIndex(r => r.id === id)
+        if (idx !== -1) this.records[idx] = res.user
+      }
+      return res
+    },
     assignRole(payload: AssignRoleDTO) {
       return UserApi().assign(payload)
     },

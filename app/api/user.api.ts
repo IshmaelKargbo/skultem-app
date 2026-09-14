@@ -50,6 +50,16 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    // Admin issuing a staff member a new temporary password - see AdminResetPasswordResult for
+    // why the response carries the plaintext password back to the caller.
+    adminResetPassword: async (id: string) => {
+      try {
+        const res = await $api(`/user/${id}/reset-password`, { method: 'POST' }) as any
+        return res.data as AdminResetPasswordResult
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     assign: async (payload: AssignRoleDTO) => {
       try {
         return await $api('/user/assign', {
