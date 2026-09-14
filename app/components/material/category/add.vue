@@ -1,15 +1,12 @@
 <template>
     <USlideover :dismissible="false" v-model:open="open">
         <!-- Trigger -->
-        <UButton
-            v-if="isEdit"
-            :icon="EDIT_ICON"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            @click="open = true"
-        />
-        <UButton v-else color="primary" label="Add Material Category" icon="prime:plus" @click="open = true" />
+        <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
+        <div v-else>
+            <UButton color="primary" class="md:hidden" icon="prime:plus" @click="open = true" />
+            <UButton color="primary" class="hidden md:flex" label="Add Material Category" icon="prime:plus"
+                @click="open = true" />
+        </div>
 
         <!-- Header -->
         <template #header>
@@ -23,11 +20,8 @@
         <template #body>
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
                 <UFormField label="Name" name="name" required>
-                    <UInput
-                        v-model="state.name"
-                        placeholder="e.g. Stationery, Laboratory, Cleaning Supplies"
-                        :disabled="isLoading"
-                    />
+                    <UInput v-model="state.name" placeholder="e.g. Stationery, Laboratory, Cleaning Supplies"
+                        :disabled="isLoading" />
                     <template #help>
                         <p class="text-xs text-muted">
                             Enter a clear category name for school materials.
@@ -36,12 +30,8 @@
                 </UFormField>
 
                 <UFormField label="Description" name="description" required>
-                    <UTextarea
-                        v-model="state.description"
-                        placeholder="Describe what items belong to this category"
-                        :disabled="isLoading"
-                        :rows="3"
-                    />
+                    <UTextarea v-model="state.description" placeholder="Describe what items belong to this category"
+                        :disabled="isLoading" :rows="3" />
                     <template #help>
                         <p class="text-xs text-muted">
                             Briefly explain what this category includes.

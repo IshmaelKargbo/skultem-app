@@ -113,6 +113,13 @@ export type CreatePeriodDTO = {
     session: string
 }
 
+// Adjusts one period's own start/end time - scoped to the single class session that period
+// belongs to, so it never touches any other class's timetable.
+export type UpdatePeriodDTO = {
+    startTime: string
+    endTime: string
+}
+
 export type CreateTimetableDTO = {
     subject: string
     period: string

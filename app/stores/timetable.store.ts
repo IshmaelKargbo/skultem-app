@@ -173,6 +173,16 @@ export const useTimetableStore = defineStore('timetable', {
       await TimetableApi().deletePeriod(id)
       this.periods.pop()
     },
+    // Only the edited period's own row changes - it belongs to a single class session, so this
+    // can never leak into another class's timetable.
+    async updatePeriod(id: string, payload: UpdatePeriodDTO) {
+      const res = await TimetableApi().updatePeriod(id, payload)
+      const updated = (res as any)?.data
+      if (!updated) return
+
+      const i = this.periods.findIndex(p => p.id === id)
+      if (i !== -1) this.periods[i] = { ...this.periods[i], ...updated }
+    },
     async deleteRoom(id: string, index: string) {
       await TimetableApi().deleteRoom(id)
       this.rooms.splice(Number.parseInt(index), 1)

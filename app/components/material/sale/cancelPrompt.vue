@@ -55,9 +55,9 @@ async function cancel() {
         </div>
 
         <template #footer>
-          <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <UButton label="Keep Sale" variant="soft" :disabled="loading" @click="close" />
-            <UButton label="Cancel Sale" color="error" :loading="loading" @click="cancel" />
+          <div class="flex gap-2">
+            <UButton class="w-full flex items-center justify-center" label="Keep Sale" variant="soft" :disabled="loading" @click="close" />
+            <UButton class="w-full flex items-center justify-center" label="Cancel Sale" color="error" :loading="loading" @click="cancel" />
           </div>
         </template>
       </UCard>

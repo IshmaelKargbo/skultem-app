@@ -1,27 +1,28 @@
 <template>
-  <UCard>
+  <UCard :ui="{
+    body: 'p-0 sm:p-0'
+  }">
     <template #header>
-      <div class="flex items-start gap-3">
-        <UIcon name="i-lucide-layers" class="size-5 text-primary" />
+      <div class="flex items-center gap-3">
+        <UIcon name="i-lucide-layers" class="size-6 text-primary" />
         <div>
           <h3 class="font-semibold">Level Assignments</h3>
-          <p class="text-sm text-muted hidden md:block">
+          <p class="text-xs-base text-muted hidden md:block">
             Pick which timing template each level's classes follow
           </p>
         </div>
       </div>
     </template>
 
-    <div class="space-y-3">
       <div v-for="level in SCHOOL_LEVEL_OPTIONS" :key="level.value"
-        class="flex items-center justify-between gap-3 rounded-2xl border border-default px-4 py-3">
+        class="flex items-center justify-between gap-3 border-b last:border-0 border-default py-3 px-5">
         <p class="font-medium">{{ level.label }}</p>
 
-        <USelectMenu :model-value="assignedId(level.value)" @update:model-value="(id: string) => assign(level.value, id)"
-          value-key="value" :items="templateOptions" :loading="loading" :placeholder="`Not set - uses ${defaultTiming?.name || 'Default'}`"
-          class="w-56" />
+        <USelectMenu :model-value="assignedId(level.value)"
+          @update:model-value="(id: string) => assign(level.value, id)" value-key="value" size="md"
+          :items="templateOptions" :loading="loading"
+          :placeholder="`Not set - uses ${defaultTiming?.name || 'Default'}`" class="w-56" />
       </div>
-    </div>
   </UCard>
 </template>
 

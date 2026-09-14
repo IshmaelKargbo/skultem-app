@@ -99,7 +99,7 @@ definePageMeta({
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex-1 flex space-x-3">
+                    <div class="flex-1 flex space-x-3 items-center">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by student or material" />
                         <MaterialSupplyGive />
                     </div>
@@ -178,10 +178,88 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div class="p-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
-                <div v-if="loading" class="space-y-4">
+                <template v-if="loading">
+                    <div v-for="i in size" :key="i"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="space-y-2">
+                                <USkeleton class="h-4 w-32" />
+                                <USkeleton class="h-3 w-28" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex justify-end">
+                                    <USkeleton class="h-4 w-16" />
+                                </div>
+                                <div class="flex justify-end">
+                                    <USkeleton class="h-6 w-24 rounded-full" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Records -->
+                <template v-else-if="data?.length">
+                    <div v-for="item in data" :key="item.id"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-gray-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 space-y-1">
+                                <h3 class="truncate text-sm font-semibold">
+                                    {{ item.student ? `${item.student.givenNames} ${item.student.familyName}` :
+                                        item.customerName }}
+                                </h3>
+                                <div class="flex items-center gap-2 text-xs text-muted">
+                                    <p class="truncate">{{ item.material.name }}</p>
+                                    <p>·</p>
+                                    <p>{{ item.student ? item.student.admissionNumber : 'Walk-in' }}</p>
+                                </div>
+                            </div>
+
+                            <div class="shrink-0 space-y-1 text-right">
+                                <p class="text-sm font-bold">{{ item.collectedQty }} / {{ item.qty }}</p>
+                                <UBadge size="sm" variant="soft" :color="item.status === 'COLLECTED' ? 'success' : 'warning'"
+                                    :icon="item.status === 'COLLECTED' ? 'i-lucide-check' : 'i-lucide-clock-3'"
+                                    :label="clean(item.status)" />
+                            </div>
+                        </div>
+
+                        <div class="mt-2 flex items-center justify-between">
+                            <p class="text-xs text-muted">
+                                {{ item.collectedOn ? formatDateTime(item.collectedOn) : 'Not collected yet' }}
+                            </p>
+
+                            <UBadge v-if="item.collectedQty >= item.qty" color="success" variant="soft" size="xs">
+                                Complete
+                            </UBadge>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty -->
+                <template v-else>
+                    <div class="flex flex-col items-center py-16">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+                            <UIcon name="ph:books-light" class="size-10 text-muted" />
+                        </div>
+
+                        <h3 class="mt-4 text-sm font-semibold">
+                            No supply found
+                        </h3>
+
+                        <p class="mt-1 text-sm text-muted">
+                            Material supply records will appear here.
+                        </p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Card view -->
+            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
+                <!-- Loading -->
+                <div v-if="loading" class="space-y-4 col-span-full">
                     <div v-for="i in 5" :key="i"
                         class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                         <div class="flex gap-3">
@@ -224,7 +302,7 @@ definePageMeta({
 
 
                 <!-- Cards -->
-                <div v-else class="space-y-3">
+                <template v-else>
                     <UCard v-for="item in data" :key="item.id" class="rounded-2xl border border-default shadow-sm"
                         :ui="{ body: 'p-4' }">
                         <div class="space-y-4">
@@ -359,14 +437,13 @@ definePageMeta({
                             </div>
                         </div>
                     </UCard>
-                </div>
+                </template>
 
             </div>
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
                     <Showing :meta="meta" />
-
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />
                 </div>

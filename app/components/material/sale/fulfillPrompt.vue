@@ -42,7 +42,7 @@ async function fulfill() {
 </script>
 
 <template>
-  <UModal v-model:open="open">
+  <UModal :dismissible="false" v-model:open="open">
     <template #content>
       <UCard>
         <template #header>
@@ -50,13 +50,8 @@ async function fulfill() {
         </template>
 
         <div class="space-y-4">
-          <UAlert
-            v-if="!hasEnoughStock"
-            color="warning"
-            variant="soft"
-            title="Not enough stock yet"
-            :description="`${sale.material.name} only has ${sale.material.inStock} in stock, but ${sale.quantity} is owed on this sale. Restock it first.`"
-          />
+          <UAlert v-if="!hasEnoughStock" color="warning" variant="soft" title="Not enough stock yet"
+            :description="`${sale.material.name} only has ${sale.material.inStock} in stock, but ${sale.quantity} is owed on this sale. Restock it first.`" />
 
           <p v-else class="text-sm text-muted">
             Hand over {{ sale.quantity }} {{ unitLabelMap[sale.material.unit] ?? sale.material.unit }} of
@@ -66,20 +61,17 @@ async function fulfill() {
           </p>
 
           <UFormField label="Note">
-            <UTextarea v-model="note" placeholder="Optional note" :rows="2" class="w-full" :disabled="!hasEnoughStock" />
+            <UTextarea v-model="note" placeholder="Optional note" :rows="2" class="w-full"
+              :disabled="!hasEnoughStock" />
           </UFormField>
         </div>
 
         <template #footer>
-          <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <UButton label="Cancel" variant="soft" :disabled="loading" @click="close" />
-            <UButton
-              label="Mark as Fulfilled"
-              :icon="FULFILL_ICON"
-              :loading="loading"
-              :disabled="!hasEnoughStock"
-              @click="fulfill"
-            />
+          <div class="flex gap-2">
+            <UButton class="w-full flex items-center justify-center" label="Cancel" variant="soft" :disabled="loading"
+              @click="close" />
+            <UButton class="w-full flex items-center justify-center" label="Mark as Fulfilled" :icon="FULFILL_ICON"
+              :loading="loading" :disabled="!hasEnoughStock" @click="fulfill" />
           </div>
         </template>
       </UCard>

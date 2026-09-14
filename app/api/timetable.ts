@@ -189,6 +189,17 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
+    // Adjusts one period's start/end time - only affects that period's own class session.
+    updatePeriod: async (id: string, payload: UpdatePeriodDTO) => {
+      try {
+        return await $api(`/timetable/period/${id}`, {
+          method: 'PATCH',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     deleteRoom: async (id: string) => {
       try {
         return await $api(`/timetable/room/${id}`, {

@@ -8,9 +8,6 @@ const { format } = useMoney()
 const { records: data, loading, meta, summary } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
-// filterValue, when present, makes the metric a shortcut into that status tab - "Paid, Not
-// Collected" has no dedicated tab button of its own, so this is the only way to reach it besides
-// typing the URL.
 const metrics = computed(() => [
     {
         label: 'Total Sales',
@@ -20,19 +17,10 @@ const metrics = computed(() => [
         isReady: !!summary.value
     },
     {
-        label: 'Awaiting Settlement',
-        value: summary.value?.pendingSettlement ?? 0,
-        icon: PENDING_ICON,
-        color: 'warning' as const,
-        isReady: !!summary.value,
-        filterValue: 'PENDING_SUPPLY'
-    },
-    {
-        label: 'Paid, Not Collected',
+        label: 'Not Collected',
         value: summary.value?.paidAwaitingPickup ?? 0,
         icon: 'i-lucide-bell-ring',
         color: 'info' as const,
-        subtle: 'Needs chasing',
         subtileColor: 'info' as const,
         isReady: !!summary.value,
         filterValue: 'PAID_PENDING'
@@ -80,10 +68,6 @@ function openCancel(sale: MaterialSale) {
     cancelModal.value = true
 }
 
-// 'PAID_PENDING' isn't a real MaterialSale.Status - it's a sentinel this page alone understands,
-// meaning "paid (fully or partially) but not yet collected". See fetchRecord(), which routes it to
-// the backend's dedicated paidPending filter instead of sending it as a status value the API (or
-// statusColorMap, keyed by a row's own real status) would never recognize.
 const statusTabs = [
     { label: 'All', value: '' },
     { label: 'Awaiting Settlement', value: 'PENDING_SUPPLY' },
@@ -129,10 +113,6 @@ function updateQuery(newQuery: Record<string, any>) {
     router.replace({ query: { ...route.query, ...newQuery } })
 }
 
-// `statusOverride`, when passed, is used in place of `status.value` - the status computed's
-// getter reads route.query.status, which router.replace() (see updateQuery) hasn't actually
-// updated yet the instant a tab click calls this synchronously afterwards. Without the override,
-// that reads the tab that was active *before* this click, one click behind.
 async function fetchRecord(statusOverride?: string) {
     const currentStatus = statusOverride !== undefined ? statusOverride : status.value
     const isPaidPending = currentStatus === 'PAID_PENDING'
@@ -173,8 +153,6 @@ function buyerName(sale: MaterialSale) {
     return sale.student ? `${sale.student.givenNames} ${sale.student.familyName}` : sale.customerName
 }
 
-// Money's already been collected but the item hasn't - flagged everywhere the row shows up
-// (not just the dedicated tab above), so it's never something you'd only notice by switching tabs.
 function isPaidAwaitingPickup(sale: MaterialSale) {
     return sale.status === 'PENDING_SUPPLY' && sale.paymentStatus !== 'UNPAID'
 }
@@ -197,9 +175,8 @@ definePageMeta({
 <template>
     <div class="px-4 md:px-6 space-y-4">
         <MaterialSectionNav />
-
         <!-- Summary -->
-        <div class="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
+        <div class="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4">
             <Metric
                 v-for="metric in metrics"
                 :key="metric.label"
@@ -315,9 +292,95 @@ definePageMeta({
                 </template>
             </UTable>
 
-            <!-- Mobile / Card view -->
-            <div class="p-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <!-- Mobile -->
+            <div v-if="view === 'table'" class="md:hidden">
+                <!-- Loading -->
+                <template v-if="loading">
+                    <div v-for="i in size" :key="i"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="space-y-2">
+                                <USkeleton class="h-4 w-32" />
+                                <USkeleton class="h-3 w-28" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex justify-end">
+                                    <USkeleton class="h-4 w-16" />
+                                </div>
+                                <div class="flex justify-end">
+                                    <USkeleton class="h-6 w-24 rounded-full" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Records -->
+                <template v-else-if="data?.length">
+                    <div v-for="item in data" :key="item.id"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 space-y-1">
+                                <h3 class="truncate text-sm font-semibold">{{ buyerName(item) }}</h3>
+                                <div class="flex items-center gap-2 text-xs text-muted">
+                                    <p class="truncate">{{ item.quantity }}× {{ item.material.name }}</p>
+                                    <p>·</p>
+                                    <p>{{ formatDate(item.createdAt) }}</p>
+                                </div>
+                            </div>
+
+                            <div class="shrink-0 space-y-1 text-right">
+                                <p class="text-sm font-bold">{{ format(item.totalAmount) }}</p>
+                                <div class="flex items-center justify-end gap-2">
+                                    <UIcon v-if="isPaidAwaitingPickup(item)" name="i-lucide-bell-ring"
+                                        class="size-4 text-info" title="Paid - not yet collected" />
+                                    <p class="text-sm font-bold" :class="item.balance > 0 ? 'text-error' : 'text-success'">
+                                        {{ item.balance > 0 ? format(item.balance) : clean(item.paymentStatus) }}
+                                    </p>
+                                    <UBadge size="sm" variant="soft" :color="statusColorMap[item.status]"
+                                        :label="item.status === 'PENDING_SUPPLY' ? 'Settle Later' : clean(item.status)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="item.status !== 'CANCELLED'" class="mt-2 flex items-center justify-between">
+                            <p class="text-xs text-muted">
+                                {{ item.student ? item.student.admissionNumber : 'Walk-in customer' }}
+                            </p>
+
+                            <div class="flex items-center gap-1">
+                                <UButton v-if="item.balance > 0" size="xs" variant="ghost" icon="i-lucide-hand-coins"
+                                    @click="openPayment(item)" />
+                                <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="success"
+                                    variant="ghost" :icon="FULFILL_ICON" @click="openFulfill(item)" />
+                                <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="error" variant="ghost"
+                                    :icon="CANCEL_ICON" @click="openCancel(item)" />
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty -->
+                <template v-else>
+                    <div class="flex flex-col items-center py-16">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+                            <UIcon :name="SALE_ICON" class="size-10 text-muted" />
+                        </div>
+
+                        <h3 class="mt-4 text-sm font-semibold">
+                            No sales found
+                        </h3>
+
+                        <p class="mt-1 text-sm text-muted">
+                            Material sales will appear here once recorded.
+                        </p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Card view -->
+            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
                 <div v-if="loading" class="space-y-4 col-span-full">
                     <div v-for="i in 5" :key="i"
                         class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
@@ -429,7 +492,7 @@ definePageMeta({
             <MaterialSaleCancelPrompt v-if="selected" v-model:open="cancelModal" :sale="selected" />
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
                     <Showing :meta="meta" />
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />

@@ -1,5 +1,5 @@
 <template>
-  <UCard>
+  <div class="border-b border-default p-4 last:border-0">
     <UForm
       :key="record.id"
       :schema="schema"
@@ -7,7 +7,7 @@
       @submit.prevent="submit"
       class="flex flex-col gap-4 lg:flex-row lg:items-end"
     >
-      <div class="grid flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="grid flex-1 gap-3 grid-cols-2 xl:grid-cols-3">
         <UFormField label="Room Name" name="name" required>
           <UInput :disabled="mode == 'created'" v-model="state.name" placeholder="e.g. Science Lab" class="w-full" />
         </UFormField>
@@ -16,22 +16,21 @@
           <UInput :disabled="mode == 'created'" v-model="state.roomNo" placeholder="e.g. A-101" class="w-full" />
         </UFormField>
 
-        <UFormField label="Description" name="description" required>
+        <UFormField label="Description" class="col-span-2 md:col-span-1" name="description" required>
           <UInput :disabled="mode == 'created'" v-model="state.description"
             placeholder="e.g. 2nd floor, 30-seat capacity" class="w-full" />
         </UFormField>
       </div>
-
       <div class="flex gap-1">
-        <UButton :loading="isLoading" type="submit" :icon="SAVE_ICON" v-if="canSave" variant="ghost" color="primary"
+        <UButton :loading="isLoading" size="md" type="submit" :icon="SAVE_ICON" v-if="canSave" variant="ghost" color="primary"
           square class="justify-center" />
-        <UButton @click="mode = 'edit'" v-if="mode == 'created'" :icon="EDIT_ICON" variant="ghost" color="warning"
+        <UButton @click="mode = 'edit'" size="md" v-if="mode == 'created'" :icon="EDIT_ICON" variant="ghost" color="warning"
           square class="justify-center" />
-        <UButton @click="removeRoom" :icon="DELETE_ICON" variant="ghost" color="error" square
+        <UButton @click="removeRoom" size="md" :icon="DELETE_ICON" variant="ghost" color="error" square
           class="justify-center" />
       </div>
     </UForm>
-  </UCard>
+  </div>
 </template>
 <script lang="ts" setup>
 import * as yup from 'yup'

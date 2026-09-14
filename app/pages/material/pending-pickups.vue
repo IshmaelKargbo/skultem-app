@@ -151,9 +151,86 @@ definePageMeta({
                 </template>
             </UTable>
 
-            <!-- Mobile / Card view -->
-            <div class="p-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <!-- Mobile -->
+            <div v-if="view === 'table'" class="md:hidden">
+                <!-- Loading -->
+                <template v-if="loading">
+                    <div v-for="i in size" :key="i"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="space-y-2">
+                                <USkeleton class="h-4 w-32" />
+                                <USkeleton class="h-3 w-28" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex justify-end">
+                                    <USkeleton class="h-4 w-16" />
+                                </div>
+                                <div class="flex justify-end">
+                                    <USkeleton class="h-6 w-24 rounded-full" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Records -->
+                <template v-else-if="data?.length">
+                    <div v-for="item in data" :key="`${item.source}-${item.id}`"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 space-y-1">
+                                <h3 class="truncate text-sm font-semibold">{{ item.buyerName }}</h3>
+                                <div class="flex items-center gap-2 text-xs text-muted">
+                                    <p class="truncate">{{ item.materialName }}</p>
+                                    <p>·</p>
+                                    <p>{{ item.admissionNumber || 'Walk-in' }}</p>
+                                </div>
+                            </div>
+
+                            <div class="shrink-0 space-y-1 text-right">
+                                <p class="text-sm font-bold">
+                                    {{ remaining(item) }}
+                                    <span v-if="item.collectedQuantity > 0" class="text-xs font-normal text-muted">
+                                        / {{ item.quantity }}
+                                    </span>
+                                </p>
+                                <div class="flex items-center justify-end gap-2">
+                                    <UBadge size="sm" variant="soft" :color="paymentStatusColorMap[item.paymentStatus] ?? 'neutral'"
+                                        :label="clean(item.paymentStatus)" />
+                                    <UBadge size="sm" variant="soft" :color="sourceColorMap[item.source]"
+                                        :label="sourceLabelMap[item.source]" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 flex items-center justify-between">
+                            <p class="text-xs text-muted">{{ formatDateTime(item.since) }}</p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty -->
+                <template v-else>
+                    <div class="flex flex-col items-center py-16">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+                            <UIcon :name="PENDING_PICKUP_ICON" class="size-10 text-muted" />
+                        </div>
+
+                        <h3 class="mt-4 text-sm font-semibold">
+                            Nothing pending
+                        </h3>
+
+                        <p class="mt-1 text-sm text-muted">
+                            Everyone's collected what they're owed.
+                        </p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Card view -->
+            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
                 <div v-if="loading" class="space-y-4 col-span-full">
                     <div v-for="i in 5" :key="i"
                         class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
@@ -224,7 +301,7 @@ definePageMeta({
             </div>
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
                     <Showing :meta="meta" />
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />

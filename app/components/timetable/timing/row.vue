@@ -1,33 +1,34 @@
 <template>
-  <UCard>
-    <div class="flex flex-col gap-4">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-          <UInput v-if="mode !== 'created'" v-model="state.name" placeholder="Template name" class="w-48" />
-          <h4 v-else class="font-semibold">{{ record.name }}</h4>
-          <UBadge v-if="record.isDefault" color="primary" variant="subtle" size="sm">Default</UBadge>
-        </div>
-
-        <div class="flex items-center gap-1">
-          <UButton v-if="mode === 'created'" size="sm" variant="ghost" color="warning" :icon="EDIT_ICON"
-            @click="mode = 'edit'" />
-          <UButton v-else size="sm" :loading="saving" :icon="SAVE_ICON" @click="save">Save</UButton>
-
-          <UButton v-if="mode === 'created' && !record.isDefault" size="sm" variant="ghost"
-            icon="i-lucide-star" title="Set as default" @click="setDefault" />
-
-          <UButton v-if="mode === 'created' && !record.isDefault" size="sm" variant="ghost" color="error"
-            :icon="DELETE_ICON" @click="confirmDelete = true" />
-        </div>
+  <div class="border-b last:border-0 border-default p-4 space-y-2">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-default pb-1">
+      <div class="flex items-center gap-2">
+        <UInput v-if="mode !== 'created'" v-model="state.name" placeholder="Template name" size="sm" class="w-48" />
+        <h4 v-else class="font-semibold">{{ record.name }}</h4>
+        <UBadge v-if="record.isDefault" color="primary" variant="subtle" size="sm">Default</UBadge>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <UFormField label="Starts">
-          <UInput :disabled="mode === 'created'" v-model="state.startTime" type="time" class="w-full" />
-        </UFormField>
-        <UFormField label="Ends">
-          <UInput :disabled="mode === 'created'" v-model="state.endTime" type="time" class="w-full" />
-        </UFormField>
+      <div class="flex items-center gap-1">
+        <UButton v-if="mode === 'created'" size="sm" variant="ghost" color="warning" :icon="EDIT_ICON"
+          @click="mode = 'edit'" />
+        <UButton v-else size="sm" :loading="saving" :icon="SAVE_ICON" @click="save">Save</UButton>
+
+        <UButton v-if="mode === 'created' && !record.isDefault" size="sm" variant="ghost" icon="i-lucide-star"
+          title="Set as default" @click="setDefault" />
+
+        <UButton v-if="mode === 'created' && !record.isDefault" size="sm" variant="ghost" color="error"
+          :icon="DELETE_ICON" @click="confirmDelete = true" />
+      </div>
+    </div>
+    <div class="flex flex-col gap-3">
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div class="grid grid-cols-2 col-span-3 gap-3">
+          <UFormField label="Starts" size="md">
+            <UInput :disabled="mode === 'created'" v-model="state.startTime" type="time" class="w-full" />
+          </UFormField>
+          <UFormField label="Ends" size="md">
+            <UInput :disabled="mode === 'created'" v-model="state.endTime" type="time" class="w-full" />
+          </UFormField>
+        </div>
         <UFormField label="Period (mins)">
           <UInputNumber :disabled="mode === 'created'" v-model="state.periodDuration" class="w-full" />
         </UFormField>
@@ -48,7 +49,7 @@
     </div>
 
     <TimetableTimingDeletePrompt v-model:open="confirmDelete" :timing-id="record.id" :timing-name="record.name" />
-  </UCard>
+  </div>
 </template>
 
 <script lang="ts" setup>

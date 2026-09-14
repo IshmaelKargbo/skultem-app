@@ -1,28 +1,30 @@
 <template>
   <div class="space-y-4">
-    <UCard>
+    <UCard :ui="{
+      body: 'p-0 sm:p-0'
+    }">
       <template #header>
-        <div class="flex justify-between">
-          <div class="flex items-start gap-3">
-            <UIcon name="i-lucide-clock-3" class="size-5 text-primary" />
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <UIcon name="i-lucide-clock-3" class="size-6 text-primary" />
             <div>
               <h3 class="font-semibold">Timing Templates</h3>
-              <p class="text-sm text-muted hidden md:block">
-                Set up school-day schedules - one Default, plus one per Level if they differ (e.g. Primary vs JSS/SSS)
-              </p>
+              <p class="text-xs-base text-muted">
+                Set up school-day schedules</p>
             </div>
           </div>
-
-          <UButton size="sm" icon="i-lucide-plus" @click="store.addTiming()">
-            Add Template
-          </UButton>
+          <div>
+            <UButton icon="i-lucide-plus" @click="store.addTiming()" class="hidden md:flex">Add Template</UButton>
+            <UButton icon="i-lucide-plus" @click="store.addTiming()" class="md:hidden" />
+          </div>
         </div>
       </template>
 
-      <div class="space-y-3">
+      <div>
         <USkeleton v-if="timingLoading" class="h-40 w-full bg-gray-200" />
         <template v-else>
-          <TimetableTimingRow v-for="(record, index) in timings" :key="record.id || `new-${index}`" :record="record" :index="index" />
+          <TimetableTimingRow v-for="(record, index) in timings" :key="record.id || `new-${index}`" :record="record"
+            :index="index" />
         </template>
       </div>
     </UCard>

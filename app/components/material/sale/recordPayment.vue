@@ -64,7 +64,7 @@ async function submit() {
 </script>
 
 <template>
-  <UModal v-model:open="open">
+  <UModal :dismissible="false" v-model:open="open">
     <template #content>
       <UCard>
         <template #header>
@@ -97,7 +97,7 @@ async function submit() {
         </div>
 
         <template #footer>
-          <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <div class="flex gap-2 justify-between sm:justify-end">
             <UButton label="Cancel" variant="soft" :disabled="loading" @click="close" />
             <UButton label="Record Payment" :loading="loading" @click="submit" />
           </div>

@@ -1,21 +1,21 @@
 <template>
-  <UCard>
+  <UCard class="md:sticky md:top-3">
     <template #header>
       <div class="flex justify-between">
-        <div class="flex items-start gap-3">
-          <UIcon name="i-lucide-calendar-days" class="size-5 text-primary" />
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-calendar-days" class="size-6 text-primary" />
           <div>
             <h3 class="font-semibold">Working Days</h3>
-            <p class="text-sm text-muted hidden md:block">
+            <p class="text-xs-base text-muted hidden md:block">
               Choose days classes are held, per timing template
             </p>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
-          <UButton v-if="mode != 'created'" size="sm" :loading="isLoading" label="Save" @click="save"
+          <UButton v-if="mode != 'created'" :loading="isLoading" @click="save" variant="ghost"
             :icon="SAVE_ICON" />
-          <UButton v-else size="sm" @click="mode = 'edit'" :icon="EDIT_ICON" label="Edit" color="warning" variant="outline" />
+          <UButton v-else @click="mode = 'edit'" :icon="EDIT_ICON" color="warning" variant="ghost" />
         </div>
       </div>
     </template>
@@ -29,7 +29,7 @@
     <template v-else>
       <UFormField label="Timing template" class="mb-4">
         <USelectMenu v-model="timingId" value-key="value" :items="templateOptions" :loading="timingLoading"
-          class="w-full sm:w-64" />
+          class="w-full" />
       </UFormField>
 
       <div v-if="loading" class="space-y-3">
@@ -37,12 +37,9 @@
       </div>
 
       <div v-else class="space-y-3">
-        <div
-          v-for="row in workingDays"
-          :key="row.day"
+        <div v-for="row in workingDays" :key="row.day"
           class="flex items-center justify-between rounded-2xl border border-default px-4 py-3"
-          :class="{ 'opacity-50': !row.state }"
-        >
+          :class="{ 'opacity-50': !row.state }">
           <div class="min-w-0">
             <p class="font-medium">
               {{ clean(row.day) }}

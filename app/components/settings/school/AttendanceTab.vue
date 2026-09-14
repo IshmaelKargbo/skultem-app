@@ -82,10 +82,18 @@ const props = defineProps<{
   locationConfigured: boolean
 }>()
 
-const { success, error: toastError } = useNotify()
+const { success, error: toastError, warning } = useNotify()
 
 const locating = ref(false)
 const locationMap = ref<{ panTo: (lat: number, lng: number) => void } | null>(null)
+
+// A GPS fix is normally accurate to well under 100m outdoors. Desktops/laptops have no GPS chip
+// and fall back to Wi-Fi/IP-based positioning, which can - especially somewhere with sparse
+// Wi-Fi-hotspot mapping - be off by hundreds of metres or more while still reporting "success".
+// That's exactly what silently saved a school location ~900m from its real one in practice: the
+// browser call succeeded, so nothing here flagged that the fix itself was untrustworthy. Warn
+// instead of saving quietly whenever the reported accuracy is this poor.
+const POOR_ACCURACY_THRESHOLD_METERS = 200
 
 // Self-contained (doesn't need anything from the page beyond the state prop above) - browser
 // geolocation, in-component only.
@@ -98,11 +106,19 @@ function useCurrentLocation() {
   locating.value = true
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      props.state.latitude = position.coords.latitude
-      props.state.longitude = position.coords.longitude
-      locationMap.value?.panTo(position.coords.latitude, position.coords.longitude)
+      const { latitude, longitude, accuracy } = position.coords
+      props.state.latitude = latitude
+      props.state.longitude = longitude
+      locationMap.value?.panTo(latitude, longitude)
       locating.value = false
-      success('Location captured.')
+
+      if (accuracy > POOR_ACCURACY_THRESHOLD_METERS) {
+        warning(`Location captured, but accuracy is poor (±${Math.round(accuracy)}m) - this is `
+          + 'common on desktops/laptops without GPS. Before saving, try again on a phone outdoors '
+          + 'or with a clear view of the sky, then check the pin lands on the right spot.')
+      } else {
+        success(`Location captured (±${Math.round(accuracy)}m accuracy).`)
+      }
     },
     (err) => {
       locating.value = false

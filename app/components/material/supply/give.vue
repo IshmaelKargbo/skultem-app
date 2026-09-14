@@ -1,11 +1,7 @@
 <template>
   <USlideover :dismissible="false" :open="open" @update:open="open = $event">
-    <UButton
-      color="primary"
-      label="Supply Material"
-      :icon="SUPPLY_ICON"
-      @click="open = true"
-    />
+    <UButton color="primary" class="hidden md:flex" label="Supply Material" :icon="SUPPLY_ICON" @click="open = true" />
+    <UButton color="primary" class="md:hidden" :icon="SUPPLY_ICON" @click="open = true" />
 
     <!-- Header -->
     <template #header>
@@ -17,29 +13,15 @@
 
     <!-- Body -->
     <template #body>
-      <UForm
-        ref="formRef"
-        :schema="schema"
-        :state="state"
-        class="space-y-4"
-        @submit="onSubmit"
-      >
+      <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
         <!-- Supply -->
         <UFormField label="Supply" name="supplyId" required>
-          <USelectMenu
-            v-model="state.supplyId"
-            :items="suppliesOptions"
-            value-key="value"
-            placeholder="Select supply"
-            class="w-full"
-          />
+          <USelectMenu v-model="state.supplyId" :items="suppliesOptions" value-key="value" placeholder="Select supply"
+            class="w-full" />
         </UFormField>
 
         <!-- Info -->
-        <div
-          v-if="selectedSupply"
-          class="p-3 rounded-lg bg-gray-50 text-sm space-y-1"
-        >
+        <div v-if="selectedSupply" class="p-3 rounded-lg bg-gray-50 text-sm space-y-1">
           <p><strong>Total:</strong> {{ selectedSupply.qty }}</p>
           <p><strong>Collected:</strong> {{ selectedSupply.collectedQty }}</p>
           <p>
@@ -50,23 +32,13 @@
 
         <!-- Quantity -->
         <UFormField label="Quantity to Collect" name="qty" required>
-          <UInput
-            v-model.number="state.qty"
-            type="number"
-            min="1"
-            :max="remainingQty"
-            placeholder="Enter quantity"
-            class="w-full"
-          />
+          <UInput v-model.number="state.qty" type="number" min="1" :max="remainingQty" placeholder="Enter quantity"
+            class="w-full" />
         </UFormField>
 
         <!-- Note -->
         <UFormField label="Note" name="note">
-          <UTextarea
-            v-model="state.note"
-            placeholder="Optional note"
-            :rows="3"
-          />
+          <UTextarea v-model="state.note" placeholder="Optional note" :rows="3" />
         </UFormField>
       </UForm>
     </template>
@@ -74,19 +46,9 @@
     <!-- Footer -->
     <template #footer>
       <div class="flex gap-3">
-        <UButton
-          label="Confirm"
-          icon="lucide:package-check"
-          :loading="isLoading"
-          @click="formRef?.submit()"
-        />
+        <UButton label="Confirm" icon="lucide:package-check" :loading="isLoading" @click="formRef?.submit()" />
 
-        <UButton
-          label="Cancel"
-          variant="outline"
-          :disabled="isLoading"
-          @click="close"
-        />
+        <UButton label="Cancel" variant="outline" :disabled="isLoading" @click="close" />
       </div>
     </template>
   </USlideover>

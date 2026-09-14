@@ -1,30 +1,19 @@
 <template>
     <div
         class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 relative overflow-hidden transition-colors duration-300">
-
         <!-- Grid -->
-        <div
-            class="absolute inset-0 pointer-events-none opacity-40 dark:opacity-10 bg-grid-light dark:bg-grid-dark" />
-
-        <!-- Glow -->
+        <div class="absolute inset-0 pointer-events-none opacity-40 dark:opacity-10 bg-grid-light dark:bg-grid-dark" />
         <div
             class="absolute -top-30 left-1/2 -translate-x-1/2 w-125 h-125 rounded-full bg-red-500/10 blur-3xl dark:bg-red-500/20" />
-
-        <div
-            class="absolute -bottom-25 -right-25 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
-
+        <div class="absolute -bottom-25 -right-25 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
         <!-- Content -->
-        <div
-            class="relative z-10 w-full max-w-lg px-6 animate-fade-up">
+        <div class="relative z-10 w-full max-w-lg px-6 animate-fade-up">
 
             <!-- Logo -->
             <div class="flex justify-center mb-6">
                 <div
                     class="w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg flex items-center justify-center">
-                    <img
-                        src="/icon.svg"
-                        alt="Skultem"
-                        class="w-8 h-8" />
+                    <img src="/icon.svg" alt="Skultem" class="w-8 h-8" />
                 </div>
             </div>
 
@@ -33,11 +22,9 @@
                 class="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-2xl dark:shadow-black/30 overflow-hidden">
 
                 <!-- Top Accent -->
-                <div
-                    class="h-1.5"
-                    :class="is404
-                        ? 'bg-linear-to-r from-orange-500 via-red-500 to-orange-500'
-                        : 'bg-linear-to-r from-red-500 via-pink-500 to-red-500'" />
+                <div class="h-1.5" :class="is404
+                    ? 'bg-linear-to-r from-orange-500 via-red-500 to-orange-500'
+                    : 'bg-linear-to-r from-red-500 via-pink-500 to-red-500'" />
 
                 <div class="p-8 text-center">
 
@@ -45,18 +32,14 @@
                     <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
 
                         <!-- Outer Ring -->
-                        <div
-                            class="absolute inset-0 rounded-full border-2 border-transparent animate-spin"
-                            :class="is404
-                                ? 'border-t-orange-500 border-r-orange-500'
-                                : 'border-t-red-500 border-r-red-500'" />
+                        <div class="absolute inset-0 rounded-full border-2 border-transparent animate-spin" :class="is404
+                            ? 'border-t-orange-500 border-r-orange-500'
+                            : 'border-t-red-500 border-r-red-500'" />
 
                         <!-- Inner Ring -->
-                        <div
-                            class="absolute inset-2 rounded-full border-2 border-dashed border-transparent"
-                            :class="is404
-                                ? 'border-b-orange-300 border-l-orange-300'
-                                : 'border-b-red-300 border-l-red-300'"
+                        <div class="absolute inset-2 rounded-full border-2 border-dashed border-transparent" :class="is404
+                            ? 'border-b-orange-300 border-l-orange-300'
+                            : 'border-b-red-300 border-l-red-300'"
                             style="animation: spin 2.4s linear infinite reverse;" />
 
                         <!-- Center -->
@@ -71,11 +54,7 @@
                     </div>
 
                     <!-- Badge -->
-                    <UBadge
-                        color="error"
-                        variant="soft"
-                        size="sm"
-                        class="tracking-wide mb-5">
+                    <UBadge color="error" variant="soft" size="sm" class="tracking-wide mb-5">
 
                         {{ error.statusCode }}
                         {{ is404 ? 'Not Found' : 'Application Error' }}
@@ -84,8 +63,7 @@
                     <!-- Text -->
                     <div class="space-y-3">
 
-                        <h1
-                            class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
 
                             {{ is404
                                 ? 'School Not Found'
@@ -105,8 +83,7 @@
                     </div>
 
                     <!-- Error Details -->
-                    <div
-                        v-if="error.message"
+                    <div v-if="error.message"
                         class="mt-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/50 p-4 text-left">
 
                         <div
@@ -116,8 +93,7 @@
                             Error Details
                         </div>
 
-                        <p
-                            class="text-sm text-gray-600 dark:text-gray-300 wrap-break-word">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 wrap-break-word">
                             {{ error.message }}
                         </p>
                     </div>
@@ -125,18 +101,11 @@
                     <!-- Actions -->
                     <div class="flex flex-wrap justify-center gap-3 mt-8">
 
-                        <UButton
-                            color="neutral"
-                            variant="soft"
-                            icon="lucide:house"
-                            to="/">
+                        <UButton color="neutral" variant="soft" icon="lucide:house" to="/">
                             Back Home
                         </UButton>
 
-                        <UButton
-                            color="error"
-                            icon="lucide:refresh-cw"
-                            @click="handleError">
+                        <UButton color="error" icon="lucide:refresh-cw" @click="handleError">
 
                             Try Again
                         </UButton>
@@ -144,11 +113,9 @@
                     </div>
 
                     <!-- Footer -->
-                    <div
-                        class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+                    <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
 
-                        <p
-                            class="text-xs text-gray-500 dark:text-gray-400">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
                             Skultem School Management Platform
                         </p>
                     </div>

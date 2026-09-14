@@ -11,6 +11,7 @@ const day = ref<string | undefined>()
 const period = ref<string | undefined>()
 const index = ref<string | undefined>()
 const deleteModal = ref(false)
+const editModal = ref(false)
 const subjectModal = ref(false)
 const selectPeriod = ref<Period>()
 const selectedSubject = ref<any>({
@@ -89,6 +90,11 @@ function addSubject(periodItem: Period, dayIndex: number) {
 function deletePeriodRecord(periodItem: Period) {
   selectPeriod.value = periodItem
   deleteModal.value = true
+}
+
+function editPeriodRecord(periodItem: Period) {
+  selectPeriod.value = periodItem
+  editModal.value = true
 }
 </script>
 
@@ -174,14 +180,24 @@ function deletePeriodRecord(periodItem: Period) {
             </p>
           </div>
 
-          <UButton
-            v-if="isAdmin && periodItem.id === periods[periods.length - 1]?.id"
-            :icon="DELETE_ICON"
-            size="xs"
-            color="error"
-            variant="ghost"
-            @click="deletePeriodRecord(periodItem)"
-          />
+          <div v-if="isAdmin" class="flex items-center gap-1">
+            <UButton
+              icon="i-lucide-pencil"
+              size="xs"
+              variant="ghost"
+              title="Adjust time"
+              @click="editPeriodRecord(periodItem)"
+            />
+
+            <UButton
+              v-if="periodItem.id === periods[periods.length - 1]?.id"
+              :icon="DELETE_ICON"
+              size="xs"
+              color="error"
+              variant="ghost"
+              @click="deletePeriodRecord(periodItem)"
+            />
+          </div>
         </div>
 
         <div
@@ -296,14 +312,24 @@ function deletePeriodRecord(periodItem: Period) {
                     {{ periodItem.name }}
                   </h4>
 
-                  <UButton
-                    v-if="pIndex === periods.length - 1 && isAdmin"
-                    :icon="DELETE_ICON"
-                    variant="ghost"
-                    color="error"
-                    size="xs"
-                    @click="deletePeriodRecord(periodItem)"
-                  />
+                  <div v-if="isAdmin" class="flex items-center gap-1">
+                    <UButton
+                      icon="i-lucide-pencil"
+                      variant="ghost"
+                      size="xs"
+                      title="Adjust time"
+                      @click="editPeriodRecord(periodItem)"
+                    />
+
+                    <UButton
+                      v-if="pIndex === periods.length - 1"
+                      :icon="DELETE_ICON"
+                      variant="ghost"
+                      color="error"
+                      size="xs"
+                      @click="deletePeriodRecord(periodItem)"
+                    />
+                  </div>
                 </div>
 
                 <p class="mt-1 flex items-center gap-1 text-xs text-muted">
@@ -413,5 +439,10 @@ function deletePeriodRecord(periodItem: Period) {
     v-model:open="deleteModal"
     :period-id="selectPeriod?.id || ''"
     :period-name="selectPeriod?.name || ''"
+  />
+  <TimetableEditPrompt
+    v-if="selectPeriod"
+    v-model:open="editModal"
+    :period="selectPeriod"
   />
 </template>

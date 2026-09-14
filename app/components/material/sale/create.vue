@@ -31,10 +31,6 @@ function defaultState() {
         amountPaid: 0,
         paymentMethod: '',
         note: '',
-        // Whether the buyer is taking the item away right now - independent of stock: someone can
-        // pay today and still ask to collect later even for something sitting on the shelf. Only
-        // matters when there's actually stock to hand over (see isPreSale) - out of stock is
-        // always "collect later" regardless of this.
         collectNow: true
     }
 }
@@ -52,8 +48,6 @@ const materialOptions = computed(() =>
 
 const selectedMaterial = computed(() => materials.value.find(m => m.id === state.materialId))
 
-// Pre-fill from the material's catalog price so staff aren't re-typing (and risking a typo on)
-// the same price every time it's sold - still just a starting point, editable below.
 watch(() => state.materialId, () => {
     if (selectedMaterial.value) state.unitPrice = Number(selectedMaterial.value.price || 0)
 })
@@ -62,16 +56,11 @@ const totalAmount = computed(() => Number(state.quantity || 0) * Number(state.un
 
 const balance = computed(() => Math.max(0, totalAmount.value - Number(state.amountPaid || 0)))
 
-// Not enough on the shelf right now -> this will be recorded as a pre-sale ("settle later")
-// instead of handing the item over immediately.
 const isPreSale = computed(() => {
     if (!selectedMaterial.value) return false
     return Number(state.quantity || 0) > Number(selectedMaterial.value.inStock)
 })
 
-// Handing over the item requires the balance to actually be zero - a partial payment should never
-// leave with the merchandise no matter how eager the buyer is to "collect now". Backend enforces
-// this independently too; this just keeps the toggle from offering a choice that isn't real.
 const isFullyPaid = computed(() => totalAmount.value > 0 && Number(state.amountPaid || 0) >= totalAmount.value)
 
 watch(isFullyPaid, (fullyPaid) => {
@@ -155,10 +144,6 @@ async function onSubmit() {
     }
 }
 
-// This button+slideover sits unconditionally in the sales list's header, so it mounts (and this
-// setup() runs) on every visit to the page - fetching the full material catalog here unconditionally
-// meant every page load paid for it before anyone even asked to record a sale. Load it only when
-// the slideover is actually opened, and only once.
 watch(open, (isOpen) => {
     if (isOpen && !materials.value.length) materialStore.fetchAll(1, 0)
 })
@@ -166,7 +151,8 @@ watch(open, (isOpen) => {
 
 <template>
     <USlideover :dismissible="false" :open="open" @update:open="open = $event">
-        <UButton color="primary" label="New Sale" :icon="SALE_ICON" @click="open = true" />
+        <UButton color="primary" class="hidden md:flex" label="New Sale" :icon="SALE_ICON" @click="open = true" />
+        <UButton color="primary" class="md:hidden" :icon="SALE_ICON" @click="open = true" />
 
         <!-- Header -->
         <template #header>

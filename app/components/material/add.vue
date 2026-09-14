@@ -77,24 +77,17 @@ const onSubmit = async (event: FormSubmitEvent<MaterialForm>) => {
     }
 }
 
-// Every material row renders its own instance of this component (for its "edit" trigger), plus
-// one more for the header's "Add" button - all fetching the same unpaged category list purely to
-// populate this form's dropdown. Only fetch if nothing's loaded yet, instead of once per instance.
 onMounted(() => {
     if (!records.value.length) store.fetchAllCategory(0, 0)
 })
 </script>
 <template>
     <USlideover :dismissible="false" v-model:open="open">
-        <UButton
-            v-if="isEdit"
-            :icon="EDIT_ICON"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            @click="open = true"
-        />
-        <UButton v-else color="primary" label="Add Material" icon="prime:plus" @click="open = true" />
+        <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
+        <div v-else>
+            <UButton color="primary" class="md:hidden" icon="prime:plus" @click="open = true" />
+            <UButton color="primary" class="hidden md:flex" label="Add Material" icon="prime:plus" @click="open = true" />
+        </div>
         <template #header>
             <div class="flex justify-between w-full items-center">
                 <p class="text-lg font-semibold">{{ isEdit ? 'Edit Material' : 'Add Material' }}</p>

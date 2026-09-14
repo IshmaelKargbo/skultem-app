@@ -99,7 +99,7 @@ definePageMeta({
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex flex-1 space-x-3">
+                    <div class="flex flex-1 space-x-3 items-center">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" />
                         <MaterialCategoryAdd />
                     </div>
@@ -170,9 +170,74 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div class="p-4" :class="view === 'table' ? 'md:hidden' : ''">
+            <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
-                <div v-if="loading" class="space-y-4">
+                <template v-if="loading">
+                    <div v-for="i in size" :key="i"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 space-y-2">
+                                <USkeleton class="h-4 w-32" />
+                                <USkeleton class="h-3 w-40" />
+                            </div>
+
+                            <div class="flex gap-1">
+                                <USkeleton class="h-7 w-7 rounded-full" />
+                                <USkeleton class="h-7 w-7 rounded-full" />
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Records -->
+                <template v-else-if="data?.length">
+                    <div v-for="item in data" :key="item.id"
+                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 space-y-1">
+                                <h3 class="truncate text-sm font-semibold">
+                                    {{ item.name }}
+                                </h3>
+                                <p class="truncate text-xs text-muted">
+                                    {{ item.description || 'No description available.' }}
+                                </p>
+                            </div>
+
+                            <div class="flex shrink-0 items-center gap-1">
+                                <MaterialCategoryAdd :category="item" />
+                                <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
+                                    @click="remove(item)" />
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty -->
+                <template v-else>
+                    <div class="flex flex-col items-center py-16">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+                            <UIcon name="lucide:folder-open" class="size-10 text-muted" />
+                        </div>
+
+                        <h3 class="mt-4 text-sm font-semibold">
+                            No categories found
+                        </h3>
+
+                        <p class="mt-1 text-sm text-muted">
+                            Create categories to organize your school materials better.
+                        </p>
+
+                        <UButton class="mt-6 rounded-full px-5" icon="i-lucide-plus" size="sm">
+                            Add Category
+                        </UButton>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Card view -->
+            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
+                <!-- Loading -->
+                <template v-if="loading">
                     <div v-for="i in 5" :key="i"
                         class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
                         <div class="flex gap-3">
@@ -190,11 +255,11 @@ definePageMeta({
                             </div>
                         </div>
                     </div>
-                </div>
+                </template>
 
                 <!-- Empty -->
                 <div v-else-if="!data?.length"
-                    class="flex min-h-[60vh] flex-col items-center justify-center rounded-4xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
+                    class="col-span-full flex min-h-[60vh] flex-col items-center justify-center rounded-4xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
                     <div
                         class="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10">
                         <UIcon name="lucide:folder-open" class="text-5xl text-primary-500" />
@@ -214,7 +279,7 @@ definePageMeta({
                 </div>
 
                 <!-- Cards -->
-                <div v-else class="grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
+                <template v-else>
                     <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }">
                         <div class=" gap-3">
                             <div class="flex items-center gap-3 border-b border-gray-200 p-3 dark:border-neutral-800">
@@ -249,20 +314,15 @@ definePageMeta({
                             </div>
                         </div>
                     </UCard>
-                </div>
+                </template>
             </div>
 
-            <MaterialCategoryDeletePrompt
-                v-if="selected"
-                v-model:open="deleteModal"
-                :category-id="selected.id"
-                :category-name="selected.name"
-            />
+            <MaterialCategoryDeletePrompt v-if="selected" v-model:open="deleteModal" :category-id="selected.id"
+                :category-name="selected.name" />
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
                     <Showing :meta="meta" />
-
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />
                 </div>
