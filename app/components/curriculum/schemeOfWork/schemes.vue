@@ -87,6 +87,11 @@ const progress = computed<string>({
 })
 
 const hasFilters = computed(() => !!(subjectId.value || sessionId.value || termId.value || progress.value))
+const filterState = ref(false)
+
+function toggleFilter() {
+    filterState.value = !filterState.value
+}
 
 function updateQuery(newQuery: Record<string, any>) {
     router.replace({ query: { ...route.query, ...newQuery } })
@@ -169,9 +174,12 @@ onMounted(() => {
                             {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of                            work.' }}
                         </p>
                     </div>
-                    <div>
+                    <div class="flex items-center gap-2">
                         <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                             :total="meta.total" show-edges />
+
+                        <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
+                            :color="!filterState ? 'info' : 'error'" class="md:hidden" />
                     </div>
                 </div>
             </template>
@@ -179,8 +187,8 @@ onMounted(() => {
             <UAlert v-if="fetchError" color="error" variant="soft" icon="i-lucide-alert-circle"
                 title="Couldn't load schemes" :description="fetchError" />
 
-            <!-- Filters -->
-            <div class="grid gap-2 sm:grid-cols-2">
+            <!-- Filters (desktop) -->
+            <div class="hidden gap-2 sm:grid-cols-2 md:grid">
                 <USelectMenu v-model="subjectId" :items="subjectOptions" :loading="loadingFilters" value-key="value"
                     label-key="label" :icon="SUBJECT_ICON" placeholder="All subjects" class="w-full" />
 
@@ -197,6 +205,24 @@ onMounted(() => {
                     <UButton v-if="hasFilters" variant="outline" color="neutral" icon="i-lucide-x" label="Clear filters"
                         @click="clearFilters" />
                 </div>
+            </div>
+
+            <!-- Filters (mobile) -->
+            <div v-if="filterState" class="grid gap-2 sm:grid-cols-2 md:hidden">
+                <USelectMenu v-model="subjectId" :items="subjectOptions" :loading="loadingFilters" value-key="value"
+                    label-key="label" :icon="SUBJECT_ICON" placeholder="All subjects" class="w-full" />
+
+                <USelectMenu v-model="sessionId" :items="classOptions" :loading="loadingFilters" value-key="value"
+                    label-key="label" :icon="CLASS_ICON" placeholder="All classes" class="w-full" />
+
+                <USelectMenu v-model="termId" :items="terms" :loading="loadingFilters" value-key="value"
+                    label-key="label" :icon="CALENDAR_ICON" placeholder="All terms" class="w-full" />
+
+                <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label"
+                    icon="i-lucide-activity" placeholder="All statuses" class="w-full" />
+
+                <UButton v-if="hasFilters" variant="outline" color="neutral" icon="i-lucide-x" label="Clear filters"
+                    class="col-span-2" block @click="clearFilters" />
             </div>
 
             <NuxtLink v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
