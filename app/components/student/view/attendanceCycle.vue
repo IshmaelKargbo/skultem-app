@@ -288,17 +288,17 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                     </div>
                 </div>
             </div>
-        </div class="md:border border-default md:p-4 md:rounded-2xl">
+        </div>
 
         <!-- Calendar -->
-        <div :ui="{ body: 'p-0 sm:p-0' }">
+        <div class="md:border border-default md:p-4 md:rounded-2xl">
             <div class="flex items-center justify-between border-b border-default px-4 py-3">
                 <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-chevron-left"
                     :label="prevMonthLabel" @click="goPrevMonth" />
 
                 <div class="flex items-center gap-2 text-sm font-semibold text-highlighted">
                     <UIcon name="i-lucide-calendar" class="size-4 text-primary" />
-                    {{ formatDate(monthLabel) }}
+                    {{ monthLabel }}
                 </div>
 
                 <UButton variant="ghost" color="neutral" size="sm" trailing-icon="i-lucide-chevron-right"
