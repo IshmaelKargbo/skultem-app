@@ -611,6 +611,18 @@ export function formatDateString(dateStr: string): string {
     return date.toDateString()
 }
 
+// For a field that's a whole-day concept (e.g. CalendarEvent start/end - the add form is a bare
+// date picker, no time-of-day) but is typed/stored as an Instant rather than a plain date: the
+// backend records it as UTC midnight of the day someone picked, so the UTC date portion of that
+// ISO string is always the actual day, regardless of anyone's timezone at creation or view time.
+// Slicing that out and formatting it as a plain date (rather than letting formatDate re-parse the
+// full instant, which would shift by the viewer's local time-of-day) keeps the displayed day
+// pinned to what was actually picked.
+export function formatWholeDayInstant(dateStr: string): string {
+    if (dateStr == "" || dateStr == null) return ""
+    return formatDate(dateStr.slice(0, 10))
+}
+
 export function formatDateTime(dateStr: string): string {
     // Unlike formatDate, this had no guard - new Date(null) resolves to the epoch, so a
     // legitimately-unset date (e.g. a material that's never been restocked) rendered as

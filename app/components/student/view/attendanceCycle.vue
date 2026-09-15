@@ -195,6 +195,18 @@ async function fetchMonth() {
     loading.value = false
 }
 
+// Events/holidays are whole-day concepts (the add form is a bare date picker, no time-of-day) -
+// the backend stores them as an Instant at UTC midnight of the selected day, so the UTC date
+// portion of that ISO string is always the actual day someone picked, regardless of their own
+// timezone at creation time. Reading the value with `new Date(entry.startDate)` and then local
+// getters (as dateKey() does) would instead reinterpret that UTC midnight as local time, rolling
+// it back a day for any viewer west of UTC - so anchor to local midnight from the UTC date part
+// instead of the instant itself.
+function eventDayBoundary(iso: string): Date {
+    const [year, month, day] = iso.slice(0, 10).split('-').map(Number)
+    return new Date(year!, month! - 1, day!)
+}
+
 async function fetchEvents() {
     eventsByDate.value = {}
 
@@ -204,8 +216,8 @@ async function fetchEvents() {
         const map: Record<string, CalendarEntry[]> = {}
 
         for (const entry of entries) {
-            const start = new Date(entry.startDate)
-            const end = new Date(entry.endDate)
+            const start = eventDayBoundary(entry.startDate)
+            const end = eventDayBoundary(entry.endDate)
             if (end < cursor.value || start > monthEnd.value) continue
 
             const from = start < cursor.value ? cursor.value : start

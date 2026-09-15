@@ -110,8 +110,8 @@ function remove(entry: CalendarEntry) {
             {{ row.original.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
           </UBadge>
           <p class="text-sm text-muted">
-            {{ formatDate(row.original.startDate) }}
-            <template v-if="row.original.endDate !== row.original.startDate"> — {{ formatDate(row.original.endDate)
+            {{ formatWholeDayInstant(row.original.startDate) }}
+            <template v-if="row.original.endDate !== row.original.startDate"> — {{ formatWholeDayInstant(row.original.endDate)
               }}</template>
           </p>
         </template>
@@ -167,8 +167,8 @@ function remove(entry: CalendarEntry) {
               <p v-if="entry.location" class="text-sm text-muted">{{ entry.location }}</p>
               <p>-</p>
               <p class="text-sm text-muted">
-                {{ formatDate(entry.startDate) }}
-                <template v-if="entry.endDate !== entry.startDate"> — {{ formatDate(entry.endDate) }}</template>
+                {{ formatWholeDayInstant(entry.startDate) }}
+                <template v-if="entry.endDate !== entry.startDate"> — {{ formatWholeDayInstant(entry.endDate) }}</template>
               </p>
             </div>
 
