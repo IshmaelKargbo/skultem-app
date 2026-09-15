@@ -164,23 +164,19 @@ onMounted(() => {
     <div class="xl:col-span-2">
         <UCard :ui="{ body: 'space-y-3' }">
             <template #header>
-                <div class="flex flex-col md:flex-row space-y-2 md:items-center md:justify-between">
+                <div class="flex items-center justify-between gap-2">
                     <div>
                         <h3 class="font-semibold">
                             {{ props.mine ? 'My Schemes' : 'Recent Schemes' }}
                         </h3>
 
                         <p class="text-xs-base text-muted">
-                            {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of                            work.' }}
+                            {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of work.' }}
                         </p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                            :total="meta.total" show-edges />
 
-                        <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
-                            :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-                    </div>
+                    <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
+                        :color="!filterState ? 'info' : 'error'" class="md:hidden" />
                 </div>
             </template>
 
@@ -261,10 +257,19 @@ onMounted(() => {
                     </h4>
 
                     <p class="mt-1 text-sm text-muted">
-                        {{ hasFilters ? 'Try clearing a filter to see more schemes.' : 'Create your first scheme of work                        to get                        started.' }}
+                        {{ hasFilters ? 'Try clearing a filter to see more schemes.' : 'Create your first scheme of work to get started.' }}
                     </p>
                 </div>
             </div>
+
+            <template #footer>
+                <div class="flex flex-col items-center justify-between space-y-2 md:flex-row md:space-y-0">
+                    <Showing :meta="meta" />
+
+                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+                        :total="meta.total" show-edges />
+                </div>
+            </template>
         </UCard>
     </div>
 </template>
