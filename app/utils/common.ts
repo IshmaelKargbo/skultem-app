@@ -578,9 +578,26 @@ export function parseClassSession(clazz: ClassSession) {
     return `${clazz.clazz} (${clazz.sectionName} - ${clazz.streamName})`
 }
 
+// A bare "YYYY-MM-DD" (a LocalDate from the backend - a due date, DOB, term start/end, etc.,
+// with no time-of-day) has no timezone of its own; it means that calendar day everywhere. But
+// `new Date("2026-09-15")` parses it as midnight UTC, not local midnight - so for anyone west of
+// UTC, formatting it back with toLocaleDateString() rolls it back to the previous day. Building
+// the Date from its Y/M/D parts instead makes JS treat it as local midnight, so the calendar day
+// displayed always matches the day the backend actually sent, regardless of the viewer's zone.
+// A real timestamp (has a "T"/time component) has no such ambiguity and is left as-is - that one
+// SHOULD shift with the viewer's local time-of-day.
+function parseDateSafely(dateStr: string): Date {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [year, month, day] = dateStr.split('-').map(Number)
+        return new Date(year!, month! - 1, day!)
+    }
+
+    return new Date(dateStr)
+}
+
 export function formatDate(dateStr: string): string {
     if (dateStr == "" || dateStr == null) return ""
-    const date = new Date(dateStr)
+    const date = parseDateSafely(dateStr)
     return date.toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'short',
@@ -589,7 +606,8 @@ export function formatDate(dateStr: string): string {
 }
 
 export function formatDateString(dateStr: string): string {
-    const date = new Date(dateStr)
+    if (dateStr == "" || dateStr == null) return ""
+    const date = parseDateSafely(dateStr)
     return date.toDateString()
 }
 

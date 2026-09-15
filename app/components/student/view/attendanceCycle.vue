@@ -183,7 +183,12 @@ async function fetchMonth() {
     const map: Record<string, string> = {}
 
     for (const record of attendances.value) {
-        map[dateKey(new Date(record.date))] = record.state
+        // record.date is a bare "YYYY-MM-DD" (a LocalDate, no time-of-day) already in dateKey's
+        // own format - round-tripping it through `new Date(...)` parses it as UTC midnight, which
+        // a viewer west of UTC (e.g. diaspora parents) would see roll back to the previous day
+        // once re-read with the local getters dateKey() uses, misplacing the mark on the wrong
+        // calendar cell. It needs no parsing at all.
+        map[record.date] = record.state
     }
 
     recordsByDate.value = map
