@@ -1,20 +1,23 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
     <Heading title="Teacher Progress" subtitle="Monitor curriculum coverage by teacher.">
-      <div class="flex space-x-2">
-        <div class="grid gap-2 md:grid-cols-2">
-          <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." />
-          <USelectMenu v-model="status" :items="statuses" value-key="value" placeholder="Filter status" />
-        </div>
-        <UButton icon="i-lucide-refresh-cw" variant="outline" color="neutral" :loading="loading" label="Refresh"
-          @click="load" />
-      </div>
+      <UButton icon="i-lucide-refresh-cw" variant="outline" color="neutral" :loading="loading" label="Refresh"
+        class="justify-center" @click="load" />
     </Heading>
 
     <CurriculumSectionNav />
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <div class="p-4">
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." class="w-full" />
+          <USelectMenu v-model="status" :items="statuses" value-key="value" placeholder="Filter status"
+            class="w-full" />
+        </div>
+      </div>
+    </UCard>
 
     <!-- Statistics -->
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
       <Metric :record="{
         color: 'neutral',
         label: 'Teachers',
@@ -49,7 +52,7 @@
       <USkeleton v-for="i in 3" :key="i" class="h-40 rounded-2xl" />
     </div>
 
-    <div v-else-if="filteredTeachers.length" class="grid grid-cols-2 gap-4">
+    <div v-else-if="filteredTeachers.length" class="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <UCard v-for="teacher in filteredTeachers" :key="teacher.id" class="overflow-hidden">
         <template #header>
           <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">

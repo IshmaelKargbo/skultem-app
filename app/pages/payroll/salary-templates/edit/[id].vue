@@ -132,8 +132,10 @@ const totalDeductions = computed(() => state.deductions.reduce((sum, d) => sum +
 const grossSalary = computed(() => (Number(state.basicSalary) || 0) + totalAllowances.value)
 const netSalary = computed(() => grossSalary.value - totalDeductions.value)
 
+const { format } = useMoney()
+
 function formatCurrency(value?: number | null) {
-  return `Le ${Number(value || 0).toLocaleString()}`
+  return format(value || 0)
 }
 
 function stripRow(row: PayComponentRow): PayComponent {

@@ -286,7 +286,7 @@ onMounted(async () => {
 
         <!-- Data -->
         <template v-else-if="data?.length">
-          <div @click="view(item)" v-for="item in data" :key="item.id">
+          <div @click="view(item)" v-for="item in data" :key="item.id" class="cursor-pointer">
             <!-- Header -->
             <div class="border-b md:border md:rounded-2xl border-default p-3">
               <div class="flex items-start justify-between gap-3">
@@ -311,6 +311,13 @@ onMounted(async () => {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                <div class="flex shrink-0 items-center gap-2 self-center">
+                  <UBadge :label="parseStaus[item.status]"
+                    :color="item.status === 'ACTIVE' ? 'success' : item.status === 'INACTIVE' ? 'warning' : 'error'"
+                    variant="subtle" size="sm" />
+                  <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
                 </div>
               </div>
             </div>

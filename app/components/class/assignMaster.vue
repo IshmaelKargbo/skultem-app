@@ -1,13 +1,9 @@
 <template>
   <USlideover :dismissible="false" v-model:open="open">
-    <UButton
-      class="flex justify-center"
-      color="info"
-      variant="subtle"
-      label="Assign Class Master"
-      :icon="ASSIGN_ICON"
-      @click="open = true"
-    />
+    <UButton class="hidden md:flex justify-center" color="secondary" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON"
+      @click="open = true" />
+    <UButton class="md:hidden" color="secondary" variant="subtle" :icon="ASSIGN_ICON"
+      @click="open = true" />
 
     <template #header>
       <div class="flex w-full items-center justify-between gap-3">
@@ -16,23 +12,12 @@
       </div>
     </template>
     <template #body>
-      <UForm
-        ref="formRef"
-        :schema="schema"
-        :state="state"
-        :disabled="isLoading"
-        class="space-y-4 sm:space-y-5 w-full"
-        @submit="onSubmit"
-      >
+      <UForm ref="formRef" :schema="schema" :state="state" :disabled="isLoading" class="space-y-4 sm:space-y-5 w-full"
+        @submit="onSubmit">
         <!-- Class -->
         <UFormField label="Class" name="classId" required>
-          <USelectMenu
-            v-model="state.classId"
-            value-key="value"
-            :items="classes"
-            placeholder="Select class"
-            :disabled="isLoading"
-          >
+          <USelectMenu v-model="state.classId" value-key="value" :items="classes" placeholder="Select class"
+            :disabled="isLoading">
             <template #leading>
               <UIcon name="i-lucide-school" class="text-muted" />
             </template>
@@ -47,13 +32,8 @@
 
         <!-- Section -->
         <UFormField v-if="selectedClass" label="Section" name="sectionId" required>
-          <USelectMenu
-            v-model="state.sectionId"
-            value-key="value"
-            :items="sections"
-            placeholder="Select section"
-            :disabled="isLoading || sections.length === 0"
-          >
+          <USelectMenu v-model="state.sectionId" value-key="value" :items="sections" placeholder="Select section"
+            :disabled="isLoading || sections.length === 0">
             <template #leading>
               <UIcon name="i-lucide-layout-grid" class="text-muted" />
             </template>
@@ -65,19 +45,9 @@
         </UFormField>
 
         <!-- Stream -->
-        <UFormField
-          v-if="selectedClass?.level === Level.SSS"
-          label="Stream"
-          name="streamId"
-          required
-        >
-          <USelectMenu
-            v-model="state.streamId"
-            value-key="value"
-            :items="streams"
-            placeholder="Select stream"
-            :disabled="isLoading || streams.length === 0"
-          >
+        <UFormField v-if="selectedClass?.level === Level.SSS" label="Stream" name="streamId" required>
+          <USelectMenu v-model="state.streamId" value-key="value" :items="streams" placeholder="Select stream"
+            :disabled="isLoading || streams.length === 0">
             <template #leading>
               <UIcon name="i-lucide-git-branch-plus" class="text-muted" />
             </template>
@@ -90,13 +60,8 @@
 
         <!-- Teacher -->
         <UFormField v-if="selectedClass" label="Teacher" name="teacherId" required>
-          <USelectMenu
-            v-model="state.teacherId"
-            value-key="value"
-            :items="teachers"
-            placeholder="Select teacher"
-            :disabled="isLoading || teachers.length === 0"
-          >
+          <USelectMenu v-model="state.teacherId" value-key="value" :items="teachers" placeholder="Select teacher"
+            :disabled="isLoading || teachers.length === 0">
             <template #leading>
               <UIcon name="i-lucide-user-round" class="text-muted" />
             </template>
@@ -113,21 +78,10 @@
 
     <template #footer>
       <div class="flex flex-col gap-3 sm:flex-row">
-        <UButton
-          class="justify-center"
-          icon="lucide:save"
-          :loading="isLoading"
-          label="Save"
-          @click="formRef?.submit()"
-        />
-        <UButton
-          class="justify-center"
-          label="Cancel"
-          variant="outline"
-          color="neutral"
-          @click="close"
-          :disabled="isLoading"
-        />
+        <UButton class="justify-center" icon="lucide:save" :loading="isLoading" label="Save"
+          @click="formRef?.submit()" />
+        <UButton class="justify-center" label="Cancel" variant="outline" color="neutral" @click="close"
+          :disabled="isLoading" />
       </div>
     </template>
   </USlideover>

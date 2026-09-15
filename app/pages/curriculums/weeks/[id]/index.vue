@@ -1,7 +1,6 @@
 <template>
   <div class="space-y-4 px-4 sm:px-6">
     <Heading title="Weekly Topic & Lesson Notes" subtitle="Manage this week's curriculum coverage and lesson notes.">
-
       <div class="space-x-3 items-center flex">
         <UDropdownMenu :items="weekStateItems" :content="{ align: 'start' }">
           <UBadge :color="getStatusColor(week?.state)" size="xl" variant="soft" class="p-1.5 px-3 rounded-xl cursor-pointer">

@@ -2,8 +2,14 @@
   <USlideover :dismissible="false" :open="open" @update:open="open = $event">
     <UButton
       color="primary"
-      class="flex justify-center"
+      class="hidden md:flex justify-center"
       label="Add Class"
+      :icon="ADD_ICON"
+      @click="open = true"
+    />
+     <UButton
+      color="primary"
+      class="md:hidden"
       :icon="ADD_ICON"
       @click="open = true"
     />

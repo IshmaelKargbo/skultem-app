@@ -430,6 +430,26 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
       { label: "Category", icon: CATEGORY_ICON, to: "/behaviours/category" },
     ],
   },
+
+
+{
+    id: "curriculums",
+    title: "Curriculums",
+    icon: "SCHEME_ICON",
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+    items: [
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Scheme of Work",
+        icon: SCHEME_ICON,
+        to: "/curriculums",
+      },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
+        label: "Teacher Progress",
+        icon: TEACHER_ICON,
+        to: "/curriculums/teacher-progress",
+      },
+    ],
+  },
   {
     id: "timetable",
     title: "Timetable",
@@ -441,10 +461,6 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     ],
   },
   {
-    // Mirrors the desktop sidebar's "Payroll" group (components/menu/index.vue) - this drawer
-    // never had it at all, so a mobile-only teacher had no way to clock in/out, request leave,
-    // or (now) see their payslips. Section-level roles matches the desktop group's top-level
-    // gate; each admin-only item is still individually gated below it.
     id: "payroll",
     title: "Payroll",
     icon: "lucide:wallet",
@@ -470,6 +486,24 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
         icon: "lucide:history",
         to: "/payroll/runs",
       },
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
+        label: "Payslips",
+        icon: "lucide:receipt",
+        to: "/payroll/history",
+      },
+    ],
+  },
+   {
+    id: "hr",
+    title: "Human Resource",
+    icon: "i-lucide-wallet",
+    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT, Role.TEACHER],
+    items: [
+      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
+        label: "Overview",
+        icon: "lucide:layout-dashboard",
+        to: "/hr",
+      },
       can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
         label: "Teacher Attendance",
         icon: ATTENDANCE_ICON,
@@ -481,16 +515,8 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
         icon: LAYERS_ICON,
         to: "/hr/leave",
       },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
-        label: "Payslips",
-        icon: "lucide:receipt",
-        to: "/payroll/history",
-      },
     ],
   },
-
-
-  
   {
     id: "communicate",
     title: "Communicate",

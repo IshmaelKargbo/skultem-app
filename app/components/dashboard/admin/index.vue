@@ -44,6 +44,9 @@
         <UCard>
             <DashboardAdminAttention />
         </UCard>
+        <UCard>
+            <DashboardAdminStaffAttendance />
+        </UCard>
         <div class="grid md:grid-cols-2 gap-3">
             <UCard>
                 <WidgetClassPerformance />

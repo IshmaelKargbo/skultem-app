@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 p-4">
+  <div class="space-y-4 px-4 md:px-6">
     <Heading title="Weekly Topics & Objectives" subtitle="Manage weekly curriculum coverage and lesson objectives.">
       <div class="flex flex-wrap gap-3">
         <UButton icon="i-lucide-plus" label="Add Week" to="/curriculums/weeks/add" />
@@ -7,7 +7,6 @@
     </Heading>
     <!-- Statistics -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
       <UCard>
         <div class="flex items-center justify-between">
           <div>

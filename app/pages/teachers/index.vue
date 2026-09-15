@@ -11,10 +11,6 @@ const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 const searchInput = ref((route.query.search as string) || '')
 let searchTimeout: ReturnType<typeof setTimeout>
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
   { label: 'Name (A-Z)', value: 'user.givenName:asc' },
   { label: 'Name (Z-A)', value: 'user.givenName:desc' },
@@ -72,6 +68,11 @@ const search = computed<string>({
 })
 
 const size = ref(runtimeConf().limit)
+const filterState = ref(false)
+
+function toggleFilter() {
+  filterState.value = !filterState.value
+}
 
 function teacherName(teacher: Teacher) {
   return `${clean(teacher.title)} ${teacher.user.givenNames} ${teacher.user.familyName}`
@@ -189,9 +190,6 @@ onBeforeUnmount(() => {
   clearTimeout(searchTimeout)
 })
 
-// Missing entirely before - the nav only links here for Admin/Owner/Proprietor (see
-// components/menu/index.vue's "Teachers" entry), but with no guard here, any role could reach
-// /teachers directly and use the full teacher management UI (add/edit included).
 definePageMeta({
   role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
 })
@@ -199,30 +197,57 @@ definePageMeta({
 
 <template>
   <div class="px-4 sm:px-6">
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex flex-1 flex-wrap gap-3">
-            <UInput v-model="searchInput" icon="i-lucide-search"
-              placeholder="Search by name, staff ID, email or phone" class="flex-1 max-w-sm" />
+        <div>
+          <div class="flex p-4 justify-between items-center">
+            <div class="flex space-x-2 flex-1 items-center">
+              <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" color="primary" :icon="ADD_ICON" />
 
-            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-              placeholder="Sort by" class="w-40" />
+              <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral"
+                class="hidden md:flex" icon="i-lucide-briefcase" />
 
-            <UButton v-if="hasActiveFilters" :trailing-icon="DELETE_ICON" variant="outline" color="error"
-              label="Clear" @click="resetFilters" />
+              <UDropdownMenu :items="addItems" arrow :content="{ align: 'end' }" class="md:hidden">
+                <UButton color="primary" :icon="ADD_ICON" />
+              </UDropdownMenu>
+            </div>
 
-            <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" :icon="ADD_ICON" />
-
-            <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral"
-              class="hidden md:flex" icon="i-lucide-briefcase" />
-
-            <UDropdownMenu :items="addItems" :content="{ align: 'end' }" class="md:hidden">
-              <UButton color="primary" :icon="ADD_ICON" />
-            </UDropdownMenu>
+            <div>
+              <TableViewToggle v-model="view" />
+              <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
+                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+            </div>
           </div>
 
-          <TableViewToggle v-model="view" />
+          <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
+              <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                placeholder="Sort by" />
+              <div class="flex space-x-1 md:col-span-2">
+                <UInput v-model="searchInput" :icon="SEARCH_ICON"
+                  placeholder="Search by name, staff ID, email or phone" class="flex-1" />
+                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                  :disabled="!hasActiveFilters" @click="resetFilters" />
+              </div>
+            </div>
+            <div class="hidden md:block">
+              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                :disabled="!hasActiveFilters" @click="resetFilters" />
+            </div>
+          </div>
+          <div v-if="filterState"
+            class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                placeholder="Sort by" />
+              <div class="flex space-x-1 sm:col-span-2">
+                <UInput v-model="searchInput" :icon="SEARCH_ICON"
+                  placeholder="Search by name, staff ID, email or phone" class="flex-1" />
+                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                  :disabled="!hasActiveFilters" @click="resetFilters" />
+              </div>
+            </div>
+          </div>
         </div>
       </template>
 
@@ -291,213 +316,58 @@ definePageMeta({
           </div>
         </template>
       </UTable>
-      <div class="space-y-4 p-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:p-4 md:space-y-4"
+        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <!-- Loading -->
         <template v-if="loading">
-          <UCard v-for="item in 4" :key="item" variant="outline">
-            <div class="space-y-5 p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <USkeleton class="size-12 rounded-2xl" />
+          <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-10 shrink-0 rounded-full" />
 
-                  <div class="space-y-2">
-                    <USkeleton class="h-3 w-28" />
-                    <USkeleton class="h-2 w-36" />
-                  </div>
-                </div>
-
-                <USkeleton class="h-6 w-16 rounded-full" />
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <USkeleton class="h-16 rounded-2xl" />
-                <USkeleton class="h-16 rounded-2xl" />
-                <USkeleton class="h-16 rounded-2xl" />
-                <USkeleton class="h-16 rounded-2xl" />
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <USkeleton class="h-9 w-9 rounded-full" />
-
-                  <div class="space-y-2">
-                    <USkeleton class="h-3 w-24" />
-                    <USkeleton class="h-2 w-20" />
-                  </div>
-                </div>
-
-                <USkeleton class="size-6 rounded-xl" />
+              <div class="min-w-0 flex-1 space-y-2">
+                <USkeleton class="h-4 w-36 rounded-md" />
+                <USkeleton class="h-3 w-28 rounded-md" />
               </div>
             </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Data -->
         <template v-else-if="data?.length">
-          <UCard v-for="item in data" :key="item.id"  class="group cursor-pointer hover:ring-secondary-300" :ui="{ body: 'sm:p-0 p-0' }">
-            <!-- Header -->
-            <div class="border-b border-gray-200 p-3 dark:border-gray-800">
+          <div @click="openTeacher(item)" v-for="item in data" :key="item.id" class="cursor-pointer">
+            <div class="border-b md:border md:rounded-2xl border-default p-3">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
-                  <UAvatar size="xl" :src="item.user?.photo || undefined" :alt="teacherName(item)" loading="lazy" />
+                  <UAvatar class="size-10" :src="item.user?.photo || undefined" :alt="teacherName(item)"
+                    loading="lazy" />
 
                   <div class="min-w-0">
-                    <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                    <h3 class="truncate text-base font-bold text-highlighted">
                       {{ teacherName(item) }}
                     </h3>
 
-                    <p class="truncate text-xs text-gray-500">
-                      {{ item.user.email }}
-                    </p>
+                    <div class="flex items-center gap-1 text-xs-base text-muted">
+                      <span>
+                        {{ item.staffId || 'No Staff ID' }}
+                      </span>
+
+                      <span v-if="item.designation">•</span>
+
+                      <span v-if="item.designation">
+                        {{ item.designation }}
+                      </span>
+                    </div>
                   </div>
+                </div>
+
+                <div class="flex shrink-0 items-center gap-2 self-center">
+                  <UBadge :label="parseStatus[item.status]" :color="item.status === 'ACTIVE' ? 'success' : item.status === 'INACTIVE' ? 'error' : 'warning'"
+                    variant="subtle" size="sm" />
+                  <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
                 </div>
               </div>
             </div>
-
-            <!-- Stats -->
-            <div class="grid grid-cols-2 gap-3 p-4">
-              <!-- Gender -->
-              <div class="rounded-2xl border p-3" :class="item.gender === 'MALE'
-                ? 'border-sky-200 bg-sky-50 dark:border-sky-500/20 dark:bg-sky-500/10'
-                : item.gender === 'FEMALE'
-                  ? 'border-pink-200 bg-pink-50 dark:border-pink-500/20 dark:bg-pink-500/10'
-                  : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-                ">
-                <div class="mb-2 flex items-center gap-2">
-                  <div class="flex size-7 items-center justify-center rounded-lg" :class="item.gender === 'MALE'
-                    ? 'bg-sky-100 dark:bg-sky-500/20'
-                    : item.gender === 'FEMALE'
-                      ? 'bg-pink-100 dark:bg-pink-500/20'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                    ">
-                    <UIcon name="i-lucide-users" class="size-4" :class="item.gender === 'MALE'
-                      ? 'text-sky-600 dark:text-sky-400'
-                      : item.gender === 'FEMALE'
-                        ? 'text-pink-600 dark:text-pink-400'
-                        : 'text-gray-600 dark:text-gray-400'
-                      " />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide" :class="item.gender === 'MALE'
-                    ? 'text-sky-700 dark:text-sky-300'
-                    : item.gender === 'FEMALE'
-                      ? 'text-pink-700 dark:text-pink-300'
-                      : 'text-gray-600 dark:text-gray-400'
-                    ">
-                    Gender
-                  </p>
-                </div>
-
-                <p class="text-sm font-semibold" :class="item.gender === 'MALE'
-                  ? 'text-sky-700 dark:text-sky-300'
-                  : item.gender === 'FEMALE'
-                    ? 'text-pink-700 dark:text-pink-300'
-                    : 'text-gray-900 dark:text-white'
-                  ">
-                  {{ parseGender[item.gender] }}
-                </p>
-              </div>
-
-              <!-- Status -->
-              <div class="rounded-2xl border p-3" :class="item.status === 'ACTIVE'
-                ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/10'
-                : item.status === 'INACTIVE'
-                  ? 'border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10'
-                  : 'border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/10'
-                ">
-                <div class="mb-2 flex items-center gap-2">
-                  <div class="flex size-7 items-center justify-center rounded-lg" :class="item.status === 'ACTIVE'
-                    ? 'bg-emerald-100 dark:bg-emerald-500/20'
-                    : item.status === 'INACTIVE'
-                      ? 'bg-red-100 dark:bg-red-500/20'
-                      : 'bg-amber-100 dark:bg-amber-500/20'
-                    ">
-                    <UIcon name="i-lucide-badge-check" class="size-4" :class="item.status === 'ACTIVE'
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : item.status === 'INACTIVE'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-amber-600 dark:text-amber-400'
-                      " />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide" :class="item.status === 'ACTIVE'
-                    ? 'text-emerald-700 dark:text-emerald-300'
-                    : item.status === 'INACTIVE'
-                      ? 'text-red-700 dark:text-red-300'
-                      : 'text-amber-700 dark:text-amber-300'
-                    ">
-                    Status
-                  </p>
-                </div>
-
-                <p class="text-sm font-semibold" :class="item.status === 'ACTIVE'
-                  ? 'text-emerald-700 dark:text-emerald-300'
-                  : item.status === 'INACTIVE'
-                    ? 'text-red-700 dark:text-red-300'
-                    : 'text-amber-700 dark:text-amber-300'
-                  ">
-                  {{ parseStatus[item.status] }}
-                </p>
-              </div>
-
-              <!-- Phone -->
-              <div
-                class="rounded-2xl border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/20 dark:bg-indigo-500/10">
-                <div class="mb-2 flex items-center gap-2">
-                  <div class="flex size-7 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
-                    <UIcon name="i-lucide-phone" class="size-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
-                    Phone
-                  </p>
-                </div>
-
-                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  {{ item.phone || 'N/A' }}
-                </p>
-              </div>
-
-              <!-- City -->
-              <div
-                class="rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-                <div class="mb-2 flex items-center gap-2">
-                  <div class="flex size-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20">
-                    <UIcon name="i-lucide-map-pinned" class="size-4 text-amber-600 dark:text-amber-400" />
-                  </div>
-
-                  <p class="text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
-                    City
-                  </p>
-                </div>
-
-                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                  {{ item.city || 'N/A' }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="flex items-center justify-between border-t border-gray-100 p-3 dark:border-gray-800">
-              <div class="flex min-w-0 items-center gap-3">
-                <UAvatar size="xl" icon="i-lucide-map-pin" />
-
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                    {{ item.city || 'Unknown City' }}
-                  </p>
-
-                  <p class="truncate text-xs text-gray-500">
-                    {{ item.street || 'No address provided' }}
-                  </p>
-                </div>
-              </div>
-
-              <UButton icon="i-lucide-arrow-right" color="neutral" variant="soft" square
-                class="rounded-xl transition-all group-hover:bg-secondary hover:bg-secondary cursor-pointer group-hover:text-white group-hover:translate-x-1"
-                @click="openTeacher(item)" />
-            </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Empty -->
@@ -513,7 +383,7 @@ definePageMeta({
       </div>
 
       <template #footer>
-        <div class="flex items-center justify-between">
+        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
           <Showing :meta="meta" />
 
           <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"

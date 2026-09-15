@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-// `mine` powers this same calendar on the teacher's own clock-in page (self-service history);
-// without it, it's the admin-facing view of a specific teacher's profile - `teacher` is only
-// needed in that case, since the "mine" API call resolves the teacher from the signed-in user.
 const { teacher, mine = false } = defineProps<{
     teacher?: Teacher | undefined
     mine?: boolean
@@ -155,6 +152,21 @@ function tooltipOf(key: string) {
     return parts.join(' • ')
 }
 
+const historyList = computed(() =>
+    Object.values(recordsByDate.value)
+        .filter(record => record.status || record.clockedInAt)
+        .sort((a, b) => b.date.localeCompare(a.date))
+)
+
+function formatDay(date: string) {
+    const [y, m, d] = date.split('-').map(Number)
+    return new Date(y!, m! - 1, d!).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function formatTime(value: string) {
+    return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+}
+
 function goPrevMonth() {
     cursor.value = addMonths(cursor.value, -1)
 }
@@ -282,12 +294,12 @@ watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
 
             <div class="grid grid-cols-7">
                 <div v-for="(cell, i) in calendarCells" :key="cell?.key ?? `blank-${i}`"
-                    class="flex min-h-20 flex-col items-center gap-1.5 border-b border-r border-default p-2 [&:nth-child(7n)]:border-r-0"
+                    class="flex md:min-h-16 flex-col items-center gap-1.5 border-b border-r border-default p-2 [&:nth-child(7n)]:border-r-0"
                 >
                     <template v-if="cell">
                         <UTooltip v-if="recordOf(cell.key)" :delay-duration="0" arrow :text="tooltipOf(cell.key)">
                             <span
-                                class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium"
+                                class="flex h-7 w-7 items-center justify-center rounded-full text-xs md:text-sm font-medium"
                                 :class="circleClass(cell.key)"
                             >
                                 {{ cell.day }}
@@ -295,13 +307,13 @@ watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
                         </UTooltip>
 
                         <span v-else
-                            class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium"
+                            class="flex h-7 w-7 items-center justify-center rounded-full text-xs md:text-sm font-medium"
                             :class="circleClass(cell.key)"
                         >
                             {{ cell.day }}
                         </span>
 
-                        <span v-if="recordOf(cell.key)?.status" class="text-[9px] font-semibold uppercase"
+                        <span v-if="recordOf(cell.key)?.status" class="text-[7px] md:text-[9px] font-semibold"
                             :class="statusTextClass(cell.key)"
                         >
                             {{ statusLabel(recordOf(cell.key)!.status as TeacherAttendanceStatus) }}
@@ -319,6 +331,54 @@ watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
                 <div class="flex items-center gap-1.5">
                     <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700" />
                     <span class="text-xs text-muted">No Record</span>
+                </div>
+            </div>
+        </UCard>
+
+        <!-- History list - spells out clock in/out times the calendar only shows on hover -->
+        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+            <div class="flex items-center gap-2 border-b border-default px-4 py-3">
+                <UIcon name="i-lucide-list" class="size-4 text-primary" />
+                <h3 class="text-sm font-semibold text-highlighted">Daily Log</h3>
+            </div>
+
+            <div v-if="loading" class="space-y-3 p-4">
+                <USkeleton v-for="i in 3" :key="i" class="h-12 w-full" />
+            </div>
+
+            <p v-else-if="!historyList.length" class="p-4 text-center text-sm text-muted">
+                No attendance records for this month yet.
+            </p>
+
+            <div v-else class="divide-y divide-default">
+                <div v-for="record in historyList" :key="record.date"
+                    class="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+                >
+                    <div class="flex min-w-0 items-center gap-2.5">
+                        <span class="h-2 w-2 shrink-0 rounded-full" :class="record.status ? statusStyles[record.status]?.dot : 'bg-gray-300 dark:bg-gray-700'" />
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-highlighted">{{ formatDay(record.date) }}</p>
+                            <UBadge v-if="record.status" :color="teacherAttendanceStatusColor(record.status)" variant="subtle" size="xs">
+                                {{ statusLabel(record.status) }}
+                            </UBadge>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row shrink-0 items-end md:items-center md:gap-3 gap-0 gap-y-1.5 text-xs">
+                        <div v-if="record.clockedInAt" class="flex items-center gap-1 text-muted">
+                            <UIcon name="i-lucide-log-in" class="size-3.5 text-primary" />
+                            <span class="font-medium text-highlighted">{{ formatTime(record.clockedInAt) }}</span>
+                            <span v-if="record.clockInByAdmin" class="text-muted">(admin)</span>
+                        </div>
+
+                        <div v-if="record.clockedOutAt" class="flex items-center gap-1 text-muted">
+                            <UIcon name="i-lucide-log-out" class="size-3.5 text-primary" />
+                            <span class="font-medium text-highlighted">{{ formatTime(record.clockedOutAt) }}</span>
+                            <span v-if="record.clockOutByAdmin" class="text-muted">(admin)</span>
+                        </div>
+
+                        <span v-if="!record.clockedInAt && !record.clockedOutAt" class="text-muted">No clock times</span>
+                    </div>
                 </div>
             </div>
         </UCard>

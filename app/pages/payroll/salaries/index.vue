@@ -164,8 +164,10 @@ function teacherName(teacher?: Teacher) {
   return `${teacher.user?.givenNames || ''} ${teacher.user?.familyName || ''}`.trim()
 }
 
+const { format } = useMoney()
+
 function formatCurrency(value?: number | null) {
-  return `Le ${Number(value || 0).toLocaleString()}`
+  return format(value || 0)
 }
 
 function load() {

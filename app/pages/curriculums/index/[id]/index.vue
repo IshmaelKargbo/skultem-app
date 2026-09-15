@@ -5,10 +5,6 @@
       <div class="flex flex-wrap items-center gap-3">
         <UBadge v-if="scheme" :label="scheme.state === 'PUBLISH' ? 'Published' : 'Draft'"
           :color="scheme.state === 'PUBLISH' ? 'success' : 'neutral'" variant="subtle" size="lg" />
-
-        <!-- Publish makes the scheme visible on a parent's Curriculum page (draft schemes are
-             hidden there - a family has no use for a still-being-built plan); a teacher keeps
-             full access to their own scheme either way via GET /scheme/me. -->
         <UButton v-if="scheme && scheme.state === 'DRAFT'" icon="i-lucide-upload" color="primary" label="Publish"
           :loading="updatingState" @click="onPublish" />
         <UButton v-else-if="scheme" icon="i-lucide-corner-up-left" variant="outline" color="neutral"
@@ -22,7 +18,7 @@
     <CurriculumSchemeOfWorkStatistics />
 
     <!-- Weeks -->
-    <div v-if="records.length" class="grid gap-5">
+    <div v-if="records.length" class="grid gap-4">
 
       <UCard v-for="week in records" :key="week.id">
         <template #header>

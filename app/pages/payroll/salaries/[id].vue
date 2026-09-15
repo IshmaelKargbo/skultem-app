@@ -182,8 +182,10 @@ const teacherName = computed(() => {
   return `${t.user?.givenNames || ''} ${t.user?.familyName || ''}`.trim()
 })
 
+const { format } = useMoney()
+
 function formatCurrency(value?: number | null) {
-  return `Le ${Number(value || 0).toLocaleString()}`
+  return format(value || 0)
 }
 
 watch(

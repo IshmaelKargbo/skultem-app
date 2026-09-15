@@ -27,7 +27,7 @@
     </UCard>
 
     <template v-if="loading">
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div class="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <USkeleton v-for="i in 4" :key="i" class="h-24 rounded-2xl" />
       </div>
     </template>
@@ -35,7 +35,7 @@
     <template v-else-if="teacher">
 
       <!-- Statistics -->
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div class="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <Metric :record="{
           icon: COVERAGE_ICON,
           label: 'Coverage',

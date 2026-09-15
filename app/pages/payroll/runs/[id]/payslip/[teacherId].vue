@@ -31,17 +31,58 @@
       Loading payslip…
     </div>
 
-    <!-- The document itself -->
-    <div v-else class="mx-auto w-fit overflow-hidden rounded-2xl shadow-sm print:overflow-visible print:rounded-none print:shadow-none">
-      <PayrollPayslipDocument id="payslip-document" :payslip="payslip" :logo="pdfLogo || settings.logoUrl"
-        :accent-color="settings.accentColor" :footer-note="settings.footerNote"
-        :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
+    <!-- The document itself - fixed at A4 size (794x1123), so on a phone-width viewport it's
+         scaled down to fit (payslip-viewport measures the available width, payslip-frame/
+         payslip-scale below apply the scale) rather than forcing horizontal scroll/pinch-zoom.
+         Printing and "Download PDF" both bypass this: print gets the !important override below,
+         and $generatePdf clones #payslip-document and forces its own width/transform regardless
+         of what's applied here (see plugins/pdf.client.ts). -->
+    <div v-else ref="viewportRef" class="payslip-viewport">
+      <div class="payslip-frame overflow-hidden rounded-2xl shadow-sm print:overflow-visible print:rounded-none print:shadow-none"
+        :style="{ width: `${frameWidth}px`, height: `${frameHeight}px`, margin: '0 auto' }">
+        <div class="payslip-scale" :style="{ transform: `scale(${scale})` }">
+          <PayrollPayslipDocument id="payslip-document" :payslip="payslip" :logo="pdfLogo || settings.logoUrl"
+            :accent-color="settings.accentColor" :footer-note="settings.footerNote"
+            :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
+        </div>
+      </div>
     </div>
 
   </div>
 </template>
 
 <script setup lang="ts">
+const DOC_WIDTH = 794
+
+const viewportRef = ref<HTMLElement | null>(null)
+const scale = ref(1)
+const docHeight = ref(1123)
+
+const frameWidth = computed(() => Math.round(DOC_WIDTH * scale.value))
+const frameHeight = computed(() => Math.round(docHeight.value * scale.value))
+
+let resizeObserver: ResizeObserver | undefined
+let measureRaf = 0
+
+function measure() {
+  const doc = document.getElementById('payslip-document')
+  if (doc) docHeight.value = Math.max(1123, doc.scrollHeight)
+
+  const available = viewportRef.value?.clientWidth || DOC_WIDTH
+  // Shrink to fit narrow viewports - never scale a document up past its real size on desktop.
+  scale.value = Math.min(1, available / DOC_WIDTH)
+}
+
+function scheduleMeasure() {
+  cancelAnimationFrame(measureRaf)
+  measureRaf = requestAnimationFrame(measure)
+}
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  cancelAnimationFrame(measureRaf)
+})
+
 const route = useRoute()
 const store = usePayrollStore()
 const { currentPayslip: payslip } = storeToRefs(store)
@@ -109,6 +150,14 @@ watch([runId, teacherId], async ([r, t]) => {
   useAppStore().setTitle('Payslip')
   useAppStore().setBack(`/payroll/runs/${r}`)
   document.title = `Payslip | ${teacherName.value || 'Payroll'} | Skultem`
+
+  // The frame this measures only exists once `payslip` is loaded (v-else above), so the
+  // observer is (re)attached here rather than in onMounted, which can run before that.
+  await nextTick()
+  resizeObserver?.disconnect()
+  resizeObserver = resizeObserver || new ResizeObserver(scheduleMeasure)
+  if (viewportRef.value) resizeObserver.observe(viewportRef.value)
+  measure()
 }, { immediate: true })
 
 definePageMeta({
@@ -117,9 +166,37 @@ definePageMeta({
 </script>
 
 <style scoped>
+.payslip-viewport {
+  width: 100%;
+}
+
+/* payslip-frame is centered with margin:0 auto (set inline, above) rather than flex
+   justify-content - a flex item's implicit min-width:auto floors it at its UNSCALED content
+   width (794px, since transform doesn't count for layout sizing, only paint), overriding the
+   smaller width set on it and pushing the actually-visible scaled content off-center to the
+   left. A block box has no such floor. */
+
+.payslip-scale {
+  width: 794px;
+  transform-origin: top left;
+}
+
 @media print {
   :deep(body) {
     background: white;
+  }
+
+  /* Printing uses the real page size, not the screen's viewport - undo the on-screen scale
+     (applied as an inline style, which needs !important here to be overridden) so the printed
+     payslip comes out full size instead of shrunk to whatever width it happened to render at. */
+  .payslip-frame {
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .payslip-scale {
+    width: auto !important;
+    transform: none !important;
   }
 }
 </style>

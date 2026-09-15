@@ -43,8 +43,10 @@
 const store = usePayrollStore()
 const { salaryHistory: history, loadingSalary: loading } = storeToRefs(store)
 
+const { format } = useMoney()
+
 function formatCurrency(value?: number | null) {
-  return `Le ${Number(value || 0).toLocaleString()}`
+  return format(value || 0)
 }
 
 onMounted(async () => {

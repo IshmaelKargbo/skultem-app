@@ -184,7 +184,7 @@ watch(() => [route.query.page, route.query.search, route.query.status, route.que
 
 onMounted(() => {
     useAppStore().setTitle(isAdmin.value ? 'Leave Management' : 'My Leave Requests')
-    useAppStore().setBack('/payroll')
+    useAppStore().setBack('/hr')
     document.title = 'Leave Management | Skultem'
 
     load()

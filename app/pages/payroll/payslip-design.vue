@@ -3,10 +3,6 @@
 
     <!-- Header -->
     <Heading title="Payslip Design" subtitle="Configure the payslip used across your school.">
-      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/payroll" class="justify-center">
-        Back
-      </UButton>
-
       <UButton icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
         Save Settings
       </UButton>
@@ -104,11 +100,14 @@
             </div>
           </template>
 
-          <div class="preview-viewport">
-            <div class="preview-scale">
-              <PayrollPayslipDocument id="payslip-settings-preview" :payslip="mockPayslip" :logo="settings.logoUrl"
-                :accent-color="settings.accentColor" :footer-note="settings.footerNote"
-                :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
+          <div ref="previewViewportRef" class="preview-viewport">
+            <div class="preview-frame"
+              :style="{ width: `${previewFrameWidth}px`, height: `${previewFrameHeight}px`, margin: '0 auto' }">
+              <div class="preview-scale" :style="{ transform: `scale(${previewScale})` }">
+                <PayrollPayslipDocument id="payslip-settings-preview" :payslip="mockPayslip" :logo="settings.logoUrl"
+                  :accent-color="settings.accentColor" :footer-note="settings.footerNote"
+                  :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
+              </div>
             </div>
           </div>
         </UCard>
@@ -126,6 +125,46 @@ const store = usePayslipSettingStore()
 const { settings } = storeToRefs(store)
 
 const saving = ref(false)
+
+// The real payslip renders at a fixed A4 size (794x1123) - this scales it down to fit whatever
+// width the preview card actually has, instead of the old hardcoded scale(0.4)/424px-tall
+// viewport, which left dead space on a wide card and clipped the bottom of the document on a
+// narrow one (same fix as pages/payroll/runs/[id]/payslip/[teacherId].vue). Capped at 0.4 so it
+// still reads as a thumbnail rather than growing to full size on a wide sidebar.
+const MAX_PREVIEW_SCALE = 0.4
+const DOC_WIDTH = 794
+
+const previewViewportRef = ref<HTMLElement | null>(null)
+const previewScale = ref(MAX_PREVIEW_SCALE)
+const previewDocHeight = ref(1123)
+
+const previewFrameWidth = computed(() => Math.round(DOC_WIDTH * previewScale.value))
+const previewFrameHeight = computed(() => Math.round(previewDocHeight.value * previewScale.value))
+
+let previewResizeObserver: ResizeObserver | undefined
+let previewMeasureRaf = 0
+
+function measurePreview() {
+  const doc = document.getElementById('payslip-settings-preview')
+  if (doc) previewDocHeight.value = Math.max(1123, doc.scrollHeight)
+
+  const available = previewViewportRef.value?.clientWidth || DOC_WIDTH
+  previewScale.value = Math.min(MAX_PREVIEW_SCALE, available / DOC_WIDTH)
+}
+
+function schedulePreviewMeasure() {
+  cancelAnimationFrame(previewMeasureRaf)
+  previewMeasureRaf = requestAnimationFrame(measurePreview)
+}
+
+onBeforeUnmount(() => {
+  previewResizeObserver?.disconnect()
+  cancelAnimationFrame(previewMeasureRaf)
+})
+
+// Editing a setting (e.g. toggling "Amount in Words", or a footer note long enough to wrap)
+// can change the document's real height - re-measure so the preview frame doesn't clip it.
+watch(settings, () => nextTick().then(schedulePreviewMeasure), { deep: true })
 
 interface SectionConfig {
   key: 'showWatermark' | 'showAmountInWords'
@@ -193,7 +232,16 @@ async function save() {
 onMounted(async () => {
   useAppStore().setTitle('Payslip Design')
   useAppStore().setBack('/payroll')
+
+  previewResizeObserver = new ResizeObserver(schedulePreviewMeasure)
+  if (previewViewportRef.value) previewResizeObserver.observe(previewViewportRef.value)
+  measurePreview()
+
   await store.fetch()
+  // Settings (accent color, logo, footer note) can change the document's measured height once
+  // loaded (a longer footer note wrapping to a second line, say) - re-measure after they land.
+  await nextTick()
+  schedulePreviewMeasure()
 })
 
 definePageMeta({
@@ -202,16 +250,24 @@ definePageMeta({
 </script>
 
 <style scoped>
-/* The real payslip component renders at A4 size (794x1123) - scale it down to fit the
-   preview card rather than building a second, lower-fidelity mockup of the design. */
+/* The real payslip component renders at A4 size (794x1123) - scaled down (in the script above)
+   to fit whatever width the preview card actually has, rather than building a second,
+   lower-fidelity mockup of the design. */
 .preview-viewport {
   overflow: hidden;
-  height: 424px;
+  padding: 1rem;
+}
+
+/* Plain block + margin:auto, not flex justify-content:center - a flex item's implicit
+   min-width:auto floors it at its UNSCALED content width (794px, since transform doesn't count
+   for layout sizing, only paint), overriding the smaller width set above and pushing the
+   actually-visible scaled content off-center to the left. A block box has no such floor. */
+.preview-frame {
+  overflow: hidden;
 }
 
 .preview-scale {
-  transform: scale(0.4);
-  transform-origin: top left;
   width: 794px;
+  transform-origin: top left;
 }
 </style>

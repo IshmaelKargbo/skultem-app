@@ -8,22 +8,23 @@ const store = useStreamStore();
 const loading = ref(true);
 const { records: data, meta } = storeToRefs(store);
 
-// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
-// why a v-model bound straight to a computed setter that triggers router.replace() reads as
-// "typing does nothing". These still seed from the URL on load and push back to it (see the
-// watch below) so a direct link/refresh keeps the search, but the URL is a mirror, not the
-// source of truth.
 const searchInput = ref(String(route.query.search ?? ""));
 const search = ref(searchInput.value);
 
 // Debounced so every keystroke doesn't fire a request.
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 watch(searchInput, (val) => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-        search.value = val;
-    }, 350);
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    search.value = val;
+  }, 350);
 });
+
+const filterState = ref(false);
+
+function toggleFilter() {
+  filterState.value = !filterState.value;
+}
 
 const editRcord = ref<Stream | null>(null);
 const editState = ref(false);
@@ -101,9 +102,6 @@ function resetFilters() {
   search.value = "";
 }
 
-// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
-// page/size and silently drops any other query key when neither changed, which would swallow a
-// search update whenever it's set while already on page 1.
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } });
 }
@@ -116,8 +114,6 @@ async function fetchRecord() {
 
 watch(() => page.value, () => fetchRecord());
 
-// Setting the search also resets the page to 1 and mirrors it into the URL (for a shareable
-// link/refresh) - the fetch itself is keyed off the local ref above, not the URL.
 watch(search, () => {
   updateQuery({ search: search.value || undefined, page: 1 });
 
@@ -145,17 +141,27 @@ definePageMeta({
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
-          <div class="flex px-4 py-3 justify-between">
+          <div class="flex p-4 justify-between items-center">
             <div class="flex space-x-3 flex-1">
               <ClassStreamAdd />
             </div>
-            <TableViewToggle v-model="view" />
+
+            <div>
+              <TableViewToggle v-model="view" />
+              <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
+                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+            </div>
           </div>
 
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ."
-              class="flex-1 max-w-sm" />
+          <div class="border-t hidden p-4 border-default md:flex items-center justify-between gap-3">
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ." />
             <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+              :disabled="!hasActiveFilters" @click="resetFilters" />
+          </div>
+          <div v-if="filterState"
+            class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ." class="flex-1" />
+            <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
               :disabled="!hasActiveFilters" @click="resetFilters" />
           </div>
         </div>
@@ -169,17 +175,10 @@ definePageMeta({
           </div>
         </template>
         <template #name-cell="{ row }">
-          <div class="flex items-center gap-3">
-            <div
-              class="flex size-10 items-center justify-center rounded-2xl bg-primary-50 text-primary dark:bg-primary-500/10">
-              <UIcon name="i-lucide-git-branch" class="size-5" />
-            </div>
-
-            <div>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ row.original.name }}
-              </p>
-            </div>
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ row.original.name }}
+            </p>
           </div>
         </template>
         <template #loading>
@@ -188,98 +187,59 @@ definePageMeta({
       </UTable>
 
       <!-- Mobile -->
-      <div class="space-y-4 p-4"
+      <div class="md:p-4 md:space-y-4"
         :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <!-- Loading -->
         <template v-if="loading">
-          <UCard v-for="i in 5" :key="i" variant="outline" class="overflow-hidden" :ui="{ body: 'p-0' }">
-            <div class="p-5 space-y-5">
-              <div class="flex items-center gap-3">
-                <USkeleton class="size-12 rounded-2xl" />
+          <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
+            <div class="flex items-center gap-3">
+              <USkeleton class="size-10 shrink-0 rounded-xl" />
 
-                <div class="flex-1 space-y-2">
-                  <USkeleton class="h-4 w-36" />
-                  <USkeleton class="h-3 w-24" />
-                </div>
-
-                <USkeleton class="size-8 rounded-xl" />
-              </div>
-
-              <USkeleton class="h-20 rounded-2xl" />
-
-              <div class="flex items-center justify-between pt-2">
-                <USkeleton class="h-6 w-16 rounded-full" />
-                <USkeleton class="h-8 w-8 rounded-xl" />
+              <div class="min-w-0 flex-1 space-y-2">
+                <USkeleton class="h-4 w-36 rounded-md" />
+                <USkeleton class="h-3 w-28 rounded-md" />
               </div>
             </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Empty -->
         <template v-else-if="!data?.length">
-          <UCard class="rounded-3xl" :ui="{ body: 'p-10' }">
-            <div class="flex flex-col items-center text-center">
-              <div class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-primary/10">
-                <UIcon name="i-lucide-git-branch" class="size-8 text-primary" />
-              </div>
+          <div class="col-span-full flex flex-col items-center justify-center py-14">
+            <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
 
-              <h3 class="font-semibold">No streams found</h3>
-
-              <p class="mt-2 text-sm text-muted">
-                Create a stream to organize classes and students.
-              </p>
-            </div>
-          </UCard>
+            <p class="text-sm text-gray-500">No streams found.</p>
+          </div>
         </template>
 
-        <!-- Cards -->
+        <!-- Data -->
         <template v-else>
-          <UCard v-for="item in data" :key="item.id" variant="outline" :ui="{ body: 'sm:p-0 p-0' }">
+          <div v-for="item in data" :key="item.id" class="border-b md:border md:rounded-2xl border-default p-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex min-w-0 items-center gap-3">
+                <div class="min-w-0">
+                  <h3 class="truncate text-base font-bold text-highlighted">
+                    {{ item.name }}
+                  </h3>
 
-            <!-- Header -->
-            <div class="border-b border-default p-3">
-              <div class="flex items-start justify-between gap-4">
-                <div class="flex items-center gap-4">
-                  <div
-                    class="flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:text-white">
-                    <UIcon name="i-lucide-git-branch" class="size-5 text-primary group-hover:text-white" />
-                  </div>
-
-                  <div>
-                    <h3 class="text-base font-bold">
-                      {{ item.name }}
-                    </h3>
-                    <div class="flex items-center gap-2 text-xs-base text-muted">
-                      Academic Stream
-                    </div>
-                  </div>
+                  <p class="truncate text-xs-base text-muted">
+                    {{ item.description || "Academic Stream" }}
+                  </p>
                 </div>
-
-                <UBadge label="Active" color="success" variant="soft" />
               </div>
-            </div>
 
-            <!-- Description -->
-            <div class="p-3">
-              <div class="rounded-xl border border-default bg-gray-50 p-3 dark:bg-neutral-800">
-                <p class="line-clamp-3 text-xs leading-6 text-toned">
-                  {{ item.description || "No description available." }}
-                </p>
-              </div>
+              <UBadge label="Active" color="success" variant="subtle" size="sm" class="shrink-0" />
             </div>
-          </UCard>
+          </div>
         </template>
       </div>
 
       <template #footer>
         <!-- Footer -->
-        <div class="flex gap-3 items-center justify-between">
+        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
           <Showing :meta="meta" />
-
-          <div class="overflow-x-auto">
-            <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-              :total="meta.total" show-edges />
-          </div>
+          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
+            :total="meta.total" show-edges />
         </div>
       </template>
     </UCard>

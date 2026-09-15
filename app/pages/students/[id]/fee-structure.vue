@@ -19,8 +19,8 @@
                 </div>
             </template>
 
-            <!-- Fee Summary -->
-            <StudentViewFeeSummary />
+            <!-- Fee Summary (amounts only — hidden for Teacher, who sees status only) -->
+            <StudentViewFeeSummary v-if="canSeeAmount" />
 
             <!-- Fee Groups -->
             <div v-if="loading" class="space-y-3">
@@ -67,7 +67,7 @@
                             </UBadge>
                         </div>
 
-                        <div class="flex shrink-0 items-center gap-4 text-sm">
+                        <div v-if="canSeeAmount" class="flex shrink-0 items-center gap-4 text-sm">
                             <span class="text-muted">
                                 Total: <span class="font-semibold text-highlighted">{{ format(group.total) }}</span>
                             </span>
@@ -85,9 +85,9 @@
                                 <tr class="text-[11px] uppercase tracking-wide text-muted">
                                     <th class="px-4 py-2 text-left font-semibold">Fee Type</th>
                                     <th class="px-4 py-2 text-left font-semibold">Due Date</th>
-                                    <th class="px-4 py-2 text-right font-semibold">Amount</th>
-                                    <th class="px-4 py-2 text-right font-semibold">Paid</th>
-                                    <th class="px-4 py-2 text-right font-semibold">Due</th>
+                                    <th v-if="canSeeAmount" class="px-4 py-2 text-right font-semibold">Amount</th>
+                                    <th v-if="canSeeAmount" class="px-4 py-2 text-right font-semibold">Paid</th>
+                                    <th v-if="canSeeAmount" class="px-4 py-2 text-right font-semibold">Due</th>
                                     <th class="px-4 py-2 text-right font-semibold">Status</th>
                                 </tr>
                             </thead>
@@ -96,10 +96,10 @@
                                 <tr v-for="fee in group.items" :key="fee.id" class="border-t border-default">
                                     <td class="px-4 py-2.5">{{ fee.fee }}</td>
                                     <td class="px-4 py-2.5 text-muted">{{ formatDateString(fee.dueDate) }}</td>
-                                    <td class="px-4 py-2.5 text-right">{{ format(fee.amount) }}</td>
-                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right">{{ format(fee.amount) }}</td>
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
                                         format(fee.amountPaid) }}</td>
-                                    <td class="px-4 py-2.5 text-right"
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right"
                                         :class="fee.outstanding > 0 ? 'text-error-600 dark:text-error-400' : 'text-muted'">
                                         {{ format(fee.outstanding) }}
                                     </td>
@@ -117,11 +117,11 @@
                                 <tr class="font-semibold"
                                     :class="group.fullyPaid ? 'bg-success-50 dark:bg-success-950/60' : 'bg-warning-50 dark:bg-warning-950/60'">
                                     <td class="px-4 py-2.5" colspan="2">Sub-Total ({{ group.items.length }} items)</td>
-                                    <td class="px-4 py-2.5 text-right">{{ format(group.total) }}</td>
-                                    <td class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right">{{ format(group.total) }}</td>
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
                                         format(group.paid)
                                         }}</td>
-                                    <td class="px-4 py-2.5 text-right"
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right"
                                         :class="group.due > 0 ? 'text-error-600 dark:text-error-400' : ''">
                                         {{ format(group.due) }}
                                     </td>
@@ -158,6 +158,9 @@ const { fees } = storeToRefs(reportStore)
 const loading = ref(true)
 const { record } = storeToRefs(store)
 const { format } = useMoney()
+
+// Teachers can see fee status only — amounts are restricted to Accountant/Owner (and other staff roles).
+const canSeeAmount = computed(() => !can(Role.TEACHER))
 
 definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]

@@ -37,6 +37,8 @@ function resolvedAmount(row: PayComponentRow) {
 }
 
 const total = computed(() => modelValue.reduce((sum, row) => sum + resolvedAmount(row), 0))
+
+const { format } = useMoney()
 </script>
 
 <template>
@@ -71,7 +73,7 @@ const total = computed(() => modelValue.reduce((sum, row) => sum + resolvedAmoun
                 </UInput>
 
                 <p class="text-right text-xs text-muted sm:w-24" :class="color === 'success' ? 'text-success' : 'text-error'">
-                    {{ color === 'success' ? '+' : '-' }} Le {{ resolvedAmount(row).toLocaleString() }}
+                    {{ color === 'success' ? '+' : '-' }} {{ format(resolvedAmount(row)) }}
                 </p>
 
                 <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" class="justify-self-end"
@@ -82,7 +84,7 @@ const total = computed(() => modelValue.reduce((sum, row) => sum + resolvedAmoun
         <div v-if="modelValue.length" class="flex items-center justify-between border-t border-default pt-2 text-sm">
             <span class="text-muted">Total {{ label.toLowerCase() }}</span>
             <span class="font-semibold" :class="color === 'success' ? 'text-success' : 'text-error'">
-                Le {{ total.toLocaleString() }}
+                {{ format(total) }}
             </span>
         </div>
     </div>

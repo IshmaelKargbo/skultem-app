@@ -174,18 +174,18 @@ const backQuery = typeof route.query.back === 'string' && route.query.back ? `?b
 const personalInfo = `/students/${route.params.id}${backQuery}`
 const attendanceInfo = `/students/${route.params.id}/attendance${backQuery}`
 const feeStructureInfo = `/students/${route.params.id}/fee-structure${backQuery}`
+const performanceInfo = `/students/${route.params.id}/performance${backQuery}`
 const academicInfo = `/students/${route.params.id}/academic-information${backQuery}`
 const behavioursInfo = `/students/${route.params.id}/behaviours${backQuery}`
-const performanceInfo = `/students/${route.params.id}/performance${backQuery}`
 const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
 const mobileTabs = computed(() => [
     { label: 'Personal', to: personalInfo, icon: USER_ICON, exact: true },
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
+    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
     { label: 'Academics', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
     { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
-    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : [])
 ])
 
@@ -193,9 +193,9 @@ const desktopTabs = computed(() => [
     { label: 'Personal Information', to: personalInfo, icon: USER_ICON, exact: true },
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
+    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
     { label: 'Academic Information', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
     { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
-    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : [])
 ])
 
@@ -213,10 +213,6 @@ watch(
     }
 )
 
-// Same "needs attention" computation as the class detail page and dashboards (attendance rate
-// over the last 30 days, or average score below the pass mark) - the class-wide endpoint is the
-// only one that exists, so this just checks whether this one student happens to be in its
-// flagged list.
 const attentionReason = ref('')
 
 watch(

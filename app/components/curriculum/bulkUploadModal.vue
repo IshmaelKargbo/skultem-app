@@ -46,12 +46,6 @@ function csvEscape(value: string) {
   return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
 }
 
-// A template seeded with real data rather than a blank/placeholder file: real class name(s), the
-// first subject, and the active term, repeated across a few example week rows - showing both the
-// exact class-name format BulkCreateSchemeOfWorkUseCase expects (bare class name where it's
-// unambiguous, the full "Class Section Stream" name otherwise) and how multiple weeks of the same
-// scheme repeat those three columns. Capped to two example classes (picking one with an ambiguous
-// bare name too, if there is one) so the file stays a short pattern to copy, not every class.
 function downloadTemplate() {
   const sessions = classStore.records
   const subjectName = subjectStore.records[0]?.name
@@ -62,8 +56,6 @@ function downloadTemplate() {
     return
   }
 
-  // How many sessions share a bare class name - only those need the fuller "Class Section
-  // Stream" form to disambiguate (matches BulkCreateSchemeOfWorkUseCase#resolveClass).
   const countByClazz = new Map<string, number>()
   for (const s of sessions) countByClazz.set(s.clazz, (countByClazz.get(s.clazz) || 0) + 1)
 
@@ -161,7 +153,7 @@ watch(open, (val) => {
             <h3 class="text-lg font-semibold">
               Bulk Upload Schemes of Work
             </h3>
-            <p class="text-xs text-muted mt-1">
+            <p class="text-xs-base text-muted mt-1">
               Upload a CSV to create many class/subject/term schemes and their weeks in one go.
             </p>
           </div>

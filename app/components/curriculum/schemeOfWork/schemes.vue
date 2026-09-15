@@ -19,8 +19,6 @@ const { termList: terms } = storeToRefs(academicYearStore)
 const loadingFilters = ref(false)
 const fetchError = ref('')
 
-// A teacher only picks among the subjects they actually teach - the full school subject list
-// (used for the admin "Recent Schemes" view) would mostly return no results for them.
 const subjectOptions = computed(() => {
     if (!props.mine) return subjectRecords.value.map(s => ({ label: s.name, value: s.id }))
 
@@ -32,10 +30,6 @@ const subjectOptions = computed(() => {
     }).map(s => ({ label: s.subjectName, value: s.subjectId }))
 })
 
-// Same reasoning for the class filter - a teacher should only be able to filter down to a class
-// they actually have business with, as either the class master or a subject teacher there, not
-// every class in the school. Built from data already loaded for subjectOptions/classMasterAssignments
-// rather than a class-wide session list.
 const classMasterAssignments = ref<TeacherClassMaster[]>([])
 
 const classOptions = computed(() => {
@@ -152,9 +146,6 @@ async function loadFilterOptions() {
 }
 
 onMounted(() => {
-    // Defaulting page must merge into the existing query, not replace it wholesale -
-    // a link into this page with e.g. ?sessionId=... (the dashboard's "View Curriculum"
-    // button) would otherwise have that filter wiped out right after landing here.
     if (!route.query.page || !route.query.size) {
         updateQuery({ page: page.value })
     }
@@ -168,13 +159,13 @@ onMounted(() => {
     <div class="xl:col-span-2">
         <UCard :ui="{ body: 'space-y-3' }">
             <template #header>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col md:flex-row space-y-2 md:items-center md:justify-between">
                     <div>
                         <h3 class="font-semibold">
                             {{ props.mine ? 'My Schemes' : 'Recent Schemes' }}
                         </h3>
 
-                        <p class="text-sm text-muted">
+                        <p class="text-xs-base text-muted">
                             {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of                            work.' }}
                         </p>
                     </div>
@@ -211,10 +202,6 @@ onMounted(() => {
             <NuxtLink v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
                 class="flex items-center justify-between gap-3 rounded-xl border border-default p-3 transition-colors hover:border-primary/40 hover:bg-muted/40">
                 <div class="flex items-center gap-2">
-                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-muted">
-                        <UIcon :name="SUBJECT_ICON" class="size-5" />
-                    </div>
-
                     <div>
                         <h4 class="font-medium">
                             {{ scheme.subject }}
@@ -223,15 +210,15 @@ onMounted(() => {
                             </span>
                         </h4>
 
-                        <p class="mt-0.5 text-xs text-muted">
+                        <p class="mt-0.5 md:text-xs text-[9px] text-muted">
                             {{ scheme.term }} • <span>{{ scheme.startDate }}</span> - <span>{{ scheme.endDate }}</span>
                         </p>
                     </div>
                 </div>
 
-                <div class="flex shrink-0 items-center gap-2">
+                <div class="flex shrink-0 flex-col items-center gap-2">
                     <UBadge v-if="scheme.state === 'DRAFT'" color="neutral" variant="subtle">Draft</UBadge>
-                    <UBadge :color="getLessonStateColor(scheme.progressState)" variant="subtle">
+                    <UBadge v-if="scheme.state !== 'DRAFT'" :color="getLessonStateColor(scheme.progressState)" variant="subtle">
                         {{ clean(scheme.progressState) }}
                     </UBadge>
                 </div>
