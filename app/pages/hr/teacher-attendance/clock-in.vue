@@ -121,25 +121,10 @@ function formatTime(value: string) {
   return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function getPosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('Your browser does not support location services.'))
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0
-    })
-  })
-}
-
 async function withLocation(): Promise<GeolocationPosition | null> {
   locating.value = true
   try {
-    return await getPosition()
+    return await getGeoPosition()
   } catch (err: any) {
     lastError.value = err?.code === 1
       ? 'Location access was denied. Enable location permission for this site and try again.'

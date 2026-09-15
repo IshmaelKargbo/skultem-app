@@ -23,11 +23,15 @@ const hasRouteTabs = computed(() => props.tabs.some(tab => !!tab.to))
 function isRouteActive(tab: Tab) {
   if (!tab.to) return false
 
+  // tab.to can carry a query string, e.g. `/students/1?back=/classes/2` - strip it before
+  // comparing, since `route.path` never includes one and would otherwise never match.
+  const pathname = tab.to.split('?')[0]
+
   if (tab.exact) {
-    return route.path === tab.to
+    return route.path === pathname
   }
 
-  return route.path.startsWith(tab.to)
+  return route.path.startsWith(pathname)
 }
 
 function setActive(key: string) {

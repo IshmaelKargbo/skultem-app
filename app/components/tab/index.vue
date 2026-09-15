@@ -36,11 +36,15 @@ const route = useRoute()
 const container = ref<HTMLElement | null>(null)
 
 const isActive = (path: string, exact?: boolean) => {
+  // `path` (tab.to) can carry a query string, e.g. `/students/1?back=/classes/2` - strip it
+  // before comparing, since `route.path` never includes one and would otherwise never match.
+  const pathname = path.split('?')[0]
+
   if (exact) {
-    return route.path === path
+    return route.path === pathname
   }
 
-  return route.path.startsWith(path)
+  return route.path.startsWith(pathname)
 }
 
 // On a narrow screen this strip can overflow - without this, whichever tab is active could be
