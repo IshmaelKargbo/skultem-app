@@ -594,6 +594,10 @@ export function formatDateString(dateStr: string): string {
 }
 
 export function formatDateTime(dateStr: string): string {
+    // Unlike formatDate, this had no guard - new Date(null) resolves to the epoch, so a
+    // legitimately-unset date (e.g. a material that's never been restocked) rendered as
+    // "Jan 1, 1970" instead of blank.
+    if (dateStr == "" || dateStr == null) return ""
     const date = new Date(dateStr)
     return date.toLocaleString(undefined, {
         year: 'numeric',

@@ -242,7 +242,7 @@ definePageMeta({
 
                         <div class="mt-2 flex items-center justify-between">
                             <p class="text-xs text-muted">
-                                Restocked {{ formatDateTime(item.lastRestockedAt) }}
+                                {{ item.lastRestockedAt ? `Restocked ${formatDateTime(item.lastRestockedAt)}` : 'Never restocked' }}
                             </p>
 
                             <div class="flex items-center gap-1">
@@ -466,7 +466,7 @@ definePageMeta({
                                         </p>
 
                                         <p class="mt-0.5 text-sm font-medium text-highlighted">
-                                            {{ formatDateTime(item.lastRestockedAt) }}
+                                            {{ item.lastRestockedAt ? formatDateTime(item.lastRestockedAt) : 'Never restocked' }}
                                         </p>
                                     </div>
                                 </div>
