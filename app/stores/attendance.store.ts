@@ -6,7 +6,22 @@ export const useAttendanceStore = defineStore('attendance', {
     meta: {} as Meta,
     loading: false,
     report: {} as AttendanceReport,
-    error: null as string | null
+    error: null as string | null,
+
+    dailyRegister: null as DailyAttendanceRegister | null,
+    loadingDailyRegister: false,
+
+    monthlySummary: [] as StudentAttendanceSummary[],
+    loadingMonthlySummary: false,
+
+    termSummary: null as TermAttendanceSummary | null,
+    loadingTermSummary: false,
+
+    inspectionReport: null as InspectionReport | null,
+    loadingInspectionReport: false,
+
+    classSummary: null as ClassAttendanceSummary | null,
+    loadingClassSummary: false
   }),
 
   actions: {
@@ -66,6 +81,53 @@ export const useAttendanceStore = defineStore('attendance', {
       }
       
       return data.records
+    },
+    async fetchDailyRegister(classSessionId: string, date: string) {
+      this.loadingDailyRegister = true
+      try {
+        this.dailyRegister = await AttendanceApi().getDailyRegister(classSessionId, date) ?? null
+      } finally {
+        this.loadingDailyRegister = false
+      }
+    },
+    async fetchMonthlySummary(classSessionId: string, year: number, month: number) {
+      this.loadingMonthlySummary = true
+      try {
+        this.monthlySummary = await AttendanceApi().getMonthlySummary(classSessionId, year, month) ?? []
+      } finally {
+        this.loadingMonthlySummary = false
+      }
+    },
+    async fetchTermSummary(classSessionId: string, termId: string) {
+      this.loadingTermSummary = true
+      try {
+        this.termSummary = await AttendanceApi().getTermSummary(classSessionId, termId) ?? null
+      } finally {
+        this.loadingTermSummary = false
+      }
+    },
+    async fetchInspectionReport(params: {
+      reportType: InspectionReportType
+      classSessionId: string
+      termId?: string
+      date?: string
+      year?: number
+      month?: number
+    }) {
+      this.loadingInspectionReport = true
+      try {
+        this.inspectionReport = await AttendanceApi().getInspectionReport(params) ?? null
+      } finally {
+        this.loadingInspectionReport = false
+      }
+    },
+    async fetchClassSummary(academicYearId?: string, termId?: string) {
+      this.loadingClassSummary = true
+      try {
+        this.classSummary = await AttendanceApi().getClassSummary(academicYearId, termId) ?? null
+      } finally {
+        this.loadingClassSummary = false
+      }
     }
   }
 })

@@ -57,6 +57,10 @@
                                     <p class="text-xs-base text-muted">{{ value.code }}</p>
                                 </div>
                             </div>
+
+                            <UButton v-if="canEdit" :icon="EDIT_ICON" color="warning" variant="ghost"
+                                aria-label="Edit subject"
+                                @click="editState = true; editRcord = value" />
                         </div>
                     </div>
 
@@ -89,15 +93,25 @@
                 </div>
             </template>
         </UCard>
+
+        <SubjectEdit v-model:open="editState" :record="editRcord" />
     </div>
 </template>
 <script setup lang="ts">
 import { nextTick } from "vue";
+import type { Row } from "@tanstack/vue-table";
 
 const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
 const { can } = useAuth();
+
+const editRcord = ref<Subject | null>(null);
+const editState = ref(false);
+
+const UButton = resolveComponent("UButton");
+
+const canEdit = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]));
 
 const columns = [
     {
@@ -111,6 +125,29 @@ const columns = [
     {
         accessorKey: "description",
         header: "Description",
+    },
+    {
+        id: "actions",
+        meta: {
+            class: {
+                td: "text-right",
+            },
+        },
+        cell: ({ row }: { row: Row<Subject> }) => {
+            if (!canEdit.value) return null
+
+            return h(UButton, {
+                icon: EDIT_ICON,
+                color: "warning",
+                size: "sm",
+                variant: "ghost",
+                "aria-label": "Edit subject",
+                onClick: () => {
+                    editState.value = true;
+                    editRcord.value = row.original;
+                },
+            });
+        },
     },
 ];
 

@@ -40,6 +40,7 @@ export function useBranding() {
         principalName: fetched.principalName,
         primaryColor: fetched.primaryColor,
         secondaryColor: fetched.secondaryColor,
+        attendanceThreshold: fetched.attendanceThreshold ?? null,
       }
 
       if (domain) setCachedSchool(domain, entry)

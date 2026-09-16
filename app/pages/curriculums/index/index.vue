@@ -25,9 +25,6 @@
           <UButton v-for="action in quickActions" :key="action.label" block variant="soft" :color="action.color"
             :icon="action.icon" :label="action.label" :to="action.to" @click="action.onClick?.()" />
         </UCard>
-
-        <!-- My Progress - teacher only: their own coverage (getTeacherProgress below is the
-             school-wide admin view, restricted server-side to admin/owner/proprietor). -->
         <UCard v-if="can(Role.TEACHER)" class="overflow-hidden">
           <template #header>
             <div class="flex items-center gap-2">
@@ -162,9 +159,6 @@ const { can } = useAuth()
 const showBulkUpload = ref(false)
 const schemesKey = ref(0)
 
-// CurriculumSchemeOfWorkSchemes owns its own fetch on mount - bump a key to remount it (and the
-// overview cards) after a bulk upload actually created something, rather than reaching into its
-// internals.
 function onBulkUploaded() {
   schemesKey.value++
   if (isAdmin.value) loadOverview()
@@ -239,9 +233,6 @@ const quickActions = computed(() => {
   ]
 
   if (isAdmin.value) {
-    // Teacher Progress is otherwise only reachable via the Coverage Overview card below, which
-    // needs teacherProgress to finish loading (and have data) before its own button renders -
-    // this gives admins/owners a direct, always-present way in.
     actions.push({ label: 'Teacher Progress', icon: COVERAGE_ICON, to: '/curriculums/teacher-progress', color: 'neutral' })
     actions.push({ label: 'Bulk Upload', icon: 'i-lucide-upload', color: 'neutral', onClick: () => { showBulkUpload.value = true } })
     actions.unshift({ label: 'Create Scheme', icon: 'i-lucide-book-plus', to: '/curriculums/add', color: 'primary' })

@@ -372,9 +372,6 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
     icon: GRADES_ICON,
     roles: [Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER],
     items: [
-      // Grading is submit (subject teacher) / approve (class master) - only a class master has
-      // anything to approve, so the link is hidden rather than opening to an empty list. Always
-      // shown for admin/owner/proprietor, who approve on every class's behalf.
       (!can(Role.TEACHER) || isClassMaster.value) && {
         label: "Grade Approval",
         icon: GRADES_APPROVAL_ICON,
@@ -401,12 +398,7 @@ const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
         to: "/subjects/subject-groups",
       },
       
-      { label: "Class Subjects", icon: BOOK_OPEN_ICON, to: "/subjects/class-subjects" },
-      {
-        label: "Streams Subjects",
-        icon: CURRICULUM_STREAM_ICON,
-        to: "/subjects/stream-subjects",
-      },
+      { label: "Class Subjects", icon: BOOK_OPEN_ICON, to: "/subjects/class-subjects" }
     ],
   },
   {

@@ -32,6 +32,18 @@ export type Student = {
     updatedAt: string
 }
 
+export type EditStudentDTO = {
+    admissionNumber: string
+    givenNames: string
+    familyName: string
+    gender: string
+    dateOfBirth: string
+    nationality: string
+    religion: string
+    city: string
+    street: string
+}
+
 export type Family = {
     fatherName: string
     motherName: string

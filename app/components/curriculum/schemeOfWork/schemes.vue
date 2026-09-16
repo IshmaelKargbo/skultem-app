@@ -101,6 +101,9 @@ function clearFilters() {
     updateQuery({ subjectId: undefined, sessionId: undefined, termId: undefined, progress: undefined, page: 1 })
 }
 
+const NoSchema = 'Create your first scheme of work to get started.'
+const RecentlyCreated = 'Recently created schemes of work.';
+
 watch(() => page.value, (value) => {
     if (value) fetchRecord()
 })
@@ -162,7 +165,7 @@ onMounted(() => {
 
 <template>
     <div class="xl:col-span-2">
-        <UCard :ui="{ body: 'space-y-3' }">
+        <UCard :ui="{ body: 'space-y-3 p-0' }">
             <template #header>
                 <div class="flex items-center justify-between gap-2">
                     <div>
@@ -171,7 +174,7 @@ onMounted(() => {
                         </h3>
 
                         <p class="text-xs-base text-muted">
-                            {{ props.mine ? 'Schemes of work for the subjects you teach.' : 'Recently created schemes of work.' }}
+                            {{ props.mine ? 'Schemes of work for the subjects you teach.' : RecentlyCreated }}
                         </p>
                     </div>
 
@@ -186,17 +189,16 @@ onMounted(() => {
             <!-- Filters (desktop) -->
             <div class="hidden gap-2 sm:grid-cols-2 md:grid">
                 <USelectMenu v-model="subjectId" :items="subjectOptions" :loading="loadingFilters" value-key="value"
-                    label-key="label" :icon="SUBJECT_ICON" placeholder="All subjects" class="w-full" />
+                    label-key="label" placeholder="All subjects" class="w-full" />
 
                 <USelectMenu v-model="sessionId" :items="classOptions" :loading="loadingFilters" value-key="value"
-                    label-key="label" :icon="CLASS_ICON" placeholder="All classes" class="w-full" />
+                    label-key="label" placeholder="All classes" class="w-full" />
 
                 <div class="flex col-span-2 space-x-2">
                     <USelectMenu v-model="termId" :items="terms" :loading="loadingFilters" value-key="value"
-                        label-key="label" :icon="CALENDAR_ICON" placeholder="All terms" class="w-full" />
+                        label-key="label" placeholder="All terms" class="w-full" />
 
-                    <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label"
-                        icon="i-lucide-activity" placeholder="All statuses" class="w-full" />
+                    <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label" placeholder="All statuses" class="w-full" />
 
                     <UButton v-if="hasFilters" variant="outline" color="neutral" icon="i-lucide-x" label="Clear filters"
                         @click="clearFilters" />
@@ -204,64 +206,67 @@ onMounted(() => {
             </div>
 
             <!-- Filters (mobile) -->
-            <div v-if="filterState" class="grid gap-2 sm:grid-cols-2 md:hidden">
+            <div v-if="filterState" class="space-y-2 md:hidden border-b border-default p-4">
                 <USelectMenu v-model="subjectId" :items="subjectOptions" :loading="loadingFilters" value-key="value"
-                    label-key="label" :icon="SUBJECT_ICON" placeholder="All subjects" class="w-full" />
+                    label-key="label" placeholder="All subjects" class="w-full" />
 
                 <USelectMenu v-model="sessionId" :items="classOptions" :loading="loadingFilters" value-key="value"
-                    label-key="label" :icon="CLASS_ICON" placeholder="All classes" class="w-full" />
+                    label-key="label" placeholder="All classes" class="w-full" />
 
                 <USelectMenu v-model="termId" :items="terms" :loading="loadingFilters" value-key="value"
-                    label-key="label" :icon="CALENDAR_ICON" placeholder="All terms" class="w-full" />
+                    label-key="label" placeholder="All terms" class="w-full" />
 
-                <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label"
-                    icon="i-lucide-activity" placeholder="All statuses" class="w-full" />
+                <USelectMenu v-model="progress" :items="progressOptions" value-key="value" label-key="label" placeholder="All statuses" class="w-full" />
 
                 <UButton v-if="hasFilters" variant="outline" color="neutral" icon="i-lucide-x" label="Clear filters"
                     class="col-span-2" block @click="clearFilters" />
             </div>
 
-            <NuxtLink v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
-                class="flex items-center justify-between gap-3 rounded-xl border border-default p-3 transition-colors hover:border-primary/40 hover:bg-muted/40">
-                <div class="flex items-center gap-2">
+            <div class="space-y-4 p-3 md:p-0">
+                <NuxtLink v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
+                    class="flex items-center justify-between gap-3 rounded-xl border border-default p-3 transition-colors hover:border-primary/40 hover:bg-muted/40">
+                    <div class="flex items-center gap-2">
+                        <div>
+                            <h4 class="font-medium">
+                                {{ scheme.subject }}
+                                <span>
+                                    ( {{ scheme.session }} )
+                                </span>
+                            </h4>
+
+                            <p class="mt-0.5 md:text-xs text-[9px] text-muted">
+                                {{ scheme.term }} • <span>{{ scheme.startDate }}</span> - <span>{{ scheme.endDate
+                                }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex shrink-0 flex-col items-center gap-2">
+                        <UBadge v-if="scheme.state === 'DRAFT'" color="neutral" variant="subtle">Draft</UBadge>
+                        <UBadge v-if="scheme.state !== 'DRAFT'" :color="getLessonStateColor(scheme.progressState)"
+                            variant="subtle">
+                            {{ clean(scheme.progressState) }}
+                        </UBadge>
+                    </div>
+                </NuxtLink>
+
+                <div v-if="!records.length" class="flex flex-col items-center gap-3 py-10 text-center">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-muted/40 text-muted">
+                        <UIcon name="i-lucide-book-open" class="size-6" />
+                    </div>
+
                     <div>
-                        <h4 class="font-medium">
-                            {{ scheme.subject }}
-                            <span>
-                                ( {{ scheme.session }} )
-                            </span>
+                        <h4 class="font-semibold">
+                            {{ hasFilters ? 'No schemes match your filters' : 'No schemes yet' }}
                         </h4>
 
-                        <p class="mt-0.5 md:text-xs text-[9px] text-muted">
-                            {{ scheme.term }} • <span>{{ scheme.startDate }}</span> - <span>{{ scheme.endDate }}</span>
+                        <p class="mt-1 text-sm text-muted">
+                            {{ hasFilters ? 'Try clearing a filter to see more schemes.' : NoSchema }}
                         </p>
                     </div>
                 </div>
 
-                <div class="flex shrink-0 flex-col items-center gap-2">
-                    <UBadge v-if="scheme.state === 'DRAFT'" color="neutral" variant="subtle">Draft</UBadge>
-                    <UBadge v-if="scheme.state !== 'DRAFT'" :color="getLessonStateColor(scheme.progressState)" variant="subtle">
-                        {{ clean(scheme.progressState) }}
-                    </UBadge>
-                </div>
-            </NuxtLink>
-
-            <div v-if="!records.length" class="flex flex-col items-center gap-3 py-10 text-center">
-                <div class="flex size-12 items-center justify-center rounded-2xl bg-muted/40 text-muted">
-                    <UIcon name="i-lucide-book-open" class="size-6" />
-                </div>
-
-                <div>
-                    <h4 class="font-semibold">
-                        {{ hasFilters ? 'No schemes match your filters' : 'No schemes yet' }}
-                    </h4>
-
-                    <p class="mt-1 text-sm text-muted">
-                        {{ hasFilters ? 'Try clearing a filter to see more schemes.' : 'Create your first scheme of work to get started.' }}
-                    </p>
-                </div>
             </div>
-
             <template #footer>
                 <div class="flex flex-col items-center justify-between space-y-2 md:flex-row md:space-y-0">
                     <Showing :meta="meta" />

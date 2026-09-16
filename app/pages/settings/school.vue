@@ -5,8 +5,8 @@
             <div class="hidden gap-3 lg:flex">
                 <UButton v-if="active === 'profile'" label="Save Settings" icon="lucide:save" :loading="saving"
                     :disabled="loading" @click="save" />
-                <UButton v-else-if="active === 'attendance'" label="Save Location" icon="lucide:save"
-                    :loading="savingLocation" :disabled="loadingLocation" @click="saveAttendanceLocation" />
+                <UButton v-else-if="active === 'attendance'" label="Save Attendance Settings" icon="lucide:save"
+                    :loading="saving || savingLocation" :disabled="loadingLocation" @click="saveAttendanceLocation" />
             </div>
         </Heading>
 
@@ -91,7 +91,8 @@
                     @clear-signature="clearFile('signature')" />
 
                 <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
-                    :loading-location="loadingLocation" :location-configured="locationConfigured" />
+                    :loading-location="loadingLocation" :location-configured="locationConfigured"
+                    v-model:attendance-threshold="state.attendanceThreshold" />
             </div>
         </div>
         <UModal v-model:open="mobilePanelOpen" fullscreen :ui="{ content: 'lg:hidden' }">
@@ -112,16 +113,17 @@
                             @clear-signature="clearFile('signature')" />
 
                         <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
-                            :loading-location="loadingLocation" :location-configured="locationConfigured" />
+                            :loading-location="loadingLocation" :location-configured="locationConfigured"
+                            v-model:attendance-threshold="state.attendanceThreshold" />
                     </div>
 
                     <template #footer>
                         <div class="flex w-full gap-3">
                             <UButton v-if="active === 'profile'" label="Save Settings" icon="lucide:save"
                                 class="flex-1 justify-center" :loading="saving" :disabled="loading" @click="save" />
-                            <UButton v-else-if="active === 'attendance'" label="Save Location" icon="lucide:save"
-                                class="flex-1 justify-center" :loading="savingLocation" :disabled="loadingLocation"
-                                @click="saveAttendanceLocation" />
+                            <UButton v-else-if="active === 'attendance'" label="Save Attendance Settings"
+                                icon="lucide:save" class="flex-1 justify-center" :loading="saving || savingLocation"
+                                :disabled="loadingLocation" @click="saveAttendanceLocation" />
                         </div>
                     </template>
                 </UCard>
@@ -146,6 +148,7 @@ type SchoolProfile = {
     principalName: string
     primaryColor: string
     secondaryColor: string
+    attendanceThreshold: number
 }
 
 const state = reactive<SchoolProfile>({
@@ -159,7 +162,8 @@ const state = reactive<SchoolProfile>({
     chiefdom: '',
     principalName: '',
     primaryColor: '#1878c5',
-    secondaryColor: '#0f172a'
+    secondaryColor: '#0f172a',
+    attendanceThreshold: 75
 })
 
 const loading = ref(true)
@@ -214,7 +218,12 @@ const attendanceState = reactive({
     allowedIps: ''
 })
 
+// Saves both halves of this tab in one click: the geofence clock-in config
+// (AttendanceLocationSetting) and the attendance % alert threshold (a plain School field, same
+// endpoint the Profile tab's Save uses) - the tab shows one button, so it does both rather than
+// silently dropping whichever field the user just changed.
 async function saveAttendanceLocation() {
+    saving.value = true
     try {
         await attendanceStore.saveLocationSettings({
             latitude: attendanceState.latitude,
@@ -222,9 +231,29 @@ async function saveAttendanceLocation() {
             radiusMeters: attendanceState.radiusMeters,
             allowedIps: attendanceState.allowedIps || undefined
         })
-        success('Clock-in location saved.')
+
+        const updated = await SchoolApi().update({
+            name: state.name,
+            domain: state.domain,
+            region: state.region,
+            district: state.district,
+            chiefdom: state.chiefdom,
+            city: state.city,
+            street: state.street,
+            attendanceThreshold: state.attendanceThreshold
+        })
+
+        if (updated) {
+            state.attendanceThreshold = updated.attendanceThreshold ?? state.attendanceThreshold
+            const domain = resolveTenantSlug(window.location.hostname)
+            if (domain) setCachedSchool(domain, updated)
+        }
+
+        success('Attendance settings saved.')
     } catch (err: any) {
-        toastError(err?.message || 'Unable to save location settings.')
+        toastError(err?.message || 'Unable to save attendance settings.')
+    } finally {
+        saving.value = false
     }
 }
 
@@ -264,6 +293,7 @@ function applySchool(school: any) {
     state.principalName = school.principalName ?? ''
     state.primaryColor = school.primaryColor ?? '#1878c5'
     state.secondaryColor = school.secondaryColor ?? '#0f172a'
+    state.attendanceThreshold = school.attendanceThreshold ?? 75
     logoUrl.value = school.logo ?? ''
     signatureUrl.value = school.principalSignature ?? ''
     logoPreview.value = logoUrl.value
@@ -280,7 +310,8 @@ async function save() {
             district: state.district,
             chiefdom: state.chiefdom,
             city: state.city,
-            street: state.street
+            street: state.street,
+            attendanceThreshold: state.attendanceThreshold
         })
 
         if (!updated) return

@@ -85,6 +85,34 @@
             </div>
         </UCard>
 
+        <UCard v-if="canManagePromotion && classTeachers.length" :ui="{ body: 'p-0 sm:p-0' }">
+            <template #header>
+                <div class="flex items-center gap-2">
+                    <UIcon name="i-lucide-user-round-check" class="size-4 text-primary" />
+                    <h3 class="text-sm font-semibold">Class Masters</h3>
+                </div>
+            </template>
+
+            <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="master in classTeachers" :key="master.id"
+                    class="flex flex-wrap items-center gap-3 p-3">
+                    <UAvatar :src="master.photo" :alt="master.name" size="md"
+                        class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
+
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium">{{ master.name }}</p>
+                        <p v-if="master.assignment" class="truncate text-[11px] text-gray-500 dark:text-gray-400">
+                            {{ master.assignment }}
+                        </p>
+                    </div>
+
+                    <UButton size="xs" color="error" variant="soft" icon="i-lucide-user-round-x"
+                        label="Unassign" :loading="unassigningMasterId === master.id"
+                        @click="onRemoveClassMaster(master.id)" />
+                </div>
+            </div>
+        </UCard>
+
         <ClassPromotionSetting :id="session?.clazzId || ''" />
 
         <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0' }">
@@ -284,6 +312,7 @@ const store = useAcademicYearStore()
 const { viewingYear } = storeToRefs(store)
 
 const { can } = useAuth()
+const { success, error: toastError } = useNotify()
 
 const classId = computed(() => String(route.params.id))
 
@@ -444,6 +473,21 @@ const classTeachers = computed(() => {
 })
 
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+
+const unassigningMasterId = ref<string | null>(null)
+
+async function onRemoveClassMaster(id: string) {
+    unassigningMasterId.value = id
+    try {
+        await classStore.removeClassMaster(id)
+        success('Class master unassigned successfully')
+        await classStore.fetchOverview(classId.value)
+    } catch (err: any) {
+        toastError(err?.message || 'Unable to unassign the class master')
+    } finally {
+        unassigningMasterId.value = null
+    }
+}
 
 const isTeacherViewer = computed(() => can(Role.TEACHER))
 const isParentViewer = computed(() => can(Role.PARENT))

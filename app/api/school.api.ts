@@ -38,7 +38,7 @@ export const SchoolApi = () => {
         useHandleError(err)
       }
     },
-    update: async (payload: { name: string, domain: string, region: string, district: string, chiefdom: string, city: string, street: string }) => {
+    update: async (payload: { name: string, domain: string, region: string, district: string, chiefdom: string, city: string, street: string, attendanceThreshold?: number }) => {
       try {
         const res = await $api('/school', {
           method: 'PUT',

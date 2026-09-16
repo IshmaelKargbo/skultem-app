@@ -12,13 +12,13 @@
             <UCard>
                 <div>
                     <p>Export Report</p>
-                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <UButton :icon="DOWNLOAD_ICON" label="Export CSV" size="lg" class="w-full flex justify-center"
-                            color="neutral" variant="outline" />
-                        <UButton :icon="DOWNLOAD_ICON" label="Export Excel" size="lg" class="w-full flex justify-center"
-                            color="neutral" variant="outline" />
+                            color="neutral" variant="outline" :loading="exportingCsv" :disabled="exportingPdf"
+                            @click="exportReport('csv')" />
                         <UButton :icon="DOWNLOAD_ICON" label="Export PDF" size="lg" class="w-full flex justify-center"
-                            color="neutral" variant="outline" />
+                            color="neutral" variant="outline" :loading="exportingPdf" :disabled="exportingCsv"
+                            @click="exportReport('pdf')" />
                     </div>
                 </div>
             </UCard>
@@ -29,5 +29,24 @@
 
 <script setup lang="ts">
 const store = useReportStore()
-const { entity, run } = storeToRefs(store)
+const { entity, run, report } = storeToRefs(store)
+const notify = useNotify()
+
+const exportingCsv = ref(false)
+const exportingPdf = ref(false)
+
+async function exportReport(format: 'csv' | 'pdf') {
+    if (report.value == null) return
+
+    const loading = format === 'csv' ? exportingCsv : exportingPdf
+    loading.value = true
+    try {
+        const { blob, filename } = await ReportApi().exportBuilderReport(report.value, format)
+        downloadBlob(blob, filename)
+    } catch (err: any) {
+        notify.error(err?.message || 'Failed to export report')
+    } finally {
+        loading.value = false
+    }
+}
 </script>

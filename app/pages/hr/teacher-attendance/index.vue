@@ -1,11 +1,14 @@
 <template>
   <div id="attendance-scroll" class="px-4 md:px-6 space-y-4">
-    <Heading title="Teacher Attendance" subtitle="Clock staff in/out and review past days.">
+    <Heading title="Mark Attendance" subtitle="Mark staff present, absent or late, or clock them in/out.">
       <div class="flex w-100 items-center gap-2">
           <UInput v-model="date" type="date" :max="today" />
         <UButton variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance"
           label="Location Settings" />
       </div>
+      <UButton icon="i-lucide-save" :loading="saving" :disabled="!pendingChanges.length" @click="saveAttendance">
+        Save Attendance
+      </UButton>
     </Heading>
 
     <HrSectionNav />
@@ -60,9 +63,12 @@
     <!-- Register -->
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <p class="font-semibold">Register</p>
-          <p class="text-xs-base text-muted">{{ formatDateString(date) }}</p>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="font-semibold">Register</p>
+            <p class="text-xs-base text-muted">{{ formatDateString(date) }}</p>
+          </div>
+          <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." class="w-full sm:w-56" />
         </div>
       </template>
 
@@ -77,8 +83,8 @@
         </div>
       </div>
 
-      <div v-else-if="roster?.entries.length" class="divide-y divide-gray-200 dark:divide-gray-800">
-        <div v-for="row in roster.entries" :key="row.teacher.id" class="flex flex-wrap items-center gap-3 p-3">
+      <div v-else-if="filteredEntries.length" class="divide-y divide-gray-200 dark:divide-gray-800">
+        <div v-for="row in filteredEntries" :key="row.teacher.id" class="flex flex-wrap items-center gap-3 p-3">
           <UAvatar :src="row.teacher.user?.photo || undefined" :alt="teacherName(row.teacher)" size="md"
             loading="lazy" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
 
@@ -97,21 +103,44 @@
                 {{ row.clockOutByAdmin ? 'out by admin' : 'out' }} {{ formatTime(row.clockedOutAt) }}
               </span>
             </p>
+            <p v-if="row.recordedBy" class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+              Marked by {{ row.recordedBy }}
+            </p>
           </div>
 
-          <UBadge v-if="row.status" :icon="statusIcon(row.status)" :label="statusLabel(row.status)" variant="subtle"
-            :color="teacherAttendanceStatusColor(row.status)" />
-          <UBadge v-else label="Not marked" variant="subtle" color="neutral" />
+          <UBadge v-if="row.clockedInAt" :label="statusBadgeLabel(row.teacher.id)"
+            :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)" variant="soft"
+            class="rounded-full" />
+
+          <UDropdownMenu v-else :items="statusMenuItems(row.teacher.id)" :content="{ align: 'end' }">
+            <UButton :label="statusBadgeLabel(row.teacher.id)" trailing-icon="i-lucide-chevron-down" size="xs"
+              variant="soft" :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)"
+              class="rounded-full" />
+          </UDropdownMenu>
+
+          <UInput v-if="!row.clockedInAt && marks[row.teacher.id]?.status === 'EXCUSED'"
+            v-model="marks[row.teacher.id]!.note" placeholder="Reason (optional)" class="w-full sm:w-48" />
 
           <template v-if="isToday">
             <UButton v-if="!row.clockedInAt" size="xs" icon="i-lucide-log-in" label="Clock In"
               :loading="adminClockingTeacherId === row.teacher.id" @click="onAdminClockIn(row.teacher.id)" />
 
-            <UButton v-else-if="!row.clockedOutAt" size="xs" color="neutral" variant="outline" icon="i-lucide-log-out"
-              label="Clock Out" :loading="adminClockingTeacherId === row.teacher.id"
-              @click="onAdminClockOut(row.teacher.id)" />
+            <template v-else>
+              <UButton v-if="!row.clockedOutAt" size="xs" color="neutral" variant="outline" icon="i-lucide-log-out"
+                label="Clock Out" :loading="adminClockingTeacherId === row.teacher.id"
+                @click="onAdminClockOut(row.teacher.id)" />
+
+              <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-rotate-ccw"
+                :label="row.clockedOutAt ? 'Undo Clock Out' : 'Undo Clock In'"
+                :loading="unclockingTeacherId === row.teacher.id" @click="onAdminUnclock(row.teacher.id)" />
+            </template>
           </template>
         </div>
+      </div>
+
+      <div v-else-if="roster?.entries.length" class="flex flex-col items-center gap-2 py-10 text-center">
+        <UIcon name="i-lucide-search-x" class="text-4xl text-muted" />
+        <p class="font-medium">No teacher matches "{{ search }}"</p>
       </div>
 
       <div v-else class="flex flex-col items-center gap-2 py-10 text-center">
@@ -183,13 +212,41 @@
 <script setup lang="ts">
 const notify = useNotify()
 const store = useTeacherAttendanceStore()
-const { roster, loadingRoster, history, historyMeta, loadingHistory, error, adminClockingTeacherId } = storeToRefs(store)
+const { roster, loadingRoster, history, historyMeta, loadingHistory, error, adminClockingTeacherId, unclockingTeacherId, saving } = storeToRefs(store)
 
 const today = new Date().toISOString().slice(0, 10)
 const date = ref(today)
 const historyPage = ref(1)
+const search = ref('')
 
 const isToday = computed(() => date.value === today)
+const marks = reactive<Record<string, { status: TeacherAttendanceStatus | null, note: string }>>({})
+
+watch(roster, (value) => {
+  if (!value) return
+  for (const row of value.entries) {
+    marks[row.teacher.id] = { status: row.status, note: row.note || '' }
+  }
+}, { immediate: true })
+
+const filteredEntries = computed(() => {
+  const entries = roster.value?.entries || []
+  if (!search.value.trim()) return entries
+
+  const query = search.value.trim().toLowerCase()
+  return entries.filter(row => teacherName(row.teacher).toLowerCase().includes(query))
+})
+
+const pendingChanges = computed(() => {
+  const entries = roster.value?.entries || []
+  return entries
+    .filter(row => marks[row.teacher.id]?.status && marks[row.teacher.id]?.status !== row.status)
+    .map(row => ({
+      teacherId: row.teacher.id,
+      status: marks[row.teacher.id]!.status as TeacherAttendanceStatus,
+      note: marks[row.teacher.id]!.note || undefined
+    }))
+})
 
 function teacherName(teacher: Teacher) {
   return `${teacher.user?.givenNames || ''} ${teacher.user?.familyName || ''}`.trim()
@@ -199,12 +256,33 @@ function formatTime(value: string) {
   return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function statusLabel(status: TeacherAttendanceStatus) {
-  return TEACHER_ATTENDANCE_STATUS_OPTIONS.find(o => o.value === status)?.label || status
+function statusBadgeLabel(teacherId: string) {
+  const status = marks[teacherId]?.status
+  return status
+    ? TEACHER_ATTENDANCE_STATUS_OPTIONS.find(o => o.value === status)?.label || status
+    : 'Not marked'
 }
 
-function statusIcon(status: TeacherAttendanceStatus) {
-  return TEACHER_ATTENDANCE_STATUS_OPTIONS.find(o => o.value === status)?.icon || ''
+function statusMenuItems(teacherId: string) {
+  return TEACHER_ATTENDANCE_STATUS_OPTIONS.map(option => ({
+    label: option.label,
+    icon: option.icon,
+    onClick: () => {
+      const entry = marks[teacherId]
+      if (entry) entry.status = option.value
+    }
+  }))
+}
+
+async function saveAttendance() {
+  if (!pendingChanges.value.length) return
+  try {
+    await store.mark(date.value, pendingChanges.value)
+    notify.success('Attendance saved successfully')
+    store.fetchHistory(historyPage.value, 10)
+  } catch (err: any) {
+    notify.error(err?.message || 'Failed to save attendance')
+  }
 }
 
 async function onAdminClockIn(teacherId: string) {
@@ -227,13 +305,23 @@ async function onAdminClockOut(teacherId: string) {
   }
 }
 
+async function onAdminUnclock(teacherId: string) {
+  try {
+    await store.adminUnclock(teacherId, date.value)
+    notify.success('Clock corrected.')
+    store.fetchHistory(historyPage.value, 10)
+  } catch (err: any) {
+    notify.error(err?.message || 'Unable to undo the clock.')
+  }
+}
+
 watch(date, () => store.fetchRoster(date.value))
 watch(historyPage, () => store.fetchHistory(historyPage.value, 10))
 
 onMounted(() => {
-  useAppStore().setTitle('Teacher Attendance')
+  useAppStore().setTitle('Mark Attendance')
   useAppStore().setBack('/hr')
-  document.title = 'Teacher Attendance | HR | Skultem'
+  document.title = 'Mark Attendance | HR | Skultem'
 
   store.fetchRoster(date.value)
   store.fetchHistory(1, 10)

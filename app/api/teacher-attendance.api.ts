@@ -78,6 +78,16 @@ export const TeacherAttendanceApi = () => {
       }
     },
 
+    // Undoes today's most recent clock event (clock-out if there is one, otherwise clock-in) -
+    // for correcting a mistaken clock.
+    adminUnclock: async (teacherId: string) => {
+      try {
+        await $api(`/teacher-attendance/${teacherId}/admin-unclock`, { method: 'POST' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     // Self-service - the geofenced clock-in/out.
     clockIn: async (latitude: number, longitude: number, accuracy?: number) => {
       try {
@@ -101,6 +111,45 @@ export const TeacherAttendanceApi = () => {
       try {
         const res = await $api('/teacher-attendance/me/today') as any
         return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    getMonthlySummary: async (year: number, month: number) => {
+      try {
+        const res = await $api(`/teacher-attendance/summary/monthly?year=${year}&month=${month}`) as any
+        return res.data as TeacherAttendanceSummaryRow[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    getTermSummary: async (termId: string) => {
+      try {
+        const res = await $api(`/teacher-attendance/summary/term?termId=${termId}`) as any
+        return res.data as TermTeacherAttendanceSummary
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    getManagementReport: async (params: {
+      reportType: TeacherManagementReportType
+      termId?: string
+      date?: string
+      year?: number
+      month?: number
+    }) => {
+      try {
+        const query = new URLSearchParams({ reportType: params.reportType })
+        if (params.termId) query.set('termId', params.termId)
+        if (params.date) query.set('date', params.date)
+        if (params.year != null) query.set('year', String(params.year))
+        if (params.month != null) query.set('month', String(params.month))
+
+        const res = await $api(`/teacher-attendance/management-report?${query.toString()}`) as any
+        return res.data as TeacherManagementReport
       } catch (err: any) {
         useHandleError(err)
       }

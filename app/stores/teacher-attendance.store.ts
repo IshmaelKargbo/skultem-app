@@ -20,11 +20,21 @@ export const useTeacherAttendanceStore = defineStore('teacherAttendance', {
     // Admin clocking a teacher in/out on the roster - keyed by teacherId so one row's spinner
     // doesn't disable the whole table.
     adminClockingTeacherId: null as string | null,
+    unclockingTeacherId: null as string | null,
 
     // Admin location settings
     locationSettings: null as AttendanceLocationSettings | null,
     loadingLocationSettings: false,
     savingLocationSettings: false,
+
+    monthlySummary: [] as TeacherAttendanceSummaryRow[],
+    loadingMonthlySummary: false,
+
+    termSummary: null as TermTeacherAttendanceSummary | null,
+    loadingTermSummary: false,
+
+    managementReport: null as TeacherManagementReport | null,
+    loadingManagementReport: false,
 
     error: null as string | null
   }),
@@ -71,6 +81,16 @@ export const useTeacherAttendanceStore = defineStore('teacherAttendance', {
         return result as ClockOutResult
       } finally {
         this.adminClockingTeacherId = null
+      }
+    },
+
+    async adminUnclock(teacherId: string, date: string) {
+      this.unclockingTeacherId = teacherId
+      try {
+        await TeacherAttendanceApi().adminUnclock(teacherId)
+        await this.fetchRoster(date)
+      } finally {
+        this.unclockingTeacherId = null
       }
     },
 
@@ -140,6 +160,39 @@ export const useTeacherAttendanceStore = defineStore('teacherAttendance', {
         return this.locationSettings
       } finally {
         this.savingLocationSettings = false
+      }
+    },
+
+    async fetchMonthlySummary(year: number, month: number) {
+      this.loadingMonthlySummary = true
+      try {
+        this.monthlySummary = await TeacherAttendanceApi().getMonthlySummary(year, month) ?? []
+      } finally {
+        this.loadingMonthlySummary = false
+      }
+    },
+
+    async fetchTermSummary(termId: string) {
+      this.loadingTermSummary = true
+      try {
+        this.termSummary = await TeacherAttendanceApi().getTermSummary(termId) ?? null
+      } finally {
+        this.loadingTermSummary = false
+      }
+    },
+
+    async fetchManagementReport(params: {
+      reportType: TeacherManagementReportType
+      termId?: string
+      date?: string
+      year?: number
+      month?: number
+    }) {
+      this.loadingManagementReport = true
+      try {
+        this.managementReport = await TeacherAttendanceApi().getManagementReport(params) ?? null
+      } finally {
+        this.loadingManagementReport = false
       }
     }
   }

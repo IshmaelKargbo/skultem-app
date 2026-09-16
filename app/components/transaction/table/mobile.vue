@@ -15,10 +15,6 @@ const size = computed<number>({
   set: (val) => updateQuery({ size: val })
 })
 
-// Just re-fetches - the URL itself is kept in sync by updateQuery() (user-driven changes) and
-// the onMounted normalization below (missing page param on first load). A router.replace() here
-// too used to stomp over both of those, dropping every other query param (size, a saved report's
-// id, ...) down to just {page} on every single page change.
 watch(() => page.value, () => {
   fetchRecord()
 }, { immediate: true })
@@ -37,10 +33,6 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   if (report.value == null) return
-  // The desktop table above (always mounted alongside this one, just CSS-hidden) watches this
-  // same route query and reacts to page changes identically - without this guard, every page
-  // change fires two concurrent runReport calls for the two of them, and whichever resolves
-  // last silently wins even if it was the stale one.
   if (loading.value) return
   loading.value = true
   await store.runReport(report.value, page.value, size.value)

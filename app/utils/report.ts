@@ -68,3 +68,12 @@ export type ReportFilters = {
   name: string
   filters: ReportFilter[]
 }
+
+// Field shown in ReportDetailModal - the "view details" modal every report-builder table opens
+// to hold whatever fields don't fit in the trimmed desktop columns / compact mobile row.
+export type ReportDetailField = {
+  label: string
+  value: string | number | null | undefined
+  color?: 'success' | 'error' | 'warning' | 'info' | 'neutral'
+  badge?: boolean
+}

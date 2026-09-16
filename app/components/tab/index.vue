@@ -1,5 +1,5 @@
 <template>
-  <div ref="container" class="overflow-x-auto">
+  <div ref="container" class="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
     <div class="inline-flex min-w-max gap-1 rounded-3xl border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
       <NuxtLink
         v-for="tab in tabs"

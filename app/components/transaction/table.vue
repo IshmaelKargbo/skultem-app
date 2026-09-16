@@ -188,8 +188,8 @@ const selected = ref<ReportSelectPayload>({
     <TransactionFilters :selected="selected" />
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-between">
-          <p>Transactions</p>
+        <div class="flex items-center justify-between">
+          <p class="text-xl">Transactions</p>
           <TableViewToggle v-model="view" />
         </div>
       </template>
@@ -246,87 +246,39 @@ const selected = ref<ReportSelectPayload>({
 
         <!-- Records -->
         <template v-else-if="data?.length">
-          <UCard v-for="item in data" :key="item.id" class="overflow-hidden" :ui="{ body: 'sm:p-0 p-0' }">
-            <div class="space-y-3">
+          <div v-for="item in data" :key="item.id" class="flex items-start justify-between border rounded-2xl border-default p-4">
+            <div class="flex gap-3">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="truncate text-sm font-semibold">
+                    {{ clean(item.type) }}
+                  </h3>
 
-              <!-- Header -->
-              <div class="flex items-start justify-between border-b border-default  p-3">
-
-                <div class="flex gap-3">
-
-                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl"
-                    :class="directionStyle(item.direction).bg">
-                    <UIcon :name="directionStyle(item.direction).icon" class="text-lg"
-                      :class="directionStyle(item.direction).text" />
-                  </div>
-
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                      <h3 class="truncate text-sm font-semibold">
-                        {{ clean(item.type) }}
-                      </h3>
-
-                      <p class="text-xs text-muted">
-                        ( {{ clean(item.referenceType) }} )
-                      </p>
-
-                    </div>
-                    <p class="mt-1 text-xs text-muted">
-                      {{ formatDate(item.createdAt) }}
-                    </p>
-                  </div>
+                  <p class="text-xs text-muted">
+                    ( {{ clean(item.referenceType) }} )
+                  </p>
 
                 </div>
+                <p class="mt-1 text-xs text-muted">
+                  {{ formatDate(item.createdAt) }}
+                </p>
+              </div>
 
+            </div>
+
+            <div class="flex items-end flex-col space-y-1">
+              <p class="truncate text-sm font-bold" :class="balanceStyle(item.balance).label">
+                {{ format(item.balance) }}
+              </p>
+              <div class="flex space-x-2">
+                <p class="truncate text-sm font-bold" :class="directionStyle(item.direction).label">
+                  {{ directionStyle(item.direction).sign }} {{ format(item.amount) }}
+                </p>
                 <UBadge size="sm" variant="soft" :icon="directionStyle(item.direction).icon"
                   :color="directionStyle(item.direction).color" :label="clean(item.direction)" />
               </div>
-
-              <!-- Amount Cards -->
-              <div class="grid grid-cols-2 gap-3 p-3">
-                <!-- Amount -->
-                <div class="min-w-0 rounded-xl border p-2"
-                  :class="[directionStyle(item.direction).border, directionStyle(item.direction).bg]">
-                  <div class="mb-2 flex items-center gap-2">
-                    <div class="flex size-7 items-center justify-center rounded-lg"
-                      :class="directionStyle(item.direction).iconBg">
-                      <UIcon :name="directionStyle(item.direction).arrowIcon" class="size-4"
-                        :class="directionStyle(item.direction).iconText" />
-                    </div>
-
-                    <p class="text-[10px] font-medium uppercase tracking-wide"
-                      :class="directionStyle(item.direction).label">
-                      Amount
-                    </p>
-                  </div>
-
-                  <p class="truncate text-sm font-bold" :class="directionStyle(item.direction).label">
-                    {{ directionStyle(item.direction).sign }} {{ format(item.amount) }}
-                  </p>
-                </div>
-
-                <!-- Balance -->
-                <div class="min-w-0 rounded-xl border p-2"
-                  :class="[balanceStyle(item.balance).border, balanceStyle(item.balance).bg]">
-                  <div class="mb-2 flex items-center gap-2">
-                    <div class="flex size-7 items-center justify-center rounded-lg"
-                      :class="balanceStyle(item.balance).iconBg">
-                      <UIcon name="i-lucide-wallet" class="size-4" :class="balanceStyle(item.balance).iconText" />
-                    </div>
-
-                    <p class="text-[10px] font-medium uppercase tracking-wide"
-                      :class="balanceStyle(item.balance).label">
-                      Balance
-                    </p>
-                  </div>
-
-                  <p class="truncate text-sm font-bold" :class="balanceStyle(item.balance).label">
-                    {{ format(item.balance) }}
-                  </p>
-                </div>
-              </div>
             </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Empty -->

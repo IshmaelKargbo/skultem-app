@@ -13,6 +13,7 @@ export type CachedSchool = {
   principalName: string | null
   primaryColor: string | null
   secondaryColor: string | null
+  attendanceThreshold: number | null
 }
 
 const STORAGE_PREFIX = 'skultem:school:'
@@ -47,6 +48,7 @@ export function useSchoolCache() {
       principalName: school.principalName ?? null,
       primaryColor: school.primaryColor ?? null,
       secondaryColor: school.secondaryColor ?? null,
+      attendanceThreshold: school.attendanceThreshold ?? null,
     }
 
     try {

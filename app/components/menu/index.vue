@@ -7,8 +7,6 @@
     <!-- Header (fixed height) -->
     <template #header>
       <NuxtLink to="/" class="flex min-w-0 items-center gap-2">
-        <!-- The school's own logo when known (see useSchoolInfo), falling back to Skultem's -
-             this is the one piece of "Skultem" branding shown on every single authenticated page. -->
         <img v-if="school?.logo" :src="school.logo" :alt="school.name || 'School logo'"
           class="h-9 w-9 shrink-0 rounded-lg object-contain" />
 
@@ -61,10 +59,6 @@
 </template>
 
 <script setup lang="ts">
-// Reactive, app-wide school info (see useSchoolInfo) - hydrated from the offline cache
-// immediately, and kept current whenever plugins/auth.ts (or the login page) fetches fresh data,
-// even on a first-ever visit where the cache started out empty and this would otherwise have been
-// stuck showing Skultem's own logo for the rest of the session.
 const { school, hydrateFromCache } = useSchoolInfo()
 hydrateFromCache()
 
@@ -83,8 +77,6 @@ interface NavItem {
   exact?: boolean
   roles?: Role[]
   subNavs?: SubNavItem[]
-  // Only reachable on the admin subdomain (see ADMIN_PORTAL_PATHS in auth.global.ts) - without
-  // this, a SYSTEM_ADMIN browsing a tenant subdomain still saw the link and hit a 404 on click.
   adminPortalOnly?: boolean
 }
 
@@ -100,9 +92,30 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', to: '/', exact: true, icon: DASHBOARD_ICON },
 
   {
-    label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON,
-    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PARENT]
+    label: 'Attendance', icon: ATTENDANCE_ICON,
+    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER],
+    subNavs: [
+      { label: 'Mark Attendance', to: '/attendance', icon: ATTENDANCE_ICON, exact: true },
+      { label: 'Daily Register', to: '/attendance/daily-register', icon: DAILY_REGISTER_ICON },
+      {
+        label: 'Monthly Summary', to: '/attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON,
+        roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+      },
+      {
+        label: 'Term Summary', to: '/attendance/term-summary', icon: TERM_SUMMARY_ICON,
+        roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+      },
+      {
+        label: 'Class Summary', to: '/attendance/class-summary', icon: CLASS_SUMMARY_ICON,
+        roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+      },
+      {
+        label: 'Inspection Reports', to: '/attendance/inspection-reports', icon: INSPECTION_REPORT_ICON,
+        roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+      },
+    ]
   },
+  { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON, roles: [Role.PARENT] },
 
   { label: 'Grade', to: '/grades', icon: GRADES_ICON, roles: [Role.TEACHER] },
 
@@ -121,12 +134,10 @@ const navItems: NavItem[] = [
     label: 'Students', to: '/students', icon: STUDENT_ICON,
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT]
   },
-
   {
     label: 'Teachers', to: '/teachers', icon: TEACHER_ICON,
     roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
   },
-
   {
     label: 'Classes', to: '/classes', icon: CLASS_ICON,
     roles: [Role.ACCOUNTANT, Role.TEACHER,]
@@ -161,8 +172,7 @@ const navItems: NavItem[] = [
       { label: 'Subjects', to: '/subjects', icon: SUBJECT_ICON, exact: true },
       { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON },
       { label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON },
-      { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON },
-      { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON },
+      { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON }
     ]
   },
   {
@@ -273,9 +283,17 @@ const navItems: NavItem[] = [
 
   {
     label: 'Analytics', icon: REPORT_ICON,
-    roles: [Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+    roles: [Role.ACCOUNTANT],
     subNavs: [
-      // { label: 'Reports', to: '/analytics', icon: REPORT_ICON, exact: true },
+      { label: 'Financial Reports', to: '/analytics/financial-reports', icon: SCHEME_ICON },
+    ]
+  },
+
+  {
+    label: 'Analytics', icon: REPORT_ICON,
+    roles: [Role.PROPRIETOR, Role.OWNER],
+    subNavs: [
+      { label: 'Reports', to: '/analytics', icon: REPORT_ICON, exact: true },
       { label: 'Financial Reports', to: '/analytics/financial-reports', icon: SCHEME_ICON },
     ]
   },
@@ -310,7 +328,11 @@ const navItems: NavItem[] = [
     label: 'Human Resource', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER],
     subNavs: [
       { label: 'Overview', to: '/hr', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-      { label: 'Teacher Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Mark Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Daily Register', to: '/hr/teacher-attendance/daily-register', icon: DAILY_REGISTER_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Monthly Summary', to: '/hr/teacher-attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Term Summary', to: '/hr/teacher-attendance/term-summary', icon: TERM_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
+      { label: 'Management Reports', to: '/hr/teacher-attendance/management-reports', icon: INSPECTION_REPORT_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
       { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER] },
       { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
     ]

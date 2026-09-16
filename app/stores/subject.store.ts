@@ -25,6 +25,9 @@ export const useSubjectStore = defineStore('subject', {
     create(payload: CreateSubjectDto) {
       return SubjectApi().create(payload)
     },
+    edit(id: string, payload: EditSubjectDto) {
+      return SubjectApi().edit(id, payload)
+    },
     findOne(id: string) {
       return SubjectApi().getOne(id) 
     },

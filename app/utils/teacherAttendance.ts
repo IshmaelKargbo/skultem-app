@@ -13,6 +13,7 @@ export type TeacherRosterEntry = {
     clockOutIp: string | null
     clockInByAdmin: boolean
     clockOutByAdmin: boolean
+    recordedBy: string | null
 }
 
 export type MyAttendanceToday = {
@@ -71,6 +72,37 @@ export type TeacherAttendanceDaySummary = {
     excusedCount: number
     totalCount: number
     rate: number
+}
+
+// Mirrors TeacherAttendanceSummaryRowDTO - backs both Monthly and Term Summary's per-teacher
+// table. No belowThreshold flag - a threshold isn't applied to teachers automatically.
+export type TeacherAttendanceSummaryRow = {
+    teacherId: string
+    teacherName: string
+    workingDays: number
+    present: number
+    absent: number
+    late: number
+    attendancePercentage: number | null
+}
+
+// Mirrors TermTeacherAttendanceSummaryDTO.
+export type TermTeacherAttendanceSummary = {
+    teachers: TeacherAttendanceSummaryRow[]
+    termLabel: string
+    totalTeachers: number
+    averageAttendance: number
+    totalPresent: number
+    totalAbsent: number
+    totalLate: number
+}
+
+export type TeacherManagementReportType = 'DAILY_REGISTER' | 'MONTHLY_SUMMARY' | 'TERM_SUMMARY'
+
+// Mirrors TeacherManagementReportDTO - payload's shape depends on reportType.
+export type TeacherManagementReport = {
+    reportType: TeacherManagementReportType
+    payload: TeacherAttendanceRoster | TeacherAttendanceSummaryRow[] | TermTeacherAttendanceSummary
 }
 
 export const TEACHER_ATTENDANCE_STATUS_OPTIONS: { label: string, value: TeacherAttendanceStatus, icon: string }[] = [

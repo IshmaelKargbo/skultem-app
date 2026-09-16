@@ -31,8 +31,16 @@ export const useLedgerStore = defineStore('ledger', {
         this.loading = false
       }
     },
-    caculateLedgerReport() {
-      return FeeApi().caculateLedgerReport()
+    async caculateLedgerReport() {
+      const res = await FeeApi().caculateLedgerReport()
+      if (res) {
+        this.total = {
+          totalDebit: res.totalDebit,
+          totalCredit: res.totalCredit,
+          finalBalance: res.netBalance
+        }
+      }
+      return res
     }
   }
 })

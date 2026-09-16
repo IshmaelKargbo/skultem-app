@@ -292,167 +292,48 @@ const selected = computed<ReportSelectPayload>(() => ({
         <template v-else>
           <div class="grid grid-cols-1 gap-4 space-y-0! p-4 md:grid-cols-2 lg:grid-cols-3">
             <!-- Ledger Cards -->
-            <UCard v-for="item in data" :key="`${item.date}-${item.student}-${item.type}`" class="overflow-hidden"
-              :ui="{ body: 'sm:p-0 p-0' }">
-              <div class="space-y-3">
-                <!-- Header -->
-                <div class="flex items-start justify-between gap-4 border-b border-default p-4">
-                  <div class="flex min-w-0 items-center gap-3">
-                    <!-- Transaction Icon -->
-                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl" :class="item.credit
-                      ? 'bg-success/10'
-                      : 'bg-error/10'
-                      ">
-                      <UIcon :name="item.credit
-                        ? 'i-lucide-arrow-down-left'
-                        : 'i-lucide-arrow-up-right'
-                        " class="size-5" :class="item.credit
-                          ? 'text-success'
-                          : 'text-error'
-                          " />
+            <div v-for="item in data" :key="`${item.date}-${item.student}-${item.type}`"
+              class="border rounded-2xl border-default" :ui="{ body: 'sm:p-0 p-0' }">
+              <!-- Header -->
+              <div class="flex items-start justify-between gap-4 border-default p-4">
+                <div class="flex min-w-0 items-center gap-3">
+                  <div class="min-w-0 space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <h3 class="truncate text-sm font-semibold text-highlighted">
+                        {{ item.student || 'No Student' }}
+                      </h3>
                     </div>
 
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-2">
-                        <h3 class="truncate text-sm font-semibold text-highlighted">
-                          {{ item.student || 'No Student' }}
-                        </h3>
-                      </div>
-
-                      <p class="mt-0.5 truncate text-xs text-muted">
+                    <div class="flex space-x-2 items-center text-muted">
+                      <p class="truncate text-xs">
                         {{ item.clazz || 'No Class' }}
+                      </p>
+                      <p>·</p>
+                      <p class="text-xs">
+                        {{ item.date }}
                       </p>
                     </div>
                   </div>
-
-                  <!-- Type -->
-                  <UBadge size="sm" variant="soft" :label="parseType[item.type]" :color="parseTypeColor[item.type]" />
                 </div>
 
-                <div class="p-4">
-                  <!-- Transaction -->
-                  <div class="flex items-center justify-between rounded-xl border border-default bg-muted/40 p-4">
-                    <div class="flex items-center gap-2">
-                      <UIcon name="i-lucide-arrow-left-right" class="size-4 text-muted" />
-
-                      <span class="text-xs text-muted">
-                        Transaction
-                      </span>
-                    </div>
-
-                    <span class="text-xl font-bold tracking-tight" :class="item.credit
+                <!-- Type -->
+                <div class="flex flex-col space-y-0.5 items-end">
+                  <p class="font-bold text-info">
+                    {{ format(item.balance || 0) }}
+                  </p>
+                  <div class="flex space-x-2">
+                    <p :class="item.credit
                       ? 'text-success'
                       : 'text-error'
                       ">
                       {{ item.credit ? '+' : '-' }}{{
                         format(item.credit || item.debit || 0)
                       }}
-                    </span>
-                  </div>
-
-                  <!-- Transaction Details -->
-                  <div class="mt-3 grid grid-cols-2 gap-3">
-                    <!-- Credit -->
-                    <div class="rounded-xl border border-success/10 bg-success/5 px-3 py-3">
-                      <div class="flex items-center gap-2">
-                        <div class="flex size-7 items-center justify-center rounded-lg bg-success/10">
-                          <UIcon name="i-lucide-trending-down" class="size-3.5 text-success" />
-                        </div>
-
-                        <p class="text-[11px] text-muted">
-                          Credit
-                        </p>
-                      </div>
-
-                      <p class="mt-2 text-sm font-semibold text-success">
-                        {{ item.credit ? format(item.credit) : '-' }}
-                      </p>
-                    </div>
-
-                    <!-- Debit -->
-                    <div class="rounded-2xl border border-error/10 bg-error/5 px-3 py-3">
-                      <div class="flex items-center gap-2">
-                        <div class="flex size-7 items-center justify-center rounded-lg bg-error/10">
-                          <UIcon name="i-lucide-trending-up" class="size-3.5 text-error" />
-                        </div>
-
-                        <p class="text-[11px] text-muted">
-                          Debit
-                        </p>
-                      </div>
-
-                      <p class="mt-2 text-sm font-semibold text-error">
-                        {{ item.debit ? format(item.debit) : '-' }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex items-end justify-between border-t border-default p-4">
-                  <!-- Balance -->
-                  <div>
-                    <div class="flex items-center gap-1.5">
-                      <UIcon name="i-lucide-wallet" class="size-3.5 text-muted" />
-
-                      <p class="text-[11px] text-muted">
-                        Running Balance
-                      </p>
-                    </div>
-
-                    <p class="mt-1 text-base font-bold text-info">
-                      {{ format(item.balance || 0) }}
                     </p>
-                  </div>
-
-                  <!-- Date -->
-                  <div class="text-right">
-                    <div class="flex items-center justify-end gap-1.5">
-                      <UIcon name="i-lucide-calendar-days" class="size-3.5 text-muted" />
-
-                      <p class="text-[11px] text-muted">
-                        Date
-                      </p>
-                    </div>
-
-                    <p class="mt-1 text-xs font-medium text-highlighted">
-                      {{ item.date }}
-                    </p>
+                    <UBadge size="xs" variant="soft" :label="parseType[item.type]" :color="parseTypeColor[item.type]" />
                   </div>
                 </div>
               </div>
-            </UCard>
-          </div>
-
-          <div class="flex justify-between space-x-2 border-t border-gray-200 p-4">
-            <div>
-              <p class="text-xs font-medium text-muted">
-                Total:
-              </p>
-
-              <p class="mt-1 text-xl font-bold text-highlighted">
-                {{ format(total.finalBalance || 0) }}
-              </p>
-            </div>
-
-            <div>
-              <p class="text-xs font-medium text-muted">
-                Credit:
-              </p>
-
-              <p class="mt-1 text-xl font-bold text-success">
-                {{ format(total.totalCredit || 0) }}
-              </p>
-            </div>
-
-            <div>
-              <p class="text-xs font-medium text-muted">
-                Debit:
-              </p>
-
-              <p class="mt-1 text-xl font-bold text-error">
-                {{ format(total.totalDebit || 0) }}
-              </p>
             </div>
           </div>
         </template>
@@ -462,7 +343,7 @@ const selected = computed<ReportSelectPayload>(() => ({
         <div class="flex flex-col md:flex-row space-y-2 md:space-x-0 justify-between items-center">
           <Showing :meta="meta" />
           <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
+            :total="meta.total" />
         </div>
       </template>
     </UCard>

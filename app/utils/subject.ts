@@ -21,3 +21,9 @@ export type CreateSubjectDto = {
     code: string
     description: string
 }
+
+export type EditSubjectDto = {
+    name: string
+    code: string
+    description: string
+}

@@ -228,6 +228,15 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    removeClassMaster: async (id: string) => {
+      try {
+        return await $api(`/class/master/remove/${id}`, {
+          method: 'POST'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getCurrentClassMaster: async (id: string) => {
       try {
         const res = await $api(`/class/master/${id}`) as any

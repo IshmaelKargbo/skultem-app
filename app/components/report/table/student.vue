@@ -18,30 +18,14 @@ const parseStatusColor: Record<string, 'success' | 'warning' | 'error'> = {
   DELETED: 'error'
 }
 
+// Desktop columns are trimmed to what fits without horizontal scroll - the rest of a student's
+// fields (age, gender, guardian phone, address) live in the detail modal opened via "actions" /
+// tapping a row, on both desktop and mobile.
 const columns = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }: any) => {
-      return `${row.original.givenNames} ${row.original.familyName}`
-    }
-  },
-  // {
-  //   accessorKey: 'dateOfBirth',
-  //   header: 'Date of Birth'
-  // },
-  {
-    accessorKey: 'age',
-    header: 'Age',
-    cell: ({ row }: any) => `${row.original.age} Years`
-  },
-  {
-    accessorKey: 'gender',
-    header: 'Gender'
-  },
-  {
-    accessorKey: 'className',
-    header: 'Class'
+    cell: ({ row }: any) => `${row.original.givenNames} ${row.original.familyName}`
   },
   {
     accessorKey: 'guardian',
@@ -49,47 +33,15 @@ const columns = [
     cell: ({ row }: any) => `${row.original.guardian.givenNames} ${row.original.guardian.familyName}`
   },
   {
-    accessorKey: 'guardian',
-    header: 'Guardian Phone',
-    cell: ({ row }: any) => row.original.guardian.phone
-  },
-  // {
-  //   accessorKey: 'guardian',
-  //   header: 'Guardian Email',
-  //   cell: ({ row }: any) => row.original.guardian.email
-  // },
-  // {
-  //   accessorKey: 'guardian',
-  //   header: 'Father',
-  //   cell: ({ row }: any) => row.original.family.fatherName
-  // },
-  // {
-  //   accessorKey: 'guardian',
-  //   header: 'Mother',
-  //   cell: ({ row }: any) => row.original.family.motherName
-  // },
-  // {
-  //   accessorKey: 'nationality',
-  //   header: 'Nationality',
-  //   cell: ({ row }: any) => clean(row.original.nationality)
-  // },
-  // {
-  //   accessorKey: 'religion',
-  //   header: 'Religion',
-  //   cell: ({ row }: any) => clean(row.original.religion)
-  // },
-  {
-    accessorKey: 'city',
-    header: 'City'
-  },
-  {
-    accessorKey: 'street',
-    header: 'Street'
+    accessorKey: 'age',
+    header: 'Age',
+    cell: ({ row }: any) => `${row.original.age} Years`
   },
   {
     accessorKey: 'status',
     header: 'Status'
-  }
+  },
+  { id: 'actions', meta: { class: { td: 'text-right' } } }
 ]
 
 const page = computed<number>({
@@ -136,6 +88,29 @@ watch(() => page.value, async () => {
 
   await fetchReport()
 }, { immediate: true })
+
+const selected = ref<Student | null>(null)
+const detailOpen = ref(false)
+
+function openDetail(item: Student) {
+  selected.value = item
+  detailOpen.value = true
+}
+
+const detailFields = computed<ReportDetailField[]>(() => {
+  const item = selected.value
+  if (!item) return []
+  return [
+    { label: 'Age', value: item.age != null ? `${item.age} Years` : 'N/A' },
+    { label: 'Gender', value: parseGender[item.gender] || 'N/A' },
+    { label: 'Class', value: item.className || 'No Class' },
+    { label: 'Admission No', value: item.admissionNumber || 'N/A' },
+    { label: 'Guardian', value: `${item.guardian?.givenNames || ''} ${item.guardian?.familyName || ''}`.trim() || 'N/A' },
+    { label: 'Guardian Phone', value: item.guardian?.phone || 'N/A' },
+    { label: 'City', value: item.city || 'N/A' },
+    { label: 'Street', value: item.street || 'N/A' }
+  ]
+})
 </script>
 
 <template>
@@ -162,23 +137,71 @@ watch(() => page.value, async () => {
         <template #status-cell="{ row }">
           <UBadge :label="parseStaus[row.original.status]" :color="parseStatusColor[row.original.status]" variant="soft" />
         </template>
-        <template #gender-cell="{ row }">
-          <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]" variant="soft" />
-        </template>
         <template #name-cell="{ row }">
           <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
             :photo="row.original.photo"
             :subtitle="`${row.original.className || 'No Class'} · ${row.original.admissionNumber || 'No Admission No'}`" />
         </template>
-        <template #dateOfBirth-cell="{ row }">
-          <p class="text-sm text-highlighted">{{ formatDateString(row.original.dateOfBirth) }}</p>
-        </template>
         <template #age-cell="{ row }">
           <UBadge color="neutral" variant="outline" :label="`${row.original.age} Years`" />
         </template>
+        <template #actions-cell="{ row }">
+          <UButton icon="i-lucide-eye" size="xs" variant="ghost" color="neutral" aria-label="View details"
+            @click="openDetail(row.original)" />
+        </template>
       </UTable>
 
-      <div class="p-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <!-- Mobile compact list (default view, mirrors /transactions and /transactions/student-ledger mobile design) -->
+      <div v-if="view === 'table'" class="md:hidden">
+        <template v-if="loading">
+          <div v-for="i in 6" :key="i" class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
+            <div class="flex min-w-0 items-center gap-3">
+              <USkeleton class="size-10 shrink-0 rounded-full" />
+              <div class="min-w-0 space-y-2">
+                <USkeleton class="h-4 w-32 rounded-md" />
+                <USkeleton class="h-3 w-24 rounded-md" />
+              </div>
+            </div>
+            <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
+          </div>
+        </template>
+
+        <template v-else-if="data?.length">
+          <div v-for="item in data" :key="item.id" class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0 active:bg-muted/50"
+            @click="openDetail(item)">
+            <div class="flex min-w-0 items-center gap-3">
+              <UAvatar size="md" :src="item.photo || '/avatar-placeholder.svg'"
+                :alt="`${item.givenNames} ${item.familyName}`" loading="lazy" />
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-highlighted">
+                  {{ item.givenNames }} {{ item.familyName }}
+                </h3>
+                <p class="truncate text-xs text-muted">
+                  {{ item.className || 'No Class' }} · {{ item.admissionNumber || 'No Admission No' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-2">
+              <UBadge :label="parseStaus[item.status]" :color="parseStatusColor[item.status]" variant="soft" size="sm" />
+              <UIcon name="i-lucide-chevron-right" class="text-muted" />
+            </div>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="flex flex-col items-center py-16">
+            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+              <UIcon name="ph:books-light" class="size-10 text-muted" />
+            </div>
+            <h3 class="mt-4 text-sm font-semibold">No students found</h3>
+            <p class="mt-1 text-sm text-muted">Student records will appear here.</p>
+          </div>
+        </template>
+      </div>
+
+      <!-- Card view (explicit toggle, unchanged detail layout, available on any breakpoint) -->
+      <div v-if="view === 'card'" class="grid grid-cols-1 gap-4 space-y-0! p-4 md:grid-cols-2 lg:grid-cols-3">
       <template v-if="loading">
         <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-0' }">
           <div class="animate-pulse">
@@ -384,5 +407,11 @@ watch(() => page.value, async () => {
         </div>
       </template>
     </UCard>
+
+    <ReportDetailModal v-model:open="detailOpen" :title="selected ? `${selected.givenNames} ${selected.familyName}` : ''"
+      :subtitle="selected?.className || 'No Class'" :photo="selected?.photo || undefined"
+      icon="i-lucide-user-round"
+      :badge="selected ? { label: parseStaus[selected.status], color: parseStatusColor[selected.status] } : undefined"
+      :fields="detailFields" />
   </div>
 </template>

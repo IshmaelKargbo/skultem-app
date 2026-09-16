@@ -33,6 +33,16 @@ export const SubjectApi = () => {
         useHandleError(err)
       }
     },
+    edit: async (id: string, payload: EditSubjectDto) => {
+      try {
+        return await $api(`/subject/edit/${id}`, {
+          method: 'PATCH',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getOne: async (id: string) => {
       try {
         const res = await $api(`/subject/${id}`) as any

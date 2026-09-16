@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 const route = useRoute()
+const router = useRouter()
 
 const id = computed(() => String(route.params.id))
 const record = ref<AssessmentApprovalRequest | null>(null)
@@ -46,13 +47,16 @@ async function reload() {
   await load()
 }
 
+// Real history back (not a fixed navigateTo) so any filters/search/page applied on the list
+// before opening this request are still in the URL when we land back on it - a hardcoded target
+// path would drop the query string and reset the list to its defaults.
 function goBack() {
-  navigateTo('/grades/approval')
+  router.back()
 }
 
 onMounted(() => {
   useAppStore().setTitle('Approval Details')
-  useAppStore().setBack('/grades/approval')
+  useAppStore().setBack(true)
   document.title = 'Approval Details | Grades | Skultem'
   load()
 })

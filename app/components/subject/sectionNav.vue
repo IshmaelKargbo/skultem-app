@@ -21,8 +21,7 @@ const allItems: NavItem[] = [
   { label: 'Subjects', to: '/subjects', icon: SUBJECT_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] },
   { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
   { label: 'Subject Groups', to: '/subjects/subject-groups', icon: CURRICULUM_GROUP_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] },
-  { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] },
-  { label: 'Stream Subjects', to: '/subjects/stream-subjects', icon: BOOK_OPEN_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] }
+  { label: 'Class Subjects', to: '/subjects/class-subjects', icon: BOOK_OPEN_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] }
 ]
 
 const items = computed(() => allItems.filter(item => can(item.roles)))

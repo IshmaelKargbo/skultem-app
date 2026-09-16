@@ -90,6 +90,17 @@
         - a second layer against someone clocking in for a colleague from elsewhere.
       </p>
     </UCard>
+
+    <UCard>
+      <template #header>
+        <p>Attendance Alert Threshold</p>
+      </template>
+      <UFormField label="Minimum Attendance %"
+        help="Students below this attendance percentage are flagged as 'needs attention' across the class view, student profile and attendance reports.">
+        <UInput v-model.number="attendanceThresholdModel" type="number" min="0" max="100" step="0.1"
+          class="w-full" />
+      </UFormField>
+    </UCard>
   </template>
 </template>
 
@@ -106,7 +117,17 @@ const props = defineProps<{
   }
   loadingLocation: boolean
   locationConfigured: boolean
+  attendanceThreshold: number
 }>()
+
+const emit = defineEmits<{
+  'update:attendanceThreshold': [value: number]
+}>()
+
+const attendanceThresholdModel = computed({
+  get: () => props.attendanceThreshold,
+  set: (value: number) => emit('update:attendanceThreshold', value)
+})
 
 const { success, error: toastError, warning } = useNotify()
 

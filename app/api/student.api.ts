@@ -169,6 +169,17 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    edit: async (id: string, payload: EditStudentDTO) => {
+      try {
+        const res: { data: any } = await $api(`/student/edit/${id}`, {
+          method: 'PATCH',
+          body: payload
+        })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     // Enrollment doesn't require a photo - this adds or replaces one afterwards.
     updatePhoto: async (id: string, photo: File) => {
       try {

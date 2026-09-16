@@ -168,6 +168,11 @@ export const useStudentStore = defineStore('student', {
       if (res && this.record?.id === id) this.record = res
       return res
     },
+    async update(id: string, payload: EditStudentDTO) {
+      const res = await StudentApi().edit(id, payload)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
     findEnrollmentByStudent(id: string) {
       return StudentApi().getCurrentEnrollment(id)
     },
