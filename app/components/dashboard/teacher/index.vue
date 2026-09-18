@@ -217,8 +217,7 @@ const clockStatusText = computed(() => {
     if (!myToday.value) return 'Checking clock status…'
     if (myToday.value.clockedInAt && myToday.value.clockedOutAt) return 'Day complete'
     if (myToday.value.clockedInAt) {
-        const time = new Date(myToday.value.clockedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        return `Clocked in at ${time}`
+        return `Clocked in at ${formatTime(myToday.value.clockedInAt)}`
     }
     return 'Not clocked in yet'
 })

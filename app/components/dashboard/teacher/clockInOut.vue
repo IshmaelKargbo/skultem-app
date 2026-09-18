@@ -95,10 +95,6 @@ const stateSubtitle = computed(() => {
     return 'Allow location access when your browser asks.'
 })
 
-function formatTime(value: string) {
-    return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
 async function withLocation(): Promise<GeolocationPosition | null> {
     locating.value = true
     try {

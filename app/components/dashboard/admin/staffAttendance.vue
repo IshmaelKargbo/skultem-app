@@ -122,10 +122,6 @@ function teacherName(teacher: Teacher) {
   return `${teacher.user?.givenNames || ''} ${teacher.user?.familyName || ''}`.trim()
 }
 
-function formatTime(value: string) {
-  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
 function statusLabel(status: TeacherAttendanceStatus) {
   return TEACHER_ATTENDANCE_STATUS_OPTIONS.find(o => o.value === status)?.label || status
 }

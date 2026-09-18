@@ -113,6 +113,10 @@ const navItems: NavItem[] = [
         label: 'Inspection Reports', to: '/attendance/inspection-reports', icon: INSPECTION_REPORT_ICON,
         roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
       },
+      {
+        label: 'Weekly Attendance by Gender', to: '/attendance/weekly-gender', icon: 'i-lucide-venus-and-mars',
+        roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+      },
     ]
   },
   { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON, roles: [Role.PARENT] },
@@ -295,6 +299,8 @@ const navItems: NavItem[] = [
     subNavs: [
       { label: 'Reports', to: '/analytics', icon: REPORT_ICON, exact: true },
       { label: 'Financial Reports', to: '/analytics/financial-reports', icon: SCHEME_ICON },
+      { label: 'Academic Reports', to: '/analytics/academic-reports', icon: 'i-lucide-bar-chart-3' },
+      { label: 'Demographics', to: '/analytics/demographics', icon: 'i-lucide-users-round' },
     ]
   },
 
@@ -302,6 +308,8 @@ const navItems: NavItem[] = [
     label: 'Analytics', icon: SCHEME_ICON, roles: [Role.ADMIN],
     subNavs: [
       { label: 'Reports', to: '/analytics/', icon: REPORT_ICON },
+      { label: 'Academic Reports', to: '/analytics/academic-reports', icon: 'i-lucide-bar-chart-3' },
+      { label: 'Demographics', to: '/analytics/demographics', icon: 'i-lucide-users-round' },
     ]
   },
 

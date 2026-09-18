@@ -252,10 +252,6 @@ function teacherName(teacher: Teacher) {
   return `${teacher.user?.givenNames || ''} ${teacher.user?.familyName || ''}`.trim()
 }
 
-function formatTime(value: string) {
-  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
 function statusBadgeLabel(teacherId: string) {
   const status = marks[teacherId]?.status
   return status

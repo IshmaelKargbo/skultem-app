@@ -88,7 +88,7 @@
                   {{ statusLabel(row.status) }}
                 </td>
                 <td class="border border-gray-200 p-2.5">{{ recordedByLabel(row) }}</td>
-                <td class="border border-gray-200 p-2.5">{{ formatTime(row) }}</td>
+                <td class="border border-gray-200 p-2.5">{{ rowClockInTime(row) }}</td>
               </tr>
             </tbody>
           </table>
@@ -166,10 +166,8 @@ function recordedByLabel(row: TeacherRosterEntry) {
   return '—'
 }
 
-function formatTime(row: TeacherRosterEntry) {
-  const value = row.clockedInAt
-  if (!value) return '—'
-  return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+function rowClockInTime(row: TeacherRosterEntry) {
+  return row.clockedInAt ? formatTime(row.clockedInAt) : '—'
 }
 
 function sanitizeFilename(value: string) {

@@ -1,6 +1,12 @@
 export const TITLE = "Skultem"
 export const DOT = "·"
 
+// Mirrors backend SchoolTimeZone.ZONE - the app is single-tenant (Sierra Leone) so every
+// attendance/clock-in timestamp should always display in this zone, not the viewer's own
+// device/browser timezone (which is what `toLocaleTimeString(undefined, ...)` silently uses,
+// producing different displayed times for the same record depending on who's looking at it).
+export const SCHOOL_TIMEZONE = 'Africa/Freetown'
+
 export type Meta = {
     size: number;
     page: number;
@@ -634,7 +640,21 @@ export function formatDateTime(dateStr: string): string {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        timeZone: SCHOOL_TIMEZONE
+    })
+}
+
+// Time-of-day only, pinned to SCHOOL_TIMEZONE - use this (not toLocaleTimeString directly) for
+// any Instant-typed field like createdAt/clockedInAt/clockedOutAt, so the displayed time matches
+// the backend's Africa/Freetown clock regardless of the viewer's own device timezone.
+export function formatTime(dateStr: string): string {
+    if (dateStr == "" || dateStr == null) return ""
+    const date = new Date(dateStr)
+    return date.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: SCHOOL_TIMEZONE
     })
 }
 

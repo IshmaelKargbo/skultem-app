@@ -141,12 +141,10 @@ function tooltipOf(key: string) {
     const parts = [statusLabel(record.status as TeacherAttendanceStatus)]
 
     if (record.clockedInAt) {
-        const time = new Date(record.clockedInAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-        parts.push(`In: ${time}${record.clockInByAdmin ? ' (by admin)' : ''}`)
+        parts.push(`In: ${formatTime(record.clockedInAt)}${record.clockInByAdmin ? ' (by admin)' : ''}`)
     }
     if (record.clockedOutAt) {
-        const time = new Date(record.clockedOutAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-        parts.push(`Out: ${time}${record.clockOutByAdmin ? ' (by admin)' : ''}`)
+        parts.push(`Out: ${formatTime(record.clockedOutAt)}${record.clockOutByAdmin ? ' (by admin)' : ''}`)
     }
 
     return parts.join(' • ')
@@ -161,10 +159,6 @@ const historyList = computed(() =>
 function formatDay(date: string) {
     const [y, m, d] = date.split('-').map(Number)
     return new Date(y!, m! - 1, d!).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
-}
-
-function formatTime(value: string) {
-    return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
 function goPrevMonth() {

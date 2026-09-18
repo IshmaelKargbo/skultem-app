@@ -137,7 +137,7 @@
                   <td class="border border-gray-200 p-2.5">{{ r.studentName }}</td>
                   <td class="border border-gray-200 p-2.5">{{ dailyStatusLabel(r) }}</td>
                   <td class="border border-gray-200 p-2.5">{{ r.recordedBy || '—' }}</td>
-                  <td class="border border-gray-200 p-2.5">{{ formatTime(r.recordedAt) }}</td>
+                  <td class="border border-gray-200 p-2.5">{{ clockTime(r.recordedAt) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -388,9 +388,8 @@ function dailyStatusLabel(r: DailyAttendanceRegisterRecord) {
   return 'Absent'
 }
 
-function formatTime(value: string | null) {
-  if (!value) return '—'
-  return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+function clockTime(value: string | null) {
+  return value ? formatTime(value) : '—'
 }
 
 function sanitizeFilename(value: string) {
