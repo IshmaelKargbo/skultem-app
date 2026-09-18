@@ -38,6 +38,15 @@ export const useParentStore = defineStore('parent', {
     },
     create(payload: CreateParentDto) {
       return ParentApi().create(payload)
+    },
+    async addEmail(id: string, email: string) {
+      const res = await ParentApi().addEmail(id, email) as any
+      const updated = res?.data
+      if (updated) {
+        const index = this.records.findIndex(e => e.id === id)
+        if (index !== -1) this.records[index] = updated
+      }
+      return res
     }
   },
   getters: {

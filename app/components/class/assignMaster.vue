@@ -195,7 +195,7 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
 
 watch(open, async (val) => {
   if (val) {
-    const res = await sessionStore.fetchAllUnassign(0, 0);
+    const res = await sessionStore.fetchAllForMasterAssignment();
     if (res == null) return;
     classes.value = res.map((c: ClassSession) => {
       let name = c.clazz;

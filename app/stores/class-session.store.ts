@@ -47,6 +47,18 @@ export const useClassSessionStore = defineStore('classSession', {
         this.error = err.data?.message || 'Failed to fetch class sessions'
       }
     },
+    // Every class session, not just ones with no class master yet - a session can now hold more
+    // than one active class master (e.g. co-taught classes), so it must stay pickable even after
+    // it already has one. Deliberately doesn't touch `records`/`meta` (unlike fetchAll) so it
+    // can't clobber a class list table's own paginated state underneath it.
+    async fetchAllForMasterAssignment() {
+      try {
+        const response = await ClassApi().getAllClassSessions(1, 0) as any
+        return response.data
+      } catch (err: any) {
+        this.error = err.data?.message || 'Failed to fetch class sessions'
+      }
+    },
     setupAll(academicYearId: string) {
       return ClassApi().setupAllSessions(academicYearId)
     },

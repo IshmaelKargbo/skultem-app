@@ -18,7 +18,7 @@
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
                             <template v-else>
-                                <img :src="photo" :alt="name" class="h-32 w-32 rounded-xl object-cover md:h-24 md:w-24"
+                                <img :src="photo" :alt="name" class="h-20 w-20 rounded-xl object-cover md:h-24 md:w-24"
                                     :class="{ 'opacity-50': uploadingPhoto }" />
 
                                 <div v-if="uploadingPhoto"
@@ -179,24 +179,27 @@ const academicInfo = `/students/${route.params.id}/academic-information${backQue
 const behavioursInfo = `/students/${route.params.id}/behaviours${backQuery}`
 const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
+// Ordered by importance: who they are, their academic placement, how they're performing
+// (performance + the report card that summarizes it, kept together), then attendance,
+// fees and behaviours - all real but secondary to the academic picture.
 const mobileTabs = computed(() => [
     { label: 'Personal', to: personalInfo, icon: USER_ICON, exact: true },
+    { label: 'Academics', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
+    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
+    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
-    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
-    { label: 'Academics', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
-    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : [])
+    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }
 ])
 
 const desktopTabs = computed(() => [
     { label: 'Personal Information', to: personalInfo, icon: USER_ICON, exact: true },
+    { label: 'Academic Information', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
+    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
+    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
-    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
-    { label: 'Academic Information', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
-    ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : [])
+    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }
 ])
 
 async function fetchStudent() {

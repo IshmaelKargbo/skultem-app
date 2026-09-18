@@ -91,6 +91,9 @@ export const useClassStore = defineStore('class', {
     findClassMaster(id: string) {
       return ClassApi().getCurrentClassMaster(id)
     },
+    findClassMastersBySession(sessionId: string) {
+      return ClassApi().getClassMastersBySession(sessionId)
+    },
     removeClassMaster(id: string) {
       return ClassApi().removeClassMaster(id)
     },

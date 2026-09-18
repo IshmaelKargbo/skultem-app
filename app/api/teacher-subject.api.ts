@@ -2,10 +2,11 @@ export const TeacherSubjectApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (page: number, size: number, classId?: string, query?: string, sortBy?: string, direction?: string) => {
+    getAll: async (page: number, size: number, classId?: string, streamId?: string, query?: string, sortBy?: string, direction?: string) => {
       try {
         const params = new URLSearchParams({ page: String(page), size: String(size) })
         if (classId) params.set('classId', classId)
+        if (streamId) params.set('streamId', streamId)
         if (query) params.set('query', query)
         if (sortBy) params.set('sortBy', sortBy)
         if (direction) params.set('direction', direction)

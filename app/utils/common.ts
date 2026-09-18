@@ -454,7 +454,7 @@ export type AssignmentSubject = {
 }
 
 export type AssignmentTeacherSubject = {
-    id: string
+    id: string | null
     subjectId: string
     teacherId: string
 }

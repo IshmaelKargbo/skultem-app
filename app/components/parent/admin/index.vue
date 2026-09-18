@@ -4,10 +4,6 @@ const router = useRouter()
 
 const view = ref<"table" | "card">("table")
 
-// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
-// page/size and silently drops any other query key when neither changed, which is exactly why
-// search here never made it into the URL (or triggered a refetch) whenever it was set while
-// already on page 1.
 function updateQuery(newQuery: Record<string, any>) {
     router.replace({ query: { ...route.query, ...newQuery } })
 }
@@ -17,10 +13,6 @@ const search = computed<string>({
     set: (value) => updateQuery({ search: value || undefined, page: 1 }),
 })
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
     { label: "Name (A-Z)", value: "user.givenName:asc" },
     { label: "Name (Z-A)", value: "user.givenName:desc" },
@@ -40,8 +32,6 @@ function resetFilters() {
     updateQuery({ search: undefined, sort: undefined, page: 1 })
 }
 
-// Debounced so every keystroke doesn't fire a request - the search box writes to this local ref,
-// which settles into the URL-synced `search` above after a short pause.
 const searchInput = ref(search.value)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 watch(searchInput, (val) => {
@@ -70,6 +60,9 @@ const STATUS_COLORS: Record<string, any> = {
     DELETED: "error",
 }
 
+// Kept to 5 columns, same as the students/teachers tables - a wider set (the old separate Phone/
+// Street/City/Status columns) overflowed the card at normal widths and forced UTable's built-in
+// horizontal scrollbar. Status still shows on the mobile card below, same as those tables.
 const columns = [
     {
         accessorKey: "name",
@@ -81,21 +74,23 @@ const columns = [
     },
     {
         accessorKey: "phone",
-        header: "Phone",
-    },
-    {
-        accessorKey: "street",
-        header: "Street",
+        header: "Contact",
     },
     {
         accessorKey: "city",
-        header: "City",
+        header: "Address",
     },
     {
-        accessorKey: "status",
-        header: "Status",
+        id: "actions",
+        meta: { class: { td: "text-right" } },
     },
 ]
+
+const addEmailTarget = ref<Parent | null>(null)
+
+function openAddEmail(parent: Parent) {
+    addEmailTarget.value = parent
+}
 
 const page = computed<number>({
     get: () => Number(route.query.page || 1),
@@ -208,20 +203,36 @@ watch(
                     </div>
                 </template>
                 <template #name-cell="{ row }">
-                    <div>
-                        <p>{{ row.original.name }}</p>
-                        <p class="text-xs text-muted">{{ row.original.email }}</p>
+                    <div class="flex items-center gap-3">
+                        <UAvatar icon="i-lucide-user" />
+
+                        <div>
+                            <p>{{ row.original.name }}</p>
+                            <p v-if="row.original.email" class="text-xs text-muted">{{ row.original.email }}</p>
+                            <UBadge v-else size="xs" variant="subtle" color="warning" label="No Email" />
+                        </div>
                     </div>
                 </template>
                 <template #students-cell="{ row }">
                     <UBadge :label="`${row.original.students} Students`" variant="outline" />
                 </template>
-                <template #status-cell="{ row }">
-                    <UBadge :label="STATUS_LABELS[row.original.status]" :color="STATUS_COLORS[row.original.status]"
-                        variant="soft" />
+                <template #phone-cell="{ row }">
+                    <p>{{ row.original.phone }}</p>
+                </template>
+                <template #city-cell="{ row }">
+                    <div>
+                        <p>{{ row.original.city }}</p>
+                        <p class="text-xs text-muted">{{ row.original.street }}</p>
+                    </div>
                 </template>
                 <template #loading>
                     <TableLoading :size="columns.length" />
+                </template>
+                <template #actions-cell="{ row }">
+                    <div class="flex justify-end">
+                        <UButton v-if="!row.original.email" @click="openAddEmail(row.original)" size="sm"
+                            variant="ghost" color="warning" label="Add Email" :icon="EMAIL_ICON" />
+                    </div>
                 </template>
             </UTable>
             <div class="md:p-4 md:space-y-4"
@@ -244,25 +255,29 @@ watch(
                     <div v-for="parent in data" :key="parent.id" class="border-b md:border md:rounded-2xl border-default p-3">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
-                                <UAvatar class="size-10" icon="i-lucide-user" />
-
                                 <div class="min-w-0">
                                     <h3 class="truncate text-base font-bold text-highlighted">
                                         {{ parent.name }}
                                     </h3>
 
-                                    <div class="flex items-center gap-1 text-xs-base text-muted">
-                                        <span class="truncate">{{ parent.email }}</span>
+                                    <div class="flex min-w-0 items-center gap-1 text-xs-base text-muted">
+                                        <span v-if="parent.email" class="truncate">{{ parent.email }}</span>
+                                        <UBadge v-else size="xs" variant="subtle" color="warning" label="No Email"
+                                            class="shrink-0" />
 
-                                        <span>•</span>
+                                        <span class="shrink-0">•</span>
 
-                                        <span>{{ parent.students }} Student{{ parent.students === 1 ? "" : "s" }}</span>
+                                        <span class="shrink-0">{{ parent.students }} Student{{ parent.students === 1 ? "" : "s" }}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <UBadge :label="STATUS_LABELS[parent.status]" :color="STATUS_COLORS[parent.status]"
-                                variant="subtle" size="sm" class="shrink-0 self-center" />
+                            <div class="flex shrink-0 flex-col items-end gap-1.5">
+                                <UBadge :label="STATUS_LABELS[parent.status]" :color="STATUS_COLORS[parent.status]"
+                                    variant="subtle" size="sm" />
+                                <UButton v-if="!parent.email" @click="openAddEmail(parent)" size="xs" variant="ghost"
+                                    color="warning" label="Add Email" :icon="EMAIL_ICON" />
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -288,5 +303,8 @@ watch(
                 </div>
             </template>
         </UCard>
+
+        <ParentAddEmail v-if="addEmailTarget" :open="!!addEmailTarget" :parent-id="addEmailTarget.id"
+            :parent-name="addEmailTarget.name" @update:open="(v) => { if (!v) addEmailTarget = null }" />
     </div>
 </template>

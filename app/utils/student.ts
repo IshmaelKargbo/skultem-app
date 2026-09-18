@@ -108,5 +108,5 @@ export type CreateStudentDto = {
     classId: string
     admissionNumber: string
     previousSchool: string
-    lastGradeCompleted: string
+    lastClass: string
 }

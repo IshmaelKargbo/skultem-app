@@ -250,6 +250,19 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    getClassMastersBySession: async (sessionId: string) => {
+      try {
+        const res = await $api(`/class/master/session/${sessionId}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class masters')
+
+        return res.data
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getClassSubjects: async (classId: string, streamId?: string) => {
       try {
         const query = streamId ? `?streamId=${streamId}` : ''

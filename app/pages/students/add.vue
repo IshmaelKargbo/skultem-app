@@ -321,7 +321,9 @@ async function submit(param: any) {
             admissionDate: academic.admissionDate,
             enrollmentType: academic.enrollmentType,
             previousSchool: academic.previousSchool,
-            lastGradeCompleted: academic.lastGradeCompleted
+            // Backend field is `lastClass`, not `lastGradeCompleted` - this key must match it or
+            // the value is silently dropped (Jackson ignores unknown properties).
+            lastClass: academic.lastGradeCompleted
         }
 
 

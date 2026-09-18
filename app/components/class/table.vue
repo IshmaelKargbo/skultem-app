@@ -38,7 +38,7 @@
           <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent}`" />
         </template>
         <template #teacherName-cell="{ row }">
-          <p>{{ row.original.teacherName || 'No Teacher Assigned' }}</p>
+          <p class="max-w-40 truncate" :title="row.original.teacherName">{{ formatTeacherNames(row.original.teacherName) || 'No Teacher Assigned' }}</p>
         </template>
         <template #loading>
           <TableLoading :size="columns.length" />
@@ -216,12 +216,12 @@
 
           <!-- Teacher -->
           <div class="flex items-center justify-between border-t border-default p-3 md:p-0 md:pt-3">
-            <div class="flex items-center gap-3">
+            <div class="flex min-w-0 items-center gap-3">
               <UAvatar size="lg" :alt="item.teacherName" />
 
-              <div>
-                <p class="font-semibold">
-                  {{ item.teacherName || "No Teacher Assigned" }}
+              <div class="min-w-0">
+                <p class="truncate font-semibold" :title="item.teacherName">
+                  {{ formatTeacherNames(item.teacherName) || "No Teacher Assigned" }}
                 </p>
 
                 <p class="text-xs text-muted">Class Teacher</p>

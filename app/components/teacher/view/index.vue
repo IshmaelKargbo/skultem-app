@@ -9,9 +9,9 @@
                 class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />
 
             <div class="px-5 pb-5">
-                <div class="-mt-12 flex flex-col gap-5 md:-mt-14 md:flex-row md:items-end md:justify-between">
+                <div class="-mt-12 flex flex-col gap-2 md:-mt-14 md:flex-row md:justify-between">
                     <!-- Teacher identity -->
-                    <div class="flex min-w-0 items-end gap-4">
+                    <div class="flex flex-col md:flex-row items-center min-w-0 gap-4">
                         <!-- Avatar -->
                         <div
                             class="relative shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
@@ -39,46 +39,51 @@
                         </div>
 
                         <!-- Identity -->
-                        <div class="min-w-0 pb-0.5 md:pb-1">
+                        <div
+                            class="min-w-0 pb-0.5 md:pb-1 flex flex-col justify-center md:justify-baseline md:items-start items-center">
                             <!-- Name -->
                             <USkeleton v-if="loading" class="h-6 w-48 md:h-7 md:w-60" />
 
                             <h2 v-else
-                                class="max-w-[calc(100vw-150px)] truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
+                                class="truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
                                 {{ name }}
                             </h2>
 
-                            <!-- Staff ID + Status -->
-                            <div v-if="loading" class="mt-2 flex items-center gap-2">
-                                <USkeleton class="h-4 w-28" />
+                            <!-- Status -->
+                            <div v-if="loading" class="mt-1 flex items-center gap-2">
                                 <USkeleton class="h-5 w-14 rounded-full" />
                             </div>
 
-                            <div v-else class="mt-2 flex flex-wrap items-center gap-2">
-                                <span class="text-sm text-muted">
-                                    {{ record?.staffId || 'No staff ID' }}
-                                </span>
+                            <div v-else class="mt-1 flex flex-wrap items-center justify-center gap-2">
 
-                                <span class="size-1 rounded-full bg-dimmed" />
-
-                                <UBadge :color="statusColor" variant="subtle" size="xs" class="rounded-full">
-                                    <span class="mr-0.5 size-1.5 rounded-full" :class="`bg-${statusColor}`" />
-                                    {{ clean(record?.status || '') }}
-                                </UBadge>
                             </div>
 
-                            <!-- Email -->
-                            <div v-if="!loading" class="mt-1.5 flex items-center gap-1.5 text-xs text-dimmed">
-                                <UIcon name="i-lucide-mail" class="size-3.5" />
-                                <span class="font-medium text-muted">
-                                    {{ record?.user?.email || 'No email' }}
-                                </span>
+                            <!-- Staff ID / Designation / Gender -->
+                            <div v-if="!loading"
+                                class="mt-1 flex items-center justify-center flex-wrap gap-1.5 text-xs text-dimmed">
+
+                                <p>{{ record?.designation || 'No designation' }}</p>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ record?.staffId || 'No staff ID' }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ clean(record?.gender || '') }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <UBadge :color="statusColor" variant="subtle" size="xs" class="rounded-full">
+                                        <span class="mr-0.5 size-1.5 rounded-full" :class="`bg-${statusColor}`" />
+                                        {{ clean(record?.status || '') }}
+                                    </UBadge>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex shrink-0 items-center gap-2">
+                    <div class="flex shrink-0 items-center gap-2 justify-center">
                         <UButton v-if="record && !loading && record.status !== 'DELETED'" size="sm" variant="soft"
                             :color="record.status === 'ACTIVE' ? 'error' : 'success'"
                             :icon="record.status === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
@@ -87,29 +92,6 @@
 
                         <UButton v-if="record && !loading" :to="`/teachers/edit/${record.id}`" size="sm" color="primary"
                             :icon="EDIT_ICON" label="Edit Teacher" />
-                    </div>
-                </div>
-
-                <!-- Quick facts -->
-                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                    <div v-for="item in quickFacts" :key="item.label"
-                        class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
-                        <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <UIcon :name="item.icon" class="size-4" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="text-xs text-muted">
-                                {{ item.label }}
-                            </p>
-
-                            <USkeleton v-if="loading" class="mt-1 h-4 w-16" />
-
-                            <p v-else class="truncate text-sm font-semibold text-highlighted">
-                                {{ item.value }}
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -126,8 +108,8 @@
             <slot />
         </div>
 
-        <TeacherStatusPrompt v-if="record" v-model:open="showStatusPrompt" :teacher-id="record.id"
-            :teacher-name="name" :active="record.status === 'ACTIVE'" @changed="record = $event" />
+        <TeacherStatusPrompt v-if="record" v-model:open="showStatusPrompt" :teacher-id="record.id" :teacher-name="name"
+            :active="record.status === 'ACTIVE'" @changed="record = $event" />
     </div>
 </template>
 
@@ -158,34 +140,6 @@ const statusColor = computed(() => {
             return 'error'
     }
 })
-
-const quickFacts = computed(() => [
-    {
-        label: 'Designation',
-        value: record.value?.designation || '—',
-        icon: 'i-lucide-briefcase'
-    },
-    {
-        label: 'Phone',
-        value: record.value?.phone || '—',
-        icon: 'i-lucide-phone'
-    },
-    {
-        label: 'Gender',
-        value: clean(record.value?.gender || '') || '—',
-        icon: 'i-lucide-user'
-    },
-    {
-        label: 'City',
-        value: record.value?.city || '—',
-        icon: 'i-lucide-map-pinned'
-    },
-    {
-        label: 'Classes',
-        value: record.value?.classes?.length ? record.value.classes.join(', ') : 'None assigned',
-        icon: 'i-lucide-school'
-    }
-])
 
 const uploadingPhoto = ref(false)
 
@@ -224,18 +178,20 @@ const attendanceInfo = `/teachers/${route.params.id}/attendance`
 // so the tabs don't flash in and back out once it arrives.
 const isTeaching = computed(() => record.value?.teaching !== false)
 
+// Ordered by importance: who they are, what/who they teach, how that teaching is progressing,
+// then attendance last (an HR record, not core to the teaching picture this profile is about).
 const mobileTabs = computed(() => [
-    { label: 'Profile', to: profileInfo, exact: true },
-    ...(isTeaching.value ? [{ label: 'Subjects', to: subjectsInfo, exact: true }] : []),
-    { label: 'Attendance', to: attendanceInfo, exact: true },
-    ...(isTeaching.value ? [{ label: 'Curriculum', to: curriculumInfo, exact: true }] : [])
+    { label: 'Profile', to: profileInfo, icon: USER_ICON, exact: true },
+    ...(isTeaching.value ? [{ label: 'Subjects', to: subjectsInfo, icon: SUBJECT_ICON, exact: true }] : []),
+    ...(isTeaching.value ? [{ label: 'Curriculum', to: curriculumInfo, icon: CURRICULUM_ICON, exact: true }] : []),
+    { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true }
 ])
 
 const desktopTabs = computed(() => [
-    { label: 'Profile Information', to: profileInfo, exact: true },
-    ...(isTeaching.value ? [{ label: 'Subjects & Classes', to: subjectsInfo, exact: true }] : []),
-    { label: 'Attendance', to: attendanceInfo, exact: true },
-    ...(isTeaching.value ? [{ label: 'Curriculum Progress', to: curriculumInfo, exact: true }] : [])
+    { label: 'Profile Information', to: profileInfo, icon: USER_ICON, exact: true },
+    ...(isTeaching.value ? [{ label: 'Subjects & Classes', to: subjectsInfo, icon: SUBJECT_ICON, exact: true }] : []),
+    ...(isTeaching.value ? [{ label: 'Curriculum Progress', to: curriculumInfo, icon: CURRICULUM_ICON, exact: true }] : []),
+    { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true }
 ])
 
 async function fetchTeacher() {

@@ -4,25 +4,45 @@
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div>
-                    <div class="md:flex hidden px-4 py-3 justify-between items-center gap-3">
-                        <div class="flex space-x-3 flex-1">
-                            <p class="md:hidden">Subjects</p>
+                    <div class="flex px-4 py-3 justify-between items-center gap-3">
+                        <div class="flex space-x-2 flex-1 items-center">
                             <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
                         </div>
 
-                        <TableViewToggle v-model="view" />
+                        <div>
+                            <TableViewToggle v-model="view" />
+                            <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
+                                variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+                        </div>
                     </div>
 
-                    <div class="border-t border-b p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid md:gap-2 gap-y-2 grid-cols-1 md:grid-cols-3">
-                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
-                                class="col-span-2" />
+                    <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
                             <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
                                 placeholder="Sort by" />
+                            <div class="flex space-x-1 sm:col-span-2">
+                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
+                                    class="flex-1" />
+                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                                    :disabled="!hasActiveFilters" @click="resetFilters" />
+                            </div>
                         </div>
                         <div class="hidden md:block">
                             <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                                 :disabled="!hasActiveFilters" @click="resetFilters" />
+                        </div>
+                    </div>
+                    <div v-if="filterState"
+                        class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                                placeholder="Sort by" />
+                            <div class="flex space-x-1 sm:col-span-2">
+                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
+                                    class="flex-1" />
+                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                                    :disabled="!hasActiveFilters" @click="resetFilters" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -39,54 +59,62 @@
                 </template>
             </UTable>
             <!-- Mobile -->
-            <div
-                :class="view === 'table' ? 'md:hidden p-4 space-y-4' : 'p-4 grid grid-cols-1 space-y-4 gap-4 md:grid-cols-2 lg:grid-cols-3'">
-                <UCard v-for="value in data" :key="value.id" :ui="{ body: 'sm:p-0 p-0' }">
-                    <!-- Header -->
-                    <div class="border-b border-default p-3">
-                        <div class="flex items-start justify-between gap-4">
-                            <div class="flex min-w-0 items-center gap-4">
-                                <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                                    <UIcon :name="SUBJECT_ICON" class="size-5 text-primary" />
-                                </div>
+            <div class="md:p-4 md:space-y-4"
+                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+                <!-- Loading -->
+                <template v-if="loading">
+                    <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
+                        <div class="flex items-center gap-3">
+                            <USkeleton class="size-10 shrink-0 rounded-full" />
 
+                            <div class="min-w-0 flex-1 space-y-2">
+                                <USkeleton class="h-4 w-36 rounded-md" />
+                                <USkeleton class="h-3 w-24 rounded-md" />
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Data -->
+                <template v-else-if="data?.length">
+                    <div v-for="value in data" :key="value.id" class="border-b md:border md:rounded-2xl border-default p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
                                 <div class="min-w-0">
-                                    <h3 class="truncate text-base font-semibold text-highlighted">
+                                    <h3 class="truncate text-base font-bold text-highlighted">
                                         {{ value.name }}
                                     </h3>
-                                    <p class="text-xs-base text-muted">{{ value.code }}</p>
+
+                                    <div class="flex min-w-0 items-center gap-1 text-xs-base text-muted">
+                                        <span class="shrink-0">{{ value.code }}</span>
+                                        <span class="shrink-0">•</span>
+                                        <span class="truncate">
+                                            {{ value.description || "No description available" }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <UButton v-if="canEdit" :icon="EDIT_ICON" color="warning" variant="ghost"
-                                aria-label="Edit subject"
-                                @click="editState = true; editRcord = value" />
+                            <UButton v-if="canEdit" :icon="EDIT_ICON" color="warning" variant="ghost" size="sm"
+                                class="shrink-0" aria-label="Edit subject" @click="editState = true; editRcord = value" />
                         </div>
                     </div>
+                </template>
 
-                    <div class="p-3">
-                        <div class="rounded-xl border border-default bg-gray-50 p-3 dark:bg-neutral-800">
-                            <p class="line-clamp-3 text-sm leading-6 text-highlighted">
-                                {{ value.description || "No description available for this subject." }}
-                            </p>
-                        </div>
-                    </div>
-                </UCard>
-            </div>
-            <template v-if="data.length == 0">
-                <UCard>
-                    <div class="flex flex-col items-center justify-center py-16">
-                        <UIcon name="i-lucide-book-open" class="mb-4 size-12 text-muted" />
+                <!-- Empty -->
+                <template v-else>
+                    <div class="col-span-full flex flex-col items-center justify-center py-14">
+                        <UIcon name="i-lucide-book-open" class="mb-3 size-10 text-gray-400" />
 
                         <h3 class="font-semibold">No subjects found</h3>
 
-                        <p class="mt-1 text-sm text-muted">No records are available.</p>
+                        <p class="text-sm text-gray-500">No records are available.</p>
                     </div>
-                </UCard>
-            </template>
+                </template>
+            </div>
 
             <template #footer>
-                <div class="flex flex-col space-y-2 md:flex-row items-center justify-between">
+                <div class="flex items-center justify-between flex-col md:flex-row space-y-2 md:space-y-0">
                     <Showing :meta="meta" />
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
                         :total="meta.total" show-edges />
@@ -102,9 +130,14 @@ import { nextTick } from "vue";
 import type { Row } from "@tanstack/vue-table";
 
 const view = ref<"table" | "card">("table");
+const filterState = ref(false);
 const route = useRoute();
 const router = useRouter();
 const { can } = useAuth();
+
+function toggleFilter() {
+    filterState.value = !filterState.value;
+}
 
 const editRcord = ref<Subject | null>(null);
 const editState = ref(false);

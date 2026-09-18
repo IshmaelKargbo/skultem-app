@@ -48,6 +48,16 @@ export const ParentApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    addEmail: async (id: string, email: string) => {
+      try {
+        return await $api(`/parent/${id}/email`, {
+          method: 'PATCH',
+          body: { email }
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

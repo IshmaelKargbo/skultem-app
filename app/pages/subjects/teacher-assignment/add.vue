@@ -6,14 +6,33 @@
     </Heading>
     <UCard v-if="state.classId" :ui="{
       body: 'sm:p-0',
+      header: 'p-0 sm:p-0'
     }">
       <template #header>
         <div>
           <!-- Section Header -->
-          <div class="flex items-center justify-between">
+          <div class="flex border-b border-default p-3 items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
               Subject Assignments ({{ state.assignments.length }})
             </h3>
+          </div>
+
+          <!-- Class Master bulk-assign -->
+          <div v-if="state.assignments.length"
+            class="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div v-if="classMasters.length" class="flex flex-wrap items-center gap-2 text-sm">
+              <span class="text-gray-500">Class Master{{ classMasters.length > 1 ? 's' : '' }}:</span>
+              <UBadge v-for="master in classMasters" :key="master.id" variant="subtle" color="neutral"
+                :label="teacherName(master)" />
+            </div>
+            <p v-else class="text-sm text-gray-400">No class master assigned to this class yet.</p>
+
+            <div v-if="classMasters.length" class="flex items-center gap-2">
+              <USelectMenu v-if="classMasters.length > 1" v-model="selectedMasterIds" multiple value-key="value"
+                :items="masterOptions" class="w-56" />
+              <UButton icon="lucide:wand-2" variant="soft" color="primary" label="Assign to All Subjects"
+                :disabled="!selectedMasterIds.length" @click="assignMasterToAll" />
+            </div>
           </div>
 
           <!-- Empty State -->
@@ -36,11 +55,11 @@
                 placeholder="Select Subject" class="w-full" v-model="row.original.subjectId" />
             </UFormField>
           </template>
-          <!-- Teacher -->
-          <template #teacherId-cell="{ row }">
-            <UFormField :name="`assignments.${row.index}.teacherId`">
-              <USelectMenu value-key="value" :loading="teacherStore.loading" :items="teachers"
-                placeholder="Select Teacher" class="w-full" v-model="row.original.teacherId" />
+          <!-- Teacher(s) -->
+          <template #teacherIds-cell="{ row }">
+            <UFormField :name="`assignments.${row.index}.teacherIds`">
+              <USelectMenu value-key="value" multiple :loading="teacherStore.loading" :items="teachers"
+                placeholder="Select one or more teachers" class="w-full" v-model="row.original.teacherIds" />
             </UFormField>
           </template>
         </UTable>
@@ -48,7 +67,7 @@
 
       <!-- Mobile: stacked cards, one per assignment -->
       <div v-if="state.assignments.length" class="divide-y md:hidden divide-gray-200 dark:divide-gray-800">
-        <div v-for="(assignment, index) in state.assignments" :key="assignment.id ?? index" class="p-4 space-y-3">
+        <div v-for="(assignment, index) in state.assignments" :key="assignment.subjectId" class="p-4 space-y-3">
           <div>
             <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
               Subject {{ index + 1 }}
@@ -61,9 +80,9 @@
             </UFormField>
           </div>
           <div>
-            <UFormField :name="`assignments.${index}.teacherId`" label="Teacher">
-              <USelectMenu value-key="value" :loading="teacherStore.loading" :items="teachers"
-                placeholder="Select Teacher" class="w-full" v-model="assignment.teacherId" />
+            <UFormField :name="`assignments.${index}.teacherIds`" label="Teacher(s)">
+              <USelectMenu value-key="value" multiple :loading="teacherStore.loading" :items="teachers"
+                placeholder="Select one or more teachers" class="w-full" v-model="assignment.teacherIds" />
             </UFormField>
           </div>
         </div>
@@ -104,14 +123,57 @@ const view = ref<'table' | 'card'>('table');
 const store = useTeacherSubjectStore();
 const subjectStore = useSubjectStore();
 const classStore = useClassSessionStore();
+const classMasterStore = useClassStore();
 const teacherStore = useTeacherStore();
 const toast = useToast();
 
 const saving = ref(false);
 
+type ClassMasterInfo = {
+  id: string;
+  teacher: {
+    id: string;
+    user: { givenNames: string; familyName: string };
+  };
+};
+
+const classMasters = ref<ClassMasterInfo[]>([]);
+// Defaults to every class master selected - "any of them can teach/grade" means the common case
+// is applying all of them in one click, not picking a subset.
+const selectedMasterIds = ref<string[]>([]);
+
+function teacherName(master: ClassMasterInfo) {
+  return `${master.teacher.user.givenNames} ${master.teacher.user.familyName}`;
+}
+
+const masterOptions = computed(() =>
+  classMasters.value.map((m) => ({
+    label: teacherName(m),
+    value: m.teacher.id,
+  }))
+);
+
+// Some classes are self-contained (one class master teaches every subject) - this fills every
+// subject with the selected master(s) in one click instead of picking the same teacher 15 times.
+// A co-taught class (more than one active master) can assign several of them to every subject at
+// once, since any of them can teach/grade it - existing per-pairing ids are preserved via
+// existingAssignmentIds so this doesn't churn rows that are already correct.
+function assignMasterToAll() {
+  if (!selectedMasterIds.value.length) return;
+
+  state.assignments.forEach((row) => {
+    row.teacherIds = [...selectedMasterIds.value];
+  });
+}
+
+type AssignmentRow = {
+  subjectId: string;
+  teacherIds: string[];
+};
+
 type ClassSubjectForm = {
   classId: string;
-  assignments: AssignmentTeacherSubject[];
+  assignments: AssignmentRow[];
 };
 
 const state = reactive<ClassSubjectForm>({
@@ -119,19 +181,29 @@ const state = reactive<ClassSubjectForm>({
   assignments: [],
 });
 
+// Tracks the real TeacherSubject id behind each (subject, teacher) pairing that already existed
+// on load, keyed by `${subjectId}::${teacherId}`. A pairing kept selected on submit reuses its id
+// (an in-place update); a newly-added pairing has none (created fresh); a pairing that's no
+// longer selected is simply left out of the submit payload (removed).
+const existingAssignmentIds = ref<Record<string, string>>({});
+
+function assignmentKey(subjectId: string, teacherId: string) {
+  return `${subjectId}::${teacherId}`;
+}
+
 const schema = yup.object({
   classId: yup.string().required("Class is required"),
   assignments: yup.array().of(
     yup.object({
       subjectId: yup.string().required("Subject is required"),
-      teacherId: yup.string().required("Teacher is required"),
+      teacherIds: yup.array().min(1, "At least one teacher is required"),
     })
   ),
 });
 
 const columns: TableColumn<any>[] = [
   { accessorKey: "subjectId", header: "Subject" },
-  { accessorKey: "teacherId", header: "Teacher" },
+  { accessorKey: "teacherIds", header: "Teacher(s)" },
 ];
 
 const classes = computed(() =>
@@ -158,20 +230,47 @@ const subjects = computed(() =>
 function resetForm() {
   state.classId = "";
   state.assignments = [];
+  classMasters.value = [];
+  selectedMasterIds.value = [];
+  existingAssignmentIds.value = {};
   navigateTo("/subjects/teacher-assignment");
 }
 
 async function fetchRecord() {
   if (!state.classId) return;
   state.assignments = [];
-  const list = await store.fetchAllByClass(state.classId, 0, 0);
+  classMasters.value = [];
+  selectedMasterIds.value = [];
+  existingAssignmentIds.value = {};
+
+  const [list, masters] = await Promise.all([
+    store.fetchAllByClass(state.classId, 0, 0),
+    classMasterStore.findClassMastersBySession(state.classId),
+  ]);
 
   if (list && list.length) {
-    state.assignments = list.map((e: TeacherSubject) => ({
-      id: e.id,
-      subjectId: e.subjectId,
-      teacherId: e.teacherId,
-    }));
+    // The backend returns one row per subject (a placeholder with no teacher) or one row per
+    // (subject, teacher) pairing when the subject already has one or more teachers assigned -
+    // group those pairings back into one form row per subject with a list of teacher ids.
+    const bySubject = new Map<string, AssignmentRow>();
+
+    for (const e of list as TeacherSubject[]) {
+      if (!bySubject.has(e.subjectId)) {
+        bySubject.set(e.subjectId, { subjectId: e.subjectId, teacherIds: [] });
+      }
+
+      if (e.teacherId) {
+        bySubject.get(e.subjectId)!.teacherIds.push(e.teacherId);
+        existingAssignmentIds.value[assignmentKey(e.subjectId, e.teacherId)] = e.id;
+      }
+    }
+
+    state.assignments = Array.from(bySubject.values());
+  }
+
+  if (masters && masters.length) {
+    classMasters.value = masters;
+    selectedMasterIds.value = masters.map((m: ClassMasterInfo) => m.teacher.id);
   }
 }
 
@@ -179,9 +278,15 @@ async function onSubmit() {
   try {
     saving.value = true;
 
-    await store.create(state.classId, {
-      assignments: state.assignments,
-    });
+    const assignments = state.assignments.flatMap((row) =>
+      row.teacherIds.map((teacherId) => ({
+        id: existingAssignmentIds.value[assignmentKey(row.subjectId, teacherId)] ?? null,
+        teacherId,
+        subjectId: row.subjectId,
+      }))
+    );
+
+    await store.create(state.classId, { assignments });
 
     toast.add({
       title: "Success",
@@ -204,7 +309,7 @@ onMounted(() => {
   subjectStore.fetchAll(0, 0);
   classStore.fetchAll(0, 0);
   teacherStore.fetchAll(0, 0);
-  useAppStore().setTitle("Assign Teacher Subject");
+  useAppStore().setTitle("Subjects");
   document.title = "Teacher Subject | Assign Teacher Subject | Skultem";
 });
 

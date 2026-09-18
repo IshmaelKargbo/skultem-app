@@ -180,3 +180,16 @@ export type Address = {
 export function classRosterUrl(classId: string, streamId?: string | null) {
     return streamId ? `/classes/${classId}?stream=${streamId}` : `/classes/${classId}`
 }
+
+// teacherName comes back as a comma-joined list when a class has more than one active
+// class master (co-taught classes) - see ListClassSessionBySchoolUseCase#toDto. Collapse
+// it to the first name plus a "+N" count so it fits a table/card cell.
+export function formatTeacherNames(teacherName?: string | null): string {
+    if (!teacherName) return ''
+
+    const names = teacherName.split(',').map((name) => name.trim()).filter(Boolean)
+
+    if (names.length <= 1) return names[0] ?? ''
+
+    return `${names[0]}(+${names.length - 1})`
+}

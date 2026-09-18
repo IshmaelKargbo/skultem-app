@@ -6,9 +6,9 @@
                 class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />
 
             <div class="px-5 pb-5">
-                <div class="-mt-10 flex flex-col gap-5 md:-mt-12 md:flex-row md:items-center md:justify-between">
+                <div class="-mt-10 flex flex-col gap-2 md:-mt-12 md:flex-row md:justify-between">
                     <!-- Identity -->
-                    <div class="flex min-w-0 items-center gap-4">
+                    <div class="flex flex-col md:flex-row items-center min-w-0 gap-4">
                         <div
                             class="shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
                             <USkeleton v-if="loading" class="h-16 w-16 rounded-xl md:h-20 md:w-20" />
@@ -19,34 +19,45 @@
                             </div>
                         </div>
 
-                        <div class="min-w-0 pb-0.5 md:pb-1">
+                        <div
+                            class="min-w-0 pb-0.5 md:pb-1 flex flex-col justify-center md:justify-baseline md:items-start items-center">
                             <USkeleton v-if="loading" class="h-6 w-40 md:h-7 md:w-56" />
 
                             <h2 v-else class="truncate text-xl font-bold tracking-tight text-highlighted md:text-2xl">
                                 {{ session?.clazz || 'Class' }}
                             </h2>
 
-                            <div v-if="loading" class="mt-2 flex items-center gap-2">
-                                <USkeleton class="h-4 w-28" />
+                            <div v-if="loading" class="mt-1 flex items-center gap-2">
+                                <USkeleton class="h-5 w-24 rounded-full" />
                             </div>
 
-                            <div v-else class="flex flex-wrap items-center gap-2 text-sm text-muted">
-                                <span>{{ session?.classLevel || 'No Level' }}</span>
-                                <span>- {{ session?.sectionName || 'No Section' }}</span>
-                                <span>- {{ session?.streamName || 'No Stream' }}</span>
-
-                                <span v-if="record?.terminal" class="size-1 rounded-full bg-dimmed" />
-
-                                <UBadge v-if="record?.terminal" color="warning" variant="subtle" size="xs"
-                                    class="rounded-full">
+                            <div v-else-if="record?.terminal" class="mt-1 flex items-center justify-center gap-2">
+                                <UBadge color="warning" variant="subtle" size="xs" class="rounded-full">
                                     Terminal Class
                                 </UBadge>
+                            </div>
+
+                            <div v-if="!loading"
+                                class="mt-1 flex items-center justify-center flex-wrap gap-1.5 text-xs text-dimmed">
+                                <p>{{ session?.classLevel || 'No Level' }}</p>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ session?.sectionName || 'No Section' }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ session?.streamName || 'No Stream' }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <p>-</p>
+                                    <p>{{ session?.totalStudent ?? 0 }} Students</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex shrink-0 flex-wrap items-center gap-2">
+                    <div class="flex shrink-0 flex-wrap items-center justify-center gap-2">
                         <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
                         <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
                             :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
@@ -57,29 +68,6 @@
                             <UButton :to="`/timetable?session=${session?.id}`" variant="soft" size="sm" color="neutral"
                                 label="Timetable" icon="i-lucide-calendar-days" />
                         </template>
-                    </div>
-                </div>
-
-                <!-- Quick facts -->
-                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <div v-for="item in quickFacts" :key="item.label"
-                        class="flex items-center gap-3 rounded-xl border border-default bg-elevated/40 px-3.5 py-3">
-                        <div
-                            class="hidden md:flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <UIcon :name="item.icon" class="size-4" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="text-xs text-muted">
-                                {{ item.label }}
-                            </p>
-
-                            <USkeleton v-if="loading" class="mt-1 h-4 w-10" />
-
-                            <p v-else class="truncate text-sm font-semibold text-highlighted">
-                                {{ item.value }}
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -94,33 +82,32 @@
             </template>
 
             <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                <div v-for="master in classTeachers" :key="master.id"
-                    class="flex flex-wrap items-center gap-3 p-3">
+                <div v-for="master in classTeachers" :key="master.id" class="flex flex-wrap items-center gap-3 p-3">
                     <UAvatar :src="master.photo" :alt="master.name" size="md"
                         class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
 
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-medium">{{ master.name }}</p>
-                        <p v-if="master.assignment" class="truncate text-[11px] text-gray-500 dark:text-gray-400">
+                        <p v-if="master.assignment" class="truncate md:text-[11px] text-gray-500 dark:text-gray-400">
                             {{ master.assignment }}
                         </p>
                     </div>
 
-                    <UButton size="xs" color="error" variant="soft" icon="i-lucide-user-round-x"
-                        label="Unassign" :loading="unassigningMasterId === master.id"
-                        @click="onRemoveClassMaster(master.id)" />
+                    <UButton size="xs" color="error" variant="soft" icon="i-lucide-user-round-x" label="Unassign"
+                        :loading="unassigningMasterId === master.id" @click="onRemoveClassMaster(master.id)" />
                 </div>
             </div>
         </UCard>
 
         <ClassPromotionSetting :id="session?.clazzId || ''" />
 
-        <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0' }">
+        <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0 p-0' }">
             <template #header>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <UIcon name="i-lucide-users" class="size-4 text-primary" />
                         <h3 class="text-sm font-semibold">Students</h3>
+                        <UBadge variant="soft" color="neutral">{{ students.length }}</UBadge>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -181,84 +168,57 @@
             </UTable>
 
             <!-- Mobile / Card -->
-            <div class="md:p-4 space-y-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'">
+            <div class="md:p-4 md:space-y-4"
+                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+                <!-- Loading -->
                 <template v-if="studentsLoading">
-                    <div v-for="i in 4" :key="i">
-                        <div class="animate-pulse">
-                            <div class="border-b border-default p-4">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div class="flex min-w-0 items-center gap-3">
-                                        <USkeleton class="size-12 shrink-0 rounded-xl" />
-                                        <div class="min-w-0 space-y-2">
-                                            <USkeleton class="h-4 w-36 rounded-md" />
-                                            <USkeleton class="h-3 w-28 rounded-md" />
-                                        </div>
-                                    </div>
-                                    <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 p-4">
-                                <div v-for="j in 4" :key="j" class="rounded-2xl border border-default bg-muted/40 p-3">
-                                    <div class="mb-3 flex items-center gap-2">
-                                        <USkeleton class="size-7 shrink-0 rounded-lg" />
-                                        <USkeleton class="h-3 w-16 rounded-md" />
-                                    </div>
-                                    <USkeleton class="h-4 w-24 rounded-md" />
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between gap-3 border-t border-default p-4">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <USkeleton class="size-10 shrink-0 rounded-full" />
-                                    <div class="min-w-0 space-y-2">
-                                        <USkeleton class="h-4 w-28 rounded-md" />
-                                        <USkeleton class="h-3 w-24 rounded-md" />
-                                    </div>
-                                </div>
-                                <USkeleton class="h-9 w-20 shrink-0 rounded-xl" />
+                    <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
+                        <div class="flex items-center gap-3">
+                            <USkeleton class="size-10 shrink-0 rounded-full" />
+
+                            <div class="min-w-0 flex-1 space-y-2">
+                                <USkeleton class="h-4 w-36 rounded-md" />
+                                <USkeleton class="h-3 w-24 rounded-md" />
                             </div>
                         </div>
                     </div>
                 </template>
 
+                <!-- Data -->
                 <template v-else-if="displayStudents.length">
-                    <UCard v-for="student in displayStudents" :key="student.id" class="shadow-none"
+                    <div v-for="student in displayStudents" :key="student.id"
+                        class="cursor-pointer border-b md:border md:rounded-2xl border-default p-3"
                         :class="needsAttention(student) ? 'md:border-l-4 border-l-2 border-l-warning' : ''"
-                        :ui="{ body: 'sm:p-0 p-0' }">
-                        <!-- Header -->
-                        <div class="border-b border-default p-4">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <UAvatar class="size-10" :src="student.photo"
-                                        :alt="`${student.givenNames} ${student.familyName}`" loading="lazy" />
+                        @click="navigateTo(`/students/${student.id}?back=/classes/${route.params.id}`)">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <UAvatar class="size-10" :src="student.photo"
+                                    :alt="`${student.givenNames} ${student.familyName}`" loading="lazy" />
+                                <div class="min-w-0">
+                                    <h3
+                                        class="flex items-center gap-1.5 truncate md:text-base font-bold text-highlighted">
+                                        {{ student.givenNames }} {{ student.familyName }}
+                                        <UTooltip class="hidden md:visible" v-if="needsAttention(student)"
+                                            :text="attentionReason(student)" :open="openAttentionId === student.id"
+                                            @update:open="(v) => openAttentionId = v ? student.id : null">
+                                            <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning"
+                                                @click.stop="openAttentionId = openAttentionId === student.id ? null : student.id" />
+                                        </UTooltip>
+                                    </h3>
 
-                                    <div class="min-w-0">
-                                        <h3
-                                            class="flex items-center gap-1.5 truncate text-base font-bold text-highlighted">
-                                            {{ student.givenNames }} {{ student.familyName }}
-                                            <UTooltip v-if="needsAttention(student)" :text="attentionReason(student)">
-                                                <UIcon name="i-lucide-alert-triangle"
-                                                    class="size-4 shrink-0 text-warning" />
-                                            </UTooltip>
-                                        </h3>
-
-                                        <p class="truncate mt-0.5 text-xs-base text-muted">
-                                            {{ student.admissionNumber || 'No Admission No' }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="flex shrink-0 flex-col items-end gap-1">
-                                    <UButton size="xs" :to="`/students/${student.id}?back=/classes/${route.params.id}`"
-                                        trailing-icon="i-lucide-chevron-right" color="neutral" variant="ghost"
-                                        class="shrink-0 rounded-xl" />
-                                    <p class="text-[10px] text-mute">{{ attentionReason(student) }}</p>
+                                    <p class="truncate text-xs-base text-muted">
+                                        {{ student.admissionNumber || 'No Admission No' }}
+                                    </p>
+                                    <p class="text-[9px] text-warning truncate">{{ attentionReason(student) }}</p>
                                 </div>
                             </div>
+
+                            <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 self-center text-muted" />
                         </div>
-                    </UCard>
+                    </div>
                 </template>
 
+                <!-- Empty -->
                 <template v-else>
                     <div class="col-span-full flex flex-col items-center gap-2 py-10">
                         <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -267,14 +227,6 @@
                 </template>
             </div>
 
-            <template #footer>
-                <div v-if="students.length"
-                    class="flex flex-col md:flex-row space-y-2 md:space-y-0 items-center justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
         </UCard>
 
         <UCard v-else-if="isTeacherViewer">
@@ -322,7 +274,7 @@ const userStore = useUserStore()
 
 const stream = route.query.stream as string
 const { record, session, overview, loading } = storeToRefs(classStore)
-const { classRecords: students, classMeta: meta, loading: studentsLoading } = storeToRefs(studentStore)
+const { classRecords: students, loading: studentsLoading } = storeToRefs(studentStore)
 
 const view = ref<'table' | 'card'>('table')
 
@@ -331,6 +283,10 @@ const performanceByName = ref<Record<string, number>>({})
 const attendanceByName = ref<Record<string, number>>({})
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const sortByPerformance = ref(false)
+// Tooltips only open on hover/keyboard-focus by default, which a touch tap doesn't reliably
+// trigger - this drives the mobile roster's attention icon manually so tapping it opens/closes
+// the reason instead of it being unreachable on mobile.
+const openAttentionId = ref<string | null>(null)
 
 function studentFullName(s: Student) {
     return `${s.givenNames} ${s.familyName}`.trim()
@@ -454,11 +410,6 @@ const columns = [
     { id: 'actions', meta: { class: { td: 'text-right' } } }
 ]
 
-const quickFacts = computed(() => [
-    { label: 'Total Students', value: session.value?.totalStudent ?? 0, icon: STUDENT_ICON },
-    { label: 'Class Teachers', value: session.value?.teacherName ?? 0, icon: 'i-lucide-user-round-check' }
-])
-
 const classTeachers = computed(() => {
     return (overview.value?.classMasters || []).map((master) => {
         const name = `${master.teacher?.user?.givenNames || ''} ${master.teacher?.user?.familyName || ''}`.trim() || 'Unnamed Teacher'
@@ -550,13 +501,6 @@ watch(promotionSessionIds, (sessionIds) => {
 }, { immediate: true })
 
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (value) => updateQuery({ page: value })
-})
-
-const size = ref(runtimeConf().limit)
-
 async function fetchClass() {
     if (!viewingYear.value) return
     const tasks = [classStore.viewClassByClassAndStream(classId.value, stream, viewingYear.value?.id || '')]
@@ -566,15 +510,18 @@ async function fetchClass() {
     await Promise.all(tasks)
 }
 
+// size=0 fetches every enrolled student in one go rather than paging through them - the roster
+// is not so large that pagination pulls its weight, and callers like sort-by-performance need the
+// whole class in memory anyway to rank it.
 async function fetchStudents() {
     if (!canViewRoster.value) return
-    await studentStore.fetchByClassAndStream(classId.value, stream, page.value, size.value)
+    await studentStore.fetchByClassAndStream(classId.value, stream, 0, 0)
 }
 
 watch([classId, viewingYear], fetchClass, { immediate: true })
 // canViewRoster starts false for a teacher until the class-master check above resolves
 // (overview loads async) - included here so the fetch fires once it settles true.
-watch([page, size, classId, canViewRoster], fetchStudents, { immediate: true })
+watch([classId, canViewRoster], fetchStudents, { immediate: true })
 
 onMounted(() => {
     useAppStore().setTitle('View Class')
@@ -584,9 +531,6 @@ onMounted(() => {
     // somewhere unexpected, e.g. after a reload).
     useAppStore().setBack(can([Role.TEACHER, Role.PARENT]) ? '/' : true)
 
-    if (!route.query.page || !route.query.size) {
-        updateQuery({ page: page.value })
-    }
     fetchClass()
     fetchMyTeacherSubjects()
     if (canManagePromotion.value) classStore.fetchAll(1, 100)

@@ -1,5 +1,5 @@
 <template>
-    <UCard class="sticky top-4" :ui="{ body: 'p-3 md:p-4', header: 'p-0 sm:p-0' }">
+    <UCard class="sticky top-4" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
         <template #header>
             <div>
                 <div class="flex p-3 border-b border-default items-center gap-2.5 justify-between">
@@ -41,8 +41,8 @@
                 </div>
             </div>
 
-            <div v-else class="space-y-2">
-                <div v-for="item in records" :key="item.id" role="button" tabindex="0" class="cursor-pointer"
+            <div v-else>
+                <div v-for="item in records" :key="item.id" role="button" tabindex="0" class="cursor-pointer border-b last:border-b-0 border-default"
                     @click="select(item)" @keydown.enter="select(item)">
                     <FeeStudentCard :active="item.id == selected?.id" :student="item" />
                 </div>

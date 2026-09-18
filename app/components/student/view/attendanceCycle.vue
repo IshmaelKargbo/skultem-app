@@ -240,7 +240,7 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
 </script>
 
 <template>
-    <div class="space-y-4">
+    <div class="space-y-4 md:p-5">
         <!-- Summary -->
         <div class="md:border border-default p-4 md:rounded-2xl">
             <div class="flex flex-col items-center gap-6 lg:flex-row">
@@ -308,7 +308,7 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
         </div>
 
         <!-- Calendar -->
-        <div class="md:border border-default md:p-4 md:rounded-2xl">
+        <div class="md:border border-default md:rounded-2xl">
             <div class="flex items-center justify-between border-b border-default px-4 py-3">
                 <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-chevron-left"
                     :label="prevMonthLabel" @click="goPrevMonth" />

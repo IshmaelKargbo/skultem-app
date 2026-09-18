@@ -94,6 +94,12 @@ const size = computed<number>({
     set: (val) => updateQuery({ size: val }),
 });
 
+const filterState = ref(false);
+
+function toggleFilter() {
+    filterState.value = !filterState.value;
+}
+
 // Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
 // why a v-model bound straight to a computed setter that triggers router.replace() reads as
 // "picking an option/typing does nothing". These still seed from the URL on load and push back
@@ -196,25 +202,49 @@ definePageMeta({
         <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div>
-                    <div class="flex px-4 py-3 justify-between">
+                    <div class="flex px-4 py-3 items-center justify-between gap-3">
                         <div class="space-x-2 flex flex-1 items-center">
                             <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
                         </div>
-                        <TableViewToggle v-model="view" />
+
+                        <div>
+                            <TableViewToggle v-model="view" />
+                            <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
+                                variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+                        </div>
                     </div>
 
-                    <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-4">
                             <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
                                 placeholder="All Classes" clear />
                             <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
                                 placeholder="Sort by" />
-                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..."
-                                class="col-span-2" />
+                            <div class="flex space-x-1 sm:col-span-2">
+                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..."
+                                    class="flex-1" />
+                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                                    :disabled="!hasActiveFilters" @click="resetFilters" />
+                            </div>
                         </div>
-                        <div>
+                        <div class="hidden md:block">
                             <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                                 :disabled="!hasActiveFilters" @click="resetFilters" />
+                        </div>
+                    </div>
+                    <div v-if="filterState"
+                        class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-4">
+                            <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
+                                placeholder="All Classes" clear />
+                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+                                placeholder="Sort by" />
+                            <div class="flex space-x-1 sm:col-span-2">
+                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..."
+                                    class="flex-1" />
+                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
+                                    :disabled="!hasActiveFilters" @click="resetFilters" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -235,117 +265,67 @@ definePageMeta({
                 </template>
             </UTable>
 
-            <div class="space-y-4 p-4"
+            <div class="md:p-4 md:space-y-4"
                 :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <UCard v-for="i in 5" :key="i" class="overflow-hidden rounded-3xl border border-default shadow-sm"
-                        :ui="{ body: 'p-5' }">
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-3">
-                                <USkeleton class="size-12 rounded-2xl" />
+                    <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
+                        <div class="flex items-center gap-3">
+                            <USkeleton class="size-10 shrink-0 rounded-full" />
 
-                                <div class="flex-1 space-y-2">
-                                    <USkeleton class="h-4 w-36" />
-                                    <USkeleton class="h-3 w-24" />
-                                </div>
-
-                                <USkeleton class="size-8 rounded-xl" />
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <USkeleton class="h-16 rounded-2xl" />
-                                <USkeleton class="h-16 rounded-2xl" />
+                            <div class="min-w-0 flex-1 space-y-2">
+                                <USkeleton class="h-4 w-36 rounded-md" />
+                                <USkeleton class="h-3 w-28 rounded-md" />
                             </div>
                         </div>
-                    </UCard>
+                    </div>
                 </template>
 
                 <!-- Data -->
                 <template v-else-if="data?.length">
-                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }">
-                        <div>
-                            <!-- Header -->
-                            <div class="flex items-start justify-between gap-3 border-b border-default p-3">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <div
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                        <UIcon name="i-lucide-folder-tree" class="size-5" />
-                                    </div>
+                    <div v-for="item in data" :key="item.id"
+                        class="border-b md:border md:rounded-2xl border-default p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <UAvatar icon="i-lucide-folder-tree" />
 
-                                    <div class="min-w-0">
-                                        <h3 class="truncate text-base font-semibold text-highlighted">
-                                            {{ item.name }}
-                                        </h3>
-                                        <p class="text-xs-base text-muted">
-                                            {{ item.className || "No class assigned" }}
-                                        </p>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-base font-bold text-highlighted">
+                                        {{ item.name }}
+                                    </h3>
 
+                                    <div class="flex min-w-0 items-center gap-1 text-xs-base text-muted">
+                                        <span class="truncate">{{ item.className || "No class assigned" }}</span>
+
+                                        <template v-if="item.streamName">
+                                            <span class="shrink-0">•</span>
+                                            <span class="shrink-0">{{ item.streamName }}</span>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Stats -->
-                            <div class="grid grid-cols-2 space-x-3 p-3">
-                                <div
-                                    class="rounded-2xl border border-primary-200 bg-primary-50 p-3 dark:border-primary-500/20 dark:bg-primary-500/10">
-                                    <div class="mb-2 flex items-center gap-2">
-                                        <div
-                                            class="flex size-7 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-500/20">
-                                            <UIcon name="i-lucide-git-branch"
-                                                class="size-4 text-primary-600 dark:text-primary-400" />
-                                        </div>
-
-                                        <p
-                                            class="text-[10px] font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">
-                                            Stream
-                                        </p>
-                                    </div>
-
-                                    <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ item.streamName || "None" }}
-                                    </p>
-                                </div>
-
-                                <div
-                                    class="rounded-2xl border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/20 dark:bg-indigo-500/10">
-                                    <div class="mb-2 flex items-center gap-2">
-                                        <div
-                                            class="flex size-7 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
-                                            <UIcon name="i-lucide-git-branch"
-                                                class="size-4 text-indigo-600 dark:text-indigo-400" />
-                                        </div>
-
-                                        <p
-                                            class="text-[10px] font-medium uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
-                                            Selection
-                                        </p>
-                                    </div>
-
-                                    <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ item.totalSelection || 0 }}
-                                    </p>
-                                </div>
+                            <div class="flex shrink-0 items-center gap-2 self-center">
+                                <UBadge variant="outline" icon="mdi:select-multiple" color="neutral"
+                                    :label="`${item.totalSelection || 0}`" />
+                                <UButton v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" :icon="EDIT_ICON"
+                                    color="warning" variant="ghost" size="sm" aria-label="Edit subject group"
+                                    @click="editState = true; editRcord = item" />
                             </div>
                         </div>
-                    </UCard>
+                    </div>
                 </template>
 
                 <!-- Empty -->
                 <template v-else>
-                    <UCard class="rounded-3xl border border-default shadow-sm col-span-full">
-                        <div class="flex flex-col items-center justify-center py-16">
-                            <div class="mb-5 flex size-20 items-center justify-center rounded-3xl bg-primary/10">
-                                <UIcon name="i-lucide-folder-tree" class="size-10 text-primary" />
-                            </div>
+                    <div class="col-span-full flex flex-col items-center justify-center py-14">
+                        <UIcon name="i-lucide-folder-tree" class="mb-3 size-10 text-gray-400" />
 
-                            <h3 class="text-base font-semibold">No subject groups</h3>
+                        <h3 class="font-semibold">No subject groups</h3>
 
-                            <p class="mt-2 text-center text-sm text-muted">
-                                Create your first subject group to organize subjects by stream or class.
-                            </p>
-                        </div>
-                    </UCard>
+                        <p class="text-sm text-gray-500">Create your first subject group to organize subjects by
+                            stream or class.</p>
+                    </div>
                 </template>
             </div>
 

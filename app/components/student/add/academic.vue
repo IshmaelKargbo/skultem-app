@@ -103,7 +103,8 @@ const schema = yup.object({
 const enrollmentTypes = [
     { label: 'New', value: 'NEW' },
     { label: 'Transfer', value: 'TRANSFER' },
-    { label: 'Re-enrolled', value: 'RE_ENROLLMENT' }
+    { label: 'Re-enrolled', value: 'RE_ENROLLMENT' },
+    { label: 'Existing Student (New to System)', value: 'EXISTING' }
 ]
 
 const classes = computed(() =>

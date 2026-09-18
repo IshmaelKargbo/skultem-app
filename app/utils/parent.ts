@@ -4,7 +4,8 @@ export type Parent = {
     name: string
     givenNames: string
     familyName: string
-    email: string
+    // Nullable - a parent enrolled without one has no portal access until an admin adds it.
+    email: string | null
     street: string
     city: string
     feeDetail?: {

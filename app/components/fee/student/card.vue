@@ -1,8 +1,7 @@
 <template>
-    <div class="group relative overflow-hidden rounded-2xl border p-3.5 transition-all duration-200"
-        :class="active
-            ? 'border-primary-300 bg-primary-50 shadow-sm dark:border-primary-700 dark:bg-primary-500/10'
-            : 'border-default bg-default hover:border-primary-200 hover:shadow-sm dark:hover:border-primary-800'">
+    <div class="group relative overflow-hidden p-3.5 transition-all duration-200" :class="active
+        ? 'bg-primary-50 dark:bg-primary-500/10'
+        : 'bg-default hover:bg-primary-50 dark:bg-primary-500/10'">
 
         <div class="flex items-start justify-between gap-3">
             <div class="flex min-w-0 items-center gap-2.5">
@@ -23,9 +22,7 @@
             </UBadge>
         </div>
 
-        <!-- Paid-of-total progress - a quicker read than the amount alone, and doubles as a status
-             signal (full green bar = settled) at a glance across a whole list. -->
-        <div class="mt-3 space-y-1.5">
+        <div class="mt-2 space-y-1.5">
             <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div class="h-full rounded-full transition-all duration-300" :class="progressColor"
                     :style="{ width: `${progressPct}%` }" />

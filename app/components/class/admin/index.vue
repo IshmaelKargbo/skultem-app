@@ -81,7 +81,7 @@
                         :label="`${row.original.totalStudent} -`" />
                 </template>
                 <template #teacherName-cell="{ row }">
-                    <p>{{ row.original.teacherName || 'No Teacher Assigned' }}</p>
+                    <p class="max-w-40 truncate" :title="row.original.teacherName">{{ formatTeacherNames(row.original.teacherName) || 'No Teacher Assigned' }}</p>
                 </template>
                 <template #loading>
                     <TableLoading :size="columns.length" />
@@ -125,12 +125,12 @@
                                         </UTooltip>
                                     </div>
 
-                                    <div class="flex items-center gap-1 text-xs-base text-muted">
-                                        <span>{{ item.grade }}</span>
+                                    <div class="flex min-w-0 items-center gap-1 text-xs-base text-muted">
+                                        <span class="shrink-0">{{ item.grade }}</span>
 
-                                        <span>•</span>
+                                        <span class="shrink-0">•</span>
 
-                                        <span>{{ item.teacherName || 'No Teacher Assigned' }}</span>
+                                        <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) || 'No Teacher Assigned' }}</span>
                                     </div>
                                 </div>
                             </div>

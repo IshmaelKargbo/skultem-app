@@ -20,11 +20,6 @@ const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
 );
 
-// No "All Students" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). Nothing selected already shows the "All students" placeholder, and
-// the select's own clear button (:clear below) gets back to it.
 const studentTypeOptions = [
   { label: "New Students Only", value: "NEW" },
   { label: "Old Students Only", value: "OLD" },
@@ -45,9 +40,6 @@ const sortOptions = [
 ];
 const DEFAULT_SORT = "createdAt:desc";
 
-// A supply fee can bundle several materials (e.g. Uniform + House Colour + Necktie) - joined into
-// one line, that's what was pushing the table wider than the viewport and forcing it to scroll.
-// Used with a truncating span + tooltip below instead, same as elsewhere in this table.
 function supplyItemsLabel(fee: FeeStructure) {
   return fee.supplyItems.map((item) => `${item.material.name} (${item.quantity})`).join(', ');
 }

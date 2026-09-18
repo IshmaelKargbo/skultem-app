@@ -1,9 +1,4 @@
 <template>
-  <!-- Shared quick-nav across every Fees & Payments page - mirrors the sidebar's own "Fees &
-       Payments" group so hopping between Fees/Payments/Structures/Discounts/Category/Receipt
-       Design doesn't mean going back to the sidebar every time. Uses the app's own Tab/TabMobile
-       pair (same as teacher/student profiles, analytics, report headers) rather than a one-off
-       nav bar, so it looks and behaves like every other section switcher in the app. -->
   <TabMobile class="md:hidden" :tabs="items" />
   <Tab class="hidden md:block" :tabs="items" />
 </template>

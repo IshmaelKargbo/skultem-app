@@ -178,6 +178,9 @@ onMounted(async () => {
         <template #totalStudent-cell="{ row }">
           <UBadge variant="outline" :trailing-icon="STUDENT_ICON" :label="`${row.original.totalStudent} -`" />
         </template>
+        <template #teacherName-cell="{ row }">
+          <p class="max-w-40 truncate" :title="row.original.teacherName">{{ formatTeacherNames(row.original.teacherName) || 'No Class Teacher' }}</p>
+        </template>
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
@@ -363,7 +366,7 @@ onMounted(async () => {
               <div class="flex items-center justify-between">
                 <div class="flex min-w-0 items-center gap-2 text-sm text-muted">
                   <UIcon name="i-lucide-user-round" class="size-4 shrink-0" />
-                  <span class="truncate">{{ item.teacherName || 'No Class Teacher' }}</span>
+                  <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) || 'No Class Teacher' }}</span>
                 </div>
 
                 <p class="shrink-0 truncate text-sm font-medium text-highlighted">

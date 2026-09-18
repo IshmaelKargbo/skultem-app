@@ -56,11 +56,12 @@ definePageMeta({
 const personalDetails = computed(() => ([
     { label: 'Given Names', icon: 'i-lucide-user-round', value: record.value?.user?.givenNames },
     { label: 'Family Name', icon: 'i-lucide-user', value: record.value?.user?.familyName },
+    { label: 'Gender', icon: 'i-lucide-user', value: clean(record.value?.gender || '') },
+    { label: 'Designation', icon: 'i-lucide-briefcase', value: record.value?.designation },
     { label: 'Email', icon: 'i-lucide-mail', value: record.value?.user?.email },
     { label: 'Phone Number', icon: 'i-lucide-phone', value: record.value?.phone },
-      { label: 'Address', icon: 'i-lucide-house', value: record.value?.street },
+    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street },
     { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.city },
-  
 ]))
 
 onMounted(() => {

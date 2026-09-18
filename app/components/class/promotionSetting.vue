@@ -78,7 +78,7 @@ watch(() => id, () => {
             <div class="flex items-center justify-between gap-3 rounded-xl border border-default p-3">
                 <div class="min-w-0 pr-3">
                     <p class="text-sm font-medium text-highlighted">Graduating class</p>
-                    <p class="text-xs text-muted">e.g. Class 6, JSS 3, SSS 3 - promoted students graduate instead of
+                    <p class="text-xs-base text-muted">e.g. Class 6, JSS 3, SSS 3 - promoted students graduate instead of
                         moving
                         up</p>
                 </div>
@@ -87,7 +87,7 @@ watch(() => id, () => {
             </div>
 
             <UFormField label="Promotes to"
-                :hint="record?.terminal ? 'Disabled while this is a graduating class' : 'The class students move up to when promoted'">
+                :help="record?.terminal ? 'Disabled while this is a graduating class' : 'The class students move up to when promoted'">
                 <USelectMenu v-model="nextClassId" value-key="value" :items="otherClasses"
                     :disabled="!!record?.terminal || savingNextClass" :loading="savingNextClass"
                     placeholder="Select next class" class="w-full" />

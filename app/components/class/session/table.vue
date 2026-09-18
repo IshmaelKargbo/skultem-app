@@ -16,7 +16,7 @@
                 </div>
             </template>
             <template #teacherName-cell="{ row }">
-                <p>{{ row.original.teacherName || 'No Teacher Assigned' }}</p>
+                <p class="max-w-40 truncate" :title="row.original.teacherName">{{ formatTeacherNames(row.original.teacherName) || 'No Teacher Assigned' }}</p>
             </template>
             <template #loading>
                 <TableLoading :size="columns.length" />
@@ -32,11 +32,12 @@
             <template v-else-if="data?.length">
                 <div v-for="item in data" :key="item.id" class="rounded-2xl border border-default p-4">
                     <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <p class="font-semibold">{{ item.clazz }}</p>
-                            <p class="text-xs text-muted">{{ item.sectionName }}<template v-if="item.streamName && item.streamName !== 'N/A'"> - {{ item.streamName }}</template></p>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-semibold">{{ item.clazz }}</p>
+                            <p class="truncate text-xs text-muted">{{ item.sectionName }}<template v-if="item.streamName && item.streamName !== 'N/A'"> - {{ item.streamName }}</template></p>
                         </div>
-                        <UBadge variant="outline" :label="item.teacherName || 'No Teacher'" />
+                        <UBadge class="max-w-32 shrink-0" :ui="{ label: 'min-w-0' }" variant="outline"
+                            :title="item.teacherName" :label="formatTeacherNames(item.teacherName) || 'No Teacher'" />
                     </div>
                 </div>
             </template>
