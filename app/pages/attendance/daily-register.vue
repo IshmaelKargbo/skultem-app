@@ -68,32 +68,32 @@
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div class="rounded-xl bg-green-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Present</p>
-            <p class="text-xl font-bold text-green-600">{{ register.presentCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ register.presentCount }}</p>
           </div>
-          <div class="rounded-xl bg-red-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Absent</p>
-            <p class="text-xl font-bold text-red-600">{{ absentTotal }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ absentTotal }}</p>
           </div>
-          <div class="rounded-xl bg-amber-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Late</p>
-            <p class="text-xl font-bold text-amber-600">{{ register.lateCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ register.lateCount }}</p>
           </div>
-          <div class="rounded-xl bg-gray-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Students</p>
-            <p class="text-xl font-bold text-gray-700">{{ register.totalStudents }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ register.totalStudents }}</p>
           </div>
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3">
-          <div class="rounded-xl bg-blue-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Boys Present</p>
-            <p class="text-lg font-bold text-blue-600">{{ register.presentBoys }} / {{ register.totalBoys }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ register.presentBoys }} / {{ register.totalBoys }}</p>
           </div>
-          <div class="rounded-xl bg-pink-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Girls Present</p>
-            <p class="text-lg font-bold text-pink-600">{{ register.presentGirls }} / {{ register.totalGirls }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ register.presentGirls }} / {{ register.totalGirls }}</p>
           </div>
         </div>
 

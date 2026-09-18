@@ -66,13 +66,13 @@
         </div>
 
         <div class="mb-4 grid grid-cols-2 gap-3">
-          <div class="rounded-xl bg-blue-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Boys Attendance</p>
-            <p class="text-lg font-bold text-blue-600">{{ genderTotals.presentBoys }} / {{ genderTotals.totalBoys }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ genderTotals.presentBoys }} / {{ genderTotals.totalBoys }}</p>
           </div>
-          <div class="rounded-xl bg-pink-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Girls Attendance</p>
-            <p class="text-lg font-bold text-pink-600">{{ genderTotals.presentGirls }} / {{ genderTotals.totalGirls }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ genderTotals.presentGirls }} / {{ genderTotals.totalGirls }}</p>
           </div>
         </div>
 

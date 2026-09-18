@@ -49,25 +49,25 @@
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <div class="rounded-xl bg-green-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Present</p>
-            <p class="text-xl font-bold text-green-600">{{ roster.presentCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ roster.presentCount }}</p>
           </div>
-          <div class="rounded-xl bg-red-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Absent</p>
-            <p class="text-xl font-bold text-red-600">{{ roster.absentCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ roster.absentCount }}</p>
           </div>
-          <div class="rounded-xl bg-amber-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Late</p>
-            <p class="text-xl font-bold text-amber-600">{{ roster.lateCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ roster.lateCount }}</p>
           </div>
-          <div class="rounded-xl bg-blue-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Excused</p>
-            <p class="text-xl font-bold text-blue-600">{{ roster.excusedCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ roster.excusedCount }}</p>
           </div>
-          <div class="rounded-xl bg-gray-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Teachers</p>
-            <p class="text-xl font-bold text-gray-700">{{ roster.totalCount }}</p>
+            <p class="text-xl font-bold text-primary-600">{{ roster.totalCount }}</p>
           </div>
         </div>
 

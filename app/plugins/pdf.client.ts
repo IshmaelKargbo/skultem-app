@@ -234,6 +234,16 @@ export default defineNuxtPlugin(() => {
         const originalHtmlOverflow = document.documentElement.style.overflow;
         const originalBodyOverflow = document.body.style.overflow;
 
+        // Every generated document (report card, receipt, payslip, attendance/academic report...)
+        // must render light-on-white regardless of the app's current theme - forceInlineStyles
+        // below bakes in whatever is *currently computed* on screen, and a bunch of CSS (color
+        // tokens, the .dark .apexcharts-* overrides in main.css) keys off the "dark" class on
+        // <html>. Dropping it for the duration of the capture makes every computed style resolve
+        // to its light-mode value, the same way it would for a viewer who never enabled dark mode.
+        const html = document.documentElement;
+        const wasDark = html.classList.contains("dark");
+        if (wasDark) html.classList.remove("dark");
+
         // Clone
         const cloned = element.cloneNode(true) as HTMLElement;
         cloned.style.position = "fixed";
@@ -251,22 +261,22 @@ export default defineNuxtPlugin(() => {
         document.body.style.overflow = "hidden";
         document.body.appendChild(cloned);
 
-        // Wait for every image to actually load before measuring/capturing -
-        // otherwise logos/photos/signatures that haven't finished downloading
-        // yet render as blank space, and the height measured below would be
-        // wrong for any image whose real dimensions hadn't resolved yet.
-        await waitForImages(cloned);
-
-        // Force all computed styles inline — resolves oklch before html2canvas sees it
-        forceInlineStyles(cloned);
-
-        // Real content height, not a fixed one page's worth - anything past a
-        // single A4 page (1123px at 96dpi) used to be silently clipped instead
-        // of flowing onto a second PDF page.
-        const measuredHeight = Math.max(1123, Math.ceil(cloned.scrollHeight));
-
         let canvas: HTMLCanvasElement;
         try {
+          // Wait for every image to actually load before measuring/capturing -
+          // otherwise logos/photos/signatures that haven't finished downloading
+          // yet render as blank space, and the height measured below would be
+          // wrong for any image whose real dimensions hadn't resolved yet.
+          await waitForImages(cloned);
+
+          // Force all computed styles inline — resolves oklch before html2canvas sees it
+          forceInlineStyles(cloned);
+
+          // Real content height, not a fixed one page's worth - anything past a
+          // single A4 page (1123px at 96dpi) used to be silently clipped instead
+          // of flowing onto a second PDF page.
+          const measuredHeight = Math.max(1123, Math.ceil(cloned.scrollHeight));
+
           canvas = await html2canvas(cloned, {
             scale: 2,
             useCORS: true,
@@ -286,6 +296,7 @@ export default defineNuxtPlugin(() => {
           document.body.removeChild(cloned);
           document.documentElement.style.overflow = originalHtmlOverflow;
           document.body.style.overflow = originalBodyOverflow;
+          if (wasDark) html.classList.add("dark");
         }
 
         const imgData = canvas.toDataURL("image/jpeg", 1);

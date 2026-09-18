@@ -61,40 +61,40 @@
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <div class="rounded-xl bg-gray-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Students</p>
-            <p class="text-lg font-bold text-gray-700">{{ summary.totalStudents }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalStudents }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Avg. Attendance</p>
             <p class="text-lg font-bold text-primary-600">{{ summary.averageAttendance }}%</p>
           </div>
-          <div class="rounded-xl bg-red-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Below {{ threshold }}%</p>
-            <p class="text-lg font-bold text-red-600">{{ summary.studentsBelowThreshold }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.studentsBelowThreshold }}</p>
           </div>
-          <div class="rounded-xl bg-green-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Present</p>
-            <p class="text-lg font-bold text-green-600">{{ summary.totalPresent }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalPresent }}</p>
           </div>
-          <div class="rounded-xl bg-red-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Absent</p>
-            <p class="text-lg font-bold text-red-600">{{ summary.totalAbsent }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalAbsent }}</p>
           </div>
-          <div class="rounded-xl bg-amber-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Late</p>
-            <p class="text-lg font-bold text-amber-600">{{ summary.totalLate }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalLate }}</p>
           </div>
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3">
-          <div class="rounded-xl bg-blue-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Boys Attendance</p>
-            <p class="text-lg font-bold text-blue-600">{{ summary.presentBoys }} / {{ summary.totalBoys }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.presentBoys }} / {{ summary.totalBoys }}</p>
           </div>
-          <div class="rounded-xl bg-pink-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Girls Attendance</p>
-            <p class="text-lg font-bold text-pink-600">{{ summary.presentGirls }} / {{ summary.totalGirls }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.presentGirls }} / {{ summary.totalGirls }}</p>
           </div>
         </div>
 

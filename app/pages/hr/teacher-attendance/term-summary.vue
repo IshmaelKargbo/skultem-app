@@ -54,25 +54,25 @@
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <div class="rounded-xl bg-gray-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Teachers</p>
-            <p class="text-lg font-bold text-gray-700">{{ summary.totalTeachers }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalTeachers }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Avg. Attendance</p>
             <p class="text-lg font-bold text-primary-600">{{ summary.averageAttendance }}%</p>
           </div>
-          <div class="rounded-xl bg-green-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Present</p>
-            <p class="text-lg font-bold text-green-600">{{ summary.totalPresent }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalPresent }}</p>
           </div>
-          <div class="rounded-xl bg-red-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Absent</p>
-            <p class="text-lg font-bold text-red-600">{{ summary.totalAbsent }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalAbsent }}</p>
           </div>
-          <div class="rounded-xl bg-amber-50 p-3 text-center">
+          <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Total Late</p>
-            <p class="text-lg font-bold text-amber-600">{{ summary.totalLate }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ summary.totalLate }}</p>
           </div>
         </div>
 

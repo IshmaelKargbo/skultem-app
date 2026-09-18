@@ -93,32 +93,32 @@
         <!-- Body: Daily Register -->
         <template v-if="report!.reportType === 'DAILY_REGISTER'">
           <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div class="rounded-xl bg-green-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Present</p>
-              <p class="text-xl font-bold text-green-600">{{ dailyPayload!.presentCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.presentCount }}</p>
             </div>
-            <div class="rounded-xl bg-red-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Absent</p>
-              <p class="text-xl font-bold text-red-600">{{ dailyPayload!.absentCount + dailyPayload!.excusedCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.absentCount + dailyPayload!.excusedCount }}</p>
             </div>
-            <div class="rounded-xl bg-amber-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Late</p>
-              <p class="text-xl font-bold text-amber-600">{{ dailyPayload!.lateCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.lateCount }}</p>
             </div>
-            <div class="rounded-xl bg-gray-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Students</p>
-              <p class="text-xl font-bold text-gray-700">{{ dailyPayload!.totalStudents }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.totalStudents }}</p>
             </div>
           </div>
 
           <div class="mb-6 grid grid-cols-2 gap-3">
-            <div class="rounded-xl bg-blue-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Boys Present</p>
-              <p class="text-lg font-bold text-blue-600">{{ dailyPayload!.presentBoys }} / {{ dailyPayload!.totalBoys }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ dailyPayload!.presentBoys }} / {{ dailyPayload!.totalBoys }}</p>
             </div>
-            <div class="rounded-xl bg-pink-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Girls Present</p>
-              <p class="text-lg font-bold text-pink-600">{{ dailyPayload!.presentGirls }} / {{ dailyPayload!.totalGirls }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ dailyPayload!.presentGirls }} / {{ dailyPayload!.totalGirls }}</p>
             </div>
           </div>
 
@@ -147,13 +147,13 @@
         <!-- Body: Monthly Summary -->
         <template v-else-if="report!.reportType === 'MONTHLY_SUMMARY'">
           <div class="mb-6 grid grid-cols-2 gap-3">
-            <div class="rounded-xl bg-blue-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Boys Attendance</p>
-              <p class="text-lg font-bold text-blue-600">{{ monthlyGenderTotals.presentBoys }} / {{ monthlyGenderTotals.totalBoys }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ monthlyGenderTotals.presentBoys }} / {{ monthlyGenderTotals.totalBoys }}</p>
             </div>
-            <div class="rounded-xl bg-pink-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Girls Attendance</p>
-              <p class="text-lg font-bold text-pink-600">{{ monthlyGenderTotals.presentGirls }} / {{ monthlyGenderTotals.totalGirls }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ monthlyGenderTotals.presentGirls }} / {{ monthlyGenderTotals.totalGirls }}</p>
             </div>
           </div>
 
@@ -189,40 +189,40 @@
         <!-- Body: Term Summary -->
         <template v-else>
           <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <div class="rounded-xl bg-gray-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Students</p>
-              <p class="text-lg font-bold text-gray-700">{{ termPayload!.totalStudents }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalStudents }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Avg. Attendance</p>
               <p class="text-lg font-bold text-primary-600">{{ termPayload!.averageAttendance }}%</p>
             </div>
-            <div class="rounded-xl bg-red-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Below {{ threshold }}%</p>
-              <p class="text-lg font-bold text-red-600">{{ termPayload!.studentsBelowThreshold }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.studentsBelowThreshold }}</p>
             </div>
-            <div class="rounded-xl bg-green-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Present</p>
-              <p class="text-lg font-bold text-green-600">{{ termPayload!.totalPresent }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalPresent }}</p>
             </div>
-            <div class="rounded-xl bg-red-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Absent</p>
-              <p class="text-lg font-bold text-red-600">{{ termPayload!.totalAbsent }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalAbsent }}</p>
             </div>
-            <div class="rounded-xl bg-amber-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Late</p>
-              <p class="text-lg font-bold text-amber-600">{{ termPayload!.totalLate }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalLate }}</p>
             </div>
           </div>
 
           <div class="mb-6 grid grid-cols-2 gap-3">
-            <div class="rounded-xl bg-blue-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Boys Attendance</p>
-              <p class="text-lg font-bold text-blue-600">{{ termPayload!.presentBoys }} / {{ termPayload!.totalBoys }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.presentBoys }} / {{ termPayload!.totalBoys }}</p>
             </div>
-            <div class="rounded-xl bg-pink-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Girls Attendance</p>
-              <p class="text-lg font-bold text-pink-600">{{ termPayload!.presentGirls }} / {{ termPayload!.totalGirls }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.presentGirls }} / {{ termPayload!.totalGirls }}</p>
             </div>
           </div>
 

@@ -42,30 +42,46 @@
       </div>
 
       <div class="grid grid-cols-2 gap-4 px-2 sm:grid-cols-4">
-        <Metric :record="{ label: 'Total Students', value: demographics.totalStudents, isReady: true, icon: 'i-lucide-users', color: 'primary' }" />
-        <Metric :record="{ label: 'Boys', value: demographics.boys, isReady: true, icon: 'i-lucide-user', color: 'info' }" />
-        <Metric :record="{ label: 'Girls', value: demographics.girls, isReady: true, icon: 'i-lucide-user', color: 'primary' }" />
-        <Metric :record="{ label: 'Not Specified', value: demographics.genderNotSpecified, isReady: true, icon: 'i-lucide-help-circle', color: 'neutral' }" />
+        <div class="rounded-xl bg-primary-50 p-3 text-center">
+          <p class="text-xs text-gray-500">Total Students</p>
+          <p class="text-xl font-bold text-primary-600">{{ demographics.totalStudents }}</p>
+        </div>
+        <div class="rounded-xl bg-primary-50 p-3 text-center">
+          <p class="text-xs text-gray-500">Boys</p>
+          <p class="text-xl font-bold text-primary-600">{{ demographics.boys }}</p>
+        </div>
+        <div class="rounded-xl bg-primary-50 p-3 text-center">
+          <p class="text-xs text-gray-500">Girls</p>
+          <p class="text-xl font-bold text-primary-600">{{ demographics.girls }}</p>
+        </div>
+        <div class="rounded-xl bg-primary-50 p-3 text-center">
+          <p class="text-xs text-gray-500">Not Specified</p>
+          <p class="text-xl font-bold text-primary-600">{{ demographics.genderNotSpecified }}</p>
+        </div>
       </div>
 
       <div class="grid gap-4 px-2 lg:grid-cols-2">
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Gender</h2>
-          </template>
-          <ClientOnly>
-            <ApexChart type="donut" height="280" :options="genderChartOptions" :series="genderChartSeries" />
-          </ClientOnly>
-        </UCard>
+        <div class="rounded-lg border border-gray-200 bg-white">
+          <div class="border-b border-gray-200 px-4 py-3">
+            <h2 class="font-semibold text-gray-900">Gender</h2>
+          </div>
+          <div class="p-4">
+            <ClientOnly>
+              <ApexChart type="donut" height="280" :options="genderChartOptions" :series="genderChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
 
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Religion</h2>
-          </template>
-          <ClientOnly>
-            <ApexChart type="bar" height="280" :options="religionChartOptions" :series="religionChartSeries" />
-          </ClientOnly>
-        </UCard>
+        <div class="rounded-lg border border-gray-200 bg-white">
+          <div class="border-b border-gray-200 px-4 py-3">
+            <h2 class="font-semibold text-gray-900">Religion</h2>
+          </div>
+          <div class="p-4">
+            <ClientOnly>
+              <ApexChart type="bar" height="280" :options="religionChartOptions" :series="religionChartSeries" />
+            </ClientOnly>
+          </div>
+        </div>
       </div>
 
       <p class="px-2 text-center text-[10px] uppercase tracking-widest text-gray-300">

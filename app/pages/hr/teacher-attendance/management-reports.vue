@@ -83,25 +83,25 @@
         <!-- Body: Daily Register -->
         <template v-if="report!.reportType === 'DAILY_REGISTER'">
           <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            <div class="rounded-xl bg-green-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Present</p>
-              <p class="text-xl font-bold text-green-600">{{ dailyPayload!.presentCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.presentCount }}</p>
             </div>
-            <div class="rounded-xl bg-red-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Absent</p>
-              <p class="text-xl font-bold text-red-600">{{ dailyPayload!.absentCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.absentCount }}</p>
             </div>
-            <div class="rounded-xl bg-amber-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Late</p>
-              <p class="text-xl font-bold text-amber-600">{{ dailyPayload!.lateCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.lateCount }}</p>
             </div>
-            <div class="rounded-xl bg-blue-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Excused</p>
-              <p class="text-xl font-bold text-blue-600">{{ dailyPayload!.excusedCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.excusedCount }}</p>
             </div>
-            <div class="rounded-xl bg-gray-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Teachers</p>
-              <p class="text-xl font-bold text-gray-700">{{ dailyPayload!.totalCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.totalCount }}</p>
             </div>
           </div>
 
@@ -158,25 +158,25 @@
         <!-- Body: Term Summary -->
         <template v-else>
           <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <div class="rounded-xl bg-gray-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Teachers</p>
-              <p class="text-lg font-bold text-gray-700">{{ termPayload!.totalTeachers }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalTeachers }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Avg. Attendance</p>
               <p class="text-lg font-bold text-primary-600">{{ termPayload!.averageAttendance }}%</p>
             </div>
-            <div class="rounded-xl bg-green-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Present</p>
-              <p class="text-lg font-bold text-green-600">{{ termPayload!.totalPresent }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalPresent }}</p>
             </div>
-            <div class="rounded-xl bg-red-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Absent</p>
-              <p class="text-lg font-bold text-red-600">{{ termPayload!.totalAbsent }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalAbsent }}</p>
             </div>
-            <div class="rounded-xl bg-amber-50 p-3 text-center">
+            <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Late</p>
-              <p class="text-lg font-bold text-amber-600">{{ termPayload!.totalLate }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalLate }}</p>
             </div>
           </div>
 
