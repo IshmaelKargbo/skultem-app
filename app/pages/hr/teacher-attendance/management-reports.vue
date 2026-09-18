@@ -259,7 +259,7 @@ const form = reactive({
 
 const generating = ref(false)
 const downloading = ref(false)
-const logoSrc = ref('')
+const logoSrc = computed(() => school.value?.logo || '')
 
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
 
@@ -316,11 +316,6 @@ async function generate() {
       year: form.reportType === 'MONTHLY_SUMMARY' ? year : undefined,
       month: form.reportType === 'MONTHLY_SUMMARY' ? month : undefined
     })
-
-    if (!logoSrc.value) {
-      const assets = await SchoolApi().getBrandingAssets()
-      logoSrc.value = assets?.logo || school.value?.logo || ''
-    }
   } catch (err: any) {
     toastError(err?.message || 'Failed to generate report')
   } finally {

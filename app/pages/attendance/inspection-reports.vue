@@ -79,7 +79,7 @@
 
       <div id="inspection-report-preview" class="rounded-lg bg-white p-6 text-gray-900 sm:p-8">
         <!-- Header -->
-        <div class="-m-6 mb-6 border-b-4 border-primary-500 px-6 pb-5 pt-6 text-center sm:-m-8 sm:mb-6 sm:px-8 sm:pt-8">
+        <div class="-m-6 mb-6 border-b-4 border-primary-500 pb-5 pt-6 text-center sm:-m-8 sm:mb-6 sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
           <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>
           <p class="mt-1 text-sm font-semibold text-gray-600">Student Attendance Report</p>
@@ -319,7 +319,7 @@ const loadingClasses = ref(false)
 const localClassSessions = ref<ClassSession[]>([])
 const generating = ref(false)
 const downloading = ref(false)
-const logoSrc = ref('')
+const logoSrc = computed(() => school.value?.logo || '')
 
 const academicYears = computed(() => academicYearStore.list)
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
@@ -420,11 +420,6 @@ async function generate() {
       year: form.reportType === 'MONTHLY_SUMMARY' ? year : undefined,
       month: form.reportType === 'MONTHLY_SUMMARY' ? month : undefined
     })
-
-    if (!logoSrc.value) {
-      const assets = await SchoolApi().getBrandingAssets()
-      logoSrc.value = assets?.logo || school.value?.logo || ''
-    }
   } catch (err: any) {
     toastError(err?.message || 'Failed to generate report')
   } finally {

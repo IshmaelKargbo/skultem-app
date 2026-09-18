@@ -37,6 +37,14 @@ export default defineNuxtConfig({
     fonts: false
   },
 
+  // App is locked to a single (light) theme — the dark mode toggle UI is commented out in
+  // components/me.vue and components/menu/drawer.vue. This just sets the default/fallback so
+  // fresh sessions never start dark; restore the toggle blocks above to bring dark mode back.
+  colorMode: {
+    preference: 'light',
+    fallback: 'light'
+  },
+
   app: {
     head: {
       meta: [

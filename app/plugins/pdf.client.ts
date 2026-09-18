@@ -148,6 +148,30 @@ function forceInlineStyles(element: HTMLElement, sourceWindow: Window = window) 
   });
 }
 
+// ApexCharts hardcodes pixel width/height directly on the chart's own wrapper div and its
+// <svg> (not a percentage), sized to whatever the container measured on the live page. The
+// clone is forced down to a fixed 794px page width for capture, but that resize only affects
+// elements sized by CSS/layout - it can't shrink an already-fixed pixel width baked onto the
+// chart itself, so a chart rendered wide on a big screen just overflows/clips instead of
+// scaling down, which is why the exported chart looks cropped or shifted. Drop the hardcoded
+// width/height and let each SVG's own viewBox scale it to fit its new, correctly-narrow
+// container instead - the same trick used to make any SVG behave like a responsive image.
+function resizeApexCharts(root: HTMLElement) {
+  root.querySelectorAll<HTMLElement>(".apexcharts-canvas").forEach((canvas) => {
+    canvas.style.width = "100%";
+    canvas.style.maxWidth = "100%";
+    canvas.style.height = "auto";
+
+    const svg = canvas.querySelector("svg.apexcharts-svg");
+    if (svg) {
+      svg.removeAttribute("width");
+      svg.removeAttribute("height");
+      (svg as unknown as HTMLElement).style.width = "100%";
+      (svg as unknown as HTMLElement).style.height = "auto";
+    }
+  });
+}
+
 // Waits for every real <img> in the clone to either finish loading or fail -
 // html2canvas was being invoked immediately after cloning, so any image that
 // hadn't finished downloading yet (logo, signature, watermark, ...) silently
@@ -212,6 +236,7 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
 
   clonedDocument.body.appendChild(clonedElement);
   forceInlineStyles(clonedElement, clonedDocument.defaultView || window);
+  resizeApexCharts(clonedElement);
   clonedElement.style.opacity = "1";
   clonedElement.style.transform = "none";
   clonedElement.style.overflow = "hidden";

@@ -36,7 +36,7 @@
 
     <template v-else>
       <div id="teacher-monthly-summary-preview" class="rounded-lg bg-white text-gray-900 px-2">
-        <div class="mb-4 border-b-4 border-primary-500 px-6 pb-5 pt-6 text-center sm:px-8 sm:pt-8">
+        <div class="mb-4 border-b-4 border-primary-500 pb-5 pt-6 text-center sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
           <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>
           <p class="mt-1 text-sm font-semibold text-gray-600">Staff Monthly Attendance Summary</p>
@@ -109,7 +109,7 @@ const monthLabel = computed(() => {
 })
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = ref('')
+const logoSrc = computed(() => school.value?.logo || '')
 
 function currentMonthISO() {
   return new Date().toISOString().slice(0, 7)
@@ -147,9 +147,6 @@ onMounted(async () => {
   document.title = 'Monthly Summary | HR | Skultem'
 
   await loadSummary()
-
-  const assets = await SchoolApi().getBrandingAssets()
-  logoSrc.value = assets?.logo || school.value?.logo || ''
 })
 
 definePageMeta({

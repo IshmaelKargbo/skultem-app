@@ -193,6 +193,7 @@
                 @click="installApp">
                 <span class="flex-1 text-left text-sm font-medium">Install App</span>
               </UButton>
+              <!-- Theme toggle disabled — app is locked to light mode. Restore this block to bring back dark mode.
               <div class="border-t border-gray-200/60 dark:border-white/10 pt-4 mt-2">
                 <div class="mb-3 px-1">
                   <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
@@ -221,6 +222,7 @@
                     @update:model-value="colorMode.preference = $event ? 'dark' : 'light'" />
                 </div>
               </div>
+              -->
             </div>
           </div>
         </template>
@@ -297,7 +299,7 @@ const roleIcons: Record<string, string> = {
   PARENT: "lucide:users",
   ACCOUNTANT: "lucide:calculator",
 };
-const colorMode = useColorMode();
+// const colorMode = useColorMode(); // theme toggle disabled — see commented "Appearance" block above
 
 const userRoles = computed(() =>
   (user.value?.roles ?? []).map((r: string) => ({

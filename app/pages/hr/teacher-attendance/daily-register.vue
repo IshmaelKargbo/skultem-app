@@ -36,12 +36,13 @@
     </UCard>
 
     <template v-else>
-      <div id="teacher-daily-register-preview" class="rounded-lg bg-white text-gray-900 px-2">
-        <div class="mb-4 border-b-4 border-primary-500 px-6 pb-5 pt-6 text-center sm:px-8 sm:pt-8">
+      <div id="teacher-daily-register-preview" class="rounded-lg bg-white text-gray-900 px-2"
+        style="background-color: #ffffff; color: #111827;">
+        <div class="mb-4 border-b-4 border-primary-500 px-2 pb-5 pt-6 text-center sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
-          <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>
-          <p class="mt-1 text-sm font-semibold text-gray-600">Staff Daily Attendance Register</p>
-          <div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
+          <h2 class="text-xl font-black tracking-wide dark:text-gray-900">{{ schoolName }}</h2>
+          <p class="mt-1 text-sm font-semibold text-gray-600 dark:text-gray-600">Staff Daily Attendance Register</p>
+          <div class="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-500">
             <span>Academic Year: {{ academicYearLabel }}</span>
             <span>Term: {{ termLabel }}</span>
             <span>Date: {{ formattedDate }}</span>
@@ -50,23 +51,23 @@
 
         <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Present</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">Present</p>
             <p class="text-xl font-bold text-primary-600">{{ roster.presentCount }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Absent</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">Absent</p>
             <p class="text-xl font-bold text-primary-600">{{ roster.absentCount }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Late</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">Late</p>
             <p class="text-xl font-bold text-primary-600">{{ roster.lateCount }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Excused</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">Excused</p>
             <p class="text-xl font-bold text-primary-600">{{ roster.excusedCount }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Total Teachers</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">Total Teachers</p>
             <p class="text-xl font-bold text-primary-600">{{ roster.totalCount }}</p>
           </div>
         </div>
@@ -136,7 +137,7 @@ const formattedDate = computed(() => filters.date
   : '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = ref('')
+const logoSrc = computed(() => school.value?.logo || '')
 
 function todayISO() {
   return new Date().toISOString().split('T')[0] as string
@@ -201,9 +202,6 @@ onMounted(async () => {
   activeTermName.value = active?.name || '—'
 
   await teacherAttendanceStore.fetchRoster(filters.date)
-
-  const assets = await SchoolApi().getBrandingAssets()
-  logoSrc.value = assets?.logo || school.value?.logo || ''
 })
 
 definePageMeta({

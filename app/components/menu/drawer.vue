@@ -101,7 +101,7 @@
             <AccountSwitch />
           </div>
         </div>
-        <!-- APPEARANCE -->
+        <!-- APPEARANCE — disabled — app is locked to light mode. Restore this block to bring back dark mode.
         <div class="border-t border-gray-200/60 dark:border-white/10 pt-4 mt-3">
           <div class="mb-3 px-1">
             <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
@@ -129,6 +129,7 @@
               @update:model-value="colorMode.preference = $event ? 'dark' : 'light'" />
           </div>
         </div>
+        -->
         <!-- QUICK LINKS -->
         <nav v-if="quickLinks.length" aria-label="Quick links"
           class="mt-3 space-y-3 rounded-3xl border border-gray-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]">
@@ -254,7 +255,7 @@ const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster(
 const route = useRoute();
 const open = ref(false);
 const expanded = ref<string[]>(["grades"]);
-const colorMode = useColorMode();
+// const colorMode = useColorMode(); // theme toggle disabled — see commented "APPEARANCE" block above
 
 onMounted(() => {
   ensureClassMasterLoaded();

@@ -32,7 +32,7 @@
 
     <div v-else-if="demographics" id="demographics-preview" class="space-y-4 rounded-lg bg-white p-2 text-gray-900">
       <div class="mb-4 border-b-4 border-primary-500 px-6 pb-5 pt-6 text-center sm:px-8 sm:pt-8">
-        <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-16 object-contain" alt="School logo">
+        <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
         <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>
         <p class="mt-1 text-sm font-semibold text-gray-600">Student Demographics</p>
         <div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
@@ -60,7 +60,7 @@
         </div>
       </div>
 
-      <div class="grid gap-4 px-2 lg:grid-cols-2">
+      <div class="grid w-full grid-cols-1 gap-4 px-2">
         <div class="rounded-lg border border-gray-200 bg-white">
           <div class="border-b border-gray-200 px-4 py-3">
             <h2 class="font-semibold text-gray-900">Gender</h2>
@@ -96,7 +96,7 @@ const ApexChart = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 const classStore = useClassStore()
 const reportStore = useAcademicReportStore()
-const { school } = useSchoolInfo()
+const { school, hydrateFromCache } = useSchoolInfo()
 const { success, error: toastError } = useNotify()
 
 const { demographics, loadingDemographics: loading } = storeToRefs(reportStore)
@@ -173,11 +173,17 @@ onMounted(async () => {
   useAppStore().setTitle('Student Demographics')
   document.title = 'Student Demographics | Skultem'
 
+  // Show the already-cached logo immediately rather than waiting on the class/demographics
+  // fetches below - the CORS-safe data URI (needed only for the html2canvas PDF capture) loads
+  // in the background and swaps in once ready.
+  hydrateFromCache()
+  logoSrc.value = school.value?.logo || ''
+  SchoolApi().getBrandingAssets().then(assets => {
+    if (assets?.logo) logoSrc.value = assets.logo
+  })
+
   await classStore.fetchAll(1, 200)
   await loadDemographics()
-
-  const assets = await SchoolApi().getBrandingAssets()
-  logoSrc.value = assets?.logo || school.value?.logo || ''
 })
 
 definePageMeta({

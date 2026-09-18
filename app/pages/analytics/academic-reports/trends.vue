@@ -44,16 +44,11 @@
 const ApexChart = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 const reportStore = useAcademicReportStore()
-const { success, error: toastError } = useNotify()
 const { filters, terms, classOptions, subjectOptions, levelOptions, queryString, apiFilters, ensureLoaded,
   classStore, subjectStore } = useAcademicReportFilters()
 
 const { academicTrend, loadingAcademicTrend } = storeToRefs(reportStore)
-const downloading = ref(false)
 
-const termLabel = computed(() => terms.value.find(t => t.value === filters.termId)?.label || '—')
-const classLabel = computed(() => classOptions.value.find(c => c.value === filters.classId)?.label || '—')
-const subjectLabel = computed(() => subjectOptions.value.find(s => s.value === filters.subjectId)?.label || '')
 const generatedDate = computed(() => new Date().toLocaleString())
 
 const trendLabelMap: Record<string, { text: string, color: 'success' | 'error' | 'neutral' | 'warning' }> = {
@@ -85,19 +80,6 @@ async function loadTrend() {
 }
 
 watch(apiFilters, loadTrend)
-
-async function downloadPdf() {
-  downloading.value = true
-  try {
-    const { $generatePdf } = useNuxtApp()
-    await $generatePdf('#academic-report-preview', `academic-report-trends-${filters.termId || 'report'}`)
-    success('Report downloaded')
-  } catch (err: any) {
-    toastError(err?.message || 'Failed to generate PDF')
-  } finally {
-    downloading.value = false
-  }
-}
 
 onMounted(async () => {
   useAppStore().setTitle('Academic Trends')
