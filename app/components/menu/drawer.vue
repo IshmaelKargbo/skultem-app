@@ -130,77 +130,74 @@
           </div>
         </div>
         -->
-        <!-- QUICK LINKS -->
-        <nav v-if="quickLinks.length" aria-label="Quick links"
-          class="mt-3 space-y-3 rounded-3xl border border-gray-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]">
-          <NuxtLink v-for="link in quickLinks" :key="link.to" :to="link.to"
-            class="flex items-center gap-4 rounded-2xl border border-transparent bg-gray-100 px-4 py-4 text-gray-700 transition hover:-translate-y-0.5 hover:border-primary-500/30 hover:bg-primary-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 dark:bg-white/5 dark:text-gray-200 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/10"
-            :class="link.to === activeQuickLinkTo
-              ? 'border-primary-500/20 bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-200'
-              : ''
-              " :aria-current="link.to === activeQuickLinkTo ? 'page' : undefined" @click="close">
-            <UIcon :name="link.icon" class="size-6 shrink-0" aria-hidden="true" />
-            <span class="text-[16px] font-medium">{{ link.label }}</span>
-          </NuxtLink>
-        </nav>
+        <!-- MENU - same portal-aware, module-grouped structure as the desktop sidebar (see composables/useMenu.ts) -->
+        <nav :aria-label="`${portalLabel} menu`" class="mt-3 pb-2">
+          <p class="mb-4 px-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+            {{ portalLabel }} Menu
+          </p>
 
-        <!-- ACCORDIONS -->
-        <div class="my-2">
-          <div v-for="section in sections" :key="section.id"
-            class="mt-3 rounded-3xl border border-gray-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.03]">
-            <button type="button"
-              class="flex w-full items-center justify-between rounded-3xl px-5 py-[1.125rem] text-gray-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
-              :aria-expanded="expanded.includes(section.id)" :aria-controls="`section-panel-${section.id}`"
-              @click="toggleSection(section.id)">
-              <span class="flex items-center gap-4">
-                <UIcon :name="section.icon" class="size-6 text-gray-700 dark:text-gray-300" aria-hidden="true" />
-                <span class="text-[16px] font-medium">{{ section.title }}</span>
-              </span>
-              <UIcon name="lucide:chevron-down"
-                class="size-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
-                :class="expanded.includes(section.id) ? 'rotate-180' : ''" aria-hidden="true" />
-            </button>
+          <div v-for="section in menuSections" :key="section.id" class="mb-5 last:mb-0">
+            <p v-if="section.tier" class="mb-3 px-1 text-xs font-bold uppercase tracking-[0.18em] text-highlighted">
+              {{ section.tier }}
+            </p>
 
-            <div v-show="expanded.includes(section.id)" :id="`section-panel-${section.id}`" class="px-5 pb-5 space-y-2">
-              <NuxtLink v-for="item in section.linkItems" :key="item.label" :to="item.to"
-                :aria-current="item.to === activeItemTo(section) ? 'page' : undefined"
-                class="group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all duration-200 ease-out ring-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
-                :class="item.to === activeItemTo(section)
-                  ? [
-                    // Light mode
-                    'bg-primary-100 text-primary-700 ring-primary-200 shadow-sm',
+            <p v-if="section.label"
+              class="mb-2 flex items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+              {{ section.label }}
+              <span class="h-px flex-1 bg-default" />
+            </p>
 
-                    // Dark mode
-                    'dark:bg-primary-500/20 dark:text-primary-300 dark:ring-primary-500/40 dark:shadow-primary-500/10',
-                  ]
-                  : [
-                    // Light mode
-                    'bg-gray-100 text-gray-700 ring-gray-200 hover:bg-primary-50 hover:text-primary-600 hover:ring-primary-300',
+            <ul class="space-y-2">
+              <li v-for="item in section.items" :key="item.label + (item.to ?? '')"
+                class="rounded-3xl border border-gray-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.03]">
+                <!-- Group with sub-pages: an accordion -->
+                <template v-if="item.subNavs">
+                  <button type="button"
+                    class="flex w-full items-center justify-between rounded-3xl px-5 py-4 text-gray-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    :aria-expanded="isExpanded(item)" :aria-controls="`menu-panel-${panelId(item)}`"
+                    @click="toggleItem(item)">
+                    <span class="flex min-w-0 items-center gap-4">
+                      <UIcon :name="item.icon" class="size-6 shrink-0 text-gray-700 dark:text-gray-300"
+                        aria-hidden="true" />
+                      <span class="truncate text-[16px] font-medium">{{ item.label }}</span>
+                    </span>
+                    <UIcon name="lucide:chevron-down"
+                      class="size-5 shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                      :class="isExpanded(item) ? 'rotate-180' : ''" aria-hidden="true" />
+                  </button>
 
-                    // Dark mode
-                    'dark:bg-white/5 dark:text-gray-300 dark:ring-white/10 dark:hover:bg-primary-500/10 dark:hover:text-primary-200 dark:hover:ring-primary-500/30',
-                  ]
-                  " @click="close">
-                <UIcon :name="item.icon"
-                  class="size-5 shrink-0 text-current transition-transform duration-200 group-hover:scale-110"
-                  aria-hidden="true" />
+                  <div v-show="isExpanded(item)" :id="`menu-panel-${panelId(item)}`" class="space-y-2 px-4 pb-4">
+                    <NuxtLink v-for="nav in visibleSubNavs(item)" :key="nav.to" :to="nav.to"
+                      :aria-current="nav.to === activeSubTo(item) ? 'page' : undefined"
+                      class="group flex items-center gap-3 rounded-2xl px-4 py-3.5 ring-1 transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                      :class="nav.to === activeSubTo(item)
+                        ? 'bg-primary-100 text-primary-700 ring-primary-200 shadow-sm dark:bg-primary-500/20 dark:text-primary-300 dark:ring-primary-500/40'
+                        : 'bg-gray-100 text-gray-700 ring-gray-200 hover:bg-primary-50 hover:text-primary-600 hover:ring-primary-300 dark:bg-white/5 dark:text-gray-300 dark:ring-white/10 dark:hover:bg-primary-500/10 dark:hover:text-primary-200 dark:hover:ring-primary-500/30'"
+                      @click="close">
+                      <UIcon v-if="nav.icon" :name="nav.icon"
+                        class="size-5 shrink-0 text-current transition-transform duration-200 group-hover:scale-110"
+                        aria-hidden="true" />
+                      <span class="font-medium">{{ nav.label }}</span>
+                      <UIcon v-if="nav.to === activeSubTo(item)" name="lucide:chevron-right"
+                        class="ml-auto size-4 text-current opacity-80" />
+                    </NuxtLink>
+                  </div>
+                </template>
 
-                <span class="font-medium">
-                  {{ item.label }}
-                </span>
-
-                <UIcon v-if="item.to === activeItemTo(section)" name="lucide:chevron-right"
-                  class="ml-auto size-4 text-current opacity-80" />
-              </NuxtLink>
-              <button v-for="item in section.actionItems" :key="item.label" type="button"
-                class="flex w-full items-center gap-3 rounded-2xl ring ring-transparent bg-gray-100 px-4 py-3.5 text-left text-gray-700 transition hover:border-primary-500/30 hover:bg-primary-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 dark:bg-white/5 dark:text-gray-200 dark:hover:border-primary-500/30 dark:hover:bg-primary-500/10"
-                @click="item.action?.()">
-                <UIcon :name="item.icon" class="size-5 shrink-0" aria-hidden="true" />
-                <span class="font-medium">{{ item.label }}</span>
-              </button>
-            </div>
+                <!-- Single page: a direct link -->
+                <NuxtLink v-else-if="item.to" :to="item.to" :aria-current="isItemActive(item) ? 'page' : undefined"
+                  class="flex items-center gap-4 rounded-3xl px-5 py-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                  :class="isItemActive(item)
+                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-200'
+                    : 'text-gray-900 hover:bg-primary-50 dark:text-white dark:hover:bg-primary-500/10'"
+                  @click="close">
+                  <UIcon :name="item.icon" class="size-6 shrink-0" aria-hidden="true" />
+                  <span class="truncate text-[16px] font-medium">{{ item.label }}</span>
+                </NuxtLink>
+              </li>
+            </ul>
           </div>
-        </div>
+        </nav>
       </div>
     </template>
 
@@ -215,74 +212,32 @@
 </template>
 
 <script setup lang="ts">
-interface QuickLink {
-  label: string;
-  to: string;
-  icon: string;
-  roles: Role[];
-  adminPortalOnly?: boolean;
-}
-
-interface SectionItem {
-  label: string;
-  icon: string;
-  to?: string;
-  action?: () => void;
-}
-
-interface RawSection {
-  id: string;
-  title: string;
-  icon: string;
-  roles: Role[];
-  items: (SectionItem | false)[];
-}
-
-interface Section {
-  id: string;
-  title: string;
-  icon: string;
-  linkItems: (SectionItem & { to: string })[];
-  actionItems: (SectionItem & { action: () => void })[];
-}
+import type { NavItem, SubNavItem } from '~/composables/useMenu'
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
 const { activeRole, can, setActiveRole } = useAuth();
-const { isPathAvailable } = useModules();
 const { canInstall, install } = usePwaInstall();
-const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster();
+const { ensureLoaded: ensureClassMasterLoaded } = useClassMaster();
+const { menuSections, onAdminPortal } = useMenu();
 
 const route = useRoute();
-const onAdminPortal = isAdminPortalHost(useRequestURL().hostname);
 const open = ref(false);
-const expanded = ref<string[]>(["grades"]);
+// Which groups are open, keyed by panelId(). Seeded with the group holding the current page.
+const expanded = ref<string[]>([]);
 // const colorMode = useColorMode(); // theme toggle disabled — see commented "APPEARANCE" block above
 
 onMounted(() => {
   ensureClassMasterLoaded();
 });
 
-function matchesRoute(to: string) {
-  return route.path === to || route.path.startsWith(`${to}/`);
-}
-
-function mostSpecificMatch(items: { to: string }[]): string | undefined {
-  const candidates = items.filter((i) => matchesRoute(i.to));
-  if (!candidates.length) return undefined;
-  return candidates.reduce((a, b) => (b.to.length > a.to.length ? b : a)).to;
-}
-
-function activeItemTo(section: Section) {
-  return mostSpecificMatch(section.linkItems);
-}
-
-const activeQuickLinkTo = computed(() => mostSpecificMatch(quickLinks.value));
-
 const name = computed(() =>
   user.value ? `${user.value.givenNames} ${user.value.familyName}` : ""
 );
+
+// "Teacher", "Admin", ... - which portal the menu below is built for.
+const portalLabel = computed(() => (onAdminPortal ? "System Admin" : clean(activeRole.value)));
 
 const roleDesc: Record<string, string> = {
   PROPRIETOR: "School owner & oversight",
@@ -311,403 +266,65 @@ const userRoles = computed(() =>
   }))
 );
 
-// Quick-access row above the accordions.
-const allQuickLinks: QuickLink[] = [
-  { label: "Modules", to: "/modules", icon: "i-lucide-blocks", roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
-  // System-admin portal only - same pages as the desktop sidebar (see menu/index.vue).
-  { label: "Schools", to: "/schools", icon: SCHOOL_ICON, roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
-  { label: "Academic Calendar", to: "/calendar", icon: "i-lucide-calendar-range", roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
-  { label: "Admins", to: "/users", icon: USERS_ICON, roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
-  {
-    label: "Attendance",
-    to: "/attendance",
-    icon: ATTENDANCE_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT],
-  },
-  {
-    label: "Parents",
-    to: "/parents",
-    icon: PARENT_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT],
-  },
-  {
-    label: "Teachers",
-    to: "/teachers",
-    icon: TEACHER_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-  }, {
-    label: "Classes",
-    to: "/classes",
-    icon: CLASS_ICON,
-    roles: [Role.ACCOUNTANT, Role.TEACHER],
-  },
-  {
-    label: "Subjects",
-    to: "/subjects",
-    icon: SUBJECT_ICON,
-    roles: [Role.TEACHER,],
-  },
-  {
-    label: "Students",
-    to: "/students",
-    icon: STUDENT_ICON,
-    roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT],
-  },
-  { label: "Timetable", to: "/timetable", icon: TIMETABLE_ICON, roles: [Role.TEACHER, Role.PARENT] },
-
-  { label: "Behaviours", to: "/behaviours", icon:BEHAVIOUR_ICON, roles: [Role.TEACHER] },
-
-   { label: "Grades", to: "/grades", icon: GRADES_ICON, roles: [Role.PARENT] },
-  {
-    label: "Notifications", to: "/communicate/notifications", icon: BELL_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT]
-  },
-  { label: "Fees", to: "/fees", icon: PAYMENT_ICON, roles: [Role.PARENT, Role.TEACHER] },
-  { label: 'Performance', to: '/performance', icon: PERFORMANCE_ICON, roles: [Role.PARENT] },
-    {
-    label: 'Curriculums', to: '/curriculums', icon: CURRICULUM_ICON,
-    roles: [Role.TEACHER, Role.PARENT]
-  },
-
-  { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, roles: [Role.PARENT] },
-
-];
-
-// Same rule as the desktop sidebar (menu/index.vue): the admin subdomain shows the system-admin
-// links regardless of the resolved role, and none of the school ones.
-const quickLinks = computed(() =>
-  allQuickLinks.filter((link) =>
-    onAdminPortal
-      ? !!link.adminPortalOnly
-      : can(link.roles) && !link.adminPortalOnly && isPathAvailable(link.to),
-  ),
-);
-
 // A system admin isn't scoped to any one school's academic calendar - same gate as me.vue.
 const canSwitchYear = computed(() =>
   !onAdminPortal && can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]),
 );
 
-const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
- 
-  {
-    id: "grades",
-    title: "Grades",
-    icon: GRADES_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.TEACHER, Role.OWNER],
-    items: [
-      (!can(Role.TEACHER) || isClassMaster.value) && {
-        label: "Grade Approval",
-        icon: GRADES_APPROVAL_ICON,
-        to: "/grades/approval",
-      },
-      { label: "Grade Assignment", icon: "lucide:clipboard-check", to: "/grades" },
-    ],
-  },
-  {
-    id: "subjects",
-    title: "Subjects",
-    icon: CURRICULUM_SUBJECT_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      { label: "Subjects", icon: CURRICULUM_SUBJECT_ICON, to: "/subjects" },
-      {
-        label: "Teacher Assignment",
-        icon: CLIPBOARD_ADD_ICON,
-        to: "/subjects/teacher-assignment",
-      },
-      {
-        label: "Subject Groups",
-        icon: CURRICULUM_GROUP_ICON,
-        to: "/subjects/subject-groups",
-      },
-      
-      { label: "Class Subjects", icon: BOOK_OPEN_ICON, to: "/subjects/class-subjects" }
-    ],
-  },
-  {
-    id: "classes",
-    title: "Classes",
-    icon: CLASS_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      { label: "Classes", icon: CLASS_ICON, to: "/classes" },
-      { label: "Sections", icon: LAYERS_ICON, to: "/classes/sections" },
-      { label: "Streams", icon: CURRICULUM_STREAM_ICON, to: "/classes/streams" },
-    ],
-  },
-  {
-    id: "behaviours",
-    title: "Behaviours",
-    icon: BEHAVIOUR_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      { label: "Behaviours", icon: BEHAVIOUR_ICON, to: "/behaviours" },
-      { label: "Category", icon: CATEGORY_ICON, to: "/behaviours/category" },
-    ],
-  },
-
-
-{
-    id: "curriculums",
-    title: "Curriculums",
-    icon: "SCHEME_ICON",
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
-    items: [
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Scheme of Work",
-        icon: SCHEME_ICON,
-        to: "/curriculums",
-      },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
-        label: "Teacher Progress",
-        icon: TEACHER_ICON,
-        to: "/curriculums/teacher-progress",
-      },
-    ],
-  },
-  {
-    id: "timetable",
-    title: "Timetable",
-    icon: TIMETABLE_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      { label: "Timetable", icon: TIMETABLE_ICON, to: "/timetable" },
-      { label: "Settings", icon: TIMETABLE_SETTINGS_ICON, to: "/timetable/setting" },
-    ],
-  },
-  {
-    id: "payroll",
-    title: "Payroll",
-    icon: "lucide:wallet",
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT, Role.TEACHER],
-    items: [
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Overview",
-        icon: "lucide:layout-dashboard",
-        to: "/payroll",
-      },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Salary Structure",
-        icon: "lucide:banknote",
-        to: "/payroll/salaries",
-      },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Salary Templates",
-        icon: "lucide:layout-template",
-        to: "/payroll/salary-templates",
-      },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Payroll Runs",
-        icon: "lucide:history",
-        to: "/payroll/runs",
-      },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
-        label: "Payslips",
-        icon: "lucide:receipt",
-        to: "/payroll/history",
-      },
-    ],
-  },
-   {
-    id: "hr",
-    title: "Human Resource",
-    icon: "i-lucide-wallet",
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT, Role.TEACHER],
-    items: [
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Overview",
-        icon: "lucide:layout-dashboard",
-        to: "/hr",
-      },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]) && {
-        label: "Teacher Attendance",
-        icon: ATTENDANCE_ICON,
-        to: "/hr/teacher-attendance",
-      },
-      { label: "Clock In / Out", icon: "lucide:log-in", to: "/hr/teacher-attendance/clock-in" },
-      can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER]) && {
-        label: "Leave",
-        icon: LAYERS_ICON,
-        to: "/hr/leave",
-      },
-    ],
-  },
-  {
-    id: "communicate",
-    title: "Communicate",
-    icon: COMMUNICATE_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.TEACHER, Role.PARENT],
-    items: [
-      { label: "Notice Board", icon: NOTICE_ICON, to: "/communicate" },
-      { label: "Events & Holidays", icon: EVENT_ICON, to: "/communicate/events" },
-        can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: "Compose Broadcast",
-        icon: BROADCAST_ICON,
-        to: "//communicate/broadcast",
-      },
-      { label: "Broadcast History", icon: BROADCAST_HISTORY_ICON, to: "/communicate/broadcast/history" },
-    ],
-  },
-  {
-    id: "expenses",
-    title: "Expenses",
-    icon: EXPENSES_ICON,
-    roles: [Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER],
-    items: [
-      { label: "Expenses", icon: EXPENSES_ICON, to: "/expenses" },
-      { label: "Expense Category", icon: CATEGORY_ICON, to: "/expenses/category" },
-    ],
-  },
-  {
-    id: "transactions",
-    title: "Transactions",
-    icon: TRANSACTION_ICON,
-    roles: [Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER],
-    items: [
-      { label: "Transactions", icon: TRANSACTION_ICON, to: "/transactions" },
-      {
-        label: "Student Ledger",
-        icon: TRANSACTION_ICON,
-        to: "/transactions/student-ledger",
-      },
-    ],
-  },
-  {
-    id: "analytics",
-    title: "Analytics",
-    icon: REPORT_ICON,
-    roles: [Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER],
-    items: [
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: "Reports",
-        icon: REPORT_ICON,
-        to: "/analytics",
-      },
-      {
-        label: "Financial Reports",
-        icon: SCHEME_ICON,
-        to: "/analytics/financial-reports",
-      },
-    ],
-  },
-  {
-    id: "academics",
-    title: "Academics",
-    icon: CALANDA_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      { label: "Academics", icon: CALANDA_ICON, to: "/academics" },
-      { label: "Term Settings", icon: TERM_ICON, to: "/academics/terms" },
-      { label: "Template", icon: TEMPLATE_ICON, to: "/academics/assessment-templates" },
-      { label: "Academic Cycle", icon: CYCLE_ICON, to: "/academics/assessment-cycle" },
-      { label: "Grade Scale", icon: GRADE_ICON, to: "/academics/grade-scale" },
-      { label: "Promotions", icon: PROMOTE_STUDENTS_ICON, to: "/academics/promotions" },
-    ],
-  },
-  {
-    id: "authorization",
-    title: "Authorization",
-    icon: USERS_ICON,
-    roles: [Role.PROPRIETOR, Role.ADMIN, Role.OWNER],
-    items: [
-      can([Role.PROPRIETOR, Role.OWNER]) && {
-        label: "Users",
-        icon: USERS_ICON,
-        to: "/auth",
-      },
-      { label: "Audits", icon: AUDIT_ICON, to: "/auth/audits" },
-      { label: "Sessions", icon: SESSIONS_ICON, to: "/auth/sessions" },
-    ],
-  },
-  {
-    id: "fees",
-    title: "Fees & Payments",
-    icon: PAYMENT_ICON,
-    roles: [Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER],
-    items: [
-      can([Role.ACCOUNTANT, Role.OWNER]) && {
-        label: "Student Fees",
-        icon: STUDENT_FEES_ICON,
-        to: "/fees-payment",
-      },
-      { label: "Payments", icon: PAYMENT_ICON, to: "/fees-payment/pay" },
-      {
-        label: "Fee Structures",
-        icon: FEE_STRUCTURE_ICON,
-        to: "/fees-payment/structure",
-      },
-      { label: "Discounts", icon: DISCOUNT_ICON, to: "/fees-payment/discounts" },
-      { label: "Category", icon: CATEGORY_ICON, to: "/fees-payment/category" },
-      can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]) && {
-        label: "Receipt Design",
-        icon: SETTINGS_ICON,
-        to: "/fees-payment/receipt-design",
-      },
-    ],
-  },
-  {
-    id: "materials",
-    title: "Materials & Supplies",
-    icon: MATERIAL_ICON,
-    roles: [Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER],
-    items: [
-      { label: "Materials", icon: MATERIAL_ICON, to: "/material" },
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
-        label: "Sales",
-        icon: SALE_ICON,
-        to: "/material/sales",
-      },
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: "Supplies",
-        icon: CURRICULUM_GROUP_ICON,
-        to: "/material/supply",
-      },
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.ACCOUNTANT]) && {
-        label: "Pending Pickups",
-        icon: PENDING_PICKUP_ICON,
-        to: "/material/pending-pickups",
-      },
-      can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER]) && {
-        label: "Category",
-        icon: CATEGORY_ICON,
-        to: "/material/category",
-      },
-    ],
-  },
-];
-
-function isSectionItem(item: SectionItem | false): item is SectionItem {
-  return item !== false;
+// --- Active page -----------------------------------------------------------------------------------
+function trimSlash(path: string) {
+  return path.length > 1 ? path.replace(/\/+$/, "") : path;
 }
 
-const sections = computed<Section[]>(() =>
-  rawSections()
-    .filter((section) => !onAdminPortal && (can(section.roles) || section.roles.length === 0))
-    .map((section) => {
-      const items = section.items.filter(isSectionItem);
-      return {
-        id: section.id,
-        title: section.title,
-        icon: section.icon,
-        // Skip links into a module this school hasn't installed (see utils/modules.ts).
-        linkItems: items.filter((i): i is SectionItem & { to: string } => !!i.to && isPathAvailable(i.to)),
-        actionItems: items.filter(
-          (i): i is SectionItem & { action: () => void } => !i.to && !!i.action
-        ),
-      };
-    })
-    // A section with no visible items (all its own items were filtered out
-    // by role) shouldn't render at all — avoids an expandable header with
-    // nothing inside it.
-    .filter((section) => section.linkItems.length > 0 || section.actionItems.length > 0)
-);
+function matchesRoute(nav: { to: string; exact?: boolean }) {
+  const to = trimSlash(nav.to);
+  return route.path === to || (!nav.exact && to !== "/" && route.path.startsWith(`${to}/`));
+}
 
-function toggleSection(id: string) {
+function visibleSubNavs(item: NavItem): SubNavItem[] {
+  return (item.subNavs ?? []).filter((nav) => !nav.roles || can(nav.roles));
+}
+
+// The most specific matching sub-page wins, so "/classes/sections" doesn't also light up "/classes".
+function activeSubTo(item: NavItem): string | undefined {
+  const candidates = visibleSubNavs(item).filter(matchesRoute);
+  if (!candidates.length) return undefined;
+  return candidates.reduce((a, b) => (b.to.length > a.to.length ? b : a)).to;
+}
+
+function isItemActive(item: NavItem) {
+  return !!item.to && matchesRoute({ to: item.to, exact: item.exact });
+}
+
+// --- Accordions ------------------------------------------------------------------------------------
+// Two groups can share a label (e.g. an "Analytics" per role), so key on label + first page.
+function panelId(item: NavItem) {
+  return `${item.label}-${item.subNavs?.[0]?.to ?? item.to ?? ""}`.replace(/[^a-zA-Z0-9-]/g, "_");
+}
+
+function isExpanded(item: NavItem) {
+  return expanded.value.includes(panelId(item));
+}
+
+function toggleItem(item: NavItem) {
+  const id = panelId(item);
   expanded.value = expanded.value.includes(id)
     ? expanded.value.filter((v) => v !== id)
     : [...expanded.value, id];
 }
+
+// Open whichever group holds the current page, so the drawer opens on it.
+function expandActiveGroup() {
+  const active = menuSections.value
+    .flatMap((section) => section.items)
+    .filter((item) => item.subNavs && activeSubTo(item))
+    .map(panelId);
+  expanded.value = [...new Set([...expanded.value, ...active])];
+}
+
+watch(open, (isOpen) => {
+  if (isOpen) expandActiveGroup();
+});
 
 function close() {
   open.value = false;

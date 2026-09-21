@@ -53,13 +53,8 @@ const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
 const sortBy = computed(() => sort.value.split(':')[0])
 const sortDirection = computed(() => sort.value.split(':')[1])
 
-const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT)
-
-function resetFilters() {
-  searchInput.value = ''
-  search.value = ''
-  sort.value = DEFAULT_SORT
-}
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(() => (sort.value !== DEFAULT_SORT ? 1 : 0))
 
 // Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
 // page/size and silently drops any other query key when neither changed, which would swallow
@@ -119,23 +114,14 @@ onMounted(() => {
   <div class="space-y-4">
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <div class="flex px-4 py-3 justify-end">
-            <TableViewToggle v-model="view" />
+        <div class="flex px-4 py-3 gap-2 items-center">
+          <div class="flex-1 border-default flex items-center gap-2">
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, email or phone"
+              class="flex-1" />
+            <ParentFilterDrawer v-model:sort="sort" :sort-options="sortOptions" :active-count="activeFilterCount"
+              :default-sort="DEFAULT_SORT" />
           </div>
-
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, email or phone"
-                class="col-span-2" />
-            </div>
-            <div>
-              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
-          </div>
+          <TableViewToggle v-model="view" />
         </div>
       </template>
 

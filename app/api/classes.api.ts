@@ -46,13 +46,14 @@ export const ClassApi = () => {
       }
     },
     getAllClassSessions: async (page: number = 1, size: number = 6, academicYearId?: string, sectionId?: string,
-      streamId?: string, query?: string) => {
+      streamId?: string, query?: string, level?: string) => {
       try {
         const params = new URLSearchParams({ page: String(page), size: String(size) })
         if (academicYearId) params.set('academicYearId', academicYearId)
         if (sectionId) params.set('sectionId', sectionId)
         if (streamId) params.set('streamId', streamId)
         if (query) params.set('query', query)
+        if (level) params.set('level', level)
 
         const res = await $api(`/class-session?${params}`) as any
 

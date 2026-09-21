@@ -19,6 +19,7 @@ const sortOptions = [
 ]
 const DEFAULT_SORT = 'createdAt:desc'
 const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
+const gender = ref(String(route.query.gender ?? ''))
 const sortBy = computed(() => sort.value.split(':')[0])
 const sortDirection = computed(() => sort.value.split(':')[1])
 
@@ -68,11 +69,11 @@ const search = computed<string>({
 })
 
 const size = ref(runtimeConf().limit)
-const filterState = ref(false)
 
-function toggleFilter() {
-  filterState.value = !filterState.value
-}
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(
+  () => [gender.value, sort.value !== DEFAULT_SORT].filter(Boolean).length
+)
 
 function teacherName(teacher: Teacher) {
   return `${clean(teacher.title)} ${teacher.user.givenNames} ${teacher.user.familyName}`
@@ -99,14 +100,6 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query })
 }
 
-const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT)
-
-function resetFilters() {
-  searchInput.value = ''
-  sort.value = DEFAULT_SORT
-  updateQuery({ search: undefined, sort: undefined, page: 1 })
-}
-
 async function fetchRecords() {
   loading.value = true
 
@@ -117,6 +110,7 @@ async function fetchRecords() {
       search.value,
       sortBy.value,
       sortDirection.value,
+      gender.value || undefined,
     )
   } finally {
     loading.value = false
@@ -144,8 +138,12 @@ watch(
   },
 )
 
-watch(sort, async () => {
-  updateQuery({ sort: sort.value === DEFAULT_SORT ? undefined : sort.value, page: 1 })
+watch([sort, gender], async () => {
+  updateQuery({
+    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    gender: gender.value || undefined,
+    page: 1,
+  })
   await fetchRecords()
 })
 
@@ -199,55 +197,26 @@ definePageMeta({
   <div class="px-4 sm:px-6">
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <div class="flex p-4 justify-between items-center">
-            <div class="flex space-x-2 flex-1 items-center">
-              <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" color="primary" :icon="ADD_ICON" />
+        <div class="flex px-4 py-3 gap-2 justify-between items-center">
+          <div class="flex space-x-2 flex-1 items-center">
+            <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" color="primary" :icon="ADD_ICON" />
 
-              <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral"
-                class="hidden md:flex" icon="i-lucide-briefcase" />
+            <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral"
+              class="hidden md:flex" icon="i-lucide-briefcase" />
 
-              <UDropdownMenu :items="addItems" arrow :content="{ align: 'end' }" class="md:hidden">
-                <UButton color="primary" :icon="ADD_ICON" />
-              </UDropdownMenu>
-            </div>
+            <UDropdownMenu :items="addItems" arrow :content="{ align: 'end' }" class="md:hidden">
+              <UButton color="primary" :icon="ADD_ICON" />
+            </UDropdownMenu>
 
-            <div>
-              <TableViewToggle v-model="view" />
-              <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
-                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+            <div class="flex-1 border-default flex items-center gap-2">
+              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, staff ID, email or phone"
+                class="flex-1" />
+              <TeacherFilterDrawer v-model:gender="gender" v-model:sort="sort" :sort-options="sortOptions" :active-count="activeFilterCount"
+                :default-sort="DEFAULT_SORT" />
             </div>
           </div>
 
-          <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
-              <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <div class="flex space-x-1 md:col-span-2">
-                <UInput v-model="searchInput" :icon="SEARCH_ICON"
-                  placeholder="Search by name, staff ID, email or phone" class="flex-1" />
-                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                  :disabled="!hasActiveFilters" @click="resetFilters" />
-              </div>
-            </div>
-            <div class="hidden md:block">
-              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
-          </div>
-          <div v-if="filterState"
-            class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <div class="flex space-x-1 sm:col-span-2">
-                <UInput v-model="searchInput" :icon="SEARCH_ICON"
-                  placeholder="Search by name, staff ID, email or phone" class="flex-1" />
-                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                  :disabled="!hasActiveFilters" @click="resetFilters" />
-              </div>
-            </div>
-          </div>
+          <TableViewToggle v-model="view" />
         </div>
       </template>
 

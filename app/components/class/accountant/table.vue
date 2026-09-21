@@ -73,17 +73,12 @@ const size = ref(runtimeConf().limit)
 // mirror, not the source of truth.
 const sectionId = ref(String(route.query.sectionId ?? ""))
 const streamId = ref(String(route.query.streamId ?? ""))
+const level = ref(String(route.query.level ?? ""))
 const searchInput = ref(String(route.query.search ?? ""))
 const search = ref(searchInput.value)
 
-const hasActiveFilters = computed(() => !!sectionId.value || !!streamId.value || !!search.value)
-
-function resetFilters() {
-  sectionId.value = ""
-  streamId.value = ""
-  searchInput.value = ""
-  search.value = ""
-}
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(() => [level.value, sectionId.value, streamId.value].filter(Boolean).length)
 
 // Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
 // page/size and silently drops any other query key when neither changed, which would swallow
@@ -107,10 +102,11 @@ watch(() => page.value, () => {
 
 // Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
 // shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
-watch([sectionId, streamId, search], () => {
+watch([sectionId, streamId, level, search], () => {
   updateQuery({
     sectionId: sectionId.value || undefined,
     streamId: streamId.value || undefined,
+    level: level.value || undefined,
     search: search.value || undefined,
     page: 1,
   })
@@ -121,7 +117,7 @@ watch([sectionId, streamId, search], () => {
 async function fetchRecords() {
   loading.value = true
   await store.fetchAll(page.value, size.value, undefined, sectionId.value || undefined, streamId.value || undefined,
-    search.value || undefined)
+    search.value || undefined, level.value || undefined)
   loading.value = false
 }
 
@@ -140,24 +136,13 @@ onMounted(async () => {
   <div class="space-y-4">
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <div class="flex px-4 py-3 justify-end">
-            <TableViewToggle v-model="view" />
+        <div class="flex px-4 py-3 gap-2 items-center">
+          <div class="flex-1 border-default flex items-center gap-2">
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name" class="flex-1" />
+            <ClassFilterDrawer v-model:section-id="sectionId" v-model:stream-id="streamId" v-model:level="level"
+              :section-options="sectionOptions" :stream-options="streamOptions" :active-count="activeFilterCount" />
           </div>
-
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <USelectMenu v-model="sectionId" value-key="value" label-key="label" :items="sectionOptions"
-                placeholder="All Sections" clear />
-              <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
-                placeholder="All Streams" clear />
-              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name" class="col-span-2" />
-            </div>
-            <div>
-              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
-          </div>
+          <TableViewToggle v-model="view" />
         </div>
       </template>
 

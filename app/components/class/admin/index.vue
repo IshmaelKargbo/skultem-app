@@ -4,51 +4,19 @@
 
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div>
-                    <div class="flex px-4 py-3 items-center justify-between gap-3">
-                        <div class="flex flex-wrap gap-3">
-                            <ClassAdd />
-                            <ClassAssignMaster />
-                        </div>
-                        <TableViewToggle v-model="view" />
-                        <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
-                            :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-                    </div>
-
-                    <div
-                        class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-4">
-                            <USelectMenu class="w-full" v-model="sectionId" value-key="value" label-key="label"
-                                :items="sectionOptions" placeholder="All Sections" clear />
-                            <USelectMenu class="w-full" v-model="streamId" value-key="value" label-key="label"
-                                :items="streamOptions" placeholder="All Streams" clear />
-                            <div class="flex space-x-1 sm:col-span-2">
-                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name"
-                                    class="flex-1" />
-                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                                    :disabled="!hasActiveFilters" @click="resetFilters" />
-                            </div>
-                        </div>
-                        <div class="hidden md:block">
-                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                                :disabled="!hasActiveFilters" @click="resetFilters" />
+                <div class="flex px-4 py-3 items-center justify-between gap-2">
+                    <div class="flex flex-1 items-center gap-2">
+                        <ClassAdd />
+                        <ClassAssignMaster />
+                        <div class="flex-1 border-default flex items-center gap-2">
+                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name"
+                                class="flex-1" />
+                            <ClassFilterDrawer v-model:section-id="sectionId" v-model:stream-id="streamId" v-model:level="level"
+                                :section-options="sectionOptions" :stream-options="streamOptions"
+                                :active-count="activeFilterCount" />
                         </div>
                     </div>
-                    <div v-if="filterState"
-                        class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-4">
-                            <USelectMenu class="w-full" v-model="sectionId" value-key="value" label-key="label"
-                                :items="sectionOptions" placeholder="All Sections" clear />
-                            <USelectMenu class="w-full" v-model="streamId" value-key="value" label-key="label"
-                                :items="streamOptions" placeholder="All Streams" clear />
-                            <div class="flex space-x-1 sm:col-span-2">
-                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name"
-                                    class="flex-1" />
-                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                                    :disabled="!hasActiveFilters" @click="resetFilters" />
-                            </div>
-                        </div>
-                    </div>
+                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
@@ -206,22 +174,12 @@ const size = ref(runtimeConf().limit);
 // mirror, not the source of truth.
 const sectionId = ref(String(route.query.sectionId ?? ""));
 const streamId = ref(String(route.query.streamId ?? ""));
+const level = ref(String(route.query.level ?? ""));
 const searchInput = ref(String(route.query.search ?? ""));
 const search = ref(searchInput.value);
 
-const hasActiveFilters = computed(() => !!sectionId.value || !!streamId.value || !!search.value);
-const filterState = ref(false);
-
-function toggleFilter() {
-    filterState.value = !filterState.value;
-}
-
-function resetFilters() {
-    sectionId.value = "";
-    streamId.value = "";
-    searchInput.value = "";
-    search.value = "";
-}
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(() => [level.value, sectionId.value, streamId.value].filter(Boolean).length);
 
 // Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
 // page/size and silently drops any other query key when neither changed, which would swallow
@@ -244,7 +202,7 @@ async function fetchRecords() {
         loading.value = true;
 
         await store.fetchAll(page.value, size.value, undefined, sectionId.value || undefined,
-            streamId.value || undefined, search.value || undefined);
+            streamId.value || undefined, search.value || undefined, level.value || undefined);
     } finally {
         loading.value = false;
     }
@@ -256,10 +214,11 @@ watch([page, size], fetchRecords, {
 
 // Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
 // shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
-watch([sectionId, streamId, search], () => {
+watch([sectionId, streamId, level, search], () => {
     updateQuery({
         sectionId: sectionId.value || undefined,
         streamId: streamId.value || undefined,
+        level: level.value || undefined,
         search: search.value || undefined,
         page: 1,
     });

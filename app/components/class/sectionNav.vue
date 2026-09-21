@@ -1,7 +1,4 @@
 <template>
-  <!-- Quick-nav across the Classes pages, same Tab/TabMobile pair used for Fees & Payments and
-       student/teacher profiles - so hopping between Classes/Sections/Streams doesn't mean going
-       back to the sidebar every time. Each item gated by that page's own definePageMeta roles. -->
   <TabMobile class="md:hidden" :tabs="items" />
   <Tab class="hidden md:block" :tabs="items" />
 </template>

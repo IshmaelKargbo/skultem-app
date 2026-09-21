@@ -86,22 +86,17 @@ const size = ref(runtimeConf().limit)
 // to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
 // mirror, not the source of truth.
 const classId = ref(String(route.query.classId ?? ''))
-const searchInput = ref(String(route.query.search ?? ''))
+const searchInput = ref('')
 const search = ref(searchInput.value)
+const gender = ref(String(route.query.gender ?? ''))
 const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
 const sortBy = computed(() => sort.value.split(':')[0])
 const sortDirection = computed(() => sort.value.split(':')[1])
 
-const hasActiveFilters = computed(
-  () => !!classId.value || !!search.value || sort.value !== DEFAULT_SORT
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(
+  () => [classId.value, gender.value, sort.value !== DEFAULT_SORT].filter(Boolean).length
 )
-
-function resetFilters() {
-  classId.value = ''
-  searchInput.value = ''
-  search.value = ''
-  sort.value = DEFAULT_SORT
-}
 
 // Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
 // page/size and silently drops any other query key when neither changed, which would swallow
@@ -121,7 +116,7 @@ watch(searchInput, (val) => {
 
 async function fetchRecord() {
   loading.value = true
-  await store.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value)
+  await store.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value, gender.value || undefined)
   loading.value = false
 }
 
@@ -133,12 +128,13 @@ watch(() => page.value, () => {
   fetchRecord()
 }, { immediate: true })
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
-watch([classId, search, sort], () => {
+// Setting a filter also resets the page to 1 and mirrors the class/sort filters into the URL (for a
+// shareable link/refresh; search is deliberately kept out of it) - the fetch itself is keyed off the
+// local refs above, not the URL.
+watch([classId, gender, search, sort], () => {
   updateQuery({
     classId: classId.value || undefined,
-    search: search.value || undefined,
+    gender: gender.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
     page: 1,
   })
@@ -159,23 +155,15 @@ onMounted(() => {
   <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
     <template #header>
       <div>
-        <div class="flex px-4 py-3 justify-end">
+        <div class="flex px-4 py-3 justify-end items-center gap-2">
           <TableViewToggle v-model="view" />
         </div>
 
-        <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-          <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
-              placeholder="All Classes" clear />
-            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-              placeholder="Sort by" />
-            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
-              class="col-span-2" />
-          </div>
-          <div>
-            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-              :disabled="!hasActiveFilters" @click="resetFilters" />
-          </div>
+        <div class="border-t p-4 border-default flex items-center gap-2">
+          <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
+            class="flex-1" />
+          <StudentFilterDrawer v-model:class-id="classId" v-model:gender="gender" v-model:sort="sort" :class-options="classOptions"
+            :sort-options="sortOptions" :active-count="activeFilterCount" :default-sort="DEFAULT_SORT" />
         </div>
       </div>
     </template>

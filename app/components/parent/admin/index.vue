@@ -24,13 +24,8 @@ const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
 const sortBy = computed(() => sort.value.split(":")[0])
 const sortDirection = computed(() => sort.value.split(":")[1])
 
-const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT)
-
-function resetFilters() {
-    searchInput.value = ''
-    sort.value = DEFAULT_SORT
-    updateQuery({ search: undefined, sort: undefined, page: 1 })
-}
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(() => (sort.value !== DEFAULT_SORT ? 1 : 0))
 
 const searchInput = ref(search.value)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
@@ -60,9 +55,6 @@ const STATUS_COLORS: Record<string, any> = {
     DELETED: "error",
 }
 
-// Kept to 5 columns, same as the students/teachers tables - a wider set (the old separate Phone/
-// Street/City/Status columns) overflowed the card at normal widths and forced UTable's built-in
-// horizontal scrollbar. Status still shows on the mobile card below, same as those tables.
 const columns = [
     {
         accessorKey: "name",
@@ -102,11 +94,6 @@ const page = computed<number>({
 })
 
 const size = ref(runtimeConf().limit);
-const filterState = ref(false)
-
-function toggleFilter() {
-    filterState.value = !filterState.value
-}
 
 async function fetchRecords() {
     try {
@@ -152,46 +139,14 @@ watch(
     <div class="px-4 sm:px-6">
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div>
-                    <div class="flex px-4 py-3 items-center justify-between gap-3">
-                        <h2 class="text-sm font-semibold text-highlighted">Parents</h2>
-
-                        <div>
-                            <TableViewToggle v-model="view" />
-                            <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
-                                variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-                        </div>
+                <div class="flex px-4 py-3 gap-2 items-center justify-between">
+                    <div class="flex-1 border-default flex items-center gap-2">
+                        <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, email or phone"
+                            class="flex-1" />
+                        <ParentFilterDrawer v-model:sort="sort" :sort-options="sortOptions"
+                            :active-count="activeFilterCount" :default-sort="DEFAULT_SORT" />
                     </div>
-
-                    <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                            <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label"
-                                :items="sortOptions" placeholder="Sort by" />
-                            <div class="flex space-x-1 sm:col-span-2">
-                                <UInput v-model="searchInput" :icon="SEARCH_ICON"
-                                    placeholder="Search by name, email or phone" class="flex-1" />
-                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                                    :disabled="!hasActiveFilters" @click="resetFilters" />
-                            </div>
-                        </div>
-                        <div class="hidden md:block">
-                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                                :disabled="!hasActiveFilters" @click="resetFilters" />
-                        </div>
-                    </div>
-                    <div v-if="filterState"
-                        class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                            <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label"
-                                :items="sortOptions" placeholder="Sort by" />
-                            <div class="flex space-x-1 sm:col-span-2">
-                                <UInput v-model="searchInput" :icon="SEARCH_ICON"
-                                    placeholder="Search by name, email or phone" class="flex-1" />
-                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                                    :disabled="!hasActiveFilters" @click="resetFilters" />
-                            </div>
-                        </div>
-                    </div>
+                    <TableViewToggle v-model="view" />
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
@@ -252,7 +207,8 @@ watch(
                 </template>
 
                 <template v-else-if="data?.length">
-                    <div v-for="parent in data" :key="parent.id" class="border-b md:border md:rounded-2xl border-default p-3">
+                    <div v-for="parent in data" :key="parent.id"
+                        class="border-b md:border md:rounded-2xl border-default p-3">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="min-w-0">
@@ -267,7 +223,8 @@ watch(
 
                                         <span class="shrink-0">•</span>
 
-                                        <span class="shrink-0">{{ parent.students }} Student{{ parent.students === 1 ? "" : "s" }}</span>
+                                        <span class="shrink-0">{{ parent.students }} Student{{ parent.students === 1 ?
+                                            "" : "s" }}</span>
                                     </div>
                                 </div>
                             </div>
