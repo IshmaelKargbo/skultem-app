@@ -301,7 +301,7 @@ export const directionOptions = [
         value: "CREDIT"
     },
     {
-        label: 'Decit',
+        label: 'Debit',
         value: "DEBIT"
     }
 ]
@@ -334,6 +334,10 @@ export const typeOptions = [
     {
         label: 'Sale',
         value: "SALE"
+    },
+    {
+        label: 'Payroll',
+        value: "PAYROLL"
     }
 ]
 

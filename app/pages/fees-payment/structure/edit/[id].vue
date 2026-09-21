@@ -6,6 +6,9 @@ const feeStructureStore = useFeeStructureStore();
 const feeCategoryStore = useFeeStore();
 const termStore = useTermStore();
 const materialStore = useMaterialStore();
+// Same rule as add.vue: supplies need the Materials & Supplies module.
+const { isInstalled } = useModules();
+const suppliesAvailable = computed(() => isInstalled(ModuleKey.MATERIALS_AND_SUPPLIES));
 
 const { error: toastError, success: toastSuccess } = useNotify();
 
@@ -162,7 +165,7 @@ onMounted(async () => {
     await Promise.all([
       feeCategoryStore.fetchAll(0, 0),
       termStore.fetchAll(0, 0),
-      materialStore.fetchAll(0, 0),
+      suppliesAvailable.value ? materialStore.fetchAll(0, 0) : Promise.resolve(),
     ]);
 
     const fee = await feeStructureStore.getOne(route.params.id as string);
@@ -296,7 +299,7 @@ definePageMeta({
               </UFormField>
 
               <!-- Has Supply -->
-              <UFormField name="hasSupply">
+              <UFormField v-if="suppliesAvailable" name="hasSupply">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Has Supply</p>

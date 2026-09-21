@@ -10,6 +10,14 @@
       color="primary"
       label="Add User"
       :icon="ADD_ICON"
+      class="hidden md:flex"
+      @click="openSlider"
+    />
+    <!-- Trigger -->
+    <UButton
+      color="primary"
+      class="md:hidden"
+      :icon="ADD_ICON"
       @click="openSlider"
     />
 

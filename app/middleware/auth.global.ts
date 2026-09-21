@@ -6,9 +6,11 @@ const PUBLIC_PATHS = ['/request-demo']
 // prefix: since the subdomain itself already says this is the admin portal, its own dashboard,
 // login and other pages just live at the same top-level paths a school's own subdomain would use
 // ("/", "/login", ...), reusing those same page components (see pages/login.vue, pages/index.vue)
-// rather than a separate page tree. /users, /schools, /schools/add and /setup have no
-// school-tenant equivalent, so they're admin-portal-only.
-const ADMIN_PORTAL_PATHS = ['/', '/login', '/users', '/schools', '/schools/add', '/setup']
+// rather than a separate page tree. /users, /schools, /schools/add, /calendar and /setup have no
+// school-tenant equivalent, so they're admin-portal-only. /logout, /profile, /reset-password and
+// /unauthorized are the account pages the portal's own header/drawer and the redirects below
+// send an admin to - leaving them out made "Sign out" 404 on the admin subdomain.
+const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup']
 // Of those, the ones reachable without a token - signing in, and the one-time first-admin wizard.
 const ADMIN_PORTAL_PUBLIC_PATHS = ['/login', '/setup']
 
@@ -38,12 +40,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
             return navigateTo('/')
         }
     } else {
-        // Symmetric with the admin-portal branch above: /users, /schools and /setup only exist on
+        // Symmetric with the admin-portal branch above: /users, /schools, /calendar and /setup only exist on
         // the admin subdomain, so they 404 here exactly like a school-scoped page would 404 there.
         // This closes what used to be a real route - a SYSTEM_ADMIN whose anchor SchoolUser row
         // happens to sit on some school's own subdomain could otherwise still reach the admin
         // pages from that tenant host directly, bypassing the admin subdomain entirely.
-        if (to.path === '/users' || to.path === '/schools' || to.path === '/schools/add' || to.path === '/setup') {
+        if (to.path === '/users' || to.path === '/schools' || to.path === '/schools/add' || to.path === '/calendar' || to.path === '/setup') {
             return abortNavigation(createError({ statusCode: 404, message: 'Page not found' }))
         }
 
@@ -76,6 +78,25 @@ export default defineNuxtRouteMiddleware(async (to) => {
         const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
         if (!allowed.includes(activeRole.value)) {
             return navigateTo('/unauthorized')
+        }
+    }
+
+    // A route belonging to a module this school hasn't installed (see utils/modules.ts): send the
+    // people who can install it to the Modules page, remembering where they were going; everyone
+    // else just goes home. The module list is normally loaded at startup (plugins/auth.ts) - this
+    // covers a session that started at the login page. Fails open if it can't be loaded.
+    if (!onAdminPortal && token.value) {
+        const modules = useModuleStore()
+        if (!modules.loaded) {
+            await modules.fetch().catch(() => { })
+        }
+
+        const moduleKey = moduleForPath(to.path)
+        if (moduleKey && modules.loaded && !modules.isInstalled(moduleKey)) {
+            const canInstall = ['ADMIN', 'OWNER', 'PROPRIETOR'].includes(activeRole.value)
+            return canInstall
+                ? navigateTo({ path: '/modules', query: { install: moduleKey, redirect: to.fullPath } })
+                : navigateTo('/')
         }
     }
 

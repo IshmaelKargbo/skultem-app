@@ -12,6 +12,18 @@ export const useLedgerStore = defineStore('ledger', {
       totalPages: 0
     } as Meta,
     total: {} as LedgerReport,
+    // The filterable Student Ledger table - kept apart from `records`/`total` above, which the year
+    // totals cards write to, so filtering never overwrites them.
+    entries: [] as Ledger[],
+    entriesMeta: {
+      size: 0,
+      page: 0,
+      total: 0,
+      showingFrom: 0,
+      showingTo: 0,
+      totalPages: 0
+    } as Meta,
+    entriesLoading: true,
     loading: true,
     error: null as string | null
   }),
@@ -29,6 +41,16 @@ export const useLedgerStore = defineStore('ledger', {
         this.error = err.data?.message || 'Failed to fetch ledger'
       } finally {
         this.loading = false
+      }
+    },
+    async fetchEntries(page: number, size: number, filters: LedgerFilters = {}) {
+      this.entriesLoading = true
+      try {
+        const response = await FeeApi().getLedger(page, size, filters)
+        this.entries = response?.data || []
+        this.entriesMeta = response?.meta || {} as Meta
+      } finally {
+        this.entriesLoading = false
       }
     },
     async caculateLedgerReport() {

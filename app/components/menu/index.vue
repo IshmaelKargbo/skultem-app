@@ -15,7 +15,14 @@
           <img src="/menu-light.svg" alt="Skultem" class="h-7 shrink-0 hidden dark:block" />
         </template>
 
-        <div v-if="school?.name" class="min-w-0">
+        <div v-if="onAdminPortal" class="min-w-0">
+          <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
+            Skultem
+          </p>
+          <p class="truncate text-xs leading-tight text-muted">System Admin</p>
+        </div>
+
+        <div v-else-if="school?.logo" class="min-w-0">
           <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
             {{ school.name }}
           </p>
@@ -28,8 +35,23 @@
 
     <!-- Scrollable Body -->
     <div class="h-full overflow-y-auto p-4">
+      <div v-for="section in menuSections" :key="section.id" class="mb-5 last:mb-0">
+        <!-- Two levels: a tier title ("Essentials", "Modules") on the first section of each tier, then
+             the subgroup label. Both are left out when there's nothing to tell apart (the admin
+             portal), so that stays a plain list. -->
+        <p v-if="section.tier"
+          class="mb-3 px-3 text-xs font-bold uppercase tracking-[0.18em] text-highlighted">
+          {{ section.tier }}
+        </p>
+
+        <p v-if="section.label"
+          class="mb-2 flex items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+          {{ section.label }}
+          <span class="h-px flex-1 bg-default" />
+        </p>
+
       <ul class="space-y-2">
-        <li v-for="item in visibleNavItems" :key="item.label + (item.to ?? '')">
+        <li v-for="item in section.items" :key="item.label + (item.to ?? '')">
           <MenuItem :label="item.label" :to="item.to" :exact="item.exact" :subNavs="item.subNavs">
             <template #icon>
               <UIcon class="w-5 h-5" :name="item.icon" />
@@ -51,6 +73,7 @@
           </MenuItem>
         </li>
       </ul>
+      </div>
     </div>
     <template #footer>
       <MenuNoticeBoard />
@@ -81,6 +104,8 @@ interface NavItem {
 }
 
 const { can } = useAuth()
+const { isPathAvailable } = useModules()
+const moduleStore = useModuleStore()
 const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
 const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
@@ -282,6 +307,7 @@ const navItems: NavItem[] = [
     subNavs: [
       { label: 'Transactions', to: '/transactions/', icon: LEDGER_ICON, exact: true },
       { label: 'Student Ledger', to: '/transactions/student-ledger', icon: LEDGER_ICON },
+      { label: 'Platform Fee', to: '/transactions/platform-fee', icon: PLATFORM_ICON },
     ]
   },
 
@@ -315,6 +341,10 @@ const navItems: NavItem[] = [
 
   {
     label: 'Schools', to: '/schools', icon: SCHOOL_ICON,
+    roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+  },
+  {
+    label: 'Academic Calendar', to: '/calendar', icon: 'i-lucide-calendar-range',
     roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
   },
   {
@@ -385,12 +415,20 @@ const navItems: NavItem[] = [
       { label: 'Sessions', to: '/auth/sessions', icon: SESSIONS_ICON },
     ]
   },
+  {
+    label: 'Modules', to: '/modules', icon: 'i-lucide-blocks',
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  },
 ]
 
 const visibleNavItems = computed(() =>
   navItems
-    .filter((item) => !item.roles || can(item.roles))
-    .filter((item) => !item.adminPortalOnly || onAdminPortal)
+    // The admin subdomain itself says this is the system-admin console, so show its items outright
+    // (plus the role-less Dashboard) rather than depending on the signed-in role resolving - a
+    // school's own subdomain keeps the normal per-role filtering, minus the admin-only items.
+    .filter((item) => onAdminPortal
+      ? item.adminPortalOnly || !item.roles
+      : (!item.roles || can(item.roles)) && !item.adminPortalOnly)
     .map((item) => {
       // Only a class master has anything to approve - a subject-only teacher's "Grade" link
       // stays a single shortcut to grade entry, not a group with an always-empty approval list.
@@ -407,5 +445,98 @@ const visibleNavItems = computed(() =>
       }
       return item
     })
+    // Hide whatever belongs to a module this school hasn't installed (see utils/modules.ts) - a
+    // link for its own page, or just the sub-links of a group; a group left empty disappears.
+    .map((item) => {
+      if (item.subNavs) {
+        const subNavs = item.subNavs.filter((nav) => isPathAvailable(nav.to))
+        return subNavs.length ? { ...item, subNavs } : null
+      }
+      return !item.to || isPathAvailable(item.to) ? item : null
+    })
+    .filter((item): item is NavItem => item !== null)
 )
+
+// --- Grouping ------------------------------------------------------------------------------------
+// Two tiers. "Essentials" - what every school has - is split into subgroups by purpose (People,
+// Classroom, Finance, ...). Below it, "Modules" gathers the items that belong to an installable
+// module (see utils/modules.ts) under a heading per category (Academics, Finance, ...). A group
+// mixing modules and core pages (Communicate, Academics) stays in Essentials.
+
+// Essentials subgroups, matched by menu label. Anything unmatched (Auth, Modules) lands in the
+// Administration subgroup that follows them.
+const ESSENTIAL_GROUPS: { id: string, label: string, items: string[] }[] = [
+  { id: 'overview', label: '', items: ['Dashboard'] },
+  { id: 'people', label: 'People', items: ['Students', 'Teachers', 'Parents'] },
+  { id: 'classroom', label: 'Classroom', items: ['Attendance', 'Classes', 'Subjects', 'Academics'] },
+  { id: 'finance', label: 'Finance', items: ['Fees', 'Fees & Payments', 'Transactions'] },
+  { id: 'reports', label: 'Reports', items: ['Analytics'] },
+  { id: 'communication', label: 'Communication', items: ['Communicate'] },
+]
+
+// The module a whole menu item (or group) belongs to, if all of it does.
+function moduleInfoFor(item: NavItem) {
+  const paths = item.subNavs ? item.subNavs.map((nav) => nav.to) : item.to ? [item.to] : []
+  const key = moduleForPaths(paths)
+  return key ? moduleStore.modules.find((m) => m.key === key) : undefined
+}
+
+type MenuSection = { id: string, tier: string, label: string, items: NavItem[] }
+
+const menuSections = computed<MenuSection[]>(() => {
+  const items = visibleNavItems.value
+
+  // The admin portal has nothing to group - a plain list.
+  if (onAdminPortal) {
+    return [{ id: 'all', tier: '', label: '', items }]
+  }
+
+  const essentials: NavItem[] = []
+  const byCategory = new Map<string, NavItem[]>()
+
+  for (const item of items) {
+    const info = moduleInfoFor(item)
+    if (!info) {
+      essentials.push(item)
+    } else {
+      byCategory.set(info.category, [...(byCategory.get(info.category) ?? []), item])
+    }
+  }
+
+  const known = new Set(ESSENTIAL_GROUPS.flatMap((group) => group.items))
+  const essentialSections: MenuSection[] = [
+    ...ESSENTIAL_GROUPS.map((group) => ({
+      id: group.id,
+      tier: '',
+      label: group.label,
+      items: essentials.filter((item) => group.items.includes(item.label)),
+    })),
+    {
+      id: 'administration',
+      tier: '',
+      label: 'Administration',
+      items: essentials.filter((item) => !known.has(item.label)),
+    },
+  ].filter((section) => section.items.length)
+
+  // The "Essentials" / "Modules" titles only mean something once there are modules to set apart.
+  const hasModules = byCategory.size > 0
+  if (hasModules && essentialSections[0]) essentialSections[0].tier = 'Essentials'
+
+  const moduleSections: MenuSection[] = []
+  // Categories in the order the catalog lists them.
+  for (const category of new Set(moduleStore.modules.map((m) => m.category))) {
+    const categoryItems = byCategory.get(category)
+    if (!categoryItems) continue
+
+    moduleSections.push({
+      id: category,
+      tier: moduleSections.length ? '' : 'Modules',
+      label: moduleStore.modules.find((m) => m.category === category)?.categoryLabel ?? category,
+      items: categoryItems,
+    })
+  }
+
+  return [...essentialSections, ...moduleSections]
+})
 </script>

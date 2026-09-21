@@ -13,6 +13,7 @@ interface NavItem {
 
 const items: NavItem[] = [
   { label: 'Transactions', to: '/transactions', icon: LEDGER_ICON, exact: true },
-  { label: 'Student Ledger', to: '/transactions/student-ledger', icon: LEDGER_ICON }
+  { label: 'Student Ledger', to: '/transactions/student-ledger', icon: LEDGER_ICON },
+  { label: 'Platform Fee', to: '/transactions/platform-fee', icon: PLATFORM_ICON }
 ]
 </script>

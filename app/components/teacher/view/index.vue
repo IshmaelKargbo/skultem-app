@@ -176,6 +176,7 @@ const attendanceInfo = `/teachers/${route.params.id}/attendance`
 // Subjects/Curriculum only apply to classroom teachers - hidden for non-teaching staff (Add
 // Staff, or a User account opted into payroll). Defaults true while the record is still loading
 // so the tabs don't flash in and back out once it arrives.
+const { isPathAvailable } = useModules()
 const isTeaching = computed(() => record.value?.teaching !== false)
 
 // Ordered by importance: who they are, what/who they teach, how that teaching is progressing,
@@ -185,14 +186,15 @@ const mobileTabs = computed(() => [
     ...(isTeaching.value ? [{ label: 'Subjects', to: subjectsInfo, icon: SUBJECT_ICON, exact: true }] : []),
     ...(isTeaching.value ? [{ label: 'Curriculum', to: curriculumInfo, icon: CURRICULUM_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true }
-])
+    // Attendance is part of Staff & HR - the tab drops out when that module isn't installed.
+].filter((tab) => isPathAvailable(tab.to)))
 
 const desktopTabs = computed(() => [
     { label: 'Profile Information', to: profileInfo, icon: USER_ICON, exact: true },
     ...(isTeaching.value ? [{ label: 'Subjects & Classes', to: subjectsInfo, icon: SUBJECT_ICON, exact: true }] : []),
     ...(isTeaching.value ? [{ label: 'Curriculum Progress', to: curriculumInfo, icon: CURRICULUM_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true }
-])
+].filter((tab) => isPathAvailable(tab.to)))
 
 async function fetchTeacher() {
     await store.viewTeacher(route.params.id as string)

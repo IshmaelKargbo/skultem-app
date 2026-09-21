@@ -89,7 +89,7 @@
           </div>
         </div>
         <!-- ACADEMIC YEAR -->
-        <div class="md:hidden border-t border-gray-200/60 dark:border-white/10 pt-4 mt-3">
+        <div v-if="canSwitchYear" class="md:hidden border-t border-gray-200/60 dark:border-white/10 pt-4 mt-3">
           <div class="mb-3 px-1">
             <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
               Academic Year
@@ -220,6 +220,7 @@ interface QuickLink {
   to: string;
   icon: string;
   roles: Role[];
+  adminPortalOnly?: boolean;
 }
 
 interface SectionItem {
@@ -249,10 +250,12 @@ const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
 const { activeRole, can, setActiveRole } = useAuth();
+const { isPathAvailable } = useModules();
 const { canInstall, install } = usePwaInstall();
 const { isClassMaster, ensureLoaded: ensureClassMasterLoaded } = useClassMaster();
 
 const route = useRoute();
+const onAdminPortal = isAdminPortalHost(useRequestURL().hostname);
 const open = ref(false);
 const expanded = ref<string[]>(["grades"]);
 // const colorMode = useColorMode(); // theme toggle disabled — see commented "APPEARANCE" block above
@@ -287,6 +290,7 @@ const roleDesc: Record<string, string> = {
   TEACHER: "Classes & students",
   PARENT: "Child progress",
   ACCOUNTANT: "Finance & fees",
+  SYSTEM_ADMIN: "Platform-wide control",
 };
 
 const roleIcons: Record<string, string> = {
@@ -295,6 +299,7 @@ const roleIcons: Record<string, string> = {
   TEACHER: "lucide:graduation-cap",
   PARENT: "lucide:users",
   ACCOUNTANT: "lucide:calculator",
+  SYSTEM_ADMIN: "lucide:shield-check",
 };
 
 const userRoles = computed(() =>
@@ -308,6 +313,11 @@ const userRoles = computed(() =>
 
 // Quick-access row above the accordions.
 const allQuickLinks: QuickLink[] = [
+  { label: "Modules", to: "/modules", icon: "i-lucide-blocks", roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+  // System-admin portal only - same pages as the desktop sidebar (see menu/index.vue).
+  { label: "Schools", to: "/schools", icon: SCHOOL_ICON, roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
+  { label: "Academic Calendar", to: "/calendar", icon: "i-lucide-calendar-range", roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
+  { label: "Admins", to: "/users", icon: USERS_ICON, roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
   {
     label: "Attendance",
     to: "/attendance",
@@ -363,7 +373,20 @@ const allQuickLinks: QuickLink[] = [
 
 ];
 
-const quickLinks = computed(() => allQuickLinks.filter((link) => can(link.roles)));
+// Same rule as the desktop sidebar (menu/index.vue): the admin subdomain shows the system-admin
+// links regardless of the resolved role, and none of the school ones.
+const quickLinks = computed(() =>
+  allQuickLinks.filter((link) =>
+    onAdminPortal
+      ? !!link.adminPortalOnly
+      : can(link.roles) && !link.adminPortalOnly && isPathAvailable(link.to),
+  ),
+);
+
+// A system admin isn't scoped to any one school's academic calendar - same gate as me.vue.
+const canSwitchYear = computed(() =>
+  !onAdminPortal && can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]),
+);
 
 const rawSections: (roles: (r: Role[]) => boolean) => RawSection[] = () => [
  
@@ -660,14 +683,15 @@ function isSectionItem(item: SectionItem | false): item is SectionItem {
 
 const sections = computed<Section[]>(() =>
   rawSections()
-    .filter((section) => can(section.roles) || section.roles.length === 0)
+    .filter((section) => !onAdminPortal && (can(section.roles) || section.roles.length === 0))
     .map((section) => {
       const items = section.items.filter(isSectionItem);
       return {
         id: section.id,
         title: section.title,
         icon: section.icon,
-        linkItems: items.filter((i): i is SectionItem & { to: string } => !!i.to),
+        // Skip links into a module this school hasn't installed (see utils/modules.ts).
+        linkItems: items.filter((i): i is SectionItem & { to: string } => !!i.to && isPathAvailable(i.to)),
         actionItems: items.filter(
           (i): i is SectionItem & { action: () => void } => !i.to && !!i.action
         ),

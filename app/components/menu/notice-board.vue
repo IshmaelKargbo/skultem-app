@@ -1,6 +1,10 @@
 <script setup lang="ts">
 const { can } = useAuth()
-const visible = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT]))
+const { isInstalled } = useModules()
+// The notice board is part of the Communication module - without it the notice API is switched off.
+const visible = computed(() =>
+  isInstalled(ModuleKey.COMMUNICATION)
+  && can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT]))
 
 const loading = ref(false)
 const notices = ref<Notice[]>([])

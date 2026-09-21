@@ -13,14 +13,13 @@
           </div>
           <p class="text-sm font-semibold text-highlighted">Request not found</p>
           <p class="max-w-xs text-xs text-muted">It may have been withdrawn, or you may not have access to it.</p>
-          <UButton to="/grades/approval" label="Back to Grade Approval" icon="i-lucide-arrow-left" color="primary" variant="soft" />
+          <UButton to="/grades/approval" label="Back to Grade Approval" icon="i-lucide-arrow-left" color="primary"
+            variant="soft" />
         </div>
       </UCard>
     </div>
 
-    <div v-else class="mx-auto max-w-3xl">
-      <GradesViewRequest :record="record" @refresh="reload" @close="goBack" />
-    </div>
+    <GradesViewRequest v-else :record="record" @refresh="reload" @close="goBack" />
   </div>
 </template>
 

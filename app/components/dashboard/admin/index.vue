@@ -44,7 +44,7 @@
         <UCard>
             <DashboardAdminAttention />
         </UCard>
-        <UCard>
+        <UCard v-if="isInstalled(ModuleKey.STAFF_HR)">
             <DashboardAdminStaffAttendance />
         </UCard>
         <div class="grid md:grid-cols-2 gap-3">
@@ -57,6 +57,8 @@
 </template>
 
 <script setup lang="ts">
+const { isInstalled } = useModules()
+
 onMounted(() => {
     useAppStore().setTitle('Dashboard')
     document.title = "Dashboard | Skultem"

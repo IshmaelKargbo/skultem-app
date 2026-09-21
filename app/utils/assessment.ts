@@ -14,6 +14,8 @@ export type Assessment = {
     weight: number
     position: number
     status: string
+    // The approver's note, set only while the assessment is RETURNED - what needs correcting.
+    returnReason?: string | null
     createdAt: string
     updatedAt: string
 }

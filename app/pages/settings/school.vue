@@ -207,6 +207,10 @@ const channels = [
 
 // Attendance tab - geofenced clock-in location.
 const attendanceStore = useTeacherAttendanceStore()
+// The clock-in location is a Staff & HR setting - without that module its API is off, so it's
+// neither loaded nor saved (the attendance alert threshold on the same tab is core and still is).
+const { isInstalled } = useModules()
+const hrInstalled = computed(() => isInstalled(ModuleKey.STAFF_HR))
 const { locationSettings, loadingLocationSettings: loadingLocation, savingLocationSettings: savingLocation } = storeToRefs(attendanceStore)
 
 const locationConfigured = computed(() => !!locationSettings.value?.configured)
@@ -225,12 +229,14 @@ const attendanceState = reactive({
 async function saveAttendanceLocation() {
     saving.value = true
     try {
-        await attendanceStore.saveLocationSettings({
-            latitude: attendanceState.latitude,
-            longitude: attendanceState.longitude,
-            radiusMeters: attendanceState.radiusMeters,
-            allowedIps: attendanceState.allowedIps || undefined
-        })
+        if (hrInstalled.value) {
+            await attendanceStore.saveLocationSettings({
+                latitude: attendanceState.latitude,
+                longitude: attendanceState.longitude,
+                radiusMeters: attendanceState.radiusMeters,
+                allowedIps: attendanceState.allowedIps || undefined
+            })
+        }
 
         const updated = await SchoolApi().update({
             name: state.name,
@@ -357,7 +363,7 @@ onMounted(async () => {
         loading.value = false
     }
 
-    await attendanceStore.fetchLocationSettings()
+    if (hrInstalled.value) await attendanceStore.fetchLocationSettings()
     if (locationSettings.value) {
         attendanceState.latitude = locationSettings.value.latitude
         attendanceState.longitude = locationSettings.value.longitude

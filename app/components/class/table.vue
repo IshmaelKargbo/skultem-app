@@ -27,7 +27,6 @@
             </div>
             <div>
               <p class="font-medium text-highlighted">{{ row.original.clazz }}</p>
-              <p class="text-xs text-muted">{{ row.original.grade }}</p>
             </div>
           </div>
         </template>
@@ -121,10 +120,6 @@
                   </h3>
 
                   <div class=" flex items-center gap-2 text-xs text-muted">
-                    <span>{{ item.grade }}</span>
-
-                    <span>•</span>
-
                     <span>{{ parseLevel[item.classLevel] }}</span>
                   </div>
                 </div>
@@ -267,7 +262,6 @@ const view = ref<'table' | 'card'>('table');
 
 const columns = [
   { accessorKey: 'clazz', header: 'Name' },
-  { accessorKey: 'grade', header: 'Grade' },
   { accessorKey: 'classLevel', header: 'Level' },
   { accessorKey: 'sectionName', header: 'Section' },
   { accessorKey: 'streamName', header: 'Stream' },

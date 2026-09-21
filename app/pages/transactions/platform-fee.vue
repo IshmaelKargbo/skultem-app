@@ -1,15 +1,15 @@
 <template>
     <div class="px-4 md:px-6 space-y-4">
         <TransactionSectionNav />
-        <TransactionReport />
-        <TransactionTable />
+        <TransactionPlatformReport />
+        <TransactionPlatformTable />
     </div>
 </template>
 
 <script setup lang="ts">
 onMounted(() => {
-    useAppStore().setTitle('Transactions')
-    document.title = 'Transactions | Skultem'
+    useAppStore().setTitle('Platform Fee')
+    document.title = 'Platform Fee | Skultem'
 })
 
 definePageMeta({

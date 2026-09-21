@@ -38,6 +38,27 @@ export const PlatformApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    // data is null until a SYSTEM_ADMIN has configured one - not an error.
+    getCalendar: async () => {
+      try {
+        const res = await $api('/platform/calendar') as any
+        return res?.data ?? null
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    saveCalendar: async (payload: SaveNationalCalendarPayload) => {
+      try {
+        const res = await $api('/platform/calendar', { method: 'PUT', body: payload }) as any
+
+        if (!res)
+          throw new Error('Failed to save the academic calendar')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

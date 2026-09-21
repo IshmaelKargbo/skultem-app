@@ -32,6 +32,7 @@ const isLoading = ref(true)
 const store = useLedgerStore()
 const { format } = useMoney()
 
+// The school's own fees only - the platform fee has its own page (Transactions > Platform Fee).
 type LedgerReportDTO = {
     totalDebit: number
     totalCredit: number

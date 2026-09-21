@@ -21,8 +21,8 @@
         <Metric :record="{ label: 'Assessments', value: overview?.totalAssessments ?? 0, isReady: !loadingReport, icon: 'i-lucide-clipboard-list', color: 'info' }" />
         <Metric :record="{ label: 'Approved', value: overview?.completedAssessments ?? 0, isReady: !loadingReport, icon: 'i-lucide-check-circle', color: 'success' }" />
         <Metric :record="{ label: filters.classId ? 'Class Average' : 'School Average', value: overview ? `${overview.classAverage}%` : '—', isReady: !loadingReport, icon: 'i-lucide-percent', color: 'primary' }" />
-        <Metric class="lg:col-span-2" :record="{ label: 'Pass Rate', value: overview ? `${overview.passRate}%` : '—', isReady: !loadingReport, icon: 'i-lucide-trending-up', color: 'success' }" />
-        <Metric :record="{ label: 'Needs Support', value: overview?.studentsNeedingSupport ?? 0, isReady: !loadingReport, icon: 'i-lucide-life-buoy', color: 'warning' }" />
+        <Metric class="lg:col-span-2" :record="{ label: 'Pass Rate', value: overview ? `${overview.passRate}%` : '—', subtle: passMarkNote, isReady: !loadingReport, icon: 'i-lucide-trending-up', color: 'success' }" />
+        <Metric :record="{ label: 'Needs Support', value: overview?.studentsNeedingSupport ?? 0, subtle: overview ? 'Below the pass mark' : undefined, isReady: !loadingReport, icon: 'i-lucide-life-buoy', color: 'warning' }" />
       </div>
 
       <div v-if="overview && overview.studentsAssessed === 0" class="px-2">
@@ -131,6 +131,15 @@ const { report, loadingReport, attention, loadingAttention, completion, loadingC
   academicTrend, loadingAcademicTrend } = storeToRefs(reportStore)
 
 const overview = computed(() => report.value?.overview || null)
+
+// Says which pass mark the pass rate (and "Needs Support") was measured against - each class's own
+// assessment template pass mark. A single number when the report covers classes that share it.
+const passMarkNote = computed(() => {
+  if (!overview.value) return undefined
+  return overview.value.passMark != null
+    ? `Pass mark: ${overview.value.passMark}%`
+    : 'Pass marks differ by class'
+})
 const classes = computed(() => report.value?.classes || [])
 const subjects = computed(() => report.value?.subjects || [])
 

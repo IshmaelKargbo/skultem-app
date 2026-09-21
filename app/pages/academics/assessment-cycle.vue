@@ -86,7 +86,7 @@
               class="group w-full rounded-xl border-2 p-4 text-left transition-all duration-200" :class="selectedClassId === item.classId
                 ? 'border-secondary bg-secondary/5 shadow-sm'
                 : 'border-default hover:border-secondary/40 hover:bg-muted/30'
-                " @click="selectClass(item.classId)">
+                " @click="openClass(item.classId)">
 
               <!-- Top -->
               <div class="flex items-start justify-between">
@@ -153,7 +153,7 @@
       </div>
 
 
-      <UCard class="lg:col-span-2">
+      <UCard class="hidden lg:col-span-2 lg:block">
         <template #header>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -194,71 +194,84 @@
             </UBadge>
           </div>
 
-          <!-- Loading -->
-          <div v-if="isLoadingCycle" class="space-y-3">
-            <USkeleton v-for="i in 4" :key="i" class="h-20 rounded-xl" />
-          </div>
-
-          <!-- Timeline -->
-          <div v-else-if="assessmentItems.length" class="space-y-4">
-            <div v-for="(assessment, index) in assessmentItems" :key="assessment.id"
-              class="group relative overflow-hidden rounded-xl border border-default bg-elevated/40 p-3">
-              <div class="flex items-center justify-between gap-3">
-
-                <div class="flex gap-3">
-                  <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 border border-primary-200 text-primary">
-                    {{ index + 1 }}
-                  </div>
-
-                  <div>
-
-                    <h4 class="font-semibold">
-                      {{ toOrdinal(index + 1) }}
-                      Assessment
-                    </h4>
-
-                    <p class="text-xs text-muted">
-                      <span>{{ assessment.name }}</span> <span>-</span> <span>
-                        Weight:
-                        <strong>({{ assessment.weight }}%)</strong>
-                      </span>
-                    </p>
-
-                    <div class="mt-3 flex items-center gap-2">
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-                <UBadge variant="soft" size="lg" :color="assessmentStatusColor(assessment.status)">
-                  {{ assessmentStatusLabel(assessment.status) }}
-                </UBadge>
-
-              </div>
-            </div>
-          </div>
-
-          <!-- Empty -->
-          <div v-else class="rounded-xl border border-dashed border-default py-16 text-center">
-            <div
-              class="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
-              <UIcon name="i-lucide-clipboard-list" class="text-2xl text-muted" />
-            </div>
-
-            <h3 class="font-medium">
-              No Assessments Found
-            </h3>
-
-            <p class="mt-2 text-sm text-muted">
-              Add assessments in Settings → Assessment Templates.
-            </p>
-          </div>
+          <AcademicsCycleTimeline :assessments="assessmentItems" :loading="isLoadingCycle" />
 
         </div>
       </UCard>
     </div>
+
+    <!-- Mobile: only the class list shows; a class's cycle opens here -->
+    <!-- Full screen: `content` overrides the drawer's default height/margin, the footer stays pinned to
+         the bottom of the scrolling area, and the safe-area padding keeps it clear of the home bar -->
+    <UDrawer v-model:open="drawerOpen" direction="bottom" :handle="false"
+      description="Assessment stages and progression for this class." :ui="{
+        content: 'mt-0 h-dvh max-h-dvh rounded-none',
+        container: 'gap-5 p-5',
+        description: 'mt-2 text-xs',
+        footer: 'sticky bottom-0 -mx-5 -mb-5 border-t border-default bg-default px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]'
+      }">
+      <template #title>
+        <span class="flex items-center gap-3">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 ring-1 ring-secondary/20">
+            <UIcon :name="CLASS_ICON" class="size-5 text-secondary" />
+          </span>
+
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-display text-lg font-semibold leading-tight text-highlighted">
+              {{ selectedClass?.className || 'Assessment Cycle' }}
+            </span>
+            <span class="mt-0.5 block truncate text-xs font-normal text-muted">
+              {{ selectedClass?.templateName || 'No template assigned' }}
+            </span>
+          </span>
+
+          <UBadge v-if="selectedClass" size="sm" variant="soft" :color="selectedClass.ready ? 'success' : 'warning'"
+            :icon="selectedClass.ready ? 'i-lucide-check-circle' : 'i-lucide-alert-triangle'"
+            :label="selectedClass.ready ? 'Ready' : 'Attention'" />
+
+          <UButton icon="i-lucide-x" color="neutral" variant="ghost" size="sm" class="shrink-0"
+            aria-label="Close" @click.stop="drawerOpen = false" />
+        </span>
+      </template>
+
+      <template #body>
+        <div class="space-y-5">
+          <!-- At a glance -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="min-w-0 rounded-xl bg-elevated/50 p-3">
+              <p class="text-[11px] uppercase tracking-wide text-muted">Term</p>
+              <p class="mt-1 truncate text-sm font-semibold text-highlighted">{{ activeTerm?.name || 'None' }}</p>
+            </div>
+            <div class="min-w-0 rounded-xl bg-elevated/50 p-3">
+              <p class="text-[11px] uppercase tracking-wide text-muted">Stages</p>
+              <p class="mt-1 text-sm font-semibold text-highlighted">{{ assessmentItems.length }}</p>
+            </div>
+            <div class="min-w-0 rounded-xl bg-elevated/50 p-3">
+              <p class="text-[11px] uppercase tracking-wide text-muted">Weight</p>
+              <p class="mt-1 text-sm font-semibold" :class="totalWeight === 100 ? 'text-success' : 'text-warning'">
+                {{ totalWeight }}%
+              </p>
+            </div>
+          </div>
+
+          <UAlert v-if="selectedClass && !selectedClass.ready" color="warning" variant="soft"
+            icon="i-lucide-alert-triangle" title="Needs attention" :description="selectedClass.note" />
+
+          <div>
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-highlighted">Assessment sequence</h3>
+              <UBadge variant="subtle" color="neutral" size="sm" :label="`${assessmentItems.length} steps`" />
+            </div>
+
+            <AcademicsCycleTimeline :assessments="assessmentItems" :loading="isLoadingCycle" />
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <UButton label="Close" color="neutral" variant="outline" size="lg" block @click="drawerOpen = false" />
+      </template>
+    </UDrawer>
   </div>
 </template>
 
@@ -283,28 +296,6 @@ const selectedTermId = ref('')
 
 const CLASSES_PAGE_SIZE = 5
 const classesPage = ref(1)
-
-const parseAssessmentStatus: Record<string, string> = {
-  COMPLETED: "Completed",
-  ACTIVE: "Active",
-  INACTIVE: "Inactive"
-}
-
-const parseAssessmentStatusColor: Record<string, string> = {
-  COMPLETED: "success",
-  ACTIVE: "info",
-  INACTIVE: "neutral"
-}
-
-// Statuses the cycle endpoint doesn't currently send fall back to a neutral "Pending" badge
-// instead of rendering blank, so an unrecognised value can't disappear from the timeline.
-function assessmentStatusLabel(status: string) {
-  return parseAssessmentStatus[status] || 'Pending'
-}
-
-function assessmentStatusColor(status: string) {
-  return parseAssessmentStatusColor[status] || 'neutral'
-}
 
 const selectedClassId = computed(() => {
   const value = route.query.classId
@@ -359,20 +350,35 @@ const totalClasses = computed(() => overview.value?.totalClasses ?? 0)
 const readyClasses = computed(() => overview.value?.readyClasses ?? 0)
 const notReadyClasses = computed(() => overview.value?.notReadyClasses ?? 0)
 
-function toOrdinal(index: number) {
-  const remainder = index % 100
-  if (remainder >= 11 && remainder <= 13) return `${index}th`
+// --- Mobile drawer ------------------------------------------------------------------------------
+// Below the lg breakpoint the class list is all that shows; tapping a class opens its cycle in a
+// drawer. The first class gets selected automatically on load (see loadOverview) - that must not
+// pop the drawer open, so it only opens from an actual tap.
+const drawerOpen = ref(false)
+const isMobile = ref(false)
 
-  switch (index % 10) {
-    case 1:
-      return `${index}st`
-    case 2:
-      return `${index}nd`
-    case 3:
-      return `${index}rd`
-    default:
-      return `${index}th`
-  }
+let mobileQuery: MediaQueryList | null = null
+const updateIsMobile = () => { isMobile.value = !!mobileQuery?.matches }
+
+onMounted(() => {
+  mobileQuery = window.matchMedia('(max-width: 1023px)')
+  updateIsMobile()
+  mobileQuery.addEventListener('change', updateIsMobile)
+})
+
+onBeforeUnmount(() => mobileQuery?.removeEventListener('change', updateIsMobile))
+
+// Growing past the breakpoint (rotating a tablet, say) swaps the drawer for the side-by-side layout.
+watch(isMobile, (mobile) => {
+  if (!mobile) drawerOpen.value = false
+})
+
+const selectedClass = computed(() =>
+  overview.value?.classes?.find((item) => item.classId === selectedClassId.value) ?? null)
+
+async function openClass(classId: string) {
+  await selectClass(classId)
+  if (isMobile.value) drawerOpen.value = true
 }
 
 function selectClass(classId: string) {

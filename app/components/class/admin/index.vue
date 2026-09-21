@@ -70,7 +70,6 @@
                                     label="Needs Attention" />
                             </UTooltip>
                         </div>
-                        <p class="text-xs text-muted">{{ row.original.grade }}</p>
                     </div>
                 </template>
                 <template #classLevel-cell="{ row }">
@@ -126,10 +125,6 @@
                                     </div>
 
                                     <div class="flex min-w-0 items-center gap-1 text-xs-base text-muted">
-                                        <span class="shrink-0">{{ item.grade }}</span>
-
-                                        <span class="shrink-0">•</span>
-
                                         <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) || 'No Teacher Assigned' }}</span>
                                     </div>
                                 </div>
@@ -185,7 +180,6 @@ const streamOptions = computed(() =>
 
 const columns = [
     { accessorKey: 'clazz', header: 'Name' },
-    { accessorKey: 'grade', header: 'Grade' },
     { accessorKey: 'classLevel', header: 'Level' },
     { accessorKey: 'sectionName', header: 'Section' },
     { accessorKey: 'streamName', header: 'Stream' },

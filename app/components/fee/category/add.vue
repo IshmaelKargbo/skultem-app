@@ -63,8 +63,11 @@ const onSubmit = async () => {
             variant="ghost"
             @click="open = true"
         />
-        <UButton v-else color="primary" label="Fee Category" icon="prime:plus" @click="open = true" />
+       <div v-else>
+         <UButton color="primary" label="Fee Category" icon="prime:plus" class="hidden md:flex" @click="open = true" />
+        <UButton color="primary" icon="prime:plus" @click="open = true" class="md:hidden" />
 
+       </div>
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">

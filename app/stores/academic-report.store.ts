@@ -9,6 +9,9 @@ export interface AcademicOverview {
   classAverage: number
   passRate: number
   studentsNeedingSupport: number
+  // The pass mark the figures above were measured against; null when the classes in a whole-school
+  // report use different assessment templates, so there's no single one to show.
+  passMark: number | null
 }
 
 export interface ClassPerformance {

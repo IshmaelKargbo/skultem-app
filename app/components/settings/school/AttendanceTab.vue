@@ -30,6 +30,8 @@
   </template>
 
   <template v-else>
+    <!-- Clock-in location, radius and network belong to Staff & HR; the alert threshold below is core. -->
+    <template v-if="hrInstalled">
     <UAlert v-if="!locationConfigured" color="warning" variant="subtle" icon="lucide:triangle-alert"
       title="Not set up yet" description="Teachers can't clock in until a location is saved here." />
     <UCard>
@@ -90,6 +92,7 @@
         - a second layer against someone clocking in for a colleague from elsewhere.
       </p>
     </UCard>
+    </template>
 
     <UCard>
       <template #header>
@@ -130,6 +133,8 @@ const attendanceThresholdModel = computed({
 })
 
 const { success, error: toastError, warning } = useNotify()
+const { isInstalled } = useModules()
+const hrInstalled = computed(() => isInstalled(ModuleKey.STAFF_HR))
 
 const locating = ref(false)
 const locationMap = ref<{ panTo: (lat: number, lng: number) => void } | null>(null)

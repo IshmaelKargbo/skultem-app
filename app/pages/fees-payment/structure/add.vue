@@ -5,6 +5,10 @@ const feeStructureStore = useFeeStructureStore();
 const feeCategoryStore = useFeeStore();
 const termStore = useTermStore();
 const materialStore = useMaterialStore();
+// Supplying materials with a fee (a uniform, books) needs the Materials & Supplies module - without
+// it there's no material list to pick from and its API is off, so the option is hidden.
+const { isInstalled } = useModules();
+const suppliesAvailable = computed(() => isInstalled(ModuleKey.MATERIALS_AND_SUPPLIES));
 const clazzStore = useClassStore();
 
 const { error: toastError, success: toastSuccess } = useNotify();
@@ -211,7 +215,7 @@ onMounted(() => {
   feeCategoryStore.fetchAll(0, 0);
   termStore.fetchAll(0, 0);
   clazzStore.fetchAll(0, 0);
-  materialStore.fetchAll(0, 0);
+  if (suppliesAvailable.value) materialStore.fetchAll(0, 0);
 });
 
 watch(
@@ -314,7 +318,7 @@ definePageMeta({
               </UFormField>
 
               <!-- Has Supply -->
-              <UFormField name="hasSupply">
+              <UFormField v-if="suppliesAvailable" name="hasSupply">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Has Supply</p>
