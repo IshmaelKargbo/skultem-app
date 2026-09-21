@@ -180,6 +180,29 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    // Corrects the class a student was placed in by mistake - see ChangeEnrollmentClassUseCase for
+    // what it refuses (anything already recorded against the old class) and what it rebuilds.
+    changeClass: async (enrollmentId: string, payload: ChangeClassDto) => {
+      try {
+        const res: { data: ChangeClassResult } = await $api(`/enrollment/${enrollmentId}/class`, {
+          method: 'PATCH',
+          body: payload
+        })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    selectOptionalSubjects: async (enrollmentId: string, optionalSubjects: string[]) => {
+      try {
+        await $api(`/enrollment/class/${enrollmentId}`, {
+          method: 'POST',
+          body: { optionalSubjects }
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     // Enrollment doesn't require a photo - this adds or replaces one afterwards.
     updatePhoto: async (id: string, photo: File) => {
       try {

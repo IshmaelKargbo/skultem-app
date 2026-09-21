@@ -173,6 +173,19 @@ export const useStudentStore = defineStore('student', {
       if (res && this.record?.id === id) this.record = res
       return res
     },
+    async changeClass(studentId: string, enrollmentId: string, payload: ChangeClassDto, optionalSubjects: string[] = []) {
+      try {
+        const res = await StudentApi().changeClass(enrollmentId, payload)
+        if (res?.requiresSubjectSelection && optionalSubjects.length) {
+          await StudentApi().selectOptionalSubjects(enrollmentId, optionalSubjects)
+        }
+        return res
+      } finally {
+        // The move may have gone through even if choosing subjects afterwards failed, so refresh either way.
+        const fresh = await StudentApi().getStudent(studentId) as any
+        if (fresh && this.record?.id === studentId) this.record = fresh
+      }
+    },
     findEnrollmentByStudent(id: string) {
       return StudentApi().getCurrentEnrollment(id)
     },

@@ -110,3 +110,15 @@ export type CreateStudentDto = {
     previousSchool: string
     lastClass: string
 }
+
+
+export type ChangeClassDto = {
+    classId: string
+    sectionId: string
+    streamId?: string
+}
+
+export type ChangeClassResult = {
+    enrollmentId: string
+    requiresSubjectSelection: boolean
+}
