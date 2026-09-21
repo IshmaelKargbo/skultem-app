@@ -111,24 +111,6 @@
           </template>
         </UFormField>
 
-        <!-- Grade -->
-        <UFormField required label="Grade" name="levelOrder">
-          <UInput
-            v-model="state.levelOrder"
-            type="number"
-            placeholder="e.g. 1"
-            :disabled="isLoading"
-          >
-            <template #leading>
-              <UIcon name="i-lucide-hash" class="text-muted" />
-            </template>
-          </UInput>
-
-          <template #help>
-            <p class="text-xs text-muted">Lower numbers appear first in class lists.</p>
-          </template>
-        </UFormField>
-
         <!-- Assessment Template -->
         <UFormField label="Assessment Template" name="assessmentTemplateId">
           <USelectMenu
@@ -215,7 +197,6 @@ type ClassForm = {
   level: Level | "";
   sections: string[];
   streams: string[];
-  levelOrder: number | null;
   assessmentTemplateId: string;
 };
 
@@ -224,7 +205,6 @@ const state = reactive<ClassForm>({
   level: "",
   sections: [],
   streams: [],
-  levelOrder: null,
   assessmentTemplateId: "",
 });
 
@@ -238,11 +218,6 @@ const schema = yup.object({
       schema.of(yup.string()).min(1, "At least one stream is required for SSS"),
     otherwise: (schema) => schema.notRequired(),
   }),
-  levelOrder: yup
-    .number()
-    .typeError("Grade must be a number")
-    .required("Grade is required")
-    .min(1),
 });
 
 watch(
@@ -258,7 +233,6 @@ const close = () => {
   state.level = "";
   state.sections = [];
   state.streams = [];
-  state.levelOrder = null;
   state.assessmentTemplateId = "";
 };
 
@@ -270,7 +244,6 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
       level: state.level as Level,
       sections: state.sections,
       streams: state.streams,
-      levelOrder: state.levelOrder as number,
       assessmentTemplateId: state.assessmentTemplateId || undefined,
     });
     toastSuccess("Class created successfully");

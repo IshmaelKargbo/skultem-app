@@ -13,6 +13,12 @@ export default defineNuxtPlugin(async () => {
     try {
         await userStore.me()
         initializeActiveRole()
+        // Best-effort and skipped on the admin portal (no school, no modules): failing to load
+        // the module list fails open (nothing hidden) and must never be mistaken for an auth
+        // failure and clear the session below - the backend enforces installs regardless.
+        if (!isAdminPortalHost(useRequestURL().hostname)) {
+            await useModuleStore().fetch().catch(() => { })
+        }
         // Best-effort inside itself (never throws) - a branding fetch failure must not be
         // mistaken for an auth failure and clear the user's session below.
         await applyBrandColorsForCurrentSchool()

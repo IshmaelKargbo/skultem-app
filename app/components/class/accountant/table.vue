@@ -22,10 +22,6 @@ const columns = [
     header: 'Name'
   },
   {
-    accessorKey: 'grade',
-    header: 'Grade'
-  },
-  {
     accessorKey: 'classLevel',
     header: 'Level'
   },

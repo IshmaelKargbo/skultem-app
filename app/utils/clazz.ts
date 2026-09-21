@@ -109,7 +109,8 @@ export type CreateClassDto = {
     name: string
     level: Level,
     sections: string[],
-    levelOrder: number,
+    // Optional and no longer collected by the UI - the backend puts a new class after the last one.
+    levelOrder?: number,
     terminal?: boolean,
     streams: string[],
     assessmentTemplateId?: string
@@ -117,7 +118,8 @@ export type CreateClassDto = {
 
 export type UpdateClassDto = {
     name: string
-    levelOrder: number
+    // Optional - left out, the class keeps its position.
+    levelOrder?: number
 }
 
 export type ClassCurriculumSubject = {

@@ -31,9 +31,14 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
-    getLedger: async (page: number, size: number) => {
+    getLedger: async (page: number, size: number, filters: LedgerFilters = {}) => {
       try {
-        const res = await $api(`/fee/ledger?page=${page}&size=${size}`) as any
+        const query = new URLSearchParams({ page: String(page), size: String(size) })
+        for (const [key, value] of Object.entries(filters)) {
+          if (value) query.set(key, value)
+        }
+
+        const res = await $api(`/fee/ledger?${query.toString()}`) as any
 
         if (!res)
           throw new Error('Failed to fetch fee ledgers')
@@ -60,6 +65,37 @@ export const FeeApi = () => {
           throw new Error('Failed to fetch fee discount report')
 
         return res.data;
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // The platform fee (Skultem's, collected by the school on its behalf) - separate from the school's
+    // own student ledger.
+    getPlatformFeeReport: async () => {
+      try {
+        const res = await $api('/fee/platform/report') as any
+
+        if (!res)
+          throw new Error('Failed to fetch platform fee report')
+
+        return res.data as PlatformFeeReport
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getPlatformFeeEntries: async (page: number, size: number, filters: LedgerFilters = {}) => {
+      try {
+        const query = new URLSearchParams({ page: String(page), size: String(size) })
+        for (const [key, value] of Object.entries(filters)) {
+          if (value) query.set(key, value)
+        }
+
+        const res = await $api(`/fee/platform/entries?${query.toString()}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch platform fee entries')
+
+        return { data: res.data as Ledger[], meta: useMeta(res.meta) }
       } catch (err: any) {
         useHandleError(err)
       }

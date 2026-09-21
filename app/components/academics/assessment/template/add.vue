@@ -2,7 +2,8 @@
     <u-slideover :dismissible="false" title="Add Assessment Template" :open="open" @update:open="open = $event">
 
         <!-- Trigger -->
-        <UButton color="primary" label="Add Assessment Template" icon="prime:plus" @click="open = true" />
+        <UButton color="primary" label="Add Assessment Template" :icon="ADD_ICON" class="hidden md:flex" @click="open = true" />
+        <UButton color="primary" :icon="ADD_ICON" class="md:hidden" @click="open = true" />
 
         <!-- Header -->
         <template #header>

@@ -16,10 +16,6 @@ const columns: TableColumn<ClassSession> = [
     header: 'Name'
   },
   {
-    accessorKey: 'grade',
-    header: 'Grade'
-  },
-  {
     accessorKey: 'totalStudent',
     header: 'Students'
   },
@@ -88,7 +84,6 @@ const detailFields = computed<ReportDetailField[]>(() => {
   const item = selected.value
   if (!item) return []
   return [
-    { label: 'Grade', value: item.grade || 'N/A' },
     { label: 'Level', value: parseLevel[item.classLevel] || 'N/A' },
     { label: 'Section', value: item.sectionName || 'N/A' },
     { label: 'Stream', value: item.streamName || 'N/A' },
@@ -147,7 +142,7 @@ const detailFields = computed<ReportDetailField[]>(() => {
               </div>
               <div class="min-w-0">
                 <h3 class="truncate text-sm font-semibold text-highlighted">{{ item.clazz }}</h3>
-                <p class="truncate text-xs text-muted">{{ item.grade }} · {{ item.teacherName || 'No Teacher' }}</p>
+                <p class="truncate text-xs text-muted">{{ item.teacherName || 'No Teacher' }}</p>
               </div>
             </div>
 
@@ -223,7 +218,7 @@ const detailFields = computed<ReportDetailField[]>(() => {
                   {{ item.clazz }}
                 </h3>
                 <p class="mt-1 truncate text-xs text-muted">
-                  {{ item.grade }} · {{ parseLevel[item.classLevel] }}
+                  {{ parseLevel[item.classLevel] }}
                 </p>
               </div>
             </div>

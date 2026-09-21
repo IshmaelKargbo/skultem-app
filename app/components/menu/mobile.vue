@@ -32,10 +32,13 @@ interface NavItem {
   icon: string
   exact?: boolean
   roles?: Role[]
+  adminPortalOnly?: boolean
 }
 
 const { can } = useAuth()
+const { isPathAvailable } = useModules()
 const route = useRoute()
+const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
 // One entry per bottom-nav icon. Omit `roles` for items visible to everyone.
 const navItems: NavItem[] = [
@@ -67,10 +70,27 @@ const navItems: NavItem[] = [
 
   { label: 'Reports', to: '/analytics/financial-reports', icon: 'i-lucide-bar-chart-3',
     roles: [Role.ACCOUNTANT] },
+
+  // System-admin portal only - same pages as the desktop sidebar (see menu/index.vue).
+  { label: 'Schools', to: '/schools', icon: SCHOOL_ICON,
+    roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
+
+  { label: 'Calendar', to: '/calendar', icon: 'i-lucide-calendar-range',
+    roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
+
+  { label: 'Admins', to: '/users', icon: USERS_ICON,
+    roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true },
 ]
 
 const visibleItems = computed(() =>
-  navItems.filter((item) => !item.roles || can(item.roles))
+  navItems
+    // Same rule as the desktop sidebar (menu/index.vue): the admin subdomain shows the system-admin
+    // items regardless of the resolved role.
+    .filter((item) => onAdminPortal
+      ? item.adminPortalOnly || !item.roles
+      : (!item.roles || can(item.roles)) && !item.adminPortalOnly)
+    // Nothing for a module this school hasn't installed (see utils/modules.ts).
+    .filter((item) => isPathAvailable(item.to))
 )
 
 function isActive(to: string, exact = false) {

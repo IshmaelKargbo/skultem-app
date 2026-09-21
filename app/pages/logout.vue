@@ -94,6 +94,7 @@ async function logout() {
 
     await store.logout()
     clearBrandColors()
+    useModuleStore().reset()
 
     isLoading.value = false
 

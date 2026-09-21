@@ -20,7 +20,7 @@
 
                             <span class="size-1 rounded-full bg-dimmed" />
 
-                            <UBadge :color="clockBadgeColor" variant="subtle" size="xs" class="rounded-full">
+                            <UBadge v-if="isInstalled(ModuleKey.STAFF_HR)" :color="clockBadgeColor" variant="subtle" size="xs" class="rounded-full">
                                 <span class="mr-1.5 size-1.5 rounded-full" :class="`bg-${clockBadgeColor}`" />
                                 {{ clockStatusText }}
                             </UBadge>
@@ -66,7 +66,7 @@
             <!-- LEFT: do stuff, then review how it's going -->
             <div class="space-y-4 lg:col-span-2">
                 <!-- CLOCK IN / OUT -->
-                <DashboardTeacherClockInOut />
+                <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
 
                 <!-- PERFORMANCE -->
                 <template v-if="hasSubjects">
@@ -186,6 +186,7 @@ const studentStore = useStudentStore()
 const assessmentStore = useAssessmentStore()
 const userStore = useUserStore()
 const teacherAttendanceStore = useTeacherAttendanceStore()
+const { isInstalled } = useModules()
 const { assessments } = storeToRefs(assessmentStore)
 const { activeCycle } = storeToRefs(studentStore)
 const { loading } = storeToRefs(store)

@@ -40,24 +40,6 @@
           </template>
         </UFormField>
 
-        <!-- Grade -->
-        <UFormField required label="Grade" name="levelOrder">
-          <UInput
-            v-model="state.levelOrder"
-            type="number"
-            placeholder="e.g. 1"
-            :disabled="isLoading || isFetching"
-          >
-            <template #leading>
-              <UIcon name="i-lucide-hash" class="text-muted" />
-            </template>
-          </UInput>
-
-          <template #help>
-            <p class="text-xs text-muted">Lower numbers appear first in class lists.</p>
-          </template>
-        </UFormField>
-
         <!-- Assessment Template -->
         <UFormField label="Assessment Template" name="assessmentTemplateId">
           <USelectMenu
@@ -130,13 +112,11 @@ const assessmentTemplates = computed(() =>
 
 type ClassEditForm = {
   name: string;
-  levelOrder: number | null;
   assessmentTemplateId: string;
 };
 
 const state = reactive<ClassEditForm>({
   name: "",
-  levelOrder: null,
   assessmentTemplateId: "",
 });
 
@@ -147,11 +127,6 @@ const originalTemplateId = ref("");
 
 const schema = yup.object({
   name: yup.string().required("Name is required"),
-  levelOrder: yup
-    .number()
-    .typeError("Grade must be a number")
-    .required("Grade is required")
-    .min(1),
 });
 
 const close = () => {
@@ -164,7 +139,6 @@ const openEdit = async () => {
   try {
     const record = await store.findOne(props.classId);
     state.name = record?.name ?? "";
-    state.levelOrder = record?.levelOrder ?? null;
     state.assessmentTemplateId = record?.assessmentTemplateId ?? "";
     originalTemplateId.value = state.assessmentTemplateId;
   } catch (err: any) {
@@ -179,7 +153,6 @@ const onSubmit = async (event: FormSubmitEvent<ClassEditForm>) => {
   try {
     await store.update(props.classId, {
       name: state.name,
-      levelOrder: state.levelOrder as number,
     });
 
     if (state.assessmentTemplateId && state.assessmentTemplateId !== originalTemplateId.value) {

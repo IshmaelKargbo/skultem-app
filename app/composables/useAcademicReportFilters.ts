@@ -1,8 +1,9 @@
 // Shared filter state for every Academic Report tab page, kept in the URL query string so
-// switching tabs (or reloading) never loses the current selection. No academic year field here on
-// purpose - the backend already defaults to the school's active academic year when none is given,
-// and the Term dropdown is pre-filtered to that year's terms, so there's nothing for the user to
-// pick.
+// switching tabs (or reloading) never loses the current selection. There's no academic year field
+// here on purpose: the year is whichever one the header's switcher is showing (its viewing year),
+// so the Term dropdown lists that year's terms and every report request is sent for that year. A term
+// carried over in the URL from a different year is dropped rather than sent - a term only exists
+// within its own year, so that combination would fail with "Term not found".
 export function useAcademicReportFilters() {
   const route = useRoute()
   const router = useRouter()
@@ -19,10 +20,11 @@ export function useAcademicReportFilters() {
     subjectId: typeof route.query.subjectId === 'string' ? route.query.subjectId : ''
   })
 
-  const activeYearId = computed(() => academicYearStore.activeYear?.id || '')
+  // The year being looked at: the switcher's pick, falling back to the school's active year.
+  const yearId = computed(() => academicYearStore.viewingYear?.id || '')
 
   const terms = computed(() => termStore.records
-    .filter(t => t.academicYear?.id === activeYearId.value)
+    .filter(t => t.academicYear?.id === yearId.value)
     .map(t => ({ label: t.name, value: t.id })))
 
   const classOptions = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
@@ -45,24 +47,49 @@ export function useAcademicReportFilters() {
     return q.toString()
   })
 
-  const apiFilters = computed(() => ({
+  // What's kept in the URL - the year is deliberately not part of it (the switcher owns that).
+  const urlFilters = computed(() => ({
     termId: filters.termId || undefined,
     level: filters.level || undefined,
     classId: filters.classId || undefined,
     subjectId: filters.subjectId || undefined
   }))
 
+  // What every report request is sent with: the selection plus the year it belongs to.
+  const apiFilters = computed(() => ({
+    ...urlFilters.value,
+    academicYearId: yearId.value || undefined
+  }))
+
   watch(filters, () => {
-    router.replace({ query: { ...route.query, ...apiFilters.value } })
+    router.replace({ query: { ...route.query, ...urlFilters.value } })
   })
+
+  // The term to open on: the school's active term when the year being viewed is the active year;
+  // any other year has no active term, so its most recent one.
+  async function defaultTermId() {
+    const active = await termStore.getActive()
+    if (active && terms.value.some(t => t.value === active.id)) return active.id
+
+    const latest = termStore.records
+      .filter(t => t.academicYear?.id === yearId.value)
+      .sort((a, b) => b.termNumber - a.termNumber)[0]
+
+    return latest?.id || ''
+  }
 
   async function ensureLoaded() {
     await academicYearStore.fetchAll(1, 100)
     await termStore.fetchAll(1, 100)
 
+    // A term from the URL that isn't in the year being viewed (the year was switched, or the link was
+    // opened under another year) would only fail - start over from a sensible one instead.
+    if (filters.termId && !terms.value.some(t => t.value === filters.termId)) {
+      filters.termId = ''
+    }
+
     if (!filters.termId) {
-      const active = await termStore.getActive()
-      filters.termId = active?.id || terms.value[0]?.value || ''
+      filters.termId = await defaultTermId()
     }
 
     await Promise.all([

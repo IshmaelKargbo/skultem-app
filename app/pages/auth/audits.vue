@@ -1,26 +1,39 @@
 <template>
     <div class="px-4 md:px-6 space-y-4">
         <AuthSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex-1 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <UInput v-model="search" icon="i-lucide-search" placeholder="Search logs..." size="lg"
-                            class="w-full" />
-                        <div class="flex w-32 justify-center items-center gap-2 rounded-2xl bg-gray-100 px-4 py-2.5 dark:bg-neutral-800">
-                            <div class="size-2 rounded-full bg-success-500" />
+                <div>
+                    <div class="flex items-center justify-between gap-3 px-4 py-3">
+                        <div>
+                            <p>Audit Logs</p>
+                            <p class="text-xs text-muted">Who did what, and when</p>
+                        </div>
 
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                {{ meta.total }} Logs
-                            </p>
+                        <div class="flex items-center gap-2">
+                            <TableViewToggle v-model="view" />
+                            <UButton @click="filterState = !filterState"
+                                :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
+                                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
                         </div>
                     </div>
 
-                    <TableViewToggle v-model="view" />
+                    <!-- Always shown from md up; on mobile it opens with the filter button -->
+                    <div :class="filterState ? 'flex' : 'hidden'"
+                        class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
+                        <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
+                            <USelectMenu class="w-full" v-model="status" value-key="value" label-key="label"
+                                :items="statusOptions" placeholder="All Statuses" clear />
+                            <UInput v-model="search" :icon="SEARCH_ICON" class="md:col-span-2"
+                                placeholder="Search this page by action, user, email or IP" />
+                        </div>
+                        <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+                            :disabled="!hasActiveFilters" @click="resetFilters" />
+                    </div>
                 </div>
             </template>
 
-            <!-- Desktop -->
+            <!-- Desktop table -->
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filtered"
                 :loading="loading">
                 <template #empty-state>
@@ -36,7 +49,7 @@
                             </p>
 
                             <p class="text-sm text-gray-500">
-                                System activities will appear here.
+                                {{ hasActiveFilters ? 'No log on this page matches your filters.' : 'System activities will appear here.' }}
                             </p>
                         </div>
                     </div>
@@ -47,7 +60,7 @@
                 </template>
 
                 <template #status-cell="{ row }">
-                    <UBadge :color="row.original.status === 'SUCCESS' ? 'success' : 'error'" variant="soft"
+                    <UBadge :color="statusColor(row.original.status)" variant="soft"
                         :label="clean(row.original.status)" />
                 </template>
 
@@ -80,180 +93,125 @@
                 </template>
             </UTable>
 
-            <!-- Mobile -->
-            <div class="p-4 overflow-x-hidden"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
-                <!-- Loading -->
+            <!-- Mobile list: one clean row per log -->
+            <div v-if="view === 'table'" class="md:hidden">
                 <template v-if="loading">
-                    <UCard v-for="i in 5" :key="i" variant="outline">
-                        <div class="space-y-4 p-4">
-                            <div class="flex items-center gap-3">
-                                <USkeleton class="size-12 rounded-2xl" />
-
-                                <div class="flex-1 space-y-2">
-                                    <USkeleton class="h-3 w-32" />
-                                    <USkeleton class="h-2 w-24" />
-                                </div>
-
-                                <USkeleton class="h-6 w-16 rounded-full" />
+                    <div v-for="i in 6" :key="i" class="border-b border-default px-4 py-3 last:border-0">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="space-y-2">
+                                <USkeleton class="h-4 w-36" />
+                                <USkeleton class="h-3 w-44" />
+                                <USkeleton class="h-3 w-28" />
                             </div>
-
-                            <USkeleton class="h-14 rounded-2xl" />
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <USkeleton class="h-14 rounded-2xl" />
-                                <USkeleton class="h-14 rounded-2xl" />
-                            </div>
+                            <USkeleton class="h-5 w-16 rounded-full" />
                         </div>
-                    </UCard>
-                </template>
-
-                <!-- Data -->
-                <template v-else-if="filtered?.length">
-                    <UCard v-for="item in filtered" :key="item.id" class="w-full overflow-hidden transition-all"
-                        :ui="{ body: 'p-0 overflow-hidden' }">
-                        <!-- Header -->
-                        <div class="border-b border-gray-100 p-3 md:p-0 md:pb-3 dark:border-gray-800">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <div
-                                        class="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
-                                        <UIcon name="i-lucide-shield-check" class="size-6" />
-                                    </div>
-
-                                    <div class="min-w-0">
-                                        <h3 class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                            {{ clean(item.action) }}
-                                        </h3>
-
-                                        <p class="truncate text-xs text-gray-500">
-                                            {{ item.userName || 'System' }}
-                                        </p>
-
-                                    </div>
-                                </div>
-
-                                <UBadge :color="item.status === 'SUCCESS' ? 'success' : 'error'" variant="soft"
-                                    size="md">
-                                    {{ clean(item.status) }}
-                                </UBadge>
-                            </div>
-                        </div>
-
-                        <!-- Body -->
-                        <div class="space-y-4 p-4">
-                            <!-- User -->
-                            <div
-                                class="rounded-2xl border border-gray-200 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-500/15">
-                                        <UIcon name="i-lucide-user-round"
-                                            class="size-5 text-emerald-600 dark:text-emerald-400" />
-                                    </div>
-
-                                    <div class="min-w-0">
-                                        <p
-                                            class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                            User
-                                        </p>
-
-                                        <p class="mt-0.5 truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                            {{ item.userName || 'System' }}
-                                        </p>
-
-                                        <p class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
-                                            {{ item.userEmail || 'No email available' }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Technical Details -->
-                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <!-- IP Address -->
-                                <div
-                                    class="min-w-0 rounded-2xl border border-primary-200 bg-primary-50/80 p-3.5 dark:border-primary-500/20 dark:bg-primary-500/10">
-                                    <div class="mb-3 flex items-center gap-2">
-                                        <div
-                                            class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/20">
-                                            <UIcon name="i-lucide-globe-2"
-                                                class="size-4 text-primary-600 dark:text-primary-400" />
-                                        </div>
-
-                                        <p
-                                            class="text-[10px] font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300">
-                                            IP Address
-                                        </p>
-                                    </div>
-
-                                    <p class="truncate font-mono text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ item.ipAddress || 'Not available' }}
-                                    </p>
-                                </div>
-
-                                <!-- Device -->
-                                <div
-                                    class="min-w-0 rounded-2xl border border-secondary-200 bg-secondary-50/80 p-3.5 dark:border-secondary-500/20 dark:bg-secondary-500/10">
-                                    <div class="mb-3 flex items-center gap-2">
-                                        <div
-                                            class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-100 dark:bg-secondary-500/20">
-                                            <UIcon name="i-lucide-monitor-smartphone"
-                                                class="size-4 text-secondary-600 dark:text-secondary-400" />
-                                        </div>
-
-                                        <p
-                                            class="text-[10px] font-semibold uppercase tracking-wider text-secondary-700 dark:text-secondary-300">
-                                            Device
-                                        </p>
-                                    </div>
-
-                                    <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ item.device || 'Unknown device' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div
-                            class="flex items-center justify-between border-t border-gray-100 p-3 md:p-0 md:pt-3 dark:border-gray-800">
-                            <div>
-                                <p class="text-xs text-gray-500">
-                                    Logged At
-                                </p>
-
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ formatDateTime(item.createdAt) }}
-                                </p>
-                            </div>
-
-                            <UAvatar size="md" :alt="item.userName || 'System'" />
-                        </div>
-                    </UCard>
-                </template>
-
-                <!-- Empty -->
-                <template v-else>
-                    <div class="flex flex-col items-center justify-center py-16 col-span-full">
-                        <div
-                            class="mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800">
-                            <UIcon name="lucide:shield-check" class="size-8 text-gray-400" />
-                        </div>
-
-                        <p class="font-medium text-gray-900 dark:text-white">
-                            No audit logs found
-                        </p>
-
-                        <p class="mt-1 text-sm text-gray-500">
-                            System activities will appear here.
-                        </p>
                     </div>
                 </template>
+
+                <template v-else-if="filtered.length">
+                    <div v-for="item in filtered" :key="item.id"
+                        class="flex items-start justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
+                        <div class="min-w-0 space-y-1">
+                            <p class="truncate text-sm font-semibold text-highlighted">{{ clean(item.action) }}</p>
+
+                            <div class="flex items-center gap-2 text-xs text-muted">
+                                <p class="truncate">{{ item.userName || 'System' }}</p>
+                                <p>·</p>
+                                <p class="shrink-0">{{ formatDateTime(item.createdAt) }}</p>
+                            </div>
+
+                            <p class="truncate text-xs text-muted">
+                                <span class="font-mono">{{ item.ipAddress || 'No IP' }}</span>
+                                <template v-if="item.device"> · {{ item.device }}</template>
+                            </p>
+                        </div>
+
+                        <UBadge size="sm" variant="soft" :color="statusColor(item.status)"
+                            :label="clean(item.status)" />
+                    </div>
+                </template>
+
+                <div v-else class="flex flex-col items-center gap-2 py-12">
+                    <UIcon name="lucide:shield-check" class="text-4xl text-gray-400" />
+                    <p class="text-sm text-gray-500">
+                        {{ hasActiveFilters ? 'No log on this page matches your filters.' : 'No audit logs found.' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card view -->
+            <div v-if="view === 'card'" class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
+                <template v-if="loading">
+                    <UCard v-for="i in 6" :key="i">
+                        <div class="animate-pulse space-y-4">
+                            <div class="flex items-center gap-3">
+                                <USkeleton class="size-10 rounded-xl" />
+                                <USkeleton class="h-4 w-36" />
+                            </div>
+                            <USkeleton class="h-3 w-full" />
+                            <USkeleton class="h-3 w-2/3" />
+                        </div>
+                    </UCard>
+                </template>
+
+                <template v-else-if="filtered.length">
+                    <UCard v-for="item in filtered" :key="item.id"
+                        class="overflow-hidden rounded-2xl border-t-2 transition-shadow hover:shadow-md"
+                        :style="{ borderTopColor: item.status === 'SUCCESS' ? 'var(--ui-success)' : 'var(--ui-error)' }"
+                        :ui="{ body: 'p-0 sm:p-0' }">
+                        <div class="space-y-4 p-5">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+                                    <UIcon name="i-lucide-shield-check" class="size-5 text-primary" />
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate font-display font-semibold text-highlighted">
+                                        {{ clean(item.action) }}
+                                    </p>
+                                    <p class="text-xs text-muted">{{ formatDateTime(item.createdAt) }}</p>
+                                </div>
+
+                                <UBadge size="sm" variant="soft" :color="statusColor(item.status)"
+                                    :label="clean(item.status)" />
+                            </div>
+
+                            <div class="flex items-center gap-3 rounded-xl bg-elevated/50 p-3">
+                                <UAvatar size="md" :alt="item.userName || 'System'" />
+
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-highlighted">
+                                        {{ item.userName || 'System' }}
+                                    </p>
+                                    <p class="truncate text-xs text-muted">{{ item.userEmail || 'No email' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <dl class="grid grid-cols-2 divide-x divide-default border-t border-default">
+                            <div class="min-w-0 px-5 py-3">
+                                <dt class="text-[11px] uppercase tracking-wide text-muted">IP address</dt>
+                                <dd class="mt-0.5 truncate font-mono text-sm">{{ item.ipAddress || 'Not available' }}</dd>
+                            </div>
+                            <div class="min-w-0 px-5 py-3">
+                                <dt class="text-[11px] uppercase tracking-wide text-muted">Device</dt>
+                                <dd class="mt-0.5 truncate text-sm">{{ item.device || 'Unknown' }}</dd>
+                            </div>
+                        </dl>
+                    </UCard>
+                </template>
+
+                <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
+                    <UIcon name="lucide:shield-check" class="text-4xl text-gray-400" />
+                    <p class="text-sm text-gray-500">
+                        {{ hasActiveFilters ? 'No log on this page matches your filters.' : 'No audit logs found.' }}
+                    </p>
+                </div>
             </div>
 
             <template #footer>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
                     <Showing :meta="meta" />
 
                     <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
@@ -263,12 +221,11 @@
         </UCard>
     </div>
 </template>
+
 <script setup lang="ts">
 const view = ref<'table' | 'card'>('table')
 const store = useAuditStore()
 const { records, meta, loading } = storeToRefs(store)
-
-const search = ref('')
 
 const columns = [
     { accessorKey: 'action', header: 'Action', cell: ({ row }: any) => clean(row.original.action) },
@@ -279,16 +236,41 @@ const columns = [
     { accessorKey: 'createdAt', header: 'Time' }
 ]
 
+// --- Filters: the same row as Transactions and the Student Ledger. Logs are paged by the server, so
+// these narrow the logs on the page that's loaded. -------------------------------------------------
+const search = ref('')
+const status = ref('')
+const filterState = ref(false) // the filter row's open/closed state on mobile
+
+const statusOptions = [
+    { label: 'Success', value: 'SUCCESS' },
+    { label: 'Failure', value: 'FAILURE' },
+]
+
+const hasActiveFilters = computed(() => !!search.value || !!status.value)
+
+function resetFilters() {
+    search.value = ''
+    status.value = ''
+}
+
+function statusColor(value: string): 'success' | 'error' {
+    return value === 'SUCCESS' ? 'success' : 'error'
+}
+
 const filtered = computed(() => {
-    if (!search.value) return records.value
-    const term = search.value.toLowerCase()
-    return records.value.filter((item) =>
-        item.action?.toLowerCase().includes(term) ||
-        item.userName?.toLowerCase().includes(term) ||
-        item.userEmail?.toLowerCase().includes(term) ||
-        item.details?.toLowerCase().includes(term) ||
-        item.ipAddress?.toLowerCase().includes(term)
-    )
+    const term = search.value.trim().toLowerCase()
+
+    return records.value.filter((item) => {
+        if (status.value && item.status !== status.value) return false
+        if (!term) return true
+
+        return item.action?.toLowerCase().includes(term) ||
+            item.userName?.toLowerCase().includes(term) ||
+            item.userEmail?.toLowerCase().includes(term) ||
+            item.details?.toLowerCase().includes(term) ||
+            item.ipAddress?.toLowerCase().includes(term)
+    })
 })
 
 const page = ref(1)

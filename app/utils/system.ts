@@ -79,3 +79,31 @@ export type SystemUser = {
     photo: string | null
     schools: SystemUserSchoolMembership[]
 }
+
+
+// The platform-wide (ministry) academic year every newly-created school starts from - see backend
+// NationalAcademicYear. Terms are numbered by order on the backend, so a payload only carries
+// their names and dates.
+export type NationalTerm = {
+    termNumber: number
+    name: string
+    startDate: string
+    endDate: string
+}
+
+export type NationalCalendar = {
+    id: string
+    name: string
+    startDate: string
+    endDate: string
+    current: boolean
+    terms: NationalTerm[]
+    updatedAt: string
+}
+
+export type SaveNationalCalendarPayload = {
+    name: string
+    startDate: string
+    endDate: string
+    terms: { name: string, startDate: string, endDate: string }[]
+}

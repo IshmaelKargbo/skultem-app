@@ -170,19 +170,26 @@
                 <span class="flex-1 text-left text-sm font-medium">Settings</span>
               </UButton>
 
+              <UButton v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" icon="lucide:blocks" variant="ghost"
+                color="neutral" size="md"
+                class="group w-full justify-start rounded-xl px-3 py-2.5 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-300 hover:text-primary-600 dark:hover:text-primary-200 border-transparent cursor-pointer"
+                to="/modules" @click="drawerOpen = false">
+                <span class="flex-1 text-left text-sm font-medium">Modules</span>
+              </UButton>
+
               <UButton v-if="can([Role.ACCOUNTANT])" icon="lucide:settings" variant="ghost" color="neutral" size="md"
                 class="group w-full justify-start rounded-xl px-3 py-2.5 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-300 hover:text-primary-600 dark:hover:text-primary-200 border-transparent cursor-pointer   "
                 to="/settings/fee-categories" @click="drawerOpen = false">
                 <span class="flex-1 text-left text-sm font-medium">Fee Categories</span>
               </UButton>
 
-              <UButton icon="lucide:bell" variant="ghost" color="neutral" size="md"
+              <UButton v-if="!onAdminPortal" icon="lucide:bell" variant="ghost" color="neutral" size="md"
                 class="group w-full justify-start rounded-xl px-3 py-2.5 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-300 hover:text-primary-600 dark:hover:text-primary-200 border-transparent cursor-pointer"
                 to="/communicate/notifications" @click="drawerOpen = false">
                 <span class="flex-1 text-left text-sm font-medium">Notifications</span>
               </UButton>
 
-              <UButton icon="lucide:life-buoy" variant="ghost" color="neutral" size="md"
+              <UButton v-if="!onAdminPortal" icon="lucide:life-buoy" variant="ghost" color="neutral" size="md"
                 class="group w-full justify-start rounded-xl px-3 py-2.5 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-300 hover:text-primary-600 dark:hover:text-primary-200 border-transparent cursor-pointer"
                 to="/support" @click="drawerOpen = false">
                 <span class="flex-1 text-left text-sm font-medium">Help & Support</span>
@@ -277,6 +284,9 @@ const canSwitchYear = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.PROP
 
 const drawerOpen = ref(false);
 
+// Notifications / Help & Support are school-scoped pages that don't exist on the admin portal.
+const onAdminPortal = isAdminPortalHost(useRequestURL().hostname);
+
 const userRoleLabel = computed(() => parseRole[activeRole.value] || 'No Role')
 const name = computed(() =>
   user.value ? `${user.value.givenNames} ${user.value.familyName}` : ""
@@ -289,6 +299,7 @@ const roleDesc: Record<string, string> = {
   TEACHER: "Classes & students",
   PARENT: "Child progress",
   ACCOUNTANT: "Finance & fees",
+  SYSTEM_ADMIN: "Platform-wide control",
 };
 
 const roleIcons: Record<string, string> = {
@@ -298,13 +309,14 @@ const roleIcons: Record<string, string> = {
   TEACHER: "lucide:book-open",
   PARENT: "lucide:users",
   ACCOUNTANT: "lucide:calculator",
+  SYSTEM_ADMIN: "lucide:shield-check",
 };
 // const colorMode = useColorMode(); // theme toggle disabled — see commented "Appearance" block above
 
 const userRoles = computed(() =>
   (user.value?.roles ?? []).map((r: string) => ({
     value: r,
-    label: r.charAt(0).toUpperCase() + r.slice(1),
+    label: parseRole[r] ?? r.charAt(0).toUpperCase() + r.slice(1),
     desc: roleDesc[r] ?? "Access level",
     icon: roleIcons[r] ?? "lucide:user",
   }))

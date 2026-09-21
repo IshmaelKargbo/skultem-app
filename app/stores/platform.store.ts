@@ -3,7 +3,10 @@ import { defineStore } from 'pinia'
 export const usePlatformStore = defineStore('platform', {
   state: () => ({
     feeSettings: [] as PlatformFeeSetting[],
-    loading: false
+    loading: false,
+
+    calendar: null as NationalCalendar | null,
+    calendarLoading: false
   }),
 
   getters: {
@@ -14,6 +17,19 @@ export const usePlatformStore = defineStore('platform', {
   },
 
   actions: {
+    async fetchCalendar() {
+      this.calendarLoading = true
+      try {
+        this.calendar = (await PlatformApi().getCalendar()) ?? null
+      } finally {
+        this.calendarLoading = false
+      }
+    },
+    async saveCalendar(payload: SaveNationalCalendarPayload) {
+      const response = await PlatformApi().saveCalendar(payload) as NationalCalendar | undefined
+      if (response) this.calendar = response
+      return response
+    },
     async fetchFeeSettings() {
       this.loading = true
       try {

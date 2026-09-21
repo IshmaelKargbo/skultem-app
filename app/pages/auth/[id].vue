@@ -36,7 +36,7 @@
                         <div class="min-w-0 pb-0.5 md:pb-1">
                             <USkeleton v-if="loading" class="h-6 w-48 md:h-7 md:w-60" />
 
-                            <h2 v-else class="max-w-[calc(100vw-150px)] truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
+                            <h2 v-else class="truncate text-xl font-bold tracking-tight text-highlighted md:max-w-md md:text-2xl">
                                 {{ name }}
                             </h2>
 
@@ -65,15 +65,16 @@
                         </div>
                     </div>
 
-                    <div class="flex shrink-0 items-center gap-2">
-                        <UButton v-if="record && me?.id !== record.id" size="sm" variant="soft"
+                    <!-- Side by side and full width on mobile, compact on desktop -->
+                    <div class="grid grid-cols-2 gap-2 md:flex md:shrink-0 md:items-center">
+                        <UButton v-if="record && me?.id !== record.id" size="sm" variant="soft" class="justify-center"
                             :color="record.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
                             :icon="record.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
                             :label="record.schoolStatus === 'ACTIVE' ? 'Deactivate' : 'Reactivate'"
                             @click="showStatusPrompt = true" />
 
                         <UButton to="/auth" variant="outline" size="sm" color="neutral" icon="i-lucide-arrow-left"
-                            label="Users" />
+                            label="Users" class="justify-center" />
                     </div>
                 </div>
             </div>
@@ -109,7 +110,8 @@
                 </div>
 
                 <UButton v-if="payroll.teacherId" :to="`/teachers/${payroll.teacherId}`" size="sm" variant="outline"
-                    color="neutral" label="View Staff Record" trailing-icon="i-lucide-arrow-right" />
+                    color="neutral" label="View Staff Record" trailing-icon="i-lucide-arrow-right"
+                    class="w-full justify-center md:w-auto" />
             </div>
 
             <!-- Not on payroll yet -->
@@ -151,9 +153,9 @@
                         </UFormField>
                     </div>
 
-                    <div class="flex justify-end">
+                    <div class="flex md:justify-end">
                         <UButton type="submit" icon="i-lucide-badge-check" :loading="includingInPayroll"
-                            label="Include in Payroll" />
+                            label="Include in Payroll" class="w-full justify-center md:w-auto" />
                     </div>
                 </UForm>
             </template>

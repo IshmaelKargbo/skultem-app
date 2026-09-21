@@ -2,106 +2,57 @@
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
-const store = useReportStore()
-const { transactions: data, meta, loading, report } = storeToRefs(store)
+const store = useTransactionStore()
+const { records: data, meta, loading } = storeToRefs(store)
 const { format } = useMoney()
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
-type AmountStyle = {
-  color: 'success' | 'error' | 'info'
-  sign: string
-  text: string     // unshaded — desktop table cells, top-level icon
-  bg: string       // bg-X-50 dark:bg-X-500/10 — icon circle backdrop / card outer bg
-  border: string   // border-X-200 dark:border-X-500/20 — card outer border
-  iconBg: string   // bg-X-100 dark:bg-X-500/20 — card inner icon circle
-  iconText: string // text-X-600 dark:text-X-400 — card inner icon color
-  label: string    // text-X-700 dark:text-X-300 — card label + value
-}
-
-const DIRECTION_STYLES: Record<string, AmountStyle & { icon: string, arrowIcon: string }> = {
-  CREDIT: {
-    icon: CREDIT_ICON,
-    arrowIcon: 'i-lucide-arrow-down-left',
-    color: 'success',
-    sign: '+',
-    text: 'text-success',
-    bg: 'bg-success-50 dark:bg-success-500/10',
-    border: 'border-success-200 dark:border-success-500/20',
-    iconBg: 'bg-success-100 dark:bg-success-500/20',
-    iconText: 'text-success-600 dark:text-success-400',
-    label: 'text-success-700 dark:text-success-300'
-  },
-  DEBIT: {
-    icon: DEBIT_ICON,
-    arrowIcon: 'i-lucide-arrow-up-right',
-    color: 'error',
-    sign: '−',
-    text: 'text-error',
-    bg: 'bg-error-50 dark:bg-error-500/10',
-    border: 'border-error-200 dark:border-error-500/20',
-    iconBg: 'bg-error-100 dark:bg-error-500/20',
-    iconText: 'text-error-600 dark:text-error-400',
-    label: 'text-error-700 dark:text-error-300'
-  }
+// How a transaction's direction reads: money in (credit) or out (debit).
+const DIRECTION_STYLES: Record<string, { icon: string, color: 'success' | 'error', sign: string, text: string }> = {
+  CREDIT: { icon: CREDIT_ICON, color: 'success', sign: '+', text: 'text-success' },
+  DEBIT: { icon: DEBIT_ICON, color: 'error', sign: '−', text: 'text-error' },
 }
 
 function directionStyle(direction: string) {
-  return DIRECTION_STYLES[direction] ?? DIRECTION_STYLES.DEBIT
-}
-
-function balanceStyle(balance: number): AmountStyle {
-  return balance < 0
-    ? {
-      color: 'error',
-      sign: '',
-      text: 'text-error',
-      bg: 'bg-error-50 dark:bg-error-500/10',
-      border: 'border-error-200 dark:border-error-500/20',
-      iconBg: 'bg-error-100 dark:bg-error-500/20',
-      iconText: 'text-error-600 dark:text-error-400',
-      label: 'text-error-700 dark:text-error-300'
-    }
-    : {
-      color: 'info',
-      sign: '',
-      text: 'text-info',
-      bg: 'bg-info-50 dark:bg-info-500/10',
-      border: 'border-info-200 dark:border-info-500/20',
-      iconBg: 'bg-info-100 dark:bg-info-500/20',
-      iconText: 'text-info-600 dark:text-info-400',
-      label: 'text-info-700 dark:text-info-300'
-    }
+  return DIRECTION_STYLES[direction] ?? DIRECTION_STYLES.DEBIT!
 }
 
 const columns = [
-  {
-    accessorKey: 'createdAt',
-    header: 'Date',
-    cell: ({ row }: any) => formatDate(row.original.createdAt)
-  },
-  {
-    accessorKey: 'type',
-    header: 'Type',
-    cell: ({ row }: any) => clean(row.original.type)
-  },
-  {
-    accessorKey: 'referenceType',
-    header: 'Reference',
-    cell: ({ row }: any) => clean(row.original.referenceType)
-  },
-  {
-    accessorKey: 'direction',
-    header: 'Direction'
-  },
-  {
-    accessorKey: 'amount',
-    header: 'Amount'
-  },
-  {
-    accessorKey: 'balance',
-    header: 'Balance'
-  },
+  { accessorKey: 'createdAt', header: 'Date' },
+  { accessorKey: 'type', header: 'Type' },
+  { accessorKey: 'referenceType', header: 'Reference' },
+  { accessorKey: 'direction', header: 'Direction' },
+  { accessorKey: 'amount', header: 'Amount', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { accessorKey: 'balance', header: 'Balance', meta: { class: { th: 'text-right', td: 'text-right' } } },
 ]
+
+// --- Filters: the same row as the Student Ledger, Students and Teachers lists ---------------------
+const sortOptions = [
+  { label: 'Newest first', value: 'desc' },
+  { label: 'Oldest first', value: 'asc' },
+]
+const DEFAULT_SORT = 'desc'
+
+const type = ref(String(route.query.type ?? ''))
+const direction = ref(String(route.query.direction ?? ''))
+const referenceType = ref(String(route.query.referenceType ?? ''))
+const from = ref(String(route.query.from ?? ''))
+const to = ref(String(route.query.to ?? ''))
+const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
+const filterState = ref(false) // the filter row's open/closed state on mobile
+
+const hasActiveFilters = computed(() =>
+  !!type.value || !!direction.value || !!referenceType.value || !!from.value || !!to.value
+  || sort.value !== DEFAULT_SORT)
+
+function resetFilters() {
+  type.value = ''
+  direction.value = ''
+  referenceType.value = ''
+  from.value = ''
+  to.value = ''
+  sort.value = DEFAULT_SORT
+}
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -112,6 +63,21 @@ const size = computed<number>({
   get: () => Number(route.query.size ?? runtimeConf().limit),
   set: (val) => updateQuery({ size: val })
 })
+
+function updateQuery(newQuery: Record<string, any>) {
+  router.replace({ query: { ...route.query, ...newQuery } })
+}
+
+async function fetchRecord() {
+  await store.fetchAll(page.value, size.value, {
+    type: type.value || undefined,
+    direction: direction.value || undefined,
+    referenceType: referenceType.value || undefined,
+    from: from.value || undefined,
+    to: to.value || undefined,
+    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+  })
+}
 
 watch(() => page.value, () => {
   nextTick(() => {
@@ -124,189 +90,200 @@ watch(() => page.value, () => {
   fetchRecord()
 }, { immediate: true })
 
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
+// Any filter change goes back to page 1 and is kept in the URL, so a filtered view can be shared or reloaded.
+watch([type, direction, referenceType, from, to, sort], () => {
+  updateQuery({
+    type: type.value || undefined,
+    direction: direction.value || undefined,
+    referenceType: referenceType.value || undefined,
+    from: from.value || undefined,
+    to: to.value || undefined,
+    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    page: 1,
+  })
 
-  if (
-    merged.page === route.query.page
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
-}
-
-async function fetchRecord() {
-  if (report.value == null) return
-  // TransactionTableMobile (always mounted alongside this one, just CSS-hidden by breakpoint)
-  // watches this same route query and reacts to page changes identically - without this guard,
-  // every page change fires two concurrent runReport calls for the two of them, and whichever
-  // resolves last silently wins even if it was the stale one.
-  if (loading.value) return
-  loading.value = true
-  await store.runReport(report.value, page.value, size.value)
-  loading.value = false
-}
-
-onMounted(async () => {
-  if (!route.query.page) {
-    router.replace({
-      query: {
-        ...route.query,
-        page: page.value
-      }
-    })
-  }
+  if (page.value === 1) fetchRecord()
 })
 
-const equalSelectOperators = (options: Option[] = []): ReportOperator[] => [
-  { name: "Equals (=)", operator: "EQUALS", type: "select", input: "select", options },
-  { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "select", input: "select", options }
-]
-
-const instantOperators: ReportOperator[] = [
-  { name: "Equals (=)", operator: "EQUALS", type: "instant", input: "date" },
-  { name: "Not Equals (!=)", operator: "NOT_EQUALS", type: "instant", input: "date" },
-  { name: "After (>)", operator: "GREATER_THAN", type: "instant", input: "date" },
-  { name: "Before (<)", operator: "LESS_THAN", type: "instant", input: "date" },
-  { name: "Between (↔)", operator: "BETWEEN", type: "instant", input: "date-range" },
-]
-
-const selected = ref<ReportSelectPayload>({
-  entity: "transactions",
-  filters: [
-    { field: "createdAt", label: "Date", operators: instantOperators },
-    { field: "direction", label: "Direction", operators: equalSelectOperators(directionOptions) },
-    { field: "type", label: "Type", operators: equalSelectOperators(typeOptions) },
-    { field: "referenceType", label: "Reference", operators: equalSelectOperators(referenceTypeOptions) }
-  ]
+onMounted(() => {
+  if (!route.query.page) {
+    updateQuery({ page: page.value })
+  }
 })
 </script>
 
 <template>
-  <div class="space-y-5">
-    <TransactionFilters :selected="selected" />
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <p class="text-xl">Transactions</p>
-          <TableViewToggle v-model="view" />
+  <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <template #header>
+      <div>
+        <div class="flex items-center justify-between px-4 py-3">
+          <div>
+            <p>Transactions</p>
+            <p class="text-xs text-muted">Complete financial transaction history</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <TableViewToggle v-model="view" />
+            <UButton @click="filterState = !filterState" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
+              variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+          </div>
+        </div>
+
+        <!-- Always shown from md up; on mobile it opens with the filter button -->
+        <div :class="filterState ? 'flex' : 'hidden'"
+          class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
+          <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3 xl:grid-cols-6">
+            <USelectMenu class="w-full" v-model="type" value-key="value" label-key="label" :items="typeOptions"
+              placeholder="All Types" clear />
+            <USelectMenu class="w-full" v-model="direction" value-key="value" label-key="label"
+              :items="directionOptions" placeholder="All Directions" clear />
+            <USelectMenu class="w-full" v-model="referenceType" value-key="value" label-key="label"
+              :items="referenceTypeOptions" placeholder="All References" clear />
+            <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
+              placeholder="Sort by" />
+            <UInput v-model="from" type="date" :max="to || undefined" aria-label="From date">
+              <template #leading><span class="text-xs text-muted">From</span></template>
+            </UInput>
+            <UInput v-model="to" type="date" :min="from || undefined" aria-label="To date">
+              <template #leading><span class="text-xs text-muted">To</span></template>
+            </UInput>
+          </div>
+          <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+            :disabled="!hasActiveFilters" @click="resetFilters" />
+        </div>
+      </div>
+    </template>
+
+    <!-- Desktop table -->
+    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <template #empty-state>
+        <div class="flex flex-col items-center gap-2 py-10">
+          <UIcon name="i-lucide-receipt" class="text-4xl text-gray-400" />
+          <p class="text-gray-500">No transactions found.</p>
+        </div>
+      </template>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
+      <template #createdAt-cell="{ row }">
+        <p class="text-xs text-muted">{{ formatDate(row.original.createdAt) }}</p>
+      </template>
+      <template #type-cell="{ row }">
+        <p class="font-medium">{{ clean(row.original.type) }}</p>
+      </template>
+      <template #referenceType-cell="{ row }">
+        <p class="text-muted">{{ clean(row.original.referenceType) }}</p>
+      </template>
+      <template #direction-cell="{ row }">
+        <UBadge :icon="directionStyle(row.original.direction).icon"
+          :color="directionStyle(row.original.direction).color" :label="clean(row.original.direction)"
+          variant="subtle" />
+      </template>
+      <template #amount-cell="{ row }">
+        <p class="font-semibold" :class="directionStyle(row.original.direction).text">
+          {{ directionStyle(row.original.direction).sign }} {{ format(row.original.amount) }}
+        </p>
+      </template>
+      <template #balance-cell="{ row }">
+        <p class="font-semibold text-info">{{ format(row.original.balance) }}</p>
+      </template>
+    </UTable>
+
+    <!-- Mobile list: one clean row per transaction -->
+    <div v-if="view === 'table'" class="md:hidden">
+      <template v-if="loading">
+        <div v-for="i in 6" :key="i" class="border-b border-default px-4 py-3 last:border-0">
+          <div class="flex items-center justify-between gap-3">
+            <div class="space-y-2">
+              <USkeleton class="h-4 w-28" />
+              <USkeleton class="h-3 w-36" />
+            </div>
+            <div class="space-y-2">
+              <USkeleton class="h-4 w-20" />
+              <USkeleton class="ml-auto h-3 w-16" />
+            </div>
+          </div>
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="i-lucide-receipt" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No transactions found.</p>
+      <template v-else-if="data?.length">
+        <div v-for="item in data" :key="item.id"
+          class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
+          <div class="min-w-0 space-y-1">
+            <p class="truncate text-sm font-semibold text-highlighted">{{ clean(item.type) }}</p>
+            <div class="flex items-center gap-2 text-xs text-muted">
+              <p class="truncate">{{ clean(item.referenceType) }}</p>
+              <p>·</p>
+              <p class="shrink-0">{{ formatDate(item.createdAt) }}</p>
+            </div>
           </div>
-        </template>
-        <template #direction-cell="{ row }">
-          <UBadge :icon="directionStyle(row.original.direction).icon"
-            :color="directionStyle(row.original.direction).color" :label="clean(row.original.direction)"
-            variant="outline" />
-        </template>
-        <template #amount-cell="{ row }">
-          <p class="font-medium" :class="directionStyle(row.original.direction).text">
-            {{ directionStyle(row.original.direction).sign }} {{ format(row.original.amount) }}
-          </p>
-        </template>
-        <template #loading>
-          <TableLoading :size="columns.length" />
-        </template>
-        <template #balance-cell="{ row }">
-          <p class="font-medium" :class="balanceStyle(row.original.balance).text">{{ format(row.original.balance) }}</p>
-        </template>
-      </UTable>
 
-      <!-- Mobile -->
-      <div class="p-3"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-3 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+          <div class="shrink-0 space-y-1 text-right">
+            <p class="text-sm font-bold" :class="directionStyle(item.direction).text">
+              {{ directionStyle(item.direction).sign }} {{ format(item.amount) }}
+            </p>
+            <p class="text-xs text-muted">Balance {{ format(item.balance) }}</p>
+          </div>
+        </div>
+      </template>
 
-        <!-- Loading -->
-        <template v-if="loading">
-          <UCard v-for="i in 5" :key="i" :ui="{ body: 'p-4' }">
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="space-y-2">
-                  <USkeleton class="h-4 w-32" />
-                  <USkeleton class="h-3 w-24" />
-                </div>
+      <div v-else class="flex flex-col items-center gap-2 py-12">
+        <UIcon name="i-lucide-receipt" class="text-4xl text-gray-400" />
+        <p class="text-sm text-gray-500">No transactions found.</p>
+      </div>
+    </div>
 
-                <USkeleton class="h-7 w-20 rounded-full" />
-              </div>
+    <!-- Card view -->
+    <div v-if="view === 'card'" class="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 lg:grid-cols-3">
+      <template v-if="loading">
+        <UCard v-for="i in 6" :key="i">
+          <div class="animate-pulse space-y-3">
+            <USkeleton class="h-4 w-28" />
+            <USkeleton class="h-3 w-36" />
+            <USkeleton class="h-6 w-24" />
+          </div>
+        </UCard>
+      </template>
 
-              <div class="grid grid-cols-2 gap-3">
-                <USkeleton class="h-20 rounded-2xl" />
-                <USkeleton class="h-20 rounded-2xl" />
-              </div>
-            </div>
-          </UCard>
-        </template>
-
-        <!-- Records -->
-        <template v-else-if="data?.length">
-          <div v-for="item in data" :key="item.id" class="flex items-start justify-between border rounded-2xl border-default p-4">
-            <div class="flex gap-3">
+      <template v-else-if="data?.length">
+        <UCard v-for="item in data" :key="item.id" class="overflow-hidden rounded-xl">
+          <div class="space-y-3">
+            <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="truncate text-sm font-semibold">
-                    {{ clean(item.type) }}
-                  </h3>
-
-                  <p class="text-xs text-muted">
-                    ( {{ clean(item.referenceType) }} )
-                  </p>
-
-                </div>
-                <p class="mt-1 text-xs text-muted">
-                  {{ formatDate(item.createdAt) }}
-                </p>
+                <p class="truncate text-sm font-semibold text-highlighted">{{ clean(item.type) }}</p>
+                <p class="mt-1 text-xs text-muted">{{ clean(item.referenceType) }} · {{ formatDate(item.createdAt) }}</p>
               </div>
-
+              <UBadge size="sm" variant="subtle" :icon="directionStyle(item.direction).icon"
+                :color="directionStyle(item.direction).color" :label="clean(item.direction)" />
             </div>
 
-            <div class="flex items-end flex-col space-y-1">
-              <p class="truncate text-sm font-bold" :class="balanceStyle(item.balance).label">
-                {{ format(item.balance) }}
-              </p>
-              <div class="flex space-x-2">
-                <p class="truncate text-sm font-bold" :class="directionStyle(item.direction).label">
+            <div class="flex items-end justify-between border-t border-default pt-3">
+              <div>
+                <p class="text-[11px] uppercase tracking-wide text-muted">Amount</p>
+                <p class="font-display text-lg font-semibold" :class="directionStyle(item.direction).text">
                   {{ directionStyle(item.direction).sign }} {{ format(item.amount) }}
                 </p>
-                <UBadge size="sm" variant="soft" :icon="directionStyle(item.direction).icon"
-                  :color="directionStyle(item.direction).color" :label="clean(item.direction)" />
+              </div>
+              <div class="text-right">
+                <p class="text-[11px] uppercase tracking-wide text-muted">Balance</p>
+                <p class="text-sm font-semibold text-info">{{ format(item.balance) }}</p>
               </div>
             </div>
           </div>
-        </template>
-
-        <!-- Empty -->
-        <template v-else>
-          <div class="flex flex-col items-center py-16 col-span-full">
-            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
-              <UIcon name="i-lucide-receipt" class="size-10 text-muted" />
-            </div>
-
-            <h3 class="mt-4 text-sm font-semibold">
-              No transactions found
-            </h3>
-
-            <p class="mt-1 text-sm text-muted">
-              Transaction records will appear here.
-            </p>
-          </div>
-        </template>
-
-      </div>
-
-      <template #footer>
-        <div class="flex justify-between items-center">
-          <Showing :meta="meta" />
-          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
+        </UCard>
       </template>
-    </UCard>
-  </div>
+
+      <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
+        <UIcon name="i-lucide-receipt" class="text-4xl text-gray-400" />
+        <p class="text-sm text-gray-500">No transactions found.</p>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
+        <Showing :meta="meta" />
+        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
+          :total="meta.total" show-edges />
+      </div>
+    </template>
+  </UCard>
 </template>

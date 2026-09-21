@@ -114,6 +114,7 @@ const { can } = useAuth()
 
 // Report cards are ADMIN/OWNER/PROPRIETOR only server-side - Accountant can view a student's
 // profile but not their report cards, so the tab only shows for roles that can actually open it.
+const { isPathAvailable } = useModules()
 const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
 definePageMeta({
@@ -190,7 +191,8 @@ const mobileTabs = computed(() => [
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
     { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }
-])
+    // Tabs for a module this school hasn't installed (Grading, Report Cards, Behaviour) drop out.
+].filter((tab) => isPathAvailable(tab.to)))
 
 const desktopTabs = computed(() => [
     { label: 'Personal Information', to: personalInfo, icon: USER_ICON, exact: true },
@@ -200,7 +202,7 @@ const desktopTabs = computed(() => [
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
     { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }
-])
+].filter((tab) => isPathAvailable(tab.to)))
 
 async function fetchStudent() {
     await store.viewStudent(route.params.id as string)

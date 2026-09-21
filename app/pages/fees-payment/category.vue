@@ -122,10 +122,6 @@ definePageMeta({
 
         <template #name-cell="{ row }">
           <div class="flex items-center gap-3">
-            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-              <UIcon name="lucide:receipt-text" class="text-primary-500" />
-            </div>
-
             <div>
               <div class="flex items-center gap-1.5">
                 <p class="font-medium text-gray-900 dark:text-white">
@@ -169,8 +165,8 @@ definePageMeta({
         </template>
       </UTable>
       <!-- Mobile -->
-      <div class="space-y-3 p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:space-y-3 md:p-4"
+        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 md:gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="i in 4" :key="i" variant="outline">
@@ -209,18 +205,13 @@ definePageMeta({
 
         <!-- Cards -->
         <template v-else>
-          <UCard v-for="item in records" :key="item.id"
-            class="overflow-hidden rounded-2xl transition-all active:scale-[0.99] hover:ring-1 hover:ring-primary-200 dark:hover:ring-primary-700"
+          <div v-for="item in records" :key="item.id"
+            class="overflow-hidden md:rounded-2xl  md:border border-default border-b last:border-0 last:md:border"
             :ui="{ body: 'sm:p-0 p-0' }">
 
-            <div class="border-b border-default p-3">
+            <div class="p-3">
               <div class="flex items-start justify-between gap-4">
                 <div class="flex min-w-0 items-center gap-4">
-                  <div
-                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-primary dark:bg-gray-800 dark:text-primary">
-                    <UIcon name="i-lucide-book-open-text" class="size-5 text-primary group-hover:text-white" />
-                  </div>
-
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5">
                       <h3 class="truncate text-base font-semibold">{{ item.name }}</h3>
@@ -245,16 +236,7 @@ definePageMeta({
                 </div>
               </div>
             </div>
-
-            <!-- Description -->
-            <div class="p-3">
-              <div class="rounded-2xl border border-default bg-gray-50 p-3 dark:bg-neutral-800">
-                <p class="text-xs leading-6 text-toned">
-                  {{ item.description || "No description available." }}
-                </p>
-              </div>
-            </div>
-          </UCard>
+          </div>
         </template>
       </div>
 
