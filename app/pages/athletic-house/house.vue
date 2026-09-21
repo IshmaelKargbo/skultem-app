@@ -48,11 +48,11 @@ onMounted(() => {
   })
 
   useAppStore().setTitle('Athletic Management');
-  document.title = 'Athletic Categories | Athletic Management | Skultem';
+  document.title = 'Athletic Houses | Athletic Management | Skultem';
 })
 
 definePageMeta({
-  role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 
 const columns = [

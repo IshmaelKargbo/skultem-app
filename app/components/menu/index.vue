@@ -347,7 +347,7 @@ const navItems: NavItem[] = [
   },
   {
     label: 'Athletic House', icon: ATHLETIC_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
     subNavs: [
       { label: 'Management', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true },
       { label: 'House', to: '/athletic-house/house', icon: CATEGORY_ICON },
