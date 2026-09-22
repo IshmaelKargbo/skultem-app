@@ -174,7 +174,7 @@ const monthLabel = computed(() => {
 })
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = computed(() => school.value?.logo || '')
+const { logoSrc, loadLogo } = useReportLogo()
 
 function currentMonthISO() {
   return new Date().toISOString().slice(0, 7)
@@ -220,6 +220,8 @@ watch(() => [filters.classSessionId, filters.month], loadSummary)
 watch(() => filters.academicYearId, loadClasses)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
+
   useAppStore().setTitle('Monthly Summary')
   document.title = 'Monthly Summary | Skultem'
 

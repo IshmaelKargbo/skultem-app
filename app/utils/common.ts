@@ -243,6 +243,22 @@ export const parseFeeStatusIcon: Record<string, string> = {
     Overdue: 'pajamas:calendar-overdue'
 }
 
+// School-fee collection status (Fees Reporting) - PAID / PARTIALLY_PAID / NO_PAYMENT, a different
+// (simpler) vocabulary than parseFeeStatusColor/Icon above, which is per-fee and includes Overdue.
+// "Outstanding" in the reports is any row with a balance (Partially Paid + No Payment together),
+// not a fourth status of its own - see the backend's FeeCollectionCalculator.
+export const parseFeeCollectionStatus: Record<string, string> = {
+    PAID: 'Paid',
+    PARTIALLY_PAID: 'Partially Paid',
+    NO_PAYMENT: 'No Payment',
+}
+
+export const parseFeeCollectionStatusColor: Record<string, string> = {
+    PAID: 'success',
+    PARTIALLY_PAID: 'warning',
+    NO_PAYMENT: 'error',
+}
+
 export enum Level {
     Primary = 'Primary',
     JSS = 'JSS',
@@ -545,6 +561,14 @@ export const genderOption: Option[] = [
         label: 'Female',
         value: 'FEMALE'
     }
+]
+
+// Whether a school only enrolls one gender, or both - purely informational (doesn't restrict
+// enrollment), lets demographic reporting/profiling start from a known baseline.
+export const schoolGenderCompositionOption: Option[] = [
+    { label: 'Boys Only', value: 'BOYS' },
+    { label: 'Girls Only', value: 'GIRLS' },
+    { label: 'Mixed', value: 'MIXED' },
 ]
 
 export const parseBehaviourKind: Record<string, string> = {

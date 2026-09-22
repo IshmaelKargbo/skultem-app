@@ -132,7 +132,7 @@ export function useMenu() {
       label: 'Behaviours', icon: BEHAVIOUR_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
       subNavs: [
         { label: 'Behaviours', to: '/behaviours', icon: BEHAVIOUR_ICON, exact: true },
-        { label: 'Category', to: '/behaviours/category', icon: CATEGORY_ICON },
+        { label: 'Category', to: '/behaviours/category', icon: MAIN_CATEGORY_ICON },
       ]
     },
 
@@ -198,9 +198,10 @@ export function useMenu() {
       subNavs: [
         { label: 'Fees', to: '/fees-payment', icon: STUDENT_FEES_ICON, exact: true },
         { label: 'Payments', to: '/fees-payment/pay', icon: PAYMENT_ICON },
+        { label: 'Reports', to: '/fees-payment/reports', icon: 'i-lucide-layout-dashboard' },
         { label: 'Discounts', to: '/fees-payment/discounts', icon: DISCOUNT_ICON },
         { label: 'Structures', to: '/fees-payment/structure', icon: FEE_STRUCTURE_ICON },
-        { label: 'Category', to: '/fees-payment/category', icon: CATEGORY_ICON },
+        { label: 'Category', to: '/fees-payment/category', icon: MAIN_CATEGORY_ICON },
         {
           label: 'Receipt Design', to: '/fees-payment/receipt-design', icon: SETTINGS_ICON,
           roles: [Role.PROPRIETOR, Role.OWNER]
@@ -213,7 +214,7 @@ export function useMenu() {
       roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
       subNavs: [
         { label: 'Expenses', to: '/expenses', icon: EXPENSES_ICON, exact: true },
-        { label: 'Category', to: '/expenses/category', icon: CATEGORY_ICON },
+        { label: 'Category', to: '/expenses/category', icon: MAIN_CATEGORY_ICON },
       ]
     },
 
@@ -296,7 +297,7 @@ export function useMenu() {
       roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
       subNavs: [
         { label: 'Management', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true },
-        { label: 'House', to: '/athletic-house/house', icon: CATEGORY_ICON },
+        { label: 'House', to: '/athletic-house/house', icon: MAIN_CATEGORY_ICON },
       ]
     },
     {
@@ -307,7 +308,7 @@ export function useMenu() {
         { label: 'Sales', to: '/material/sales', icon: SALE_ICON },
         { label: 'Supplies', to: '/material/supply', icon: CURRICULUM_GROUP_ICON },
         { label: 'Pending Pickups', to: '/material/pending-pickups', icon: PENDING_PICKUP_ICON },
-        { label: 'Category', to: '/material/category', icon: CATEGORY_ICON },
+        { label: 'Category', to: '/material/category', icon: MAIN_CATEGORY_ICON },
       ]
     },
 

@@ -149,6 +149,7 @@ type SchoolProfile = {
     primaryColor: string
     secondaryColor: string
     attendanceThreshold: number
+    genderComposition: string
 }
 
 const state = reactive<SchoolProfile>({
@@ -163,7 +164,8 @@ const state = reactive<SchoolProfile>({
     principalName: '',
     primaryColor: '#1878c5',
     secondaryColor: '#0f172a',
-    attendanceThreshold: 75
+    attendanceThreshold: 75,
+    genderComposition: 'MIXED'
 })
 
 const loading = ref(true)
@@ -246,7 +248,8 @@ async function saveAttendanceLocation() {
             chiefdom: state.chiefdom,
             city: state.city,
             street: state.street,
-            attendanceThreshold: state.attendanceThreshold
+            attendanceThreshold: state.attendanceThreshold,
+            genderComposition: state.genderComposition
         })
 
         if (updated) {
@@ -300,6 +303,7 @@ function applySchool(school: any) {
     state.primaryColor = school.primaryColor ?? '#1878c5'
     state.secondaryColor = school.secondaryColor ?? '#0f172a'
     state.attendanceThreshold = school.attendanceThreshold ?? 75
+    state.genderComposition = school.genderComposition ?? 'MIXED'
     logoUrl.value = school.logo ?? ''
     signatureUrl.value = school.principalSignature ?? ''
     logoPreview.value = logoUrl.value
@@ -317,7 +321,8 @@ async function save() {
             chiefdom: state.chiefdom,
             city: state.city,
             street: state.street,
-            attendanceThreshold: state.attendanceThreshold
+            attendanceThreshold: state.attendanceThreshold,
+            genderComposition: state.genderComposition
         })
 
         if (!updated) return

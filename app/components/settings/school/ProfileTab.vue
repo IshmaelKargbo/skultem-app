@@ -19,6 +19,11 @@
       <UFormField label="Principal Name">
         <UInput v-model="state.principalName" placeholder="e.g. Dr. A. Conteh" class="w-full" />
       </UFormField>
+
+      <UFormField label="Student Body" help="Eases demographic reporting - purely informational, doesn't restrict enrollment.">
+        <USelectMenu v-model="state.genderComposition" :items="schoolGenderCompositionOption" value-key="value"
+          label-key="label" class="w-full" />
+      </UFormField>
     </div>
   </UCard>
   <UCard>
@@ -91,6 +96,7 @@ defineProps<{
     principalName: string
     primaryColor: string
     secondaryColor: string
+    genderComposition: string
   }
   logoPreview: string
   signaturePreview: string

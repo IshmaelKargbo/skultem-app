@@ -193,6 +193,42 @@ async function waitForImages(container: HTMLElement, timeoutMs = 4000) {
   ]);
 }
 
+// html2canvas clones the element a SECOND time internally (into an offscreen iframe, via its own
+// `onclone`) before it actually rasterizes anything - our own `cloned` div above is only the first
+// of two clones. A plain remote <img src> that loaded fine in the page (and satisfied
+// waitForImages above) can still come out blank in the final canvas, because that second,
+// html2canvas-owned clone doesn't reliably re-resolve/re-load it (cross-origin timing, or the
+// re-parenting isolateClonedDocument does below). A data: URI sidesteps all of that - once the
+// bytes are inlined, every subsequent clone already "has" the image with no network/CORS
+// involved, so it survives no matter how many times the node gets cloned. Swaps img.src in place;
+// on any failure (network, opaque cross-origin response, ...) the original src is left as-is, so
+// this can only help, never regress on top of waitForImages.
+async function inlineImagesAsDataUrls(container: HTMLElement) {
+  const images = Array.from(container.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map(async (img) => {
+      const src = img.getAttribute("src");
+      if (!src || src.startsWith("data:")) return;
+
+      try {
+        const res = await fetch(src, { mode: "cors" });
+        if (!res.ok) return;
+        const blob = await res.blob();
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        img.src = dataUrl;
+      } catch {
+        // Left as the original src - waitForImages already gave it its best shot.
+      }
+    })
+  );
+}
+
 // `height` is the real measured content height (see generatePdf) - a document
 // taller than one A4 page (a report card with more sections than a receipt,
 // for example) must not be clamped to a fixed 1123px or everything past that
@@ -293,6 +329,7 @@ export default defineNuxtPlugin(() => {
           // yet render as blank space, and the height measured below would be
           // wrong for any image whose real dimensions hadn't resolved yet.
           await waitForImages(cloned);
+          await inlineImagesAsDataUrls(cloned);
 
           // Force all computed styles inline — resolves oklch before html2canvas sees it
           forceInlineStyles(cloned);
@@ -335,8 +372,17 @@ export default defineNuxtPlugin(() => {
         const pageWidth = 210;
         const pageHeight = 297;
         const margin = 10;
+        // A page break falls wherever the source content happens to measure exactly one page's
+        // worth of height - almost never a clean gap, usually mid-table-row. The plain `margin`
+        // reads fine at the top of page 1 (a real header/logo sits there), but on a continuation
+        // page it puts that cut-off row right against the page edge with nothing to signal "this
+        // continues from the previous page". A bigger top margin here is just breathing room, not
+        // a fix for the mid-row cut itself - genuinely avoiding a split row would mean walking the
+        // rendered DOM for row boundaries, not just slicing a flat raster image.
+        const continuationTopMargin = 20;
         const usableWidth = pageWidth - margin * 2;
         const pageContentHeight = pageHeight - margin * 2;
+        const continuationContentHeight = pageHeight - continuationTopMargin - margin;
 
         const imgWidth = usableWidth;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -348,12 +394,15 @@ export default defineNuxtPlugin(() => {
         pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
         heightLeft -= pageContentHeight;
 
-        // Subsequent pages
+        // Subsequent pages - `consumed` is how much of the source image has already been shown
+        // across every earlier page, so the image is shifted up by exactly that much and the
+        // still-unseen remainder lands starting at continuationTopMargin on this new page.
         while (heightLeft > 0) {
           pdf.addPage();
-          position = margin - (imgHeight - heightLeft);
+          const consumed = imgHeight - heightLeft;
+          position = continuationTopMargin - consumed;
           pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
-          heightLeft -= pageContentHeight;
+          heightLeft -= continuationContentHeight;
         }
 
         const filename = name.trim() || "receipt";

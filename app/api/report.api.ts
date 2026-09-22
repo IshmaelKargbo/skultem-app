@@ -106,6 +106,12 @@ export const ReportApi = () => {
       }),
     exportFees: (format: string, filters?: { classId?: string; startDate?: string; endDate?: string }) =>
       download('/report/export/fees', { format, ...filters }),
+    // Fees Reporting - school fees only (platform fee excluded), same filters the on-screen
+    // Student Balances / Payment History reports support.
+    exportStudentFeeBalances: (format: string, filters?: StudentBalanceFilters) =>
+      download('/report/export/fee-balances', { format, ...filters }),
+    exportFeePaymentHistory: (format: string, filters?: PaymentHistoryFilters) =>
+      download('/report/export/fee-payment-history', { format, ...filters }),
     exportGrades: (teacherSubjectId: string, termId: string, format: string) =>
       download('/report/export/grades', { teacherSubjectId, termId, format }),
     exportBuilderReport: (payload: ReportSelectFilterPayload, format: 'csv' | 'pdf') =>

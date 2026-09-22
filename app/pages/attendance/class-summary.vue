@@ -142,7 +142,7 @@ const academicYearLabel = computed(() =>
   academicYears.value.find(y => y.value === filters.academicYearId)?.label || academicYearStore.activeYear?.name || '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = computed(() => school.value?.logo || '')
+const { logoSrc, loadLogo } = useReportLogo()
 
 function sanitizeFilename(value: string) {
   return String(value).replace(/[^a-z0-9-_]/gi, '-')
@@ -174,6 +174,8 @@ async function downloadPdf() {
 watch(() => filters.termId, loadSummary)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
+
   useAppStore().setTitle('Class Summary')
   document.title = 'Class Summary | Skultem'
 

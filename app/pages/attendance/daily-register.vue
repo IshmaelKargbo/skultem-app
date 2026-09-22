@@ -173,7 +173,7 @@ const formattedDate = computed(() => filters.date
   : '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = computed(() => school.value?.logo || '')
+const { logoSrc, loadLogo } = useReportLogo()
 
 function todayISO() {
   return new Date().toISOString().split('T')[0] as string
@@ -254,6 +254,8 @@ watch(() => [filters.classSessionId, filters.date], loadRegister)
 watch(() => filters.academicYearId, loadClasses)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
+
   useAppStore().setTitle('Daily Register')
   document.title = 'Daily Register | Skultem'
 

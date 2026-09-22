@@ -319,7 +319,7 @@ const loadingClasses = ref(false)
 const localClassSessions = ref<ClassSession[]>([])
 const generating = ref(false)
 const downloading = ref(false)
-const logoSrc = computed(() => school.value?.logo || '')
+const { logoSrc, loadLogo } = useReportLogo()
 
 const academicYears = computed(() => academicYearStore.list)
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
@@ -448,6 +448,8 @@ async function downloadPdf() {
 watch(() => form.academicYearId, loadClasses)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
+
   useAppStore().setTitle('Inspection Reports')
   document.title = 'Inspection Reports | Skultem'
 

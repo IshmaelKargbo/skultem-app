@@ -174,7 +174,7 @@ const termLabel = computed(() => terms.value.find(t => t.value === filters.termI
 const classLabel = computed(() => classSessions.value.find(c => c.value === filters.classSessionId)?.label || '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = computed(() => school.value?.logo || '')
+const { logoSrc, loadLogo } = useReportLogo()
 
 function sanitizeFilename(value: string) {
   return String(value).replace(/[^a-z0-9-_]/gi, '-')
@@ -214,6 +214,8 @@ watch(() => [filters.classSessionId, filters.termId], loadSummary)
 watch(() => filters.academicYearId, loadClasses)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
+
   useAppStore().setTitle('Term Summary')
   document.title = 'Term Summary | Skultem'
 
