@@ -85,6 +85,7 @@
                                         <h3 class="truncate font-bold text-highlighted">
                                             {{ item.clazz }}
                                         </h3>
+                                        <p class="text-muted" v-if="item.streamId">-  {{ item.streamName }}</p>
 
                                         <UTooltip v-if="item.needsAttention" :delay-duration="0" arrow
                                             text="At least one student here has low attendance or is below the pass mark">

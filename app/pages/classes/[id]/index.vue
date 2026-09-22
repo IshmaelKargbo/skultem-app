@@ -283,9 +283,6 @@ const performanceByName = ref<Record<string, number>>({})
 const attendanceByName = ref<Record<string, number>>({})
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const sortByPerformance = ref(false)
-// Tooltips only open on hover/keyboard-focus by default, which a touch tap doesn't reliably
-// trigger - this drives the mobile roster's attention icon manually so tapping it opens/closes
-// the reason instead of it being unreachable on mobile.
 const openAttentionId = ref<string | null>(null)
 
 function studentFullName(s: Student) {

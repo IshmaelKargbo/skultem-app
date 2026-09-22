@@ -1,9 +1,8 @@
 <template>
   <USlideover :dismissible="false" v-model:open="open">
-    <UButton class="hidden md:flex justify-center" color="secondary" variant="subtle" label="Assign Class Master" :icon="ASSIGN_ICON"
-      @click="open = true" />
-    <UButton class="md:hidden" color="secondary" variant="subtle" :icon="ASSIGN_ICON"
-      @click="open = true" />
+    <UButton class="hidden md:flex justify-center" color="secondary" variant="subtle" label="Assign Class Master"
+      :icon="ASSIGN_ICON" @click="open = true" />
+    <UButton class="md:hidden" color="secondary" variant="subtle" :icon="ASSIGN_ICON" @click="open = true" />
 
     <template #header>
       <div class="flex w-full items-center justify-between gap-3">
@@ -113,13 +112,13 @@ const schema = yup.object({
   teacherId: yup.string().required("Teacher is required"),
 });
 
-const classes = ref<{ label: string; value: string; stream: string }[]>([]);
+const classes = ref<{ label: string; value: string; classId: string; stream: string }[]>([]);
 const sections = ref<{ label: string; value: string }[]>([]);
 const streams = ref<{ label: string; value: string }[]>([]);
 
 const selectedClass = computed(() => {
   if (!state.classId) return null;
-  return sessionStore.records.find((c) => c.clazzId === state.classId);
+  return sessionStore.records.find((c) => c.id === state.classId);
 });
 
 const teachers = computed(
@@ -140,15 +139,18 @@ async function fetchRecords() {
   sections.value = [];
   streams.value = [];
 
+  const classRecord = classes.value.find(e => (e.value == state.classId))
+  if (!classRecord) return;
+
   try {
-    const resultSections = await store.findAllSections(state.classId);
+    const resultSections = await store.findAllSections(classRecord.classId);
     sections.value =
       resultSections?.map((s: ClassSection) => ({
         label: s.section.name,
         value: s.section.id,
       })) || [];
 
-    const resultStreams = await store.findAllStreams(state.classId);
+    const resultStreams = await store.findAllStreams(classRecord.classId);
     streams.value =
       resultStreams?.map((s: ClassStream) => ({
         label: `${s.stream.name} `,
@@ -176,7 +178,7 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
     const clazz = classes.value.find((e) => e.value == state.classId);
 
     if (clazz) {
-      await store.assignClassMaster(state.classId, {
+      await store.assignClassMaster(clazz.classId, {
         sectionId: state.sectionId,
         streamId: clazz.stream || "",
         teacherId: state.teacherId,
@@ -206,7 +208,8 @@ watch(open, async (val) => {
 
       return {
         label: name,
-        value: c.clazzId,
+        value: c.id,
+        classId: c.clazzId,
         stream: c.streamId,
       };
     });
