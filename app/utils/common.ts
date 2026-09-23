@@ -290,16 +290,35 @@ export enum Role {
     OWNER = 'OWNER',
     SYSTEM_ADMIN = 'SYSTEM_ADMIN',
     PROPRIETOR = 'PROPRIETOR',
+    // Staff member with the whole school portal - see roleAllows below.
+    SUPER_ADMIN = 'SUPER_ADMIN',
     ADMIN = 'ADMIN',
     TEACHER = 'TEACHER',
     PARENT = 'PARENT',
     ACCOUNTANT = 'ACCOUNTANT'
 }
 
+// SUPER_ADMIN gets everything the owner/proprietor gets, without being either. Anything gated on
+// OWNER or PROPRIETOR lets it through, so the role lists across pages and the menu don't each need
+// it added. Admin-only and accountant-only lists are deliberately not matched: those are reduced
+// variants of owner features (e.g. the accountant's student list), and matching them would render
+// both variants side by side. The backend is broader (see PermissionService).
+const SUPER_ADMIN_COVERS: string[] = [Role.OWNER, Role.PROPRIETOR]
+
+export function roleAllows(activeRole: string, required: string | string[]) {
+    const list = Array.isArray(required) ? required : [required]
+    if (list.includes(activeRole)) return true
+    return activeRole === Role.SUPER_ADMIN && list.some(r => SUPER_ADMIN_COVERS.includes(r))
+}
+
 export const roles = [
     {
         label: 'Proprietor',
         value: Role.PROPRIETOR.toString()
+    },
+    {
+        label: 'Super Admin',
+        value: Role.SUPER_ADMIN.toString()
     },
     {
         label: 'Admin',
@@ -440,6 +459,7 @@ export const parseRole: Record<string, string> = {
     OWNER: 'Owner',
     PROPRIETOR: 'Proprietor',
     SYSTEM_ADMIN: 'System Admin',
+    SUPER_ADMIN: 'Super Admin',
     ADMIN: 'Admin',
     TEACHER: 'Teacher',
     PARENT: 'Parent',
@@ -449,6 +469,7 @@ export const parseRole: Record<string, string> = {
 export const parseRoleColor: Record<string, string> = {
     OWNER: 'success',
     PROPRIETOR: 'primary',
+    SUPER_ADMIN: 'warning',
     ADMIN: 'info',
     TEACHER: 'neutral',
     PARENT: 'primary',
@@ -457,6 +478,7 @@ export const parseRoleColor: Record<string, string> = {
 
 export const parseRoleIcon: Record<string, string> = {
     ADMIN: 'fluent:building-24-regular',
+    SUPER_ADMIN: 'fluent:shield-person-24-regular',
     OWNER: 'fluent:crown-24-regular',
     PROPRIETOR: 'fluent:crown-24-regular',
     TEACHER: 'fluent:hat-graduation-24-regular',

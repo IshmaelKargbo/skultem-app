@@ -13,7 +13,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <UButton v-if="can('ACCOUNTANT')" to="/payments" icon="i-lucide-credit-card"
+                        <UButton v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" to="/payments" icon="i-lucide-credit-card"
                             label="Record Payment" color="primary" size="sm" />
                     </div>
                 </div>

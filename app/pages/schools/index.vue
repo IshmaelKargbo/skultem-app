@@ -26,6 +26,24 @@ function openEditModal(school: SystemSchool) {
   editModal.value = true;
 }
 
+const goLiveModal = ref(false);
+const goLiveTarget = ref<SystemSchool>();
+
+function openGoLiveModal(school: SystemSchool) {
+  goLiveTarget.value = school;
+  goLiveModal.value = true;
+}
+
+// Switching on is harmless on its own - it only lets the school (or us) clear test data later.
+async function enablePlayground(school: SystemSchool) {
+  try {
+    await store.setTestFlag(school.id, true);
+    toastSuccess(`${clean(school.name)} is now in playground mode`);
+  } catch (err: any) {
+    toastError(err?.message || "Failed to switch on playground mode");
+  }
+}
+
 const STATUS_COLOR: Record<string, "success" | "neutral" | "error"> = {
   ACTIVE: "success",
   INACTIVE: "neutral",
@@ -105,6 +123,9 @@ function rowActions(school: SystemSchool) {
     [
       { label: "Edit School", icon: "i-lucide-pencil", onClick: () => openEditModal(school) },
       { label: "Set Platform Fee", icon: "i-lucide-shield", onClick: () => openPlatformFeeModal(school) },
+      school.testSchool
+        ? { label: "Take Live…", icon: "i-lucide-rocket", onClick: () => openGoLiveModal(school) }
+        : { label: "Switch to Playground", icon: "i-lucide-flask-conical", onClick: () => enablePlayground(school) },
     ],
     statusItems,
   ];
@@ -173,7 +194,11 @@ definePageMeta({
         </template>
 
         <template #status-cell="{ row }">
-          <UBadge variant="subtle" :color="STATUS_COLOR[row.original.status]" :label="clean(row.original.status)" />
+          <div class="flex flex-wrap gap-1">
+            <UBadge variant="subtle" :color="STATUS_COLOR[row.original.status]" :label="clean(row.original.status)" />
+            <UBadge v-if="row.original.testSchool" variant="subtle" color="warning" icon="i-lucide-flask-conical"
+              label="Playground" />
+          </div>
         </template>
 
         <template #platformFee-cell="{ row }">
@@ -235,7 +260,11 @@ definePageMeta({
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-2 border-t border-default p-3 text-xs text-muted">
-              <UBadge variant="subtle" :color="STATUS_COLOR[school.status]" :label="clean(school.status)" />
+              <div class="flex flex-wrap gap-1">
+                <UBadge variant="subtle" :color="STATUS_COLOR[school.status]" :label="clean(school.status)" />
+                <UBadge v-if="school.testSchool" variant="subtle" color="warning" icon="i-lucide-flask-conical"
+                  label="Playground" />
+              </div>
               <span>
                 Platform fee:
                 {{
@@ -264,6 +293,12 @@ definePageMeta({
       v-model:open="platformFeeModal"
       :school-id="platformFeeTarget.id"
       :school-name="platformFeeTarget.name"
+    />
+
+    <SystemAdminGoLiveModal
+      v-if="goLiveTarget"
+      v-model:open="goLiveModal"
+      :school="goLiveTarget"
     />
 
     <SystemAdminEditSchoolModal

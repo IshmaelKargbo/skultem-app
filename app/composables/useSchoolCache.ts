@@ -14,6 +14,8 @@ export type CachedSchool = {
   primaryColor: string | null
   secondaryColor: string | null
   attendanceThreshold: number | null
+  // Playground mode (see utils/playground.ts) - drives the banner in layouts/default.vue.
+  testSchool: boolean
 }
 
 const STORAGE_PREFIX = 'skultem:school:'
@@ -49,6 +51,7 @@ export function useSchoolCache() {
       primaryColor: school.primaryColor ?? null,
       secondaryColor: school.secondaryColor ?? null,
       attendanceThreshold: school.attendanceThreshold ?? null,
+      testSchool: school.testSchool ?? false,
     }
 
     try {

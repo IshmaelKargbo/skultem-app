@@ -49,7 +49,7 @@
         >
           <USelectMenu
             v-model="state.role"
-            :items="roles"
+            :items="roleOptions"
             value-key="value"
             placeholder="Select role"
             class="w-full"
@@ -81,6 +81,12 @@
 
 <script setup lang="ts">
 import * as yup from 'yup'
+
+// Only owner-level staff can hand out Super Admin (the backend enforces it too - see
+// PermissionService#canGrantRole), so a plain admin isn't offered an option that would fail.
+const { can } = useAuth()
+const roleOptions = computed(() =>
+  can([Role.OWNER, Role.PROPRIETOR]) ? roles : roles.filter(r => r.value !== Role.SUPER_ADMIN))
 
 const props = defineProps<{
   modelValue: boolean

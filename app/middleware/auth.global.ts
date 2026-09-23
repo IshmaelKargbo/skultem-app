@@ -75,8 +75,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     if (requiredRole && activeRole.value) {
-        const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-        if (!allowed.includes(activeRole.value)) {
+        if (!roleAllows(activeRole.value, requiredRole)) {
             return navigateTo('/unauthorized')
         }
     }
@@ -93,7 +92,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
         const moduleKey = moduleForPath(to.path)
         if (moduleKey && modules.loaded && !modules.isInstalled(moduleKey)) {
-            const canInstall = ['ADMIN', 'OWNER', 'PROPRIETOR'].includes(activeRole.value)
+            const canInstall = roleAllows(activeRole.value, ['ADMIN', 'OWNER', 'PROPRIETOR'])
             return canInstall
                 ? navigateTo({ path: '/modules', query: { install: moduleKey, redirect: to.fullPath } })
                 : navigateTo('/')

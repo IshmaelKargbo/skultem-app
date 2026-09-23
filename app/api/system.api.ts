@@ -45,6 +45,50 @@ export const SystemApi = () => {
         useHandleError(err)
       }
     },
+    // Playground mode (see backend SetSchoolTestFlagUseCase) - turning it on lets a school try the
+    // system out; taking it live again goes through moveToProduction below, which clears test data.
+    setTestFlag: async (schoolId: string, testSchool: boolean) => {
+      try {
+        const res = await $api(`/system/school/${schoolId}/test?testSchool=${testSchool}`, {
+          method: 'PUT'
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update playground mode')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getPlaygroundSummary: async (schoolId: string) => {
+      try {
+        const res = await $api(`/system/school/${schoolId}/playground`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch playground summary')
+
+        return res.data as PlaygroundSummary
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Same go-live a school's owner can do from Settings (PlaygroundApi().goLive), on their behalf.
+    moveToProduction: async (schoolId: string, payload: GoLivePayload) => {
+      try {
+        const res = await $api(`/system/school/${schoolId}/move-to-production`, {
+          method: 'POST',
+          body: payload
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to take school live')
+
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     // Onboards a new school on a client's behalf. Hits the same public POST /school endpoint a
     // school uses to sign itself up (see SecurityConfig) - it also creates the owner account and
     // emails them their login, so onboarding here is otherwise identical to self-service signup.

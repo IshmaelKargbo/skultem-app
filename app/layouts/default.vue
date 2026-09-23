@@ -40,6 +40,7 @@ watch(
     <div class="flex min-w-0 flex-1 flex-col">
       <!-- Header -->
       <Header class="shrink-0" />
+      <PlaygroundBanner class="shrink-0" />
 
       <!-- Scroll Container -->
       <main

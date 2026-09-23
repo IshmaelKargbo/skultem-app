@@ -29,6 +29,8 @@ export type SystemSchool = {
     address: SystemSchoolAddress
     status: 'ACTIVE' | 'INACTIVE' | 'DELETED'
     owner: SystemSchoolOwner
+    // Playground mode - see utils/playground.ts.
+    testSchool: boolean
     createdAt: string
     updatedAt: string
 }

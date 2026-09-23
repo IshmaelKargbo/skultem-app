@@ -34,9 +34,7 @@ export function useAuth() {
     }
 
     function hasRole(role: string | string[]) {
-        return Array.isArray(role)
-            ? role.includes(activeRole.value)
-            : activeRole.value === role
+        return roleAllows(activeRole.value, role)
     }
 
     function can(role: string | string[]) {

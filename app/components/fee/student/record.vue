@@ -17,8 +17,8 @@
                         Pay Fees
                     </UButton>
                     <p class="md:hidden uppercase text-muted font-semibold">Summery</p>
-                    <FeeStudentAssign v-if="can([Role.ACCOUNTANT])" :student="student" @assigned="refreshFees" />
-                    <FeeDiscountAdd v-if="can([Role.ACCOUNTANT])" :student-id="student.id"
+                    <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student" @assigned="refreshFees" />
+                    <FeeDiscountAdd v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student-id="student.id"
                         :refresh-report="refreshFees" trigger-label="Discount" trigger-variant="outline"
                         trigger-size="sm" trigger-icon="mdi:discount-outline" trigger-color="neutral" />
                 </div>
@@ -46,9 +46,9 @@
                                 icon="streamline-ultimate:cash-payment-bills" class="col-span-2 justify-center md:col-span-1">
                                 Pay Fees
                             </UButton>
-                            <FeeStudentAssign v-if="can([Role.ACCOUNTANT])" :student="student"
+                            <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
                                 @assigned="refreshFees" />
-                            <FeeDiscountAdd v-if="can([Role.ACCOUNTANT])" :student-id="student.id"
+                            <FeeDiscountAdd v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student-id="student.id"
                                 :refresh-report="refreshFees" trigger-label="Apply Discount" trigger-variant="outline"
                                 trigger-size="sm" trigger-icon="mdi:discount-outline" trigger-color="neutral" />
                         </div>

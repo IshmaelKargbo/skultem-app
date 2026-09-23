@@ -63,6 +63,25 @@ export const useSystemStore = defineStore('system', {
       return response
     },
 
+    async setTestFlag(schoolId: string, testSchool: boolean) {
+      const response = await SystemApi().setTestFlag(schoolId, testSchool) as any
+      this.replaceSchool(schoolId, response)
+      return response
+    },
+
+    async moveToProduction(schoolId: string, payload: GoLivePayload) {
+      const response = await SystemApi().moveToProduction(schoolId, payload) as any
+      this.replaceSchool(schoolId, response)
+      return response
+    },
+
+    replaceSchool(schoolId: string, school: SystemSchool | undefined) {
+      const index = this.schools.findIndex(s => s.id === schoolId)
+      if (index !== -1 && school) {
+        this.schools[index] = school
+      }
+    },
+
     async searchUsers(query: string, page: number = 1, size: number = 10) {
       this.usersLoading = true
       try {

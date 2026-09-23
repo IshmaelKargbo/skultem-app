@@ -93,6 +93,8 @@
                 <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
                     :loading-location="loadingLocation" :location-configured="locationConfigured"
                     v-model:attendance-threshold="state.attendanceThreshold" />
+
+                <SettingsSchoolPlaygroundTab v-else-if="active === 'playground'" @live="onLive" />
             </div>
         </div>
         <UModal v-model:open="mobilePanelOpen" fullscreen :ui="{ content: 'lg:hidden' }">
@@ -115,6 +117,8 @@
                         <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
                             :loading-location="loadingLocation" :location-configured="locationConfigured"
                             v-model:attendance-threshold="state.attendanceThreshold" />
+
+                        <SettingsSchoolPlaygroundTab v-else-if="active === 'playground'" @live="onLive" />
                     </div>
 
                     <template #footer>
@@ -179,16 +183,21 @@ const logoPreview = ref('')
 const signaturePreview = ref('')
 
 // Only the sections that actually do something - System & Formats/Security/Integrations were
-// permanent "Soon" placeholders with no page behind them.
-const sections = [
+// permanent "Soon" placeholders with no page behind them. Playground only exists while the school
+// is in playground mode (a system admin sets that - see utils/playground.ts).
+const isPlayground = ref(false)
+const sections = computed(() => [
     { key: 'profile', label: 'School Profile', icon: SCHOOL_ICON },
-    { key: 'attendance', label: 'Attendance', icon: ATTENDANCE_ICON }
-]
+    { key: 'attendance', label: 'Attendance', icon: ATTENDANCE_ICON },
+    ...(isPlayground.value ? [{ key: 'playground', label: 'Playground', icon: 'i-lucide-flask-conical' }] : [])
+])
 
 const route = useRoute()
-const initialSection = sections.some(s => s.key === route.query.section) ? String(route.query.section) : sections[0]!.key
-const active = ref(initialSection)
-const activeSectionLabel = computed(() => sections.find(s => s.key === active.value)?.label ?? '')
+// 'playground' is accepted up front since that section only appears once the school has loaded -
+// onMounted falls back to the profile if the school turns out not to be one.
+const requestedSection = String(route.query.section ?? '')
+const active = ref(['profile', 'attendance', 'playground'].includes(requestedSection) ? requestedSection : 'profile')
+const activeSectionLabel = computed(() => sections.value.find(s => s.key === active.value)?.label ?? '')
 
 // Mobile only (see the USlideover in the template) - a tab tap both switches the active section
 // and opens the drawer showing it; on desktop the drawer stays closed and this is a no-op since
@@ -291,6 +300,7 @@ function clearFile(key: 'logo' | 'signature') {
 }
 
 function applySchool(school: any) {
+    isPlayground.value = !!school.testSchool
     state.name = school.name ?? ''
     state.motto = school.motto ?? ''
     state.domain = school.domain ?? ''
@@ -308,6 +318,13 @@ function applySchool(school: any) {
     signatureUrl.value = school.principalSignature ?? ''
     logoPreview.value = logoUrl.value
     signaturePreview.value = signatureUrl.value
+}
+
+// Going live drops the Playground section, so land back on the dashboard with a fresh start.
+function onLive() {
+    isPlayground.value = false
+    mobilePanelOpen.value = false
+    navigateTo('/')
 }
 
 async function save() {
@@ -367,6 +384,9 @@ onMounted(async () => {
     } finally {
         loading.value = false
     }
+    if (active.value === 'playground' && !isPlayground.value) active.value = 'profile'
+    // Deep links (e.g. the playground banner's "Go live") land on their section on mobile too.
+    else if (requestedSection === active.value) selectSection(active.value)
 
     if (hrInstalled.value) await attendanceStore.fetchLocationSettings()
     if (locationSettings.value) {
