@@ -35,11 +35,16 @@ const onSubmit = async () => {
 
     try {
         if (isEdit.value && category) {
-            await store.updateCategory({ id: category.id, ...state })
+            await store.updateCategory({
+                id: category.id,
+                ...state
+            })
+
             toastSuccess('Fee category updated successfully')
         } else {
             await store.create(state)
             await store.fetchAll()
+
             toastSuccess('Fee category created successfully')
         }
 
@@ -53,25 +58,25 @@ const onSubmit = async () => {
 </script>
 
 <template>
-    <USlideover :dismissible="false" v-model:open="open">
+    <USlideover v-model:open="open" :dismissible="false">
         <!-- Trigger -->
-        <UButton
-            v-if="isEdit"
-            :icon="EDIT_ICON"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            @click="open = true"
-        />
-       <div v-else>
-         <UButton color="primary" label="Fee Category" icon="prime:plus" class="hidden md:flex" @click="open = true" />
-        <UButton color="primary" icon="prime:plus" @click="open = true" class="md:hidden" />
+        <div>
+            <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" />
 
-       </div>
+            <div v-else>
+                <UButton color="primary" label="Fee Category" icon="prime:plus" class="hidden md:flex" />
+
+                <UButton color="primary" icon="prime:plus" class="md:hidden" />
+            </div>
+        </div>
+
         <!-- Header -->
         <template #header>
             <div class="flex justify-between w-full items-center">
-                <p class="text-lg font-semibold">{{ isEdit ? 'Edit Fee Category' : 'Add Fee Category' }}</p>
+                <p class="text-lg font-semibold">
+                    {{ isEdit ? 'Edit Fee Category' : 'Add Fee Category' }}
+                </p>
+
                 <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
             </div>
         </template>
@@ -81,6 +86,7 @@ const onSubmit = async () => {
             <UForm ref="formRef" :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
                 <UFormField label="Name" name="name" required>
                     <UInput v-model="state.name" placeholder="e.g. Tuition, Library, Exam" :disabled="isLoading" />
+
                     <template #help>
                         <p class="text-xs text-muted">
                             Enter the name of the fee category.
@@ -91,6 +97,7 @@ const onSubmit = async () => {
                 <UFormField label="Description" name="description" required>
                     <UTextarea v-model="state.description" placeholder="Enter a short description" :disabled="isLoading"
                         :rows="3" />
+
                     <template #help>
                         <p class="text-xs text-muted">
                             Brief explanation of what this fee covers.
@@ -104,7 +111,8 @@ const onSubmit = async () => {
         <template #footer>
             <div class="flex space-x-3">
                 <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
-                <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
+
+                <UButton label="Cancel" variant="outline" color="neutral" :disabled="isLoading" @click="close" />
             </div>
         </template>
     </USlideover>
