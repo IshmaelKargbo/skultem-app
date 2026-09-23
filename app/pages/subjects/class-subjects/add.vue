@@ -1,5 +1,5 @@
 <template>
-    <UForm class="p-4 sm:p-6 space-y-4 pb-24 md:pb-4" :state="state" :schema="schema" @submit="onSubmit">
+    <UForm class="px-4 md:px-6 space-y-4" :state="state" :schema="schema" @submit="onSubmit">
         <!-- Header -->
         <Heading title="Assign Subjects to Class" subtitle="Define the curriculum structure for this class.">
             <UFormField class="w-full md:w-auto md:min-w-sm" name="classId">

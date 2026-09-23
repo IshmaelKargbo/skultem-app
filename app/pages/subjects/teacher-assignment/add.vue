@@ -36,7 +36,7 @@
           </div>
 
           <!-- Empty State -->
-          <div v-if="!state.assignments.length"
+          <div v-if="!loading && !state.assignments.length"
             class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
             <p class="text-sm text-gray-500 mb-4">No subjects assigned yet.</p>
           </div>
@@ -119,12 +119,12 @@
 import type { TableColumn } from "@nuxt/ui";
 import * as yup from "yup";
 
-const view = ref<'table' | 'card'>('table');
 const store = useTeacherSubjectStore();
 const subjectStore = useSubjectStore();
 const classStore = useClassSessionStore();
 const classMasterStore = useClassStore();
 const teacherStore = useTeacherStore();
+const loading = ref(true);
 const toast = useToast();
 
 const saving = ref(false);
@@ -138,8 +138,6 @@ type ClassMasterInfo = {
 };
 
 const classMasters = ref<ClassMasterInfo[]>([]);
-// Defaults to every class master selected - "any of them can teach/grade" means the common case
-// is applying all of them in one click, not picking a subset.
 const selectedMasterIds = ref<string[]>([]);
 
 function teacherName(master: ClassMasterInfo) {
@@ -153,11 +151,6 @@ const masterOptions = computed(() =>
   }))
 );
 
-// Some classes are self-contained (one class master teaches every subject) - this fills every
-// subject with the selected master(s) in one click instead of picking the same teacher 15 times.
-// A co-taught class (more than one active master) can assign several of them to every subject at
-// once, since any of them can teach/grade it - existing per-pairing ids are preserved via
-// existingAssignmentIds so this doesn't churn rows that are already correct.
 function assignMasterToAll() {
   if (!selectedMasterIds.value.length) return;
 
@@ -181,10 +174,6 @@ const state = reactive<ClassSubjectForm>({
   assignments: [],
 });
 
-// Tracks the real TeacherSubject id behind each (subject, teacher) pairing that already existed
-// on load, keyed by `${subjectId}::${teacherId}`. A pairing kept selected on submit reuses its id
-// (an in-place update); a newly-added pairing has none (created fresh); a pairing that's no
-// longer selected is simply left out of the submit payload (removed).
 const existingAssignmentIds = ref<Record<string, string>>({});
 
 function assignmentKey(subjectId: string, teacherId: string) {
@@ -237,6 +226,7 @@ function resetForm() {
 }
 
 async function fetchRecord() {
+  loading.value = true
   if (!state.classId) return;
   state.assignments = [];
   classMasters.value = [];
@@ -249,9 +239,6 @@ async function fetchRecord() {
   ]);
 
   if (list && list.length) {
-    // The backend returns one row per subject (a placeholder with no teacher) or one row per
-    // (subject, teacher) pairing when the subject already has one or more teachers assigned -
-    // group those pairings back into one form row per subject with a list of teacher ids.
     const bySubject = new Map<string, AssignmentRow>();
 
     for (const e of list as TeacherSubject[]) {
@@ -272,6 +259,8 @@ async function fetchRecord() {
     classMasters.value = masters;
     selectedMasterIds.value = masters.map((m: ClassMasterInfo) => m.teacher.id);
   }
+
+  loading.value = false
 }
 
 async function onSubmit() {
@@ -309,6 +298,7 @@ onMounted(() => {
   subjectStore.fetchAll(0, 0);
   classStore.fetchAll(0, 0);
   teacherStore.fetchAll(0, 0);
+  
   useAppStore().setTitle("Subjects");
   document.title = "Teacher Subject | Assign Teacher Subject | Skultem";
 });
