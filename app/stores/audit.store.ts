@@ -9,7 +9,7 @@ export const useAuditStore = defineStore('audit', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 10, academicYearId?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, academicYearId?: string) {
       this.loading = true
       this.error = null
       try {

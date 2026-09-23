@@ -24,7 +24,7 @@ export const useCommunicateStore = defineStore('communicate', {
     },
 
     actions: {
-        async fetchNotices(page: number = 1, size: number = 10) {
+        async fetchNotices(page: number = 1, size: number = runtimeConf().limit) {
             this.loading = true
             this.error = null
             try {
@@ -67,7 +67,7 @@ export const useCommunicateStore = defineStore('communicate', {
             }
         },
 
-        async fetchCalendar(page: number = 1, size: number = 10) {
+        async fetchCalendar(page: number = 1, size: number = runtimeConf().limit) {
             this.loading = true
             this.error = null
             try {
@@ -102,7 +102,7 @@ export const useCommunicateStore = defineStore('communicate', {
             this.calendar = this.calendar.filter(e => e.id !== id)
         },
 
-        async fetchBroadcasts(page: number = 1, size: number = 10) {
+        async fetchBroadcasts(page: number = 1, size: number = runtimeConf().limit) {
             this.loading = true
             this.error = null
             try {

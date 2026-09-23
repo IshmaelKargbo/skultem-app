@@ -43,7 +43,7 @@ export const usePayrollStore = defineStore('payroll', {
       }
     },
 
-    async fetchSalaries(page: number = 1, size: number = 12, search: string = '', sortBy: string = '', direction: string = '') {
+    async fetchSalaries(page: number = 1, size: number = runtimeConf().limit, search: string = '', sortBy: string = '', direction: string = '') {
       this.loadingSalaries = true
       this.error = null
       try {
@@ -61,7 +61,7 @@ export const usePayrollStore = defineStore('payroll', {
       return await PayrollApi().setSalary(payload)
     },
 
-    async fetchSalaryTemplates(page: number = 1, size: number = 12, search: string = '', sortBy: string = '', direction: string = '') {
+    async fetchSalaryTemplates(page: number = 1, size: number = runtimeConf().limit, search: string = '', sortBy: string = '', direction: string = '') {
       this.loadingTemplates = true
       this.error = null
       try {
@@ -119,7 +119,7 @@ export const usePayrollStore = defineStore('payroll', {
       }
     },
 
-    async fetchRuns(page: number = 1, size: number = 10, search: string = '', status: string = '', sortBy: string = '', direction: string = '') {
+    async fetchRuns(page: number = 1, size: number = runtimeConf().limit, search: string = '', status: string = '', sortBy: string = '', direction: string = '') {
       this.loadingRuns = true
       this.error = null
       try {

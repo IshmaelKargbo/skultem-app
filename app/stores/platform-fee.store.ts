@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
 
-// The school's view of its platform fee (see Transactions > Platform Fee) - distinct from
-// usePlatformStore, which is the system admin's tool for setting each school's fee amount.
 export const usePlatformFeeStore = defineStore('platform-fee', {
   state: () => ({
     report: null as PlatformFeeReport | null,

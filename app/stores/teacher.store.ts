@@ -10,7 +10,7 @@ export const useTeacherStore = defineStore('teacher', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, search: string = "", sortBy?: string, direction?: string, gender?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, search: string = "", sortBy?: string, direction?: string, gender?: string) {
       this.loading = true
       this.error = null
       try {

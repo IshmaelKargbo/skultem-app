@@ -9,7 +9,7 @@ export const useHouseStore = defineStore('house', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

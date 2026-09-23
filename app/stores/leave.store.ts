@@ -16,7 +16,7 @@ export const useLeaveStore = defineStore('leave', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 9, filters: { status?: string, type?: string, search?: string } = {}) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, filters: { status?: string, type?: string, search?: string } = {}) {
       this.loading = true
       this.error = null
       try {
@@ -30,7 +30,7 @@ export const useLeaveStore = defineStore('leave', {
       }
     },
 
-    async fetchMine(page: number = 1, size: number = 9) {
+    async fetchMine(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

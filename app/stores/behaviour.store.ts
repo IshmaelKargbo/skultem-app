@@ -9,7 +9,7 @@ export const useBehaviourStore = defineStore('behaviourStore', {
   }),
 
   actions: {
-    async fetchAll(classId: string = "", page: number = 1, size: number = 6) {
+    async fetchAll(classId: string = "", page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

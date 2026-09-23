@@ -3,17 +3,12 @@ import { defineStore } from 'pinia'
 export const useModuleStore = defineStore('module', {
   state: () => ({
     modules: [] as SchoolModule[],
-    // False until the first successful fetch. Until then nothing is hidden (fail open): the
-    // backend enforces installs on every request regardless, so a failed fetch must not blank the
-    // whole menu - see useModules.
     loaded: false,
     loading: false
   }),
 
   getters: {
     isInstalled: (state) => (key: string) => state.modules.find(m => m.key === key)?.installed ?? false,
-
-    // Grouped for the Modules page: one entry per category, in catalog order.
     byCategory: (state) => {
       const groups: { category: string, label: string, modules: SchoolModule[] }[] = []
       for (const module of state.modules) {

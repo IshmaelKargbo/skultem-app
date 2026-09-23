@@ -5,13 +5,6 @@ export const useMaterialStore = defineStore('material', {
     categories: [] as MaterialCategory[],
     supplies: [] as Supply[],
     records: [] as Material[],
-    // Materials, categories and supplies each need their own loading/meta - they used to share
-    // one `loading`/`meta` pair, which meant an unrelated fetch (e.g. MaterialAdd populating its
-    // category dropdown) toggled the exact flag the materials table's `:loading` prop watches.
-    // Every material row renders its own MaterialAdd, each firing that category fetch on mount;
-    // each one flipping the shared flag made the table remount its rows - and therefore every
-    // row's MaterialAdd - which fired the fetch again, forever. See material/add.vue and
-    // pages/material/index.vue.
     meta: {} as Meta,
     categoriesMeta: {} as Meta,
     suppliesMeta: {} as Meta,

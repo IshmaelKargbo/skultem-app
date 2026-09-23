@@ -25,7 +25,7 @@ export const useAttendanceStore = defineStore('attendance', {
   }),
 
   actions: {
-    async fetchAll(id: string, page: number = 1, size: number = 6) {
+    async fetchAll(id: string, page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

@@ -9,7 +9,7 @@ export const useExpenseStore = defineStore('expenses', {
     error: null as string | null
   }),
   actions: {
-    async fetchAllCategories(page: number = 1, size: number = 6) {
+    async fetchAllCategories(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -22,7 +22,7 @@ export const useExpenseStore = defineStore('expenses', {
         this.loading = false
       }
     },
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

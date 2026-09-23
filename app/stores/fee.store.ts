@@ -17,7 +17,7 @@ export const useFeeStore = defineStore('fee', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -30,7 +30,7 @@ export const useFeeStore = defineStore('fee', {
         this.loading = false
       }
     },
-    async getClassFeeDetails(session: string, term: string, page: number = 1, size: number = 6) {
+    async getClassFeeDetails(session: string, term: string, page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -43,7 +43,7 @@ export const useFeeStore = defineStore('fee', {
         this.loading = false
       }
     },
-    async fetchAllPayment(page: number = 1, size: number = 6) {
+    async fetchAllPayment(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

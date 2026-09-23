@@ -12,8 +12,6 @@ export const useLedgerStore = defineStore('ledger', {
       totalPages: 0
     } as Meta,
     total: {} as LedgerReport,
-    // The filterable Student Ledger table - kept apart from `records`/`total` above, which the year
-    // totals cards write to, so filtering never overwrites them.
     entries: [] as Ledger[],
     entriesMeta: {
       size: 0,
@@ -29,7 +27,7 @@ export const useLedgerStore = defineStore('ledger', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

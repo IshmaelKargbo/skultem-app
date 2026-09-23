@@ -26,9 +26,6 @@ export interface IdCardVisualSettings {
     validityYears: number
 }
 
-// Mirrors GetIdCardSettingUseCase.DEFAULT_STAFF_FIELDS on the backend - used here only as a
-// fallback so this list is never empty for a school whose backend hasn't picked up the
-// staffFields column/defaults yet (e.g. a server running from before this feature shipped).
 const DEFAULT_STAFF_FIELDS: IdCardField[] = [
     { key: 'name', label: 'Full Name', icon: 'i-lucide-user', cardSlot: 'front', enabled: true, required: true },
     { key: 'staffId', label: 'Staff ID', icon: 'i-lucide-id-card', cardSlot: 'front', enabled: true, required: true },
@@ -58,9 +55,6 @@ const DEFAULT_SETTINGS: IdCardVisualSettings = {
 export const useIdCardStore = defineStore('idCard', {
     state: () => ({
         settings: { ...DEFAULT_SETTINGS },
-        // Staff cards reuse `settings` above (same colours/layout/dimensions/background) - only
-        // the field list is separate, since a staff card shows Staff ID/Position/Phone instead of
-        // Admission No/Class/Guardian.
         fields: [] as IdCardField[],
         staffFields: [] as IdCardField[],
         loaded: false,

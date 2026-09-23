@@ -229,6 +229,19 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    getSssOverview: async (id: string, academicYear: string, stream: string) => {
+      try {
+        const res = await $api(`/class/${id}/sss/overview?streamId=${stream}&academicYearId=${academicYear}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class sss overview')
+
+        return res.data as ClassOverview
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     removeClassMaster: async (id: string) => {
       try {
         return await $api(`/class/master/remove/${id}`, {

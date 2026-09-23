@@ -14,8 +14,6 @@ export interface ReportCardSubject {
     weight: number
     weightScore: number
     grade: string
-    // Null for report cards generated before this field existed - re-generate
-    // to backfill the breakdown, the combined score/grade above still hold.
     assessments: ReportCardAssessmentScore[] | null
 }
 

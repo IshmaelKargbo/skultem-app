@@ -6,8 +6,6 @@ export const useTimetableStore = defineStore('timetable', {
     periods: [] as Period[],
     roomMeta: null as Meta | null,
     periodLoading: true,
-    // Timing templates (Default / Primary / JSS-SSS / ...) - a school can have several, each
-    // assignable to one or more Levels. See TimetableTiming for the template manager UI.
     timings: [] as Timing[],
     timingLevels: [] as TimingLevel[],
     timingLoading: true,

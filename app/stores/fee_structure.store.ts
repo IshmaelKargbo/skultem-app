@@ -10,7 +10,7 @@ export const useFeeStructureStore = defineStore('fee_structure', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, termId?: string, classId?: string, studentType?: string, sortBy?: string, direction?: string, gender?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, termId?: string, classId?: string, studentType?: string, sortBy?: string, direction?: string, gender?: string) {
       this.loading = true
       this.error = null
       try {

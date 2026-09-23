@@ -13,7 +13,7 @@ export const useStudentStore = defineStore('student', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, search: string = "", classId?: string, sortBy?: string, direction?: string, gender?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, search: string = "", classId?: string, sortBy?: string, direction?: string, gender?: string) {
       this.loading = true
       this.error = null
       try {
@@ -74,7 +74,7 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async fetchAllAndReturn(page: number = 1, size: number = 6, search: string = "") {
+    async fetchAllAndReturn(page: number = 1, size: number = runtimeConf().limit, search: string = "") {
       this.loading = true
       this.error = null
       try {
@@ -110,7 +110,7 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async fetchByClass(classId: string, page: number = 1, size: number = 6) {
+    async fetchByClass(classId: string, page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -123,7 +123,7 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async fetchByClassAndStream(classId: string, streamId: string | undefined, page: number = 1, size: number = 6) {
+    async fetchByClassAndStream(classId: string, streamId: string | undefined, page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -148,7 +148,7 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async getPaymentHistoryByStudent(studentId: string, page: number = 1, size: number = 6) {
+    async getPaymentHistoryByStudent(studentId: string, page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

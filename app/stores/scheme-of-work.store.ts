@@ -26,7 +26,7 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
       if (res && this.record?.id === id) this.record = res
       return res
     },
-    async fetchAll(page: number = 1, size: number = 6, filter?: SchemeOfWorkFilter) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, filter?: SchemeOfWorkFilter) {
       this.loading = true
       if (filter) this.filter = filter
       try {
@@ -34,15 +34,12 @@ export const useSchemeOfWorkStore = defineStore('schemaOfWork', {
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
-        // CurriculumsApi() funnels failures through useHandleError, which re-throws a plain
-        // Error (message on `.message`) rather than the raw ofetch error (message on
-        // `.data.message`) - check both so the real reason surfaces instead of the fallback.
         throw err.data?.message || err.message || 'Failed to fetch scheme of work'
       } finally {
         this.loading = false
       }
     },
-    async fetchMine(page: number = 1, size: number = 6, filter?: SchemeOfWorkFilter) {
+    async fetchMine(page: number = 1, size: number = runtimeConf().limit, filter?: SchemeOfWorkFilter) {
       this.loading = true
       if (filter) this.filter = filter
       try {

@@ -10,8 +10,6 @@ export const usePlatformStore = defineStore('platform', {
   }),
 
   getters: {
-    // Falls back to an unconfigured default rather than undefined - a school simply has no row
-    // yet until a SYSTEM_ADMIN sets an amount (see PlatformFeeSettingRepository).
     feeSettingFor: (state) => (schoolId: string): PlatformFeeSetting =>
       state.feeSettings.find(s => s.schoolId === schoolId) || { schoolId, amount: null, updatedAt: null }
   },

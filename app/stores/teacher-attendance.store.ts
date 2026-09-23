@@ -94,7 +94,7 @@ export const useTeacherAttendanceStore = defineStore('teacherAttendance', {
       }
     },
 
-    async fetchHistory(page: number = 1, size: number = 10) {
+    async fetchHistory(page: number = 1, size: number = runtimeConf().limit) {
       this.loadingHistory = true
       try {
         const res = await TeacherAttendanceApi().history(page, size)

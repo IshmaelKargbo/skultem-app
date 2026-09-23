@@ -429,7 +429,7 @@ async function onRemoveClassMaster(id: string) {
     try {
         await classStore.removeClassMaster(id)
         success('Class master unassigned successfully')
-        await classStore.fetchOverview(classId.value)
+        await classStore.fetchOverview(classId.value, viewingYear.value?.id || '', stream)
     } catch (err: any) {
         toastError(err?.message || 'Unable to unassign the class master')
     } finally {
@@ -441,9 +441,6 @@ const isTeacherViewer = computed(() => can(Role.TEACHER))
 const isParentViewer = computed(() => can(Role.PARENT))
 const isMasterOfThisClass = computed(() => classTeachers.value.some(t => t.isMe))
 
-// A subject teacher gets the same roster/attention view as the class master, just not the
-// promotion actions (canManagePromotion stays admin/owner/proprietor-only) - they teach real
-// students in this class and need to see who's struggling just as much as the class master does.
 const teacherSubjectStore = useTeacherSubjectStore()
 const myTeacherSubjects = ref<TeacherSubject[]>([])
 const isSubjectTeacherOfThisClass = computed(() =>
@@ -455,8 +452,6 @@ async function fetchMyTeacherSubjects() {
     myTeacherSubjects.value = await teacherSubjectStore.fetchAllByTeacher(0, 0) || []
 }
 
-// A parent never sees the roster here - it's every family's child in that class, not just
-// their own, so it stays off-limits regardless of who they are.
 const canViewRoster = computed(() => {
     if (isParentViewer.value) return false
     return !isTeacherViewer.value || isMasterOfThisClass.value || isSubjectTeacherOfThisClass.value
@@ -501,31 +496,20 @@ watch(promotionSessionIds, (sessionIds) => {
 async function fetchClass() {
     if (!viewingYear.value) return
     const tasks = [classStore.viewClassByClassAndStream(classId.value, stream, viewingYear.value?.id || '')]
-    // Overview backs the class-master/promotion checks below - a parent has no
-    // use for it and isn't authorized to fetch it, so skip the call entirely.
-    if (!isParentViewer.value) tasks.push(classStore.fetchOverview(classId.value))
+    if (!isParentViewer.value) tasks.push(classStore.fetchOverview(classId.value, viewingYear.value.id || '', stream))
     await Promise.all(tasks)
 }
 
-// size=0 fetches every enrolled student in one go rather than paging through them - the roster
-// is not so large that pagination pulls its weight, and callers like sort-by-performance need the
-// whole class in memory anyway to rank it.
 async function fetchStudents() {
     if (!canViewRoster.value) return
     await studentStore.fetchByClassAndStream(classId.value, stream, 0, 0)
 }
 
 watch([classId, viewingYear], fetchClass, { immediate: true })
-// canViewRoster starts false for a teacher until the class-master check above resolves
-// (overview loads async) - included here so the fetch fires once it settles true.
 watch([classId, canViewRoster], fetchStudents, { immediate: true })
 
 onMounted(() => {
     useAppStore().setTitle('View Class')
-    // Teachers and parents reach this page from a card on their own dashboard
-    // rather than the admin /classes list, so send their back button straight
-    // to the dashboard instead of a plain history-back (which could land
-    // somewhere unexpected, e.g. after a reload).
     useAppStore().setBack(can([Role.TEACHER, Role.PARENT]) ? '/' : true)
 
     fetchClass()

@@ -25,7 +25,7 @@ export const useSystemStore = defineStore('system', {
       }
     },
 
-    async fetchSchools(page: number = 1, size: number = 10, query?: string) {
+    async fetchSchools(page: number = 1, size: number = runtimeConf().limit, query?: string) {
       this.schoolsLoading = true
       try {
         const response = await SystemApi().listSchools(page, size, query) as any
@@ -78,8 +78,6 @@ export const useSystemStore = defineStore('system', {
       const response = await SystemApi().updateSchoolUserStatus(schoolId, userId, status) as any
       if (!response) return response
 
-      // Patch just that one membership in place, on that one user - a full re-fetch would lose
-      // the caller's current page/search position for a change this small.
       const user = this.users.find(u => u.id === userId)
       const membership = user?.schools.find(s => s.schoolId === schoolId)
       if (membership) membership.status = response.status

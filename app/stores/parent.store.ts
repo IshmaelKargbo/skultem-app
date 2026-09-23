@@ -10,7 +10,7 @@ export const useParentStore = defineStore('parent', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, query?: string, sortBy?: string, direction?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
@@ -23,7 +23,7 @@ export const useParentStore = defineStore('parent', {
         this.loading = false
       }
     },
-    async fetchAllStudents(page: number = 1, size: number = 6) {
+    async fetchAllStudents(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

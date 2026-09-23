@@ -9,7 +9,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, classId?: string, streamId?: string, query?: string, sortBy?: string, direction?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, classId?: string, streamId?: string, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {
@@ -22,7 +22,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
         this.loading = false
       }
     },
-    async fetchAllByClass(id: string, page: number = 1, size: number = 6) {
+    async fetchAllByClass(id: string, page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -47,7 +47,7 @@ export const useTeacherSubjectStore = defineStore('teacherSubject', {
         this.loading = false
       }
     },
-    async fetchAllByTeacher(page: number = 1, size: number = 6) {
+    async fetchAllByTeacher(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {

@@ -98,10 +98,10 @@ export type ClassTeacher = {
 export type ClassOverview = {
     clazz: Clazz
     sectionCount: number
-    streamCount: number
+    streamCount?: number
     classMasterCount: number
     sections: ClassSection[]
-    streams: ClassStream[]
+    streams?: ClassStream[]
     classMasters: ClassMaster[]
 }
 

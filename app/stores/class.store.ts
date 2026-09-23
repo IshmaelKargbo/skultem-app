@@ -12,7 +12,7 @@ export const useClassStore = defineStore('class', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit) {
       this.loading = true
       this.error = null
       try {
@@ -57,14 +57,13 @@ export const useClassStore = defineStore('class', {
         this.loading = false
       }
     },
-    // Powers the class-master check on the class detail page (classTeachers /
-    // isMasterOfThisClass) - without this, `overview` never gets populated and a
-    // class master can never pass canViewRoster, so "View Class" from their
-    // dashboard card would always render the locked/no-roster state.
-    async fetchOverview(id: string) {
+    async fetchOverview(id: string, academicYear: string, stream?: string) {
       this.overview = undefined
       try {
-        this.overview = await ClassApi().getOverview(id)
+        if (stream)
+          this.overview = await ClassApi().getSssOverview(id, academicYear, stream)
+        else
+          this.overview = await ClassApi().getOverview(id)
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch class overview'
       }

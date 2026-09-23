@@ -9,7 +9,7 @@ export const useSubjectStore = defineStore('subject', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 11, query?: string, sortBy?: string, direction?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, query?: string, sortBy?: string, direction?: string) {
       this.loading = true
       this.error = null
       try {

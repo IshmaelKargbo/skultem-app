@@ -10,7 +10,7 @@ export const useMaterialSaleStore = defineStore('materialSale', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = 6, search?: string, status?: string, paidPending?: boolean) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, search?: string, status?: string, paidPending?: boolean) {
       this.loading = true
       this.error = null
       try {
