@@ -139,7 +139,7 @@ const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
 // The data: URI logo (safe for the PDF capture) of the viewer's own section, if they're limited to
 // one; the school's plain logo shows meanwhile.
-const { logoSrc: reportLogo, loadLogo } = useReportLogo()
+const { logoSrc: reportLogo, loadLogo, ready: logoReady } = useReportLogo()
 const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
 function todayISO() {
@@ -182,6 +182,7 @@ async function downloadPdf() {
   if (!roster.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#teacher-daily-register-preview', `teacher-daily-register-${sanitizeFilename(filters.date)}`)
     success('Register downloaded')

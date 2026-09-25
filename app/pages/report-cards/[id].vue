@@ -292,6 +292,11 @@ const remarkDraft = ref('')
 const savingRemark = ref(false)
 
 const brandingAssets = ref<{ logo: string | null, principalSignature: string | null }>()
+// Warm the print-safe logo/signature as soon as the card is open, so Download PDF doesn't wait on
+// the image round trip (and it's already in the browser cache on later visits).
+watch(() => record.value?.level, (level) => {
+  if (level !== undefined) useBrandingAssets().get({ level }).catch(() => {})
+})
 const logoSrc = computed(() =>
   brandingAssets.value?.logo || record.value?.school.logo || record.value?.settings.logoUrl || '')
 const signatureSrc = computed(() =>
@@ -372,7 +377,7 @@ async function downloadPdf() {
   downloading.value = true
   try {
     if (!brandingAssets.value) {
-      brandingAssets.value = await SchoolApi().getBrandingAssets(record.value.level)
+      brandingAssets.value = await useBrandingAssets().get({ level: record.value.level })
       await nextTick()
     }
 

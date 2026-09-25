@@ -109,7 +109,7 @@ const filters = reactive({
 const downloading = ref(false)
 // The data: URI logo for the selected level's section (the viewer's own section when none is
 // picked); the school's plain logo shows meanwhile.
-const { logoSrc: reportLogo, loadLogo } = useReportLogo()
+const { logoSrc: reportLogo, loadLogo, ready: logoReady } = useReportLogo()
 const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
 const classes = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
@@ -158,6 +158,7 @@ watch(() => filters.level, level => loadLogo(level || null)) // that level's sec
 async function downloadPdf() {
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#demographics-preview', 'student-demographics')
     success('Report downloaded')

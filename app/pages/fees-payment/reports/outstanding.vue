@@ -156,7 +156,7 @@ const academicYearLabel = computed(() =>
 const termLabel = computed(() => terms.value.find(t => t.value === filters.termId)?.label || 'Whole Year')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 const insights = computed(() => {
   const r = report.value
@@ -188,6 +188,7 @@ async function downloadPdf() {
   if (!report.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#outstanding-fees-preview', `outstanding-fees-${sanitizeFilename(termLabel.value)}`)
     success('Report downloaded')

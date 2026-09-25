@@ -438,6 +438,7 @@ async function loadReceiptSettings() {
 
 async function loadPdfLogo() {
     try {
+        // Print-safe data: URI of this student's section logo - only needed now, at download time.
         const assets = await useBrandingAssets().get({ referenceNo: lastPayments.value[0]?.referenceNo })
         pdfLogo.value = assets?.logo || ''
     } catch {

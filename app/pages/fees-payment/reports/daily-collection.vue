@@ -192,7 +192,7 @@ const loading = computed(() => store.loading)
 
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -219,6 +219,7 @@ async function downloadPdf() {
   if (!report.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#daily-collection-preview', `daily-collection-${filters.from}-${filters.to}`)
     success('Report downloaded')

@@ -142,7 +142,7 @@ const academicYearLabel = computed(() =>
   academicYears.value.find(y => y.value === filters.academicYearId)?.label || academicYearStore.activeYear?.name || '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 function sanitizeFilename(value: string) {
   return String(value).replace(/[^a-z0-9-_]/gi, '-')
@@ -161,6 +161,7 @@ async function downloadPdf() {
   if (!summary.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#class-summary-preview', `class-summary-${sanitizeFilename(summary.value.termLabel || 'all-terms')}`)
     success('Summary downloaded')

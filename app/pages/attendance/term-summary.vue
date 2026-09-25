@@ -174,7 +174,7 @@ const termLabel = computed(() => terms.value.find(t => t.value === filters.termI
 const classLabel = computed(() => classSessions.value.find(c => c.value === filters.classSessionId)?.label || '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 function sanitizeFilename(value: string) {
   return String(value).replace(/[^a-z0-9-_]/gi, '-')
@@ -200,6 +200,7 @@ async function downloadPdf() {
   if (!summary.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#term-summary-preview', `term-summary-${sanitizeFilename(termLabel.value)}`)
     success('Summary downloaded')

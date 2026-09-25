@@ -319,7 +319,7 @@ const loadingClasses = ref(false)
 const localClassSessions = ref<ClassSession[]>([])
 const generating = ref(false)
 const downloading = ref(false)
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 const academicYears = computed(() => academicYearStore.list)
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
@@ -435,6 +435,7 @@ async function downloadPdf() {
   if (!report.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#inspection-report-preview', `inspection-report-${sanitizeFilename(form.reportType)}`)
     success('Report downloaded')

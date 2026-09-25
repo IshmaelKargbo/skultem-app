@@ -25,7 +25,7 @@
 
                     <div v-else-if="receipt" class="mx-auto w-fit shadow-lg">
                         <ReceiptPayment id="receipt-view-instance" :receipt="receipt"
-                            :parse-payment-method="PAYMENT_METHOD_LABELS" :logo="pdfLogo || settings.logoUrl"
+                            :parse-payment-method="PAYMENT_METHOD_LABELS" :logo="pdfLogo || plainLogo || settings.logoUrl"
                             :accent-color="settings.accentColor" :footer-note="settings.footerNote"
                             :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
                     </div>
@@ -42,7 +42,7 @@
         <div v-if="receipt"
             class="pointer-events-none fixed left-0 top-0 -z-10 h-[1123px] w-[794px] overflow-hidden opacity-0">
             <ReceiptPayment id="receipt-download-instance" :receipt="receipt"
-                :parse-payment-method="PAYMENT_METHOD_LABELS" :logo="pdfLogo || settings.logoUrl"
+                :parse-payment-method="PAYMENT_METHOD_LABELS" :logo="pdfLogo || plainLogo || settings.logoUrl"
                 :accent-color="settings.accentColor" :footer-note="settings.footerNote"
                 :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
         </div>
@@ -79,21 +79,34 @@ async function ensureSettingsLoaded() {
 }
 
 // The logo of the section the receipt's student belongs to (the school's for a whole-school school).
-async function loadPdfLogo(referenceNo: string) {
+// The plain logo URL shows straight away (a cheap lookup); the print-safe data: URI - which can
+// take a while the first time, then comes from the browser cache - loads in the background and is
+// awaited only when a PDF is actually being made.
+const plainLogo = ref('')
+let pdfLogoReady: Promise<void> = Promise.resolve()
+
+async function loadPlainLogo(referenceNo: string) {
     try {
-        const assets = await useBrandingAssets().get({ referenceNo })
-        pdfLogo.value = assets?.logo || ''
+        plainLogo.value = (await useBrandingAssets().getPlain({ referenceNo }))?.logo || ''
     } catch {
-        pdfLogo.value = ''
+        plainLogo.value = ''
     }
+}
+
+function loadPdfLogo(referenceNo: string) {
+    pdfLogo.value = null
+    pdfLogoReady = useBrandingAssets().get({ referenceNo })
+        .then((assets) => { pdfLogo.value = assets?.logo || '' })
+        .catch(() => { pdfLogo.value = '' })
 }
 
 async function loadReceipt(referenceNo: string) {
     const [payments] = await Promise.all([
         useFeePaymentStore().getReceipt(referenceNo) as Promise<any>,
         ensureSettingsLoaded(),
-        loadPdfLogo(referenceNo),
+        loadPlainLogo(referenceNo),
     ])
+    loadPdfLogo(referenceNo)
 
     receipt.value = payments?.length ? buildPaymentReceipt(payments) : null
     return receipt.value
@@ -126,6 +139,7 @@ async function download(referenceNo: string) {
             return
         }
 
+        await pdfLogoReady
         await nextTick()
         await $generatePdf('#receipt-download-instance', `receipt-${sanitizeFilename(receipt.value.referenceNo)}`)
     } catch (error: any) {

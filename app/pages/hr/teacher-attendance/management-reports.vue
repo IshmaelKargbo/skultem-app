@@ -261,7 +261,7 @@ const generating = ref(false)
 const downloading = ref(false)
 // The data: URI logo (safe for the PDF capture) of the viewer's own section, if they're limited to
 // one; the school's plain logo shows meanwhile.
-const { logoSrc: reportLogo, loadLogo } = useReportLogo()
+const { logoSrc: reportLogo, loadLogo, ready: logoReady } = useReportLogo()
 const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
@@ -334,6 +334,7 @@ async function downloadPdf() {
   if (!report.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#teacher-management-report-preview', `teacher-management-report-${sanitizeFilename(form.reportType)}`)
     success('Report downloaded')

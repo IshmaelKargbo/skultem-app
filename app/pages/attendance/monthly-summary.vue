@@ -174,7 +174,7 @@ const monthLabel = computed(() => {
 })
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 function currentMonthISO() {
   return new Date().toISOString().slice(0, 7)
@@ -206,6 +206,7 @@ async function downloadPdf() {
   if (!summary.value.length) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#monthly-summary-preview', `monthly-summary-${sanitizeFilename(filters.month)}`)
     success('Summary downloaded')

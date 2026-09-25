@@ -91,7 +91,7 @@ const dashboard = computed(() => store.dashboard)
 const loading = computed(() => store.loading)
 
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 const generatedDate = computed(() => new Date().toLocaleDateString())
 
 // Plain frontend derivations of the numbers already on the page - same approach as the academic
@@ -140,6 +140,7 @@ async function downloadPdf() {
   if (!dashboard.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#fees-dashboard-preview', `fees-dashboard-${sanitizeFilename(dashboard.value.academicYearName)}`)
     success('Dashboard downloaded')

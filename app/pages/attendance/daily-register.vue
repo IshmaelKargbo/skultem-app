@@ -173,7 +173,7 @@ const formattedDate = computed(() => filters.date
   : '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const { logoSrc, loadLogo } = useReportLogo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 function todayISO() {
   return new Date().toISOString().split('T')[0] as string
@@ -240,6 +240,7 @@ async function downloadPdf() {
   if (!register.value) return
   downloading.value = true
   try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
     const { $generatePdf } = useNuxtApp()
     await $generatePdf('#daily-register-preview', `daily-register-${sanitizeFilename(filters.date)}`)
     success('Register downloaded')

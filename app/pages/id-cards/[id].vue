@@ -256,6 +256,8 @@ function addressLine(a?: SectionAddress | null) {
 
 onMounted(async () => {
   useAppStore().setTitle('ID Card Preview')
+  // Warm the print-safe images so Download / Print doesn't wait on them.
+  useBrandingAssets().get(brandingTarget.value).catch(() => {})
   // Not awaited: decorative, and must never hold the card back. Only a school run in management
   // sections has anything section-specific to show; any other school skips the request entirely.
   useSchoolStructure().load().then((structure) => {

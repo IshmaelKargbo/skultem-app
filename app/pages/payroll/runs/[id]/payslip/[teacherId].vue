@@ -109,13 +109,20 @@ const teacherName = computed(() => {
 })
 
 // The logo of the section this staff member belongs to (the school's when they belong to none or several).
+// Plain logo URL first (cheap, shows at once), then the print-safe data: URI in the background - the
+// PDF download waits for it (see downloadPdf). Cached in the browser after the first time.
+let pdfLogoReady: Promise<void> = Promise.resolve()
+
 async function loadPdfLogo() {
+  const target = { teacherId: teacherId.value }
   try {
-    const assets = await useBrandingAssets().get({ teacherId: teacherId.value })
-    pdfLogo.value = assets?.logo || ''
+    pdfLogo.value = (await useBrandingAssets().getPlain(target))?.logo || ''
   } catch {
     pdfLogo.value = ''
   }
+  pdfLogoReady = useBrandingAssets().get(target)
+    .then((assets) => { if (assets?.logo) pdfLogo.value = assets.logo })
+    .catch(() => { /* the plain logo is still showing */ })
 }
 
 async function downloadPdf() {
@@ -123,6 +130,7 @@ async function downloadPdf() {
 
   downloading.value = true
   try {
+    await pdfLogoReady
     await nextTick()
     await $generatePdf('#payslip-document', `payslip-${sanitizeFilename(payslip.value.payrollRunPeriod)}-${sanitizeFilename(teacherName.value)}`)
   } catch (err: any) {
