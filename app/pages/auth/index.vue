@@ -12,6 +12,29 @@ const { user: me } = storeToRefs(store)
 const showAssign = ref(false)
 const selectedUserId = ref('')
 
+// Only owner-level staff can change someone's section access (see AssignStaffManagementSectionsUseCase),
+// and it's only meaningful once the school has actually split itself into sections.
+const { can } = useAuth()
+const { isSectionBased, load: loadStructure } = useSchoolStructure()
+
+function scopableRoles(user: User) {
+  return user.roles.filter(r => isScopableRole(r))
+}
+
+function canManageSections(user: User) {
+  return can([Role.OWNER, Role.PROPRIETOR]) && isSectionBased.value && !!scopableRoles(user).length
+}
+
+const sectionsTarget = ref<User | null>(null)
+const showManageSections = computed<boolean>({
+  get: () => sectionsTarget.value !== null,
+  set: (v) => { if (!v) sectionsTarget.value = null }
+})
+
+function openManageSections(user: User) {
+  sectionsTarget.value = user
+}
+
 const statusTarget = ref<User | null>(null)
 const showStatus = computed<boolean>({
   get: () => statusTarget.value !== null,
@@ -133,6 +156,9 @@ function userActions(user: User) {
     [
       { label: 'View profile', icon: 'i-lucide-eye', to: `/auth/${user.id}` },
       { label: 'Assign role', icon: 'eos-icons:cluster-role-binding', onClick: () => openAssignRole(user.id) },
+      ...(canManageSections(user)
+        ? [{ label: 'Manage sections', icon: 'lucide:layers', onClick: () => openManageSections(user) }]
+        : []),
     ],
     ...(own
       ? []
@@ -193,6 +219,7 @@ onMounted(async () => {
   }
 
   fetchRecord()
+  loadStructure()
   appStore.setTitle('Auth Management')
   document.title = 'Users | Auth | Skultem'
 })
@@ -304,6 +331,11 @@ definePageMeta({
             <UTooltip :delay-duration="0" arrow text="Assign Role">
               <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding" class="rounded-xl"
                 @click="openAssignRole(row.original.id)" />
+            </UTooltip>
+
+            <UTooltip v-if="canManageSections(row.original)" :delay-duration="0" arrow text="Manage Sections">
+              <UButton size="sm" variant="soft" color="info" icon="lucide:layers" class="rounded-xl"
+                @click="openManageSections(row.original)" />
             </UTooltip>
 
             <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow text="Reset Password">
@@ -423,6 +455,10 @@ definePageMeta({
                   <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding"
                     class="rounded-xl" @click="openAssignRole(item.id)" />
                 </UTooltip>
+                <UTooltip v-if="canManageSections(item)" :delay-duration="0" arrow text="Manage Sections">
+                  <UButton size="sm" variant="soft" color="info" icon="lucide:layers" class="rounded-xl"
+                    @click="openManageSections(item)" />
+                </UTooltip>
                 <UDropdownMenu v-if="me?.id !== item.id" :items="userActions(item).slice(1)"
                   :content="{ align: 'end' }">
                   <UButton icon="lucide:ellipsis-vertical" color="neutral" variant="ghost" size="sm"
@@ -452,6 +488,15 @@ definePageMeta({
     </UCard>
 
     <AuthUsersAssign v-model="showAssign" :user-id="selectedUserId" @success="fetchRecord" />
+
+    <AuthUsersManageSections
+      v-if="sectionsTarget"
+      v-model="showManageSections"
+      :user-id="sectionsTarget.id"
+      :user-name="`${sectionsTarget.givenNames} ${sectionsTarget.familyName}`"
+      :roles="scopableRoles(sectionsTarget)"
+      @success="fetchRecord"
+    />
 
     <AuthUsersStatusPrompt v-if="statusTarget" v-model:open="showStatus" :user-id="statusTarget.id"
       :user-name="`${statusTarget.givenNames} ${statusTarget.familyName}`"

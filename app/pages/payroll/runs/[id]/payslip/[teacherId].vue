@@ -108,9 +108,10 @@ const teacherName = computed(() => {
   return `${t.user?.givenNames || ''} ${t.user?.familyName || ''}`.trim()
 })
 
+// The logo of the section this staff member belongs to (the school's when they belong to none or several).
 async function loadPdfLogo() {
   try {
-    const assets = await SchoolApi().getBrandingAssets()
+    const assets = await useBrandingAssets().get({ teacherId: teacherId.value })
     pdfLogo.value = assets?.logo || ''
   } catch {
     pdfLogo.value = ''
@@ -144,7 +145,7 @@ watch([runId, teacherId], async ([r, t]) => {
   await Promise.all([
     store.fetchPayslip(r, t),
     settingStore.loaded ? Promise.resolve() : settingStore.fetch().catch(() => {}),
-    pdfLogo.value === null ? loadPdfLogo() : Promise.resolve()
+    loadPdfLogo()
   ])
 
   useAppStore().setTitle('Payslip')

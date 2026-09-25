@@ -293,7 +293,7 @@ const savingRemark = ref(false)
 
 const brandingAssets = ref<{ logo: string | null, principalSignature: string | null }>()
 const logoSrc = computed(() =>
-  brandingAssets.value?.logo || record.value?.settings.logoUrl || record.value?.school.logo || '')
+  brandingAssets.value?.logo || record.value?.school.logo || record.value?.settings.logoUrl || '')
 const signatureSrc = computed(() =>
   brandingAssets.value?.principalSignature || record.value?.school.principalSignature || '')
 
@@ -372,7 +372,7 @@ async function downloadPdf() {
   downloading.value = true
   try {
     if (!brandingAssets.value) {
-      brandingAssets.value = await SchoolApi().getBrandingAssets()
+      brandingAssets.value = await SchoolApi().getBrandingAssets(record.value.level)
       await nextTick()
     }
 

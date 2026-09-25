@@ -1,16 +1,16 @@
 <template>
-    <UCard :ui="{ body: 'sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-xl font-semibold">Student Photo Upload</p>
-                <p class="text-sm text-muted">Optional - upload a clear profile photo, or add one later from the
+                <p class="font-semibold md:text-xl">Student Photo</p>
+                <p class="text-xs-base md:text-sm text-muted">Optional - upload a clear profile photo, or add one later from the
                     student's profile.</p>
             </div>
         </template>
 
         <UForm :state="form" :schema="schema" @submit="submit">
             <div>
-                <div class="border-b p-5 dark:border-gray-800 border-gray-200 grid grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 gap-5 p-4 md:grid-cols-2 md:p-5">
 
                     <!-- Left: Upload + Cropped Result -->
                     <div class="space-y-4">
@@ -49,8 +49,8 @@
                     </div>
 
                     <!-- Right: Guidelines -->
-                    <div class="space-y-3 py-5">
-                        <p class="text-xl font-semibold">Photo Guidelines</p>
+                    <div class="space-y-3 rounded-lg bg-elevated/50 p-4 md:bg-transparent md:py-5">
+                        <p class="font-semibold md:text-xl">Photo Guidelines</p>
                         <div class="space-y-2 text-muted text-sm">
                             <p>- Clear, front-facing photo</p>
                             <p>- JPG, JPEG or PNG format</p>
@@ -61,13 +61,7 @@
                     </div>
                 </div>
 
-                <div class="flex px-5 py-4 justify-between items-center">
-                    <p class="text-sm text-muted">Step 4 of 4</p>
-                    <div class="flex gap-3">
-                        <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral" />
-                        <UButton type="submit" :loading="loading" :trailing-icon="NEXT_ICON" label="Enroll Student" />
-                    </div>
-                </div>
+                <StudentAddFooter next-label="Enroll Student" :loading="loading" @back="back" />
             </div>
         </UForm>
     </UCard>

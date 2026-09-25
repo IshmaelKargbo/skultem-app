@@ -139,7 +139,10 @@ const filteredTeachers = computed(() => {
 
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = computed(() => school.value?.logo || '')
+// The data: URI logo (safe for the PDF capture) of the viewer's own section, if they're limited to
+// one; the school's plain logo shows meanwhile.
+const { logoSrc: reportLogo, loadLogo } = useReportLogo()
+const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
 function sanitizeFilename(value: string) {
   return String(value).replace(/[^a-z0-9-_]/gi, '-')
@@ -171,6 +174,7 @@ async function downloadPdf() {
 watch(() => filters.termId, loadSummary)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background
   useAppStore().setTitle('Human Resource')
   useAppStore().setBack('/hr')
   document.title = 'Term Summary | HR | Skultem'

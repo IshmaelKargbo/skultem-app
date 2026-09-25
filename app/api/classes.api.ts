@@ -131,10 +131,11 @@ export const ClassApi = () => {
     },
     assignStudentToClass: async (payload: AssignStudentsDto) => {
       try {
-        return await $api('/enrollment/class', {
+        return await withIdempotency('enrollment.create', payload, headers => $api('/enrollment/class', {
           method: 'POST',
+          headers,
           body: payload
-        })
+        }))
       } catch (err: any) {
         useHandleError(err)
       }

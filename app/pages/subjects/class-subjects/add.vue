@@ -218,7 +218,8 @@ const selectedClass = computed(() =>
 )
 
 const disableByLevel = computed(
-    () => selectedClass.value?.classLevel === 'PRIMARY'
+    // All-core levels (Daycare/Nursery/Primary) have no optional subjects - see Level#isAllSubjectsCore.
+    () => !!levelInfo(selectedClass.value?.classLevel)?.allSubjectsCore
 )
 
 const lockedCount = computed(() =>

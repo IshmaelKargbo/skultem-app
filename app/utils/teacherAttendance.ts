@@ -40,6 +40,8 @@ export type AttendanceLocationSettings = {
     longitude: number
     radiusMeters: number
     allowedIps: string | null
+    // null = the school-wide location; otherwise the management section it belongs to.
+    managementSectionId?: string | null
 }
 
 export type TeacherAttendanceRoster = {

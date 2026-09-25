@@ -62,9 +62,10 @@ const loading = ref(true)
 
 const runId = computed(() => route.params.id as string)
 
+// The logo of the section this staff member belongs to - needs the payslip first, for who it's for.
 async function loadPdfLogo() {
   try {
-    const assets = await SchoolApi().getBrandingAssets()
+    const assets = await useBrandingAssets().get({ teacherId: payslip.value?.teacher?.id })
     pdfLogo.value = assets?.logo || ''
   } catch {
     pdfLogo.value = ''
@@ -96,9 +97,9 @@ watch(runId, async (id) => {
   try {
     await Promise.all([
       store.fetchMyPayslip(id),
-      settingStore.loaded ? Promise.resolve() : settingStore.fetch().catch(() => {}),
-      pdfLogo.value === null ? loadPdfLogo() : Promise.resolve()
+      settingStore.loaded ? Promise.resolve() : settingStore.fetch().catch(() => {})
     ])
+    await loadPdfLogo()
   } finally {
     loading.value = false
   }

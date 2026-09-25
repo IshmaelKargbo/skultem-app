@@ -50,7 +50,7 @@
           <USelectMenu
             v-model="state.level"
             value-key="value"
-            :items="levels"
+            :items="myLevelOptions"
             placeholder="Select class level"
             :disabled="isLoading"
           >
@@ -61,14 +61,14 @@
 
           <template #help>
             <p class="text-xs text-muted">
-              Select the education level for this class, e.g. JSS or SSS.
+              {{ scopeHelp }}
             </p>
           </template>
         </UFormField>
 
         <!-- Stream -->
         <UFormField
-          v-if="state.level === Level.SSS"
+          v-if="isStreamed"
           required
           label="Stream"
           name="streams"
@@ -192,9 +192,24 @@ const assessmentTemplates = computed(() =>
   }))
 );
 
+const { levelOptions, load: loadStructure } = useSchoolStructure();
+
+// A scoped Admin (limited to one management section, e.g. Secondary) should only be offered the
+// levels they can actually create classes in - the backend rejects anything outside their scope
+// (see SectionScopeGuard#level) - not every level the whole school offers.
+const { scope: myScope, load: loadMyScope, restrict } = useMyScope();
+const myLevelOptions = computed(() => restrict(levelOptions.value));
+
+const scopeHelp = computed(() => {
+  if (myScope.value && !myScope.value.wholeSchool) {
+    return `You can only create classes in your section (${myScope.value.sectionNames.join(', ')}).`;
+  }
+  return "Select the education level for this class. Only the levels your school offers are listed (Settings > School Structure).";
+});
+
 type ClassForm = {
   name: string;
-  level: Level | "";
+  level: string;
   sections: string[];
   streams: string[];
   assessmentTemplateId: string;
@@ -208,14 +223,16 @@ const state = reactive<ClassForm>({
   assessmentTemplateId: "",
 });
 
+const isStreamed = computed(() => !!levelInfo(state.level)?.streamed);
+
 const schema = yup.object({
   name: yup.string().required("Name is required"),
-  level: yup.mixed<Level>().required("Level is required"),
+  level: yup.string().required("Level is required"),
   sections: yup.array().of(yup.string()).min(1, "At least one section is required"),
   streams: yup.array().when("level", {
-    is: Level.SSS,
+    is: (level: string) => !!levelInfo(level)?.streamed,
     then: (schema) =>
-      schema.of(yup.string()).min(1, "At least one stream is required for SSS"),
+      schema.of(yup.string()).min(1, "At least one stream is required for this level"),
     otherwise: (schema) => schema.notRequired(),
   }),
 });
@@ -223,7 +240,7 @@ const schema = yup.object({
 watch(
   () => state.level,
   (val) => {
-    if (val !== Level.SSS) state.streams = [];
+    if (!levelInfo(val)?.streamed) state.streams = [];
   }
 );
 
@@ -241,7 +258,7 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
   try {
     await store.create({
       name: state.name,
-      level: state.level as Level,
+      level: state.level as LevelCode,
       sections: state.sections,
       streams: state.streams,
       assessmentTemplateId: state.assessmentTemplateId || undefined,
@@ -257,6 +274,8 @@ const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
 };
 
 onMounted(() => {
+  loadStructure();
+  loadMyScope();
   streamStore.fetchAll();
   sectionStore.fetchAll();
   assessmentStore.fetchAll(1, 0);

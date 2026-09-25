@@ -171,6 +171,26 @@ export const TeacherAttendanceApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    // Clock-in locations of the school's management sections (a school run from several places).
+    // A section-limited Admin only gets their own section(s)'.
+    getSectionLocationSettings: async () => {
+      try {
+        const res = await $api('/attendance-location/sections') as any
+        return res.data as AttendanceLocationSettings[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    saveSectionLocationSettings: async (sectionId: string, payload: { latitude: number, longitude: number, radiusMeters: number, allowedIps?: string }) => {
+      try {
+        const res = await $api(`/attendance-location/sections/${sectionId}`, { method: 'PUT', body: payload }) as any
+        return res.data as AttendanceLocationSettings
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

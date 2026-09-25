@@ -74,14 +74,28 @@ export const SchoolApi = () => {
     // public bucket sends no CORS headers, which breaks html2canvas's PDF
     // capture of those images on the ID card. Use this (not `logo`/
     // `principalSignature` from `get`) anywhere an image gets captured to canvas.
-    getBrandingAssets: async () => {
+    // Pass a level to get that level's management section's own branding (falling back to the
+    // school's) - reports about one class/level should. Omit it for the school-wide branding.
+    // A string is a level; an object can name a student (their current class), a staff member
+    // (teacherId), a receipt (referenceNo) instead, and `inline: false` returns the plain URLs
+    // (cheap, for on-screen display) rather than the data: URIs a PDF capture needs.
+    getBrandingAssets: async (target?: string | BrandingTarget | null) => {
       try {
-        const res = await $api('/school/branding/assets') as any
+        const query = typeof target === 'string' ? { level: target } : target ? { ...target } : undefined
+        const res = await $api('/school/branding/assets', { query }) as any
 
         if (!res)
           throw new Error('Failed to fetch school branding assets')
 
-        return res.data as { logo: string | null, principalSignature: string | null }
+        return res.data as {
+          logo: string | null
+          principalSignature: string | null
+          principalName: string | null
+          address: SectionAddress | null
+          // Whether the principal / address are the section's own (vs inherited from the school).
+          ownPrincipal: boolean
+          ownAddress: boolean
+        }
       } catch (err: any) {
         useHandleError(err)
       }
@@ -97,6 +111,51 @@ export const SchoolApi = () => {
           throw new Error('Failed to fetch asset')
 
         return res.data?.dataUri as string | null
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Levels offered + management model/sections - see utils/schoolStructure.ts.
+    // One management section's own logo / principal / signature / location (multipart, like the
+    // school-wide updateBranding). Returns the whole refreshed structure.
+    updateSectionBranding: async (sectionId: string, payload: FormData) => {
+      try {
+        const res = await $api(`/school/structure/sections/${sectionId}/branding`, {
+          method: 'PUT',
+          body: payload
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update section branding')
+
+        return res.data as SchoolStructure
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getStructure: async () => {
+      try {
+        const res = await $api('/school/structure') as any
+
+        if (!res)
+          throw new Error('Failed to fetch school structure')
+
+        return res.data as SchoolStructure
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    updateStructure: async (payload: SchoolStructurePayload) => {
+      try {
+        const res = await $api('/school/structure', {
+          method: 'PUT',
+          body: payload
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update school structure')
+
+        return res.data as SchoolStructure
       } catch (err: any) {
         useHandleError(err)
       }

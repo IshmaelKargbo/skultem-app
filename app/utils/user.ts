@@ -67,7 +67,8 @@ export type AssignRoleDTO = {
 
 export type LoginDto = {
     domain: string
-    email: string
+    // Email or phone number - the backend tells them apart (see LoginUseCase).
+    identifier: string
     password: string
 }
 

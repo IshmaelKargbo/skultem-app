@@ -117,7 +117,7 @@ definePageMeta({
         </div>
       </template>
 
-      <div class="space-y-4 p-4">
+      <div class="space-y-4">
         <!-- LOADING -->
         <div v-if="isLoading" class="space-y-3">
           <GradesRecordLoading v-for="(_, index) in 6" :key="index" />

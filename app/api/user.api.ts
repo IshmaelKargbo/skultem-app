@@ -70,6 +70,51 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    // The signed-in user's own effective scope - drives which levels forms like Add Class offer,
+    // since the backend denies creating anything outside it anyway (see SectionScopeGuard).
+    getMyScope: async () => {
+      try {
+        const res = await $api('/user/me/scope') as any
+
+        if (!res)
+          throw new Error('Failed to fetch scope')
+
+        return res.data as MyScope
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Which staff are limited to which management sections - anyone not in the list is whole-school.
+    // Only meaningful in a SECTION_BASED school; owner-level only (see AssignStaffManagementSectionsUseCase).
+    getManagementSections: async () => {
+      try {
+        const res = await $api('/user/management-sections') as any
+
+        if (!res)
+          throw new Error('Failed to fetch management access')
+
+        return res.data as StaffScope[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Limits userId's access under `role` to these management sections - an empty list restores
+    // whole-school access for that role.
+    assignManagementSections: async (userId: string, role: string, sectionIds: string[]) => {
+      try {
+        const res = await $api(`/user/${userId}/management-sections`, {
+          method: 'PUT',
+          body: { role, sectionIds }
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update management access')
+
+        return res.data as StaffScope
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     setAccess: async (id: string, active: boolean) => {
       try {
         const res = await $api(`/user/${id}/access?active=${active}`, { method: 'PATCH' }) as any

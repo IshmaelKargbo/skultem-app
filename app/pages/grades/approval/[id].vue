@@ -40,15 +40,10 @@ async function load() {
   }
 }
 
-// After approve/return, GradesViewRequest's own store call already updated the request - just
-// re-fetch this one record rather than reloading the whole list it was opened from.
 async function reload() {
   await load()
 }
 
-// Real history back (not a fixed navigateTo) so any filters/search/page applied on the list
-// before opening this request are still in the URL when we land back on it - a hardcoded target
-// path would drop the query string and reset the list to its defaults.
 function goBack() {
   router.back()
 }

@@ -100,6 +100,28 @@
           />
         </UFormField>
 
+        <!-- Management section - only for a scopable role (Admin/Accountant/Teacher) in a school
+        that's split into management sections; a one-management school has nothing to pick, this
+        user is simply staff of the whole school. Owner-level only, same as editing the structure
+        itself - see AssignStaffManagementSectionsUseCase. -->
+        <UFormField
+          v-if="showSectionPicker"
+          required
+          label="Management Section"
+          name="sectionIds"
+          help="Which part of the school will they manage? They'll only see and work with that section's data."
+        >
+          <USelectMenu
+            v-model="state.sectionIds"
+            :items="sectionOptions"
+            value-key="value"
+            multiple
+            :disabled="isLoading"
+            placeholder="Select management section(s)"
+            class="w-full"
+          />
+        </UFormField>
+
         <UDivider />
 
         <!-- Payroll toggle -->
@@ -177,6 +199,12 @@ const { can } = useAuth()
 const roleOptions = computed(() =>
   can([Role.OWNER, Role.PROPRIETOR]) ? roles : roles.filter(r => r.value !== Role.SUPER_ADMIN))
 
+// Management-section assignment is owner-level too (see AssignStaffManagementSectionsUseCase) -
+// and only meaningful once the school has actually split itself into sections.
+const { isSectionBased, sectionOptions, load: loadStructure } = useSchoolStructure()
+const showSectionPicker = computed(() =>
+  can([Role.OWNER, Role.PROPRIETOR]) && isSectionBased.value && isScopableRole(state.role))
+
 const { error: toastError, success: toastSuccess } = useNotify()
 
 const open = ref(false)
@@ -205,6 +233,7 @@ const initialState = {
   familyName: '',
   email: '',
   role: '',
+  sectionIds: [] as string[],
   includeInPayroll: false,
   staffId: '',
   designation: '',
@@ -217,11 +246,20 @@ const initialState = {
 
 const state = reactive({ ...initialState })
 
+// A role change can turn the section picker off (or point it at a different set of options) -
+// drop whatever was picked so a stale selection can't silently ride along.
+watch(() => state.role, () => { state.sectionIds = [] })
+
 const schema = yup.object({
   givenNames: yup.string().required('Given names are required'),
   familyName: yup.string().required('Family name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
   role: yup.string().required('Role is required'),
+  sectionIds: yup.array().of(yup.string()).test(
+    'section-required',
+    'Select at least one management section',
+    (value) => !showSectionPicker.value || !!value?.length
+  ),
 
   staffId: yup.string().when('includeInPayroll', {
     is: true,
@@ -255,6 +293,7 @@ const schema = yup.object({
 
 function openSlider() {
   open.value = true
+  loadStructure()
 }
 
 function close() {
@@ -267,7 +306,18 @@ async function onSubmit() {
   try {
     isLoading.value = true
 
-    await store.create({ ...state })
+    const res: any = await store.create({ ...state })
+    const userId = res?.data?.id
+
+    // A section pick only makes it here once the account itself exists - a failure at this step
+    // shouldn't look like the whole thing failed (the user IS created), just flag it separately.
+    if (showSectionPicker.value && state.sectionIds.length && userId) {
+      try {
+        await store.assignManagementSections(userId, state.role, state.sectionIds)
+      } catch (scopeError: any) {
+        toastError(scopeError?.message || 'User created, but limiting them to that management section failed - set it from their profile.')
+      }
+    }
 
     toastSuccess('User created successfully')
     store.fetchAll(1, runtimeConf().limit)

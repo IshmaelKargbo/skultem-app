@@ -30,13 +30,8 @@ export function useAcademicReportFilters() {
   const classOptions = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
   const subjectOptions = computed(() => subjectStore.records.map(s => ({ label: s.name, value: s.id })))
 
-  // Backend Level enum is uppercase (PRIMARY/JSS/SSS) - kept local rather than reusing the
-  // app-wide Level enum, whose values are mixed-case for display elsewhere.
-  const levelOptions = [
-    { label: 'Primary', value: 'PRIMARY' },
-    { label: 'JSS', value: 'JSS' },
-    { label: 'SSS', value: 'SSS' }
-  ]
+  // Only the levels this school offers (Settings > School Structure), as raw Level values.
+  const { levelOptions, load: loadStructure } = useSchoolStructure()
 
   const queryString = computed(() => {
     const q = new URLSearchParams()
@@ -79,6 +74,7 @@ export function useAcademicReportFilters() {
   }
 
   async function ensureLoaded() {
+    loadStructure()
     await academicYearStore.fetchAll(1, 100)
     await termStore.fetchAll(1, 100)
 

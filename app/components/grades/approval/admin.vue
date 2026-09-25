@@ -1,11 +1,6 @@
 <script setup lang="ts">
 type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
 
-// No "All Statuses" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). Nothing selected already shows the "All Statuses" placeholder, and
-// the select's own clear button (:clear below) gets back to it.
 const filterOptions: { label: string, value: ApprovalRequestStatusFilter }[] = [
   { label: 'Pending', value: 'PENDING_REVIEW' },
   { label: 'Approved', value: 'APPROVED' },
@@ -25,9 +20,6 @@ const isLoading = ref(false)
 const loadingSession = ref(true)
 const summary = ref<AssessmentApprovalSummary | null>(null)
 
-// "" (All Teachers) is the default - see fetchRecords/fetchSummary, which route to the
-// school-wide endpoints when nothing more specific is picked. No "All Teachers" entry in the
-// list itself - see the note on filterOptions above; the placeholder covers it.
 const teachers = computed(() =>
   teacherRecords.value.map(e => ({
     label: `${e.user.givenNames} ${e.user.familyName}`,
@@ -35,12 +27,6 @@ const teachers = computed(() =>
   }))
 )
 
-// Plain local refs, not URL-bound computed getters/setters - a USelectMenu's v-model needs to
-// read back the value it was just given synchronously. Routing the write through
-// router.replace()'s async round trip first (as a computed setter would) left the dropdown
-// showing its old selection until the navigation resolved, which read as "picking an option does
-// nothing". These still seed from the URL on load and push back to it (see the watch below) so a
-// direct link/refresh keeps the filter, but the URL is a mirror now, not the source of truth.
 const teacherId = ref(String(route.query.teacherId ?? ''))
 const status = ref<ApprovalRequestStatusFilter>((route.query.status as ApprovalRequestStatusFilter) ?? '')
 const searchInput = ref(String(route.query.search ?? ''))
@@ -167,7 +153,7 @@ definePageMeta({
         </div>
       </template>
 
-      <div class="space-y-4 p-4">
+      <div class="space-y-4">
         <!-- LOADING -->
         <div v-if="isLoading" class="space-y-3">
           <GradesRecordLoading v-for="(_, index) in 6" :key="index" />
@@ -184,8 +170,8 @@ definePageMeta({
         </div>
 
         <!-- LIST -->
-        <div v-else class="space-y-3">
-          <GradesRecord v-for="req in requests" :key="req.id" :record="req"
+        <div v-else>
+          <GradesRecord class="border-b last:border-b-0 border-default" v-for="req in requests" :key="req.id" :record="req"
             @click="router.push(`/grades/approval/${req.id}`)" />
         </div>
       </div>

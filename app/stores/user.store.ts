@@ -40,6 +40,15 @@ export const useUserStore = defineStore('user', {
     assignRole(payload: AssignRoleDTO) {
       return UserApi().assign(payload)
     },
+    getMyScope() {
+      return UserApi().getMyScope()
+    },
+    getManagementSections() {
+      return UserApi().getManagementSections()
+    },
+    assignManagementSections(userId: string, role: string, sectionIds: string[]) {
+      return UserApi().assignManagementSections(userId, role, sectionIds)
+    },
     async setAccess(id: string, active: boolean) {
       const res = await UserApi().setAccess(id, active)
       if (res) {

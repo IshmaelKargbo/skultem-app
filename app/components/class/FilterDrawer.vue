@@ -9,7 +9,9 @@ const sectionId = defineModel<string>('sectionId', { required: true })
 const streamId = defineModel<string>('streamId', { required: true })
 const level = defineModel<string>('level', { required: true })
 
-const levelOptions = Object.entries(parseLevel).map(([value, label]) => ({ label, value }))
+// Only the levels this school offers (Settings > School Structure).
+const { levelOptions, load: loadStructure } = useSchoolStructure()
+onMounted(() => loadStructure())
 
 const open = ref(false)
 const draftSectionId = ref(sectionId.value)

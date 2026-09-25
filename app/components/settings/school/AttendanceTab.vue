@@ -32,6 +32,9 @@
   <template v-else>
     <!-- Clock-in location, radius and network belong to Staff & HR; the alert threshold below is core. -->
     <template v-if="hrInstalled">
+    <UAlert v-if="isSectionBased" color="info" variant="subtle" icon="lucide:map-pin"
+      title="Each section can have its own clock-in location"
+      description="This is the school-wide location. Staff limited to a section clock in at that section's own location (set under Section Branding); staff not limited to any section can clock in at any of them. This one is used by sections that haven't set their own." />
     <UAlert v-if="!locationConfigured" color="warning" variant="subtle" icon="lucide:triangle-alert"
       title="Not set up yet" description="Teachers can't clock in until a location is saved here." />
     <UCard>
@@ -135,6 +138,7 @@ const attendanceThresholdModel = computed({
 const { success, error: toastError, warning } = useNotify()
 const { isInstalled } = useModules()
 const hrInstalled = computed(() => isInstalled(ModuleKey.STAFF_HR))
+const { isSectionBased } = useSchoolStructure()
 
 const locating = ref(false)
 const locationMap = ref<{ panTo: (lat: number, lng: number) => void } | null>(null)

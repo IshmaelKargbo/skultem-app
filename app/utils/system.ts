@@ -51,6 +51,8 @@ export type OnboardSchoolPayload = {
     email: string
     phone: string
     password: string
+    // Levels offered and how they're managed (see utils/schoolStructure.ts).
+    structure?: SchoolStructurePayload
 }
 
 // Body for editing an existing school's profile from the system-admin portal - matches

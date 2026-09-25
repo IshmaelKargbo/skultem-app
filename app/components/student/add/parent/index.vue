@@ -1,9 +1,9 @@
 <template>
-    <UCard :ui="{ body: 'sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-lg font-semibold md:text-xl">Parent / Guardian Information</p>
-                <p class="text-sm text-muted">Provide parent or legal guardian contact details.</p>
+                <p class="font-semibold md:text-xl">Parent / Guardian Information</p>
+                <p class="text-xs md:text-sm text-muted">Provide parent or legal guardian contact details.</p>
             </div>
         </template>
 
@@ -83,11 +83,13 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex flex-col gap-3 sm:flex-row">
-                        <UButton @click="action = 0" :variant="action === 0 ? 'solid' : 'outline'"
-                            label="Find existing guardian" class="w-full justify-center" size="xl" />
-                        <UButton @click="action = 1" :variant="action === 1 ? 'solid' : 'outline'"
-                            label="Add new guardian" class="w-full justify-center" size="xl" />
+                    <div class="grid grid-cols-2 gap-1 rounded-xl bg-elevated p-1">
+                        <UButton @click="action = 0" :variant="action === 0 ? 'solid' : 'ghost'"
+                            :color="action === 0 ? 'primary' : 'neutral'" icon="i-lucide-search"
+                            label="Existing guardian" class="justify-center" size="lg" />
+                        <UButton @click="action = 1" :variant="action === 1 ? 'solid' : 'ghost'"
+                            :color="action === 1 ? 'primary' : 'neutral'" icon="i-lucide-user-plus"
+                            label="New guardian" class="justify-center" size="lg" />
                     </div>
 
                     <!-- Existing Guardian -->
@@ -177,16 +179,7 @@
                 </div>
 
                 <!-- Footer -->
-                <div
-                    class="flex flex-col-reverse gap-3 border-t border-gray-200 px-4 py-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between md:px-5">
-                    <p class="text-sm text-muted">Step 2 of 4</p>
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <UButton @click="back" label="Back" :icon="BACK_ICON" variant="outline" color="neutral"
-                            class="w-full justify-center sm:w-auto" />
-                        <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON"
-                            class="w-full justify-center sm:w-auto" />
-                    </div>
-                </div>
+                <StudentAddFooter @back="back" />
 
             </div>
         </UForm>
@@ -209,6 +202,8 @@ const { state } = defineProps<{
 const emit = defineEmits<{
     next: [typeof form]
     back: []
+    // Live copy of the form for the enrollment draft autosave - fires on mount and on every edit.
+    change: [typeof form]
 }>()
 
 const form = reactive({
@@ -330,9 +325,13 @@ watch(
     (newVal) => {
         if (!newVal) return
         Object.assign(form, { ...newVal })
+        // A picked existing guardian is what gets submitted (parentId wins), so reopen on that tab.
+        if (form.existingGuardianId) action.value = 0
     },
     { immediate: true }
 )
+
+watch(form, (value) => emit('change', { ...value }), { deep: true, immediate: true })
 
 onMounted(async () => {
     await store.fetchAll(0, 0)

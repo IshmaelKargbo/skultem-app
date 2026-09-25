@@ -55,6 +55,11 @@
                             </div>
 
                             <div v-else class="mt-1 flex flex-wrap items-center gap-2">
+                                <UBadge v-if="hasLeft" :color="record?.status === 'EXPELLED' ? 'error' : 'warning'"
+                                    variant="subtle" size="xs" class="rounded-full"
+                                    :icon="record?.status === 'EXPELLED' ? 'lucide:user-x' : 'lucide:user-minus'">
+                                    {{ record?.status === 'EXPELLED' ? 'Expelled' : 'Withdrawn' }}
+                                </UBadge>
                                 <UTooltip v-if="attentionReason" :delay-duration="0" arrow :text="attentionReason">
                                     <UBadge color="warning" variant="subtle" size="xs" class="rounded-full"
                                         icon="i-lucide-alert-triangle">
@@ -85,14 +90,35 @@
 
                     <!-- Actions -->
                     <div class="flex shrink-0 items-center gap-2 justify-center">
-                        <StudentChangeClass v-if="record && !loading && canChangeClass" :student-id="record.id"
+                        <StudentChangeClass v-if="record && !loading && canChangeClass && !hasLeft" :student-id="record.id"
                             :student-name="name" />
                         <UButton v-if="record && !loading" :to="`/students/${record.id}/edit`" size="sm" color="primary"
                             :icon="EDIT_ICON" label="Edit Student" />
+                        <UDropdownMenu v-if="record && !loading && exitActions.length" :items="exitActions"
+                            :content="{ align: 'end' }">
+                            <UButton size="sm" color="neutral" variant="outline" icon="lucide:ellipsis-vertical"
+                                aria-label="More student actions" />
+                        </UDropdownMenu>
                     </div>
                 </div>
             </div>
         </UCard>
+
+        <!-- Left the school: why and when -->
+        <UAlert v-if="record && hasLeft" :color="record.status === 'EXPELLED' ? 'error' : 'warning'" variant="soft"
+            :icon="record.status === 'EXPELLED' ? 'lucide:user-x' : 'lucide:user-minus'"
+            :title="`${name} was ${record.status === 'EXPELLED' ? 'expelled' : 'withdrawn'}${record.exitDate ? ' on ' + record.exitDate : ''}`">
+            <template #description>
+                <p v-if="record.exitReason">Reason: {{ record.exitReason }}</p>
+                <p v-if="record.exitNote" class="mt-0.5">{{ record.exitNote }}</p>
+                <p class="mt-0.5 text-xs">They're out of class lists, attendance and grading. Fees owed stay on record.</p>
+            </template>
+        </UAlert>
+
+        <StudentExitPrompt v-if="record" v-model:open="showExit" :student-id="record.id" :student-name="name"
+            :mode="exitMode" @changed="fetchStudent" />
+        <StudentDeletePermanently v-if="record" v-model:open="showDelete" :student-id="record.id" :student-name="name"
+            :admission-number="record.admissionNumber" @deleted="navigateTo('/students')" />
 
         <!-- Mobile tabs -->
         <TabMobile class="md:hidden" :tabs="mobileTabs" />
@@ -123,6 +149,41 @@ const canChangeClass = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWN
 
 definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+})
+
+const hasLeft = computed(() => studentHasLeft(record.value?.status))
+
+// Matches POST /student/{id}/withdraw|expel|reinstate (ADMIN/OWNER/PROPRIETOR); permanent delete is
+// owner-level only, like the backend.
+const canManageExit = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const canDeletePermanently = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
+
+const showExit = ref(false)
+const showDelete = ref(false)
+const exitMode = ref<'withdraw' | 'expel' | 'reinstate'>('withdraw')
+
+function openExit(mode: 'withdraw' | 'expel' | 'reinstate') {
+    exitMode.value = mode
+    showExit.value = true
+}
+
+const exitActions = computed(() => {
+    const groups: any[][] = []
+
+    if (canManageExit.value) {
+        groups.push(hasLeft.value
+            ? [{ label: 'Reinstate student', icon: 'lucide:user-check', onClick: () => openExit('reinstate') }]
+            : [
+                { label: 'Stop enrolment (withdraw)', icon: 'lucide:user-minus', onClick: () => openExit('withdraw') },
+                { label: 'Expel student', icon: 'lucide:user-x', color: 'error', onClick: () => openExit('expel') }
+            ])
+    }
+
+    if (canDeletePermanently.value) {
+        groups.push([{ label: 'Delete permanently', icon: 'lucide:trash-2', color: 'error', onClick: () => { showDelete.value = true } }])
+    }
+
+    return groups
 })
 
 const name = computed(() => {

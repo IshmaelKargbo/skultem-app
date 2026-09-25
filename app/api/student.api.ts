@@ -161,11 +161,28 @@ export const StudentApi = () => {
     },
     create: async (payload: FormData) => {
       try {
-        const res: { data: any } = await $api('/student', {
+        // Retry-safe: a repeat of the same enrolment reuses its Idempotency-Key (see utils/idempotency.ts).
+        const res: { data: any } = await withIdempotency('student.enroll', payload, headers => $api('/student', {
           method: 'POST',
+          headers,
           body: payload
-        })
+        }))
         return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Onboards many students from one CSV (see backend BulkImportStudentsUseCase). dryRun only
+    // checks the file - nothing is created - so problem rows can be fixed before importing.
+    bulkImport: async (file: File, dryRun: boolean) => {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await $api(`/student/bulk?dryRun=${dryRun}`, {
+          method: 'POST',
+          body: formData
+        }) as any
+        return res as { message: string, data: BulkStudentImportResult }
       } catch (err: any) {
         useHandleError(err)
       }
@@ -205,6 +222,46 @@ export const StudentApi = () => {
       }
     },
     // Enrollment doesn't require a photo - this adds or replaces one afterwards.
+    // A student leaves the school without finishing - their enrolment stops (they drop out of class
+    // lists, attendance and grading) but the record and any fees owed stay. See backend
+    // EndStudentEnrollmentUseCase.
+    withdraw: async (id: string, payload: EndStudentDto) => {
+      try {
+        const res: { data: any } = await $api(`/student/${id}/withdraw`, { method: 'POST', body: payload })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    expel: async (id: string, payload: EndStudentDto) => {
+      try {
+        const res: { data: any } = await $api(`/student/${id}/expel`, { method: 'POST', body: payload })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    reinstate: async (id: string) => {
+      try {
+        const res: { data: any } = await $api(`/student/${id}/reinstate`, { method: 'POST' })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Irreversible - removes the student with their fees and assessments. Owner-level only; the
+    // admission number is the typed confirmation.
+    deletePermanently: async (id: string, confirmation: string) => {
+      try {
+        const res: { data: any } = await $api(`/student/${id}/delete-permanently`, {
+          method: 'POST',
+          body: { confirmation }
+        })
+        return res.data as { studentName: string, enrollmentsRemoved: number, feesRemoved: number, assessmentsRemoved: number }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     updatePhoto: async (id: string, photo: File) => {
       try {
         const formData = new FormData()

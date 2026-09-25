@@ -65,6 +65,11 @@
         </div>
       </UCard>
 
+      <!-- Levels + management structure -->
+      <div ref="structureEl" class="scroll-mt-4">
+        <SettingsSchoolStructureEditor v-model="structure" :readonly="loading" :show-errors="showStructureErrors" />
+      </div>
+
       <!-- Owner -->
       <UCard>
         <template #header>
@@ -125,6 +130,11 @@ const { regionOptions, districtOptions } = useRdcsl();
 
 const loading = ref(false);
 
+// Levels offered + how they're managed. No levels pre-ticked - the school has to say what it runs.
+const structure = ref<SchoolStructureDraft>({ managementModel: "UNIFIED", levels: [], sections: [] });
+const showStructureErrors = ref(false);
+const structureEl = ref<HTMLElement | null>(null);
+
 const state = reactive({
   name: "",
   domain: "",
@@ -167,6 +177,13 @@ function randomPassword() {
 }
 
 async function onSubmit() {
+  if (validateSchoolStructure(structure.value).length) {
+    showStructureErrors.value = true;
+    structureEl.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+    toastError("Finish setting up the school's levels and management structure");
+    return;
+  }
+
   try {
     loading.value = true;
 
@@ -183,6 +200,7 @@ async function onSubmit() {
       email: state.email,
       phone: state.phone,
       password: randomPassword(),
+      structure: draftToPayload(structure.value),
     });
 
     if (!school) return;

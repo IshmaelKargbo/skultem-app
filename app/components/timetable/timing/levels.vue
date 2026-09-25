@@ -14,12 +14,12 @@
       </div>
     </template>
 
-      <div v-for="level in SCHOOL_LEVEL_OPTIONS" :key="level.value"
+      <div v-for="level in levelOptions" :key="level.value"
         class="flex items-center justify-between gap-3 border-b last:border-0 border-default py-3 px-5">
         <p class="font-medium">{{ level.label }}</p>
 
-        <USelectMenu :model-value="assignedId(level.value)"
-          @update:model-value="(id: string) => assign(level.value, id)" value-key="value" size="md"
+        <USelectMenu :model-value="assignedId(level.value as SchoolLevel)"
+          @update:model-value="(id: string) => assign(level.value as SchoolLevel, id)" value-key="value" size="md"
           :items="templateOptions" :loading="loading"
           :placeholder="`Not set - uses ${defaultTiming?.name || 'Default'}`" class="w-56" />
       </div>
@@ -28,6 +28,8 @@
 
 <script lang="ts" setup>
 const store = useTimetableStore()
+// Only the levels this school offers (Settings > School Structure).
+const { levelOptions, load: loadStructure } = useSchoolStructure()
 const { timings, timingLevels, defaultTiming } = storeToRefs(store)
 
 const loading = ref(true)
@@ -51,6 +53,7 @@ async function assign(level: SchoolLevel, timingId: string) {
 }
 
 onMounted(async () => {
+  loadStructure()
   try {
     await store.listTimingLevels()
   } catch (error: any) {

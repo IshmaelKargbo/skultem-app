@@ -4,11 +4,11 @@
       <!-- BANNER -->
       <div class="h-14 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
 
-      <UButton icon="lucide:x" size="sm" variant="soft" color="neutral" class="absolute top-3 right-3 rounded-full" @click="close" />
+      <UButton icon="lucide:x" size="sm" variant="soft" color="neutral" class="absolute md:hidden top-3 right-3 rounded-full" @click="close" />
 
       <div class="space-y-6 px-5 pb-5">
         <!-- IDENTITY -->
-        <div class="-mt-7 flex flex-wrap items-end justify-between gap-3">
+        <div class="-mt-7 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-end gap-3">
             <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-default p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10">
               <div class="flex size-full items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10">

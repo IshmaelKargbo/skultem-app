@@ -187,7 +187,8 @@ onMounted(() => {
       </template>
       <template #name-cell="{ row }">
         <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
-          :photo="row.original.photo" :subtitle="row.original.className || 'No Class'" />
+          :photo="row.original.photo" :status="row.original.status"
+          :subtitle="row.original.className || 'No Class'" />
       </template>
       <template #total-cell="{ row }">
         <p class="text-error">{{ format(row.original.feeDetail?.total) }}</p>

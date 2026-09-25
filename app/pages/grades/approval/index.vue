@@ -22,9 +22,6 @@
     </div>
 
     <GradesApprovalTeacher v-else-if="isClassMaster" />
-
-    <!-- Grading is submit (subject teacher) / approve (class master) - a subject-only teacher
-         has nothing to approve here, so point them at where they actually act instead. -->
     <div v-else class="px-4 md:px-6">
       <UCard>
         <div class="flex flex-col items-center gap-3 py-10 text-center">

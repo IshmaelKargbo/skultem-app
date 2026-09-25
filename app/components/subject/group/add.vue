@@ -42,7 +42,7 @@
           <USelectMenu
             v-model="state.level"
             value-key="value"
-            :items="levelsXPrimary"
+            :items="groupLevels"
             placeholder="Select Level"
           >
             <template #leading>
@@ -53,7 +53,7 @@
 
         <!-- Class -->
         <UFormField
-          v-if="state.level && state.level !== Level.SSS"
+          v-if="state.level && !isStreamed"
           required
           label="Class"
           name="classId"
@@ -72,7 +72,7 @@
 
         <!-- Stream -->
         <UFormField
-          v-if="state.level === Level.SSS"
+          v-if="isStreamed"
           required
           label="Stream"
           name="streamId"
@@ -143,9 +143,15 @@ const streams = computed(() =>
   }))
 );
 
-const levelsXPrimary = computed(() =>
-  levels.filter((e) => e.label.toUpperCase() != "PRIMARY")
+// Subject groups only exist where students choose subjects - never at an all-core level (Daycare,
+// Nursery, Primary). Streamed levels (SSS) attach them to a stream instead of a class.
+const { offeredLevels, load: loadStructure } = useSchoolStructure();
+const groupLevels = computed(() =>
+  offeredLevels.value
+    .filter((l) => !l.allSubjectsCore)
+    .map((l) => ({ label: l.label, value: l.value as string }))
 );
+const isStreamed = computed(() => !!levelInfo(state.level)?.streamed);
 
 const classes = computed(() =>
   classStore.records
@@ -158,7 +164,7 @@ const classes = computed(() =>
 
 type SubjectGroupForm = {
   name: string;
-  level: Level | null;
+  level: string;
   classId: string;
   streamId: string;
   totalSelection: number | null;
@@ -166,7 +172,7 @@ type SubjectGroupForm = {
 
 const state = reactive<SubjectGroupForm>({
   name: "",
-  level: null,
+  level: "",
   streamId: "",
   classId: "",
   totalSelection: null,
@@ -174,21 +180,21 @@ const state = reactive<SubjectGroupForm>({
 
 const schema = yup.object({
   name: yup.string().required("Group name is required"),
-  level: yup.mixed<Level>().required("Level is required"),
+  level: yup.string().required("Level is required"),
   streamId: yup
     .string()
     .nullable()
     .when("level", {
-      is: (val: Level) => val === Level.SSS,
-      then: (schema) => schema.required("Stream is required for SSS"),
+      is: (val: string) => !!levelInfo(val)?.streamed,
+      then: (schema) => schema.required("Stream is required for this level"),
       otherwise: (schema) => schema.nullable(),
     }),
   classId: yup
     .string()
     .nullable()
     .when("level", {
-      is: (val: Level) => val !== Level.SSS,
-      then: (schema) => schema.required("Class is required for Primary of JSS"),
+      is: (val: string) => !levelInfo(val)?.streamed,
+      then: (schema) => schema.required("Class is required for this level"),
       otherwise: (schema) => schema.nullable(),
     }),
   totalSelection: yup
@@ -238,6 +244,7 @@ const onSubmit = async (event: FormSubmitEvent<SubjectGroupForm>) => {
 };
 
 onMounted(() => {
+  loadStructure();
   streamStore.fetchAll(0, 0);
   classStore.fetchAll(0, 0);
 });

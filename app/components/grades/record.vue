@@ -1,11 +1,7 @@
 <template>
-    <UCard v-if="record" :ui="{ body: 'p-4' }" class="cursor-pointer border-l-4 transition-colors hover:border-primary/40"
+    <div v-if="record" class="cursor-pointer border-l-2 transition-colors hover:border-primary/40"
         :class="[borderClass(record.status), selected?.id === record.id ? 'ring-2 ring-primary/40' : '']">
-        <div class="flex items-start gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10">
-                <UIcon name="lucide:clipboard-check" class="text-primary-500" />
-            </div>
-
+        <div class="flex items-start gap-3 p-3">
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                     <h3 class="min-w-0 truncate font-semibold text-highlighted">{{ record.subject }}</h3>
@@ -30,7 +26,7 @@
                     :pass="record.passPercentage" :fail="record.failPercentage" />
             </div>
         </div>
-    </UCard>
+    </div>
 </template>
 
 <script setup lang="ts">

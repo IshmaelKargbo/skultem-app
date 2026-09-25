@@ -94,6 +94,10 @@
                     :loading-location="loadingLocation" :location-configured="locationConfigured"
                     v-model:attendance-threshold="state.attendanceThreshold" />
 
+                <SettingsSchoolSectionBrandingTab v-else-if="active === 'sections'" :school-defaults="schoolDefaults" />
+
+                <SettingsSchoolStructureTab v-else-if="active === 'structure'" />
+
                 <SettingsSchoolPlaygroundTab v-else-if="active === 'playground'" @live="onLive" />
             </div>
         </div>
@@ -117,6 +121,10 @@
                         <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
                             :loading-location="loadingLocation" :location-configured="locationConfigured"
                             v-model:attendance-threshold="state.attendanceThreshold" />
+
+                        <SettingsSchoolSectionBrandingTab v-else-if="active === 'sections'" :school-defaults="schoolDefaults" />
+
+                        <SettingsSchoolStructureTab v-else-if="active === 'structure'" />
 
                         <SettingsSchoolPlaygroundTab v-else-if="active === 'playground'" @live="onLive" />
                     </div>
@@ -186,17 +194,39 @@ const signaturePreview = ref('')
 // permanent "Soon" placeholders with no page behind them. Playground only exists while the school
 // is in playground mode (a system admin sets that - see utils/playground.ts).
 const isPlayground = ref(false)
-const sections = computed(() => [
-    { key: 'profile', label: 'School Profile', icon: SCHOOL_ICON },
-    { key: 'attendance', label: 'Attendance', icon: ATTENDANCE_ICON },
-    ...(isPlayground.value ? [{ key: 'playground', label: 'Playground', icon: 'i-lucide-flask-conical' }] : [])
-])
+
+// A school run in management sections gets a "Section Branding" tab (each section's own logo,
+// principal, signature and location). A section-limited Admin can only change their own section's
+// details - every other tab saves school-wide settings the backend would refuse - so that's all
+// they're shown.
+const { isSectionBased, load: loadStructure } = useSchoolStructure()
+const { scope, load: loadScope } = useMyScope()
+const isScoped = computed(() => !!scope.value && !scope.value.wholeSchool)
+
+const sections = computed(() => {
+    if (isScoped.value) return [{ key: 'sections', label: 'Section Branding', icon: 'i-lucide-building-2' }]
+    return [
+        { key: 'profile', label: 'School Profile', icon: SCHOOL_ICON },
+        ...(isSectionBased.value ? [{ key: 'sections', label: 'Section Branding', icon: 'i-lucide-building-2' }] : []),
+        { key: 'attendance', label: 'Attendance', icon: ATTENDANCE_ICON },
+        { key: 'structure', label: 'School Structure', icon: 'i-lucide-network' },
+        ...(isPlayground.value ? [{ key: 'playground', label: 'Playground', icon: 'i-lucide-flask-conical' }] : [])
+    ]
+})
+
+// The school's own values, shown in the section tab as what an empty field falls back to.
+const schoolDefaults = computed(() => ({
+    logo: logoUrl.value,
+    principalName: state.principalName,
+    principalSignature: signatureUrl.value,
+    address: { street: state.street, city: state.city, chiefdom: state.chiefdom, district: state.district, region: state.region }
+}))
 
 const route = useRoute()
 // 'playground' is accepted up front since that section only appears once the school has loaded -
 // onMounted falls back to the profile if the school turns out not to be one.
 const requestedSection = String(route.query.section ?? '')
-const active = ref(['profile', 'attendance', 'playground'].includes(requestedSection) ? requestedSection : 'profile')
+const active = ref(['profile', 'sections', 'attendance', 'structure', 'playground'].includes(requestedSection) ? requestedSection : 'profile')
 const activeSectionLabel = computed(() => sections.value.find(s => s.key === active.value)?.label ?? '')
 
 // Mobile only (see the USlideover in the template) - a tab tap both switches the active section
@@ -356,6 +386,7 @@ async function save() {
         if (!branded) return
 
         applySchool(branded)
+        useReportLogo().reset() // reports/receipts cache the logo for the session
         applyBrandColors(branded.primaryColor, branded.secondaryColor)
 
         // Keep the offline cache (see useSchoolCache) in step too, or it'd keep serving the old
@@ -381,14 +412,18 @@ onMounted(async () => {
     try {
         const school = await SchoolApi().get('current')
         if (school) applySchool(school)
+        // Before the tabs render, so a section-limited Admin never sees a tab they can't use.
+        await Promise.all([loadStructure(), loadScope()])
     } finally {
         loading.value = false
     }
-    if (active.value === 'playground' && !isPlayground.value) active.value = 'profile'
+    // Fall back to the first tab this user actually has (e.g. a deep link to a tab that only
+    // exists in section-based schools, or a section-limited Admin landing on 'profile').
+    if (!sections.value.some(s => s.key === active.value)) active.value = sections.value[0]?.key ?? 'profile'
     // Deep links (e.g. the playground banner's "Go live") land on their section on mobile too.
     else if (requestedSection === active.value) selectSection(active.value)
 
-    if (hrInstalled.value) await attendanceStore.fetchLocationSettings()
+    if (hrInstalled.value && !isScoped.value) await attendanceStore.fetchLocationSettings()
     if (locationSettings.value) {
         attendanceState.latitude = locationSettings.value.latitude
         attendanceState.longitude = locationSettings.value.longitude

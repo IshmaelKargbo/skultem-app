@@ -28,8 +28,41 @@ export type Student = {
     rank: string
     house?: House
     status: string
+    // Why/when a WITHDRAWN or EXPELLED student left - empty for everyone else.
+    exitReason?: string | null
+    exitDate?: string | null
+    exitNote?: string | null
     createdAt: string
     updatedAt: string
+}
+
+// Withdrawing (stopping enrollment) or expelling a student. exitDate defaults to today server-side.
+export type EndStudentDto = {
+    reason?: string
+    exitDate?: string
+    note?: string
+}
+
+// Plain strings, sent as the "reason" text - "Other" lets the note carry the detail.
+export const WITHDRAW_REASONS: string[] = [
+    'Relocated',
+    'Transferred to another school',
+    'Fees / financial difficulty',
+    'Health reasons',
+    'Family decision',
+    'Other'
+]
+
+export const EXPEL_REASONS: string[] = [
+    'Serious misconduct',
+    'Repeated indiscipline',
+    'Violence or threat to others',
+    'Academic dishonesty',
+    'Other'
+]
+
+export function studentHasLeft(status?: string | null): boolean {
+    return status === 'WITHDRAWN' || status === 'EXPELLED'
 }
 
 export type EditStudentDTO = {
@@ -121,4 +154,34 @@ export type ChangeClassDto = {
 export type ChangeClassResult = {
     enrollmentId: string
     requiresSubjectSelection: boolean
+}
+
+// Result of a bulk student import - see StudentApi().bulkImport. A dry run only has READY/FAILED
+// rows; a real run has CREATED/FAILED.
+export type BulkStudentImportRow = {
+    row: number
+    name: string
+    className: string
+    admissionNumber: string | null
+    guardianPhone: string
+    // Linked to a guardian already at the school (or an earlier row - siblings).
+    existingGuardian: boolean
+    outcome: 'READY' | 'CREATED' | 'FAILED'
+    message: string | null
+    // Set when the row failed on its subjects: the elective groups of its class to pick from.
+    subjectChoices: BulkSubjectChoice[] | null
+}
+
+export type BulkSubjectChoice = {
+    group: string
+    select: number
+    subjects: string[]
+}
+
+export type BulkStudentImportResult = {
+    dryRun: boolean
+    ready: number
+    created: number
+    failed: number
+    rows: BulkStudentImportRow[]
 }

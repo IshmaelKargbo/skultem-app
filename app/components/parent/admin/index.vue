@@ -78,11 +78,22 @@ const columns = [
     },
 ]
 
+const { can } = useAuth()
+// Matches PATCH /parent/{id} (ADMIN/OWNER/PROPRIETOR); permanent delete is owner-level only, like the backend.
+const canDelete = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
+
+const editTarget = ref<Parent | null>(null)
+const deleteTarget = ref<Parent | null>(null)
+
 const addEmailTarget = ref<Parent | null>(null)
 
 function openAddEmail(parent: Parent) {
     addEmailTarget.value = parent
 }
+
+// Guardians can sign in with their phone number, so one without an email still gets portal
+// access once an admin hands them a password (they're asked to set their own on first login).
+const loginTarget = ref<Parent | null>(null)
 
 const page = computed<number>({
     get: () => Number(route.query.page || 1),
@@ -184,9 +195,15 @@ watch(
                     <TableLoading :size="columns.length" />
                 </template>
                 <template #actions-cell="{ row }">
-                    <div class="flex justify-end">
+                    <div class="flex justify-end gap-1">
+                        <UButton @click="editTarget = row.original" size="sm" variant="ghost" color="neutral"
+                            label="Edit" :icon="EDIT_ICON" />
                         <UButton v-if="!row.original.email" @click="openAddEmail(row.original)" size="sm"
                             variant="ghost" color="warning" label="Add Email" :icon="EMAIL_ICON" />
+                        <UButton @click="loginTarget = row.original" size="sm" variant="ghost" color="neutral"
+                            label="Give login" icon="i-lucide-key-round" />
+                        <UButton v-if="canDelete" @click="deleteTarget = row.original" size="sm" variant="ghost"
+                            color="error" icon="lucide:trash-2" aria-label="Delete parent permanently" />
                     </div>
                 </template>
             </UTable>
@@ -232,8 +249,14 @@ watch(
                             <div class="flex shrink-0 flex-col items-end gap-1.5">
                                 <UBadge :label="STATUS_LABELS[parent.status]" :color="STATUS_COLORS[parent.status]"
                                     variant="subtle" size="sm" />
+                                <UButton @click="editTarget = parent" size="xs" variant="ghost" color="neutral"
+                                    label="Edit" :icon="EDIT_ICON" />
                                 <UButton v-if="!parent.email" @click="openAddEmail(parent)" size="xs" variant="ghost"
                                     color="warning" label="Add Email" :icon="EMAIL_ICON" />
+                                <UButton @click="loginTarget = parent" size="xs" variant="ghost" color="neutral"
+                                    label="Give login" icon="i-lucide-key-round" />
+                                <UButton v-if="canDelete" @click="deleteTarget = parent" size="xs" variant="ghost"
+                                    color="error" label="Delete" icon="lucide:trash-2" />
                             </div>
                         </div>
                     </div>
@@ -261,7 +284,17 @@ watch(
             </template>
         </UCard>
 
+        <ParentEdit v-if="editTarget" :open="!!editTarget" :parent="editTarget"
+            @update:open="(v) => { if (!v) editTarget = null }" @saved="fetchRecords" />
+
+        <ParentDeletePermanently v-if="deleteTarget" :open="!!deleteTarget" :parent="deleteTarget"
+            @update:open="(v) => { if (!v) deleteTarget = null }" @deleted="fetchRecords" />
+
         <ParentAddEmail v-if="addEmailTarget" :open="!!addEmailTarget" :parent-id="addEmailTarget.id"
             :parent-name="addEmailTarget.name" @update:open="(v) => { if (!v) addEmailTarget = null }" />
+
+        <AuthUsersResetPasswordPrompt v-if="loginTarget" :open="!!loginTarget" :user-id="loginTarget.userId"
+            :user-name="loginTarget.name" :sign-in-with="loginTarget.phone"
+            @update:open="(v) => { if (!v) loginTarget = null }" />
     </div>
 </template>

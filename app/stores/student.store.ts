@@ -163,6 +163,24 @@ export const useStudentStore = defineStore('student', {
     create(payload: FormData) {
       return StudentApi().create(payload)
     },
+    async withdraw(id: string, payload: EndStudentDto) {
+      const res = await StudentApi().withdraw(id, payload)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
+    async expel(id: string, payload: EndStudentDto) {
+      const res = await StudentApi().expel(id, payload)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
+    async reinstate(id: string) {
+      const res = await StudentApi().reinstate(id)
+      if (res && this.record?.id === id) this.record = res
+      return res
+    },
+    deletePermanently(id: string, confirmation: string) {
+      return StudentApi().deletePermanently(id, confirmation)
+    },
     async updatePhoto(id: string, photo: File) {
       const res = await StudentApi().updatePhoto(id, photo)
       if (res && this.record?.id === id) this.record = res

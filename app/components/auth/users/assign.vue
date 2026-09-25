@@ -55,6 +55,27 @@
             class="w-full"
           />
         </UFormField>
+
+        <!-- Management section - only for a scopable role (Admin/Accountant/Teacher) in a school
+        split into management sections; nothing to pick in a one-management school, this user is
+        simply staff of the whole school. Owner-level only, same as editing the structure itself. -->
+        <UFormField
+          v-if="showSectionPicker"
+          required
+          label="Management Section"
+          name="sectionIds"
+          help="Which part of the school will they manage? They'll only see and work with that section's data."
+        >
+          <USelectMenu
+            v-model="state.sectionIds"
+            :items="sectionOptions"
+            value-key="value"
+            multiple
+            :disabled="isLoading"
+            placeholder="Select management section(s)"
+            class="w-full"
+          />
+        </UFormField>
       </UForm>
     </template>
 
@@ -88,6 +109,12 @@ const { can } = useAuth()
 const roleOptions = computed(() =>
   can([Role.OWNER, Role.PROPRIETOR]) ? roles : roles.filter(r => r.value !== Role.SUPER_ADMIN))
 
+// Management-section assignment is owner-level too (see AssignStaffManagementSectionsUseCase) -
+// and only meaningful once the school has actually split itself into sections.
+const { isSectionBased, sectionOptions, load: loadStructure } = useSchoolStructure()
+const showSectionPicker = computed(() =>
+  can([Role.OWNER, Role.PROPRIETOR]) && isSectionBased.value && isScopableRole(state.role))
+
 const props = defineProps<{
   modelValue: boolean
   userId: string
@@ -113,8 +140,13 @@ const open = computed({
 
 const state = reactive({
   user: props.userId,
-  role: ''
+  role: '',
+  sectionIds: [] as string[]
 })
+
+// A role change can turn the section picker off (or point it at a different set of options) -
+// drop whatever was picked so a stale selection can't silently ride along.
+watch(() => state.role, () => { state.sectionIds = [] })
 
 const users = computed(() =>
   records.value.map((user) => ({
@@ -125,7 +157,12 @@ const users = computed(() =>
 
 const schema = yup.object({
   user: yup.string().required(),
-  role: yup.string().required('Role is required')
+  role: yup.string().required('Role is required'),
+  sectionIds: yup.array().of(yup.string()).test(
+    'section-required',
+    'Select at least one management section',
+    (value) => !showSectionPicker.value || !!value?.length
+  )
 })
 
 watch(
@@ -141,7 +178,8 @@ function close() {
 
   Object.assign(state, {
     user: props.userId,
-    role: ''
+    role: '',
+    sectionIds: []
   })
 }
 
@@ -153,6 +191,16 @@ async function onSubmit() {
       userId: state.user,
       role: state.role
     })
+
+    // The role assignment succeeded regardless of what happens next - a failure here shouldn't
+    // look like the whole thing failed, just flag it separately.
+    if (showSectionPicker.value && state.sectionIds.length) {
+      try {
+        await store.assignManagementSections(state.user, state.role, state.sectionIds)
+      } catch (scopeError: any) {
+        toastError(scopeError?.message || 'Role assigned, but limiting them to that management section failed - set it from their profile.')
+      }
+    }
 
     toastSuccess('Role assigned successfully')
 
@@ -170,5 +218,8 @@ async function fetchUsers() {
   await store.fetchAll(1, 100)
 }
 
-onMounted(fetchUsers)
+onMounted(() => {
+  fetchUsers()
+  loadStructure()
+})
 </script>

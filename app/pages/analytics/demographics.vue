@@ -107,17 +107,15 @@ const filters = reactive({
 })
 
 const downloading = ref(false)
-const logoSrc = ref('')
+// The data: URI logo for the selected level's section (the viewer's own section when none is
+// picked); the school's plain logo shows meanwhile.
+const { logoSrc: reportLogo, loadLogo } = useReportLogo()
+const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
 const classes = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
 const classLabel = computed(() => classes.value.find(c => c.value === filters.classId)?.label || '')
-// Backend Level enum is uppercase (PRIMARY/JSS/SSS) - kept local to this filter rather than reusing
-// the app-wide Level enum, whose values are mixed-case for display elsewhere.
-const levels = [
-  { label: 'Primary', value: 'PRIMARY' },
-  { label: 'JSS', value: 'JSS' },
-  { label: 'SSS', value: 'SSS' }
-]
+// Only the levels this school offers (Settings > School Structure), as raw Level values.
+const { levelOptions: levels, load: loadStructure } = useSchoolStructure()
 
 const schoolName = computed(() => school.value?.name || 'Skultem')
 const generatedDate = computed(() => new Date().toLocaleString())
@@ -155,6 +153,7 @@ async function loadDemographics() {
 }
 
 watch(() => [filters.classId, filters.level], loadDemographics)
+watch(() => filters.level, level => loadLogo(level || null)) // that level's section logo
 
 async function downloadPdf() {
   downloading.value = true
@@ -170,6 +169,7 @@ async function downloadPdf() {
 }
 
 onMounted(async () => {
+  loadStructure()
   useAppStore().setTitle('Student Demographics')
   document.title = 'Student Demographics | Skultem'
 
@@ -177,10 +177,7 @@ onMounted(async () => {
   // fetches below - the CORS-safe data URI (needed only for the html2canvas PDF capture) loads
   // in the background and swaps in once ready.
   hydrateFromCache()
-  logoSrc.value = school.value?.logo || ''
-  SchoolApi().getBrandingAssets().then(assets => {
-    if (assets?.logo) logoSrc.value = assets.logo
-  })
+  loadLogo(filters.level || null)
 
   await classStore.fetchAll(1, 200)
   await loadDemographics()

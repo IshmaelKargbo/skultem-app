@@ -259,7 +259,11 @@ export const parseFeeCollectionStatusColor: Record<string, string> = {
     NO_PAYMENT: 'error',
 }
 
+// Legacy display-cased level values - the backend upper-cases them. New code should use LevelCode
+// and the school's offered levels (useSchoolStructure) instead of this fixed list.
 export enum Level {
+    Daycare = 'Daycare',
+    Nursery = 'Nursery',
     Primary = 'Primary',
     JSS = 'JSS',
     SSS = 'SSS',
@@ -537,6 +541,8 @@ export type Option = {
 }
 
 export const levels = [
+    { label: 'Daycare', value: Level.Daycare },
+    { label: 'Nursery', value: Level.Nursery },
     { label: 'Primary', value: Level.Primary },
     { label: 'JSS', value: Level.JSS },
     { label: 'SSS', value: Level.SSS },
@@ -564,6 +570,8 @@ export function handleScroll(event: Event) {
 }
 
 export const parseLevel: Record<string, string> = {
+    'DAYCARE': 'Daycare',
+    'NURSERY': 'Nursery',
     'PRIMARY': 'Primary',
     'JSS': 'JSS',
     'SSS': 'SSS'

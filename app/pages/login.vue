@@ -121,11 +121,15 @@
           <UForm :schema="schema" :state="state" @submit="handleLogin" class="space-y-4">
 
             <!-- Email -->
-            <UFormField name="email" label="Email Address" :ui="{
+            <!-- A school's own login also takes a phone number - most guardians have one, far fewer
+                 have (or remember) an email. See the backend's LoginUseCase. -->
+            <UFormField name="email" :label="isAdminPortal ? 'Email Address' : 'Email or Phone Number'" :ui="{
               label: 'text-[10px] font-bold tracking-[0.12em] uppercase text-gray-400 dark:text-white/30 mb-1.5'
             }">
-              <UInput v-model="state.email" type="email" size="lg"
-                :placeholder="isAdminPortal ? 'you@skultem.com' : 'you@school.edu'" icon="lucide:mail"
+              <UInput v-model="state.email" :type="isAdminPortal ? 'email' : 'text'" size="lg"
+                :inputmode="isAdminPortal ? 'email' : 'text'" autocomplete="username"
+                :placeholder="isAdminPortal ? 'you@skultem.com' : 'you@school.edu or 076 123 456'"
+                :icon="isAdminPortal || state.email.includes('@') || !state.email ? 'lucide:mail' : 'lucide:phone'"
                 class="w-full" :ui="{ base: 'w-full rounded-xl' }" />
             </UFormField>
 
@@ -348,7 +352,13 @@ const adminSlides = [
 const slides = computed(() => isAdminPortal ? adminSlides : schoolSlides)
 
 const schema = yup.object({
-  email: yup.string().email('Enter a valid email').required('Email is required'),
+  email: isAdminPortal
+    ? yup.string().email('Enter a valid email').required('Email is required')
+    : yup.string().required('Enter your email or phone number').test('email-or-phone',
+      'Enter a valid email, or your full phone number',
+      value => !value || (value.includes('@')
+        ? yup.string().email().isValidSync(value)
+        : value.replace(/\D/g, '').length >= 8)),
   password: isAdminPortal
     ? yup.string().required('Password is required')
     : yup.string().min(6, 'Password must be at least 6 characters').required('Password is required')
@@ -369,7 +379,7 @@ const handleLogin = async () => {
 
       await userStore.login({
         domain: domain || '',
-        email: state.email,
+        identifier: state.email.trim(),
         password: state.password
       })
     }

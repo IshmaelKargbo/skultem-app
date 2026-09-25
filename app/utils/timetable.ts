@@ -20,19 +20,14 @@ export type UpdateRoomDTO = {
     description: string
 }
 
-// Matches the backend's Level enum (com.moriba.skultem.domain.vo.Level) values exactly -
-// deliberately not the existing `Level` enum in utils/common.ts, whose member values
-// ('Primary'/'JSS'/'SSS') don't match the API's raw PRIMARY/JSS/SSS strings.
-export type SchoolLevel = 'PRIMARY' | 'JSS' | 'SSS'
+// The backend's raw Level values - see utils/schoolStructure.ts for the full catalog.
+export type SchoolLevel = LevelCode
 
-export const SCHOOL_LEVEL_OPTIONS: { label: string, value: SchoolLevel }[] = [
-    { label: 'Primary', value: 'PRIMARY' },
-    { label: 'JSS', value: 'JSS' },
-    { label: 'SSS', value: 'SSS' },
-]
+export const SCHOOL_LEVEL_OPTIONS: { label: string, value: SchoolLevel }[] =
+    LEVEL_CATALOG.map(l => ({ label: l.label, value: l.value }))
 
 export function schoolLevelLabel(level: SchoolLevel): string {
-    return SCHOOL_LEVEL_OPTIONS.find(o => o.value === level)?.label || level
+    return levelLabel(level)
 }
 
 // A named, reusable school-day schedule - a school can have several (e.g. "Default", "Primary",

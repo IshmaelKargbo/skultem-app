@@ -447,6 +447,8 @@ async function downloadPdf() {
 
 watch(() => form.academicYearId, loadClasses)
 
+watch(() => form.classSessionId, id => loadLogo(localClassSessions.value.find(c => c.id === id)?.classLevel ?? null)) // that class's section logo
+
 onMounted(async () => {
   loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
 

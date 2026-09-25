@@ -137,7 +137,10 @@ const formattedDate = computed(() => filters.date
   : '—')
 const generatedDate = computed(() => new Date().toLocaleDateString())
 const schoolName = computed(() => school.value?.name || 'Skultem')
-const logoSrc = computed(() => school.value?.logo || '')
+// The data: URI logo (safe for the PDF capture) of the viewer's own section, if they're limited to
+// one; the school's plain logo shows meanwhile.
+const { logoSrc: reportLogo, loadLogo } = useReportLogo()
+const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
 function todayISO() {
   return new Date().toISOString().split('T')[0] as string
@@ -192,6 +195,7 @@ async function downloadPdf() {
 watch(() => filters.date, () => teacherAttendanceStore.fetchRoster(filters.date))
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background
   useAppStore().setTitle('Human Resource')
   useAppStore().setBack('/hr')
   document.title = 'Daily Register | HR | Skultem'

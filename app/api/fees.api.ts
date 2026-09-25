@@ -208,10 +208,11 @@ export const FeeApi = () => {
     },
     recordPayment: async (payload: RecordPaymentDto) => {
       try {
-        return await $api('/payment', {
+        return await withIdempotency('payment.record', payload, headers => $api('/payment', {
           method: 'POST',
+          headers,
           body: payload
-        })
+        }))
       } catch (err: any) {
         useHandleError(err)
       }
@@ -230,10 +231,11 @@ export const FeeApi = () => {
     },
     createStructure: async (payload: CreateFeeStructureDto) => {
       try {
-        return await $api('/fee/structure', {
+        return await withIdempotency('fee.structure.create', payload, headers => $api('/fee/structure', {
           method: 'POST',
+          headers,
           body: payload
-        })
+        }))
       } catch (err: any) {
         useHandleError(err)
       }
@@ -272,10 +274,11 @@ export const FeeApi = () => {
     },
     assignFeeToStudent: async (payload: AssignFeeToStudentDto) => {
       try {
-        return await $api('/fee/structure/assign', {
+        return await withIdempotency('fee.structure.assign', payload, headers => $api('/fee/structure/assign', {
           method: 'POST',
+          headers,
           body: payload
-        })
+        }))
       } catch (err: any) {
         useHandleError(err)
       }

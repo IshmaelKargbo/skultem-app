@@ -36,6 +36,8 @@ export interface ReportCardSummary {
 
 export interface ReportCardDetail extends ReportCardSummary {
     classId: string
+    // Level of the card's class - picks which management section's logo/principal the card prints.
+    level: string | null
     classSize: number
     termId: string
     attendancePercentage: number | null

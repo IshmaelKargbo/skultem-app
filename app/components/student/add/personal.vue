@@ -1,9 +1,9 @@
 <template>
-    <UCard :ui="{ body: 'sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-lg font-semibold md:text-xl">Personal Information</p>
-                <p class="text-sm text-muted">
+                <p class="font-semibold md:text-xl">Personal Information</p>
+                <p class="text-xs-base md:text-sm text-muted">
                     Enter the student's basic details and upload a photo.
                 </p>
             </div>
@@ -11,7 +11,7 @@
 
         <UForm :state="form" :schema="schema" @submit="next">
             <div
-                class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
+                class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-5 md:p-5">
                 <UFormField name="givenNames" label="Given Names" required>
                     <UInput v-model="form.givenNames" placeholder="Enter given names" :leading-icon="USER_ICON" />
                     <template #help>
@@ -89,11 +89,7 @@
                 </UFormField>
             </div>
 
-            <div class="flex flex-col-reverse gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
-                <p class="text-sm text-muted">Step 1 of 4</p>
-                <UButton type="submit" class="w-full justify-center sm:w-auto" :trailing-icon="NEXT_ICON"
-                    label="Next Step" />
-            </div>
+            <StudentAddFooter :show-back="false" />
         </UForm>
     </UCard>
 </template>
@@ -116,6 +112,8 @@ const { state } = defineProps<{
 
 const emit = defineEmits<{
     next: [typeof form]
+    // Live copy of the form for the enrollment draft autosave - fires on mount and on every edit.
+    change: [typeof form]
 }>()
 
 const schema = yup.object({
@@ -167,4 +165,6 @@ watch(() => state, (newVal) => {
     const dob = newVal.dob ? new Date(newVal.dob).toISOString().split('T')[0] : ''
     Object.assign(form, { ...newVal, dob })
 }, { immediate: true })
+
+watch(form, (value) => emit('change', { ...value }), { deep: true, immediate: true })
 </script>

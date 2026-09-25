@@ -3,6 +3,9 @@ const props = defineProps<{
   open: boolean
   userId: string
   userName: string
+  // What they type in the login box alongside the password, e.g. a guardian's phone number -
+  // shown with the temporary password so the admin can pass both on.
+  signInWith?: string
 }>()
 
 const emit = defineEmits<{
@@ -87,6 +90,9 @@ async function copy() {
             <UInput :model-value="temporaryPassword" readonly class="flex-1 font-mono" />
             <UButton icon="lucide:copy" color="neutral" variant="soft" @click="copy" />
           </div>
+          <p v-if="signInWith" class="mt-3 text-sm text-toned">
+            They sign in with <span class="font-semibold text-highlighted">{{ signInWith }}</span> and this password.
+          </p>
         </template>
 
         <template #footer>

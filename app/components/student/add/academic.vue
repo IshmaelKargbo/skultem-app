@@ -28,6 +28,8 @@ const { state } = defineProps<{
 const emit = defineEmits<{
     next: [any]
     back: []
+    // Live copy of the form for the enrollment draft autosave - fires on mount and on every edit.
+    change: [any]
 }>()
 
 const form = reactive({
@@ -198,8 +200,12 @@ watch(selectedOptional, (val) => {
     form.optionalSubjects = { ...val }
 }, { deep: true })
 
-watch(() => form.classId, async (val) => {
-    if (val) {
+// Only a real class *change* wipes the optional picks - the first assignment (restoring the
+// step's saved state on mount/resume) must keep them.
+watch(() => form.classId, async (val, oldVal) => {
+    if (val && !oldVal) {
+        await fetchSubjects(val)
+    } else if (val) {
         selectedCore.value = []
         Object.keys(selectedOptional).forEach(key => {
             selectedOptional[key] = ''
@@ -218,6 +224,11 @@ watch(() => state, (val) => {
     }
 }, { immediate: true, deep: true })
 
+watch([form, selectedOptional], () => emit('change', {
+    ...form,
+    selectedOptionIds: { ...selectedOptional }
+}), { deep: true, immediate: true })
+
 function submit() {
     emit('next', {
         ...form,
@@ -235,11 +246,11 @@ onMounted(() => {
 </script>
 
 <template>
-    <UCard :ui="{ body: 'sm:p-0' }">
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
             <div>
-                <p class="text-lg font-semibold md:text-xl">Academic Information</p>
-                <p class="text-sm text-muted">Admission and enrollment details for the student.</p>
+                <p class="font-semibold md:text-xl">Academic Information</p>
+                <p class="text-xs-base md:text-sm text-muted">Admission and enrollment details for the student.</p>
             </div>
         </template>
 
@@ -378,16 +389,7 @@ onMounted(() => {
             </div>
 
             <!-- FOOTER -->
-            <div
-                class="flex flex-col-reverse gap-3 border-t border-default px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
-                <p class="text-sm text-muted">Step 3 of 4</p>
-                <div class="flex flex-col gap-2 sm:flex-row">
-                    <UButton @click="back" :icon="BACK_ICON" label="Back" variant="outline" color="neutral"
-                        class="w-full justify-center sm:w-auto" />
-                    <UButton type="submit" label="Next Step" :trailing-icon="NEXT_ICON"
-                        class="w-full justify-center sm:w-auto" />
-                </div>
-            </div>
+            <StudentAddFooter @back="back" />
         </UForm>
     </UCard>
 </template>

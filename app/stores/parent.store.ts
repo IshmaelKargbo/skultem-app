@@ -39,6 +39,18 @@ export const useParentStore = defineStore('parent', {
     create(payload: CreateParentDto) {
       return ParentApi().create(payload)
     },
+    async edit(id: string, payload: EditParentDto) {
+      const res = await ParentApi().edit(id, payload)
+      if (res) {
+        const index = this.records.findIndex(e => e.id === id)
+        // Keep the list-only figures (student count, fees) the edit response doesn't carry.
+        if (index !== -1) this.records[index] = { ...this.records[index], ...res, students: this.records[index]!.students, feeDetail: this.records[index]!.feeDetail }
+      }
+      return res
+    },
+    deletePermanently(id: string, confirmation: string) {
+      return ParentApi().deletePermanently(id, confirmation)
+    },
     async addEmail(id: string, email: string) {
       const res = await ParentApi().addEmail(id, email) as any
       const updated = res?.data

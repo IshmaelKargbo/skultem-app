@@ -146,6 +146,10 @@ onMounted(async () => {
               <UButton to="/students/add" class="md:items-center md:flex md:justify-center hidden" color="primary"
                 label="Enrolled Student" :icon="ADD_ICON" />
               <UButton to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
+              <UButton class="hidden md:flex" color="neutral" variant="soft" label="Import"
+                icon="i-lucide-file-spreadsheet" to="/students/import" />
+              <UButton class="md:hidden" color="neutral" variant="soft" icon="i-lucide-file-spreadsheet"
+                aria-label="Import students" to="/students/import" />
               <div class="flex-1 border-default flex items-center gap-2">
                 <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
                   class="flex-1" />
@@ -180,7 +184,8 @@ onMounted(async () => {
         </template>
         <template #name-cell="{ row }">
           <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
-            :photo="row.original.photo" :subtitle="`${row.original.admissionNumber || 'No Admission No'}`" />
+            :photo="row.original.photo" :status="row.original.status"
+            :subtitle="`${row.original.admissionNumber || 'No Admission No'}`" />
         </template>
         <template #loading>
           <TableLoading :size="columns.length" />

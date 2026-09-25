@@ -48,7 +48,14 @@ const activeFields = computed(() => (cardType.value === 'staff' ? idCardStore.st
 const student = ref<Student>()
 const teacher = ref<Teacher>()
 const school = ref<any>()
-const brandingAssets = ref<{ logo: string | null, principalSignature: string | null }>()
+type Branding = Awaited<ReturnType<ReturnType<typeof SchoolApi>['getBrandingAssets']>>
+// The section this card's person belongs to decides the logo / principal / signature / address
+// (see SchoolBrandingResolver): `sectionBranding` is the cheap plain-URL version loaded up front
+// for display, `brandingAssets` the data: URI version fetched lazily right before a PDF/print capture.
+const brandingAssets = ref<Branding>()
+const sectionBranding = ref<Branding>()
+const brandingTarget = computed<BrandingTarget>(() =>
+  cardType.value === 'staff' ? { teacherId: recordId.value } : { studentId: recordId.value })
 // Same lazy same-origin swap as brandingAssets above, for the student/staff photo - see
 // captureBothSides(). Keyed by the raw photo URL so switching between two people (or a person
 // whose photo changes) doesn't keep serving a stale data: URI from a previous capture.
@@ -92,10 +99,17 @@ const template = computed(() => {
     // CORS-safe data: URI from getBrandingAssets() is only fetched lazily,
     // right before a PDF/print capture that actually needs it (see
     // captureBothSides), so it never blocks the initial page load.
-    logo: brandingAssets.value?.logo || school.value?.logo || '/icon.svg',
-    principal: idCardStore.settings.principalName || school.value?.principalName || '',
-    signature: brandingAssets.value?.principalSignature || school.value?.principalSignature || '',
-    address: idCardStore.settings.schoolAddress || ''
+    logo: brandingAssets.value?.logo || sectionBranding.value?.logo || school.value?.logo || '/icon.svg',
+    // A section's own principal / address beat the school-wide "Card Design" values, which in turn
+    // beat the school's own principal.
+    principal: sectionBranding.value?.ownPrincipal
+      ? sectionBranding.value.principalName || ''
+      : idCardStore.settings.principalName || school.value?.principalName || '',
+    signature: brandingAssets.value?.principalSignature || sectionBranding.value?.principalSignature
+      || school.value?.principalSignature || '',
+    address: sectionBranding.value?.ownAddress
+      ? addressLine(sectionBranding.value.address)
+      : idCardStore.settings.schoolAddress || ''
   }
 
   if (cardType.value === 'staff') {
@@ -165,7 +179,7 @@ async function captureBothSides(): Promise<HTMLCanvasElement[]> {
     // page load, so viewing the card stays fast. Cached in the ref so a
     // second download/print in the same visit doesn't re-fetch.
     if (!brandingAssets.value) {
-      brandingAssets.value = await SchoolApi().getBrandingAssets()
+      brandingAssets.value = await useBrandingAssets().get(brandingTarget.value)
       await nextTick()
     }
 
@@ -235,8 +249,20 @@ async function printCard() {
   }
 }
 
+function addressLine(a?: SectionAddress | null) {
+  if (!a) return ''
+  return [a.street, a.city, a.chiefdom, a.district, a.region].filter(p => p && p.trim()).join(', ')
+}
+
 onMounted(async () => {
   useAppStore().setTitle('ID Card Preview')
+  // Not awaited: decorative, and must never hold the card back. Only a school run in management
+  // sections has anything section-specific to show; any other school skips the request entirely.
+  useSchoolStructure().load().then((structure) => {
+    if (structure?.managementModel !== 'SECTION_BASED') return
+    return SchoolApi().getBrandingAssets({ ...brandingTarget.value, inline: false })
+      .then((res) => { sectionBranding.value = res })
+  }).catch(() => {})
   loading.value = true
   try {
     if (cardType.value === 'staff') {

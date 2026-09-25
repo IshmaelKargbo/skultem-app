@@ -107,7 +107,7 @@ export type ClassOverview = {
 
 export type CreateClassDto = {
     name: string
-    level: Level,
+    level: LevelCode,
     sections: string[],
     // Optional and no longer collected by the UI - the backend puts a new class after the last one.
     levelOrder?: number,

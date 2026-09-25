@@ -49,6 +49,27 @@ export const ParentApi = () => {
         useHandleError(err)
       }
     },
+    edit: async (id: string, payload: EditParentDto) => {
+      try {
+        const res = await $api(`/parent/${id}`, { method: 'PATCH', body: payload }) as any
+        return res.data as Parent
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Irreversible - owner-level only, and refused while a student still has this parent as their
+    // guardian. The guardian's full name is the typed confirmation.
+    deletePermanently: async (id: string, confirmation: string) => {
+      try {
+        const res = await $api(`/parent/${id}/delete-permanently`, {
+          method: 'POST',
+          body: { confirmation }
+        }) as any
+        return res.data as { parentName: string, otherStudentLinksRemoved: number, account: string }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     addEmail: async (id: string, email: string) => {
       try {
         return await $api(`/parent/${id}/email`, {

@@ -25,7 +25,7 @@
 
                     <div v-else-if="receipt" class="mx-auto w-fit shadow-lg">
                         <ReceiptPayment id="receipt-view-instance" :receipt="receipt"
-                            :parse-payment-method="PAYMENT_METHOD_LABELS" :logo="settings.logoUrl"
+                            :parse-payment-method="PAYMENT_METHOD_LABELS" :logo="pdfLogo || settings.logoUrl"
                             :accent-color="settings.accentColor" :footer-note="settings.footerNote"
                             :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />
                     </div>
@@ -75,14 +75,13 @@ async function ensureSettingsLoaded() {
     const tasks: Promise<any>[] = []
 
     if (!settingStore.loaded) tasks.push(settingStore.fetch().catch(() => { }))
-    if (pdfLogo.value === null) tasks.push(loadPdfLogo())
-
     await Promise.all(tasks)
 }
 
-async function loadPdfLogo() {
+// The logo of the section the receipt's student belongs to (the school's for a whole-school school).
+async function loadPdfLogo(referenceNo: string) {
     try {
-        const assets = await SchoolApi().getBrandingAssets()
+        const assets = await useBrandingAssets().get({ referenceNo })
         pdfLogo.value = assets?.logo || ''
     } catch {
         pdfLogo.value = ''
@@ -93,6 +92,7 @@ async function loadReceipt(referenceNo: string) {
     const [payments] = await Promise.all([
         useFeePaymentStore().getReceipt(referenceNo) as Promise<any>,
         ensureSettingsLoaded(),
+        loadPdfLogo(referenceNo),
     ])
 
     receipt.value = payments?.length ? buildPaymentReceipt(payments) : null

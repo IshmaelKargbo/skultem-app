@@ -425,7 +425,8 @@ async function loadReceiptSettings() {
     const tasks: Promise<any>[] = []
 
     if (!settingStore.loaded) tasks.push(settingStore.fetch())
-    if (pdfLogo.value === null) tasks.push(loadPdfLogo())
+    // Every time: the logo depends on which student (and so which section) this receipt is for.
+    tasks.push(loadPdfLogo())
 
     try {
         await Promise.all(tasks)
@@ -437,7 +438,7 @@ async function loadReceiptSettings() {
 
 async function loadPdfLogo() {
     try {
-        const assets = await SchoolApi().getBrandingAssets()
+        const assets = await useBrandingAssets().get({ referenceNo: lastPayments.value[0]?.referenceNo })
         pdfLogo.value = assets?.logo || ''
     } catch {
         pdfLogo.value = ''

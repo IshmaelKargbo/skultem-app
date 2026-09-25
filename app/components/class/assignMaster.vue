@@ -44,7 +44,7 @@
         </UFormField>
 
         <!-- Stream -->
-        <UFormField v-if="selectedClass?.level === Level.SSS" label="Stream" name="streamId" required>
+        <UFormField v-if="levelInfo(selectedClass?.level)?.streamed" label="Stream" name="streamId" required>
           <USelectMenu v-model="state.streamId" value-key="value" :items="streams" placeholder="Select stream"
             :disabled="isLoading || streams.length === 0">
             <template #leading>
