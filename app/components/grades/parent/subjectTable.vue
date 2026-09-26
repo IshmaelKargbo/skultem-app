@@ -166,7 +166,8 @@ watch(() => [term, student], runReport, { immediate: true })
                         </thead>
 
                         <tbody>
-                            <tr v-for="subject in group.items" :key="subject.id" class="border-t border-default">
+                            <template v-for="subject in group.items" :key="subject.id">
+                            <tr class="border-t border-default">
                                 <td class="px-4 py-2.5 font-medium">
                                     {{ subject.subject }}
                                 </td>
@@ -197,6 +198,10 @@ watch(() => [term, student], runReport, { immediate: true })
                                     </UBadge>
                                 </td>
                             </tr>
+                            <tr v-if="subject.continuous">
+                                <td colspan="5" class="px-4 pb-3"><GradesCaBreakdown :grade="subject" /></td>
+                            </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>

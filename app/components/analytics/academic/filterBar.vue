@@ -8,6 +8,7 @@ defineProps<{
   classLoading?: boolean
   subjectLoading?: boolean
 }>()
+
 </script>
 
 <template>

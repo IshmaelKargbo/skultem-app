@@ -125,6 +125,7 @@ export function useMenu() {
       subNavs: [
         { label: 'Grades', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true },
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
+        { label: 'Assessment Setup', to: '/grades/configuration', icon: 'lucide:sliders-horizontal' },
       ]
     },
 

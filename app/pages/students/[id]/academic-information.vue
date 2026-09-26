@@ -121,7 +121,28 @@
                         </div>
                     </div>
 
-                    <div v-if="expandedKeys.has(group.key)" class="overflow-x-auto border-t border-default">
+                    <!-- Phone: a card per subject instead of the sideways-scrolling table. -->
+                    <div v-if="expandedKeys.has(group.key)" class="space-y-2 border-t border-default p-3 md:hidden">
+                        <div v-for="subject in group.items" :key="subject.id">
+                            <div class="flex items-center justify-between gap-2 rounded-lg bg-elevated/40 px-3 py-2">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium">{{ subject.subject }}</p>
+                                    <p class="truncate text-[11px] text-muted">{{ subject.teacher }}</p>
+                                </div>
+                                <div class="flex shrink-0 items-center gap-2">
+                                    <span class="text-sm">
+                                        {{ subject.score }}% <span class="text-muted">({{ subject.weightScore }}%)</span>
+                                    </span>
+                                    <UBadge size="sm" variant="soft" :color="gradeColor(subject.grade)">
+                                        {{ subject.grade || 'N/A' }}
+                                    </UBadge>
+                                </div>
+                            </div>
+                            <GradesCaBreakdown class="mt-1" :grade="subject" />
+                        </div>
+                    </div>
+
+                    <div v-if="expandedKeys.has(group.key)" class="hidden overflow-x-auto border-t border-default md:block">
                         <table class="w-full min-w-max text-sm">
                             <thead>
                                 <tr class="text-[11px] uppercase tracking-wide text-muted">
@@ -134,7 +155,8 @@
                             </thead>
 
                             <tbody>
-                                <tr v-for="subject in group.items" :key="subject.id" class="border-t border-default">
+                                <template v-for="subject in group.items" :key="subject.id">
+                                <tr class="border-t border-default">
                                     <td class="px-4 py-2.5 font-medium">
                                         {{ subject.subject }}
                                     </td>
@@ -161,6 +183,10 @@
                                         </UBadge>
                                     </td>
                                 </tr>
+                                <tr v-if="subject.continuous">
+                                    <td colspan="5" class="px-4 pb-3"><GradesCaBreakdown :grade="subject" /></td>
+                                </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -189,6 +215,8 @@
                 </div>
             </template>
         </UCard>
+
+        <GradesCaSupport class="mt-4" :student-name="record?.givenNames" />
     </StudentView>
 </template>
 
@@ -201,6 +229,8 @@ const store = useStudentStore()
 const reportStore = useReportStore()
 const { record, activeCycle } = storeToRefs(store)
 const { grades, meta } = storeToRefs(reportStore)
+const gradeColor = (grade: string | null) => grade === 'A' ? 'success'
+    : grade === 'B' ? 'primary' : grade === 'C' ? 'warning' : grade === null ? 'neutral' : 'error'
 const loading = ref(true)
 const route = useRoute()
 const router = useRouter()

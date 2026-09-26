@@ -47,12 +47,14 @@
         <UCard v-if="isInstalled(ModuleKey.STAFF_HR)">
             <DashboardAdminStaffAttendance />
         </UCard>
+        <!-- The school calendar sits beside recent activity; the class average runs full width along the bottom. -->
         <div class="grid md:grid-cols-2 gap-3">
-            <UCard>
-                <WidgetClassPerformance />
-            </UCard>
+            <DashboardAdminEventCalendar />
             <DashboardAdminActivity />
         </div>
+        <UCard>
+            <WidgetClassPerformance />
+        </UCard>
     </div>
 </template>
 

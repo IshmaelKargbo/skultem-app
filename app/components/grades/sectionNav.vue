@@ -18,7 +18,8 @@ interface NavItem {
 
 const allItems: NavItem[] = [
   { label: 'Grade Assignment', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT] },
-  { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, roles: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER] }
+  { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, roles: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER] },
+  { label: 'Assessment Setup', to: '/grades/configuration', icon: 'lucide:sliders-horizontal', roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] }
 ]
 
 const items = computed(() => allItems.filter(item => can(item.roles)))

@@ -10,7 +10,7 @@ const streamId = defineModel<string>('streamId', { required: true })
 const level = defineModel<string>('level', { required: true })
 
 // Only the levels this school offers (Settings > School Structure).
-const { levelOptions, load: loadStructure } = useSchoolStructure()
+const { levelOptions, load: loadStructure } = useScopedLevelOptions()
 onMounted(() => loadStructure())
 
 const open = ref(false)

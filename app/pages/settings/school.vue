@@ -268,6 +268,11 @@ const attendanceState = reactive({
 // endpoint the Profile tab's Save uses) - the tab shows one button, so it does both rather than
 // silently dropping whichever field the user just changed.
 async function saveAttendanceLocation() {
+    // An untouched form holds 0,0 (the ocean) - saving it would make every clock-in fail.
+    if (hrInstalled.value && (attendanceState.latitude === 0 && attendanceState.longitude === 0)) {
+        toastError('Pick the school\'s location on the map first - search the address, click the map, or use "Use My Current Location".')
+        return
+    }
     saving.value = true
     try {
         if (hrInstalled.value) {

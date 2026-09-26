@@ -68,6 +68,16 @@ export const AcademicReportApi = () => {
       }
     },
 
+    // CA + formal test progress and the students the classwork already says need a look (termId required).
+    getContinuousAssessmentReport: async (filters: { termId?: string, classId?: string, level?: string, page?: number, size?: number }) => {
+      try {
+        const res = await $api(`/report/academic/continuous?${toQuery(filters)}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     getWeeklyGenderAttendance: async (classId: string, filters: { academicYearId?: string, weekOf?: string }) => {
       try {
         const res = await $api(`/report/academic/class/${classId}/attendance/weekly-gender?${toQuery(filters)}`) as any

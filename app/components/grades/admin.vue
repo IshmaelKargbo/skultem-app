@@ -134,6 +134,29 @@
 
     <GradesReturnedNotice :assessments="assessments" />
 
+    <!-- Assessments opened as Continuous Assessment are recorded here rather than typed into the grid. -->
+    <UCard v-if="continuousAssessments.length">
+      <div class="space-y-4">
+        <div v-for="item in continuousAssessments" :key="item.assessment.id" class="space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-highlighted">{{ item.assessment.name }}</p>
+              <p class="text-xs text-muted">
+                CA {{ item.structure.caPercentage }}% + formal test {{ item.structure.formalPercentage }}% ·
+                {{ item.structure.caEntries }} {{ CA_UNITS[item.structure.caFrequency].plural }} of CA
+              </p>
+            </div>
+            <UButton size="sm" :icon="isEditableStatus(item.assessment.status as ScoreStatus) ? 'lucide:pencil-line' : 'lucide:eye'"
+              :label="isEditableStatus(item.assessment.status as ScoreStatus) ? (item.structure.caSubmitted ? 'Enter formal test' : 'Record CA') : 'View breakdown'"
+              :variant="isEditableStatus(item.assessment.status as ScoreStatus) ? 'solid' : 'subtle'"
+              @click="openCa(item.assessment.id)" />
+          </div>
+
+          <GradesTeacherCaInsight :assessment="item.assessment" :rows="rows" />
+        </div>
+      </div>
+    </UCard>
+
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-end">
@@ -185,6 +208,7 @@
           :total="calculateTotal(student)"
           :position="hasSubmittedAssessments ? rankingMap[student.id] || '-' : 'N/A'"
           @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)"
+          @open-ca="openCa"
         />
       </div>
     </UCard>
@@ -292,6 +316,24 @@ const classes = computed(() =>
 const editableAssessments = computed(() =>
   assessments.value.filter((a) => isEditableStatus(a.status as ScoreStatus))
 );
+
+// Assessments opened as Continuous Assessment (CA + formal test) - recorded in the panel, not the grid.
+const continuousAssessments = computed(() =>
+  assessments.value.flatMap((a) => {
+    const structure = continuousOf(rows.value, a.id);
+    return structure ? [{ assessment: a, structure }] : [];
+  })
+);
+const continuousIds = computed(() => new Set(continuousAssessments.value.map((c) => c.assessment.id)));
+const simpleEditable = computed(() => editableAssessments.value.filter((a) => !continuousIds.value.has(a.id)));
+
+// Recording CA and the formal test has its own page.
+function openCa(assessmentId: string) {
+  navigateTo({
+    path: "/grades/continuous",
+    query: { teacherSubjectId: state.teacherSubjectId, termId: state.termId, assessmentId },
+  });
+}
 
 const disableActions = computed(
   () =>
@@ -594,12 +636,19 @@ function buildColumns() {
 
       const status = score.status as ScoreStatus;
 
-      if (!isEditableStatus(status))
+      const scoreTxt = `${score.score} (${score.weightScore})`;
+
+      // CA + formal test: the result stays one simple score; clicking it shows the breakdown behind it.
+      if (continuousIds.value.has(a.id)) {
         return h(
-          "div",
-          { class: "text-gray-500 font-medium" },
-          `${score.score} (${score.weightScore})`
+          "button",
+          { class: "text-left font-medium text-primary hover:underline", onClick: () => openCa(a.id) },
+          scoreTxt
         );
+      }
+
+      if (!isEditableStatus(status))
+        return h("div", { class: "text-gray-500 font-medium" }, scoreTxt);
 
       return h(UInput, {
         modelValue: score.score,
@@ -723,10 +772,15 @@ function buildAssessmentGrades(assessmentId: string) {
 
 async function persistDraftGrades(showToast: boolean) {
   if (disableActions.value) return;
-  const editable = editableAssessments.value;
+  const editable = simpleEditable.value;
   if (!editable.length) {
-    info("No editable assessments available");
-    return;
+    if (showToast)
+      info(
+        continuousIds.value.size
+          ? "Continuous assessments are recorded on their own page - use Record CA"
+          : "No editable assessments available"
+      );
+    return true;
   }
   saving.value = true;
   try {

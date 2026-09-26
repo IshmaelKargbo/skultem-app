@@ -143,9 +143,8 @@ watch(() => [term, student], runReport, { immediate: true })
                 </button>
 
                 <div v-if="expandedKeys.has(group.key)" class="space-y-2 border-t border-default p-3">
+                    <div v-for="subject in group.items" :key="subject.id">
                     <div
-                        v-for="subject in group.items"
-                        :key="subject.id"
                         class="flex items-center justify-between gap-2 rounded-lg bg-elevated/40 px-3 py-2"
                     >
                         <div class="min-w-0">
@@ -174,6 +173,8 @@ watch(() => [term, student], runReport, { immediate: true })
                                 {{ subject.grade || 'N/A' }}
                             </UBadge>
                         </div>
+                    </div>
+                    <GradesCaBreakdown class="mt-1" :grade="subject" />
                     </div>
                 </div>
             </div>

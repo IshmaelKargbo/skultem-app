@@ -13,7 +13,7 @@ const canGoLive = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
 </script>
 
 <template>
-  <div v-if="visible" class="px-4 pt-4 md:px-6">
+  <div v-if="visible" class="px-4 pt-2 md:px-6">
     <div
       class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-sm sm:px-4">
       <UIcon name="i-lucide-flask-conical" class="size-4 shrink-0 text-warning" />

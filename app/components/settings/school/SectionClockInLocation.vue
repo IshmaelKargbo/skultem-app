@@ -37,7 +37,7 @@
         <UButton variant="soft" icon="lucide:crosshair" :loading="locating" @click="useCurrentLocation">
           Use My Current Location
         </UButton>
-        <UButton icon="lucide:save" :loading="saving" @click="save">Save location</UButton>
+        <UButton icon="lucide:save" :loading="saving" :disabled="!placeChosen" @click="save">Save location</UButton>
       </div>
     </div>
   </div>
@@ -99,7 +99,13 @@ function useCurrentLocation() {
   )
 }
 
+const placeChosen = computed(() => !(form.latitude === 0 && form.longitude === 0))
+
 async function save() {
+  if (!placeChosen.value) {
+    toastError('Pick this section\'s location on the map first - search the address, click the map, or use "Use My Current Location".')
+    return
+  }
   saving.value = true
   try {
     const res = await TeacherAttendanceApi().saveSectionLocationSettings(props.sectionId, {

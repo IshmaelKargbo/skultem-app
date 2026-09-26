@@ -5,12 +5,20 @@
       <UBadge v-if="allTermsCompleted" variant="soft" color="success" size="lg">
         All terms completed for this year
       </UBadge>
-      <UTooltip v-else text="Advances every class on the selected term at once - not just the class you're viewing.">
-        <UButton icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
-          :disabled="!selectedTermId || isRefreshing" @click="advanceAssessmentStage">
-          Move To Next Assessment
-        </UButton>
-      </UTooltip>
+      <div v-else class="grid w-full gap-2 md:flex md:w-auto md:items-center">
+        <!-- Sections run their assessments separately, so a section moves on its own. -->
+        <USelectMenu v-if="isSectionBased" v-model="advanceSectionId" value-key="value" :items="advanceSections"
+          placeholder="Choose section" class="w-full md:w-44" />
+        <UTooltip :text="isSectionBased
+          ? 'Moves only the chosen section to its next assessment - the other sections stay where they are.'
+          : 'Advances every class on the selected term at once - not just the class you\'re viewing.'">
+          <UButton class="w-full justify-center md:w-auto" icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
+            :disabled="!selectedTermId || isRefreshing || (isSectionBased && !advanceSectionId)"
+            @click="advanceAssessmentStage">
+            {{ isSectionBased && advanceSectionName ? `Move ${advanceSectionName} To Next Assessment` : 'Move To Next Assessment' }}
+          </UButton>
+        </UTooltip>
+      </div>
     </Heading>
 
     <AcademicsSectionNav />
@@ -456,12 +464,25 @@ async function loadCycle() {
   }
 }
 
+// Management sections (Primary, Secondary...) are managed separately, so each moves on its own. A section-limited
+// admin only sees their own.
+const { isSectionBased, sectionOptions, load: loadStructure } = useSchoolStructure()
+const { scope, load: loadScope } = useMyScope()
+const advanceSectionId = ref('')
+const advanceSections = computed(() => sectionOptions.value.filter(s =>
+  !scope.value || scope.value.wholeSchool || scope.value.sectionIds.includes(s.value)))
+const advanceSectionName = computed(() => advanceSections.value.find(s => s.value === advanceSectionId.value)?.label || '')
+onMounted(async () => {
+  await Promise.all([loadStructure(), loadScope()])
+  if (!advanceSectionId.value && advanceSections.value.length === 1) advanceSectionId.value = advanceSections.value[0]!.value
+})
+
 async function advanceAssessmentStage() {
   if (!selectedTermId.value) return
 
   isAdvancingAssessment.value = true
   try {
-    const res = await assessmentStore.advanceCycle(selectedTermId.value)
+    const res = await assessmentStore.advanceCycle(selectedTermId.value, isSectionBased.value ? advanceSectionId.value : null)
 
     if (!res) {
       throw new Error(assessmentStore.error || 'Failed to advance assessment stage')

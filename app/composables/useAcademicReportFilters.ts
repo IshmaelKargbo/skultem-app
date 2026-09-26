@@ -30,8 +30,9 @@ export function useAcademicReportFilters() {
   const classOptions = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
   const subjectOptions = computed(() => subjectStore.records.map(s => ({ label: s.name, value: s.id })))
 
-  // Only the levels this school offers (Settings > School Structure), as raw Level values.
-  const { levelOptions, load: loadStructure } = useSchoolStructure()
+  // Only the levels this caller may look at: the school's levels narrowed to their own section(s) (or the section an
+  // owner is viewing) - see useScopedLevelOptions.
+  const { levelOptions, load: loadLevels } = useScopedLevelOptions()
 
   const queryString = computed(() => {
     const q = new URLSearchParams()
@@ -74,7 +75,7 @@ export function useAcademicReportFilters() {
   }
 
   async function ensureLoaded() {
-    loadStructure()
+    loadLevels()
     await academicYearStore.fetchAll(1, 100)
     await termStore.fetchAll(1, 100)
 
@@ -86,6 +87,12 @@ export function useAcademicReportFilters() {
 
     if (!filters.termId) {
       filters.termId = await defaultTermId()
+    }
+
+    // A level carried over in the URL that this caller isn't offered (another section's) would only show nothing.
+    await loadLevels()
+    if (filters.level && !levelOptions.value.some(o => o.value === filters.level)) {
+      filters.level = ''
     }
 
     await Promise.all([

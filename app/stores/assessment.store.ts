@@ -169,11 +169,11 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async advanceCycle(termId: string) {
+    async advanceCycle(termId: string, sectionId?: string | null) {
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().advanceCycle(termId) as AssessmentCycleAdvance
+        const response = await AssessmentApi().advanceCycle(termId, sectionId) as AssessmentCycleAdvance
         return response
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to advance assessment cycle'

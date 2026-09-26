@@ -33,6 +33,7 @@
       <p>
         <template v-if="resolvingAddress">Looking up address…</template>
         <template v-else-if="currentAddress">{{ currentAddress }}</template>
+        <template v-else-if="!hasPlace(latitude, longitude)"><span class="font-medium text-warning">No location picked yet</span> - search the address, click the map, or use "Use My Current Location". Nothing can be saved until you do.</template>
         <template v-else>Click anywhere on the map, or drag the pin, to set the school's location. The shaded circle is the clock-in radius.</template>
       </p>
     </div>
@@ -65,9 +66,11 @@ const resolvingAddress = ref(false)
 // location has been saved, rather than opening on the middle of the ocean at (0, 0).
 const DEFAULT_CENTER: [number, number] = [8.4657, -13.2317]
 
+let L: any
 let map: any
 let marker: any
 let circle: any
+let resizeObserver: ResizeObserver | undefined
 let searchTimer: ReturnType<typeof setTimeout>
 let addressTimer: ReturnType<typeof setTimeout>
 
@@ -100,12 +103,36 @@ async function reverseGeocode(lat: number, lng: number) {
   }
 }
 
+// 0,0 is what an untouched form holds - the ocean, not a school - so it never counts as a chosen place.
+const hasPlace = (lat: number, lng: number) => !(lat === 0 && lng === 0) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+
+function ensurePin(lat: number, lng: number) {
+  if (!map || !L) return
+  if (marker) {
+    marker.setLatLng([lat, lng])
+    circle?.setLatLng([lat, lng])
+    return
+  }
+  circle = L.circle([lat, lng], {
+    radius: props.radiusMeters || 150,
+    color: 'var(--ui-primary, #1878c5)',
+    fillColor: 'var(--ui-primary, #1878c5)',
+    fillOpacity: 0.12,
+    weight: 1.5,
+  }).addTo(map)
+  marker = L.marker([lat, lng], { icon: pinIcon(L), draggable: true }).addTo(map)
+  marker.on('dragend', () => {
+    const at = marker.getLatLng()
+    setPosition(at.lat, at.lng)
+  })
+}
+
 function setPosition(lat: number, lng: number, opts: { pan?: boolean } = {}) {
   emit('update:latitude', lat)
   emit('update:longitude', lng)
 
-  if (marker) marker.setLatLng([lat, lng])
-  if (circle) circle.setLatLng([lat, lng])
+  // No pin exists until a place has been chosen (see onMounted) - the first pick creates it.
+  ensurePin(lat, lng)
   if (opts.pan && map) map.setView([lat, lng], Math.max(map.getZoom(), 16))
 
   clearTimeout(addressTimer)
@@ -148,7 +175,12 @@ watch(() => props.radiusMeters, (radius) => {
 // without re-triggering the emit->prop->watch loop that setPosition() already covers for
 // map-driven moves - guard on real drift, not floating point noise from that round-trip.
 watch([() => props.latitude, () => props.longitude], ([lat, lng]) => {
-  if (!marker) return
+  if (!map || !hasPlace(lat, lng)) return
+  if (!marker) {
+    ensurePin(lat, lng)
+    map.setView([lat, lng], Math.max(map.getZoom(), 16))
+    return
+  }
   const at = marker.getLatLng()
   if (Math.abs(at.lat - lat) > 1e-9 || Math.abs(at.lng - lng) > 1e-9) {
     marker.setLatLng([lat, lng])
@@ -157,47 +189,42 @@ watch([() => props.latitude, () => props.longitude], ([lat, lng]) => {
 })
 
 onMounted(async () => {
-  const L = await import('leaflet')
+  L = await import('leaflet')
 
-  const start: [number, number] = props.configured ? [props.latitude, props.longitude] : DEFAULT_CENTER
+  const placed = hasPlace(props.latitude, props.longitude)
+  const start: [number, number] = placed ? [props.latitude, props.longitude] : DEFAULT_CENTER
 
-  map = L.map(mapEl.value!, { zoomControl: true }).setView(start, props.configured ? 16 : 12)
+  map = L.map(mapEl.value!, { zoomControl: true }).setView(start, placed ? 16 : 12)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
   }).addTo(map)
 
-  circle = L.circle(start, {
-    radius: props.radiusMeters || 150,
-    color: 'var(--ui-primary, #1878c5)',
-    fillColor: 'var(--ui-primary, #1878c5)',
-    fillOpacity: 0.12,
-    weight: 1.5,
-  }).addTo(map)
-
-  marker = L.marker(start, { icon: pinIcon(L), draggable: true }).addTo(map)
-
-  marker.on('dragend', () => {
-    const { lat, lng } = marker.getLatLng()
-    setPosition(lat, lng)
-  })
+  // A pin only where a place has actually been chosen. Showing one at the default centre made an empty form look
+  // set - and saving it stored 0,0.
+  if (placed) ensurePin(props.latitude, props.longitude)
 
   map.on('click', (e: any) => {
     setPosition(e.latlng.lat, e.latlng.lng)
   })
 
-  if (props.configured) reverseGeocode(props.latitude, props.longitude)
+  if (placed) reverseGeocode(props.latitude, props.longitude)
 
-  // The map is inside a tab that may render at 0 width/height (a hidden panel) before the user
-  // switches to it, or inside a slideover whose transition hasn't finished when Leaflet
-  // measures its container - both leave it stuck showing only the top-left tile.
+  // The map sits in a tab / collapsed section / slideover that may still be settling (or hidden at 0 size) when
+  // Leaflet measures it, which leaves most of it grey. Re-measure whenever its box changes size.
   requestAnimationFrame(() => map?.invalidateSize())
+  if (typeof ResizeObserver !== 'undefined' && mapEl.value) {
+    resizeObserver = new ResizeObserver(() => map?.invalidateSize())
+    resizeObserver.observe(mapEl.value)
+  }
+  setTimeout(() => map?.invalidateSize(), 400)
 })
 
 onBeforeUnmount(() => {
   clearTimeout(searchTimer)
   clearTimeout(addressTimer)
+  resizeObserver?.disconnect()
   map?.remove()
 })
 

@@ -96,6 +96,9 @@
       :id="state.student"
     />
 
+    <!-- Continuous assessment: plain-language help from the classwork + formal test marks -->
+    <GradesCaSupport v-if="selectedStudent" :student-name="selectedStudent.givenNames" />
+
     <div class="hidden md:grid md:grid-cols-4 grid-cols-2 md:gap-5 gap-3">
       <GradesParentGrade :id="state.student" :term="state.term" grade="A" />
       <GradesParentGrade :id="state.student" :term="state.term" grade="B" />

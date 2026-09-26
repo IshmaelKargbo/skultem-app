@@ -61,14 +61,39 @@
           </div>
         </div>
 
+        <!-- CA + FORMAL TEST INSIGHT: only for a section using continuous assessment -->
+        <GradesTeacherCaInsight v-if="isContinuous" :assessment="insightAssessment" :rows="insightRows" />
+
         <!-- STUDENT SCORES -->
         <div>
           <p class="mb-2 text-sm font-semibold text-highlighted">Student Scores</p>
-          <div class="overflow-hidden rounded-xl border border-default">
+          <!-- Phone, continuous assessment: a card per student (CA + formal test don't fit as table columns). -->
+          <div v-if="isContinuous" class="space-y-2 md:hidden">
+            <div v-for="student in sortedStudentScores" :key="student.id" class="rounded-xl border border-default p-3">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex min-w-0 items-center gap-2">
+                  <UAvatar size="xs" :alt="student.student" :text="studentInitials(student.student)"
+                    class="shrink-0 ring-1 ring-default" />
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium text-highlighted">{{ student.student }}</p>
+                  </div>
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                  <span class="text-lg font-bold text-highlighted">{{ student.score }}</span>
+                  <UBadge size="sm" variant="subtle" color="primary">{{ student.grade }}</UBadge>
+                </div>
+              </div>
+              <GradesCaBreakdown class="mt-2" :grade="student" />
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-xl border border-default" :class="isContinuous ? 'hidden md:block' : ''">
             <table class="w-full text-sm">
               <thead class="bg-elevated/60 text-left">
                 <tr>
                   <th class="p-2 font-medium text-muted">Student</th>
+                  <th v-if="isContinuous" class="p-2 font-medium text-muted">CA</th>
+                  <th v-if="isContinuous" class="p-2 font-medium text-muted">Test</th>
                   <th class="p-2 font-medium text-muted">Score</th>
                   <th class="p-2 text-right font-medium text-muted">Grade</th>
                 </tr>
@@ -84,7 +109,31 @@
                         class="shrink-0 ring-1 ring-default"
                       />
                       <span class="truncate text-highlighted">{{ student.student }}</span>
+                      <UBadge v-if="isContinuous && trendOf(student).trend !== 'not-enough-data'" size="sm" variant="subtle"
+                        :color="trendOf(student).trend === 'improving' ? 'success' : trendOf(student).trend === 'declining' ? 'error' : 'neutral'"
+                        :icon="trendOf(student).trend === 'improving' ? 'lucide:trending-up' : trendOf(student).trend === 'declining' ? 'lucide:trending-down' : 'lucide:minus'">
+                        {{ CA_TREND_LABEL[trendOf(student).trend] }}
+                      </UBadge>
                     </div>
+                  </td>
+                  <td v-if="isContinuous" class="p-2">
+                    <template v-if="student.continuous">
+                      <p class="font-medium text-highlighted">
+                        {{ student.continuous.caScore ?? '-' }}
+                        <span class="text-xs text-muted">({{ student.continuous.caPoints }}/{{ student.continuous.caPercentage }})</span>
+                      </p>
+                      <p class="text-[11px] text-muted whitespace-nowrap">
+                        {{ student.continuous.caEntryScores.map(v => v ?? '-').join(' · ') }}
+                      </p>
+                    </template>
+                  </td>
+                  <td v-if="isContinuous" class="p-2">
+                    <template v-if="student.continuous">
+                      <p class="font-medium text-highlighted">
+                        {{ student.continuous.formalScore ?? '-' }}
+                        <span class="text-xs text-muted">({{ student.continuous.formalPoints }}/{{ student.continuous.formalPercentage }})</span>
+                      </p>
+                    </template>
                   </td>
                   <td class="p-2 font-medium text-highlighted"> {{ student.score }} </td>
                   <td class="p-2 text-right">
@@ -116,6 +165,14 @@
               <UButton label="Cancel" variant="outline" color="neutral" @click="reopenForm = false" />
             </div>
           </div>
+
+          <UAlert v-if="needsOtherReviewer" class="mt-3" color="info" variant="subtle" icon="lucide:shield-check"
+            title="An admin or proprietor approves this one"
+            description="You teach this subject as well as being the class master, so you can't approve your own grades. It is waiting for an admin, proprietor or owner." />
+          <UAlert v-else-if="selected.requiresAdminReview && selected.status === 'Pending Review'" class="mt-3"
+            color="info" variant="subtle" icon="lucide:shield-check"
+            title="Class master taught this subject"
+            description="The class master is also the subject teacher here, so it comes to you for approval." />
 
           <div v-if="showAction" class="mt-3 flex gap-3 border-t border-default pt-3">
             <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
@@ -165,7 +222,14 @@ const state = reactive({
 
 const returnForm = ref(false)
 const reopenForm = ref(false)
-const showAction = computed(() => selected.value?.status === 'Pending Review' && !returnForm.value)
+// A class master who taught the subject can't approve their own grades - that goes to an admin/proprietor/owner.
+const needsOtherReviewer = computed(() =>
+  !!selected.value?.requiresAdminReview
+  && selected.value?.status === 'Pending Review'
+  && !can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])
+)
+const showAction = computed(() =>
+  selected.value?.status === 'Pending Review' && !returnForm.value && !needsOtherReviewer.value)
 const canReopen = computed(() =>
   selected.value?.status === 'Approved'
   && can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])
@@ -175,6 +239,17 @@ const sortedStudentScores = computed(() => {
 
   return [...selected.value.studentScores].sort((a, b) => b.score - a.score)
 })
+
+// Continuous assessment (CA + formal test): each score carries its breakdown, so the reviewer can see how the class
+// and each student did, not just the final number.
+const isContinuous = computed(() => !!selected.value?.studentScores?.some(s => s.continuous))
+const insightAssessment = computed(() => ({ id: selected.value?.assessmentId ?? '', name: selected.value?.assessment ?? '' }) as Assessment)
+const insightRows = computed(() => (selected.value?.studentScores ?? []).map(s => ({
+  id: s.id,
+  name: s.student,
+  scores: [{ assessment: selected.value?.assessmentId, continuous: s.continuous }]
+})) as unknown as StudentAssessment[])
+const trendOf = (s: AssessmentScore) => caTrendOf(s.continuous?.caEntryScores ?? [])
 
 const open = ref(false)
 const emit = defineEmits(["close", "refresh"])

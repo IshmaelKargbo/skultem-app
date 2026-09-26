@@ -115,7 +115,7 @@ const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 const classes = computed(() => classStore.records.map(c => ({ label: c.name, value: c.id })))
 const classLabel = computed(() => classes.value.find(c => c.value === filters.classId)?.label || '')
 // Only the levels this school offers (Settings > School Structure), as raw Level values.
-const { levelOptions: levels, load: loadStructure } = useSchoolStructure()
+const { levelOptions: levels, load: loadStructure } = useScopedLevelOptions()
 
 const schoolName = computed(() => school.value?.name || 'Skultem')
 const generatedDate = computed(() => new Date().toLocaleString())

@@ -8,6 +8,7 @@ defineProps<{
 
 const emit = defineEmits<{
   "score-change": [assessmentId: string, value: unknown]
+  "open-ca": [assessmentId: string]
 }>()
 </script>
 
@@ -46,7 +47,20 @@ const emit = defineEmits<{
           <p class="mt-1 text-xs text-gray-500">Weight {{ assessment.weight }}</p>
         </div>
 
-        <div v-if="isEditableStatus(getStudentScore(record, assessment.id)?.status as ScoreStatus)"
+        <!-- Continuous assessment: one simple score, with the CA + test breakdown a tap away. -->
+        <button v-if="getStudentScore(record, assessment.id)?.continuous" type="button"
+          class="flex flex-col items-end gap-0.5 shrink-0 text-right" @click="emit('open-ca', assessment.id)">
+          <p class="text-sm font-semibold text-primary">
+            {{ getStudentScore(record, assessment.id)?.score ?? '-' }}
+            <span class="text-xs text-gray-500">({{ getStudentScore(record, assessment.id)?.weightScore ?? '-' }})</span>
+          </p>
+          <p class="text-xs text-muted">
+            CA {{ getStudentScore(record, assessment.id)?.continuous?.caPoints }}/{{ getStudentScore(record, assessment.id)?.continuous?.caPercentage }}
+            + Test {{ getStudentScore(record, assessment.id)?.continuous?.formalPoints }}/{{ getStudentScore(record, assessment.id)?.continuous?.formalPercentage }}
+          </p>
+        </button>
+
+        <div v-else-if="isEditableStatus(getStudentScore(record, assessment.id)?.status as ScoreStatus)"
           class="flex-1 shrink-0">
           <UInput :ui="{ base: 'text-base' }" :model-value="getStudentScore(record, assessment.id)?.score" type="number"
             min="0" max="100" @update:model-value="emit('score-change', assessment.id, $event)" />
