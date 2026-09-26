@@ -56,6 +56,19 @@ const columns = computed(() => [
   ...(canManage.value ? [{ id: 'actions', meta: { class: { td: 'text-right' } } }] : [])
 ])
 
+// The phone actions menu: Edit, Delete.
+const editing = ref<CalendarEntry>()
+const editOpen = ref(false)
+watch(editOpen, (open) => { if (!open) editing.value = undefined })
+
+function entryActions(entry: CalendarEntry) {
+  return [[
+    { label: 'Edit', icon: EDIT_ICON, onSelect: () => { editing.value = entry; editOpen.value = true } }
+  ], [
+    { label: 'Delete', icon: DELETE_ICON, color: 'error' as const, onSelect: () => remove(entry) }
+  ]]
+}
+
 function remove(entry: CalendarEntry) {
   selected.value = entry
   deleteModal.value = true
@@ -99,7 +112,10 @@ function remove(entry: CalendarEntry) {
             </div>
 
             <div>
-              <p class="font-medium text-highlighted">{{ row.original.title }}</p>
+              <p class="flex items-center gap-2 font-medium text-highlighted">
+                {{ row.original.title }}
+                <CommunicateSectionBadge :section-id="row.original.managementSectionId" />
+              </p>
               <p class="max-w-xs truncate text-xs text-muted">{{ row.original.description }}</p>
             </div>
           </div>
@@ -146,33 +162,37 @@ function remove(entry: CalendarEntry) {
 
         <div v-else v-for="entry in data" :key="entry.id" class="w-full p-4 space-y-2">
           <div class="flex items-start gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl"
+            <div class="hidden md:flex size-10 shrink-0 items-center justify-center rounded-xl"
               :class="entry.type === 'HOLIDAY' ? 'bg-warning-50 dark:bg-warning-500/10' : 'bg-primary-50 dark:bg-primary-500/10'">
               <UIcon class="size-5" :name="entry.type === 'HOLIDAY' ? HOLIDAY_ICON : EVENT_ICON"
                 :class="entry.type === 'HOLIDAY' ? 'text-warning-500' : 'text-primary-500'" />
             </div>
 
-            <div class="min-w-0 flex-1">
-              <p class="font-medium text-highlighted">{{ entry.title }}</p>
+            <div class="min-w-0 space-y-1 flex-1">
+              <p class="flex flex-wrap items-center gap-2 font-medium text-highlighted">
+                {{ entry.title }}
+                <CommunicateSectionBadge :section-id="entry.managementSectionId" />
+              </p>
               <p v-if="entry.description" class="truncate text-xs text-muted">{{ entry.description }}</p>
             </div>
 
-            <div v-if="canManage" class="flex shrink-0 gap-1">
-              <CommunicateEventAdd :entry="entry" />
-              <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(entry)" />
-            </div>
+            <!-- Phone: one menu with Edit / Delete. -->
+            <UDropdownMenu v-if="canManage" :items="entryActions(entry)" :content="{ align: 'end' }">
+              <UButton :icon="MORE_ICON" size="sm" color="neutral" variant="ghost" aria-label="Actions"
+                class="shrink-0" />
+            </UDropdownMenu>
           </div>
           <div class="border-t border-default flex items-center justify-between gap-2 pt-2">
             <div class="flex space-x-2">
-              <p v-if="entry.location" class="text-sm text-muted">{{ entry.location }}</p>
+              <p v-if="entry.location" class="md:text-sm text-xs-base text-muted">{{ entry.location }}</p>
               <p>-</p>
-              <p class="text-sm text-muted">
+              <p class="md:text-sm text-xs-base text-muted">
                 {{ formatWholeDayInstant(entry.startDate) }}
                 <template v-if="entry.endDate !== entry.startDate"> — {{ formatWholeDayInstant(entry.endDate) }}</template>
               </p>
             </div>
 
-            <UBadge :color="entry.type === 'HOLIDAY' ? 'warning' : 'info'" variant="subtle">
+            <UBadge :color="entry.type === 'HOLIDAY' ? 'warning' : 'info'" variant="subtle" size="xs">
               {{ entry.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
             </UBadge>
           </div>
@@ -187,6 +207,9 @@ function remove(entry: CalendarEntry) {
         </div>
       </template>
     </UCard>
+
+    <!-- The edit form for the phone menu (it has no button of its own here). -->
+    <CommunicateEventAdd v-if="editing" :key="editing.id" :entry="editing" hide-trigger v-model:open="editOpen" />
 
     <CommunicateEventDeletePrompt v-model:open="deleteModal" :entry-id="selected?.id || ''"
       :entry-title="selected?.title || ''" />

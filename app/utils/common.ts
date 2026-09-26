@@ -16,7 +16,12 @@ export type Meta = {
     totalPages: number;
 }
 
-export const unitLabelMap: Record<string, string> = {
+// A named alias, not `Record<string, string>` written out on each `export const`: Nuxt's
+// auto-import scanner reads the comma in that annotation as a second declared name and registers a
+// phantom `string` import from every such file (the "Duplicated imports 'string'" warning).
+export type StringMap = Record<string, string>
+
+export const unitLabelMap: StringMap = {
     PCS: 'Pieces',
     BOX: 'Box',
     PACK: 'Pack',
@@ -229,14 +234,14 @@ export const nationalities = [
     { label: 'Zimbabwean', value: 'ZIMBABWEAN' }
 ]
 
-export const parseFeeStatusColor: Record<string, string> = {
+export const parseFeeStatusColor: StringMap = {
     Paid: 'success',
     Pending: 'warning',
     Partial: 'info',
     Overdue: 'error'
 }
 
-export const parseFeeStatusIcon: Record<string, string> = {
+export const parseFeeStatusIcon: StringMap = {
     Pending: 'i-lucide-clock',
     Paid: 'i-lucide-check-circle',
     Partial: 'ph:circle-half-tilt-duotone',
@@ -247,13 +252,13 @@ export const parseFeeStatusIcon: Record<string, string> = {
 // (simpler) vocabulary than parseFeeStatusColor/Icon above, which is per-fee and includes Overdue.
 // "Outstanding" in the reports is any row with a balance (Partially Paid + No Payment together),
 // not a fourth status of its own - see the backend's FeeCollectionCalculator.
-export const parseFeeCollectionStatus: Record<string, string> = {
+export const parseFeeCollectionStatus: StringMap = {
     PAID: 'Paid',
     PARTIALLY_PAID: 'Partially Paid',
     NO_PAYMENT: 'No Payment',
 }
 
-export const parseFeeCollectionStatusColor: Record<string, string> = {
+export const parseFeeCollectionStatusColor: StringMap = {
     PAID: 'success',
     PARTIALLY_PAID: 'warning',
     NO_PAYMENT: 'error',
@@ -407,7 +412,7 @@ export const ledgerTypeOptions = [
     }
 ]
 
-export const monthOrder: Record<string, number> = {
+export const monthOrder: { [month: string]: number } = {
     January: 1,
     February: 2,
     March: 3,
@@ -459,7 +464,7 @@ export const paymentMethods = {
     },
 }
 
-export const parseRole: Record<string, string> = {
+export const parseRole: StringMap = {
     OWNER: 'Owner',
     PROPRIETOR: 'Proprietor',
     SYSTEM_ADMIN: 'System Admin',
@@ -470,7 +475,7 @@ export const parseRole: Record<string, string> = {
     ACCOUNTANT: 'Accounttant'
 }
 
-export const parseRoleColor: Record<string, string> = {
+export const parseRoleColor: StringMap = {
     OWNER: 'success',
     PROPRIETOR: 'primary',
     SUPER_ADMIN: 'warning',
@@ -480,9 +485,9 @@ export const parseRoleColor: Record<string, string> = {
     ACCOUNTANT: 'error'
 }
 
-export const parseRoleIcon: Record<string, string> = {
+export const parseRoleIcon: StringMap = {
     ADMIN: 'fluent:building-24-regular',
-    SUPER_ADMIN: 'fluent:shield-person-24-regular',
+    SUPER_ADMIN: 'fluent:person-shield-24-regular',
     OWNER: 'fluent:crown-24-regular',
     PROPRIETOR: 'fluent:crown-24-regular',
     TEACHER: 'fluent:hat-graduation-24-regular',
@@ -529,7 +534,7 @@ export function updateQuery(newQuery: Record<string, any>) {
   useRouter().replace({ query: merged });
 }
 
-export const parseGenderColor: Record<string, string> = {
+export const parseGenderColor: StringMap = {
     MALE: 'success',
     FEMALE: 'info'
 }
@@ -569,7 +574,7 @@ export function handleScroll(event: Event) {
     }
 }
 
-export const parseLevel: Record<string, string> = {
+export const parseLevel: StringMap = {
     'DAYCARE': 'Daycare',
     'NURSERY': 'Nursery',
     'PRIMARY': 'Primary',
@@ -577,7 +582,7 @@ export const parseLevel: Record<string, string> = {
     'SSS': 'SSS'
 }
 
-export const parseGender: Record<string, string> = {
+export const parseGender: StringMap = {
     'MALE': 'Male',
     'FEMALE': 'Female'
 }
@@ -601,19 +606,19 @@ export const schoolGenderCompositionOption: Option[] = [
     { label: 'Mixed', value: 'MIXED' },
 ]
 
-export const parseBehaviourKind: Record<string, string> = {
+export const parseBehaviourKind: StringMap = {
     'POSITIVE': 'Positive',
     'NEGATIVE': 'Negative',
     'NEUTRAL': 'Neutral'
 }
 
-export const parseBehaviourKindColor: Record<string, string> = {
+export const parseBehaviourKindColor: StringMap = {
     'POSITIVE': 'success',
     'NEGATIVE': 'error',
     'NEUTRAL': 'neutral'
 }
 
-export const parseTitle: Record<string, string> = {
+export const parseTitle: StringMap = {
     MR: 'Mr.',
     MRS: 'Mrs.',
     MISS: 'Miss',
@@ -753,7 +758,7 @@ export const useHandleError = (err: any) => {
     throw new Error(message)
 }
 
-export const parsePaymentMethod: Record<string, string> = {
+export const parsePaymentMethod: StringMap = {
     "CASH": "Cash",
     "BANK": "Bank",
     "MOBILE_MONEY": "Mobile Money"

@@ -105,6 +105,22 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    // Only a class nobody has been placed in (see DeleteClassUseCase) - the backend explains why not.
+    delete: async (id: string) => {
+      try {
+        return await $api(`/class/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // One row of a class (e.g. "SSS 1 Science B") - the rest of the class stays.
+    deleteSession: async (id: string) => {
+      try {
+        return await $api(`/class-session/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     createSession: async (payload: CreateClassSessionDto) => {
       try {
         return await $api('/class-session', {

@@ -56,6 +56,10 @@
                 <template #actions-cell="{ row }">
                     <UButton @click="viewClass(row.original)" size="sm" variant="ghost" color="success"
                         class="cursor-pointer" :icon="VIEW_ICON" />
+                    <UTooltip text="Remove this section / stream from the class">
+                        <UButton size="sm" variant="ghost" color="error" class="cursor-pointer" icon="i-lucide-trash-2"
+                            @click="askRemove(row.original)" />
+                    </UTooltip>
                 </template>
             </UTable>
             <div class="md:p-4 md:space-y-4"
@@ -102,6 +106,8 @@
                             <div class="flex shrink-0 items-center gap-2 self-center">
                                 <UBadge variant="subtle" color="secondary" size="sm" :trailing-icon="STUDENT_ICON"
                                     :label="`${item.totalStudent}`" />
+                                <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs"
+                                    aria-label="Remove from class" @click.stop="askRemove(item)" />
                                 <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
                             </div>
                         </div>
@@ -126,6 +132,11 @@
                 </div>
             </template>
         </UCard>
+
+        <ConfirmDeleteModal v-if="removing" v-model:open="removeOpen" title="Remove from class"
+            :item-name="rowLabel(removing)" confirm-label="Remove"
+            description="Removes just this section / stream of the class, with its class teacher and subject assignments. Only possible while no students are placed in it. To delete the whole class, open it and use Delete class."
+            :on-confirm="confirmRemove" />
     </div>
 </template>
 <script setup lang="ts">
@@ -159,6 +170,36 @@ const columns = [
 
 function viewClass(row: ClassSession) {
     router.push(`/classes/${row.clazzId}?stream=${row.streamId}`);
+}
+
+// Removes ONE row of a class - e.g. "SSS 1 Science B" when Science only runs in A - and leaves the rest
+// of the class alone. The backend refuses while students are placed in it and says so.
+const { success: toastSuccess, error: toastError } = useNotify();
+const removeOpen = ref(false);
+const removing = ref<ClassSession | null>(null);
+
+function rowLabel(row: ClassSession) {
+    return [row.clazz, row.sectionName, row.streamName && row.streamName !== 'N/A' ? row.streamName : '']
+        .filter(Boolean)
+        .join(' ');
+}
+
+function askRemove(row: ClassSession) {
+    removing.value = row;
+    removeOpen.value = true;
+}
+
+async function confirmRemove() {
+    if (!removing.value) return;
+    try {
+        await store.delete(removing.value.id);
+        toastSuccess('Removed from the class');
+        await fetchRecords();
+    } catch (err: any) {
+        // Left open on purpose: the backend's reason (e.g. it still has students) is what to read.
+        toastError(err?.message || 'Unable to remove it');
+        throw err;
+    }
 }
 
 const page = computed<number>({

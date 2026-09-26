@@ -53,5 +53,11 @@ export function useSchoolStructure() {
         description: s.levels.map(levelLabel).join(' • ')
     })))
 
-    return { structure, loading, load, set, offeredLevels, levelOptions, isSectionBased, sectionOptions }
+    // "Primary School" for a management section id; '' for null/whole school or an unknown id.
+    function sectionName(id?: string | null): string {
+        if (!id) return ''
+        return structure.value?.sections.find(s => s.id === id)?.name ?? ''
+    }
+
+    return { structure, loading, load, set, offeredLevels, levelOptions, isSectionBased, sectionOptions, sectionName }
 }

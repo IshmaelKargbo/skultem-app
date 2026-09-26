@@ -71,6 +71,9 @@ export const useClassStore = defineStore('class', {
     create(payload: CreateClassDto) {
       return ClassApi().create(payload)
     },
+    delete(id: string) {
+      return ClassApi().delete(id)
+    },
     assignStudentClass(payload: AssignStudentsDto) {
       return ClassApi().assignStudentToClass(payload)
     },

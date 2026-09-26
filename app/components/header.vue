@@ -18,6 +18,11 @@
 
                         <div v-if="!isSystemAdmin" class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span class="hidden text-xs font-medium text-muted sm:inline">{{ displayYearName }}</span>
+                            <!-- Owner-level "view one section" is on: everything below is narrowed to it. -->
+                            <UBadge v-if="viewingSection" color="primary" variant="solid" size="sm" class="gap-1"
+                                icon="i-lucide-filter">
+                                {{ viewingSection.name }} only
+                            </UBadge>
                             <UBadge :color="yearStatus.color" variant="subtle" size="sm" class="gap-1 hidden md:flex">
                                 <UIcon :name="yearStatus.icon" class="size-3" />
                                 {{ yearStatus.label }}
@@ -69,12 +74,10 @@ function goBack() {
 
 const { can, activeRole } = useAuth()
 
+const { viewingSection } = useSectionView()
+
 const canSwitchYear = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
 const canManageSettings = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
-// A SYSTEM_ADMIN isn't scoped to any one school's academic calendar - their SchoolUser row is
-// anchored to an arbitrary school (see BootstrapSystemAdminUseCase), so that school's academic
-// year/term would show here with no meaning to a system admin. Skip both the fetch and the
-// display for them rather than surface some random school's term info in the platform console.
 const isSystemAdmin = computed(() => can(Role.SYSTEM_ADMIN))
 
 const academicYearStore = useAcademicYearStore()

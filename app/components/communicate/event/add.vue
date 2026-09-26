@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 
-const { entry } = defineProps<{ entry?: CalendarEntry }>()
+// hideTrigger: opened by the caller through v-model:open (e.g. a mobile actions menu) instead of its own button.
+const { entry, hideTrigger = false } = defineProps<{ entry?: CalendarEntry, hideTrigger?: boolean }>()
 
 const store = useCommunicateStore()
 const { success: toastSuccess, error: toastError } = useNotify()
 
 const isEdit = computed(() => !!entry)
-const open = ref(false)
+const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const formRef = ref()
 
@@ -23,7 +24,8 @@ function defaultState() {
     type: entry?.type || 'EVENT',
     startDate: entry?.startDate ? entry.startDate.slice(0, 10) : '',
     endDate: entry?.endDate ? entry.endDate.slice(0, 10) : '',
-    location: entry?.location || ''
+    location: entry?.location || '',
+    managementSectionId: entry?.managementSectionId || ''
   }
 }
 
@@ -57,7 +59,8 @@ async function onSubmit() {
       type: state.type as CalendarEntryType,
       startDate: new Date(state.startDate).toISOString(),
       endDate: new Date(state.endDate).toISOString(),
-      location: state.location
+      location: state.location,
+      managementSectionId: state.managementSectionId || null
     }
 
     if (isEdit.value && entry) {
@@ -78,15 +81,17 @@ async function onSubmit() {
 
 <template>
   <UModal :dismissible="false" v-model:open="open">
-    <UButton
-      v-if="isEdit"
-      :icon="EDIT_ICON"
-      size="xs"
-      color="neutral"
-      variant="ghost"
-      @click="open = true"
-    />
-    <UButton v-else color="primary" class="flex justify-center" label="Add Event / Holiday" :icon="ADD_ICON" @click="open = true" />
+    <template v-if="!hideTrigger">
+      <UButton
+        v-if="isEdit"
+        :icon="EDIT_ICON"
+        size="xs"
+        color="neutral"
+        variant="ghost"
+        @click="open = true"
+      />
+      <UButton v-else color="primary" class="flex justify-center" label="Add Event / Holiday" :icon="ADD_ICON" @click="open = true" />
+    </template>
 
     <template #header>
       <div class="flex w-full items-center justify-between">
@@ -179,6 +184,9 @@ async function onSubmit() {
       />
     </UFormField>
   </div>
+
+  <!-- Who: the whole school or one management section -->
+  <CommunicateSectionPicker v-model="state.managementSectionId" :locked="!!entry" :disabled="isLoading" />
 
   <!-- Location -->
   <UFormField

@@ -1,3 +1,7 @@
+// Every icon the source uses (regenerate with `npm run icons -- --write` after adding one) - bundled into
+// the client below so they render instantly instead of being fetched the first time they appear.
+import bundledIcons from './icons.bundle.json'
+
 const appleSplashScreens = [
   { width: 640, height: 1136, media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)' },
   { width: 750, height: 1334, media: '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)' },
@@ -35,6 +39,18 @@ export default defineNuxtConfig({
 
   ui: {
     fonts: false
+  },
+
+  // Icons ship with the app: every collection in use is a dev dependency (@iconify-json/*), the icons the
+  // source references are bundled into the client (scan + the explicit list from `npm run icons`), and
+  // the server bundle is served locally - so nothing is fetched from the Iconify API at runtime.
+  icon: {
+    clientBundle: {
+      scan: true,
+      icons: bundledIcons,
+      sizeLimitKb: 1024
+    },
+    serverBundle: 'local'
   },
 
   // App is locked to a single (light) theme — the dark mode toggle UI is commented out in

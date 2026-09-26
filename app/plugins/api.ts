@@ -62,6 +62,13 @@ export default defineNuxtPlugin(() => {
           Authorization: `Bearer ${accessToken.value}`,
         }
       }
+
+      // An owner-level user looking at one management section (see composables/useSectionView.ts). The
+      // server ignores it for anyone else, and for an id that isn't one of the school's sections.
+      const viewSection = useCookie<string | null>('viewing_section_id').value
+      if (viewSection) {
+        context.options.headers = { ...context.options.headers, 'X-View-Section': viewSection }
+      }
     },
 
     async onResponseError(context: any) {

@@ -4,7 +4,10 @@
 // misplaced click on a plain "Are you sure?" modal. The caller owns the actual delete call (pass
 // it as `onConfirm`) and stays in charge of its own success/error toast, same as before - this
 // component only owns the confirmation gate and the loading/close mechanics around it.
-const { open, title, itemName, description, confirmLabel = 'Delete' } = defineProps<{
+// onConfirm has to be in this destructure too - a bare `onConfirm` below is otherwise a ReferenceError
+// (props destructured from defineProps are only in scope by name when listed), which made every
+// Delete button on this dialog do nothing.
+const { open, title, itemName, description, confirmLabel = 'Delete', onConfirm } = defineProps<{
     open: boolean
     title: string
     itemName: string
@@ -23,7 +26,9 @@ const isOpen = computed({
 const typed = ref('')
 const loading = ref(false)
 
-const matches = computed(() => typed.value.trim() === itemName.trim())
+// Never "matches" a blank name - a caller that hasn't got the name yet must not get a Delete button
+// that a blank field would already satisfy.
+const matches = computed(() => itemName.trim() !== '' && typed.value.trim() === itemName.trim())
 
 function close() {
     isOpen.value = false

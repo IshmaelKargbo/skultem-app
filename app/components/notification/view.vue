@@ -172,7 +172,7 @@ watch(() => record, () => {
                 <div v-if="Object.keys(filteredMeta).length" class="overflow-hidden rounded-2xl border border-default">
                     <div class="flex items-center gap-2 border-b border-default bg-muted/30 px-4 py-3">
                         <div class="flex size-8 items-center justify-center rounded-xl bg-muted">
-                            <UIcon name="i-lucide-list-details" class="size-4 text-muted" />
+                            <UIcon name="i-lucide-list" class="size-4 text-muted" />
                         </div>
 
                         <div>

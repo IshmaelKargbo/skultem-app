@@ -91,8 +91,27 @@
           </template>
         </UFormField>
 
+        <!-- Streamed levels: each stream picks its own sections (Art -> A and B, Science -> A only). -->
+        <div v-if="isStreamed && state.streams.length" class="space-y-3">
+          <p class="text-sm font-medium text-highlighted">Sections for each stream</p>
+          <UFormField v-for="streamId in state.streams" :key="streamId" required :label="streamName(streamId)"
+            :name="`streamSections.${streamId}`"
+            :error="showErrors && !(state.streamSections[streamId]?.length) ? 'Pick at least one section' : undefined">
+            <USelectMenu v-model="state.streamSections[streamId]" value-key="value" :items="sections" multiple
+              :placeholder="`Sections that run ${streamName(streamId)}`" :disabled="isLoading">
+              <template #leading>
+                <UIcon name="i-lucide-layout-grid" class="text-muted" />
+              </template>
+            </USelectMenu>
+          </UFormField>
+          <p class="text-xs text-muted">
+            Streams don't have to share sections - e.g. Art can run sections A and B while Science only runs A.
+            You can add or remove one later.
+          </p>
+        </div>
+
         <!-- Sections -->
-        <UFormField required label="Sections" name="sections">
+        <UFormField v-if="!isStreamed" required label="Sections" name="sections">
           <USelectMenu
             v-model="state.sections"
             value-key="value"
@@ -212,6 +231,8 @@ type ClassForm = {
   level: string;
   sections: string[];
   streams: string[];
+  // Streamed levels: the sections each chosen stream runs.
+  streamSections: Record<string, string[]>;
   assessmentTemplateId: string;
 };
 
@@ -220,15 +241,23 @@ const state = reactive<ClassForm>({
   level: "",
   sections: [],
   streams: [],
+  streamSections: {},
   assessmentTemplateId: "",
 });
+
+const showErrors = ref(false);
+const streamName = (id: string) => streams.value.find((s) => s.value === id)?.label || "Stream";
 
 const isStreamed = computed(() => !!levelInfo(state.level)?.streamed);
 
 const schema = yup.object({
   name: yup.string().required("Name is required"),
   level: yup.string().required("Level is required"),
-  sections: yup.array().of(yup.string()).min(1, "At least one section is required"),
+  sections: yup.array().when("level", {
+    is: (level: string) => !!levelInfo(level)?.streamed,
+    then: (schema) => schema.notRequired(),
+    otherwise: (schema) => schema.of(yup.string()).min(1, "At least one section is required"),
+  }),
   streams: yup.array().when("level", {
     is: (level: string) => !!levelInfo(level)?.streamed,
     then: (schema) =>
@@ -240,7 +269,22 @@ const schema = yup.object({
 watch(
   () => state.level,
   (val) => {
-    if (!levelInfo(val)?.streamed) state.streams = [];
+    if (!levelInfo(val)?.streamed) {
+      state.streams = [];
+      state.streamSections = {};
+    }
+  }
+);
+
+// A newly picked stream starts with the sections another chosen stream already runs (the common case
+// is the same sections for every stream); dropped streams lose theirs.
+watch(
+  () => [...state.streams],
+  (now) => {
+    const next: Record<string, string[]> = {};
+    const template = now.map((id) => state.streamSections[id]).find((s) => s?.length) ?? [];
+    for (const id of now) next[id] = state.streamSections[id] ?? [...template];
+    state.streamSections = next;
   }
 );
 
@@ -250,17 +294,29 @@ const close = () => {
   state.level = "";
   state.sections = [];
   state.streams = [];
+  state.streamSections = {};
   state.assessmentTemplateId = "";
+  showErrors.value = false;
 };
 
 const onSubmit = async (event: FormSubmitEvent<ClassForm>) => {
+  if (isStreamed.value && state.streams.some((id) => !state.streamSections[id]?.length)) {
+    showErrors.value = true;
+    return;
+  }
+
   isLoading.value = true;
   try {
+    const perStream = isStreamed.value
+      ? state.streams.map((id) => ({ streamId: id, sectionIds: state.streamSections[id] ?? [] }))
+      : undefined;
     await store.create({
       name: state.name,
       level: state.level as LevelCode,
-      sections: state.sections,
+      // A streamed class's sections come from its streams above.
+      sections: perStream ? [...new Set(perStream.flatMap((p) => p.sectionIds))] : state.sections,
       streams: state.streams,
+      streamSections: perStream,
       assessmentTemplateId: state.assessmentTemplateId || undefined,
     });
     toastSuccess("Class created successfully");

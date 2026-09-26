@@ -50,7 +50,7 @@
 
                     <template #help>
                         <p v-if="!sections.length" class="text-xs text-warning">
-                            This class has no sections linked to it yet.
+                            The school has no sections yet - add them under Classes › Sections.
                         </p>
                     </template>
                 </UFormField>
@@ -121,6 +121,12 @@ const selectedClass = computed(() => classStore.records.find((c) => c.id === sta
 const sections = ref<{ label: string, value: string }[]>([])
 const streams = ref<{ label: string, value: string }[]>([])
 
+// Any of the school's sections / streams can be added to a class - the backend links one the class
+// doesn't have yet (e.g. adding SSS 1 Art section B later), so this isn't limited to what the class
+// was created with.
+const sectionStore = useSectionStore()
+const streamStore = useStreamStore()
+
 async function fetchDependents() {
     state.sectionId = ''
     state.streamId = ''
@@ -130,18 +136,12 @@ async function fetchDependents() {
     if (!state.classId) return
 
     try {
-        const resultSections = await classStore.findAllSections(state.classId)
-        sections.value = (resultSections || []).map((s: ClassSection) => ({
-            label: s.sectionName || s.section.name,
-            value: s.id
-        }))
+        if (!sectionStore.records.length) await sectionStore.fetchAll()
+        sections.value = sectionStore.records.map(s => ({ label: s.name, value: s.id }))
 
         if (levelInfo(selectedClass.value?.level)?.streamed) {
-            const resultStreams = await classStore.findAllStreams(state.classId)
-            streams.value = (resultStreams || []).map((s: ClassStream) => ({
-                label: s.stream.name,
-                value: s.stream.id
-            }))
+            if (!streamStore.records.length) await streamStore.fetchAll()
+            streams.value = streamStore.records.map(s => ({ label: s.name, value: s.id }))
         }
     } catch {
         sections.value = []

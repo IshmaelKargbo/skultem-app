@@ -59,6 +59,8 @@
                     <!-- Actions -->
                     <div class="flex shrink-0 flex-wrap items-center justify-center gap-2">
                         <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
+                        <UButton v-if="canManagePromotion && !loading && className" variant="soft" size="sm" color="error"
+                            icon="i-lucide-trash-2" label="Delete class" @click="deleteOpen = true" />
                         <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
                             :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
 
@@ -100,6 +102,11 @@
         </UCard>
 
         <ClassPromotionSetting :id="session?.clazzId || ''" />
+
+        <ConfirmDeleteModal v-model:open="deleteOpen" title="Delete Class" :item-name="className"
+            confirm-label="Delete class"
+            description="Removes this class with all of its sections and streams, subjects and setup. Only possible while no students have been placed in it - move them to another class first."
+            :on-confirm="confirmDeleteClass" />
 
         <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0 p-0' }">
             <template #header>
@@ -421,6 +428,20 @@ const classTeachers = computed(() => {
 })
 
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+
+const deleteOpen = ref(false)
+const className = computed(() => record.value?.name || session.value?.clazz || '')
+async function confirmDeleteClass() {
+    try {
+        await classStore.delete(record.value?.id || session.value?.clazzId || classId.value)
+        success('Class deleted')
+        await navigateTo('/classes')
+    } catch (err: any) {
+        // Left open on purpose: the backend's reason (e.g. it still has students) is what to read.
+        toastError(err?.message || 'Unable to delete the class')
+        throw err
+    }
+}
 
 const unassigningMasterId = ref<string | null>(null)
 

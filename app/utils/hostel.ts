@@ -30,7 +30,7 @@ export const hostelTypeOptions: { label: string, value: HostelType }[] = [
     { label: 'Staff', value: 'STAFF' }
 ]
 
-export const parseHostelType: Record<HostelType, string> = {
+export const parseHostelType: { [K in HostelType]: string } = {
     MIXED: 'Mixed',
     MALE: 'Male',
     FEMALE: 'Female',

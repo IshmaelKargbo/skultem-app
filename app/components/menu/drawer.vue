@@ -101,6 +101,17 @@
             <AccountSwitch />
           </div>
         </div>
+        <div v-if="canSwitchSection" class="border-t border-gray-200/60 dark:border-white/10 pt-4 mt-3">
+          <div class="mb-3 px-1">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+              Viewing
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-between rounded-2xl border border-gray-200/70 dark:border-white/10 bg-gray-100 dark:bg-white/5 px-4 py-3">
+            <SectionSwitch />
+          </div>
+        </div>
         <!-- APPEARANCE — disabled — app is locked to light mode. Restore this block to bring back dark mode.
         <div class="border-t border-gray-200/60 dark:border-white/10 pt-4 mt-3">
           <div class="mb-3 px-1">
@@ -221,6 +232,7 @@ const { activeRole, can, setActiveRole } = useAuth();
 const { canInstall, install } = usePwaInstall();
 const { ensureLoaded: ensureClassMasterLoaded } = useClassMaster();
 const { menuSections, onAdminPortal } = useMenu();
+const { canSwitch: canSwitchSection } = useSectionView();
 
 const route = useRoute();
 const open = ref(false);

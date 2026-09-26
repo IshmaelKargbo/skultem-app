@@ -113,7 +113,10 @@ export type CreateClassDto = {
     levelOrder?: number,
     terminal?: boolean,
     streams: string[],
-    assessmentTemplateId?: string
+    assessmentTemplateId?: string,
+    // Streamed levels only: which sections each stream runs (Art -> A, B; Science -> A). Left out,
+    // every chosen section runs under every chosen stream.
+    streamSections?: { streamId: string, sectionIds: string[] }[]
 }
 
 export type UpdateClassDto = {

@@ -32,7 +32,7 @@ export const ModuleKey = {
     ANALYTICS: 'analytics',
 } as const
 
-export const MODULE_ICON: Record<string, string> = {
+export const MODULE_ICON: StringMap = {
     [ModuleKey.GRADING]: 'i-lucide-graduation-cap',
     [ModuleKey.REPORT_CARDS]: 'i-lucide-file-text',
     [ModuleKey.CURRICULUM]: 'i-lucide-book-open-check',
@@ -132,7 +132,7 @@ export function moduleForPaths(paths: string[]): string | null {
 }
 
 // Icon per category, shown on the Modules page's section headers.
-export const CATEGORY_ICON: Record<string, string> = {
+export const CATEGORY_ICON: StringMap = {
     academics: 'i-lucide-graduation-cap',
     finance: 'i-lucide-banknote',
     people: 'i-lucide-users',

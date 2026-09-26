@@ -99,7 +99,7 @@
                   </p>
                   <span v-else />
 
-                  <UButton v-if="module.installed" label="Disable" color="neutral" variant="outline" size="sm"
+                  <UButton v-if="module.installed && canDisable" label="Disable" color="neutral" variant="outline" size="sm"
                     :loading="busyKey === module.key" :disabled="!!busyKey || blockedBy(module).length > 0"
                     @click="askToDisable(module)" />
                   <UButton v-else label="Install" icon="i-lucide-plus" size="sm" :loading="busyKey === module.key"
@@ -187,6 +187,12 @@ const { success: toastSuccess, error: toastError } = useNotify();
 const busyKey = ref("");
 const confirmOpen = ref(false);
 const toDisable = ref<SchoolModule>();
+
+// Switching a module off removes it for the whole school, so it's only offered to whole-school staff -
+// an Admin limited to one section can install modules but not disable them (the backend refuses too).
+const { scope: myScope, load: loadMyScope } = useMyScope();
+const canDisable = computed(() => !myScope.value || myScope.value.wholeSchool);
+onMounted(() => { loadMyScope(); });
 
 // Skeletons only until the first list has arrived - a refresh after install/disable keeps the cards.
 const ready = computed(() => !loading.value || modules.value.length > 0);

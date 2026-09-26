@@ -127,7 +127,7 @@ export type ReceiptSetting = {
     showAmountInWords: boolean
 }
 
-export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+export const PAYMENT_METHOD_LABELS: StringMap = {
     CASH: 'Cash',
     BANK: 'Bank Transfer',
     MOBILE_MONEY: 'Mobile Money'

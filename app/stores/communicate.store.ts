@@ -41,22 +41,29 @@ export const useCommunicateStore = defineStore('communicate', {
         async createNotice(payload: CreateNoticeDto) {
             const notice = await NoticeApi().create(payload) as Notice
             if (notice) this.notices.unshift(notice)
+            // An event notice can put itself on the calendar - keep the Events page current.
+            if (notice?.onCalendar) await this.fetchCalendar()
             return notice
         },
 
         async updateNotice(payload: UpdateNoticeDto) {
             const { id, ...rest } = payload
+            const wasOnCalendar = this.notices.find(e => e.id === id)?.onCalendar
             const notice = await NoticeApi().update(id, rest) as Notice
             if (notice) {
                 const index = this.notices.findIndex(e => e.id === id)
                 if (index !== -1) this.notices[index] = notice
             }
+            // Its calendar entry was created, changed or removed along with the notice.
+            if (wasOnCalendar || notice?.onCalendar) await this.fetchCalendar()
             return notice
         },
 
         async deleteNotice(id: string) {
+            const wasOnCalendar = this.notices.find(e => e.id === id)?.onCalendar
             await NoticeApi().remove(id)
             this.notices = this.notices.filter(e => e.id !== id)
+            if (wasOnCalendar) await this.fetchCalendar()
         },
 
         async togglePin(id: string) {

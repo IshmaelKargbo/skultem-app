@@ -31,15 +31,12 @@ const categoryFilter = ref('')
 const deleteModal = ref(false)
 const selected = ref<Notice>()
 
-// No "All categories" entry - a Reka UI Combobox item's value can't be an empty string (it
-// throws "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the
-// list renders, breaking every item in it). The placeholder covers "nothing selected", and the
-// select's own :clear button gets back to it.
 const categoryOptions = [
   { label: 'General', value: 'GENERAL' },
   { label: 'Academic', value: 'ACADEMIC' },
   { label: 'Fee', value: 'FEE' },
-  { label: 'Urgent', value: 'URGENT' }
+  { label: 'Urgent', value: 'URGENT' },
+  { label: 'Event', value: 'EVENT' }
 ]
 
 const data = computed(() => {
@@ -62,6 +59,20 @@ function remove(notice: Notice) {
   deleteModal.value = true
 }
 
+// The phone actions menu: Pin/Unpin, Edit, Delete.
+const editing = ref<Notice>()
+const editOpen = ref(false)
+watch(editOpen, (open) => { if (!open) editing.value = undefined })
+
+function noticeActions(notice: Notice) {
+  return [[
+    { label: notice.pinned ? 'Unpin' : 'Pin to top', icon: notice.pinned ? UNPIN_ICON : PIN_ICON, onSelect: () => togglePin(notice) },
+    { label: 'Edit', icon: EDIT_ICON, onSelect: () => { editing.value = notice; editOpen.value = true } }
+  ], [
+    { label: 'Delete', icon: DELETE_ICON, color: 'error' as const, onSelect: () => remove(notice) }
+  ]]
+}
+
 async function togglePin(notice: Notice) {
   try {
     await store.togglePin(notice.id)
@@ -74,7 +85,9 @@ async function togglePin(notice: Notice) {
 <template>
   <div class="px-4 md:px-6 space-y-4">
     <CommunicateSectionNav />
-    <UCard>
+    <UCard :ui="{
+      body: 'p-0 sm:p-0'
+    }">
       <template #header>
         <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -108,48 +121,95 @@ async function togglePin(notice: Notice) {
         </div>
 
         <div v-else class="space-y-3">
-          <UCard v-for="notice in data" :key="notice.id" :ui="{ body: 'p-4' }"
-            :class="notice.pinned ? 'ring-1 ring-primary/30' : ''">
+          <div v-for="notice in data" :key="notice.id" class="p-3 border-b border-default last:border-0"
+            :class="notice.pinned ? 'bg-primary-100/30' : ''">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <UIcon v-if="notice.pinned" :name="PIN_ICON" class="size-3.5 text-primary" />
-                  <h3 class="truncate font-semibold text-highlighted">{{ notice.title }}</h3>
-                  <UBadge :color="noticeCategoryStyle[notice.category].color" variant="subtle" size="sm">
-                    {{ noticeCategoryStyle[notice.category].label }}
-                  </UBadge>
-                  <UBadge color="neutral" variant="subtle" size="sm">{{ audienceLabel(notice.audience) }}</UBadge>
-                  <UBadge v-if="isNoticeExpired(notice)" color="neutral" variant="soft" size="sm">Expired</UBadge>
+                <div class="flex justify-between  items-center">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <UIcon v-if="notice.pinned" :name="PIN_ICON" class="size-3.5 text-primary" />
+                    <h3 class="truncate font-semibold text-highlighted">{{ notice.title }}</h3>
+                    <UBadge :color="noticeCategoryStyle[notice.category].color" variant="subtle" size="sm">
+                      {{ noticeCategoryStyle[notice.category].label }}
+                    </UBadge>
+                    <UBadge color="neutral" variant="subtle" size="sm">{{ audienceLabel(notice.audience) }}</UBadge>
+                    <CommunicateSectionBadge :section-id="notice.managementSectionId" />
+                    <UBadge v-if="isNoticeExpired(notice)" color="neutral" variant="soft" size="sm">Expired</UBadge>
+                  </div>
+                  <!-- Tablet / desktop: the three icon buttons. -->
+                  <div v-if="canManage" class="hidden shrink-0 items-center gap-1 sm:flex">
+                    <UButton :icon="notice.pinned ? UNPIN_ICON : PIN_ICON" size="xs" color="neutral" variant="ghost"
+                      @click="togglePin(notice)" />
+
+                    <CommunicateNoticeAdd :notice="notice" />
+
+                    <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(notice)" />
+                  </div>
+
+                  <!-- Phone: one menu with Pin / Edit / Delete. -->
+                  <UDropdownMenu v-if="canManage" :items="noticeActions(notice)" :content="{ align: 'end' }"
+                    class="sm:hidden">
+                    <UButton :icon="MORE_ICON" size="sm" color="neutral" variant="ghost" aria-label="Notice actions"
+                      class="shrink-0 sm:hidden" />
+                  </UDropdownMenu>
+                </div>
+
+                <!-- When / where: the point of a PTA-meeting style notice - shown before the body. -->
+                <div v-if="notice.eventAt" class="mt-3 flex flex-wrap items-start gap-3 rounded-xl p-3 ring-1"
+                  :class="noticeEventState(notice) === 'PAST' ? 'bg-muted/40 ring-default' : 'bg-success/5 ring-success/25'">
+                  <div class="hidden md:flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
+                    <UIcon name="i-lucide-calendar-clock" class="size-5 text-success" />
+                  </div>
+                  <div class="min-w-0 space-y-2 md:space-y-0 flex-1">
+                    <p class="font-semibold text-highlighted">{{ formatEventWhen(notice) }}</p>
+                    <p v-if="notice.eventLocation" class="mt-0.5 flex items-center gap-1 text-sm text-muted">
+                      <UIcon name="i-lucide-map-pin" class="size-3.5" /> {{ notice.eventLocation }}
+                    </p>
+                    <div class="md:hidden flex flex-wrap items-center gap-1.5">
+                    <UBadge :color="noticeEventState(notice) === 'PAST' ? 'neutral' : 'success'" variant="subtle"
+                      size="sm">
+                      {{ noticeEventState(notice) === 'PAST' ? 'Past' : eventCountdown(notice) }}
+                    </UBadge>
+                    <UBadge v-if="notice.onCalendar" color="info" variant="subtle" size="sm"
+                      icon="i-lucide-calendar-days">
+                      On calendar
+                    </UBadge>
+                  </div>
+                  </div>
+                  <div class="hidden md:flex flex-wrap items-center gap-1.5">
+                    <UBadge :color="noticeEventState(notice) === 'PAST' ? 'neutral' : 'success'" variant="subtle"
+                      size="sm">
+                      {{ noticeEventState(notice) === 'PAST' ? 'Past' : eventCountdown(notice) }}
+                    </UBadge>
+                    <UBadge v-if="notice.onCalendar" color="info" variant="subtle" size="sm"
+                      icon="i-lucide-calendar-days">
+                      On calendar
+                    </UBadge>
+                  </div>
                 </div>
 
                 <p class="mt-2 text-sm text-muted">{{ notice.content }}</p>
 
-                <p class="mt-3 text-xs text-muted">
+                <p class="mt-3 md:text-xs text-xs-base text-muted">
                   Posted by {{ notice.postedBy }} · {{ formatDateTime(notice.postedAt) }}
                   <template v-if="notice.expiresAt"> · Expires {{ formatDate(notice.expiresAt) }}</template>
                 </p>
               </div>
-
-              <div v-if="canManage" class="flex shrink-0 items-center gap-1">
-                <UButton :icon="notice.pinned ? UNPIN_ICON : PIN_ICON" size="xs" color="neutral" variant="ghost"
-                  @click="togglePin(notice)" />
-
-                <CommunicateNoticeAdd :notice="notice" />
-
-                <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(notice)" />
-              </div>
             </div>
-          </UCard>
+          </div>
         </div>
       </div>
       <template #footer>
-        <div v-if="meta.total" class="flex items-center justify-between">
+        <div v-if="meta.total" class="flex flex-col md:flex-row space-y-2 md:space-y-0 items-center justify-between">
           <Showing :meta="meta" />
           <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
             :total="meta.total" show-edges />
         </div>
       </template>
     </UCard>
+
+    <!-- The edit form for the phone menu (it has no button of its own here). -->
+    <CommunicateNoticeAdd v-if="editing" :key="editing.id" :notice="editing" hide-trigger v-model:open="editOpen" />
 
     <CommunicateNoticeDeletePrompt v-model:open="deleteModal" :notice-id="selected?.id || ''"
       :notice-title="selected?.title || ''" />

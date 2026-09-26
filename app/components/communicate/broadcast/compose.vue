@@ -20,7 +20,8 @@ function defaultState() {
     audience: 'ALL' as Audience,
     channels: ['SMS'] as BroadcastChannel[],
     sendOption: 'NOW' as 'NOW' | 'SCHEDULE',
-    scheduledAt: ''
+    scheduledAt: '',
+    managementSectionId: ''
   }
 }
 
@@ -32,13 +33,13 @@ const recipientsLoading = ref(false)
 async function refreshRecipientsPreview() {
   recipientsLoading.value = true
   try {
-    recipientsPreview.value = await BroadcastApi().getAudienceSize(state.audience) || 0
+    recipientsPreview.value = await BroadcastApi().getAudienceSize(state.audience, state.managementSectionId) || 0
   } finally {
     recipientsLoading.value = false
   }
 }
 
-watch(() => state.audience, refreshRecipientsPreview, { immediate: true })
+watch(() => [state.audience, state.managementSectionId], refreshRecipientsPreview, { immediate: true })
 
 const schema = yup.object({
   title: yup.string().required('Title is required'),
@@ -76,7 +77,8 @@ async function onSubmit() {
       audience: state.audience,
       channels: state.channels,
       sendOption: state.sendOption,
-      scheduledAt: state.sendOption === 'SCHEDULE' ? new Date(state.scheduledAt).toISOString() : null
+      scheduledAt: state.sendOption === 'SCHEDULE' ? new Date(state.scheduledAt).toISOString() : null,
+      managementSectionId: state.managementSectionId || null
     })
 
     lastSent.value = broadcast
@@ -142,6 +144,9 @@ async function onSubmit() {
                 </span>
               </template>
             </UFormField>
+
+            <!-- Who: the whole school or one management section -->
+            <CommunicateSectionPicker v-model="state.managementSectionId" :disabled="isLoading" />
 
             <!-- Audience -->
             <UFormField label="Audience" name="audience" required>

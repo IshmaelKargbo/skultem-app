@@ -27,6 +27,9 @@ export const useClassSessionStore = defineStore('classSession', {
     create(payload: CreateClassSessionDto) {
       return ClassApi().createSession(payload)
     },
+    delete(id: string) {
+      return ClassApi().deleteSession(id)
+    },
     async fetchAllMe() {
       this.loading = true
       this.error = null

@@ -95,7 +95,10 @@ const columns = [
         </template>
 
         <template #audience-cell="{ row }">
-          <UBadge color="neutral" variant="subtle">{{ audienceLabel(row.original.audience) }}</UBadge>
+          <div class="flex flex-wrap items-center gap-1">
+            <UBadge color="neutral" variant="subtle">{{ audienceLabel(row.original.audience) }}</UBadge>
+            <CommunicateSectionBadge :section-id="row.original.managementSectionId" />
+          </div>
         </template>
 
         <template #delivery-cell="{ row }">
@@ -154,6 +157,7 @@ const columns = [
 
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
             <UBadge color="neutral" variant="subtle">{{ audienceLabel(broadcast.audience) }}</UBadge>
+            <CommunicateSectionBadge :section-id="broadcast.managementSectionId" />
             <p><span class="font-medium text-highlighted">{{ broadcast.deliveredCount }}</span> / {{
               broadcast.recipientsCount }} delivered</p>
             <p>{{ formatDateTime(broadcast.sentAt || broadcast.scheduledAt || broadcast.createdAt) }}</p>

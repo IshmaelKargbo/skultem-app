@@ -155,6 +155,20 @@
               </div>
             </div>
 
+            <!-- Owner / proprietor: look at the whole school or just one section (Primary, Secondary...) -->
+            <div v-if="canSwitchSection" class="border-t border-gray-200/60 dark:border-white/10 pt-4">
+              <div class="mb-3 px-1">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                  Viewing
+                </p>
+              </div>
+
+              <div
+                class="flex items-center justify-between rounded-2xl border border-gray-200/70 dark:border-white/10 bg-gray-100 dark:bg-white/5 px-4 py-3">
+                <SectionSwitch />
+              </div>
+            </div>
+
             <!-- Menu -->
             <div class="space-y-1.5 border-t border-gray-200/60 dark:border-white/10 pt-4">
               <UButton icon="lucide:user" variant="ghost" color="neutral" size="md"
@@ -283,6 +297,7 @@ const { canInstall, install } = usePwaInstall();
 const canSwitchYear = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]));
 
 const drawerOpen = ref(false);
+const { canSwitch: canSwitchSection } = useSectionView();
 
 // Notifications / Help & Support are school-scoped pages that don't exist on the admin portal.
 const onAdminPortal = isAdminPortalHost(useRequestURL().hostname);

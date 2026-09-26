@@ -18,9 +18,9 @@ export const BroadcastApi = () => {
       }
     },
 
-    getAudienceSize: async (audience: Audience) => {
+    getAudienceSize: async (audience: Audience, sectionId?: string | null) => {
       try {
-        const res = await $api(`/broadcast/audience-size?audience=${audience}`) as any
+        const res = await $api('/broadcast/audience-size', { query: { audience, sectionId: sectionId || undefined } }) as any
         return res.data as number
       } catch (err: any) {
         useHandleError(err)
