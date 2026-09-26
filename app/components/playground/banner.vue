@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// Shown across the app while the school is in playground mode, so nobody mistakes test records
-// for real ones. Owners/admins get a shortcut to the go-live screen in Settings.
 const { school, hydrateFromCache } = useSchoolInfo()
 const { can } = useAuth()
 
@@ -8,12 +6,11 @@ hydrateFromCache()
 
 const visible = computed(() => !!school.value?.testSchool && !can(Role.SYSTEM_ADMIN))
 const canManage = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
-// Owner, proprietor or super admin - admins can open the screen but only review it.
 const canGoLive = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
 </script>
 
 <template>
-  <div v-if="visible" class="px-4 pt-2 md:px-6">
+  <div v-if="visible" class="px-4 pt-3 md:px-6">
     <div
       class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-sm sm:px-4">
       <UIcon name="i-lucide-flask-conical" class="size-4 shrink-0 text-warning" />
