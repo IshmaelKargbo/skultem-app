@@ -200,10 +200,10 @@ watch(open, async (val) => {
     const res = await sessionStore.fetchAllForMasterAssignment();
     if (res == null) return;
     classes.value = res.map((c: ClassSession) => {
-      let name = c.clazz;
+      let name = `${c.clazz} - ${c.sectionName}`;
 
       if (c.streamName != "N/A") {
-        name = `${c.clazz} (${c.streamName})`;
+        name = `${c.clazz} - ${c.sectionName} (${c.streamName})`;
       }
 
       return {
