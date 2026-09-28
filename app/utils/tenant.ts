@@ -14,6 +14,7 @@ export function resolveTenantSlug(hostname: string): string {
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return runtimeConf().domain || ''
     }
+
     return hostname.split('.')[0] || ''
 }
 

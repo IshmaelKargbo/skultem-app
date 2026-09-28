@@ -45,6 +45,20 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    getAllSectionsBySession: async (classId: string, streamId: string, academicYearId: string) => {
+      try {
+        const res = await $api(`/class/section/${classId}?academicYearId=${academicYearId}&streamId=${streamId}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class sections')
+
+        const data = res.data
+
+        return data as ClassSection[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAllClassSessions: async (page: number = 1, size: number = 6, academicYearId?: string, sectionId?: string,
       streamId?: string, query?: string, level?: string) => {
       try {

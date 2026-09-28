@@ -25,6 +25,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
+
     // The admin portal isn't any school's subdomain - there's no tenant to resolve here, and
     // every page outside ADMIN_PORTAL_PATHS simply doesn't exist on this host.
     if (onAdminPortal) {

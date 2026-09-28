@@ -86,9 +86,14 @@ export const useClassStore = defineStore('class', {
     findAllStreams(id: string) {
       return ClassApi().getAllStreams(id)
     },
-    async findAllSections(id: string) {
-      const res = await ClassApi().getAllSections(id)
-      if (res) return res
+    async findAllSections(id: string, streamId: string, academicYearId: string) {
+      if (streamId == '') {
+        const res = await ClassApi().getAllSections(id)
+        if (res) return res
+      } else {
+        const res = await ClassApi().getAllSectionsBySession(id, streamId, academicYearId)
+        if (res) return res
+      }
     },
     findClassMaster(id: string) {
       return ClassApi().getCurrentClassMaster(id)

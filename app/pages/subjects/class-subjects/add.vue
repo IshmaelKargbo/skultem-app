@@ -358,6 +358,7 @@ onMounted(() => {
     subjectStore.fetchAll(0, 0)
     classStore.fetchAll(0, 0)
     useAppStore().setTitle('Class Subjects')
+    useAppStore().setBack('/subjects/class-subjects')
     document.title = 'Assign Class Subject | Class Subjects | Skultem'
 })
 

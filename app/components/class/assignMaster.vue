@@ -28,7 +28,19 @@
             </p>
           </template>
         </UFormField>
+        <!-- Stream -->
+        <UFormField v-if="levelInfo(selectedClass?.classLevel)?.streamed" label="Stream" name="streamId" required>
+          <USelectMenu v-model="state.streamId" value-key="value" :items="streams" placeholder="Select stream"
+            :disabled="isLoading || streams.length === 0">
+            <template #leading>
+              <UIcon name="i-lucide-git-branch-plus" class="text-muted" />
+            </template>
+          </USelectMenu>
 
+          <template #help>
+            <p class="text-xs text-muted">Select the stream for this SSS class.</p>
+          </template>
+        </UFormField>
         <!-- Section -->
         <UFormField v-if="selectedClass" label="Section" name="sectionId" required>
           <USelectMenu v-model="state.sectionId" value-key="value" :items="sections" placeholder="Select section"
@@ -40,20 +52,6 @@
 
           <template #help>
             <p class="text-xs text-muted">Choose the section within this class.</p>
-          </template>
-        </UFormField>
-
-        <!-- Stream -->
-        <UFormField v-if="levelInfo(selectedClass?.level)?.streamed" label="Stream" name="streamId" required>
-          <USelectMenu v-model="state.streamId" value-key="value" :items="streams" placeholder="Select stream"
-            :disabled="isLoading || streams.length === 0">
-            <template #leading>
-              <UIcon name="i-lucide-git-branch-plus" class="text-muted" />
-            </template>
-          </USelectMenu>
-
-          <template #help>
-            <p class="text-xs text-muted">Select the stream for this SSS class.</p>
           </template>
         </UFormField>
 
@@ -91,8 +89,11 @@ import * as yup from "yup";
 import type { FormSubmitEvent } from "#ui/types";
 
 const store = useClassStore();
+const { records } = storeToRefs(store);
+const academicStore = useAcademicYearStore();
 const sessionStore = useClassSessionStore();
 const teacherStore = useTeacherStore();
+const { viewingYear } = storeToRefs(academicStore);
 const toast = useNotify();
 
 const isLoading = ref(false);
@@ -112,14 +113,15 @@ const schema = yup.object({
   teacherId: yup.string().required("Teacher is required"),
 });
 
-const classes = ref<{ label: string; value: string; classId: string; stream: string }[]>([]);
 const sections = ref<{ label: string; value: string }[]>([]);
 const streams = ref<{ label: string; value: string }[]>([]);
 
 const selectedClass = computed(() => {
   if (!state.classId) return null;
-  return sessionStore.records.find((c) => c.id === state.classId);
+  return sessionStore.records.find((c) => c.clazzId === state.classId);
 });
+
+const classes = computed(() => records.value.map(e => ({ value: e.id, label: e.name })));
 
 const teachers = computed(
   () =>
@@ -135,22 +137,15 @@ async function fetchRecords() {
 
   // Reset dependent fields
   state.sectionId = "";
-  state.streamId = "";
+
   sections.value = [];
   streams.value = [];
 
-  const classRecord = classes.value.find(e => (e.value == state.classId))
-  if (!classRecord) return;
 
   try {
-    const resultSections = await store.findAllSections(classRecord.classId);
-    sections.value =
-      resultSections?.map((s: ClassSection) => ({
-        label: s.section.name,
-        value: s.section.id,
-      })) || [];
+    fetchSections()
 
-    const resultStreams = await store.findAllStreams(classRecord.classId);
+    const resultStreams = await store.findAllStreams(state.classId);
     streams.value =
       resultStreams?.map((s: ClassStream) => ({
         label: `${s.stream.name} `,
@@ -159,6 +154,26 @@ async function fetchRecords() {
   } catch (err) {
     sections.value = [];
     streams.value = [];
+  }
+}
+
+async function fetchSections() {
+  if (selectedClass.value?.classLevel == 'SSS') {
+    const resultSections = await store.findAllSections(state.classId, state.streamId, viewingYear.value?.id || '');
+    console.log(resultSections);
+    
+    sections.value =
+      resultSections?.map((s: ClassSection) => ({
+        label: s.section.name,
+        value: s.section.id,
+      })) || [];
+  } else {
+    const resultSections = await store.findAllSections(state.classId, state.streamId, '');
+    sections.value =
+      resultSections?.map((s: ClassSection) => ({
+        label: s.section.name,
+        value: s.section.id,
+      })) || [];
   }
 }
 
@@ -175,12 +190,13 @@ const close = () => {
 const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
   isLoading.value = true;
   try {
-    const clazz = classes.value.find((e) => e.value == state.classId);
+    const clazz = sessionStore.records.find((e) => e.clazzId == state.classId);
+    if (!clazz) return;
 
     if (clazz) {
-      await store.assignClassMaster(clazz.classId, {
+      await store.assignClassMaster(state.classId, {
         sectionId: state.sectionId,
-        streamId: clazz.stream || "",
+        streamId: clazz.streamId || "",
         teacherId: state.teacherId,
       });
 
@@ -197,30 +213,16 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
 
 watch(open, async (val) => {
   if (val) {
-    const res = await sessionStore.fetchAllForMasterAssignment();
-    if (res == null) return;
-    classes.value = res.map((c: ClassSession) => {
-      let name = `${c.clazz} - ${c.sectionName}`;
-
-      if (c.streamName != "N/A") {
-        name = `${c.clazz} - ${c.sectionName} (${c.streamName})`;
-      }
-
-      return {
-        label: name,
-        value: c.id,
-        classId: c.clazzId,
-        stream: c.streamId,
-      };
-    });
+    await store.fetchAll(0, 0);
     await teacherStore.fetchAll(0, 0);
   }
 });
 
-watch(
-  () => state.classId,
-  () => {
-    fetchRecords();
-  }
-);
+watch(() => state.classId, () => {
+  fetchRecords();
+});
+
+watch(() => state.streamId, () => {
+  fetchSections();
+});
 </script>
