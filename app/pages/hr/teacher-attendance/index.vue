@@ -217,6 +217,7 @@ const { roster, loadingRoster, history, historyMeta, loadingHistory, error, admi
 const today = new Date().toISOString().slice(0, 10)
 const date = ref(today)
 const historyPage = ref(1)
+const historySize = ref(7)
 const search = ref('')
 
 const isToday = computed(() => date.value === today)
@@ -275,7 +276,7 @@ async function saveAttendance() {
   try {
     await store.mark(date.value, pendingChanges.value)
     notify.success('Attendance saved successfully')
-    store.fetchHistory(historyPage.value, 10)
+    store.fetchHistory(historyPage.value, historySize.value)
   } catch (err: any) {
     notify.error(err?.message || 'Failed to save attendance')
   }
@@ -285,7 +286,7 @@ async function onAdminClockIn(teacherId: string) {
   try {
     await store.adminClockIn(teacherId, date.value)
     notify.success('Teacher clocked in.')
-    store.fetchHistory(historyPage.value, 10)
+    store.fetchHistory(historyPage.value, historySize.value)
   } catch (err: any) {
     notify.error(err?.message || 'Unable to clock the teacher in.')
   }
@@ -295,7 +296,7 @@ async function onAdminClockOut(teacherId: string) {
   try {
     await store.adminClockOut(teacherId, date.value)
     notify.success('Teacher clocked out.')
-    store.fetchHistory(historyPage.value, 10)
+    store.fetchHistory(historyPage.value, historySize.value)
   } catch (err: any) {
     notify.error(err?.message || 'Unable to clock the teacher out.')
   }
@@ -305,14 +306,14 @@ async function onAdminUnclock(teacherId: string) {
   try {
     await store.adminUnclock(teacherId, date.value)
     notify.success('Clock corrected.')
-    store.fetchHistory(historyPage.value, 10)
+    store.fetchHistory(historyPage.value, historySize.value)
   } catch (err: any) {
     notify.error(err?.message || 'Unable to undo the clock.')
   }
 }
 
 watch(date, () => store.fetchRoster(date.value))
-watch(historyPage, () => store.fetchHistory(historyPage.value, 10))
+watch(historyPage, () => store.fetchHistory(historyPage.value, 7))
 
 onMounted(() => {
   useAppStore().setTitle('Mark Attendance')
@@ -320,7 +321,7 @@ onMounted(() => {
   document.title = 'Mark Attendance | HR | Skultem'
 
   store.fetchRoster(date.value)
-  store.fetchHistory(1, 10)
+  store.fetchHistory(1, historySize.value)
 })
 
 definePageMeta({
