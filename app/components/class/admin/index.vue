@@ -89,7 +89,8 @@
                                         <h3 class="truncate font-bold text-highlighted">
                                             {{ item.clazz }}
                                         </h3>
-                                        <p class="text-muted" v-if="item.streamId">-  {{ item.streamName }}</p>
+                                        <p class="text-muted">-  {{ item.sectionName }}</p>
+                                        <p class="text-muted" v-if="item.streamId">({{ item.streamName }})</p>
 
                                         <UTooltip v-if="item.needsAttention" :delay-duration="0" arrow
                                             text="At least one student here has low attendance or is below the pass mark">
@@ -123,14 +124,6 @@
                     </div>
                 </template>
             </div>
-
-            <template #footer>
-                <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
         </UCard>
 
         <ConfirmDeleteModal v-if="removing" v-model:open="removeOpen" title="Remove from class"
@@ -207,8 +200,6 @@ const page = computed<number>({
     set: (value) => updateQuery({ page: value }),
 });
 
-const size = ref(runtimeConf().limit);
-
 // Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
 // why a v-model bound straight to a computed setter that triggers router.replace() reads as
 // "picking an option/typing does nothing". These still seed from the URL on load and push back
@@ -243,14 +234,14 @@ async function fetchRecords() {
     try {
         loading.value = true;
 
-        await store.fetchAll(page.value, size.value, undefined, sectionId.value || undefined,
+        await store.fetchAll(0, 0, undefined, sectionId.value || undefined,
             streamId.value || undefined, search.value || undefined, level.value || undefined);
     } finally {
         loading.value = false;
     }
 }
 
-watch([page, size], fetchRecords, {
+watch([page], fetchRecords, {
     immediate: true,
 });
 

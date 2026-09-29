@@ -199,40 +199,10 @@ onMounted(async () => {
       </UTable>
       <div class="md:p-4  md:space-y-4"
         :class="tableView === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+        
         <template v-if="loading">
-          <UCard v-for="i in 6" :key="i" :ui="{ body: 'sm:p-0 p-0' }">
+          <div v-for="i in 6" :key="i">
             <div class="animate-pulse">
-              <!-- Header -->
-              <div class="border-b border-default p-4">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex min-w-0 items-center gap-3">
-                    <!-- Avatar -->
-                    <USkeleton class="size-12 shrink-0 rounded-xl" />
-
-                    <!-- Name -->
-                    <div class="min-w-0 space-y-2">
-                      <USkeleton class="h-4 w-36 rounded-md" />
-                      <USkeleton class="h-3 w-28 rounded-md" />
-                    </div>
-                  </div>
-
-                  <!-- Status -->
-                  <USkeleton class="h-6 w-16 shrink-0 rounded-full" />
-                </div>
-              </div>
-
-              <!-- Stats -->
-              <div class="grid grid-cols-2 gap-3 p-4">
-                <div v-for="j in 4" :key="j" class="rounded-2xl border border-default bg-muted/40 p-3">
-                  <div class="mb-3 flex items-center gap-2">
-                    <USkeleton class="size-7 shrink-0 rounded-lg" />
-                    <USkeleton class="h-3 w-16 rounded-md" />
-                  </div>
-
-                  <USkeleton class="h-4 w-24 rounded-md" />
-                </div>
-              </div>
-
               <!-- Footer -->
               <div class="flex items-center justify-between gap-3 border-t border-default p-4">
                 <div class="flex min-w-0 items-center gap-3">
@@ -247,7 +217,7 @@ onMounted(async () => {
                 <USkeleton class="h-9 w-20 shrink-0 rounded-xl" />
               </div>
             </div>
-          </UCard>
+          </div>
         </template>
 
         <!-- Data -->

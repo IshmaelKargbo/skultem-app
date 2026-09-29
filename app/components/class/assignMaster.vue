@@ -74,7 +74,7 @@
     </template>
 
     <template #footer>
-      <div class="flex flex-col gap-3 sm:flex-row">
+      <div class="flex gap-3 sm:flex-row">
         <UButton class="justify-center" icon="lucide:save" :loading="isLoading" label="Save"
           @click="formRef?.submit()" />
         <UButton class="justify-center" label="Cancel" variant="outline" color="neutral" @click="close"

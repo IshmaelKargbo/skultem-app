@@ -16,7 +16,7 @@
             </UFormField>
 
             <UFormField name="date" class="w-full">
-              <UInput v-model="state.date" type="date" class="w-full" @change="fetchRecords" />
+              <UInput :max="today" v-model="state.date" type="date" class="w-full" @change="fetchRecords" />
             </UFormField>
           </div>
         </div>
@@ -153,15 +153,12 @@ const store = useAttendanceStore()
 const router = useRouter()
 const route = useRoute()
 const { error, success } = useNotify()
+const today = todayISO()
 
 const { report } = storeToRefs(store)
 
 const isLoading = ref(true)
 const selectedClass = ref<ClassSession>()
-
-function todayISO() {
-  return new Date().toISOString().split('T')[0]
-}
 
 type AttendanceRowRecord = {
   attendanceId: string

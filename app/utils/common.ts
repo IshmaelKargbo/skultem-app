@@ -16,6 +16,9 @@ export type Meta = {
     totalPages: number;
 }
 
+export function todayISO() {
+  return new Date().toISOString().split('T')[0]
+}
 // A named alias, not `Record<string, string>` written out on each `export const`: Nuxt's
 // auto-import scanner reads the comma in that annotation as a second declared name and registers a
 // phantom `string` import from every such file (the "Duplicated imports 'string'" warning).
