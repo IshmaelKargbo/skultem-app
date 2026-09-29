@@ -189,7 +189,17 @@ const close = () => {
 const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
   isLoading.value = true;
   try {
-    const clazz = sessionStore.records.find((e) => e.clazzId == state.classId);
+    const clazz = sessionStore.records.find((e) => {
+      if (!state.streamId) {
+        return e.clazzId === state.classId;
+      }
+
+      return (
+        e.clazzId === state.classId &&
+        e.streamId === state.streamId
+      );
+    });
+
     if (!clazz) return;
 
     if (clazz) {
