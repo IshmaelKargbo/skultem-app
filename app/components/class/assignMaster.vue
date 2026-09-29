@@ -18,7 +18,7 @@
           <USelectMenu v-model="state.classId" value-key="value" :items="classes" placeholder="Select class"
             :disabled="isLoading">
             <template #leading>
-              <UIcon name="i-lucide-school" class="text-muted" />
+              <UIcon :name="CLASS_ICON" class="text-muted" />
             </template>
           </USelectMenu>
 
@@ -160,8 +160,7 @@ async function fetchRecords() {
 async function fetchSections() {
   if (selectedClass.value?.classLevel == 'SSS') {
     const resultSections = await store.findAllSections(state.classId, state.streamId, viewingYear.value?.id || '');
-    console.log(resultSections);
-    
+
     sections.value =
       resultSections?.map((s: ClassSection) => ({
         label: s.section.name,
@@ -202,7 +201,7 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
 
       toast.success("The class master has been assigned successfully.");
       close();
-      sessionStore.fetchAll();
+      sessionStore.fetchAll(0, 0);
     }
   } catch (err: any) {
     toast.error(err.message || "Something went wrong");
@@ -213,8 +212,11 @@ const onSubmit = async (event: FormSubmitEvent<typeof state>) => {
 
 watch(open, async (val) => {
   if (val) {
-    await store.fetchAll(0, 0);
-    await teacherStore.fetchAll(0, 0);
+    await Promise.all([
+      sessionStore.fetchAll(0, 0),
+      store.fetchAll(0, 0),
+      teacherStore.fetchAll(0, 0),
+    ]);
   }
 });
 
