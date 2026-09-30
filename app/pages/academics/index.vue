@@ -75,12 +75,10 @@ const columns = [
     }
 ]
 
-// --- Filters: the same row as the Auth pages, Transactions and the Student Ledger. Academic years are
-// paged by the server, so these narrow the years on the page that's loaded. --------------------------
 const search = ref('')
 const status = ref('')
 const current = ref('')
-const filterState = ref(false) // the filter row's open/closed state on mobile
+const filterState = ref(false)
 
 const statusOptions = [
     { label: 'Opened', value: 'OPENED' },
@@ -154,7 +152,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

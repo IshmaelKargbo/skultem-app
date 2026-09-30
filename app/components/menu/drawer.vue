@@ -308,8 +308,6 @@ function isItemActive(item: NavItem) {
   return !!item.to && matchesRoute({ to: item.to, exact: item.exact });
 }
 
-// --- Accordions ------------------------------------------------------------------------------------
-// Two groups can share a label (e.g. an "Analytics" per role), so key on label + first page.
 function panelId(item: NavItem) {
   return `${item.label}-${item.subNavs?.[0]?.to ?? item.to ?? ""}`.replace(/[^a-zA-Z0-9-]/g, "_");
 }

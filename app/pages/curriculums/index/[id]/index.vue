@@ -42,8 +42,10 @@
 
 
         <div class="space-y-5">
-          <p v-if="week.subTopic" class="bg-gray-50 p-3 border-2 rounded-xl border-dashed border-gray-200 dark:border-gray-900">{{
-            week.subTopic }}
+          <p v-if="week.subTopic"
+            class="bg-gray-50 p-3 border-2 rounded-xl border-dashed border-gray-200 dark:border-gray-900">
+            {{
+              week.subTopic }}
           </p>
           <!-- Objectives -->
           <div>
@@ -184,12 +186,6 @@ onMounted(() => {
 
 
 definePageMeta({
-  role: [
-    Role.ADMIN,
-    Role.PROPRIETOR,
-    Role.OWNER,
-    Role.TEACHER
-  ]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
-
 </script>

@@ -293,10 +293,6 @@ const academic = reactive({
     selectedOptionIds: {} as Record<string, string>
 })
 
-// ─── Draft autosave / resume ──────────────────────────────────────────────────
-// Committed step data (personal/parent/academic) only updates on "Next", so each step also streams
-// its live form here - the draft then holds whatever was on screen, not just the last completed step.
-
 const draft = useEnrollmentDraft()
 const live = reactive({
     personal: {} as Record<string, any>,
@@ -543,6 +539,6 @@ onMounted(() => {
 
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 </script>

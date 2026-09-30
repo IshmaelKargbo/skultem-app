@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
-
     <Heading title="Salary Structures" subtitle="Manage teacher compensation packages.">
       <UButton variant="soft" color="neutral" icon="i-lucide-layout-template" to="/payroll/salary-templates"
         label="Salary Templates" />
@@ -145,12 +144,6 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val })
 })
 
-// A local override - the global updateQuery only compares page/size and silently drops any other
-// query key (search/sort) when neither changed, e.g. setting a filter while already on page 1.
-function updateQuery(newQuery: Record<string, any>) {
-  router.replace({ query: { ...route.query, ...newQuery } })
-}
-
 let searchTimeout: ReturnType<typeof setTimeout>
 watch(search, (value) => {
   clearTimeout(searchTimeout)
@@ -188,6 +181,6 @@ onMounted(() => {
 onBeforeUnmount(() => clearTimeout(searchTimeout))
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

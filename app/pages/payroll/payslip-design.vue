@@ -126,11 +126,6 @@ const { settings } = storeToRefs(store)
 
 const saving = ref(false)
 
-// The real payslip renders at a fixed A4 size (794x1123) - this scales it down to fit whatever
-// width the preview card actually has, instead of the old hardcoded scale(0.4)/424px-tall
-// viewport, which left dead space on a wide card and clipped the bottom of the document on a
-// narrow one (same fix as pages/payroll/runs/[id]/payslip/[teacherId].vue). Capped at 0.4 so it
-// still reads as a thumbnail rather than growing to full size on a wide sidebar.
 const MAX_PREVIEW_SCALE = 0.4
 const DOC_WIDTH = 794
 
@@ -162,8 +157,6 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(previewMeasureRaf)
 })
 
-// Editing a setting (e.g. toggling "Amount in Words", or a footer note long enough to wrap)
-// can change the document's real height - re-measure so the preview frame doesn't clip it.
 watch(settings, () => nextTick().then(schedulePreviewMeasure), { deep: true })
 
 interface SectionConfig {
@@ -238,30 +231,21 @@ onMounted(async () => {
   measurePreview()
 
   await store.fetch()
-  // Settings (accent color, logo, footer note) can change the document's measured height once
-  // loaded (a longer footer note wrapping to a second line, say) - re-measure after they land.
   await nextTick()
   schedulePreviewMeasure()
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 
 <style scoped>
-/* The real payslip component renders at A4 size (794x1123) - scaled down (in the script above)
-   to fit whatever width the preview card actually has, rather than building a second,
-   lower-fidelity mockup of the design. */
 .preview-viewport {
   overflow: hidden;
   padding: 1rem;
 }
 
-/* Plain block + margin:auto, not flex justify-content:center - a flex item's implicit
-   min-width:auto floors it at its UNSCALED content width (794px, since transform doesn't count
-   for layout sizing, only paint), overriding the smaller width set above and pushing the
-   actually-visible scaled content off-center to the left. A block box has no such floor. */
 .preview-frame {
   overflow: hidden;
 }

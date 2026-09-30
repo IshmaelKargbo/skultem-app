@@ -169,11 +169,9 @@ function getRowItems(row: Row<AssessmentTemplate>) {
   ]
 }
 
-// --- Filters: the same row as the Auth pages, Transactions and the Student Ledger. Templates are
-// paged by the server, so these narrow the templates on the page that's loaded. ---------------------
 const search = ref('')
 const status = ref('')
-const filterState = ref(false) // the filter row's open/closed state on mobile
+const filterState = ref(false)
 
 const statusOptions = [
   { label: 'Balanced', value: 'Balanced' },
@@ -226,7 +224,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 watch(

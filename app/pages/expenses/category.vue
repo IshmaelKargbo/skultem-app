@@ -3,17 +3,11 @@ import type { Row } from '@tanstack/vue-table'
 
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
-const router = useRouter()
-
 const store = useExpenseStore()
-
 const loading = ref(true)
-
 const { categories: data, meta } = storeToRefs(store)
-
 const editRcord = ref<FeeCategory | null>(null)
 const editState = ref(false)
-
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
@@ -104,7 +98,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

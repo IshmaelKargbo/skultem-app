@@ -107,8 +107,6 @@ const filters = reactive({
 })
 
 const downloading = ref(false)
-// The data: URI logo for the selected level's section (the viewer's own section when none is
-// picked); the school's plain logo shows meanwhile.
 const { logoSrc: reportLogo, loadLogo, ready: logoReady } = useReportLogo()
 const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 
@@ -173,10 +171,6 @@ onMounted(async () => {
   loadStructure()
   useAppStore().setTitle('Student Demographics')
   document.title = 'Student Demographics | Skultem'
-
-  // Show the already-cached logo immediately rather than waiting on the class/demographics
-  // fetches below - the CORS-safe data URI (needed only for the html2canvas PDF capture) loads
-  // in the background and swaps in once ready.
   hydrateFromCache()
   loadLogo(filters.level || null)
 
@@ -185,6 +179,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

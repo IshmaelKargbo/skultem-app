@@ -143,9 +143,7 @@ onMounted(() => {
     document.title = "Add Week | Scheme of Work | Skultem"
 })
 
-// Missing entirely before - matches its parent curriculum page and the top-level "add
-// curriculum" page (curriculums/index/[id]/index.vue, curriculums/index/add.vue).
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

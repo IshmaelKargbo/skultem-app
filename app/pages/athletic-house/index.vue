@@ -216,8 +216,6 @@ const saving = ref(false)
 const randomizing = ref(false)
 const confirmRandomOpen = ref(false)
 
-// studentId -> houseId, seeded from each student's current house and
-// mutated locally as the user picks from the dropdowns.
 const assignments = ref<Record<string, string | undefined>>({})
 // snapshot taken right after loading, used to work out what changed.
 const original = ref<Record<string, string | undefined>>({})
@@ -341,6 +339,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

@@ -65,8 +65,7 @@
         </UCard>
         <UCard>
           <div class="flex gap-3">
-            <UButton variant="outline" color="neutral" to="/curriculums/scheme-of-work"
-              label="Cancel" />
+            <UButton variant="outline" color="neutral" to="/curriculums/scheme-of-work" label="Cancel" />
 
             <UButton type="submit" :trailing-icon="SAVE_ICON" label="Save Scheme" :loading="isLoading"
               @click="formRef?.submit()" />
@@ -254,9 +253,6 @@ const selectedClassLabel = computed(
   () => classes.value.find(c => c.value === state.classId)?.label || 'Not selected'
 )
 
-// `classes` now lists sessions, so state.classId is a session id - look it up directly rather
-// than by clazz id (getByClazz would resolve to whichever of a class's streams happens to come
-// back first, silently mixing up e.g. SSS 1 Science with SSS 1 Art).
 const selectedClass = computed(
   () => classStore.get(state.classId)
 )
@@ -308,12 +304,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [
-    Role.ADMIN,
-    Role.PROPRIETOR,
-    Role.OWNER,
-    Role.TEACHER
-  ]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 watch(() => selectedTerm.value, (value) => {

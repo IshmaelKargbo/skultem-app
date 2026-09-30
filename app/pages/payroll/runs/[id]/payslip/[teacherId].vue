@@ -108,9 +108,6 @@ const teacherName = computed(() => {
   return `${t.user?.givenNames || ''} ${t.user?.familyName || ''}`.trim()
 })
 
-// The logo of the section this staff member belongs to (the school's when they belong to none or several).
-// Plain logo URL first (cheap, shows at once), then the print-safe data: URI in the background - the
-// PDF download waits for it (see downloadPdf). Cached in the browser after the first time.
 let pdfLogoReady: Promise<void> = Promise.resolve()
 
 async function loadPdfLogo() {
@@ -147,9 +144,6 @@ function sanitizeFilename(value: string) {
 watch([runId, teacherId], async ([r, t]) => {
   if (!r || !t) return
 
-  // The design settings and the CORS-safe logo are both decorative/supporting - a failure loading
-  // either shouldn't block the payslip data that already succeeded (see receipt/viewer.vue for the
-  // same reasoning).
   await Promise.all([
     store.fetchPayslip(r, t),
     settingStore.loaded ? Promise.resolve() : settingStore.fetch().catch(() => {}),
@@ -160,8 +154,6 @@ watch([runId, teacherId], async ([r, t]) => {
   useAppStore().setBack(`/payroll/runs/${r}`)
   document.title = `Payslip | ${teacherName.value || 'Payroll'} | Skultem`
 
-  // The frame this measures only exists once `payslip` is loaded (v-else above), so the
-  // observer is (re)attached here rather than in onMounted, which can run before that.
   await nextTick()
   resizeObserver?.disconnect()
   resizeObserver = resizeObserver || new ResizeObserver(scheduleMeasure)
@@ -170,7 +162,7 @@ watch([runId, teacherId], async ([r, t]) => {
 }, { immediate: true })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 
@@ -178,12 +170,6 @@ definePageMeta({
 .payslip-viewport {
   width: 100%;
 }
-
-/* payslip-frame is centered with margin:0 auto (set inline, above) rather than flex
-   justify-content - a flex item's implicit min-width:auto floors it at its UNSCALED content
-   width (794px, since transform doesn't count for layout sizing, only paint), overriding the
-   smaller width set on it and pushing the actually-visible scaled content off-center to the
-   left. A block box has no such floor. */
 
 .payslip-scale {
   width: 794px;
@@ -195,9 +181,6 @@ definePageMeta({
     background: white;
   }
 
-  /* Printing uses the real page size, not the screen's viewport - undo the on-screen scale
-     (applied as an inline style, which needs !important here to be overridden) so the printed
-     payslip comes out full size instead of shrunk to whatever width it happened to render at. */
   .payslip-frame {
     width: auto !important;
     height: auto !important;

@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR]
 })
 </script>
 

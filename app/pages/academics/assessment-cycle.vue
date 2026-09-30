@@ -331,15 +331,10 @@ const classesMeta = computed(() => useMeta({
   count: filteredClasses.value.length
 }))
 
-// A new search query means a different set of results - always jump back to page 1 rather than
-// staying on, say, page 2 of what is now a completely different filtered list.
 watch(search, () => {
   classesPage.value = 1
 })
 
-// The overview can also reload with fewer classes for other reasons (a template unassigned,
-// etc.) - if that leaves the current page past the end, snap back rather than rendering an
-// empty page with visible pagination.
 watch(filteredClasses, () => {
   const maxPage = Math.max(1, Math.ceil(filteredClasses.value.length / CLASSES_PAGE_SIZE))
   if (classesPage.value > maxPage) classesPage.value = maxPage
@@ -349,19 +344,12 @@ const activeTerm = computed(() => cycle.value?.activeTerm || overview.value?.act
 const assessmentItems = computed(() => cycle.value?.assessments || [])
 const totalWeight = computed(() => cycle.value?.totalWeight || 0)
 
-// ResolveActiveTermUseCase (backend) only ever hands back a CLOSED term as "active" once every
-// term in the academic year has been closed out - so this is the signal that there's nothing
-// left to advance, school-wide.
 const allTermsCompleted = computed(() => activeTerm.value?.status === 'CLOSED')
 
 const totalClasses = computed(() => overview.value?.totalClasses ?? 0)
 const readyClasses = computed(() => overview.value?.readyClasses ?? 0)
 const notReadyClasses = computed(() => overview.value?.notReadyClasses ?? 0)
 
-// --- Mobile drawer ------------------------------------------------------------------------------
-// Below the lg breakpoint the class list is all that shows; tapping a class opens its cycle in a
-// drawer. The first class gets selected automatically on load (see loadOverview) - that must not
-// pop the drawer open, so it only opens from an actual tap.
 const drawerOpen = ref(false)
 const isMobile = ref(false)
 
@@ -416,9 +404,6 @@ async function loadOverview() {
     }
 
     if (!selectedClassId.value && overview.value?.classes?.length) {
-      // Awaited so the class query param lands before loadCycle() (called right after this in
-      // refreshAll) reads selectedClassId - otherwise the very first cycle fetch races the
-      // still-pending navigation and silently loads nothing.
       await selectClass(overview.value.classes[0].classId)
     }
 

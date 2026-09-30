@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
-
     <Heading title="Human Resource" subtitle="Staff attendance and leave, at a glance.">
       <UButton icon="i-lucide-log-in" to="/hr/teacher-attendance/clock-in" label="Clock In / Out" variant="soft" />
       <UButton icon="i-lucide-calendar-plus" to="/hr/leave/add" label="Request Leave" />
@@ -140,6 +139,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

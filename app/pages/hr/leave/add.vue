@@ -1,9 +1,5 @@
 <template>
   <div class=" space-y-4 px-4 md:px-6">
-
-    <Heading title="New Leave Request"
-      :subtitle="isAdmin ? 'Submit a leave request on behalf of a teacher.' : 'Submit a new leave request.'" />
-
     <UForm ref="formRef" :state="state" :schema="schema" class="space-y-4" @submit="onSubmit">
 
       <!-- Teacher - admin only, teachers file for themselves -->
@@ -168,6 +164,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

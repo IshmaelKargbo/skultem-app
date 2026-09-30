@@ -281,5 +281,5 @@ onMounted(() => {
     document.title = 'Notifications | Skultem'
 })
 
-definePageMeta({ role: [Role.PARENT] })
+definePageMeta({ role: [Role.PARENT, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.TEACHER, Role.ACCOUNTANT, Role.ADMIN] })
 </script>

@@ -14,10 +14,7 @@ const page = computed<number>({
   set: (val) => updateQuery({ page: val })
 })
 
-const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
-  set: (val) => updateQuery({ size: val })
-})
+const size = ref(runtimeConf().limit)
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({
@@ -52,7 +49,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 const columns = [

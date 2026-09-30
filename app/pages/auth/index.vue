@@ -12,8 +12,6 @@ const { user: me } = storeToRefs(store)
 const showAssign = ref(false)
 const selectedUserId = ref('')
 
-// Only owner-level staff can change someone's section access (see AssignStaffManagementSectionsUseCase),
-// and it's only meaningful once the school has actually split itself into sections.
 const { can } = useAuth()
 const { isSectionBased, load: loadStructure } = useSchoolStructure()
 
@@ -94,8 +92,6 @@ const columns = [
   }
 ]
 
-// --- Filters: the same row as Transactions and the Student Ledger. There's no server-side user
-// search, so these narrow the users on the page that's loaded. -------------------------------------
 const search = ref('')
 const role = ref('')
 const status = ref('')
@@ -225,7 +221,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

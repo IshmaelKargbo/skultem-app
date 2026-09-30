@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 const route = useRoute()
-const router = useRouter()
 const { success: toastSuccess, error: toastError } = useNotify()
 
 const sessionId = computed(() => String(route.params.sessionId))

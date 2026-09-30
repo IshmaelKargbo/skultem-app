@@ -34,29 +34,29 @@ export function useMenu() {
 
     {
       label: 'Attendance', icon: ATTENDANCE_ICON,
-      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER],
+      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.TEACHER],
       subNavs: [
         { label: 'Mark Attendance', to: '/attendance', icon: ATTENDANCE_ICON, exact: true },
         { label: 'Daily Register', to: '/attendance/daily-register', icon: DAILY_REGISTER_ICON },
         {
           label: 'Monthly Summary', to: '/attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON,
-          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
         {
           label: 'Term Summary', to: '/attendance/term-summary', icon: TERM_SUMMARY_ICON,
-          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
         {
           label: 'Class Summary', to: '/attendance/class-summary', icon: CLASS_SUMMARY_ICON,
-          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
         {
           label: 'Inspection Reports', to: '/attendance/inspection-reports', icon: INSPECTION_REPORT_ICON,
-          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
         {
           label: 'Weekly Attendance by Gender', to: '/attendance/weekly-gender', icon: 'i-lucide-venus-and-mars',
-          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
       ]
     },
@@ -77,11 +77,11 @@ export function useMenu() {
 
     {
       label: 'Students', to: '/students', icon: STUDENT_ICON,
-      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT]
+      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN]
     },
     {
       label: 'Teachers', to: '/teachers', icon: TEACHER_ICON,
-      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
     },
     {
       label: 'Classes', to: '/classes', icon: CLASS_ICON,
@@ -95,7 +95,7 @@ export function useMenu() {
 
     {
       label: 'Parents', to: '/parents', icon: PARENT_ICON,
-      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT]
+      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN]
     },
     {
       label: 'Curriculums', to: '/curriculums', icon: CURRICULUM_ICON,
@@ -103,7 +103,7 @@ export function useMenu() {
     },
     {
       label: 'Classes', icon: CLASS_ICON,
-      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR],
+      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true },
         { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON },
@@ -112,7 +112,7 @@ export function useMenu() {
     },
     {
       label: 'Subjects', icon: SUBJECT_ICON,
-      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR],
+      roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Subjects', to: '/subjects', icon: SUBJECT_ICON, exact: true },
         { label: 'Teacher Assignment', to: '/subjects/teacher-assignment', icon: TEACHER_ICON },
@@ -121,7 +121,7 @@ export function useMenu() {
       ]
     },
     {
-      label: 'Grades', icon: GRADES_ASSIGN_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'Grades', icon: GRADES_ASSIGN_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Grades', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true },
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
@@ -130,7 +130,7 @@ export function useMenu() {
     },
 
     {
-      label: 'Behaviours', icon: BEHAVIOUR_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'Behaviours', icon: BEHAVIOUR_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Behaviours', to: '/behaviours', icon: BEHAVIOUR_ICON, exact: true },
         { label: 'Category', to: '/behaviours/category', icon: MAIN_CATEGORY_ICON },
@@ -138,18 +138,18 @@ export function useMenu() {
     },
 
     {
-      label: 'Curriculums', icon: SCHEME_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'Curriculums', icon: SCHEME_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Scheme of Work', to: '/curriculums', icon: SCHEME_ICON, exact: true },
         {
           label: 'Teacher Progress', to: '/curriculums/teacher-progress', icon: TEACHER_ICON,
-          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
       ]
     },
 
     {
-      label: 'Timetable', icon: TIMETABLE_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'Timetable', icon: TIMETABLE_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true },
         { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON },
@@ -158,24 +158,24 @@ export function useMenu() {
 
     {
       label: 'Communicate', icon: COMMUNICATE_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true },
         { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON },
         { label: 'Notifications', to: '/communicate/notifications', icon: BELL_ICON },
         {
           label: 'Compose Broadcast', to: '/communicate/broadcast', icon: BROADCAST_ICON, exact: true,
-          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
         {
           label: 'Broadcast History', to: '/communicate/broadcast/history', icon: BROADCAST_HISTORY_ICON,
-          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
       ]
     },
 
     {
-      label: 'ID Cards', icon: ID_CARD_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'ID Cards', icon: ID_CARD_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true },
         { label: 'Card Design', to: '/id-cards/settings', icon: SETTINGS_ICON },
@@ -183,7 +183,7 @@ export function useMenu() {
     },
 
     {
-      label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
         { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
@@ -195,7 +195,22 @@ export function useMenu() {
 
     {
       label: 'Fees & Payments', icon: PAYMENT_ICON,
-      roles: [Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+      roles: [Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      subNavs: [
+        { label: 'Fees', to: '/fees-payment', icon: STUDENT_FEES_ICON, exact: true },
+        { label: 'Reports', to: '/fees-payment/reports', icon: 'i-lucide-layout-dashboard' },
+        { label: 'Discounts', to: '/fees-payment/discounts', icon: DISCOUNT_ICON },
+        { label: 'Structures', to: '/fees-payment/structure', icon: FEE_STRUCTURE_ICON },
+        { label: 'Category', to: '/fees-payment/category', icon: MAIN_CATEGORY_ICON },
+        {
+          label: 'Receipt Design', to: '/fees-payment/receipt-design', icon: SETTINGS_ICON,
+          roles: [Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+        },
+      ]
+    },
+    {
+      label: 'Fees & Payments', icon: PAYMENT_ICON,
+      roles: [Role.ACCOUNTANT],
       subNavs: [
         { label: 'Fees', to: '/fees-payment', icon: STUDENT_FEES_ICON, exact: true },
         { label: 'Payments', to: '/fees-payment/pay', icon: PAYMENT_ICON },
@@ -205,14 +220,14 @@ export function useMenu() {
         { label: 'Category', to: '/fees-payment/category', icon: MAIN_CATEGORY_ICON },
         {
           label: 'Receipt Design', to: '/fees-payment/receipt-design', icon: SETTINGS_ICON,
-          roles: [Role.PROPRIETOR, Role.OWNER]
+          roles: [Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
       ]
     },
 
     {
       label: 'Expenses', icon: EXPENSES_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Expenses', to: '/expenses', icon: EXPENSES_ICON, exact: true },
         { label: 'Category', to: '/expenses/category', icon: MAIN_CATEGORY_ICON },
@@ -221,7 +236,7 @@ export function useMenu() {
 
     {
       label: 'Transactions', icon: TRANSACTION_ICON,
-      roles: [Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT],
+      roles: [Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Transactions', to: '/transactions/', icon: LEDGER_ICON, exact: true },
         { label: 'Student Ledger', to: '/transactions/student-ledger', icon: LEDGER_ICON },
@@ -239,7 +254,7 @@ export function useMenu() {
 
     {
       label: 'Analytics', icon: REPORT_ICON,
-      roles: [Role.PROPRIETOR, Role.OWNER],
+      roles: [Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Reports', to: '/analytics', icon: REPORT_ICON, exact: true },
         { label: 'Financial Reports', to: '/analytics/financial-reports', icon: SCHEME_ICON },
@@ -270,32 +285,32 @@ export function useMenu() {
       roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
     },
     {
-      label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER],
+      label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
-        { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Salary Templates', to: '/payroll/salary-templates', icon: 'i-lucide-layout-template', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
+        { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Salary Templates', to: '/payroll/salary-templates', icon: 'i-lucide-layout-template', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
       ]
     },
       {
-      label: 'Human Resource', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER],
+      label: 'Human Resource', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
-        { label: 'Overview', to: '/hr', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Mark Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Daily Register', to: '/hr/teacher-attendance/daily-register', icon: DAILY_REGISTER_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Monthly Summary', to: '/hr/teacher-attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Term Summary', to: '/hr/teacher-attendance/term-summary', icon: TERM_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Management Reports', to: '/hr/teacher-attendance/management-reports', icon: INSPECTION_REPORT_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-        { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER] },
-        { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
+        { label: 'Overview', to: '/hr', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Mark Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Daily Register', to: '/hr/teacher-attendance/daily-register', icon: DAILY_REGISTER_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Monthly Summary', to: '/hr/teacher-attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Term Summary', to: '/hr/teacher-attendance/term-summary', icon: TERM_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Management Reports', to: '/hr/teacher-attendance/management-reports', icon: INSPECTION_REPORT_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
       ]
     },
     {
       label: 'Athletic House', icon: ATHLETIC_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Management', to: '/athletic-house', icon: ATHLETIC_ICON, exact: true },
         { label: 'House', to: '/athletic-house/house', icon: MAIN_CATEGORY_ICON },
@@ -315,7 +330,7 @@ export function useMenu() {
 
     {
       label: 'Academics', icon: ACADEMIC_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Academic Year', to: '/academics', icon: CALANDA_ICON, exact: true },
         { label: 'Terms', to: '/academics/terms', icon: TERM_ICON },
@@ -326,7 +341,7 @@ export function useMenu() {
       ]
     },
     {
-      label: 'Auth', icon: AUTH_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      label: 'Auth', icon: AUTH_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Users', to: '/auth', icon: USERS_ICON, exact: true },
         { label: 'Audits', to: '/auth/audits', icon: AUDIT_ICON },
@@ -335,21 +350,16 @@ export function useMenu() {
     },
     {
       label: 'Modules', to: '/modules', icon: 'i-lucide-blocks',
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
     },
   ]
 
   const visibleNavItems = computed(() =>
     navItems
-      // The admin subdomain itself says this is the system-admin console, so show its items outright
-      // (plus the role-less Dashboard) rather than depending on the signed-in role resolving - a
-      // school's own subdomain keeps the normal per-role filtering, minus the admin-only items.
       .filter((item) => onAdminPortal
         ? item.adminPortalOnly || !item.roles
         : (!item.roles || can(item.roles)) && !item.adminPortalOnly)
       .map((item) => {
-        // Only a class master has anything to approve - a subject-only teacher's "Grade" link
-        // stays a single shortcut to grade entry, not a group with an always-empty approval list.
         if (item.label === 'Grade' && item.to === '/grades' && can(Role.TEACHER) && isClassMaster.value) {
           return {
             label: 'Grade',
@@ -374,15 +384,7 @@ export function useMenu() {
       })
       .filter((item): item is NavItem => item !== null)
   )
-
-  // --- Grouping ------------------------------------------------------------------------------------
-  // Two tiers. "Essentials" - what every school has - is split into subgroups by purpose (People,
-  // Classroom, Finance, ...). Below it, "Modules" gathers the items that belong to an installable
-  // module (see utils/modules.ts) under a heading per category (Academics, Finance, ...). A group
-  // mixing modules and core pages (Communicate, Academics) stays in Essentials.
-
-  // Essentials subgroups, matched by menu label. Anything unmatched (Auth, Modules) lands in the
-  // Administration subgroup that follows them.
+  
   const ESSENTIAL_GROUPS: { id: string, label: string, items: string[] }[] = [
     { id: 'overview', label: '', items: ['Dashboard'] },
     { id: 'people', label: 'People', items: ['Students', 'Teachers', 'Parents'] },

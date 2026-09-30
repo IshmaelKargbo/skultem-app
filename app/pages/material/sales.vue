@@ -104,14 +104,7 @@ const page = computed<number>({
     set: val => updateQuery({ page: val })
 })
 
-const size = computed<number>({
-    get: () => Number(route.query.size ?? 6),
-    set: val => updateQuery({ size: val })
-})
-
-function updateQuery(newQuery: Record<string, any>) {
-    router.replace({ query: { ...route.query, ...newQuery } })
-}
+const size = ref(runtimeConf().limit)
 
 async function fetchRecord(statusOverride?: string) {
     const currentStatus = statusOverride !== undefined ? statusOverride : status.value

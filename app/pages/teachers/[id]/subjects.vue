@@ -68,7 +68,7 @@ const subjects = ref<TeacherSubject[]>([])
 const loading = ref(true)
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 
 watch(

@@ -324,11 +324,6 @@ watch(
 )
 
 definePageMeta({
-  role: [
-    Role.ADMIN,
-    Role.PROPRIETOR,
-    Role.OWNER,
-    Role.TEACHER,
-  ],
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

@@ -5,7 +5,7 @@ const store = useCommunicateStore()
 const { calendar, loading, calendarMeta: meta } = storeToRefs(store)
 
 const { can } = useAuth()
-const canManage = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
+const canManage = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]))
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -23,7 +23,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 const search = ref('')

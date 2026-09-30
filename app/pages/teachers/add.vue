@@ -1,19 +1,5 @@
 <template>
-  <div class="space-y-6  p-4 md:px-6">
-
-    <!-- Header -->
-    <div class="flex flex-col gap-4 pl-2 md:pl-0 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">
-          Add Teacher
-        </h1>
-
-        <p class="mt-1 text-sm text-muted">
-          Create a teacher profile and assign responsibilities.
-        </p>
-      </div>
-    </div>
-
+  <div class="space-y-4  px-4 md:px-6">
     <UForm ref="formRef" :state="state" :schema="schema" class="space-y-6" @submit="onSubmit">
 
       <!-- Personal Information -->
@@ -253,20 +239,6 @@ const state = reactive<TeacherForm>({
   designation: ''
 })
 
-const titles = [
-  { label: 'Mr', value: 'MR' },
-  { label: 'Mrs', value: 'MRS' },
-  { label: 'Miss', value: 'MISS' },
-  { label: 'Ms', value: 'MS' },
-  { label: 'Dr', value: 'DR' },
-  { label: 'Prof', value: 'PROF' }
-]
-
-const genders = [
-  { label: 'Male', value: 'MALE' },
-  { label: 'Female', value: 'FEMALE' }
-]
-
 const classes = ref<{ label: string; value: string }[]>([])
 const classesLoading = ref(true)
 
@@ -366,11 +338,12 @@ onMounted(async () => {
 
 onMounted(() => {
   useAppStore().setTitle('Add Teachers');
+  useAppStore().setBack('/teachers')
   document.title = 'Teachers | Skultem'
 })
 
 // Missing entirely before - see teachers/index.vue's guard for why.
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER, Role.PROPRIETOR]
 })
 </script>

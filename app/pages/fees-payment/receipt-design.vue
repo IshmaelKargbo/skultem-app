@@ -179,13 +179,11 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.PROPRIETOR, Role.OWNER]
+  role: [Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 
 <style scoped>
-/* The real receipt component renders at A4 size (794x1123) - scale it down to fit the
-   preview card rather than building a second, lower-fidelity mockup of the design. */
 .preview-viewport {
   overflow: hidden;
   height: 424px;

@@ -1,10 +1,6 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
     <IdCardsSectionNav />
-
-    <!-- Design (colours/layout/dimensions/background) is shared - only the field list below
-         differs per card type, so one toggle up top drives both the field editor and the preview
-         rather than duplicating it in each column. -->
     <div class="inline-flex overflow-hidden rounded-lg border border-default">
       <UButton :variant="cardType === 'student' ? 'solid' : 'outline'" color="neutral" size="sm" class="rounded-none"
         icon="i-lucide-graduation-cap" @click="cardType = 'student'">
@@ -19,9 +15,6 @@
     <div class="grid gap-6 lg:grid-cols-3">
       <!-- Left: the settings form -->
       <div>
-        <!-- Nuxt auto-imports this as IdCardsIDCardSettings (directory-prefixed) —
-             use that name directly rather than an explicit import, which "remove
-             unused import" tooling keeps stripping since it looks redundant. -->
         <IdCardsIDCardSettings
           v-model="open"
           :settings="uiSettings"
@@ -53,17 +46,12 @@
 </template>
 
 <script setup lang="ts">
-// Do NOT add `import IDCardSettings from '.../IDCardSettings.vue'` here — see
-// the template comment. Nuxt registers this component globally already; the
-// bare `IDCardSettings` tag name just isn't it (see IdCardsIDCardSettings).
 const router = useRouter()
 const { success, error: toastError } = useNotify()
 const store = useIdCardStore()
 const { school, hydrateFromCache } = useSchoolInfo()
 
 const open = ref(true)
-// Which field list the "Fields" card edits and the preview renders - the design itself
-// (uiSettings) is shared between student and staff cards, so it doesn't need its own per-type copy.
 const cardType = ref<'student' | 'staff'>('student')
 const activeFields = computed(() => (cardType.value === 'staff' ? store.staffFields : store.fields))
 
@@ -95,10 +83,6 @@ function onClose() {
   router.push('/id-cards')
 }
 
-// Sample student - the design is school-wide, not any one student's, so the preview stands in
-// with placeholder data (mirrors how pages/id-cards/[id].vue builds the real template, just with
-// this fake person instead of a fetched one). Real school branding (logo/name/principal) still
-// comes through so the preview shows the actual school, not a generic placeholder.
 const mockStudent = {
   givenNames: 'Aminata',
   familyName: 'Kamara',
@@ -196,6 +180,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

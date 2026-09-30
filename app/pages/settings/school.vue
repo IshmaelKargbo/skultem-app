@@ -223,15 +223,10 @@ const schoolDefaults = computed(() => ({
 }))
 
 const route = useRoute()
-// 'playground' is accepted up front since that section only appears once the school has loaded -
-// onMounted falls back to the profile if the school turns out not to be one.
 const requestedSection = String(route.query.section ?? '')
 const active = ref(['profile', 'sections', 'attendance', 'structure', 'playground'].includes(requestedSection) ? requestedSection : 'profile')
 const activeSectionLabel = computed(() => sections.value.find(s => s.key === active.value)?.label ?? '')
 
-// Mobile only (see the USlideover in the template) - a tab tap both switches the active section
-// and opens the drawer showing it; on desktop the drawer stays closed and this is a no-op since
-// its content is lg:hidden regardless.
 const mobilePanelOpen = ref(false)
 function selectSection(key: string) {
     active.value = key
@@ -248,8 +243,6 @@ const channels = [
 
 // Attendance tab - geofenced clock-in location.
 const attendanceStore = useTeacherAttendanceStore()
-// The clock-in location is a Staff & HR setting - without that module its API is off, so it's
-// neither loaded nor saved (the attendance alert threshold on the same tab is core and still is).
 const { isInstalled } = useModules()
 const hrInstalled = computed(() => isInstalled(ModuleKey.STAFF_HR))
 const { locationSettings, loadingLocationSettings: loadingLocation, savingLocationSettings: savingLocation } = storeToRefs(attendanceStore)
@@ -394,8 +387,6 @@ async function save() {
         useReportLogo().reset() // reports/receipts cache the logo for the session
         applyBrandColors(branded.primaryColor, branded.secondaryColor)
 
-        // Keep the offline cache (see useSchoolCache) in step too, or it'd keep serving the old
-        // colors instantly on the next visit until something else happens to refetch and overwrite it.
         const domain = resolveTenantSlug(window.location.hostname)
         if (domain) setCachedSchool(domain, branded)
 
@@ -422,8 +413,6 @@ onMounted(async () => {
     } finally {
         loading.value = false
     }
-    // Fall back to the first tab this user actually has (e.g. a deep link to a tab that only
-    // exists in section-based schools, or a section-limited Admin landing on 'profile').
     if (!sections.value.some(s => s.key === active.value)) active.value = sections.value[0]?.key ?? 'profile'
     // Deep links (e.g. the playground banner's "Go live") land on their section on mobile too.
     else if (requestedSection === active.value) selectSection(active.value)
@@ -438,6 +427,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

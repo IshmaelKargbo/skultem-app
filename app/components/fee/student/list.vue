@@ -14,7 +14,7 @@
         </template>
         <div class="space-y-2">
             <div v-if="isLoading" class="space-y-2">
-                <div v-for="n in 7" :key="n" class="rounded-2xl border border-default p-3.5 space-y-3">
+                <div v-for="n in 7" :key="n" class="border-b last:border-b-0 border-default p-3.5 space-y-3">
                     <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-2.5">
                             <USkeleton class="size-9 rounded-full" />
@@ -42,8 +42,9 @@
             </div>
 
             <div v-else>
-                <div v-for="item in records" :key="item.id" role="button" tabindex="0" class="cursor-pointer border-b last:border-b-0 border-default"
-                    @click="select(item)" @keydown.enter="select(item)">
+                <div v-for="item in records" :key="item.id" role="button" tabindex="0"
+                    class="cursor-pointer border-b last:border-b-0 border-default" @click="select(item)"
+                    @keydown.enter="select(item)">
                     <FeeStudentCard :active="item.id == selected?.id" :student="item" />
                 </div>
             </div>

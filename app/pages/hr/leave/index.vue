@@ -126,10 +126,6 @@ const route = useRoute()
 const router = useRouter()
 const NoLeave = 'You have not submitted any leave requests.'
 
-// Neither list below has an "All ..." entry - a Reka UI Select/Combobox item's value can't be an
-// empty string (it throws "must have a value prop that is not an empty string" the moment the
-// list renders, breaking every item in it). The placeholders cover "nothing selected", and each
-// select's own :clear button gets back to it.
 const statusOptions = [
     { label: 'Pending', value: 'PENDING' },
     { label: 'Approved', value: 'APPROVED' },
@@ -194,6 +190,6 @@ onMounted(() => {
 onBeforeUnmount(() => clearTimeout(searchTimeout))
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

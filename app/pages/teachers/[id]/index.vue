@@ -50,7 +50,7 @@ const store = useTeacherStore()
 const { record, loading } = storeToRefs(store)
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 
 const personalDetails = computed(() => ([

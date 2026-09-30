@@ -1,5 +1,5 @@
 <template>
-    <ClassAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
+    <ClassAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER])" />
     <ClassAccountant v-if="can([Role.ACCOUNTANT])" />
     <ClassTeacher v-if="can([Role.TEACHER])" />
 </template>
@@ -11,6 +11,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.TEACHER]
 })
 </script>

@@ -35,8 +35,8 @@
                     </UFormField>
 
                     <UFormField label="Term" required>
-                        <USelectMenu v-model="form.termId" :items="terms" :loading="termStore.loading"
-                            value-key="value" label-key="label" placeholder="Select term" />
+                        <USelectMenu v-model="form.termId" :items="terms" :loading="termStore.loading" value-key="value"
+                            label-key="label" placeholder="Select term" />
                     </UFormField>
 
                 </div>
@@ -122,7 +122,8 @@
 
         <UCard v-else-if="!generating">
             <div class="flex flex-col items-center justify-center py-14 text-center">
-                <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
+                <div
+                    class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
                     <UIcon name="i-lucide-file-text" class="size-6 text-primary-500" />
                 </div>
                 <h3 class="text-sm font-semibold text-highlighted">No report cards generated yet</h3>
@@ -196,11 +197,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [
-        Role.ADMIN,
-        Role.PROPRIETOR,
-        Role.OWNER,
-        Role.TEACHER
-    ]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

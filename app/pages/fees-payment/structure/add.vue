@@ -5,8 +5,6 @@ const feeStructureStore = useFeeStructureStore();
 const feeCategoryStore = useFeeStore();
 const termStore = useTermStore();
 const materialStore = useMaterialStore();
-// Supplying materials with a fee (a uniform, books) needs the Materials & Supplies module - without
-// it there's no material list to pick from and its API is off, so the option is hidden.
 const { isInstalled } = useModules();
 const suppliesAvailable = computed(() => isInstalled(ModuleKey.MATERIALS_AND_SUPPLIES));
 const clazzStore = useClassStore();
@@ -38,10 +36,6 @@ const terms = computed(() =>
   }))
 );
 
-// Who this fee is assigned to is now a mode pick (assignMode) separate from which classes -
-// letting "Specific Classes" be a genuine multi-select instead of squeezing ALL/SELECTION
-// sentinels and real class ids into one flat list, which couldn't support picking more than one
-// class at a time.
 const assignModes = [
   { label: "All Students", value: "ALL" },
   { label: "Specific Classes", value: "CLASS" },
@@ -55,10 +49,6 @@ const classes = computed(() =>
   }))
 );
 
-// No "All Genders" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared"), same reason the student-type filter on the fee
-// structures list has no "All Students" entry either. Nothing selected already shows the "All
-// Genders" placeholder, and the select's own clear button (:clear below) gets back to it.
 const genderOptions = [
   { label: "Boys Only", value: "MALE" },
   { label: "Girls Only", value: "FEMALE" },
@@ -227,7 +217,7 @@ watch(
 );
 
 definePageMeta({
-  role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER],
+  role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
 });
 </script>
 

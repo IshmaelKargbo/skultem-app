@@ -6,7 +6,6 @@ const feeStructureStore = useFeeStructureStore();
 const feeCategoryStore = useFeeStore();
 const termStore = useTermStore();
 const materialStore = useMaterialStore();
-// Same rule as add.vue: supplies need the Materials & Supplies module.
 const { isInstalled } = useModules();
 const suppliesAvailable = computed(() => isInstalled(ModuleKey.MATERIALS_AND_SUPPLIES));
 
@@ -14,8 +13,6 @@ const { error: toastError, success: toastSuccess } = useNotify();
 
 const isLoading = ref(false);
 const isFetching = ref(true);
-// Only editable for a CLASS/ALL fee - a SELECTION fee (specific students picked by hand) can't
-// carry either flag, same rule the backend enforces (see FeeStructure#update).
 const isSelectionType = ref(false);
 
 const categories = computed(() =>
@@ -208,7 +205,7 @@ watch(
 );
 
 definePageMeta({
-  role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER],
+  role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
 });
 </script>
 

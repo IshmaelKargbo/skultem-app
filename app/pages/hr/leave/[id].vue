@@ -7,8 +7,6 @@
         </div>
 
         <template v-else-if="leave">
-            <Heading title="Leave Details" subtitle="Review this leave request." />
-
             <!-- Status banner - the page's primary message + the actions that resolve it -->
             <div class="flex flex-col gap-4 rounded-xl border p-5 sm:flex-row sm:items-center sm:justify-between"
                 :class="bannerStyle">
@@ -313,6 +311,6 @@ watch(
 )
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

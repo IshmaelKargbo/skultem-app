@@ -42,14 +42,7 @@ const page = computed<number>({
     set: (val) => updateQuery({ page: val })
 })
 
-const size = computed<number>({
-    get: () => Number(route.query.size ?? 6),
-    set: (val) => updateQuery({ size: val })
-})
-
-function updateQuery(newQuery: Record<string, any>) {
-    router.replace({ query: { ...route.query, ...newQuery } })
-}
+const size = ref(runtimeConf().limit)
 
 async function fetchRecord() {
     await store.fetchAllCategory(page.value, size.value, search.value)
@@ -89,7 +82,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

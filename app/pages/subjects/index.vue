@@ -6,7 +6,7 @@
                 <div>
                     <div class="flex px-4 py-3 justify-between items-center gap-3">
                         <div class="flex space-x-2 flex-1 items-center">
-                            <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
+                            <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
                         </div>
 
                         <div>
@@ -309,6 +309,6 @@ onMounted(() => {
 });
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER],
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN],
 })
 </script>

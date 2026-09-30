@@ -1,10 +1,6 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
     <ReportCardSectionNav />
-
-    <!-- A parent has no use for the admin tooling below (whole-school stats, generate/design
-         actions, a class/term filtered list of every student) - they get their own child's
-         report cards instead, the same split as Curriculum and Performance. -->
     <ReportCardParentView v-if="can(Role.PARENT)" />
 
     <template v-else>
@@ -211,8 +207,6 @@ onMounted(() => {
   useAppStore().setTitle('Report Cards')
   document.title = 'Report Cards | Skultem'
 
-  // ReportCardParentView fetches its own child-scoped data above - the admin list/filters/stats
-  // calls below are staff-only endpoints a parent isn't authorized to hit.
   if (can(Role.PARENT)) return
 
   classStore.fetchAll(1, 100)
@@ -221,6 +215,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

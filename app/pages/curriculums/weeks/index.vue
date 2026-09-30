@@ -252,37 +252,6 @@ const weeks = ref([
   }
 ])
 
-
-const filteredWeeks = computed(() => {
-  return weeks.value.filter((week) => {
-
-    const matchesSearch =
-      week.topic.toLowerCase()
-        .includes(search.value.toLowerCase())
-
-    const matchesSubject =
-      !selectedSubject.value ||
-      week.subject === selectedSubject.value
-
-    const matchesClass =
-      !selectedClass.value ||
-      week.class === selectedClass.value
-
-    const matchesStatus =
-      !selectedStatus.value ||
-      week.status === selectedStatus.value
-
-    return (
-      matchesSearch &&
-      matchesSubject &&
-      matchesClass &&
-      matchesStatus
-    )
-
-  })
-})
-
-
 const totalWeeks = computed(
   () => weeks.value.length
 )
@@ -340,12 +309,6 @@ onMounted(() => {
 
 
 definePageMeta({
-  role: [
-    Role.ADMIN,
-    Role.PROPRIETOR,
-    Role.OWNER,
-    Role.TEACHER
-  ]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
-
 </script>

@@ -100,19 +100,10 @@ function toggleFilter() {
     filterState.value = !filterState.value;
 }
 
-// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
-// why a v-model bound straight to a computed setter that triggers router.replace() reads as
-// "picking an option/typing does nothing". These still seed from the URL on load and push back
-// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
-// mirror, not the source of truth.
 const classId = ref(String(route.query.classId ?? ""));
 const searchInput = ref(String(route.query.search ?? ""));
 const search = ref(searchInput.value);
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
     { label: "Name (A-Z)", value: "name:asc" },
     { label: "Name (Z-A)", value: "name:desc" },
@@ -157,8 +148,6 @@ watch(
     { immediate: true }
 );
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
 watch([classId, search, sort], () => {
     updateQuery({
         classId: classId.value || undefined,
@@ -192,7 +181,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 
@@ -204,7 +193,7 @@ definePageMeta({
                 <div>
                     <div class="flex px-4 py-3 items-center justify-between gap-3">
                         <div class="space-x-2 flex flex-1 items-center">
-                            <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" />
+                            <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
                         </div>
 
                         <div>

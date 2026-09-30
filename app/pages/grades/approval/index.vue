@@ -1,9 +1,7 @@
 <template>
-  <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER])" />
+  <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
 
   <template v-else-if="can(Role.TEACHER)">
-    <!-- Still loading, or haven't successfully checked yet - never fall through to "you're not a
-         class master" on the strength of a still-pending or failed check (see useClassMaster). -->
     <div v-if="loading || (!checked && !error)" class="px-4 md:px-6">
       <USkeleton class="h-40 w-full rounded-2xl" />
     </div>
@@ -46,6 +44,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

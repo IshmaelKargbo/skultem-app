@@ -7,15 +7,11 @@
                 <FeeStudentList @select="select" />
             </div>
 
-            <!-- Right Panel - desktop only. On mobile, tapping a student below opens the
-                 full-screen modal instead of swapping the list out for this panel in place. -->
             <div class="hidden flex-1 md:block">
                 <FeeStudentRecord :student="selectedStudent" />
             </div>
         </div>
 
-        <!-- Mobile: tapping a student above opens this full-screen modal with their fee
-             details, instead of the list being replaced by the details panel in place. -->
         <UModal v-model:open="mobileDetailsOpen" fullscreen :ui="{ content: 'md:hidden' }">
             <template #content>
                 <UCard :ui="{ root: 'flex h-full flex-col rounded-none', body: 'flex-1 overflow-y-auto p-0 sm:p-0' }">
@@ -57,6 +53,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

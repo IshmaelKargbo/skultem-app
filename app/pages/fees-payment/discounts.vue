@@ -1,7 +1,6 @@
 <template>
     <div class="px-4 md:px-6 space-y-4">
         <FeeSectionNav />
-
         <FeeDiscountReport ref="reportRef" />
         <FeeDiscountTable @refresh="refreshReport" />
     </div>
@@ -20,6 +19,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

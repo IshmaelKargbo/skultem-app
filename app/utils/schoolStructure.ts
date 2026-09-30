@@ -133,11 +133,7 @@ export function draftToPayload(draft: SchoolStructureDraft): SchoolStructurePayl
     }
 }
 
-// Roles that can be limited to one or more management sections - matches the backend's
-// SectionScopeService#SCOPABLE_ROLES exactly. Everyone else (Owner, Proprietor, Super Admin,
-// Parent) always has whole-school access regardless of the school's management model. Plain
-// strings (not the Role enum) - utils files can't reference each other's auto-imports.
-export const SCOPABLE_ROLES: string[] = ['ADMIN', 'ACCOUNTANT', 'TEACHER']
+export const SCOPABLE_ROLES: string[] = ['ADMIN', 'ACCOUNTANT', 'TEACHER', 'PRINCIPAL']
 
 export function isScopableRole(role?: string | null): boolean {
     return !!role && SCOPABLE_ROLES.includes(role)

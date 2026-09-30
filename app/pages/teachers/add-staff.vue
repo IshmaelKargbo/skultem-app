@@ -1,21 +1,6 @@
 <template>
-  <div class="space-y-6  p-4 md:px-6">
-
-    <!-- Header -->
-    <div class="flex flex-col gap-4 pl-2 md:pl-0 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">
-          Add Staff
-        </h1>
-
-        <p class="mt-1 text-sm text-muted">
-          Add a staff record for someone who won't be using the portal - a cleaner, cook, security
-          guard, driver, or anyone else who still needs to show up in payroll and attendance.
-        </p>
-      </div>
-    </div>
-
-    <UAlert color="primary" variant="soft" icon="i-lucide-info" class="rounded-lg"
+  <div class="space-y-4  px-4 md:px-6">
+    <UAlert color="primary" variant="soft" icon="i-lucide-info"
       title="They won't be sent login credentials"
       description="A record is still created for them under the hood - that's what payroll and attendance run off - but they're never emailed a password. If this person will log in themselves, use Add Teacher instead." />
 
@@ -320,11 +305,12 @@ async function onSubmit(
 
 onMounted(() => {
   useAppStore().setTitle('Add Staff');
+  useAppStore().setBack('/teachers')
   document.title = 'Add Staff | Teachers | Skultem'
 })
 
 // Missing entirely before - see teachers/index.vue's guard for why.
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER, Role.PROPRIETOR]
 })
 </script>

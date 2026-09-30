@@ -17,7 +17,7 @@ export type Meta = {
 }
 
 export function todayISO() {
-  return new Date().toISOString().split('T')[0]
+    return new Date().toISOString().split('T')[0]
 }
 // A named alias, not `Record<string, string>` written out on each `export const`: Nuxt's
 // auto-import scanner reads the comma in that annotation as a second declared name and registers a
@@ -32,6 +32,29 @@ export const unitLabelMap: StringMap = {
 }
 
 export const ALT_IMAGE = '/avatar-placeholder.svg'
+
+export const genders = [
+  { label: 'Male', value: 'MALE' },
+  { label: 'Female', value: 'FEMALE' }
+]
+
+export const titles = [
+    { label: 'Mr', value: 'MR' },
+    { label: 'Mrs', value: 'MRS' },
+    { label: 'Miss', value: 'MISS' },
+    { label: 'Ms', value: 'MS' },
+    { label: 'Dr', value: 'DR' },
+    { label: 'Prof', value: 'PROF' },
+    { label: 'Pst', value: 'PST' },
+    { label: 'Rev', value: 'REV' },
+    { label: 'Hon', value: 'HON' },
+    { label: 'Eng', value: 'ENG' },
+    { label: 'Sir', value: 'SIR' },
+    { label: 'Madam', value: 'MADAM' },
+    { label: 'Sheikh', value: 'SHEIKH' },
+    { label: 'Imam', value: 'IMAM' }
+]
+
 export const nationalities = [
     { label: 'Afghan', value: 'AFGHAN' },
     { label: 'Albanian', value: 'ALBANIAN' },
@@ -302,7 +325,7 @@ export enum Role {
     OWNER = 'OWNER',
     SYSTEM_ADMIN = 'SYSTEM_ADMIN',
     PROPRIETOR = 'PROPRIETOR',
-    // Staff member with the whole school portal - see roleAllows below.
+    PRINCIPAL = 'PRINCIPAL',
     SUPER_ADMIN = 'SUPER_ADMIN',
     ADMIN = 'ADMIN',
     TEACHER = 'TEACHER',
@@ -310,11 +333,6 @@ export enum Role {
     ACCOUNTANT = 'ACCOUNTANT'
 }
 
-// SUPER_ADMIN gets everything the owner/proprietor gets, without being either. Anything gated on
-// OWNER or PROPRIETOR lets it through, so the role lists across pages and the menu don't each need
-// it added. Admin-only and accountant-only lists are deliberately not matched: those are reduced
-// variants of owner features (e.g. the accountant's student list), and matching them would render
-// both variants side by side. The backend is broader (see PermissionService).
 const SUPER_ADMIN_COVERS: string[] = [Role.OWNER, Role.PROPRIETOR]
 
 export function roleAllows(activeRole: string, required: string | string[]) {
@@ -327,6 +345,10 @@ export const roles = [
     {
         label: 'Proprietor',
         value: Role.PROPRIETOR.toString()
+    },
+    {
+        label: 'Principal',
+        value: Role.PRINCIPAL.toString()
     },
     {
         label: 'Super Admin',
@@ -470,6 +492,7 @@ export const paymentMethods = {
 export const parseRole: StringMap = {
     OWNER: 'Owner',
     PROPRIETOR: 'Proprietor',
+    PRINCIPAL: 'Principal',
     SYSTEM_ADMIN: 'System Admin',
     SUPER_ADMIN: 'Super Admin',
     ADMIN: 'Admin',
@@ -493,6 +516,7 @@ export const parseRoleIcon: StringMap = {
     SUPER_ADMIN: 'fluent:person-shield-24-regular',
     OWNER: 'fluent:crown-24-regular',
     PROPRIETOR: 'fluent:crown-24-regular',
+    PRINCIPAL: 'lucide:briefcase-business',
     TEACHER: 'fluent:hat-graduation-24-regular',
     PARENT: 'fluent:people-24-regular',
     ACCOUNTANT: 'fluent:calculator-24-regular'
@@ -528,13 +552,13 @@ export const runtimeConf = () => {
 }
 
 export function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...useRoute().query, ...newQuery };
+    const merged = { ...useRoute().query, ...newQuery };
 
-  if (merged.page === useRoute().query.page && merged.size === useRoute().query.size) {
-    return;
-  }
+    if (merged.page === useRoute().query.page && merged.size === useRoute().query.size) {
+        return;
+    }
 
-  useRouter().replace({ query: merged });
+    useRouter().replace({ query: merged });
 }
 
 export const parseGenderColor: StringMap = {
@@ -557,13 +581,13 @@ export const levels = [
 ]
 
 export function getTotalWeeks(startDate: string, endDate: string): number {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-  const days =
-    Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const days =
+        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-  return Math.ceil(days / 7);
+    return Math.ceil(days / 7);
 }
 
 export function handleScroll(event: Event) {

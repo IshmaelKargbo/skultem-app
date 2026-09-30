@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 const route = useRoute()
@@ -27,8 +27,6 @@ const promoteVerb = computed(() => isTerminal.value ? 'Graduating' : 'Promoting'
 const sortedItems = computed(() => {
     if (!detail.value) return []
 
-    // Passed first (highest average leading), then failed, each group sorted best-to-worst average -
-    // a student allowed to pass is grouped with the promotes since that's the decision that stands.
     const rank = (item: PromotionRequestItem) =>
         allowToPass.value.has(item.enrollmentId) || item.outcome === 'PROMOTE' ? 0 : 1
 

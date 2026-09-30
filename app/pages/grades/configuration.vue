@@ -1,8 +1,5 @@
 <template>
   <div class="px-4 md:px-6 space-y-4">
-    <Heading title="Assessment Setup"
-      subtitle="Choose how each section assesses its students - one score per test, or continuous assessment plus a formal test" />
-
     <GradesSectionNav />
 
     <UAlert color="info" variant="subtle" icon="lucide:info" title="Changes apply to new assessments"
@@ -50,6 +47,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

@@ -17,7 +17,8 @@
                         Pay Fees
                     </UButton>
                     <p class="md:hidden uppercase text-muted font-semibold">Summery</p>
-                    <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student" @assigned="refreshFees" />
+                    <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
+                        @assigned="refreshFees" />
                     <FeeDiscountAdd v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student-id="student.id"
                         :refresh-report="refreshFees" trigger-label="Discount" trigger-variant="outline"
                         trigger-size="sm" trigger-icon="mdi:discount-outline" trigger-color="neutral" />
@@ -43,7 +44,8 @@
                         <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap">
                             <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && (feesState?.outstanding || 0) > 0"
                                 :to="`/fees-payment/pay?studentId=${student.id}`" color="primary" size="sm"
-                                icon="streamline-ultimate:cash-payment-bills" class="col-span-2 justify-center md:col-span-1">
+                                icon="streamline-ultimate:cash-payment-bills"
+                                class="col-span-2 justify-center md:col-span-1">
                                 Pay Fees
                             </UButton>
                             <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
@@ -57,8 +59,7 @@
             </template>
 
             <div v-if="student">
-                <div class="grid gap-3 grid-cols-2 xl:grid-cols-4"
-                    :class="embedded ? 'px-4 py-4' : 'pb-5 p-0 md:p-5'">
+                <div class="grid gap-3 grid-cols-2 xl:grid-cols-4" :class="embedded ? 'px-4 py-4' : 'pb-5 p-0 md:p-5'">
                     <UCard class="bg-info-100/60 dark:bg-info-900/30 ring-info-300/70 dark:ring-info-800/70"
                         :ui="embedded ? { root: 'ring-0 shadow-none' } : {}">
                         <div class="space-y-1">
@@ -67,8 +68,7 @@
                             <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.total || 0) }}</p>
                         </div>
                     </UCard>
-                    <UCard
-                        class="bg-success-100/60 dark:bg-success-900/25 ring-success-300/80 dark:ring-success-800/70"
+                    <UCard class="bg-success-100/60 dark:bg-success-900/25 ring-success-300/80 dark:ring-success-800/70"
                         :ui="embedded ? { root: 'ring-0 shadow-none' } : {}">
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Paid</p>
@@ -81,7 +81,8 @@
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
                             <USkeleton class="w-32 h-10 bg-error-300" v-if="loading" />
-                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.outstanding || 0) }}</p>
+                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.outstanding || 0) }}
+                            </p>
                         </div>
                     </UCard>
                     <UCard class="bg-purple-100/60 dark:bg-purple-900/25 ring-purple-300/80 dark:ring-purple-800/70"
@@ -89,7 +90,8 @@
                         <div class="space-y-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Discounts</p>
                             <USkeleton class="w-32 h-10 bg-purple-300" v-if="loading" />
-                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.discount || 0) }}</p>
+                            <p class="text-lg md:text-xl font-semibold" v-else>{{ format(feesState?.discount || 0) }}
+                            </p>
                         </div>
                     </UCard>
                 </div>
@@ -100,13 +102,13 @@
                     <FeeStudentTable :student="student" :refresh-key="refreshKey" :embedded="embedded" />
                 </div>
             </div>
-           <div v-else class="p-5">
-             <div
-                class="border border-dashed flex justify-center flex-col items-center rounded-2xl space-y-5 p-10 h-56 w-full border-blue-300 dark:border-gray-700">
-                <UIcon class="text-5xl text-gray-300 dark:text-gray-500" name="hugeicons:folder-details" />
-                <p class="text-gray-500 dark:text-gray-400">Select a student to view their fee details</p>
+            <div v-else class="p-5">
+                <div
+                    class="border border-dashed flex justify-center flex-col items-center rounded-2xl space-y-5 p-10 h-56 w-full border-blue-300 dark:border-gray-700">
+                    <UIcon class="text-5xl text-gray-300 dark:text-gray-500" name="hugeicons:folder-details" />
+                    <p class="text-gray-500 dark:text-gray-400">Select a student to view their fee details</p>
+                </div>
             </div>
-           </div>
         </UCard>
         <FeeStudentPayments :student="student" :embedded="embedded" />
     </div>
@@ -139,12 +141,10 @@ async function fetchFees() {
 
     (res.records as StudentFee[]).forEach((e: StudentFee) => {
         outstanding += e.outstanding
-        paid += e.paid
+        paid += e.amountPaid
         total += e.total
         discount += e.discount
     })
-
-
 
     feesState.value = { outstanding, paid, discount, total }
 }

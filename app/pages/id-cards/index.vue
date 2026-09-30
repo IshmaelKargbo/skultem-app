@@ -2,8 +2,6 @@
   <div class="space-y-4 px-4 md:px-6">
     <IdCardsSectionNav />
 
-    <!-- Student / Staff toggle - same design, different record source (see [[id-cards-staff]]).
-         Switching tabs resets the filters below since class/search only make sense for students. -->
     <div class="inline-flex overflow-hidden rounded-lg border border-default">
       <UButton :variant="cardType === 'student' ? 'solid' : 'outline'" color="neutral" size="sm" class="rounded-none"
         icon="i-lucide-graduation-cap" @click="setCardType('student')">
@@ -120,10 +118,6 @@ const selectedClass = ref('')
 const meta = computed(() => (cardType.value === 'staff' ? teacherMeta.value : studentMeta.value))
 const loading = computed(() => (cardType.value === 'staff' ? teacherLoading.value : studentLoading.value))
 
-// No "All Classes" entry - a Reka UI Combobox item's value can't be an empty string (it throws
-// "A <ComboboxItem /> must have a value prop that is not an empty string" the moment the list
-// renders, breaking every item in it). The placeholder below already covers "nothing selected",
-// and the select's own :clear button gets back to it.
 const classOptions = computed(() => classes.value.map(c => ({ label: c.name, value: c.id })))
 
 const page = computed<number>({
@@ -147,8 +141,6 @@ function setCardType(type: 'student' | 'staff') {
   page.value = 1
 }
 
-// Same "Preview & Print" grid either way - normalised here so the template only deals with one
-// shape instead of branching on cardType in the markup.
 const filteredRecords = computed(() => {
   if (cardType.value === 'staff') {
     return teachers.value.map(t => ({
@@ -184,6 +176,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

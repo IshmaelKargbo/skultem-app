@@ -130,8 +130,6 @@ watch(
   { immediate: true }
 )
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
 watch([classId, streamId, search, sort], () => {
   updateQuery({
     classId: classId.value || undefined,
@@ -157,7 +155,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 <template>

@@ -173,8 +173,6 @@ const { can } = useAuth()
 
 onMounted(() => {
   useAppStore().setTitle('Clock In / Out')
-  // Reached from the teacher's own dashboard widget - take them back there. Reached via
-  // HR/payroll (admin, accountant, etc. checking a staff member) - back to payroll instead.
   useAppStore().setBack(can(Role.TEACHER) ? '/' : '/hr')
   document.title = 'Clock In / Out | Skultem'
 
@@ -182,6 +180,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

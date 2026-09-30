@@ -77,7 +77,7 @@ const store = useReportCardStore()
 const { studentRecords: records, loadingStudent: loading } = storeToRefs(store)
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER]
 })
 
 watch(

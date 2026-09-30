@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER]
 })
 
 const store = useTeacherStore()

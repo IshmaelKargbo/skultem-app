@@ -359,6 +359,6 @@ onMounted(() => {
 
 // Missing entirely before - see teachers/index.vue's guard for why.
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER, Role.PROPRIETOR]
 })
 </script>

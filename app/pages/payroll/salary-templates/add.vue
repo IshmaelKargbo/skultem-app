@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
-
     <Heading title="Add Salary Template" subtitle="A reusable compensation package you can apply to any teacher.">
       <UButton variant="soft" color="neutral" to="/payroll/salary-templates" label="Cancel" />
       <UButton icon="i-lucide-check" :loading="saving" label="Save Template" @click="formRef?.submit()" />
@@ -151,6 +150,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
