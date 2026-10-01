@@ -11,10 +11,6 @@ const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
 )
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
   { label: 'Name (A-Z)', value: 'givenNames:asc' },
   { label: 'Name (Z-A)', value: 'givenNames:desc' },
@@ -98,15 +94,13 @@ const activeFilterCount = computed(
   () => [classId.value, gender.value, sort.value !== DEFAULT_SORT].filter(Boolean).length
 )
 
-// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
-// page/size and silently drops any other query key when neither changed, which would swallow
-// these filter updates whenever a filter is set while already on page 1.
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
 }
 
 // Debounced so every keystroke doesn't fire a request.
 let searchTimer: ReturnType<typeof setTimeout> | undefined
+
 watch(searchInput, (val) => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
@@ -128,9 +122,6 @@ watch(() => page.value, () => {
   fetchRecord()
 }, { immediate: true })
 
-// Setting a filter also resets the page to 1 and mirrors the class/sort filters into the URL (for a
-// shareable link/refresh; search is deliberately kept out of it) - the fetch itself is keyed off the
-// local refs above, not the URL.
 watch([classId, gender, search, sort], () => {
   updateQuery({
     classId: classId.value || undefined,
@@ -154,17 +145,15 @@ onMounted(() => {
 <template>
   <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
     <template #header>
-      <div>
-        <div class="flex px-4 py-3 justify-end items-center gap-2">
-          <TableViewToggle v-model="view" />
-        </div>
-
-        <div class="border-t p-4 border-default flex items-center gap-2">
+      <div class="flex px-4 py-3 items-center gap-2">
+        <div class="flex flex-1 items-center gap-2">
           <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
             class="flex-1" />
-          <StudentFilterDrawer v-model:class-id="classId" v-model:gender="gender" v-model:sort="sort" :class-options="classOptions"
-            :sort-options="sortOptions" :active-count="activeFilterCount" :default-sort="DEFAULT_SORT" />
+          <StudentFilterDrawer v-model:class-id="classId" v-model:gender="gender" v-model:sort="sort"
+            :class-options="classOptions" :sort-options="sortOptions" :active-count="activeFilterCount"
+            :default-sort="DEFAULT_SORT" />
         </div>
+        <TableViewToggle v-model="view" />
       </div>
     </template>
 
@@ -187,8 +176,7 @@ onMounted(() => {
       </template>
       <template #name-cell="{ row }">
         <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
-          :photo="row.original.photo" :status="row.original.status"
-          :subtitle="row.original.className || 'No Class'" />
+          :photo="row.original.photo" :status="row.original.status" :subtitle="row.original.className || 'No Class'" />
       </template>
       <template #total-cell="{ row }">
         <p class="text-error">{{ format(row.original.feeDetail?.total) }}</p>
@@ -258,7 +246,8 @@ onMounted(() => {
 
       <!-- Data -->
       <template v-else-if="data?.length">
-        <UCard v-for="item in data" :key="item.id" class="group cursor-pointer hover:ring-secondary-300" :ui="{ body: 'sm:p-0 p-0' }" @click="viewStudent(item)">
+        <UCard v-for="item in data" :key="item.id" class="group cursor-pointer hover:ring-secondary-300"
+          :ui="{ body: 'sm:p-0 p-0' }" @click="viewStudent(item)">
           <!-- Header -->
           <template #header>
             <div class="flex items-start justify-between gap-3">

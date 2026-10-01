@@ -178,7 +178,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 pb-10 md:px-6">
+  <div class="px-4 space-y-4 md:px-6">
     <div class="grid gap-5 lg:grid-cols-5 lg:items-start lg:gap-6">
       <!-- LEFT: how to prepare the file -->
       <aside class="space-y-4 lg:sticky lg:top-5 lg:col-span-2">

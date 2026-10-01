@@ -30,7 +30,7 @@
             </div>
 
             <div v-else-if="records.length === 0"
-                class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-14 text-center">
+                class="flex flex-col items-center gap-3 py-14 text-center">
                 <div
                     class="flex h-14 w-14 items-center justify-center rounded-[20px] bg-primary-50 dark:bg-primary-500/10">
                     <UIcon :name="STUDENT_FEES_ICON" class="text-2xl text-primary-500" />

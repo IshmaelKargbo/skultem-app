@@ -271,9 +271,7 @@ const parent = reactive({
     fatherOccupation: '',
     fatherContact: '',
     motherContact: '',
-
     existingGuardianId: '',
-
     guardianGivenNames: '',
     guardianFamilyName: '',
     relationship: '',
@@ -493,8 +491,6 @@ async function submit(param: any) {
             admissionDate: academic.admissionDate,
             enrollmentType: academic.enrollmentType,
             previousSchool: academic.previousSchool,
-            // Backend field is `lastClass`, not `lastGradeCompleted` - this key must match it or
-            // the value is silently dropped (Jackson ignores unknown properties).
             lastClass: academic.lastGradeCompleted
         }
 

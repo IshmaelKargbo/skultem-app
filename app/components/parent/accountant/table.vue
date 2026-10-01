@@ -6,10 +6,6 @@ const store = useParentStore()
 const { format } = useMoney()
 const { records: data, meta, loading } = storeToRefs(store)
 
-// No "Default" entry here - a Reka UI Combobox item's value can't be an empty string (it's
-// reserved internally to mean "cleared", and an item using it throws "A <ComboboxItem /> must
-// have a value prop that is not an empty string" the moment the list renders, breaking every item
-// in it, not just that one). DEFAULT_SORT below is always a real selection instead.
 const sortOptions = [
   { label: 'Name (A-Z)', value: 'user.givenName:asc' },
   { label: 'Name (Z-A)', value: 'user.givenName:desc' },
@@ -42,11 +38,6 @@ const page = computed<number>({
 // SIZE (URL synced)
 const size = ref(runtimeConf().limit)
 
-// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
-// why a v-model bound straight to a computed setter that triggers router.replace() reads as
-// "picking an option/typing does nothing". These still seed from the URL on load and push back
-// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
-// mirror, not the source of truth.
 const searchInput = ref(String(route.query.search ?? ''))
 const search = ref(searchInput.value)
 const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
@@ -56,9 +47,6 @@ const sortDirection = computed(() => sort.value.split(':')[1])
 // What the filter drawer holds (search sits outside it).
 const activeFilterCount = computed(() => (sort.value !== DEFAULT_SORT ? 1 : 0))
 
-// Shadows the global `updateQuery` util (app/utils/common.ts) - that one only ever compares
-// page/size and silently drops any other query key when neither changed, which would swallow
-// these filter updates whenever a filter is set while already on page 1.
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
 }
@@ -81,11 +69,8 @@ watch(
   { immediate: true }
 )
 
-// Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
-// shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
 watch([search, sort], () => {
   updateQuery({
-    search: search.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
     page: 1,
   })

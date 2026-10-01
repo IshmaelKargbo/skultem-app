@@ -162,8 +162,6 @@ onMounted(async () => {
               <TableViewToggle v-model="tableView" />
             </div>
           </div>
-
-
         </div>
       </template>
       <UTable v-if="tableView === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
