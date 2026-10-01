@@ -26,10 +26,6 @@ const columns = [
     cell: ({ row }: any) => `${row.original.givenNames} ${row.original.familyName}`
   },
   {
-    accessorKey: 'gender',
-    header: 'Gender'
-  },
-  {
     accessorKey: 'className',
     header: 'Class'
   },
@@ -37,14 +33,6 @@ const columns = [
     accessorKey: 'guardian.givenNames',
     header: 'Guardian',
     cell: ({ row }: any) => `${row.original.guardian.givenNames} ${row.original.guardian.familyName}`
-  },
-  {
-    accessorKey: 'family.fatherName',
-    header: 'Father'
-  },
-  {
-    accessorKey: 'family.motherName',
-    header: 'Mother'
   },
   {
     accessorKey: 'total',
@@ -76,11 +64,6 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit)
 
-// Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
-// why a v-model bound straight to a computed setter that triggers router.replace() reads as
-// "picking an option/typing does nothing". These still seed from the URL on load and push back
-// to it (see the watch below) so a direct link/refresh keeps the filters, but the URL is a
-// mirror, not the source of truth.
 const classId = ref(String(route.query.classId ?? ''))
 const searchInput = ref('')
 const search = ref(searchInput.value)
@@ -176,7 +159,7 @@ onMounted(() => {
       </template>
       <template #name-cell="{ row }">
         <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
-          :photo="row.original.photo" :status="row.original.status" :subtitle="row.original.className || 'No Class'" />
+          :photo="row.original.photo" :status="row.original.status" :subtitle="row.original.admissionNumber" />
       </template>
       <template #total-cell="{ row }">
         <p class="text-error">{{ format(row.original.feeDetail?.total) }}</p>
