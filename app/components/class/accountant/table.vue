@@ -16,6 +16,8 @@ const streamOptions = computed(() =>
   streamStore.records.map((e) => ({ label: e.name, value: e.id }))
 )
 
+const NoClassTeacher = 'No Class Teacher';
+
 const columns = [
   {
     accessorKey: 'clazz',
@@ -331,8 +333,7 @@ onMounted(async () => {
               <div class="flex items-center justify-between">
                 <div class="flex min-w-0 items-center gap-2 text-sm text-muted">
                   <UIcon name="i-lucide-user-round" class="size-4 shrink-0" />
-                  <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) || 'No Class
-                    Teacher' }}</span>
+                  <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) || NoClassTeacher }}</span>
                 </div>
 
                 <p class="shrink-0 truncate text-sm font-medium text-highlighted">
