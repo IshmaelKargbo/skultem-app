@@ -138,7 +138,7 @@ onMounted(async () => {
               <p>{{ row.original.clazz }}</p>
               <p>- {{ row.original.sectionName }}</p>
             </div>
-            <p>{{ row.original.streamName || '-' }}</p>
+            <p class="text-xs text-muted">{{ row.original.streamName == 'N/A' ? '-' : row.original.streamName }}</p>
           </div>
         </template>
         <template #totalStudent-cell="{ row }">
@@ -333,7 +333,8 @@ onMounted(async () => {
               <div class="flex items-center justify-between">
                 <div class="flex min-w-0 items-center gap-2 text-sm text-muted">
                   <UIcon name="i-lucide-user-round" class="size-4 shrink-0" />
-                  <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) || NoClassTeacher }}</span>
+                  <span class="truncate" :title="item.teacherName">{{ formatTeacherNames(item.teacherName) ||
+                    NoClassTeacher }}</span>
                 </div>
 
                 <p class="shrink-0 truncate text-sm font-medium text-highlighted">
