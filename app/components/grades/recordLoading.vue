@@ -1,5 +1,5 @@
 <template>
-    <div class="rounded-xl border border-default p-4">
+    <div class="border-default p-4">
         <div class="flex gap-3">
             <USkeleton class="h-10 w-10 rounded-xl" />
 

@@ -10,15 +10,9 @@
         <!-- IDENTITY -->
         <div class="-mt-7 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-end gap-3">
-            <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-default p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-              <div class="flex size-full items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/10">
-                <UIcon name="lucide:clipboard-check" class="size-6 text-primary-500" />
-              </div>
-            </div>
-
             <div class="min-w-0 pb-0.5">
               <p class="text-xs font-medium uppercase tracking-wide text-muted">
-                {{ selected.subject }} &middot; {{ selected.assessment }} &middot; {{ selected.term }}
+                {{ selected.subject }} &middot; {{ selected.class }}  &middot; {{ selected.assessment }} &middot; {{ selected.term }}
               </p>
               <p class="text-lg font-bold text-highlighted">{{ selected.teacher }}</p>
               <p class="text-sm text-muted">{{ selected.class }}</p>

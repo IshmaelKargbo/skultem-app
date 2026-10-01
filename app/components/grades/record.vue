@@ -5,6 +5,7 @@
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                     <h3 class="min-w-0 truncate font-semibold text-highlighted">{{ record.subject }}</h3>
+                    <p>- {{ record.class }}</p>
                     <UBadge size="sm" variant="subtle" :color="statusColor(record.status)"
                         :label="statusLabel(record.status)" class="shrink-0" />
                 </div>
