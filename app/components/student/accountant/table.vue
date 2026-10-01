@@ -124,7 +124,6 @@ onMounted(() => {
   clazzStore.fetchAll(0, 0)
 })
 </script>
-
 <template>
   <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
     <template #header>
