@@ -143,20 +143,20 @@ const { can } = useAuth()
 // Report cards are ADMIN/OWNER/PROPRIETOR only server-side - Accountant can view a student's
 // profile but not their report cards, so the tab only shows for roles that can actually open it.
 const { isPathAvailable } = useModules()
-const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
 // Matches PATCH /enrollment/{id}/class, which only ADMIN/OWNER/PROPRIETOR may call.
-const canChangeClass = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const canChangeClass = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
 
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.TEACHER]
 })
 
 const hasLeft = computed(() => studentHasLeft(record.value?.status))
 
 // Matches POST /student/{id}/withdraw|expel|reinstate (ADMIN/OWNER/PROPRIETOR); permanent delete is
 // owner-level only, like the backend.
-const canManageExit = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
-const canDeletePermanently = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
+const canManageExit = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
+const canDeletePermanently = computed(() => can([Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
 
 const showExit = ref(false)
 const showDelete = ref(false)

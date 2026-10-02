@@ -15,9 +15,9 @@ interface NavItem {
 }
 
 const allItems: NavItem[] = [
-  { label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.ACCOUNTANT, Role.OWNER, Role.TEACHER] },
-  { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
-  { label: 'Streams', to: '/classes/streams', icon: CURRICULUM_STREAM_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] }
+  { label: 'Classes', to: '/classes', icon: CLASS_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.ACCOUNTANT, Role.OWNER, Role.TEACHER] },
+  { label: 'Sections', to: '/classes/sections', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER] },
+  { label: 'Streams', to: '/classes/streams', icon: CURRICULUM_STREAM_ICON, roles: [Role.ADMIN, Role.PRINCIPAL, Role.PROPRIETOR, Role.OWNER] }
 ]
 
 const items = computed(() => allItems.filter(item => can(item.roles)))

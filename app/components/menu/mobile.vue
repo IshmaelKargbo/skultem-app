@@ -48,13 +48,13 @@ const navItems: NavItem[] = [
     roles: [Role.PARENT, Role.TEACHER] },
 
   { label: 'Students', to: '/students', icon: STUDENT_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER] },
 
   { label: 'Classes', to: '/classes', icon: CLASS_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER] },
 
   { label: 'Teachers', to: '/teachers', icon: TEACHER_ICON,
-    roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+    roles: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER] },
 
   { label: 'Fees', to: '/fees', icon: PAYMENT_ICON,
     roles: [Role.PARENT, Role.TEACHER] },

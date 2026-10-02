@@ -126,7 +126,7 @@ const classes = computed(() => records.value.map(e => ({ value: e.id, label: e.n
 const teachers = computed(
   () =>
     teacherStore.records?.map((t) => ({
-      label: `${t.user.givenNames} ${t.user.familyName}`,
+      label: `${t.user.givenNames} ${t.user.familyName} (${t.designation})`,
       value: t.id,
     })) || []
 );
@@ -134,7 +134,7 @@ const teachers = computed(
 // Fetch sections and streams
 async function fetchRecords() {
   if (!state.classId) return;
-
+ 
   // Reset dependent fields
   state.sectionId = "";
 

@@ -298,8 +298,9 @@ onMounted(() => {
   subjectStore.fetchAll(0, 0);
   classStore.fetchAll(0, 0);
   teacherStore.fetchAll(0, 0);
-  
+
   useAppStore().setTitle("Subjects");
+  useAppStore().setBack('/subjects/teacher-assignment')
   document.title = "Teacher Subject | Assign Teacher Subject | Skultem";
 });
 
