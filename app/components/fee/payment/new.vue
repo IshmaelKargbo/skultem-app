@@ -95,7 +95,7 @@
                                 class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <p class="font-medium">{{ fee.feeName }}</p>
+                                        <p class="font-medium">{{ fee.feeName }} <span> - {{ fee.term }}</span></p>
                                         <UBadge v-if="fee.allowInstallment === false" size="xs" color="warning"
                                             variant="subtle">
                                             Full payment only
@@ -243,9 +243,6 @@
 import * as yup from 'yup'
 
 const props = defineProps<{
-    // Set by /fees-payment/pay?studentId=... - lets the "Pay Fees" shortcut on a student's fee
-    // record (or their card in the Fees list) jump straight into a prefilled payment form instead
-    // of landing empty and making the accountant search for the same student all over again.
     initialStudentId?: string
 }>()
 
@@ -271,10 +268,6 @@ const isLoading = ref(false)
 const receipt = ref<any | null>(null)
 const receiptModalOpen = ref(false)
 const isDownloadingReceipt = ref(false)
-// The receipt setting's logoUrl is the school's raw R2 URL (see GetReceiptSettingUseCase) - fine
-// for on-screen display, but R2's public bucket sends no CORS headers, which taints the canvas
-// html2canvas draws it into and silently drops the image from the exported PDF. This resolves it
-// to a same-origin data: URI first, same fix already used for ID cards/report cards.
 const pdfLogo = ref<string | null>(null)
 
 async function onStudentSelect() {
@@ -357,8 +350,6 @@ const canSubmit = computed(() =>
     !isOverAllocated.value
 )
 
-// Raw payment records + the bits of form state the receipt needs, kept only long enough to build
-// the receipt lazily - see downloadReceipt(). Captured before reset() clears the form.
 const lastPayments = ref<any[]>([])
 const lastPaymentMeta = ref<{ method: string, studentName?: string }>()
 
@@ -401,10 +392,6 @@ async function downloadReceipt() {
     isDownloadingReceipt.value = true
 
     try {
-        // Only built now, on request - fetching the receipt design settings and the school logo
-        // (as a same-origin data: URI, a real network round trip - see loadPdfLogo) used to run
-        // eagerly on every payment, making "Record Payment" wait on both even when nobody ended up
-        // wanting a receipt.
         receipt.value = buildPaymentReceipt(lastPayments.value, lastPaymentMeta.value)
         await loadReceiptSettings()
         await nextTick()
@@ -486,11 +473,6 @@ const methodOptions = [
 
 const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch()
 
-// The select can only show a label for a value that's actually in its `items` list - normally
-// true the moment a student is picked from the dropdown itself, but the deep-link case below sets
-// state.studentId directly, before the (debounced, server-side) search has any reason to have
-// fetched that particular student. Pinning them into a synthetic entry sidesteps that race
-// entirely, rather than showing the raw id until/unless the search happens to catch up.
 const pinnedStudent = ref<{ label: string, value: string } | null>(null)
 
 const studentOptions = computed(() => {
@@ -520,8 +502,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Scales the full-size receipt down to fit the confirmation modal - same trick used by the
-   receipt design settings page's Live Preview, so what's shown here matches what gets printed. */
 .preview-card {
     overflow: hidden;
 }
