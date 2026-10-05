@@ -9,11 +9,6 @@
         }">
             <template v-if="student && embedded" #header>
                 <div class="flex gap-2 p-3 overflow-x-auto *:shrink-0">
-                    <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && (feesState?.outstanding || 0) > 0"
-                        :to="`/fees-payment/pay?studentId=${student.id}`" color="primary" size="sm"
-                        icon="streamline-ultimate:cash-payment-bills">
-                        Pay Fees
-                    </UButton>
                     <p class="md:hidden uppercase text-muted font-semibold">Summery</p>
                     <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
                         @assigned="refreshFees" />
