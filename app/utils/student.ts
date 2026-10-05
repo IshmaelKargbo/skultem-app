@@ -97,7 +97,7 @@ export type StudentFee = {
     id: string
     feeId: string
     feeName: string
-    total: number
+    amount: number
     amountPaid: number
     outstanding: number
     discount: number

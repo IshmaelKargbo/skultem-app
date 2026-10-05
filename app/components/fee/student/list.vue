@@ -14,7 +14,7 @@
         </template>
         <div class="space-y-2">
             <div v-if="isLoading" class="space-y-2">
-                <div v-for="n in 7" :key="n" class="border-b last:border-b-0 border-default p-3.5 space-y-3">
+                <div v-for="n in 7" :key="n" class="border-b last:border-b-0 border-default md:p-5 p-3 space-y-3">
                     <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-2.5">
                             <USkeleton class="size-9 rounded-full" />

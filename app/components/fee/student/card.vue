@@ -1,5 +1,5 @@
 <template>
-    <div class="group relative overflow-hidden p-3.5 transition-all duration-200" :class="active
+    <div class="group relative overflow-hidden md:p-5 p-3 transition-all duration-200" :class="active
         ? 'bg-primary-50 dark:bg-primary-500/10'
         : 'bg-default hover:bg-primary-50 dark:bg-primary-500/10'">
 

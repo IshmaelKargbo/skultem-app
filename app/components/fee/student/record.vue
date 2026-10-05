@@ -7,8 +7,6 @@
         } : {
             body: 'sm:p-0',
         }">
-            <!-- Embedded (mobile full-screen modal): the modal's own header already shows the
-                 student's name, so this only surfaces the actions as a compact scrollable row. -->
             <template v-if="student && embedded" #header>
                 <div class="flex gap-2 p-3 overflow-x-auto *:shrink-0">
                     <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && (feesState?.outstanding || 0) > 0"
@@ -139,10 +137,13 @@ async function fetchFees() {
 
     let outstanding = 0, paid = 0, total = 0, discount = 0;
 
+    console.log(res.records);
+    
+
     (res.records as StudentFee[]).forEach((e: StudentFee) => {
         outstanding += e.outstanding
         paid += e.amountPaid
-        total += e.total
+        total += e.amount
         discount += e.discount
     })
 
