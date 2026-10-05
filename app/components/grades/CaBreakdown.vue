@@ -1,7 +1,8 @@
 <template>
   <div v-if="c" class="rounded-lg border border-default bg-elevated/30 px-3 py-2 text-xs">
     <div v-if="empty" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted">
-      <span>No CA or formal test marks recorded yet · {{ c.caPercentage }}% classwork + {{ c.formalPercentage }}% formal test</span>
+      <span v-if="c.caPercentage === 0">No CA or formal test marks recorded yet · CA is for monitoring only - the formal test is the whole mark</span>
+      <span v-else>No CA or formal test marks recorded yet · {{ c.caPercentage }}% classwork + {{ c.formalPercentage }}% formal test</span>
       <UBadge v-if="progress" size="sm" variant="subtle" color="warning" icon="lucide:clock">{{ progress }}</UBadge>
     </div>
     <div v-else class="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -9,7 +10,8 @@
         Classwork (CA)
         <template v-if="c.caScore != null">
           <span class="font-semibold text-highlighted">{{ c.caScore }}%</span>
-          <span class="text-muted">= {{ c.caPoints }}/{{ c.caPercentage }} of the mark</span>
+          <span v-if="c.caPercentage === 0" class="text-muted">(monitoring only - not part of the mark)</span>
+          <span v-else class="text-muted">= {{ c.caPoints }}/{{ c.caPercentage }} of the mark</span>
         </template>
         <span v-else class="font-medium text-highlighted">none recorded yet</span>
       </span>

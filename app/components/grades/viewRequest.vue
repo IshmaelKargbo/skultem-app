@@ -114,7 +114,8 @@
                     <template v-if="student.continuous">
                       <p class="font-medium text-highlighted">
                         {{ student.continuous.caScore ?? '-' }}
-                        <span class="text-xs text-muted">({{ student.continuous.caPoints }}/{{ student.continuous.caPercentage }})</span>
+                        <span v-if="student.continuous.caPercentage === 0" class="text-xs text-muted">(monitoring only)</span>
+                        <span v-else class="text-xs text-muted">({{ student.continuous.caPoints }}/{{ student.continuous.caPercentage }})</span>
                       </p>
                       <p class="text-[11px] text-muted whitespace-nowrap">
                         {{ student.continuous.caEntryScores.map(v => v ?? '-').join(' · ') }}
@@ -160,13 +161,16 @@
             </div>
           </div>
 
-          <UAlert v-if="needsOtherReviewer" class="mt-3" color="info" variant="subtle" icon="lucide:shield-check"
+          <UAlert v-if="needsOtherReviewer && selected.approver === 'ADMIN'" class="mt-3" color="info" variant="subtle"
+            icon="lucide:shield-check" title="An admin approves grades for this class"
+            description="Your school has an admin approve grades for this class, so this is waiting for an admin, proprietor or owner. You'll see it here once it's approved or returned." />
+          <UAlert v-else-if="needsOtherReviewer" class="mt-3" color="info" variant="subtle" icon="lucide:shield-check"
             title="An admin or proprietor approves this one"
             description="You teach this subject as well as being the class master, so you can't approve your own grades. It is waiting for an admin, proprietor or owner." />
           <UAlert v-else-if="selected.requiresAdminReview && selected.status === 'Pending Review'" class="mt-3"
             color="info" variant="subtle" icon="lucide:shield-check"
-            title="Class master taught this subject"
-            description="The class master is also the subject teacher here, so it comes to you for approval." />
+            :title="selected.approver === 'ADMIN' ? 'Grades are approved by an admin' : 'Class master taught this subject'"
+            :description="selected.approver === 'ADMIN' ? 'In this class the admin approves grades rather than the class master.' : 'The class master is also the subject teacher here, so it comes to you for approval.'" />
 
           <div v-if="showAction" class="mt-3 flex gap-3 border-t border-default pt-3">
             <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"

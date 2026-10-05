@@ -198,7 +198,7 @@
               <p class="text-lg font-bold text-primary-600">{{ termPayload!.averageAttendance }}%</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
-              <p class="text-xs text-gray-500">Below {{ threshold }}%</p>
+              <p class="text-xs text-gray-500">Below {{ thresholdText([termPayload?.threshold], threshold) }}</p>
               <p class="text-lg font-bold text-primary-600">{{ termPayload!.studentsBelowThreshold }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">

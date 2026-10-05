@@ -70,7 +70,7 @@
             <p class="text-lg font-bold text-primary-600">{{ summary.averageAttendance }}%</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Below {{ threshold }}%</p>
+            <p class="text-xs text-gray-500">Below {{ thresholdText([summary?.threshold], threshold) }}</p>
             <p class="text-lg font-bold text-primary-600">{{ summary.studentsBelowThreshold }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">

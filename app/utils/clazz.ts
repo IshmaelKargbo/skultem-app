@@ -61,11 +61,22 @@ export type StudentAttention = {
     academicAverage: number | null
     attendanceFlag: boolean
     academicFlag: boolean
+    // attendanceRate is the recent window (~last 20 recorded school days); the rest is context.
+    termAttendanceRate: number | null
+    attendanceTrend: 'IMPROVING' | 'STEADY' | 'DECLINING' | null
+    absenceStreak: number
+    severity: 'WATCH' | 'NEEDS_ATTENTION' | 'CRITICAL'
+    // The term before this one (same academic year) and where the average is heading against it.
+    previousTermAverage: number | null
+    academicTrend: 'IMPROVING' | 'STEADY' | 'DECLINING' | null
 }
 
 export type ClassAttention = {
     totalStudents: number
+    // Students at NEEDS_ATTENTION or CRITICAL (what the class badge counts)...
     flaggedCount: number
+    // ...and those on WATCH: a recent dip the term as a whole doesn't back up.
+    watchCount: number
     students: StudentAttention[]
 }
 

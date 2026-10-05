@@ -132,7 +132,7 @@
             <!-- Desktop Table -->
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="displayStudents"
                 :loading="studentsLoading"
-                :meta="{ class: { tr: (row: any) => needsAttention(row.original) ? 'border-l-4 border-l-warning' : '' } }">
+                :meta="{ class: { tr: (row: any) => attentionStyle(row.original) ? `border-l-4 ${attentionStyle(row.original)!.border}` : '' } }">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -146,7 +146,8 @@
                             :subtitle="row.original.admissionNumber || 'No Admission No'" />
 
                         <UTooltip v-if="needsAttention(row.original)" :text="attentionReason(row.original)">
-                            <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning" />
+                            <UIcon :name="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
+                                class="size-4 shrink-0" :class="attentionStyle(row.original)?.text" />
                         </UTooltip>
                     </div>
                 </template>
@@ -195,7 +196,7 @@
                 <template v-else-if="displayStudents.length">
                     <div v-for="student in displayStudents" :key="student.id"
                         class="cursor-pointer border-b md:border md:rounded-2xl border-default p-3"
-                        :class="needsAttention(student) ? 'md:border-l-4 border-l-2 border-l-warning' : ''"
+                        :class="attentionStyle(student) ? `md:border-l-4 border-l-2 ${attentionStyle(student)!.border}` : ''"
                         @click="navigateTo(`/students/${student.id}?back=/classes/${route.params.id}`)">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
@@ -208,7 +209,8 @@
                                         <UTooltip class="hidden md:visible" v-if="needsAttention(student)"
                                             :text="attentionReason(student)" :open="openAttentionId === student.id"
                                             @update:open="(v) => openAttentionId = v ? student.id : null">
-                                            <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0 text-warning"
+                                            <UIcon :name="attentionOf(student)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
+                                                class="size-4 shrink-0" :class="attentionStyle(student)?.text"
                                                 @click.stop="openAttentionId = openAttentionId === student.id ? null : student.id" />
                                         </UTooltip>
                                     </h3>
@@ -216,7 +218,7 @@
                                     <p class="truncate text-xs-base text-muted">
                                         {{ student.admissionNumber || 'No Admission No' }}
                                     </p>
-                                    <p class="text-[9px] text-warning truncate">{{ attentionReason(student) }}</p>
+                                    <p class="text-[9px] truncate" :class="attentionStyle(student)?.text">{{ attentionReason(student) }}</p>
                                 </div>
                             </div>
 
@@ -304,19 +306,45 @@ function attentionOf(s: Student) {
     return attentionByStudentId.value[s.id]
 }
 
+// Colour per level: critical = red, needs attention = amber, watch = a softer neutral hint.
+const SEVERITY_STYLE = {
+    CRITICAL: { text: 'text-error', border: 'border-l-error' },
+    NEEDS_ATTENTION: { text: 'text-warning', border: 'border-l-warning' },
+    WATCH: { text: 'text-muted', border: 'border-l-neutral' }
+} as const
+
+function attentionStyle(s: Student) {
+    const a = attentionOf(s)
+    return a ? SEVERITY_STYLE[a.severity] : undefined
+}
+
 function needsAttention(s: Student) {
     return !!attentionOf(s)
 }
+
+const TREND_LABEL = { IMPROVING: 'improving', STEADY: 'steady', DECLINING: 'declining' } as const
 
 function attentionReason(s: Student) {
     const a = attentionOf(s)
     if (!a) return ''
 
     const parts: string[] = []
-    if (a.attendanceFlag) parts.push(`Attendance ${a.attendanceRate}%`)
-    if (a.academicFlag) parts.push(`Average ${a.academicAverage}%`)
+    if (a.attendanceFlag) {
+        let text = a.attendanceRate != null ? `Attendance ${a.attendanceRate}% recently` : 'Attendance'
+        if (a.termAttendanceRate != null) text += ` (${a.termAttendanceRate}% this term)`
+        if (a.attendanceTrend) text += `, ${TREND_LABEL[a.attendanceTrend]}`
+        if (a.absenceStreak >= 3) text += `, ${a.absenceStreak} absences in a row`
+        parts.push(text)
+    }
+    if (a.academicFlag) {
+        let text = `Average ${a.academicAverage}%`
+        if (a.previousTermAverage != null) text += ` (${a.previousTermAverage}% last term)`
+        if (a.academicTrend) text += `, ${TREND_LABEL[a.academicTrend]}`
+        parts.push(text)
+    }
 
-    return `${parts.join(' · ')} - needs follow-up`
+    const tail = a.severity === 'WATCH' ? 'keep an eye on' : 'needs follow-up'
+    return `${parts.join(' · ')} - ${tail}`
 }
 
 async function fetchAttention() {

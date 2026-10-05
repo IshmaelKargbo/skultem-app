@@ -1,42 +1,83 @@
 <template>
-  <UCard>
+  <!-- A collapsible card per school / section (same pattern as Settings > Section Branding): the header
+       summarises the setup, opening the card shows everything you can change. -->
+  <UCard :ui="{ header: 'p-3 sm:p-4', body: open ? 'p-4 sm:p-5' : 'hidden' }">
     <template #header>
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
+      <button type="button" class="flex w-full items-center justify-between gap-3 text-left" :aria-expanded="open"
+        @click="open = !open">
+        <div class="min-w-0 space-y-1.5">
           <p class="font-medium text-highlighted">{{ config.sectionName || 'Whole school' }}</p>
-          <p class="text-xs text-muted">{{ summary }}</p>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <UBadge color="primary" variant="subtle">{{ chips.style }}</UBadge>
+            <UBadge v-if="chips.counts" color="neutral" variant="subtle">{{ chips.counts }}</UBadge>
+            <UBadge v-if="chips.recordings" color="neutral" variant="subtle">{{ chips.recordings }}</UBadge>
+            <UBadge v-if="chips.custom" color="neutral" variant="subtle">{{ chips.custom }}</UBadge>
+            <UBadge v-if="dirty" color="warning" variant="soft">Unsaved changes</UBadge>
+          </div>
+          <p class="text-xs text-muted">{{ who }}</p>
         </div>
-        <UButton label="Save" icon="lucide:save" size="sm" :loading="saving" :disabled="!dirty || !!problem"
-          @click="save" />
-      </div>
+        <UIcon name="i-lucide-chevron-down" class="size-5 shrink-0 text-muted transition-transform"
+          :class="open ? 'rotate-180' : ''" />
+      </button>
     </template>
 
-    <div class="space-y-5">
-      <URadioGroup v-model="form.structure" variant="card" :items="structures" :disabled="saving" />
-
-      <template v-if="form.structure === 'CA_AND_TEST'">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <UFormField label="Continuous assessment (%)" help="Share of the test score that comes from CA">
-            <UInput v-model.number="form.caPercentage" type="number" min="1" max="99" class="w-full"
-              :disabled="saving" @update:model-value="onCa" />
+    <div v-show="open" class="space-y-6">
+          <UFormField label="How are tests scored?">
+            <URadioGroup v-model="form.structure" variant="card" :items="structures" :disabled="saving" />
           </UFormField>
-          <UFormField label="Formal test (%)" help="The rest - changes automatically so the two total 100">
-            <UInput v-model.number="form.formalPercentage" type="number" min="1" max="99" class="w-full"
-              :disabled="saving" @update:model-value="onFormal" />
-          </UFormField>
-        </div>
 
-        <UFormField label="How often is CA recorded?">
-          <URadioGroup v-model="form.caFrequency" variant="card" orientation="horizontal"
-            :items="frequencies" :disabled="saving" :ui="{ fieldset: 'grid grid-cols-2 gap-2 sm:grid-cols-4' }" />
-        </UFormField>
+          <template v-if="form.structure === 'CA_AND_TEST'">
+            <UFormField label="Does CA count toward the score?">
+              <URadioGroup v-model="form.caMode" variant="card" :items="caModes" :disabled="saving"
+                :ui="{ fieldset: 'grid grid-cols-1 gap-2 sm:grid-cols-2' }" @update:model-value="onCaMode" />
+            </UFormField>
 
-        <UFormField :label="`How many ${unit.plural} of CA in a term?`"
-          :help="`Teachers get ${form.caEntries || 0} recording ${form.caEntries === 1 ? 'slot' : 'slots'} (${slotExample}). The CA score is the average of what is recorded.`">
-          <UInput v-model.number="form.caEntries" type="number" min="1" max="40" class="w-full sm:w-40"
-            :disabled="saving" />
-        </UFormField>
+            <div v-if="form.caMode === 'counts'" class="space-y-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <UFormField label="CA share (%)">
+                  <UInput v-model.number="form.caPercentage" type="number" min="1" max="99" class="w-full"
+                    :disabled="saving" @update:model-value="onCa" />
+                </UFormField>
+                <UFormField label="Formal test share (%)" help="Fills in so the two total 100">
+                  <UInput v-model.number="form.formalPercentage" type="number" min="1" max="99" class="w-full"
+                    :disabled="saving" @update:model-value="onFormal" />
+                </UFormField>
+              </div>
+              <p class="text-xs text-muted">
+                Example: CA 80 and test 80 gives {{ example.ca }} + {{ example.formal }} =
+                <span class="font-medium text-highlighted">{{ example.total }}/100</span>.
+              </p>
+            </div>
+            <p v-else class="rounded-lg bg-elevated/40 px-3 py-2 text-xs text-muted">
+              The formal test is the whole score. Teachers still record CA {{ unit.plural }} and see how strong each
+              student is, and nothing waits on it.
+            </p>
 
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <UFormField label="How often is CA recorded?">
+                <USelect v-model="form.caFrequency" :items="frequencyItems" class="w-full" :disabled="saving" />
+              </UFormField>
+              <UFormField :label="`${unit.plural} of CA per term`"
+                :help="`Teachers get ${form.caEntries || 0} slot${form.caEntries === 1 ? '' : 's'}: ${slotExample}`">
+                <UInput v-model.number="form.caEntries" type="number" min="1" max="40" class="w-full"
+                  :disabled="saving" />
+              </UFormField>
+            </div>
+
+            <!-- Optional: most schools never need this, so it stays folded away. -->
+            <div class="rounded-xl border border-default">
+              <button type="button" class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                :aria-expanded="showPlan" @click="showPlan = !showPlan">
+                <span>
+                  <span class="block text-sm font-medium text-highlighted">Different for some tests or terms</span>
+                  <span class="block text-xs text-muted">
+                    {{ planPayload.length ? `${planPayload.length} custom` : 'Optional - every test follows the setup above' }}
+                  </span>
+                </span>
+                <UIcon name="i-lucide-chevron-down" class="size-4 shrink-0 text-muted transition-transform"
+                  :class="showPlan ? 'rotate-180' : ''" />
+              </button>
+              <div v-show="showPlan" class="border-t border-default p-4">
         <!-- Terms and tests differ in length: a short term, or a short test, has fewer weeks. -->
         <div class="space-y-2">
           <div>
@@ -97,30 +138,27 @@
           </div>
         </div>
 
-        <div class="rounded-xl border border-default bg-elevated/40 p-3 text-sm">
-          <p class="font-medium text-highlighted">Example</p>
-          <p class="text-muted">
-            A student averages 80% in CA and scores 80% in the formal test:
-            CA {{ example.ca }}/{{ form.caPercentage || 0 }} + Test {{ example.formal }}/{{ form.formalPercentage || 0 }}
-            = <span class="font-semibold text-highlighted">{{ example.total }}/100</span>.
-            The result still appears as one simple score.
-          </p>
+              </div>
+            </div>
+          </template>
+
+          <UAlert v-if="problem" color="warning" variant="subtle" icon="lucide:alert-triangle" :description="problem" />
+
+      <div class="border-t border-default pt-4">
+        <div class="flex w-full flex-col gap-3">
+          <UCheckbox v-if="dirty" v-model="applyNow" label="Also update tests nobody has started"
+            description="Tests with no marks yet switch straight away. Anything with a mark in it is never touched." />
+          <div class="flex items-center justify-between gap-3">
+            <UButton v-if="!dirty && !(config.isDefault && config.structure === 'SIMPLE')" label="Update tests nobody has started"
+              icon="lucide:refresh-cw" size="sm" color="neutral" variant="ghost" @click="confirmOpen = true" />
+            <span v-else />
+            <div class="flex gap-2">
+              <UButton label="Discard changes" color="neutral" variant="soft" :disabled="saving || !dirty" @click="resetForm" />
+              <UButton label="Save" icon="lucide:save" :loading="saving" :disabled="!dirty || !!problem"
+                @click="save" />
+            </div>
+          </div>
         </div>
-      </template>
-
-      <UAlert v-if="problem" color="warning" variant="subtle" icon="lucide:alert-triangle" :description="problem" />
-
-      <UCheckbox v-if="dirty" v-model="applyNow" label="Also move assessments nobody has graded yet onto this setup"
-        description="Blank assessments (no grade, no CA recording) switch straight away, so nothing has to wait for a new term. Anything with a grade in it is never touched." />
-
-      <div class="flex flex-col gap-3 border-t border-dashed border-default pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-xs text-muted">
-          {{ dirty ? 'Save your changes first to apply them to unstarted assessments.'
-            : 'Assessments that already have a grade in them keep the setup they started with.' }}
-        </p>
-        <UButton label="Apply to unstarted assessments" icon="lucide:refresh-cw" size="sm" color="neutral"
-          variant="subtle" class="justify-center" :disabled="dirty || (config.isDefault && config.structure === 'SIMPLE')"
-          @click="confirmOpen = true" />
       </div>
     </div>
 
@@ -152,6 +190,8 @@
 
 <script setup lang="ts">
 const props = defineProps<{ config: AssessmentConfiguration }>()
+// Whether the card is unfolded. The page owns it, so a reload after saving doesn't fold everything back.
+const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{ saved: [config: AssessmentConfiguration] }>()
 
 const { success, info } = useNotify()
@@ -160,6 +200,7 @@ const assessmentStore = useAssessmentStore()
 const saving = ref(false)
 const applying = ref(false)
 const confirmOpen = ref(false)
+const showPlan = ref(false)
 const applyNow = ref(true)
 
 // --- Plan by term: which assessments use CA + formal test in which term, and how many recordings each has ---
@@ -242,16 +283,24 @@ onMounted(async () => {
 
 const structures = [
   { label: 'Simple Assessment', value: 'SIMPLE', description: 'One score per test - the way it has always worked' },
-  { label: 'Continuous Assessment + Formal Assessment', value: 'CA_AND_TEST', description: 'Teachers record CA through the term and a formal test; together they make the test score' }
+  { label: 'Continuous Assessment + Formal Assessment', value: 'CA_AND_TEST', description: 'Teachers record CA through the term alongside the formal test. Choose below whether CA counts toward the score or is only for monitoring' }
+]
+const caModes = [
+  { label: 'Counts toward the score', value: 'counts', description: 'CA and the formal test are weighted together (for example 30% CA + 70% test) to make the test score' },
+  { label: 'Monitoring only', value: 'monitor', description: 'CA shows how strong a student is but never changes the Test 1 / Test 2 score - the formal test is 100%' }
 ]
 const frequencies = CA_FREQUENCY_OPTIONS.map(o => ({ label: o.label, value: o.value, description: o.hint }))
+const frequencyItems = CA_FREQUENCY_OPTIONS.map(o => ({ label: o.label, value: o.value }))
 
 function fromConfig(c: AssessmentConfiguration) {
   const ca = c.structure === 'CA_AND_TEST'
+  const monitor = ca && c.caPercentage === 0
   return {
     structure: c.structure as AssessmentStructure,
-    caPercentage: ca ? c.caPercentage : 30,
-    formalPercentage: ca ? c.formalPercentage : 70,
+    // CA at 0% is the "monitoring only" setup - CA is recorded but isn't part of the score.
+    caMode: (monitor ? 'monitor' : 'counts') as 'counts' | 'monitor',
+    caPercentage: ca && !monitor ? c.caPercentage : 30,
+    formalPercentage: ca && !monitor ? c.formalPercentage : 70,
     caFrequency: (c.caFrequency ?? 'WEEKLY') as CaFrequency,
     caEntries: ca ? c.caEntries : 6
   }
@@ -259,6 +308,14 @@ function fromConfig(c: AssessmentConfiguration) {
 
 const form = reactive(fromConfig(props.config))
 watch(() => props.config, c => { Object.assign(form, fromConfig(c)); loadCells(c) })
+
+function onCaMode(mode: unknown) {
+  // Back to "counts": the weights are 30/70 again unless the school already had something else in the boxes.
+  if (mode === 'counts' && (!form.caPercentage || form.caPercentage < 1)) {
+    form.caPercentage = 30
+    form.formalPercentage = 70
+  }
+}
 
 // The two percentages always total 100 - editing one fills in the other.
 function onCa(v: unknown) {
@@ -285,9 +342,11 @@ function round(n: number) { return Math.round(n * 10) / 10 }
 
 const problem = computed(() => {
   if (form.structure === 'SIMPLE') return ''
-  const ca = Number(form.caPercentage), formal = Number(form.formalPercentage)
-  if (!(ca >= 1 && ca <= 99) || !(formal >= 1 && formal <= 99)) return 'Each part must be between 1% and 99%.'
-  if (ca + formal !== 100) return 'CA and formal test must total 100%.'
+  if (form.caMode === 'counts') {
+    const ca = Number(form.caPercentage), formal = Number(form.formalPercentage)
+    if (!(ca >= 1 && ca <= 99) || !(formal >= 1 && formal <= 99)) return 'Each part must be between 1% and 99%.'
+    if (ca + formal !== 100) return 'CA and formal test must total 100%.'
+  }
   const n = Number(form.caEntries)
   if (!Number.isInteger(n) || n < 1 || n > 40) return 'Choose between 1 and 40 CA recordings.'
   if (planPayload.value.some(p => p.usesCa && (!Number.isInteger(p.caEntries) || p.caEntries < 1 || p.caEntries > 40)))
@@ -299,21 +358,37 @@ const dirty = computed(() => {
   const c = props.config
   if (form.structure !== c.structure) return true
   if (form.structure === 'SIMPLE') return false
-  return form.caPercentage !== c.caPercentage || form.formalPercentage !== c.formalPercentage
+  const monitor = c.structure === 'CA_AND_TEST' && c.caPercentage === 0
+  if ((form.caMode === 'monitor') !== monitor) return true
+  return (form.caMode === 'counts' && (form.caPercentage !== c.caPercentage || form.formalPercentage !== c.formalPercentage))
     || form.caFrequency !== c.caFrequency || form.caEntries !== c.caEntries
     || c.inherited || planKey(planPayload.value) !== planKey(c.plan || [])
 })
 
-const summary = computed(() => {
+// What the card shows: a few short chips instead of a sentence, and who/when changed it.
+const chips = computed(() => {
   const c = props.config
-  const what = c.structure === 'CA_AND_TEST'
-    ? `Continuous Assessment: CA ${c.caPercentage}% + formal test ${c.formalPercentage}% · ${c.caEntries} ${CA_UNITS[c.caFrequency ?? 'WEEKLY'].plural}`
-    : 'Simple Assessment'
-  const who = c.isDefault ? 'Default - never changed'
+  if (c.structure !== 'CA_AND_TEST') return { style: 'Simple assessment', counts: '', recordings: '', custom: '' }
+  const unitName = CA_UNITS[c.caFrequency ?? 'WEEKLY'].plural.toLowerCase()
+  return {
+    style: 'CA + formal test',
+    counts: c.caPercentage === 0 ? 'CA for monitoring only' : `CA ${c.caPercentage}% · Test ${c.formalPercentage}%`,
+    recordings: `${c.caEntries} ${unitName}`,
+    custom: c.plan?.length ? `${c.plan.length} custom` : ''
+  }
+})
+const who = computed(() => {
+  const c = props.config
+  return c.isDefault ? 'Default - never changed'
     : c.inherited ? 'Inherited from the school-wide setup'
     : `Version ${c.version}${c.updatedBy ? ` · changed by ${c.updatedBy}` : ''}${c.updatedAt ? ` on ${new Date(c.updatedAt).toLocaleDateString()}` : ''}`
-  return `${what} · ${who}`
 })
+
+// Throws away unsaved edits and goes back to what is saved.
+function resetForm() {
+  Object.assign(form, fromConfig(props.config))
+  loadCells(props.config)
+}
 
 async function save() {
   if (problem.value) return
@@ -322,7 +397,10 @@ async function save() {
     const payload: SaveAssessmentConfigurationDto = form.structure === 'SIMPLE'
       ? { structure: 'SIMPLE', applyToUnstarted: applyNow.value }
       : {
-          structure: form.structure, caPercentage: form.caPercentage, formalPercentage: form.formalPercentage,
+          structure: form.structure,
+          // Monitoring only = CA 0% / formal 100% (CA is recorded but isn't part of the score).
+          caPercentage: form.caMode === 'monitor' ? 0 : form.caPercentage,
+          formalPercentage: form.caMode === 'monitor' ? 100 : form.formalPercentage,
           caFrequency: form.caFrequency, caEntries: form.caEntries, plan: planPayload.value,
           applyToUnstarted: applyNow.value
         }

@@ -38,7 +38,7 @@ export const SchoolApi = () => {
         useHandleError(err)
       }
     },
-    update: async (payload: { name: string, domain: string, region: string, district: string, chiefdom: string, city: string, street: string, attendanceThreshold?: number, genderComposition?: string }) => {
+    update: async (payload: { name: string, domain: string, region: string, district: string, chiefdom: string, city: string, street: string, attendanceThreshold?: number, attendanceWindowDays?: number, attendanceMinDays?: number, attendanceStreakDays?: number, gradeApprover?: string, genderComposition?: string }) => {
       try {
         const res = await $api('/school', {
           method: 'PUT',
@@ -95,6 +95,7 @@ export const SchoolApi = () => {
           // Whether the principal / address are the section's own (vs inherited from the school).
           ownPrincipal: boolean
           ownAddress: boolean
+          phone: string | null
         }
       } catch (err: any) {
         useHandleError(err)
@@ -118,6 +119,44 @@ export const SchoolApi = () => {
     // Levels offered + management model/sections - see utils/schoolStructure.ts.
     // One management section's own logo / principal / signature / location (multipart, like the
     // school-wide updateBranding). Returns the whole refreshed structure.
+    // One management section's own attendance rules. An empty/null value clears that override so the
+    // section uses the school's again. Returns the whole refreshed structure.
+    updateSectionAttendanceRules: async (sectionId: string, payload: {
+      attendanceThreshold: number | null
+      attendanceWindowDays: number | null
+      attendanceMinDays: number | null
+      attendanceStreakDays: number | null
+    }) => {
+      try {
+        const res = await $api(`/school/structure/sections/${sectionId}/attendance-rules`, {
+          method: 'PUT',
+          body: payload
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update section attendance rules')
+
+        return res.data as SchoolStructure
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Who approves grades in one section ('CLASS_MASTER' | 'ADMIN'); null = use the school's choice.
+    updateSectionGradeApprover: async (sectionId: string, gradeApprover: 'CLASS_MASTER' | 'ADMIN' | null) => {
+      try {
+        const res = await $api(`/school/structure/sections/${sectionId}/grade-approver`, {
+          method: 'PUT',
+          body: { gradeApprover }
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to update section grade approver')
+
+        return res.data as SchoolStructure
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     updateSectionBranding: async (sectionId: string, payload: FormData) => {
       try {
         const res = await $api(`/school/structure/sections/${sectionId}/branding`, {

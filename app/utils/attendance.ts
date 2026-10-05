@@ -94,6 +94,8 @@ export type StudentAttendanceSummary = {
     late: number
     attendancePercentage: number | null
     belowThreshold: boolean
+    // The minimum attendance % applied to this student - their section's, else the school's.
+    threshold: number
 }
 
 // Mirrors TermAttendanceSummaryDTO.
@@ -109,6 +111,7 @@ export type TermAttendanceSummary = {
     totalGirls: number
     presentBoys: number
     presentGirls: number
+    threshold: number
 }
 
 // Mirrors ClassAttendanceSummaryRowDTO - one row per class session, "SSS 1 Science" and
@@ -128,6 +131,8 @@ export type ClassAttendanceSummaryRow = {
     presentGirls: number
     attendancePercentage: number | null
     belowThreshold: boolean
+    // The minimum attendance % applied to this class - its section's, else the school's.
+    threshold: number
 }
 
 // Mirrors ClassAttendanceSummaryDTO - termLabel is null when "All Terms" was requested.
@@ -150,4 +155,12 @@ export type InspectionReportType = 'DAILY_REGISTER' | 'MONTHLY_SUMMARY' | 'TERM_
 export type InspectionReport = {
     reportType: InspectionReportType
     payload: DailyAttendanceRegister | StudentAttendanceSummary[] | TermAttendanceSummary
+}
+// "75" when every value agrees, otherwise a phrase for mixed thresholds (each section sets its own).
+// `fallback` is the school's own minimum, used when there is nothing to read a value from yet.
+export function thresholdText(values: (number | null | undefined)[], fallback: number): string {
+    const distinct = [...new Set(values.filter((v): v is number => v != null))]
+    if (distinct.length === 0) return `${fallback}%`
+    if (distinct.length === 1) return `${distinct[0]}%`
+    return `their section's minimum`
 }

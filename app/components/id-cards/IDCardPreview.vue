@@ -2,17 +2,19 @@
   <UCard :ui="{ body: 'p-6 sm:p-10' }"
     class="bg-[radial-gradient(circle_at_top,_var(--ui-bg-muted)_0%,_transparent_70%)]">
 
-    <!-- Front / Back toggle -->
+    <!-- Front / Back toggle - same pill-tab look as the app's Tab component (that one is link-based,
+         this switches a local value instead of the route). -->
     <div class="mb-6 flex justify-center">
-      <div class="inline-flex overflow-hidden rounded-lg border border-default">
-        <UButton :variant="side === 'front' ? 'solid' : 'outline'" color="neutral" size="sm" class="rounded-none"
-          @click="side = 'front'">
-          Front
-        </UButton>
-        <UButton :variant="side === 'back' ? 'solid' : 'outline'" color="neutral" size="sm" class="rounded-none"
-          @click="side = 'back'">
-          Back
-        </UButton>
+      <div class="inline-flex gap-1 rounded-3xl border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
+        <button v-for="tab in sideTabs" :key="tab.value" type="button"
+          class="flex items-center gap-1.5 rounded-3xl px-4 py-2 text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
+          :class="side === tab.value
+            ? 'bg-secondary-100 text-secondary-600 font-semibold dark:bg-secondary-800 dark:text-secondary-200'
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+          @click="side = tab.value">
+          <UIcon :name="tab.icon" class="size-4 shrink-0" />
+          {{ tab.label }}
+        </button>
       </div>
     </div>
     <div class="flex justify-center overflow-auto">
@@ -61,9 +63,13 @@
         </div>
 
         <div v-if="settings.layout !== 'vertical'"
-          class="absolute z-50 top-3 right-3 sm:top-5 sm:right-5 bg-white pt-1 sm:pt-1.5 items-center rounded-full"
-          :style="{ '--tw-ring-color': settings.headerTextColor + '30' }">
-          <img :src="template.school.logo" class="w-20 h-21 sm:w-35 sm:h-37 rounded-full object-fill" alt="School crest">
+          class="absolute z-50 top-3 right-3 sm:top-5 sm:right-5 flex h-20 w-20 sm:h-36 sm:w-36 items-center justify-center overflow-hidden bg-white"
+          :style="{ '--tw-ring-color': settings.headerTextColor + '30', borderRadius: (settings.logoRadius ?? 50) + '%' }">
+          <!-- Fixed-size white container; the logo is fitted inside it (object-contain keeps its
+               proportions) and scaled by the Logo size setting, so an oversized logo never
+               overflows the container. -->
+          <img :src="template.school.logo" class="object-contain" alt="School crest"
+            :style="{ width: Math.min(settings.logoSize || 100, 100) + '%', height: Math.min(settings.logoSize || 100, 100) + '%' }">
         </div>
         <div :class="['relative z-10 px-4 sm:px-5', settings.layout === 'horizontal' ? 'flex gap-3 sm:gap-4 pt-1' : 'pt-1 text-center']">
 
@@ -135,7 +141,7 @@
           </div>
           <div class="shrink-0 px-3 pt-1.5 pb-1 text-center">
             <img v-if="template.school.signature" :src="template.school.signature" alt="Principal's signature"
-              class="mx-auto h-8 object-contain" />
+              class="mx-auto object-contain" :style="signatureStyle(2)" />
             <p v-else class="text-lg leading-none text-gray-600 italic"
               style="font-family: 'Brush Script MT', cursive; line-height: 25px;">
               {{
@@ -155,22 +161,8 @@
         <div
           class="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 h-10 text-center text-[10px] font-medium"
           :style="{ backgroundColor: settings.footerColor, color: settings.headerTextColor }">
-          <!-- SCHOOL -->
-          <div class="inline-flex items-center gap-1 footer-position font-semibold">
-            <svg class="block size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path
-                d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-
-            <span class="block whitespace-nowrap footer-text">
-              {{ template.school.name }}
-            </span>
-          </div>
-
           <!-- ADDRESS -->
-          <div v-if="template.school.address" class="inline-flex items-center gap-1 footer-position">
+          <div v-if="footerAddress" class="inline-flex items-center gap-1 footer-position">
             <svg class="block size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path
@@ -179,7 +171,7 @@
             </svg>
 
             <span class="block whitespace-nowrap footer-text">
-              {{ template.school.address }}
+              {{ footerAddress }}
             </span>
           </div>
         </div>
@@ -217,7 +209,17 @@
               <span class="w-20 shrink-0 font-medium text-gray-400">Phone</span>
               <span class="shrink-0 text-gray-300">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
-                person.phone
+                formatPhoneSL(person.phone)
+                ||
+                '—'
+              }}</span>
+            </div>
+            <!-- A staff member's emergency contact is the school itself. -->
+            <div class="flex gap-2 items-center text-[11px] leading-5">
+              <span class="w-20 shrink-0 font-medium text-gray-400">Emergency</span>
+              <span class="shrink-0 text-gray-300">:</span>
+              <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
+                formatPhoneSL(template.school.phone)
                 ||
                 '—'
               }}</span>
@@ -225,10 +227,10 @@
           </div>
           <div v-else>
             <div class="flex gap-2 items-center text-[11px] leading-5">
-              <span class="w-20 shrink-0 font-medium text-gray-400">Parent</span>
+              <span class="w-20 shrink-0 font-medium text-gray-400">Phone</span>
               <span class="shrink-0 text-gray-300">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
-                person.parentContact
+                formatPhoneSL(person.parentContact)
                 ||
                 '—'
               }}</span>
@@ -237,7 +239,7 @@
               <span class="w-20 shrink-0 font-medium text-gray-400">Emergency</span>
               <span class="shrink-0 text-gray-300">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
-                person.emergencyContact
+                formatPhoneSL(template.school.phone)
                 ||
                 '—'
               }}</span>
@@ -258,10 +260,10 @@
             </p>
           </div>
 
-          <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3"
+          <div class="mt-3 rounded-xl border border-gray-300 bg-gray-100 p-3"
             :class="settings.layout === 'horizontal' && 'sm:col-span-2'">
             <div class="flex items-center gap-1.5">
-              <svg class="size-3.5 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              <svg class="size-3.5 shrink-0 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
                   d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
@@ -293,8 +295,8 @@
                 all
                 times
                 while
-                on
-                campus.
+                in
+                school.
               </li>
             </ul>
           </div>
@@ -308,7 +310,7 @@
 
             <div class="shrink-0 px-3 pt-1.5 pb-1 text-center">
               <img v-if="template.school.signature" :src="template.school.signature" alt="Principal's signature"
-                class="mx-auto h-7 object-contain" />
+                class="mx-auto object-contain" :style="signatureStyle(1.75)" />
               <p v-else class="text-base leading-none text-gray-600 italic"
                 style="font-family: 'Brush Script MT', cursive; line-height: 22px;">
                 {{ template.school.principal || 'Principal' }}
@@ -325,22 +327,8 @@
         <div
           class="relative flex flex-wrap h-10 items-center justify-center gap-x-4 gap-y-1 px-4 text-center text-[10px] font-medium py-3"
           :style="{ backgroundColor: settings.footerColor, color: settings.headerTextColor }">
-          <!-- SCHOOL -->
-          <div class="inline-flex footer-position items-center gap-1 font-semibold">
-            <svg class="block size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path
-                d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-
-            <span class="block whitespace-nowrap footer-text">
-              {{ template.school.name }}
-            </span>
-          </div>
-
           <!-- ADDRESS -->
-          <div v-if="template.school.address" class="inline-flex items-center gap-1 footer-position">
+          <div v-if="footerAddress" class="inline-flex items-center gap-1 footer-position">
             <svg class="block size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path
@@ -349,7 +337,7 @@
             </svg>
 
             <span class="block whitespace-nowrap footer-text">
-              {{ template.school.address }}
+              {{ footerAddress }}
             </span>
           </div>
         </div>
@@ -392,6 +380,9 @@ interface Template {
   updatedAt: string
   cardsIssued: number
   validityYears: number
+  logoSize?: number
+  logoRadius?: number
+  signatureSize?: number
   accentColor: string
   accentColorDark: string
   school: {
@@ -400,6 +391,7 @@ interface Template {
     principal: string
     signature?: string
     address: string
+    phone?: string
     tagline?: string
   }
   student?: {
@@ -424,6 +416,18 @@ interface Template {
   }
 }
 
+// Signature height scales from its default (rem) by the Signature size setting; max-width keeps a
+// very wide signature from pushing the barcode off the card.
+function signatureStyle(baseRem: number) {
+  return { height: `${baseRem * (props.settings.signatureSize || 100) / 100}rem`, maxWidth: '9rem' }
+}
+
+// The footer is a single short line, so it carries only the street and city - the school address is
+// joined street, city, chiefdom, district, region everywhere it's built, so those are the first two
+// parts. The back of the card still prints the full address.
+const footerAddress = computed(() =>
+  (props.template.school.address || '').split(',').map(p => p.trim()).filter(Boolean).slice(0, 2).join(', '))
+
 const props = withDefaults(defineProps<{
   template: Template
   settings: Settings
@@ -442,8 +446,25 @@ const props = withDefaults(defineProps<{
 // - now resolved from whichever half of the template applies. Kept as `any` since the two shapes
 // diverge (admissionNo/class vs staffId/designation) and activeFields already looks keys up
 // dynamically the same way.
+// Sierra Leone numbers as +232 XX XXX XXX - accepts 077654321, 77654321, +23277654321 or 23277654321.
+// Anything that doesn't look like one is shown as typed.
+function formatPhoneSL(raw?: string | null) {
+  const value = (raw || '').trim()
+  if (!value) return ''
+  let digits = value.replace(/\D/g, '')
+  if (digits.startsWith('232')) digits = digits.slice(3)
+  else if (digits.startsWith('0')) digits = digits.slice(1)
+  if (digits.length !== 8) return value
+  return `+232 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
+}
+
 const person = computed<any>(() => (props.cardType === 'staff' ? props.template.staff : props.template.student) || {})
 const cardTypeLabel = computed(() => (props.cardType === 'staff' ? 'Staff' : 'Student'))
+
+const sideTabs = [
+  { value: 'front', label: 'Front', icon: 'i-lucide-id-card' },
+  { value: 'back', label: 'Back', icon: 'i-lucide-flip-horizontal-2' }
+] as const
 
 const emit = defineEmits<{ 'update:side': [value: 'front' | 'back'] }>()
 

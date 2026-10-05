@@ -107,6 +107,8 @@ const template = computed(() => {
       : idCardStore.settings.principalName || school.value?.principalName || '',
     signature: brandingAssets.value?.principalSignature || sectionBranding.value?.principalSignature
       || school.value?.principalSignature || '',
+    // Section's own phone, else the school's (the resolver already merges them).
+    phone: sectionBranding.value?.phone || school.value?.phone || '',
     address: sectionBranding.value?.ownAddress
       ? addressLine(sectionBranding.value.address)
       : idCardStore.settings.schoolAddress || ''

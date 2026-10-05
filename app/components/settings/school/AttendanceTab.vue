@@ -1,6 +1,4 @@
 <template>
-  <!-- Skeleton shapes the same three cards the loaded content renders below, so the tab doesn't
-       jump around once the location settings come back. -->
   <template v-if="loadingLocation">
     <UCard>
       <template #header>
@@ -107,19 +105,49 @@
           class="w-full" />
       </UFormField>
     </UCard>
+
+    <UCard>
+      <template #header>
+        <p>How "Needs Attention" Judges Attendance</p>
+      </template>
+      <div class="grid grid-cols-1 gap-4">
+        <UFormField label="Days to look back"
+          help="How many of a student's most recent school days we look at (weekends and holidays don't count). 20 is about four weeks. When a student starts coming to school again, they come off the list once those recent days look good.">
+          <UInput v-model.number="rules.attendanceWindowDays" type="number" min="5" max="60" class="w-full" />
+        </UFormField>
+
+        <UFormField label="Minimum marked days"
+          help="A student needs at least this many marked days before they can be flagged. This stops a new student, or the first week of a term, from being flagged after one or two absences.">
+          <UInput v-model.number="rules.attendanceMinDays" type="number" min="1" :max="rules.attendanceWindowDays"
+            class="w-full" />
+        </UFormField>
+
+        <UFormField label="Absent days in a row"
+          help="If a student is absent this many school days in a row, they are marked Critical straight away, even if their overall attendance is still good.">
+          <UInput v-model.number="rules.attendanceStreakDays" type="number" min="2" max="10" class="w-full" />
+        </UFormField>
+      </div>
+      <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
+        <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
+        Together with the minimum attendance % above, these decide which students show as Watch, Needs attention
+        or Critical on the class page and in reports.
+      </p>
+    </UCard>
   </template>
 </template>
 
 <script setup lang="ts">
-// `state` is the parent's own reactive attendance-form object, mutated directly via v-model (and,
-// below, from the geolocation callback) - see components/settings/school/ProfileTab.vue for why
-// this stays one object prop rather than one prop per field.
 const props = defineProps<{
   state: {
     latitude: number
     longitude: number
     radiusMeters: number
     allowedIps: string
+  }
+  rules: {
+    attendanceWindowDays: number
+    attendanceMinDays: number
+    attendanceStreakDays: number
   }
   loadingLocation: boolean
   locationConfigured: boolean
@@ -143,16 +171,8 @@ const { isSectionBased } = useSchoolStructure()
 const locating = ref(false)
 const locationMap = ref<{ panTo: (lat: number, lng: number) => void } | null>(null)
 
-// A GPS fix is normally accurate to well under 100m outdoors. Desktops/laptops have no GPS chip
-// and fall back to Wi-Fi/IP-based positioning, which can - especially somewhere with sparse
-// Wi-Fi-hotspot mapping - be off by hundreds of metres or more while still reporting "success".
-// That's exactly what silently saved a school location ~900m from its real one in practice: the
-// browser call succeeded, so nothing here flagged that the fix itself was untrustworthy. Warn
-// instead of saving quietly whenever the reported accuracy is this poor.
 const POOR_ACCURACY_THRESHOLD_METERS = 200
 
-// Self-contained (doesn't need anything from the page beyond the state prop above) - browser
-// geolocation, in-component only.
 function useCurrentLocation() {
   if (!navigator.geolocation) {
     toastError('Your browser does not support location services.')

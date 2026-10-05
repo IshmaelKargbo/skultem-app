@@ -24,6 +24,12 @@ export interface IdCardVisualSettings {
     schoolAddress: string
     principalName: string
     validityYears: number
+    // Logo size as a % of the default size on the card
+    logoSize: number
+    // Logo container corner roundness, 0 (square) - 50 (circle)
+    logoRadius: number
+    // Principal signature size as a % of the default
+    signatureSize: number
 }
 
 const DEFAULT_STAFF_FIELDS: IdCardField[] = [
@@ -49,7 +55,10 @@ const DEFAULT_SETTINGS: IdCardVisualSettings = {
     schoolName: '',
     schoolAddress: '',
     principalName: '',
-    validityYears: 1
+    validityYears: 1,
+    logoSize: 100,
+    logoRadius: 50,
+    signatureSize: 100
 }
 
 export const useIdCardStore = defineStore('idCard', {
@@ -82,7 +91,10 @@ export const useIdCardStore = defineStore('idCard', {
                     schoolName: res.schoolName || '',
                     schoolAddress: res.schoolAddress || '',
                     principalName: res.principalName || '',
-                    validityYears: res.validityYears || 1
+                    validityYears: res.validityYears || 1,
+                    logoSize: res.logoSize || 100,
+                    logoRadius: res.logoRadius ?? 50,
+                    signatureSize: res.signatureSize || 100
                 })
 
                 try {

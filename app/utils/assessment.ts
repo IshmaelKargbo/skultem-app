@@ -46,6 +46,8 @@ export type AssessmentApprovalRequest = {
     termId: string
     // The class master taught this subject themselves, so an admin/proprietor/owner reviews it instead.
     requiresAdminReview?: boolean
+    // Who approves grades for this class: its section's choice, else the school's.
+    approver?: 'CLASS_MASTER' | 'ADMIN'
 }
 
 export type AssessmentApprovalSummary = {

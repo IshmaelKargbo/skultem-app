@@ -142,7 +142,8 @@
             <div class="min-w-0">
               <p class="truncate text-sm font-medium text-highlighted">{{ item.assessment.name }}</p>
               <p class="text-xs text-muted">
-                CA {{ item.structure.caPercentage }}% + formal test {{ item.structure.formalPercentage }}% ·
+                <template v-if="item.structure.caPercentage === 0">CA for monitoring only (formal test is the score) ·</template>
+                <template v-else>CA {{ item.structure.caPercentage }}% + formal test {{ item.structure.formalPercentage }}% ·</template>
                 {{ item.structure.caEntries }} {{ CA_UNITS[item.structure.caFrequency].plural }} of CA
               </p>
             </div>

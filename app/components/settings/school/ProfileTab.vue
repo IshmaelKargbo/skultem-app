@@ -20,11 +20,30 @@
         <UInput v-model="state.principalName" placeholder="e.g. Dr. A. Conteh" class="w-full" />
       </UFormField>
 
+      <UFormField label="School Phone" help="Printed on the back of ID cards. A section can set its own.">
+        <UInput v-model="state.phone" type="tel" placeholder="e.g. +232 76 123 456" class="w-full" />
+      </UFormField>
+
       <UFormField label="Student Body" help="Eases demographic reporting - purely informational, doesn't restrict enrollment.">
         <USelectMenu v-model="state.genderComposition" :items="schoolGenderCompositionOption" value-key="value"
           label-key="label" class="w-full" />
       </UFormField>
     </div>
+  </UCard>
+  <UCard>
+    <template #header>
+      <p>Grade Approval</p>
+    </template>
+    <UFormField label="Who approves grades?"
+      help="After a subject teacher submits grades, who signs them off before parents can see them. If your school has sections (for example primary and secondary), each section can choose differently under Section Branding.">
+      <USelectMenu v-model="state.gradeApprover" :items="gradeApproverOptions" value-key="value" label-key="label"
+        class="w-full" />
+    </UFormField>
+    <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
+      <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
+      An admin, proprietor or owner can always approve grades. A class master who also taught the subject can't approve
+      their own, so those go to an admin as well.
+    </p>
   </UCard>
   <UCard>
     <template #header>
@@ -77,6 +96,11 @@
 </template>
 
 <script setup lang="ts">
+const gradeApproverOptions = [
+  { label: 'The class master', value: 'CLASS_MASTER' },
+  { label: 'An admin', value: 'ADMIN' }
+]
+
 import ColorPicker from '~/components/id-cards/ColorPicker.vue'
 
 // `state` is the parent's own reactive form object, passed straight through (not copied) - the
@@ -94,6 +118,8 @@ defineProps<{
     district: string
     chiefdom: string
     principalName: string
+    phone: string
+    gradeApprover: string
     primaryColor: string
     secondaryColor: string
     genderComposition: string

@@ -146,6 +146,40 @@
         </div>
       </UCard>
 
+      <!-- ── Logo & Signature ── -->
+      <UCard>
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-badge" class="size-5 text-primary" />
+            <h3 class="font-semibold">Logo & Signature</h3>
+          </div>
+        </template>
+
+        <div class="space-y-5">
+          <div v-for="s in sizeSliders" :key="s.key" class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium">{{ s.label }}</label>
+              <span class="text-sm font-semibold text-primary">{{ sliderValue(s) }}{{ s.unit }}</span>
+            </div>
+            <div class="relative h-5 flex items-center">
+              <div class="absolute inset-x-0 h-1.5 rounded-full overflow-hidden">
+                <div class="h-full bg-muted" />
+                <div class="absolute inset-y-0 left-0 rounded-full bg-primary transition-all"
+                  :style="{ width: ((sliderValue(s) - s.min) / (s.max - s.min)) * 100 + '%' }" />
+              </div>
+              <input type="range" :value="sliderValue(s)" :min="s.min" :max="s.max" :step="s.step"
+                @input="(e) => updateSetting(s.key, Number((e.target as HTMLInputElement).value))"
+                class="relative w-full appearance-none bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer" />
+            </div>
+            <div class="flex justify-between text-[10px] text-muted">
+              <span>{{ s.minLabel }}</span>
+              <span>{{ s.maxLabel }}</span>
+            </div>
+            <p class="text-xs text-muted">{{ s.hint }}</p>
+          </div>
+        </div>
+      </UCard>
+
       <!-- ── Background ── -->
       <UCard>
         <template #header>
@@ -288,6 +322,9 @@ interface Settings {
   bgImageUrl: string
   bgOpacity: number
   validityYears: number
+  logoSize?: number
+  logoRadius?: number
+  signatureSize?: number
 }
 
 const props = withDefaults(defineProps<{
@@ -375,6 +412,20 @@ function clearBgImage() {
   const updated = { ...settings.value, bgImageUrl: '' }
   emit('update:settings', updated)
   if (bgImageInput.value) bgImageInput.value.value = ''
+}
+
+const sizeSliders = [
+  { key: 'logoSize', label: 'Logo size', unit: '%', min: 30, max: 100, step: 5, def: 100, minLabel: 'Smaller', maxLabel: 'Fits container',
+    hint: 'The logo sits inside a fixed white container on the card. Reduce the size if your logo is too big or touches the edges.' },
+  { key: 'logoRadius', label: 'Logo container roundness', unit: '%', min: 0, max: 50, step: 5, def: 50, minLabel: 'Square', maxLabel: 'Circle',
+    hint: 'How rounded the corners of the white logo container are.' },
+  { key: 'signatureSize', label: 'Signature size', unit: '%', min: 50, max: 200, step: 5, def: 100, minLabel: 'Smaller', maxLabel: 'Larger',
+    hint: 'Size of the principal signature on the card.' }
+] as const
+
+function sliderValue(s: typeof sizeSliders[number]) {
+  const v = props.settings[s.key] ?? s.def
+  return Math.min(Math.max(v, s.min), s.max)
 }
 
 function resetSettings() {

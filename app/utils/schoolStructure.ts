@@ -73,6 +73,14 @@ export type ManagementSectionView = {
     logo?: string | null
     principalName?: string | null
     principalSignature?: string | null
+    phone?: string | null
+    // This section's own attendance rules - null means it uses the school's.
+    attendanceThreshold?: number | null
+    attendanceWindowDays?: number | null
+    attendanceMinDays?: number | null
+    attendanceStreakDays?: number | null
+    // Who approves grades in this section; null = the school's choice.
+    gradeApprover?: 'CLASS_MASTER' | 'ADMIN' | null
     address?: SectionAddress | null
 }
 

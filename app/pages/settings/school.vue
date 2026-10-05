@@ -92,7 +92,7 @@
 
                 <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
                     :loading-location="loadingLocation" :location-configured="locationConfigured"
-                    v-model:attendance-threshold="state.attendanceThreshold" />
+                    v-model:attendance-threshold="state.attendanceThreshold" :rules="state" />
 
                 <SettingsSchoolSectionBrandingTab v-else-if="active === 'sections'" :school-defaults="schoolDefaults" />
 
@@ -120,7 +120,7 @@
 
                         <SettingsSchoolAttendanceTab v-else-if="active === 'attendance'" :state="attendanceState"
                             :loading-location="loadingLocation" :location-configured="locationConfigured"
-                            v-model:attendance-threshold="state.attendanceThreshold" />
+                            v-model:attendance-threshold="state.attendanceThreshold" :rules="state" />
 
                         <SettingsSchoolSectionBrandingTab v-else-if="active === 'sections'" :school-defaults="schoolDefaults" />
 
@@ -158,9 +158,14 @@ type SchoolProfile = {
     district: string
     chiefdom: string
     principalName: string
+    phone: string
     primaryColor: string
     secondaryColor: string
     attendanceThreshold: number
+    attendanceWindowDays: number
+    attendanceMinDays: number
+    attendanceStreakDays: number
+    gradeApprover: string
     genderComposition: string
 }
 
@@ -174,9 +179,14 @@ const state = reactive<SchoolProfile>({
     district: '',
     chiefdom: '',
     principalName: '',
+    phone: '',
     primaryColor: '#1878c5',
     secondaryColor: '#0f172a',
     attendanceThreshold: 75,
+    attendanceWindowDays: 20,
+    attendanceMinDays: 5,
+    attendanceStreakDays: 3,
+    gradeApprover: 'CLASS_MASTER',
     genderComposition: 'MIXED'
 })
 
@@ -218,6 +228,12 @@ const sections = computed(() => {
 const schoolDefaults = computed(() => ({
     logo: logoUrl.value,
     principalName: state.principalName,
+    phone: state.phone,
+    gradeApprover: state.gradeApprover,
+    attendanceThreshold: state.attendanceThreshold,
+    attendanceWindowDays: state.attendanceWindowDays,
+    attendanceMinDays: state.attendanceMinDays,
+    attendanceStreakDays: state.attendanceStreakDays,
     principalSignature: signatureUrl.value,
     address: { street: state.street, city: state.city, chiefdom: state.chiefdom, district: state.district, region: state.region }
 }))
@@ -286,11 +302,18 @@ async function saveAttendanceLocation() {
             city: state.city,
             street: state.street,
             attendanceThreshold: state.attendanceThreshold,
+            attendanceWindowDays: state.attendanceWindowDays,
+            attendanceMinDays: state.attendanceMinDays,
+            attendanceStreakDays: state.attendanceStreakDays,
+            gradeApprover: state.gradeApprover,
             genderComposition: state.genderComposition
         })
 
         if (updated) {
             state.attendanceThreshold = updated.attendanceThreshold ?? state.attendanceThreshold
+            state.attendanceWindowDays = updated.attendanceWindowDays ?? state.attendanceWindowDays
+            state.attendanceMinDays = updated.attendanceMinDays ?? state.attendanceMinDays
+            state.attendanceStreakDays = updated.attendanceStreakDays ?? state.attendanceStreakDays
             const domain = resolveTenantSlug(window.location.hostname)
             if (domain) setCachedSchool(domain, updated)
         }
@@ -338,9 +361,14 @@ function applySchool(school: any) {
     state.district = school.address?.district ?? ''
     state.chiefdom = school.address?.chiefdom ?? ''
     state.principalName = school.principalName ?? ''
+    state.phone = school.phone ?? ''
     state.primaryColor = school.primaryColor ?? '#1878c5'
     state.secondaryColor = school.secondaryColor ?? '#0f172a'
     state.attendanceThreshold = school.attendanceThreshold ?? 75
+    state.attendanceWindowDays = school.attendanceWindowDays ?? 20
+    state.attendanceMinDays = school.attendanceMinDays ?? 5
+    state.attendanceStreakDays = school.attendanceStreakDays ?? 3
+    state.gradeApprover = school.gradeApprover ?? 'CLASS_MASTER'
     state.genderComposition = school.genderComposition ?? 'MIXED'
     logoUrl.value = school.logo ?? ''
     signatureUrl.value = school.principalSignature ?? ''
@@ -367,6 +395,10 @@ async function save() {
             city: state.city,
             street: state.street,
             attendanceThreshold: state.attendanceThreshold,
+            attendanceWindowDays: state.attendanceWindowDays,
+            attendanceMinDays: state.attendanceMinDays,
+            attendanceStreakDays: state.attendanceStreakDays,
+            gradeApprover: state.gradeApprover,
             genderComposition: state.genderComposition
         })
 
@@ -375,6 +407,7 @@ async function save() {
         const formData = new FormData()
         formData.append('motto', state.motto || '')
         formData.append('principalName', state.principalName || '')
+        formData.append('phone', state.phone || '')
         formData.append('primaryColor', state.primaryColor || '')
         formData.append('secondaryColor', state.secondaryColor || '')
         if (logoFile.value) formData.append('logo', logoFile.value)

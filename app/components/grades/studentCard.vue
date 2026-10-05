@@ -54,7 +54,11 @@ const emit = defineEmits<{
             {{ getStudentScore(record, assessment.id)?.score ?? '-' }}
             <span class="text-xs text-gray-500">({{ getStudentScore(record, assessment.id)?.weightScore ?? '-' }})</span>
           </p>
-          <p class="text-xs text-muted">
+          <p v-if="getStudentScore(record, assessment.id)?.continuous?.caPercentage === 0" class="text-xs text-muted">
+            CA {{ getStudentScore(record, assessment.id)?.continuous?.caScore ?? '-' }}% (monitoring only) · Test
+            {{ getStudentScore(record, assessment.id)?.continuous?.formalScore ?? '-' }}
+          </p>
+          <p v-else class="text-xs text-muted">
             CA {{ getStudentScore(record, assessment.id)?.continuous?.caPoints }}/{{ getStudentScore(record, assessment.id)?.continuous?.caPercentage }}
             + Test {{ getStudentScore(record, assessment.id)?.continuous?.formalPoints }}/{{ getStudentScore(record, assessment.id)?.continuous?.formalPercentage }}
           </p>

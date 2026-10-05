@@ -78,7 +78,7 @@
 
         <p class="mb-4 flex items-center gap-1.5 text-xs text-gray-500 print:hidden">
           <UIcon name="i-lucide-info" class="size-3.5" />
-          Rows highlighted in red are below the school's configured attendance threshold of {{ threshold }}%.
+          Rows highlighted in red are below the configured attendance threshold of {{ effectiveThreshold }}.
         </p>
 
         <div class="overflow-x-auto">
@@ -150,6 +150,8 @@ const classSessions = computed(() => localClassSessions.value.map(e => {
 }))
 
 const summary = computed(() => attendanceStore.monthlySummary)
+// The class's section may have its own minimum, so read it from the data rather than the school's.
+const effectiveThreshold = computed(() => thresholdText(summary.value.map(s => s.threshold), threshold.value))
 const loading = computed(() => attendanceStore.loadingMonthlySummary)
 
 const genderTotals = computed(() => {
