@@ -11,7 +11,11 @@ export const useSystemStore = defineStore('system', {
 
     users: [] as SystemUser[],
     usersMeta: {} as Meta,
-    usersLoading: false
+    usersLoading: false,
+
+    demoRequests: [] as DemoRequest[],
+    demoRequestsMeta: {} as Meta,
+    demoRequestsLoading: false
   }),
 
   actions: {
@@ -79,6 +83,17 @@ export const useSystemStore = defineStore('system', {
       const index = this.schools.findIndex(s => s.id === schoolId)
       if (index !== -1 && school) {
         this.schools[index] = school
+      }
+    },
+
+    async fetchDemoRequests(page: number = 1, size: number = 10) {
+      this.demoRequestsLoading = true
+      try {
+        const response = await RequestDemoApi().list(page, size) as any
+        this.demoRequests = response?.data || []
+        this.demoRequestsMeta = response?.meta || {} as Meta
+      } finally {
+        this.demoRequestsLoading = false
       }
     },
 

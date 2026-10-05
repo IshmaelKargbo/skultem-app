@@ -10,7 +10,7 @@ const PUBLIC_PATHS = ['/request-demo']
 // school-tenant equivalent, so they're admin-portal-only. /logout, /profile, /reset-password and
 // /unauthorized are the account pages the portal's own header/drawer and the redirects below
 // send an admin to - leaving them out made "Sign out" 404 on the admin subdomain.
-const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup']
+const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests']
 // Of those, the ones reachable without a token - signing in, and the one-time first-admin wizard.
 const ADMIN_PORTAL_PUBLIC_PATHS = ['/login', '/setup']
 
@@ -46,7 +46,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         // This closes what used to be a real route - a SYSTEM_ADMIN whose anchor SchoolUser row
         // happens to sit on some school's own subdomain could otherwise still reach the admin
         // pages from that tenant host directly, bypassing the admin subdomain entirely.
-        if (to.path === '/users' || to.path === '/schools' || to.path === '/schools/add' || to.path === '/calendar' || to.path === '/setup') {
+        if (to.path === '/users' || to.path === '/schools' || to.path === '/schools/add' || to.path === '/calendar' || to.path === '/setup' || to.path === '/demo-requests') {
             return abortNavigation(createError({ statusCode: 404, message: 'Page not found' }))
         }
 

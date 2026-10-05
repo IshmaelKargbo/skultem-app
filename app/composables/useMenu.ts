@@ -277,6 +277,10 @@ export function useMenu() {
       roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
     },
     {
+      label: 'Demo Requests', to: '/demo-requests', icon: 'i-lucide-presentation',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+    },
+    {
       label: 'Academic Calendar', to: '/calendar', icon: 'i-lucide-calendar-range',
       roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
     },

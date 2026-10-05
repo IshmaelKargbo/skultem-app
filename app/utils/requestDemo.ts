@@ -10,6 +10,12 @@ export type CreateRequestDemoPayload = {
     message: string
 }
 
+export type DemoRequest = CreateRequestDemoPayload & {
+    id: string
+    createdAt: string
+    updatedAt: string
+}
+
 export const demoWalkthroughFormats = [
     { label: 'Video call', value: 'Video call' },
     { label: 'In person', value: 'In person' },
