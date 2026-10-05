@@ -35,12 +35,6 @@
                             </div>
                         </div>
                         <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap">
-                            <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && (feesState?.outstanding || 0) > 0"
-                                :to="`/fees-payment/pay?studentId=${student.id}`" color="primary" size="sm"
-                                icon="streamline-ultimate:cash-payment-bills"
-                                class="col-span-2 justify-center md:col-span-1">
-                                Pay Fees
-                            </UButton>
                             <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
                                 @assigned="refreshFees" />
                             <FeeDiscountAdd v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student-id="student.id"
