@@ -108,6 +108,10 @@ export const useSystemStore = defineStore('system', {
       }
     },
 
+    async addAdmin(payload: { email: string, password: string, givenNames: string, familyName: string }) {
+      return await SystemApi().addAdmin(payload)
+    },
+
     async updateSchoolUserStatus(schoolId: string, userId: string, status: string) {
       const response = await SystemApi().updateSchoolUserStatus(schoolId, userId, status) as any
       if (!response) return response

@@ -9,6 +9,16 @@ const page = computed<number>({
   set: (val) => router.replace({ query: { ...route.query, page: val } }),
 });
 
+const view = ref<"table" | "card">("table");
+
+const columns = [
+  { accessorKey: "school", header: "School" },
+  { id: "contact", header: "Contact" },
+  { id: "location", header: "Location" },
+  { id: "interest", header: "Interest" },
+  { accessorKey: "createdAt", header: "Requested" },
+];
+
 watch(page, () => store.fetchDemoRequests(page.value, 10));
 
 onMounted(() => {
@@ -25,60 +35,113 @@ definePageMeta({
 
 <template>
   <div class="px-4 md:px-6 space-y-4">
-    <div v-if="demoRequestsLoading" class="grid gap-3 sm:grid-cols-2">
-      <UCard v-for="i in 4" :key="i">
-        <div class="animate-pulse space-y-2 p-2">
-          <USkeleton class="h-4 w-40" />
-          <USkeleton class="h-3 w-56" />
+    <Heading title="Demo Requests" subtitle="Schools that asked for a walkthrough from the market page." />
+
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-sm font-semibold text-highlighted">Requests</h2>
+          <TableViewToggle v-model="view" />
         </div>
-      </UCard>
-    </div>
+      </template>
 
-    <UCard v-else-if="!demoRequests.length">
-      <div class="flex flex-col items-center justify-center py-14 text-center">
-        <UIcon name="i-lucide-presentation" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
-        <p class="text-sm font-semibold text-highlighted">No demo requests yet</p>
-        <p class="mt-1 text-xs text-muted">Requests submitted from the market page will show up here.</p>
-      </div>
-    </UCard>
-
-    <template v-else>
-      <UCard v-for="req in demoRequests" :key="req.id" :ui="{ body: 'p-4' }">
-        <div class="flex flex-wrap items-start justify-between gap-2">
-          <div class="min-w-0">
-            <p class="font-semibold text-highlighted">{{ req.school }}</p>
-            <p class="text-sm text-muted">{{ req.name }}</p>
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="demoRequests"
+        :loading="demoRequestsLoading">
+        <template #empty-state>
+          <div class="flex flex-col items-center gap-2 py-10">
+            <UIcon name="i-lucide-presentation" class="text-4xl text-gray-400" />
+            <p class="text-gray-500">No demo requests yet.</p>
           </div>
-          <span class="text-xs text-muted">{{ formatDateTime(req.createdAt) }}</span>
-        </div>
+        </template>
 
-        <div class="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-          <a :href="`mailto:${req.email}`" class="flex items-center gap-2 text-primary">
-            <UIcon name="i-lucide-mail" class="size-4 shrink-0 text-muted" />{{ req.email }}
-          </a>
-          <a :href="`tel:${req.phone}`" class="flex items-center gap-2 text-primary">
-            <UIcon name="i-lucide-phone" class="size-4 shrink-0 text-muted" />{{ req.phone }}
-          </a>
-          <span class="flex items-center gap-2">
-            <UIcon name="i-lucide-map-pin" class="size-4 shrink-0 text-muted" />{{ req.address }}, {{ req.city }}
-          </span>
-        </div>
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
 
-        <div class="mt-3 flex flex-wrap gap-2">
-          <UBadge size="sm" variant="subtle" color="primary" :label="req.preferred" icon="i-lucide-video" />
-          <UBadge size="sm" variant="subtle" color="info" :label="req.priority" icon="i-lucide-star" />
-        </div>
+        <template #school-cell="{ row }">
+          <div class="space-y-1">
+            <p class="font-medium">{{ row.original.school }}</p>
+            <p class="text-xs text-muted">{{ row.original.name }}</p>
+          </div>
+        </template>
 
-        <p v-if="req.message" class="mt-3 rounded-xl border border-default p-2.5 text-sm text-muted whitespace-pre-line">
-          {{ req.message }}
-        </p>
-      </UCard>
+        <template #contact-cell="{ row }">
+          <div class="space-y-1 text-sm">
+            <a :href="`mailto:${row.original.email}`" class="block text-primary">{{ row.original.email }}</a>
+            <a :href="`tel:${row.original.phone}`" class="block text-xs text-muted">{{ row.original.phone }}</a>
+          </div>
+        </template>
 
-      <div class="flex justify-between items-center">
-        <Showing :meta="demoRequestsMeta" />
-        <UPagination size="sm" v-model:page="page" :page-size="demoRequestsMeta.size"
-          :items-per-page="demoRequestsMeta.size" :total="demoRequestsMeta.total" show-edges />
+        <template #location-cell="{ row }">
+          <div class="space-y-1">
+            <p class="text-sm">{{ row.original.city }}</p>
+            <p class="text-xs text-muted">{{ row.original.address }}</p>
+          </div>
+        </template>
+
+        <template #interest-cell="{ row }">
+          <div class="space-y-1">
+            <div class="flex flex-wrap gap-1">
+              <UBadge size="xs" variant="subtle" color="primary" :label="row.original.preferred" />
+              <UBadge size="xs" variant="subtle" color="info" :label="row.original.priority" />
+            </div>
+            <p v-if="row.original.message" class="max-w-xs truncate text-xs text-muted"
+              :title="row.original.message">{{ row.original.message }}</p>
+          </div>
+        </template>
+
+        <template #createdAt-cell="{ row }">
+          <p class="text-xs text-muted">{{ formatDateTime(row.original.createdAt) }}</p>
+        </template>
+      </UTable>
+
+      <!-- Mobile -->
+      <div class="space-y-3 p-4"
+        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+        <template v-if="demoRequestsLoading">
+          <UCard v-for="i in 4" :key="i" class="overflow-hidden">
+            <div class="animate-pulse space-y-2 p-4">
+              <USkeleton class="h-4 w-32" />
+              <USkeleton class="h-3 w-48" />
+            </div>
+          </UCard>
+        </template>
+
+        <UCard v-else-if="!demoRequests.length" class="col-span-full">
+          <div class="flex flex-col items-center justify-center py-14">
+            <UIcon name="i-lucide-presentation" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
+            <h3 class="text-sm font-semibold text-highlighted">No demo requests yet</h3>
+          </div>
+        </UCard>
+
+        <template v-else>
+          <UCard v-for="req in demoRequests" :key="req.id" class="overflow-hidden rounded-xl" :ui="{ body: 'p-0' }">
+            <div class="p-3">
+              <p class="truncate text-sm font-semibold text-highlighted">{{ req.school }}</p>
+              <p class="truncate text-xs text-muted">{{ req.name }} · {{ req.city }}</p>
+              <a :href="`mailto:${req.email}`" class="mt-1 block truncate text-xs text-primary">{{ req.email }}</a>
+              <a :href="`tel:${req.phone}`" class="block text-xs text-muted">{{ req.phone }}</a>
+              <p v-if="req.message" class="mt-2 text-xs text-muted whitespace-pre-line">{{ req.message }}</p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-default p-3 text-xs text-muted">
+              <div class="flex flex-wrap gap-1">
+                <UBadge size="xs" variant="subtle" color="primary" :label="req.preferred" />
+                <UBadge size="xs" variant="subtle" color="info" :label="req.priority" />
+              </div>
+              <span>{{ formatDateTime(req.createdAt) }}</span>
+            </div>
+          </UCard>
+        </template>
       </div>
-    </template>
+
+      <template #footer>
+        <div class="flex justify-between items-center">
+          <Showing :meta="demoRequestsMeta" />
+          <UPagination size="sm" v-model:page="page" :page-size="demoRequestsMeta.size"
+            :items-per-page="demoRequestsMeta.size" :total="demoRequestsMeta.total" show-edges />
+        </div>
+      </template>
+    </UCard>
   </div>
 </template>

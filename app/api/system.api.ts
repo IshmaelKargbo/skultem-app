@@ -152,6 +152,16 @@ export const SystemApi = () => {
       }
     },
 
+    // Another system admin, added by an existing one (see AddSystemAdminUseCase on the backend).
+    addAdmin: async (payload: { email: string, password: string, givenNames: string, familyName: string }) => {
+      try {
+        const res = await $api('/system/admins', { method: 'POST', body: payload }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     // Reachable pre-auth - the only path onto the very first system admin account (see
     // BootstrapSystemAdminUseCase on the backend). Self-disabling once any system admin exists, so
     // this is safe to leave reachable rather than needing to be torn out after first use.
