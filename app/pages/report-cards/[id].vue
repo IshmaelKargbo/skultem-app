@@ -45,7 +45,7 @@
               </div>
               <div class="flex items-center justify-between py-2.5">
                 <dt class="text-sm text-muted">Term</dt>
-                <dd class="text-sm font-medium">{{ record.termName }}</dd>
+                <dd class="text-sm font-medium">{{ record.termName }}<span v-if="record.scopeLabel" class="block text-xs text-primary">{{ record.scopeLabel }}</span></dd>
               </div>
               <div class="flex items-center justify-between py-2.5">
                 <dt class="text-sm text-muted">Average</dt>
@@ -72,7 +72,17 @@
               </div>
             </template>
 
-            <UTextarea v-model="remarkDraft" :rows="3" placeholder="Add a remark for this student..." class="w-full" />
+            <!-- Picked from the school's score ranges; the class master's own remark goes under it. -->
+            <div v-if="record.gradeRemark" class="mb-3 rounded-lg bg-muted/40 p-3">
+              <p class="text-xs font-medium uppercase tracking-wide text-muted">Automatic remark ({{ record.average.toFixed(1) }}%)</p>
+              <p class="mt-1 text-sm">{{ record.gradeRemark }}</p>
+            </div>
+
+            <UFormField :label="record.gradeRemark ? 'Additional remark (optional)' : undefined">
+              <UTextarea v-model="remarkDraft" :rows="3"
+                :placeholder="record.gradeRemark ? 'Add your own comment on top of the automatic remark...' : 'Add a remark for this student...'"
+                class="w-full" />
+            </UFormField>
 
             <UButton class="mt-3" size="sm" :loading="savingRemark" :disabled="remarkDraft === (record.remark || '')"
               @click="saveRemark">
@@ -81,7 +91,7 @@
           </UCard>
 
           <!-- Read-only for a parent - the remark is the class teacher's, not theirs to edit. -->
-          <UCard v-else-if="record.settings.showRemarks && record.remark">
+          <UCard v-else-if="record.settings.showRemarks && (record.remark || record.gradeRemark)">
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-message-square" class="size-5 text-primary" />
@@ -89,7 +99,8 @@
               </div>
             </template>
 
-            <p class="text-sm text-muted">{{ record.remark }}</p>
+            <p v-if="record.gradeRemark" class="text-sm text-muted">{{ record.gradeRemark }}</p>
+            <p v-if="record.remark" class="text-sm text-muted" :class="{ 'mt-2': record.gradeRemark }">{{ record.remark }}</p>
           </UCard>
         </div>
 
@@ -148,7 +159,7 @@
                 <div class="space-y-1.5">
                   <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
                     <span class="text-gray-500">Term</span>
-                    <span class="font-medium">{{ record.termName }}</span>
+                    <span class="font-medium">{{ record.termName }}<template v-if="record.scopeLabel"> ({{ record.scopeLabel }})</template></span>
                   </div>
                   <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
                     <span class="text-gray-500">Session</span>
@@ -168,7 +179,7 @@
                       <th class="border border-gray-200 p-2.5 text-left font-semibold">Subject</th>
                       <th v-for="col in assessmentColumns" :key="col"
                         class="border border-gray-200 p-2.5 text-center font-semibold">{{ col }}</th>
-                      <th class="border border-gray-200 p-2.5 text-center font-semibold">Total</th>
+                      <th class="border border-gray-200 p-2.5 text-center font-semibold">{{ isYearCard ? 'Final Score' : 'Total' }}</th>
                       <th class="border border-gray-200 p-2.5 text-center font-semibold">Grade</th>
                     </tr>
                   </thead>
@@ -177,7 +188,7 @@
                     <tr v-for="subject in record.subjects" :key="subject.subject">
                       <td class="border border-gray-200 p-2.5">{{ subject.subject }}</td>
                       <td v-for="col in assessmentColumns" :key="col" class="border border-gray-200 p-2.5 text-center">
-                        {{subject.assessments?.find(a => a.name === col)?.score ?? '—'}}
+                        {{ cellScore(subject, col) }}
                       </td>
                       <td class="border border-gray-200 p-2.5 text-center font-semibold">{{ subject.score }}</td>
                       <td class="border border-gray-200 p-2.5 text-center font-bold"
@@ -190,7 +201,7 @@
                   <tfoot>
                     <tr class="bg-gray-50">
                       <td class="border border-gray-200 p-2.5 font-semibold" :colspan="1 + assessmentColumns.length">
-                        Overall Average
+                        {{ isYearCard ? 'Final Average (all terms)' : 'Overall Average' }}
                       </td>
                       <td class="border border-gray-200 p-2.5 text-center font-semibold" colspan="2">
                         {{ record.average.toFixed(1) }}%
@@ -227,9 +238,11 @@
               </div>
 
               <!-- Remarks -->
-              <div v-if="record.settings.showRemarks && record.remark" class="mt-7 rounded-lg bg-gray-50 p-4">
+              <div v-if="record.settings.showRemarks && (record.remark || record.gradeRemark)"
+                class="mt-7 rounded-lg bg-gray-50 p-4">
                 <h3 class="text-sm font-semibold">Class Teacher's Remark</h3>
-                <p class="mt-1.5 text-sm text-gray-600">{{ record.remark }}</p>
+                <p v-if="record.gradeRemark" class="mt-1.5 text-sm text-gray-600">{{ record.gradeRemark }}</p>
+                <p v-if="record.remark" class="text-sm text-gray-600" :class="record.gradeRemark ? 'mt-1' : 'mt-1.5'">{{ record.remark }}</p>
               </div>
 
               <!-- Footer note -->
@@ -242,15 +255,15 @@
               </p>
 
               <!-- Signatures -->
-              <div v-if="record.settings.showSignatures" class="mt-12 grid grid-cols-2 gap-6 text-center">
-                <div>
-                  <img v-if="signatureSrc" :src="signatureSrc" class="mx-auto h-10 object-contain"
-                    alt="Principal's signature">
+              <div v-if="showTeacherSignature || showPrincipalSignature" class="mt-12 grid gap-6 text-center"
+                :class="showTeacherSignature && showPrincipalSignature ? 'grid-cols-2' : 'grid-cols-1 max-w-xs mx-auto'">
+                <div v-if="showTeacherSignature">
+                  <div class="h-10" />
                   <div class="h-5 border-b border-gray-400" />
                   <p class="text-xs mt-2 text-gray-500">Class Teacher</p>
                 </div>
 
-                <div>
+                <div v-if="showPrincipalSignature">
                   <img v-if="signatureSrc" :src="signatureSrc" class="mx-auto h-10 object-contain"
                     alt="Principal's signature">
                   <div class="h-5 border-b border-gray-400" />
@@ -299,6 +312,10 @@ watch(() => record.value?.level, (level) => {
 })
 const logoSrc = computed(() =>
   brandingAssets.value?.logo || record.value?.school.logo || record.value?.settings.logoUrl || '')
+// Older saved settings only have the combined showSignatures - fall back to it for either signatory.
+const showTeacherSignature = computed(() => record.value?.settings.showTeacherSignature ?? record.value?.settings.showSignatures ?? false)
+const showPrincipalSignature = computed(() => record.value?.settings.showPrincipalSignature ?? record.value?.settings.showSignatures ?? false)
+
 const signatureSrc = computed(() =>
   brandingAssets.value?.principalSignature || record.value?.school.principalSignature || '')
 
@@ -310,8 +327,25 @@ const schoolAddressLine = computed(() => {
     .join(', ')
 })
 
+// A whole-year card: its columns are the terms (each term's score), and "Total" becomes the final score.
+const isYearCard = computed(() => !!record.value?.subjects.some(s => s.termScores?.length))
+
+function cellScore(subject: ReportCardSubject, col: string) {
+  return isYearCard.value
+    ? subject.termScores?.find(t => t.term === col)?.score ?? '—'
+    : subject.assessments?.find(a => a.name === col)?.score ?? '—'
+}
+
 const assessmentColumns = computed(() => {
   if (!record.value) return []
+
+  if (isYearCard.value) {
+    const terms: string[] = []
+    for (const subject of record.value.subjects) {
+      for (const t of subject.termScores || []) if (!terms.includes(t.term)) terms.push(t.term)
+    }
+    return terms
+  }
 
   const levelByName = new Map<string, number>()
   for (const subject of record.value.subjects) {

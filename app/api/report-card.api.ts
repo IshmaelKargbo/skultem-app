@@ -2,7 +2,17 @@ export const ReportCardApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    generate: async (payload: { classId: string, termId: string, includeAttendance: boolean, includeRanking: boolean }) => {
+    assessments: async (classId: string): Promise<ReportCardAssessmentOption[]> => {
+      try {
+        const res = await $api(`/report-card/assessments?classId=${classId}`) as any
+        return res.data || []
+      } catch (err: any) {
+        useHandleError(err)
+        return []
+      }
+    },
+
+    generate: async (payload: GenerateReportCardPayload) => {
       try {
         const res = await $api('/report-card/generate', {
           method: 'POST',
@@ -23,12 +33,15 @@ export const ReportCardApi = () => {
       }
     },
 
-    fetchAll: async (page: number, size: number, filters?: { classId?: string, termId?: string, search?: string }) => {
+    fetchAll: async (page: number, size: number, filters?: ReportCardFilters) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (filters?.classId) query.set('classId', filters.classId)
         if (filters?.termId) query.set('termId', filters.termId)
         if (filters?.search) query.set('search', filters.search)
+        if (filters?.level) query.set('level', filters.level)
+        if (filters?.sectionId) query.set('sectionId', filters.sectionId)
+        if (filters?.streamId) query.set('streamId', filters.streamId)
 
         const res = await $api(`/report-card?${query.toString()}`) as any
         const meta = useMeta(res.meta)

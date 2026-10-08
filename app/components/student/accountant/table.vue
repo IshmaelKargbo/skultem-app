@@ -234,7 +234,7 @@ onMounted(() => {
           <template #header>
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <UAvatar size="2xl" :src="item.photo || '/avatar-placeholder.svg'"
+                <UAvatar size="2xl" class="bg-white" :src="item.photo || '/avatar-placeholder.svg'"
                   :alt="`${item.givenNames} ${item.familyName}`" loading="lazy" />
 
                 <div class="min-w-0">

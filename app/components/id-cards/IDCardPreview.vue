@@ -71,13 +71,13 @@
           <img :src="template.school.logo" class="object-contain" alt="School crest"
             :style="{ width: Math.min(settings.logoSize || 100, 100) + '%', height: Math.min(settings.logoSize || 100, 100) + '%' }">
         </div>
-        <div :class="['relative z-10 px-4 sm:px-5', settings.layout === 'horizontal' ? 'flex gap-3 sm:gap-4 pt-1' : 'pt-1 text-center']">
+        <div :class="['relative z-10 px-4 sm:px-5', settings.layout === 'horizontal' ? 'flex gap-2 sm:gap-3 pt-1' : 'pt-1 text-center']">
 
           <!-- Photo -->
-          <div :class="settings.layout === 'horizontal' ? 'shrink-0 pt-2 pr-2 sm:pr-3' : 'flex justify-center'">
+          <div :class="settings.layout === 'horizontal' ? 'shrink-0 -mt-0.5 pr-0 sm:pr-1' : 'flex justify-center -mt-2'">
             <div :class="[
               'overflow-hidden border-[3px] shadow-md',
-              settings.layout === 'horizontal' ? 'h-28 w-24 sm:h-40 sm:w-34' : 'mx-auto h-24 w-24',
+              settings.layout === 'horizontal' ? 'h-24 w-20 sm:h-32 sm:w-26' : 'mx-auto h-24 w-24',
               settings.profileShape === 'round' ? 'rounded-full' : 'rounded-xl'
             ]" :style="{ borderColor: settings.headerColor }">
               <!-- No crossorigin attribute - R2's public bucket URL sends no CORS headers (see
@@ -88,7 +88,7 @@
                    data: URI right before capturing (see getBrandingAssets() in pages/id-cards/[id].vue);
                    the photo isn't part of that swap yet, so it may still be missing from exported
                    PDFs even though it now displays correctly on screen. -->
-              <img v-if="person.photo" :src="person.photo" alt="" class="h-full w-full object-cover" />
+              <img v-if="person.photo" :src="person.photo" alt="" class="h-full w-full bg-white object-cover" />
               <div v-else class="flex h-full w-full items-center justify-center"
                 :style="{ backgroundImage: `linear-gradient(to bottom right, ${settings.headerColor}22, ${settings.headerColor}44)` }">
                 <span class="text-xl font-bold" :style="{ color: settings.headerColor }">{{
@@ -100,22 +100,15 @@
 
           <!-- Name + fields -->
           <div class="min-w-0 flex-1">
-            <h2 class="truncate text-lg font-black uppercase tracking-wide" style="line-height: 45px;"
-              :style="{ color: settings.primaryTextColor }">
-              {{
-                person.name
-              }}
-            </h2>
-
             <div :class="settings.layout === 'vertical' ? 'inline-block text-left' : 'space-y-0.5'">
               <template v-for="field in activeFields" :key="field.key">
                 <div v-if="field.enabled && field.cardSlot === 'front'"
-                  class="flex gap-2 text-[11.5px] leading-6 items-center">
-                  <span class="w-16 sm:w-24 shrink-0 font-medium text-gray-500">{{
-                    field.label
+                  class="flex gap-1.5 text-[11px] leading-5 items-center">
+                  <span class="w-14 sm:w-[4.5rem] shrink-0 whitespace-nowrap font-medium text-gray-500">{{
+                    cardLabel(field.label)
                   }}</span>
                   <span class="shrink-0 text-gray-300">:</span>
-                  <span class="min-w-0 truncate font-bold" style="line-height: 26px;"
+                  <span class="min-w-0 truncate font-bold" style="line-height: 22px;"
                     :style="{ color: settings.primaryTextColor }">
                     {{
                       person[field.key] ?? '—'
@@ -459,6 +452,10 @@ function formatPhoneSL(raw?: string | null) {
 }
 
 const person = computed<any>(() => (props.cardType === 'staff' ? props.template.staff : props.template.student) || {})
+// "Admission No." is wider than the label column and wrapped onto two lines; schools' saved card
+// designs still carry that label, so it's shortened here rather than only in the default.
+const cardLabel = (label: string) => (label === 'Admission No.' ? 'Adm. No.' : label)
+
 const cardTypeLabel = computed(() => (props.cardType === 'staff' ? 'Staff' : 'Student'))
 
 const sideTabs = [

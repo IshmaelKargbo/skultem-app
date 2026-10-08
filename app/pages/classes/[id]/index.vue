@@ -59,8 +59,12 @@
                     <!-- Actions -->
                     <div class="flex shrink-0 flex-wrap items-center justify-center gap-2">
                         <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
-                        <UButton v-if="canManagePromotion && !loading && className" variant="soft" size="sm" color="error"
-                            icon="i-lucide-trash-2" label="Delete class" @click="deleteOpen = true" />
+                        <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="deleteItems"
+                            :content="{ align: 'end' }">
+                            <UButton variant="soft" size="sm" color="error" icon="i-lucide-trash-2" label="Delete"
+                                trailing-icon="i-lucide-chevron-down" />
+                        </UDropdownMenu>
+                        <ClassPromotionSetting :id="session?.clazzId || ''" />
                         <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
                             :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
 
@@ -101,7 +105,10 @@
             </div>
         </UCard>
 
-        <ClassPromotionSetting :id="session?.clazzId || ''" />
+        <ConfirmDeleteModal v-model:open="deleteSessionOpen" :title="`Delete ${sessionName}`"
+            :item-name="sessionName" :confirm-label="`Delete ${sessionName}`"
+            description="Removes only this section - with its class teacher, subject assignments and setup. The class's other sections are not touched. Only possible while no students are placed in it - move them first."
+            :on-confirm="confirmDeleteSession" />
 
         <ConfirmDeleteModal v-model:open="deleteOpen" title="Delete Class" :item-name="className"
             confirm-label="Delete class"
@@ -281,7 +288,8 @@ const classStore = useClassStore()
 const studentStore = useStudentStore()
 const userStore = useUserStore()
 
-const stream = route.query.stream as string
+const stream = computed(() => (route.query.stream as string) || '')
+const sessionId = computed(() => (route.query.session as string) || '')
 const { record, session, overview, loading } = storeToRefs(classStore)
 const { classRecords: students, loading: studentsLoading } = storeToRefs(studentStore)
 
@@ -458,6 +466,38 @@ const classTeachers = computed(() => {
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
 const deleteOpen = ref(false)
+const deleteSessionOpen = ref(false)
+
+// "JSS 1 A" - this one section/stream, not the whole class.
+const sessionName = computed(() => [
+    session.value?.clazz,
+    session.value?.sectionName,
+    session.value?.streamName && session.value.streamName !== 'N/A' ? session.value.streamName : ''
+].filter(Boolean).join(' '))
+
+const deleteItems = computed(() => [[
+    {
+        label: `Delete ${sessionName.value}`, icon: 'i-lucide-trash-2', color: 'error' as const,
+        onSelect: () => { deleteSessionOpen.value = true }
+    },
+    {
+        label: 'Delete whole class (all sections)', icon: 'i-lucide-trash-2', color: 'error' as const,
+        onSelect: () => { deleteOpen.value = true }
+    }
+]])
+
+async function confirmDeleteSession() {
+    if (!session.value) return
+    try {
+        await classStore.deleteSession(session.value.id)
+        success(`${sessionName.value} deleted`)
+        await navigateTo('/classes')
+    } catch (err: any) {
+        // Left open on purpose: the backend's reason (e.g. it still has students) is what to read.
+        toastError(err?.message || 'Unable to delete this section')
+        throw err
+    }
+}
 const className = computed(() => record.value?.name || session.value?.clazz || '')
 async function confirmDeleteClass() {
     try {
@@ -478,7 +518,7 @@ async function onRemoveClassMaster(id: string) {
     try {
         await classStore.removeClassMaster(id)
         success('Class master unassigned successfully')
-        await classStore.fetchOverview(classId.value, viewingYear.value?.id || '', stream)
+        await classStore.fetchOverview(classId.value, viewingYear.value?.id || '', stream.value, sessionId.value)
     } catch (err: any) {
         toastError(err?.message || 'Unable to unassign the class master')
     } finally {
@@ -544,18 +584,20 @@ watch(promotionSessionIds, (sessionIds) => {
 
 async function fetchClass() {
     if (!viewingYear.value) return
-    const tasks = [classStore.viewClassByClassAndStream(classId.value, stream, viewingYear.value?.id || '')]
-    if (!isParentViewer.value) tasks.push(classStore.fetchOverview(classId.value, viewingYear.value.id || '', stream))
+    const tasks = [classStore.viewClassByClassAndStream(classId.value, stream.value, viewingYear.value?.id || '', sessionId.value)]
+    if (!isParentViewer.value) tasks.push(classStore.fetchOverview(classId.value, viewingYear.value.id || '', stream.value, sessionId.value))
     await Promise.all(tasks)
 }
 
 async function fetchStudents() {
     if (!canViewRoster.value) return
-    await studentStore.fetchByClassAndStream(classId.value, stream, 0, 0)
+    // Wait for the exact section to load, or this would briefly list every section of the class.
+    if (sessionId.value && session.value?.id !== sessionId.value) return
+    await studentStore.fetchByClassAndStream(classId.value, stream.value, 0, 0, session.value?.sectionId)
 }
 
-watch([classId, viewingYear], fetchClass, { immediate: true })
-watch([classId, canViewRoster], fetchStudents, { immediate: true })
+watch([classId, viewingYear, stream, sessionId], fetchClass, { immediate: true })
+watch([classId, canViewRoster, stream, () => session.value?.id], fetchStudents, { immediate: true })
 
 onMounted(() => {
     useAppStore().setTitle('View Class')

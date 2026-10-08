@@ -124,18 +124,30 @@ const sort = computed<string>({
 const sortBy = computed(() => sort.value.split(":")[0]);
 const sortDirection = computed(() => sort.value.split(":")[1]);
 
-// Whether any filter/sort differs from its default - drives whether "Clear" is enabled.
-const hasActiveFilters = computed(
-  () => !!termId.value || !!classId.value || !!studentType.value || !!gender.value || sort.value !== DEFAULT_SORT
-);
+// What the filter drawer edits - the same values the URL carries.
+const drawerModel = computed(() => ({
+  termId: termId.value,
+  classId: classId.value,
+  studentType: studentType.value,
+  gender: gender.value,
+  sort: sort.value,
+}));
 
-function resetFilters() {
+const filterFields = computed(() => [
+  { key: "termId", label: "Term", type: "select" as const, options: termOptions.value, placeholder: "All terms" },
+  { key: "classId", label: "Class", type: "select" as const, options: classOptions.value, placeholder: "All classes" },
+  { key: "studentType", label: "Students", type: "select" as const, options: studentTypeOptions, placeholder: "All students" },
+  { key: "gender", label: "Gender", type: "select" as const, options: genderOptions, placeholder: "All genders" },
+  { key: "sort", label: "Sort by", type: "select" as const, options: sortOptions, default: DEFAULT_SORT, required: true },
+]);
+
+function applyDrawer(value: Record<string, string>) {
   updateQuery({
-    termId: undefined,
-    classId: undefined,
-    studentType: undefined,
-    gender: undefined,
-    sort: undefined,
+    termId: value.termId || undefined,
+    classId: value.classId || undefined,
+    studentType: value.studentType || undefined,
+    gender: value.gender || undefined,
+    sort: !value.sort || value.sort === DEFAULT_SORT ? undefined : value.sort,
     page: 1,
   });
 }
@@ -193,30 +205,12 @@ definePageMeta({
       <template #header>
         <div>
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
-            <h2 class="text-sm font-semibold text-highlighted">Fee Structures</h2>
+            <UButton color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
 
             <div class="flex flex-wrap items-center gap-2">
-              <UButton color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
+              <FilterDrawer :model-value="drawerModel" :fields="filterFields" title="Filter fee structures"
+                description="Narrow by term, class, student type, gender or order" @update:model-value="applyDrawer" />
               <TableViewToggle v-model="view" />
-            </div>
-          </div>
-
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 col-span-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <USelectMenu v-model="termId" value-key="value" label-key="label" :items="termOptions"
-                placeholder="All terms" />
-              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
-                placeholder="All classes" />
-              <USelectMenu v-model="studentType" value-key="value" label-key="label" :items="studentTypeOptions"
-                placeholder="All students" clear />
-              <USelectMenu v-model="gender" value-key="value" label-key="label" :items="genderOptions"
-                placeholder="All genders" clear />
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-            </div>
-            <div>
-              <UButton class="col-span-2 justify-center sm:col-span-1" :trailing-icon="DELETE_ICON" variant="outline"
-                color="error" label="Clear" :disabled="!hasActiveFilters" @click="resetFilters" />
             </div>
           </div>
         </div>

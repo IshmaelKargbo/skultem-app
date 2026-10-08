@@ -18,7 +18,7 @@ interface NavItem {
 
 const allItems: NavItem[] = [
   { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT] },
-  { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
+  { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] },
   { label: 'Design', to: '/report-cards/templates', icon: SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] }
 ]
 

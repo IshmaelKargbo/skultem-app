@@ -225,7 +225,7 @@ onMounted(async () => {
             <div class="border-b md:border md:rounded-2xl border-default p-3">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
-                  <UAvatar class="size-10" :src="item.photo" :alt="`${item.givenNames} ${item.familyName}`"
+                  <UAvatar class="size-10 bg-white" :src="item.photo" :alt="`${item.givenNames} ${item.familyName}`"
                     loading="lazy" />
 
                   <div class="min-w-0">

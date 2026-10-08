@@ -25,11 +25,11 @@ export const useAttendanceStore = defineStore('attendance', {
   }),
 
   actions: {
-    async fetchAll(id: string, page: number = 1, size: number = runtimeConf().limit) {
+    async fetchAll(id: string, page: number = 1, size: number = 7) {
       this.loading = true
       this.error = null
       try {
-        const response = await AttendanceApi().getHistory(id) as any
+        const response = await AttendanceApi().getHistory(id, page, size) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

@@ -126,7 +126,7 @@ const classes = computed(() => records.value.map(e => ({ value: e.id, label: e.n
 const teachers = computed(
   () =>
     teacherStore.records?.map((t) => ({
-      label: `${t.user.givenNames} ${t.user.familyName} (${t.designation})`,
+      label: teacherLabel(t),
       value: t.id,
     })) || []
 );

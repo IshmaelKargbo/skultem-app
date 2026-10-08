@@ -51,6 +51,50 @@
 
         <UCard>
           <template #header>
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-message-square-text" class="size-5 text-primary" />
+                <h3 class="font-semibold">
+                  Remarks by Score Range
+                </h3>
+              </div>
+
+              <UButton v-if="!settings.remarkScale.length" size="xs" variant="soft" icon="i-lucide-wand-sparkles"
+                @click="useSuggestedRemarks">
+                Use suggested
+              </UButton>
+            </div>
+          </template>
+
+          <p class="text-sm text-muted -mt-1 mb-4">
+            The remark is picked from the student's average, so teachers don't have to write "very good" on every
+            card. The class master can still add their own remark on top.
+          </p>
+
+          <div v-if="settings.remarkScale.length" class="space-y-3">
+            <div v-for="(band, i) in settings.remarkScale" :key="i"
+              class="grid grid-cols-[4.5rem_4.5rem_1fr_auto] items-start gap-2 sm:gap-3">
+              <UInput v-model.number="band.minScore" type="number" :min="0" :max="100" placeholder="From"
+                aria-label="From score" />
+              <UInput v-model.number="band.maxScore" type="number" :min="0" :max="100" placeholder="To"
+                aria-label="To score" />
+              <UInput v-model="band.remark" placeholder="e.g. Excellent work, keep it up" aria-label="Remark" />
+              <UButton icon="i-lucide-trash-2" color="error" variant="ghost" aria-label="Remove range"
+                @click="settings.remarkScale.splice(i, 1)" />
+            </div>
+
+            <p v-if="remarkScaleError" class="text-sm text-error">{{ remarkScaleError }}</p>
+          </div>
+
+          <p v-else class="text-sm text-muted">No ranges yet - cards only show what the teacher writes.</p>
+
+          <UButton class="mt-4" size="sm" variant="outline" icon="i-lucide-plus" @click="addRemarkBand">
+            Add range
+          </UButton>
+        </UCard>
+
+        <UCard>
+          <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-palette" class="size-5 text-primary" />
               <h3 class="font-semibold">
@@ -149,7 +193,7 @@ const { settings } = storeToRefs(store)
 const saving = ref(false)
 
 interface SectionConfig {
-  key: 'showAttendance' | 'showRemarks' | 'showPosition' | 'showSignatures' | 'showGradeScale'
+  key: 'showAttendance' | 'showRemarks' | 'showPosition' | 'showTeacherSignature' | 'showPrincipalSignature' | 'showGradeScale'
   label: string
   hint: string
   icon: string
@@ -175,10 +219,16 @@ const sections: SectionConfig[] = [
     icon: 'i-lucide-trophy'
   },
   {
-    key: 'showSignatures',
-    label: 'Signatures',
-    hint: 'Teacher and principal sign-off',
+    key: 'showTeacherSignature',
+    label: 'Class Teacher Signature',
+    hint: 'Signature line for the class teacher',
     icon: 'i-lucide-signature'
+  },
+  {
+    key: 'showPrincipalSignature',
+    label: 'Principal Signature',
+    hint: "Signature line for the principal, with the school's saved signature",
+    icon: 'i-lucide-pen-line'
   },
   {
     key: 'showGradeScale',
@@ -190,7 +240,43 @@ const sections: SectionConfig[] = [
 
 const activeSections = computed(() => sections.filter(section => settings.value[section.key]))
 
+function addRemarkBand() {
+  const last = [...settings.value.remarkScale].sort((a, b) => b.maxScore - a.maxScore)[0]
+  const from = last ? Math.min(last.maxScore + 1, 100) : 0
+  settings.value.remarkScale.push({ minScore: from, maxScore: 100, remark: '' })
+}
+
+function useSuggestedRemarks() {
+  settings.value.remarkScale = [
+    { minScore: 0, maxScore: 39, remark: 'Needs urgent support. Please work closely with the teachers to improve.' },
+    { minScore: 40, maxScore: 49, remark: 'Below average. More effort and regular practice are needed.' },
+    { minScore: 50, maxScore: 59, remark: 'Fair performance. With more focus, there is room to improve.' },
+    { minScore: 60, maxScore: 69, remark: 'Good performance. Keep working hard.' },
+    { minScore: 70, maxScore: 79, remark: 'Very good performance. Keep it up.' },
+    { minScore: 80, maxScore: 100, remark: 'Excellent performance. Keep up the outstanding work.' }
+  ]
+}
+
+// Mirrors the server's rules so a mistake shows before Save, not as a failed request.
+const remarkScaleError = computed(() => {
+  const bands = [...settings.value.remarkScale].sort((a, b) => a.minScore - b.minScore)
+  for (let i = 0; i < bands.length; i++) {
+    const b = bands[i]!
+    if (!b.remark.trim()) return 'Every range needs a remark.'
+    if (!Number.isInteger(b.minScore) || !Number.isInteger(b.maxScore) || b.minScore < 0 || b.maxScore > 100)
+      return 'Ranges must be whole scores between 0 and 100.'
+    if (b.minScore > b.maxScore) return 'A range can\'t start above where it ends.'
+    if (i > 0 && b.minScore <= bands[i - 1]!.maxScore) return 'Ranges can\'t overlap.'
+  }
+  return ''
+})
+
 async function save() {
+  if (remarkScaleError.value) {
+    notifyError(remarkScaleError.value)
+    return
+  }
+
   saving.value = true
   try {
     await store.save()

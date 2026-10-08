@@ -18,6 +18,8 @@ export interface NavItem {
   roles?: Role[]
   subNavs?: SubNavItem[]
   adminPortalOnly?: boolean
+  // Shown to a teacher only while they're a class master of some class.
+  classMasterOnly?: boolean
 }
 
 export type MenuSection = { id: string, tier: string, label: string, items: NavItem[] }
@@ -179,6 +181,14 @@ export function useMenu() {
       subNavs: [
         { label: 'ID Cards', to: '/id-cards', icon: ID_CARD_ICON, exact: true },
         { label: 'Card Design', to: '/id-cards/settings', icon: SETTINGS_ICON },
+      ]
+    },
+
+    {
+      label: 'Report Cards', icon: REPORT_ICON, roles: [Role.TEACHER], classMasterOnly: true,
+      subNavs: [
+        { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
+        { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
       ]
     },
 
@@ -362,7 +372,8 @@ export function useMenu() {
     navItems
       .filter((item) => onAdminPortal
         ? item.adminPortalOnly || !item.roles
-        : (!item.roles || can(item.roles)) && !item.adminPortalOnly)
+        : (!item.roles || can(item.roles)) && !item.adminPortalOnly
+          && (!item.classMasterOnly || isClassMaster.value))
       .map((item) => {
         if (item.label === 'Grade' && item.to === '/grades' && can(Role.TEACHER) && isClassMaster.value) {
           return {

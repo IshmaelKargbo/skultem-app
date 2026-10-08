@@ -156,7 +156,8 @@ const schoolInfo = computed(() => {
     principal: sec?.principalName || uiSettings.principalName || school.value?.principalName || '',
     signature: sec?.principalSignature || fullSchool.value?.principalSignature || '',
     phone: sec?.phone || fullSchool.value?.phone || '',
-    address: sectionAddress || uiSettings.schoolAddress || ''
+    address: sectionAddress || uiSettings.schoolAddress || '',
+    tagline: school.value?.motto || fullSchool.value?.motto || ''
   }
 })
 

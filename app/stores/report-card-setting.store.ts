@@ -7,8 +7,17 @@ export interface ReportCardSettings {
     showAttendance: boolean
     showRemarks: boolean
     showPosition: boolean
-    showSignatures: boolean
+    showTeacherSignature: boolean
+    showPrincipalSignature: boolean
     showGradeScale: boolean
+    remarkScale: RemarkBand[]
+}
+
+// Scores from minScore to maxScore (inclusive) get this ready-made remark on the report card.
+export interface RemarkBand {
+    minScore: number
+    maxScore: number
+    remark: string
 }
 
 const DEFAULT_SETTINGS: ReportCardSettings = {
@@ -18,13 +27,15 @@ const DEFAULT_SETTINGS: ReportCardSettings = {
     showAttendance: true,
     showRemarks: true,
     showPosition: true,
-    showSignatures: true,
-    showGradeScale: true
+    showTeacherSignature: true,
+    showPrincipalSignature: true,
+    showGradeScale: true,
+    remarkScale: []
 }
 
 export const useReportCardSettingStore = defineStore('reportCardSetting', {
     state: () => ({
-        settings: { ...DEFAULT_SETTINGS },
+        settings: { ...DEFAULT_SETTINGS, remarkScale: [] as RemarkBand[] },
         loaded: false,
         loading: false
     }),
@@ -43,8 +54,10 @@ export const useReportCardSettingStore = defineStore('reportCardSetting', {
                     showAttendance: res.showAttendance,
                     showRemarks: res.showRemarks,
                     showPosition: res.showPosition,
-                    showSignatures: res.showSignatures,
-                    showGradeScale: res.showGradeScale
+                    showTeacherSignature: res.showTeacherSignature ?? res.showSignatures,
+                    showPrincipalSignature: res.showPrincipalSignature ?? res.showSignatures,
+                    showGradeScale: res.showGradeScale,
+                    remarkScale: res.remarkScale ?? []
                 })
 
                 this.loaded = true

@@ -52,6 +52,39 @@ definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
+const { success: toastSuccess, error: toastError } = useNotify()
+
+const editOpen = ref(false)
+const editTarget = ref<House>()
+const deleteOpen = ref(false)
+const deleteTarget = ref<House>()
+
+function rowActions(house: House) {
+  return [[
+    {
+      label: 'Edit House', icon: 'i-lucide-pencil',
+      onSelect: () => { editTarget.value = house; nextTick(() => { editOpen.value = true }) }
+    },
+    {
+      label: 'Delete House', icon: 'i-lucide-trash-2', color: 'error' as const,
+      onSelect: () => { deleteTarget.value = house; deleteOpen.value = true }
+    }
+  ]]
+}
+
+async function confirmDelete() {
+  if (!deleteTarget.value) return
+  try {
+    await store.delete(deleteTarget.value.id)
+    toastSuccess('House deleted')
+    await fetchRecord()
+  } catch (err: any) {
+    // Left open on purpose: the backend's reason (e.g. students still assigned) is what to read.
+    toastError(err?.message || 'Unable to delete the house')
+    throw err
+  }
+}
+
 const columns = [
   {
     accessorKey: 'name',
@@ -66,7 +99,8 @@ const columns = [
     header: 'House Masters'
   },
   {
-    id: 'actions'
+    id: 'actions',
+    meta: { class: { td: 'text-right' } }
   }
 ]
 </script>
@@ -119,6 +153,14 @@ const columns = [
           </div>
         </template>
 
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UDropdownMenu :items="rowActions(row.original)" :content="{ align: 'end' }">
+              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="xs" variant="ghost" />
+            </UDropdownMenu>
+          </div>
+        </template>
+
         <!-- House Masters -->
         <template #houseMasters-cell="{ row }">
           <div class="flex flex-wrap gap-1">
@@ -161,7 +203,7 @@ const columns = [
                   <div class="size-full rounded-xl shadow-sm" :style="{ backgroundColor: item.color }" />
                 </div>
 
-                <div>
+                <div class="min-w-0 flex-1">
                   <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
                     {{ item.name }}
                   </h3>
@@ -169,6 +211,10 @@ const columns = [
                     Athletic House
                   </p>
                 </div>
+
+                <UDropdownMenu :items="rowActions(item)" :content="{ align: 'end' }">
+                  <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="sm" variant="ghost" />
+                </UDropdownMenu>
               </div>
             </template>
 
@@ -225,5 +271,12 @@ const columns = [
         </div>
       </template>
     </UCard>
+
+    <AthleticCategoryAdd v-if="editTarget" v-model:open="editOpen" :house="editTarget" />
+
+    <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete House"
+      :item-name="deleteTarget.name" confirm-label="Delete house"
+      description="Deletes this house and its house master assignments. Only possible while no students are assigned to it - reassign them first."
+      :on-confirm="confirmDelete" />
   </div>
 </template>

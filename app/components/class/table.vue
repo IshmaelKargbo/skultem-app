@@ -271,7 +271,7 @@ const columns = [
 ];
 
 function viewClass(row: ClassSession) {
-  router.push(`/classes/${row.clazzId}`);
+  router.push(classRosterUrl(row.clazzId, row.streamId, row.id));
 }
 
 const page = computed<number>({

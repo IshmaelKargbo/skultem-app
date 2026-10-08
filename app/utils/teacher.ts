@@ -89,3 +89,10 @@ export type EditTeacherDTO = {
     phone: string
     designation?: string
 }
+
+// "Jane Doe (Head of Science)" for teacher dropdowns - the designation tells apart staff with
+// similar names and shows the role at a glance. Left off when the teacher has none.
+export function teacherLabel(t: { user?: { givenNames?: string, familyName?: string } | null, designation?: string | null }) {
+    const name = `${t.user?.givenNames || ''} ${t.user?.familyName || ''}`.trim()
+    return t.designation ? `${name} (${t.designation})` : name
+}

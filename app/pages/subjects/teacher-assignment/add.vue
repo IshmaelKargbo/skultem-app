@@ -204,7 +204,7 @@ const classes = computed(() =>
 
 const teachers = computed(() =>
   teacherStore.records.map((e) => ({
-    label: `${e.user.givenNames} ${e.user.familyName}`,
+    label: teacherLabel(e),
     value: e.id,
   }))
 );

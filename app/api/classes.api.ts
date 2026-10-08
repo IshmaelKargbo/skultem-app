@@ -221,6 +221,19 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    getOneBySession: async (sessionId: string) => {
+      try {
+        const res = await $api(`/class-session/session/${sessionId}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch class')
+
+        return res.data
+
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getOneByClassAndStream: async (id: string, stream: string, academicYearId: string) => {
       try {
         const res = await $api(`/class-session/${id}/stream/${stream}?academicYearId=${academicYearId}`) as any
@@ -260,9 +273,9 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
-    getSssOverview: async (id: string, academicYear: string, stream: string) => {
+    getSssOverview: async (id: string, academicYear: string, stream: string, sessionId?: string) => {
       try {
-        const res = await $api(`/class/${id}/sss/overview?streamId=${stream}&academicYearId=${academicYear}`) as any
+        const res = await $api(`/class/${id}/sss/overview?streamId=${stream || ''}&academicYearId=${academicYear}${sessionId ? `&sessionId=${sessionId}` : ''}`) as any
 
         if (!res)
           throw new Error('Failed to fetch class sss overview')

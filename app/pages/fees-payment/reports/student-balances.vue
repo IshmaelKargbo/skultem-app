@@ -13,23 +13,14 @@
 
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex flex-col gap-3 p-4">
-          <div class="grid gap-2 sm:grid-cols-3">
-            <USelectMenu v-model="filters.academicYearId" :items="academicYears" value-key="value" label-key="label"
-              placeholder="Active year" class="w-full" />
-            <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label" clear
-              placeholder="Whole year" class="w-full" />
-            <USelectMenu v-model="sortBy" :items="sortOptions" value-key="value" label-key="label"
-              placeholder="Sort by" class="w-full" />
+        <div class="flex items-center justify-between gap-2 px-4 py-3">
+          <div>
+            <p class="font-semibold">Student Balances</p>
+            <p class="text-xs text-muted">Expected, paid and outstanding for every student</p>
           </div>
-          <div class="flex items-center gap-2">
-            <FeeReportStudentBalanceFilterDrawer v-model:class-session-id="filters.classSessionId" v-model:status="filters.status"
-              v-model:fee-category-id="filters.feeCategoryId" v-model:balance-min="filters.balanceMin"
-              v-model:balance-max="filters.balanceMax" :class-options="classSessions"
-              :fee-category-options="feeCategories" :active-count="activeFilterCount" />
-            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-              :disabled="!hasActiveFilters" @click="resetFilters" />
-          </div>
+          <FilterDrawer :model-value="drawerModel" :fields="filterFields" title="Filter student balances"
+            description="Narrow by year, term, class, status, fee type or balance range"
+            @update:model-value="applyDrawer" />
         </div>
       </template>
 
@@ -175,19 +166,31 @@ const records = computed(() => store.studentBalances)
 const meta = computed(() => store.studentBalancesMeta)
 const loading = computed(() => store.loading)
 
-const activeFilterCount = computed(() => [
-  filters.classSessionId, filters.status, filters.feeCategoryId, filters.balanceMin, filters.balanceMax,
-].filter(Boolean).length)
-const hasActiveFilters = computed(() => activeFilterCount.value > 0 || sortBy.value !== DEFAULT_SORT)
+const statusOptions = [
+  { label: 'Paid', value: 'PAID' },
+  { label: 'Partially Paid', value: 'PARTIALLY_PAID' },
+  { label: 'No Payment', value: 'NO_PAYMENT' },
+]
 
-function resetFilters() {
-  filters.classSessionId = ''
-  filters.status = ''
-  filters.feeCategoryId = ''
-  filters.balanceMin = ''
-  filters.balanceMax = ''
-  sortBy.value = DEFAULT_SORT
+// The drawer edits year/term/class/status/fee type/balance range and the sort order as one object.
+const drawerModel = computed(() => ({ ...filters, sortBy: sortBy.value }))
+
+function applyDrawer(value: Record<string, string>) {
+  const { sortBy: nextSort, ...rest } = value
+  Object.assign(filters, rest)
+  sortBy.value = nextSort || DEFAULT_SORT
 }
+
+const filterFields = computed(() => [
+  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
+  { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
+  { key: 'classSessionId', label: 'Class', type: 'select' as const, options: classSessions.value, placeholder: 'Every class' },
+  { key: 'status', label: 'Payment Status', type: 'select' as const, options: statusOptions, placeholder: 'Every status' },
+  { key: 'feeCategoryId', label: 'Fee Type', type: 'select' as const, options: feeCategories.value, placeholder: 'Every fee type' },
+  { key: 'balanceMin', label: 'Min Balance', type: 'number' as const, placeholder: '0' },
+  { key: 'balanceMax', label: 'Max Balance', type: 'number' as const, placeholder: 'Any' },
+  { key: 'sortBy', label: 'Sort by', type: 'select' as const, options: sortOptions, default: DEFAULT_SORT, required: true },
+])
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),

@@ -193,8 +193,14 @@ export type Address = {
 // showing every stream's students mixed together. streamId must stay nullish (not
 // an empty string) for a class with no streams, or `?stream=` would round-trip as a
 // non-empty "stream" query value and the page would (wrongly) try to filter by it.
-export function classRosterUrl(classId: string, streamId?: string | null) {
-    return streamId ? `/classes/${classId}?stream=${streamId}` : `/classes/${classId}`
+// sessionId pins the exact section (JSS 1 A vs JSS 1 B) - without it the page can't tell sections
+// of the same class apart.
+export function classRosterUrl(classId: string, streamId?: string | null, sessionId?: string | null) {
+    const query = new URLSearchParams()
+    if (streamId) query.set('stream', streamId)
+    if (sessionId) query.set('session', sessionId)
+    const qs = query.toString()
+    return qs ? `/classes/${classId}?${qs}` : `/classes/${classId}`
 }
 
 // teacherName comes back as a comma-joined list when a class has more than one active

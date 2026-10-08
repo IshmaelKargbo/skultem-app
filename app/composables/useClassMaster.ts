@@ -17,6 +17,15 @@ export function useClassMaster() {
 
     const isClassMaster = computed(() => (assignments.value?.length ?? 0) > 0)
 
+    // The classes they're class master of, one entry per class even when it has several sessions.
+    const classOptions = computed(() => {
+        const seen = new Map<string, { label: string, value: string }>()
+        for (const a of assignments.value ?? []) {
+            if (!seen.has(a.classId)) seen.set(a.classId, { label: a.className, value: a.classId })
+        }
+        return [...seen.values()]
+    })
+
     async function ensureLoaded() {
         if (!can(Role.TEACHER)) return
         // Only a confirmed success skips a retry - unlike checking assignments.value (which the
@@ -36,5 +45,5 @@ export function useClassMaster() {
         }
     }
 
-    return { assignments, isClassMaster, loading, checked, error, ensureLoaded }
+    return { assignments, isClassMaster, classOptions, loading, checked, error, ensureLoaded }
 }

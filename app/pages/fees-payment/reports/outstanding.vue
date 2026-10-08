@@ -9,18 +9,8 @@
       </UButton>
     </Heading>
 
-    <UCard>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UFormField label="Academic Year">
-          <USelectMenu v-model="filters.academicYearId" :items="academicYears" value-key="value" label-key="label"
-            placeholder="Active year" class="w-full" />
-        </UFormField>
-        <UFormField label="Term">
-          <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label" clear
-            placeholder="Whole year" class="w-full" />
-        </UFormField>
-      </div>
-    </UCard>
+    <FilterBar :model-value="filters" :fields="filterFields" title="Filter outstanding fees"
+      description="Choose the academic year and term" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -213,6 +203,11 @@ onMounted(async () => {
   await termStore.fetchAll(1, 100)
   await loadReport()
 })
+
+const filterFields = computed(() => [
+  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
+  { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
+])
 
 definePageMeta({
   role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]

@@ -29,6 +29,11 @@ export type AttendanceHistory = {
     date: string
     classId: string
     className: string
+    // The section / stream this day's attendance is for - blank stream when the class has none.
+    sectionName: string
+    streamName: string | null
+    // The exact class session (SSS 1 Art) - what the page's `class` link points at.
+    sessionId: string
     presentCount: number,
     totalCount: number
     createdAt: string

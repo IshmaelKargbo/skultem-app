@@ -22,7 +22,7 @@ const summary = ref<AssessmentApprovalSummary | null>(null)
 
 const teachers = computed(() =>
   teacherRecords.value.map(e => ({
-    label: `${e.user.givenNames} ${e.user.familyName}`,
+    label: teacherLabel(e),
     value: e.id
   }))
 )

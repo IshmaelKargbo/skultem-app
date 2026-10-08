@@ -132,9 +132,9 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
-    getByClass: async (classId: string, streamId: string | undefined, page: number, size: number) => {
+    getByClass: async (classId: string, streamId: string | undefined, page: number, size: number, sectionId?: string) => {
       try {
-        const res = await $api(`/enrollment/class/${classId}?page=${page}&size=${size}${streamId ? `&stream=${streamId}` : ''}`) as any
+        const res = await $api(`/enrollment/class/${classId}?page=${page}&size=${size}${streamId ? `&stream=${streamId}` : ''}${sectionId ? `&section=${sectionId}` : ''}`) as any
 
         if (!res)
           throw new Error('Failed to fetch students by class')

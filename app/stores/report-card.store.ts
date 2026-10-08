@@ -15,7 +15,36 @@ export interface ReportCardSubject {
     weightScore: number
     grade: string
     assessments: ReportCardAssessmentScore[] | null
+    // Whole-year cards: the subject's score per term; `score` is then the final, year score.
+    termScores?: { term: string, score: number }[] | null
 }
+
+export type GenerateReportCardPayload = {
+    classId: string
+    termId?: string
+    includeAttendance: boolean
+    includeRanking: boolean
+    // Only these assessments count; empty = all of the term's.
+    assessmentIds?: string[]
+    // Every term of the term's academic year.
+    wholeYear?: boolean
+    // With wholeYear: the academic year to cover (termId isn't needed then).
+    academicYearId?: string
+    // Just this section / stream of the class (JSS 1 A) - blank = the whole class.
+    sectionId?: string
+    streamId?: string
+}
+
+export type ReportCardFilters = {
+    classId?: string
+    termId?: string
+    search?: string
+    level?: string
+    sectionId?: string
+    streamId?: string
+}
+
+export type ReportCardAssessmentOption = { id: string, name: string, weight: number, position: number }
 
 export interface ReportCardSummary {
     id: string
@@ -32,6 +61,8 @@ export interface ReportCardSummary {
     passed: boolean
     downloadCount: number
     generatedAt: string
+    // Which slice the card covers: "First Test + Second Test", "All terms", or null for the whole term.
+    scopeLabel: string | null
 }
 
 export interface ReportCardDetail extends ReportCardSummary {
@@ -41,7 +72,10 @@ export interface ReportCardDetail extends ReportCardSummary {
     classSize: number
     termId: string
     attendancePercentage: number | null
+    // The class master's own remark, written on top of the automatic one.
     remark: string | null
+    // Picked from the school's remark score ranges for this card's average; null when none matches.
+    gradeRemark: string | null
     subjects: ReportCardSubject[]
     school: {
         id: string
@@ -61,6 +95,8 @@ export interface ReportCardDetail extends ReportCardSummary {
         showRemarks: boolean
         showPosition: boolean
         showSignatures: boolean
+        showTeacherSignature: boolean
+        showPrincipalSignature: boolean
         showGradeScale: boolean
     }
 }
@@ -96,7 +132,7 @@ export const useReportCardStore = defineStore('reportCard', {
             }
         },
 
-        async fetchAll(page: number, size: number, filters?: { classId?: string, termId?: string, search?: string }) {
+        async fetchAll(page: number, size: number, filters?: ReportCardFilters) {
             this.loading = true
             try {
                 const res = await ReportCardApi().fetchAll(page, size, filters)
@@ -113,7 +149,7 @@ export const useReportCardStore = defineStore('reportCard', {
             this.stats = await ReportCardApi().stats()
         },
 
-        async generate(payload: { classId: string, termId: string, includeAttendance: boolean, includeRanking: boolean }) {
+        async generate(payload: GenerateReportCardPayload) {
             this.generating = true
             try {
                 return await ReportCardApi().generate(payload)

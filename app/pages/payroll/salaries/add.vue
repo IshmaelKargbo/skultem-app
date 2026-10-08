@@ -162,7 +162,7 @@ const schema = yup.object({
 })
 
 const teacherOptions = computed(() => teachers.value.map(t => ({
-  label: `${t.user?.givenNames || ''} ${t.user?.familyName || ''}`.trim(),
+  label: teacherLabel(t),
   value: t.id,
   staffId: t.staffId
 })))

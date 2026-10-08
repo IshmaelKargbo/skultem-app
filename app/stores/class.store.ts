@@ -39,12 +39,14 @@ export const useClassStore = defineStore('class', {
         this.loading = false
       }
     },
-    async viewClassByClassAndStream(id: string, stream: string, academicYearId: string) {
+    async viewClassByClassAndStream(id: string, stream: string, academicYearId: string, sessionId?: string) {
       this.loading = true
       this.error = null
       this.record = undefined
       try {
-        if (stream) {
+        if (sessionId) {
+          this.session = await ClassApi().getOneBySession(sessionId)
+        } else if (stream) {
           const res = await ClassApi().getOneByClassAndStream(id, stream, academicYearId)
           this.session = res
         } else {
@@ -57,11 +59,11 @@ export const useClassStore = defineStore('class', {
         this.loading = false
       }
     },
-    async fetchOverview(id: string, academicYear: string, stream?: string) {
+    async fetchOverview(id: string, academicYear: string, stream?: string, sessionId?: string) {
       this.overview = undefined
       try {
-        if (stream)
-          this.overview = await ClassApi().getSssOverview(id, academicYear, stream)
+        if (stream || sessionId)
+          this.overview = await ClassApi().getSssOverview(id, academicYear, stream || '', sessionId)
         else
           this.overview = await ClassApi().getOverview(id)
       } catch (err: any) {
@@ -70,6 +72,9 @@ export const useClassStore = defineStore('class', {
     },
     create(payload: CreateClassDto) {
       return ClassApi().create(payload)
+    },
+    deleteSession(id: string) {
+      return ClassApi().deleteSession(id)
     },
     delete(id: string) {
       return ClassApi().delete(id)

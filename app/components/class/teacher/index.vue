@@ -70,7 +70,7 @@
                 <USeparator />
 
                 <div class="flex flex-wrap items-center gap-2 p-3">
-                    <UButton :to="classRosterUrl(c.classId, c.streamId)" size="sm" variant="soft" color="neutral"
+                    <UButton :to="classRosterUrl(c.classId, c.streamId, c.sessionId)" size="sm" variant="soft" color="neutral"
                         label="View Class" :icon="CLASS_ICON" />
 
                     <UButton :to="`/curriculums?sessionId=${c.sessionId}`" size="sm" variant="soft" color="neutral"

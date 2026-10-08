@@ -111,7 +111,9 @@ const template = computed(() => {
     phone: sectionBranding.value?.phone || school.value?.phone || '',
     address: sectionBranding.value?.ownAddress
       ? addressLine(sectionBranding.value.address)
-      : idCardStore.settings.schoolAddress || ''
+      : idCardStore.settings.schoolAddress || '',
+    // Printed under the school name on the card header; falls back to "<type> Identification".
+    tagline: school.value?.motto || ''
   }
 
   if (cardType.value === 'staff') {

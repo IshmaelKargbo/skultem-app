@@ -15,16 +15,8 @@
       </div>
     </Heading>
 
-    <UCard>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UFormField label="From">
-          <UInput v-model="filters.from" type="date" class="w-full" />
-        </UFormField>
-        <UFormField label="To">
-          <UInput v-model="filters.to" type="date" class="w-full" />
-        </UFormField>
-      </div>
-    </UCard>
+    <FilterBar :model-value="filters" :fields="filterFields" title="Filter daily collection"
+      description="Pick a day or a date range" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -266,6 +258,11 @@ onMounted(async () => {
   await loadReport()
   await loadTransactions()
 })
+
+const filterFields = computed(() => [
+  { key: 'from', label: 'From', type: 'date' as const, default: today() },
+  { key: 'to', label: 'To', type: 'date' as const, default: today() },
+])
 
 definePageMeta({
   role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]

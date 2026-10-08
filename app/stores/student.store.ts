@@ -123,11 +123,11 @@ export const useStudentStore = defineStore('student', {
         this.loading = false
       }
     },
-    async fetchByClassAndStream(classId: string, streamId: string | undefined, page: number = 1, size: number = runtimeConf().limit) {
+    async fetchByClassAndStream(classId: string, streamId: string | undefined, page: number = 1, size: number = runtimeConf().limit, sectionId?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await StudentApi().getByClass(classId, streamId, page, size) as any
+        const response = await StudentApi().getByClass(classId, streamId, page, size, sectionId) as any
         this.classRecords = response.data || []
         this.classMeta = response.meta || {} as Meta
       } catch (err: any) {

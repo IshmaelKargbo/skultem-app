@@ -1,12 +1,28 @@
 <script setup lang="ts">
 const store = useAttendanceStore()
-const { records } = storeToRefs(store)
+const { records, meta, loading } = storeToRefs(store)
+
+const PAGE_SIZE = 7
 const route = useRoute()
 const router = useRouter()
 
+// `class` in the URL is the class session (SSS 1 Art), so a row is the open one when its session and date match.
 const selected = computed(() => {
-  return records.value.find(e => e.classId === clazz.value && e.date === date.value)
+  return records.value.find(e => e.sessionId === clazz.value && e.date === date.value)
 })
+
+// Driven by the store so marking attendance (which reloads page 1) and paging stay in step.
+const page = computed<number>({
+  get: () => Number(meta.value.page ?? 1),
+  set: (val) => { if (clazz.value) store.fetchAll(clazz.value, val, PAGE_SIZE) }
+})
+
+// "A" / "A · Art" - what tells SSS 1 Art apart from SSS 1 Science in the history.
+function sectionLabel(item: AttendanceHistory) {
+  return [item.sectionName, item.streamName && item.streamName !== 'N/A' ? item.streamName : '']
+    .filter(Boolean)
+    .join(' · ')
+}
 
 const clazz = computed<string>({
   get: () => route.query.class as string,
@@ -34,7 +50,7 @@ function updateQuery(newQuery: Record<string, any>) {
 async function click(row: AttendanceHistory) {
   updateQuery({
     date: row.date,
-    class: row.classId
+    class: row.sessionId
   })
 }
 </script>
@@ -47,13 +63,13 @@ async function click(row: AttendanceHistory) {
       <div v-if="records.length > 0" v-for="(item, index) in records" :key="index" :class="[
         'flex p-3 justify-between cursor-pointer transition-colors',
         index + 1 < records.length ? 'border-b border-gray-200 dark:border-gray-800' : '',
-        selected?.classId == item.classId && selected.date == item.date
+        selected?.sessionId == item.sessionId && selected.date == item.date
           ? 'bg-success-50/40 dark:bg-gray-950 rounded-md'
           : 'hover:bg-gray-50  dark:border-gray-800 dark:hover:bg-gray-950'
       ]" @click="click(item)">
         <div class="space-y-0.5">
           <p class="md:text-base font-medium">{{ formatDateString(item.date) }}</p>
-          <p class="text-sm text-mute">{{ item.className }}</p>
+          <p class="text-sm text-mute">{{ item.className }}<span v-if="sectionLabel(item)"> · {{ sectionLabel(item) }}</span></p>
         </div>
         <div class="flex flex-col items-end">
           <p class="md:text-2xl text-xl text-success-500">{{ (item.presentCount / item.totalCount * 100).toFixed(0) }}%
@@ -77,5 +93,13 @@ async function click(row: AttendanceHistory) {
         </p>
       </div>
     </div>
+
+    <template v-if="meta.total > PAGE_SIZE" #footer>
+      <div class="flex items-center justify-between">
+        <Showing :meta="meta" />
+        <UPagination v-model:page="page" size="sm" :page-size="PAGE_SIZE" :items-per-page="PAGE_SIZE"
+          :total="meta.total" :disabled="loading" />
+      </div>
+    </template>
   </UCard>
 </template>

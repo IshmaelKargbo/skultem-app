@@ -25,6 +25,12 @@ export const useHouseStore = defineStore('house', {
     create(payload: CreateHouseDto) {
       return HouseApi().create(payload)
     },
+    update(id: string, payload: CreateHouseDto) {
+      return HouseApi().update(id, payload)
+    },
+    delete(id: string) {
+      return HouseApi().delete(id)
+    },
     assign(payload: AssignHouseDto) {
       return HouseApi().assign(payload)
     },

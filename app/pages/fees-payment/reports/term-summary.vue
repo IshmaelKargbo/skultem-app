@@ -9,29 +9,8 @@
       </UButton>
     </Heading>
 
-    <UCard>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <UFormField label="Academic Year">
-          <USelectMenu v-model="filters.academicYearId" :items="academicYears" value-key="value" label-key="label"
-            placeholder="Active year" class="w-full" />
-        </UFormField>
-
-        <UFormField label="Term">
-          <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label" clear
-            placeholder="Whole year" class="w-full" />
-        </UFormField>
-
-        <UFormField label="Class">
-          <USelectMenu v-model="filters.classSessionId" :items="classSessions" :loading="loadingClasses"
-            value-key="value" label-key="label" clear placeholder="Every class" class="w-full" />
-        </UFormField>
-
-        <UFormField label="Fee Type">
-          <USelectMenu v-model="filters.feeCategoryId" :items="feeCategories" value-key="value" label-key="label"
-            clear placeholder="Every fee type" class="w-full" />
-        </UFormField>
-      </div>
-    </UCard>
+    <FilterBar :model-value="filters" :fields="filterFields" title="Filter term summary"
+      description="Narrow by year, term, class or fee type" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -231,6 +210,13 @@ onMounted(async () => {
   await loadClasses()
   await loadSummary()
 })
+
+const filterFields = computed(() => [
+  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
+  { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
+  { key: 'classSessionId', label: 'Class', type: 'select' as const, options: classSessions.value, placeholder: 'Every class' },
+  { key: 'feeCategoryId', label: 'Fee Type', type: 'select' as const, options: feeCategories.value, placeholder: 'Every fee type' },
+])
 
 definePageMeta({
   role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]

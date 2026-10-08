@@ -1,5 +1,5 @@
 <template>
-    <div class="grid gap-5 md:grid-cols-3 grid-cols-1">
+    <div class="grid gap-5 md:grid-cols-3 grid-cols-2">
         <Metric :record="{
             label: 'Total Revenue (This Term)',
             value: totalRevenue,
@@ -18,7 +18,7 @@
             color: 'info',
             subtileColor: 'success'
         }" />
-        <Metric :record="{
+        <Metric class="col-span-2 md:col-span-1" :record="{
             label: 'Outstanding Fees',
             value: balance,
             subtle: '-5.3%',

@@ -9,6 +9,7 @@ const { id } = defineProps<{
 
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
+const open = ref(false)
 const savingTerminal = ref(false)
 
 const savingNextClass = ref(false)
@@ -66,32 +67,29 @@ watch(() => id, () => {
 </script>
 
 <template>
-    <UCard v-if="canManagePromotion">
-        <template #header>
-            <div class="flex items-center gap-2">
-                <UIcon :name="PROMOTE_STUDENTS_ICON" class="size-4 text-primary" />
-                <h3 class="text-sm font-semibold">Promotion Settings</h3>
+    <USlideover v-if="canManagePromotion" v-model:open="open" title="Promotion Settings"
+        description="How students of this class move up when promoted.">
+        <UButton variant="soft" size="sm" color="primary" :icon="PROMOTE_STUDENTS_ICON" label="Promotion Settings" />
+
+        <template #body>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between gap-3 rounded-xl border border-default p-3">
+                    <div class="min-w-0 pr-3">
+                        <p class="text-sm font-medium text-highlighted">Graduating class</p>
+                        <p class="text-xs-base text-muted">e.g. Class 6, JSS 3, SSS 3 - promoted students graduate
+                            instead of moving up</p>
+                    </div>
+                    <USwitch :model-value="!!record?.terminal" :loading="savingTerminal" :disabled="savingTerminal"
+                        @update:model-value="toggleTerminal" />
+                </div>
+
+                <UFormField label="Promotes to"
+                    :help="record?.terminal ? 'Disabled while this is a graduating class' : 'The class students move up to when promoted'">
+                    <USelectMenu v-model="nextClassId" value-key="value" :items="otherClasses"
+                        :disabled="!!record?.terminal || savingNextClass" :loading="savingNextClass"
+                        placeholder="Select next class" class="w-full" />
+                </UFormField>
             </div>
         </template>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            <div class="flex items-center justify-between gap-3 rounded-xl border border-default p-3">
-                <div class="min-w-0 pr-3">
-                    <p class="text-sm font-medium text-highlighted">Graduating class</p>
-                    <p class="text-xs-base text-muted">e.g. Class 6, JSS 3, SSS 3 - promoted students graduate instead of
-                        moving
-                        up</p>
-                </div>
-                <USwitch :model-value="!!record?.terminal" :loading="savingTerminal" :disabled="savingTerminal"
-                    @update:model-value="toggleTerminal" />
-            </div>
-
-            <UFormField label="Promotes to"
-                :help="record?.terminal ? 'Disabled while this is a graduating class' : 'The class students move up to when promoted'">
-                <USelectMenu v-model="nextClassId" value-key="value" :items="otherClasses"
-                    :disabled="!!record?.terminal || savingNextClass" :loading="savingNextClass"
-                    placeholder="Select next class" class="w-full" />
-            </UFormField>
-        </div>
-    </UCard>
+    </USlideover>
 </template>

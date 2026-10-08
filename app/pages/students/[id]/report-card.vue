@@ -25,7 +25,7 @@
 
                     <div class="flex items-start justify-between">
                         <div>
-                            <h4 class="font-semibold">{{ item.termName }}</h4>
+                            <h4 class="font-semibold">{{ item.termName }}<span v-if="item.scopeLabel" class="ml-1 text-xs font-medium text-primary">· {{ item.scopeLabel }}</span></h4>
                             <p class="text-xs text-muted">{{ item.academicYearName }} · {{ item.className }}</p>
                         </div>
 

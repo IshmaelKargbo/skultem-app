@@ -33,26 +33,23 @@ const sortOptions = [
 ]
 const DEFAULT_SORT = 'desc'
 
-const type = ref(String(route.query.type ?? ''))
-const direction = ref(String(route.query.direction ?? ''))
-const referenceType = ref(String(route.query.referenceType ?? ''))
-const from = ref(String(route.query.from ?? ''))
-const to = ref(String(route.query.to ?? ''))
-const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
-const filterState = ref(false) // the filter row's open/closed state on mobile
+const filters = ref<Record<string, string>>({
+  type: String(route.query.type ?? ''),
+  direction: String(route.query.direction ?? ''),
+  referenceType: String(route.query.referenceType ?? ''),
+  from: String(route.query.from ?? ''),
+  to: String(route.query.to ?? ''),
+  sort: String(route.query.sort ?? DEFAULT_SORT),
+})
 
-const hasActiveFilters = computed(() =>
-  !!type.value || !!direction.value || !!referenceType.value || !!from.value || !!to.value
-  || sort.value !== DEFAULT_SORT)
-
-function resetFilters() {
-  type.value = ''
-  direction.value = ''
-  referenceType.value = ''
-  from.value = ''
-  to.value = ''
-  sort.value = DEFAULT_SORT
-}
+const filterFields = computed(() => [
+  { key: 'type', label: 'Type', type: 'select' as const, options: typeOptions, placeholder: 'All Types' },
+  { key: 'direction', label: 'Direction', type: 'select' as const, options: directionOptions, placeholder: 'All Directions' },
+  { key: 'referenceType', label: 'Reference', type: 'select' as const, options: referenceTypeOptions, placeholder: 'All References' },
+  { key: 'from', label: 'From', type: 'date' as const },
+  { key: 'to', label: 'To', type: 'date' as const },
+  { key: 'sort', label: 'Sort by', type: 'select' as const, options: sortOptions, default: DEFAULT_SORT, required: true },
+])
 
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
@@ -70,12 +67,12 @@ function updateQuery(newQuery: Record<string, any>) {
 
 async function fetchRecord() {
   await store.fetchAll(page.value, size.value, {
-    type: type.value || undefined,
-    direction: direction.value || undefined,
-    referenceType: referenceType.value || undefined,
-    from: from.value || undefined,
-    to: to.value || undefined,
-    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    type: filters.value.type || undefined,
+    direction: filters.value.direction || undefined,
+    referenceType: filters.value.referenceType || undefined,
+    from: filters.value.from || undefined,
+    to: filters.value.to || undefined,
+    sort: filters.value.sort === DEFAULT_SORT ? undefined : filters.value.sort,
   })
 }
 
@@ -91,14 +88,14 @@ watch(() => page.value, () => {
 }, { immediate: true })
 
 // Any filter change goes back to page 1 and is kept in the URL, so a filtered view can be shared or reloaded.
-watch([type, direction, referenceType, from, to, sort], () => {
+watch(filters, () => {
   updateQuery({
-    type: type.value || undefined,
-    direction: direction.value || undefined,
-    referenceType: referenceType.value || undefined,
-    from: from.value || undefined,
-    to: to.value || undefined,
-    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+    type: filters.value.type || undefined,
+    direction: filters.value.direction || undefined,
+    referenceType: filters.value.referenceType || undefined,
+    from: filters.value.from || undefined,
+    to: filters.value.to || undefined,
+    sort: filters.value.sort === DEFAULT_SORT ? undefined : filters.value.sort,
     page: 1,
   })
 
@@ -116,39 +113,16 @@ onMounted(() => {
   <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
     <template #header>
       <div>
-        <div class="flex items-center justify-between px-4 py-3">
+        <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div>
             <p>Transactions</p>
             <p class="text-xs text-muted">Complete financial transaction history</p>
           </div>
           <div class="flex items-center gap-2">
+            <FilterDrawer v-model="filters" :fields="filterFields" title="Filter transactions"
+              description="Narrow the list by type, direction, reference or date" />
             <TableViewToggle v-model="view" />
-            <UButton @click="filterState = !filterState" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
-              variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
           </div>
-        </div>
-
-        <!-- Always shown from md up; on mobile it opens with the filter button -->
-        <div :class="filterState ? 'flex' : 'hidden'"
-          class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
-          <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3 xl:grid-cols-6">
-            <USelectMenu class="w-full" v-model="type" value-key="value" label-key="label" :items="typeOptions"
-              placeholder="All Types" clear />
-            <USelectMenu class="w-full" v-model="direction" value-key="value" label-key="label"
-              :items="directionOptions" placeholder="All Directions" clear />
-            <USelectMenu class="w-full" v-model="referenceType" value-key="value" label-key="label"
-              :items="referenceTypeOptions" placeholder="All References" clear />
-            <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-              placeholder="Sort by" />
-            <UInput v-model="from" type="date" :max="to || undefined" aria-label="From date">
-              <template #leading><span class="text-xs text-muted">From</span></template>
-            </UInput>
-            <UInput v-model="to" type="date" :min="from || undefined" aria-label="To date">
-              <template #leading><span class="text-xs text-muted">To</span></template>
-            </UInput>
-          </div>
-          <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-            :disabled="!hasActiveFilters" @click="resetFilters" />
         </div>
       </div>
     </template>

@@ -9,24 +9,8 @@
       </UButton>
     </Heading>
 
-    <UCard>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <UFormField label="Academic Year">
-          <USelectMenu v-model="filters.academicYearId" :items="academicYears" value-key="value" label-key="label"
-            :disabled="usingDateRange" placeholder="Active year" class="w-full" />
-        </UFormField>
-        <UFormField label="Term">
-          <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label" clear
-            :disabled="usingDateRange" placeholder="Whole year" class="w-full" />
-        </UFormField>
-        <UFormField label="From">
-          <UInput v-model="filters.from" type="date" class="w-full" />
-        </UFormField>
-        <UFormField label="To">
-          <UInput v-model="filters.to" type="date" class="w-full" />
-        </UFormField>
-      </div>
-    </UCard>
+    <FilterBar :model-value="filters" :fields="filterFields" title="Filter payment methods"
+      description="A date range takes over from the year and term" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -163,6 +147,13 @@ onMounted(async () => {
   await termStore.fetchAll(1, 100)
   await loadSummary()
 })
+
+const filterFields = computed(() => [
+  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
+  { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
+  { key: 'from', label: 'From', type: 'date' as const },
+  { key: 'to', label: 'To', type: 'date' as const },
+])
 
 definePageMeta({
   role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]

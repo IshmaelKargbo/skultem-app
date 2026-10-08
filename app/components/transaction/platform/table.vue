@@ -1,34 +1,21 @@
 <template>
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
         <template #header>
-            <div>
-                <div class="flex items-center justify-between px-4 py-3">
-                    <div>
-                        <p class="font-semibold">Platform Fee Entries</p>
-                        <p class="text-xs-base line-clamp-1 text-muted">The platform fee charged to each student and the payments made towards it</p>
-                    </div>
-                    <UButton @click="filterState = !filterState" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
-                        variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-                </div>
-
-                <!-- Always shown from md up; on mobile it opens with the filter button -->
-                <div :class="filterState ? 'flex' : 'hidden'"
-                    class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
-                    <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3 xl:grid-cols-5">
-                        <USelectMenu class="w-full" v-model="classId" value-key="value" label-key="label"
-                            :items="classOptions" placeholder="All Classes" clear />
-                        <USelectMenu class="w-full" v-model="type" value-key="value" label-key="label"
-                            :items="typeOptions" placeholder="All Types" clear />
-                        <USelectMenu class="w-full" v-model="termId" value-key="value" label-key="label"
-                            :items="termList" placeholder="All Terms" clear />
-                        <USelectMenu class="w-full" v-model="sort" value-key="value" label-key="label"
-                            :items="sortOptions" placeholder="Sort by" />
-                        <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no" />
-                    </div>
-                    <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                        :disabled="!hasActiveFilters" @click="resetFilters" />
-                </div>
+          <div>
+            <div class="flex items-center justify-between gap-2 px-4 py-3">
+              <div>
+                <p class="font-semibold">Platform Fee Entries</p>
+                <p class="text-xs text-muted">The platform fee charged to each student and the payments made towards it</p>
+              </div>
+              
             </div>
+
+            <div class="flex items-center gap-2 border-t border-default p-4">
+              <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no" class="flex-1" />
+              <FilterDrawer v-model="filters" :fields="filterFields" title="Filter platform fee entries"
+                description="Narrow the list by class, type, term or order" />
+            </div>
+          </div>
         </template>
 
         <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
@@ -161,25 +148,22 @@ const DEFAULT_SORT = 'desc'
 
 const value = ref(String(route.query.search ?? '')) // what's typed
 const search = ref(value.value) // the typed text once the user pauses - this is what drives the fetch
-const classId = ref(String(route.query.classId ?? ''))
-const type = ref(String(route.query.type ?? ''))
-const termId = ref(String(route.query.termId ?? ''))
-const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
-const filterState = ref(false) // the filter row's open/closed state on mobile
+// What the filter drawer holds (search sits outside it, beside the drawer button).
+const filters = ref<Record<string, string>>({
+  classId: String(route.query.classId ?? ''),
+  type: String(route.query.type ?? ''),
+  termId: String(route.query.termId ?? ''),
+  sort: String(route.query.sort ?? DEFAULT_SORT),
+})
+
+const filterFields = computed(() => [
+  { key: 'classId', label: 'Class', type: 'select' as const, options: classOptions.value, placeholder: 'All Classes' },
+  { key: 'type', label: 'Type', type: 'select' as const, options: typeOptions, placeholder: 'All Types' },
+  { key: 'termId', label: 'Term', type: 'select' as const, options: termList.value, placeholder: 'All Terms' },
+  { key: 'sort', label: 'Sort by', type: 'select' as const, options: sortOptions, default: DEFAULT_SORT, required: true },
+])
 
 const classOptions = computed(() => clazzStore.records.map((e) => ({ label: e.name, value: e.id })))
-
-const hasActiveFilters = computed(() =>
-    !!value.value || !!classId.value || !!type.value || !!termId.value || sort.value !== DEFAULT_SORT)
-
-function resetFilters() {
-    value.value = ''
-    search.value = ''
-    classId.value = ''
-    type.value = ''
-    termId.value = ''
-    sort.value = DEFAULT_SORT
-}
 
 const page = computed<number>({
     get: () => Number(route.query.page ?? 1),
@@ -193,10 +177,10 @@ function updateQuery(newQuery: Record<string, any>) {
 function fetchRecord() {
     return store.fetchEntries(page.value, size, {
         search: search.value || undefined,
-        classId: classId.value || undefined,
-        type: type.value || undefined,
-        termId: termId.value || undefined,
-        sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+        classId: filters.value.classId || undefined,
+        type: filters.value.type || undefined,
+        termId: filters.value.termId || undefined,
+        sort: filters.value.sort === DEFAULT_SORT ? undefined : filters.value.sort,
     })
 }
 
@@ -212,13 +196,13 @@ watch(value, (val) => {
 })
 
 // Any filter change goes back to page 1 and is kept in the URL, so a filtered view can be shared or reloaded.
-watch([search, classId, type, termId, sort], () => {
+watch([search, filters], () => {
     updateQuery({
         search: search.value || undefined,
-        classId: classId.value || undefined,
-        type: type.value || undefined,
-        termId: termId.value || undefined,
-        sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
+        classId: filters.value.classId || undefined,
+        type: filters.value.type || undefined,
+        termId: filters.value.termId || undefined,
+        sort: filters.value.sort === DEFAULT_SORT ? undefined : filters.value.sort,
         page: 1,
     })
 

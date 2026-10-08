@@ -1,12 +1,12 @@
 <template>
   <USlideover v-model:open="open" :dismissible="false">
     <!-- Trigger -->
-    <UButton color="primary" label="Add House" icon="prime:plus" @click="open = true" />
+    <UButton v-if="!house" color="primary" label="Add House" icon="prime:plus" @click="open = true" />
 
     <!-- Header -->
     <template #header>
       <div class="flex items-center justify-between w-full">
-        <h2 class="text-lg font-semibold">Create House</h2>
+        <h2 class="text-lg font-semibold">{{ house ? 'Edit House' : 'Create House' }}</h2>
 
         <UButton icon="lucide:x" variant="ghost" color="neutral" @click="close" />
       </div>
@@ -72,7 +72,7 @@
     <!-- Footer -->
     <template #footer>
       <div class="flex gap-3">
-        <UButton icon="lucide:save" label="Create House" :loading="isLoading" @click="formRef?.submit()" />
+        <UButton icon="lucide:save" :label="house ? 'Save Changes' : 'Create House'" :loading="isLoading" @click="formRef?.submit()" />
 
         <UButton label="Cancel" variant="outline" color="neutral" :disabled="isLoading" @click="close" />
       </div>
@@ -89,13 +89,18 @@ const teacherStore = useTeacherStore()
 const { records } = storeToRefs(teacherStore)
 const { success: toastSuccess, error: toastError } = useNotify()
 
-const open = ref(false)
+const props = defineProps<{ house?: House }>()
+const emit = defineEmits<{ saved: [] }>()
+
+// With a `house` this edits it and is opened by the parent (v-model:open); without one it's the
+// "Add House" button + create form.
+const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const formRef = ref()
 
 const teachers = computed(() =>
   records.value.map((teacher) => ({
-    label: `${teacher.user.givenNames} ${teacher.user.familyName}`,
+    label: teacherLabel(teacher),
     value: teacher.id
   }))
 )
@@ -142,6 +147,17 @@ function resetForm() {
   Object.assign(state, initialState)
 }
 
+watch(open, (value) => {
+  if (value && props.house) {
+    Object.assign(state, {
+      name: props.house.name,
+      motto: props.house.motto,
+      color: props.house.color,
+      masters: props.house.houseMasters.map(m => m.id)
+    })
+  }
+})
+
 function close() {
   open.value = false
   resetForm()
@@ -151,14 +167,19 @@ async function onSubmit(event: { data: HouseForm }) {
   try {
     isLoading.value = true
 
-    await store.create(state)
+    if (props.house) {
+      await store.update(props.house.id, { ...state })
+      toastSuccess('House updated successfully')
+    } else {
+      await store.create(state)
+      toastSuccess('House created successfully')
+    }
     store.fetchAll(1, runtimeConf().limit)
-
-    toastSuccess('House created successfully')
+    emit('saved')
 
     close()
   } catch (error: any) {
-    toastError(error?.message || 'Failed to create house')
+    toastError(error?.message || (props.house ? 'Failed to update house' : 'Failed to create house'))
   } finally {
     isLoading.value = false
   }
