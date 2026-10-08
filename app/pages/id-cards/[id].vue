@@ -3,10 +3,6 @@
     <Heading :title="personName || 'ID Card Preview'"
       :subtitle="`Preview and print this ${cardType}'s identification card.`">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/id-cards" class="justify-center">
-          Back
-        </UButton>
-
         <UButton icon="i-lucide-settings-2" variant="outline" color="neutral" to="/id-cards/settings"
           class="justify-center">
           Card Design
@@ -15,11 +11,6 @@
         <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading"
           class="justify-center" @click="downloadPdf">
           Download PDF
-        </UButton>
-
-        <UButton icon="i-lucide-printer" variant="outline" color="neutral" :loading="printing" class="justify-center"
-          @click="printCard">
-          Print
         </UButton>
       </div>
     </Heading>
@@ -260,6 +251,7 @@ function addressLine(a?: SectionAddress | null) {
 
 onMounted(async () => {
   useAppStore().setTitle('ID Card Preview')
+  useAppStore().setBack('/id-cards')
   // Warm the print-safe images so Download / Print doesn't wait on them.
   useBrandingAssets().get(brandingTarget.value).catch(() => {})
   // Not awaited: decorative, and must never hold the card back. Only a school run in management
