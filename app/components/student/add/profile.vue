@@ -241,7 +241,7 @@ async function cropPhoto(file: File): Promise<File> {
     )
 
     const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.92)
+        canvas.toBlob(resolve, 'image/jpeg', 0.78)
     })
 
     if (!blob) return file

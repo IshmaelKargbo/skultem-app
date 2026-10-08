@@ -106,10 +106,12 @@ const name = computed(() => {
 
 async function onPhotoChange(event: Event) {
     const input = event.target as HTMLInputElement
-    const file = input.files?.[0]
+    const picked = input.files?.[0]
     input.value = ''
 
-    if (!file) return
+    if (!picked) return
+
+    const file = await compressImage(picked)
 
     if (file.size > 2 * 1024 * 1024) {
         useNotify().error('Photo must be 2MB or less')
