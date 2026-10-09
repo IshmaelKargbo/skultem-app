@@ -10,7 +10,7 @@
     </Heading>
 
     <FilterBar :model-value="filters" :fields="filterFields" title="Filter payment methods"
-      description="A date range takes over from the year and term" @update:model-value="Object.assign(filters, $event)" />
+      description="A date range takes over from the term" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -149,7 +149,6 @@ onMounted(async () => {
 })
 
 const filterFields = computed(() => [
-  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
   { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
   { key: 'from', label: 'From', type: 'date' as const },
   { key: 'to', label: 'To', type: 'date' as const },

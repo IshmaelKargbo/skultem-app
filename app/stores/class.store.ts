@@ -114,6 +114,12 @@ export const useClassStore = defineStore('class', {
       if (res && this.record?.id === id) this.record = res
       return res
     },
+    // Saves the given classes in the order they're passed (first = lowest rank), then refreshes the list.
+    async reorder(classIds: string[]) {
+      const ok = await ClassApi().reorder(classIds)
+      if (ok) await this.fetchAll(1, 200)
+      return ok
+    },
     updateTemplate(classId: string, templateId: string) {
       return ClassApi().updateTemplate(classId, templateId)
     },

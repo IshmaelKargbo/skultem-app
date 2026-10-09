@@ -349,6 +349,21 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    reorder: async (classIds: string[]) => {
+      try {
+        const res = await $api('/class/reorder', {
+          method: 'PUT',
+          body: { classIds }
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to save class order')
+
+        return true
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     updateTemplate: async (classId: string, templateId: string) => {
       try {
         return await $api(`/class/${classId}/template`, {

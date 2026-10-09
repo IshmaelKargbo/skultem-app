@@ -10,7 +10,7 @@
     </Heading>
 
     <FilterBar :model-value="filters" :fields="filterFields" title="Filter term summary"
-      description="Narrow by year, term, class or fee type" @update:model-value="Object.assign(filters, $event)" />
+      description="Narrow by term, class or fee type" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -212,7 +212,6 @@ onMounted(async () => {
 })
 
 const filterFields = computed(() => [
-  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
   { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
   { key: 'classSessionId', label: 'Class', type: 'select' as const, options: classSessions.value, placeholder: 'Every class' },
   { key: 'feeCategoryId', label: 'Fee Type', type: 'select' as const, options: feeCategories.value, placeholder: 'Every fee type' },

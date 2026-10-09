@@ -2,9 +2,11 @@
   <div class="space-y-4 px-4 md:px-6">
     <UCard>
       <div class="space-y-4">
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <UButton v-for="p in periods" :key="p.value" :label="p.label" size="sm"
             :variant="filters.period === p.value ? 'solid' : 'outline'" @click="filters.period = p.value" />
+          <UButton label="Arrange classes" icon="i-lucide-arrow-up-down" size="sm" color="neutral" variant="soft"
+            class="ml-auto" :disabled="classStore.records.length < 2" @click="arrangeOpen = true" />
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -28,6 +30,8 @@
         </div>
       </div>
     </UCard>
+
+    <ClassReorder v-model:open="arrangeOpen" :classes="classStore.records" />
 
     <UCard v-if="loadingSummary">
       <div class="space-y-3">
@@ -205,8 +209,14 @@ const terms = computed(() => termStore.records
   .filter(t => !filters.academicYearId || t.academicYear?.id === filters.academicYearId)
   .map(t => ({ label: t.name, value: t.id })))
 
-// Highest overall attendance first.
-const sortedClasses = computed(() => sortByDesc(summary.value?.classes, c => c.totals.overallAttendancePercentage))
+const arrangeOpen = ref(false)
+
+// Lowest class rank first (JSS 1 before JSS 2 ...); the order is set with "Arrange classes".
+const sortedClasses = computed(() => {
+  const rank = new Map(classStore.records.map(c => [c.id, c.levelOrder]))
+  const of = (id: string) => rank.get(id) ?? Number.MAX_SAFE_INTEGER
+  return [...(summary.value?.classes ?? [])].sort((a, b) => of(a.classId) - of(b.classId))
+})
 
 const classIdParam = () => (filters.classId === ALL ? undefined : filters.classId)
 

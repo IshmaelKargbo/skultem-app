@@ -40,6 +40,26 @@
           </template>
         </UFormField>
 
+        <!-- Position -->
+        <UFormField label="Position" name="position">
+          <USelectMenu
+            v-model="state.position"
+            value-key="value"
+            :items="positionOptions"
+            :disabled="isLoading || isFetching"
+          >
+            <template #leading>
+              <UIcon name="i-lucide-arrow-up-down" class="text-muted" />
+            </template>
+          </USelectMenu>
+
+          <template #help>
+            <p class="text-xs text-muted">
+              Where this class ranks, from the lowest (Nursery) to the highest (SSS). Reports follow this order.
+            </p>
+          </template>
+        </UFormField>
+
         <!-- Assessment Template -->
         <UFormField label="Assessment Template" name="assessmentTemplateId">
           <USelectMenu
@@ -112,13 +132,26 @@ const assessmentTemplates = computed(() =>
 
 type ClassEditForm = {
   name: string;
+  position: number;
   assessmentTemplateId: string;
 };
 
 const state = reactive<ClassEditForm>({
   name: "",
+  position: 1,
   assessmentTemplateId: "",
 });
+
+// Classes in saved rank order, loaded when the panel opens.
+const ranked = ref<Clazz[]>([]);
+const originalPosition = ref(1);
+
+const positionOptions = computed(() =>
+  ranked.value.map((c, i) => ({
+    label: c.id === props.classId ? `${i + 1} (current)` : `${i + 1} - ${c.name}`,
+    value: i + 1,
+  }))
+);
 
 // Tracked separately from state.assessmentTemplateId so onSubmit only calls the
 // template endpoint when the user actually changed it - that endpoint 400s if
@@ -140,6 +173,10 @@ const openEdit = async () => {
     const record = await store.findOne(props.classId);
     state.name = record?.name ?? "";
     state.assessmentTemplateId = record?.assessmentTemplateId ?? "";
+    await store.fetchAll(1, 200);
+    ranked.value = [...store.records].sort((a, b) => a.levelOrder - b.levelOrder);
+    const idx = ranked.value.findIndex((c) => c.id === props.classId);
+    originalPosition.value = state.position = idx >= 0 ? idx + 1 : 1;
     originalTemplateId.value = state.assessmentTemplateId;
   } catch (err: any) {
     toastError(err?.message || "Failed to load class");
@@ -157,6 +194,12 @@ const onSubmit = async (event: FormSubmitEvent<ClassEditForm>) => {
 
     if (state.assessmentTemplateId && state.assessmentTemplateId !== originalTemplateId.value) {
       await store.updateTemplate(props.classId, state.assessmentTemplateId);
+    }
+
+    if (state.position !== originalPosition.value) {
+      const ids = ranked.value.map((c) => c.id).filter((id) => id !== props.classId);
+      ids.splice(state.position - 1, 0, props.classId);
+      await store.reorder(ids);
     }
 
     toastSuccess("Class updated successfully");

@@ -24,6 +24,10 @@ export const useSectionStore = defineStore('section', {
     },
     create(payload: CreateSectionDto) {
       return SectionApi().create(payload)
+    },
+    // Saves the given sections in the order they're passed (first = lowest rank).
+    async reorder(sectionIds: string[]) {
+      return await SectionApi().reorder(sectionIds)
     }
   }
 })

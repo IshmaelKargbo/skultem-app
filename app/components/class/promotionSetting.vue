@@ -3,13 +3,15 @@ const { can } = useAuth()
 const store = useClassStore()
 const {record, loading} = storeToRefs(store)
 const { success: toastSuccess, error: toastError } = useNotify()
-const { id } = defineProps<{
+const { id, hideTrigger = false } = defineProps<{
     id: string
+    // The parent opens it (v-model:open) from its own menu instead of using the built-in button.
+    hideTrigger?: boolean
 }>()
 
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
 
-const open = ref(false)
+const open = defineModel<boolean>('open', { default: false })
 const savingTerminal = ref(false)
 
 const savingNextClass = ref(false)
@@ -69,7 +71,8 @@ watch(() => id, () => {
 <template>
     <USlideover v-if="canManagePromotion" v-model:open="open" title="Promotion Settings"
         description="How students of this class move up when promoted.">
-        <UButton variant="soft" size="sm" color="primary" :icon="PROMOTE_STUDENTS_ICON" label="Promotion Settings" />
+        <UButton v-if="!hideTrigger" variant="soft" size="sm" color="primary" :icon="PROMOTE_STUDENTS_ICON"
+            label="Promotion Settings" />
 
         <template #body>
             <div class="space-y-4">

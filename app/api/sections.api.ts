@@ -22,6 +22,22 @@ export const SectionApi = () => {
       }
     },
 
+    reorder: async (sectionIds: string[]) => {
+      try {
+        const res = await $api('/section/reorder', {
+          method: 'PUT',
+          body: { sectionIds }
+        }) as any
+
+        if (!res)
+          throw new Error('Failed to save section order')
+
+        return true
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     create: async (payload: CreateSectionDto) => {
       try {
         return await $api('/section', {

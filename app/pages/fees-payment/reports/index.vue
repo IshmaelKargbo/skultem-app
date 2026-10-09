@@ -10,7 +10,7 @@
     </Heading>
 
     <FilterBar :model-value="filters" :fields="filterFields" title="Filter fees dashboard"
-      description="Choose the academic year and term" @update:model-value="Object.assign(filters, $event)" />
+      description="Choose the term" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -30,18 +30,61 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Metric :record="{ label: 'Total Expected', value: format(dashboard.totalExpected), icon: 'i-lucide-banknote', color: 'info', isReady: true }" />
-          <Metric :record="{ label: 'Total Collected', value: format(dashboard.totalCollected), icon: 'i-lucide-check-circle', color: 'success', isReady: true }" />
-          <Metric :record="{ label: 'Outstanding', value: format(dashboard.totalOutstanding), icon: 'i-lucide-alert-triangle', color: 'error', isReady: true }" />
-          <Metric :record="{ label: 'Collection Rate', value: `${dashboard.collectionRate}%`, icon: 'i-lucide-percent', color: 'primary', isReady: true }" />
-          <Metric :record="{ label: 'Fully Paid Students', value: String(dashboard.studentsFullyPaid), icon: 'i-lucide-user-check', color: 'success', isReady: true }" />
-          <Metric :record="{ label: 'Students With Balance', value: String(dashboard.studentsWithBalance), icon: 'i-lucide-user-minus', color: 'warning', isReady: true }" />
-          <Metric :record="{ label: 'Students With No Payment', value: String(dashboard.studentsNoPayment), icon: 'i-lucide-user-x', color: 'error', isReady: true }" />
-          <Metric :record="{ label: 'Total Students', value: String(dashboard.totalStudents), icon: 'i-lucide-users', color: 'neutral', isReady: true }" />
+        <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div v-for="t in tiles" :key="t.label" class="rounded-xl bg-primary-50 p-3 text-center">
+            <p class="text-xs text-gray-500">{{ t.label }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ t.value }}</p>
+          </div>
         </div>
 
-        <FeeReportInsightSection class="mt-6" title="Key Insights" :items="insights" />
+        <FeeReportInsightSection title="Key Insights" :items="insights" />
+
+        <h3 class="mb-2 mt-6 text-sm font-semibold text-gray-700">Fee Collection</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-max border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="border border-gray-200 p-2.5 text-left font-semibold">Item</th>
+                <th class="border border-gray-200 p-2.5 text-right font-semibold">Amount</th>
+                <th class="border border-gray-200 p-2.5 text-center font-semibold">Share of Expected</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in collectionRows" :key="r.label" :class="r.alert ? 'bg-red-50' : ''">
+                <td class="border border-gray-200 p-2.5">{{ r.label }}</td>
+                <td class="border border-gray-200 p-2.5 text-right font-semibold"
+                  :class="r.alert ? 'text-red-600' : 'text-gray-700'">{{ format(r.amount) }}</td>
+                <td class="border border-gray-200 p-2.5 text-center">{{ r.share }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="mb-2 mt-6 text-sm font-semibold text-gray-700">Student Payment Status</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-max border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="border border-gray-200 p-2.5 text-left font-semibold">Status</th>
+                <th class="border border-gray-200 p-2.5 text-center font-semibold">Students</th>
+                <th class="border border-gray-200 p-2.5 text-center font-semibold">Share of Students</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in statusRows" :key="r.label" :class="r.alert ? 'bg-red-50' : ''">
+                <td class="border border-gray-200 p-2.5">{{ r.label }}</td>
+                <td class="border border-gray-200 p-2.5 text-center font-semibold">{{ r.count }}</td>
+                <td class="border border-gray-200 p-2.5 text-center">{{ r.share }}%</td>
+              </tr>
+              <tr class="bg-gray-50 font-semibold">
+                <td class="border border-gray-200 p-2.5">Total</td>
+                <td class="border border-gray-200 p-2.5 text-center">{{ dashboard.totalStudents }}</td>
+                <td class="border border-gray-200 p-2.5 text-center">100%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
 
         <p class="mt-6 text-center text-[10px] uppercase tracking-widest text-gray-300">
           Generated by Skultem &middot; {{ generatedDate }}
@@ -82,6 +125,39 @@ const loading = computed(() => store.loading)
 const schoolName = computed(() => school.value?.name || 'Skultem')
 const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 const generatedDate = computed(() => new Date().toLocaleDateString())
+
+const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0)
+
+const tiles = computed(() => {
+  const d = dashboard.value
+  if (!d) return []
+  return [
+    { label: 'Expected', value: format(d.totalExpected) },
+    { label: 'Collected', value: format(d.totalCollected) },
+    { label: 'Outstanding', value: format(d.totalOutstanding) },
+    { label: 'Collection Rate', value: `${d.collectionRate}%` },
+  ]
+})
+
+const collectionRows = computed(() => {
+  const d = dashboard.value
+  if (!d) return []
+  return [
+    { label: 'Total expected', amount: d.totalExpected, share: 100, alert: false },
+    { label: 'Total collected', amount: d.totalCollected, share: pct(d.totalCollected, d.totalExpected), alert: false },
+    { label: 'Outstanding', amount: d.totalOutstanding, share: pct(d.totalOutstanding, d.totalExpected), alert: d.totalOutstanding > 0 },
+  ]
+})
+
+const statusRows = computed(() => {
+  const d = dashboard.value
+  if (!d) return []
+  return [
+    { label: 'Fully paid', count: d.studentsFullyPaid, share: pct(d.studentsFullyPaid, d.totalStudents), alert: false },
+    { label: 'With a balance', count: d.studentsWithBalance, share: pct(d.studentsWithBalance, d.totalStudents), alert: false },
+    { label: 'No payment yet', count: d.studentsNoPayment, share: pct(d.studentsNoPayment, d.totalStudents), alert: d.studentsNoPayment > 0 },
+  ]
+})
 
 // Plain frontend derivations of the numbers already on the page - same approach as the academic
 // reports "What needs your attention" section. Only shown when there's real data behind them.
@@ -157,7 +233,6 @@ onMounted(async () => {
 })
 
 const filterFields = computed(() => [
-  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
   { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
 ])
 

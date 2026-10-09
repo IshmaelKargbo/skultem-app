@@ -1,123 +1,112 @@
 <template>
-  <div class="px-4 sm:px-6 space-y-4">
+  <div class="space-y-4 px-4 md:px-6">
     <FeeReportSectionNav />
 
     <Heading title="Student Balances" subtitle="Every student's current fee position, without opening them one by one.">
       <div class="flex gap-2">
-        <UButton icon="i-lucide-download" color="primary" class="justify-center"
-          :loading="exporting" @click="exportReport">
+        <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
+          :disabled="!rows.length" @click="downloadPdf">
+          Export PDF
+        </UButton>
+        <UButton icon="i-lucide-file-spreadsheet" color="neutral" variant="soft" class="justify-center"
+          :loading="exporting" @click="exportCsv">
           Export CSV
         </UButton>
       </div>
     </Heading>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
-      <template #header>
-        <div class="flex items-center justify-between gap-2 px-4 py-3">
-          <div>
-            <p class="font-semibold">Student Balances</p>
-            <p class="text-xs text-muted">Expected, paid and outstanding for every student</p>
-          </div>
-          <FilterDrawer :model-value="drawerModel" :fields="filterFields" title="Filter student balances"
-            description="Narrow by year, term, class, status, fee type or balance range"
-            @update:model-value="applyDrawer" />
-        </div>
-      </template>
+    <FilterBar :model-value="drawerModel" :fields="filterFields" title="Filter student balances"
+      description="Narrow by term, class, status, fee type or balance range" @update:model-value="applyDrawer" />
 
-      <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
-        <template #empty-state>
-          <div class="flex flex-col items-center gap-2 py-10">
-            <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-            <p class="text-gray-500">No students found for this filter.</p>
-          </div>
-        </template>
-        <template #loading>
-          <TableLoading :size="columns.length" />
-        </template>
-        <template #studentName-cell="{ row }">
-          <NuxtLink :to="`/transactions/student-ledger?search=${encodeURIComponent(row.original.studentName)}`"
-            class="text-primary-600 hover:underline">
-            {{ row.original.studentName }}
-          </NuxtLink>
-        </template>
-        <template #expected-cell="{ row }">
-          {{ format(row.original.expected) }}
-        </template>
-        <template #paid-cell="{ row }">
-          <span class="text-success">{{ format(row.original.paid) }}</span>
-        </template>
-        <template #balance-cell="{ row }">
-          <span :class="row.original.balance > 0 ? 'text-error font-semibold' : 'text-gray-500'">
-            {{ format(row.original.balance) }}
-          </span>
-        </template>
-        <template #status-cell="{ row }">
-          <UBadge :label="parseFeeCollectionStatus[row.original.status]"
-            :color="parseFeeCollectionStatusColor[row.original.status]" variant="subtle" />
-        </template>
-      </UTable>
-
-      <!-- Mobile -->
-      <div class="p-4 space-y-3 md:hidden">
-        <template v-if="loading">
-          <USkeleton v-for="i in 6" :key="i" class="h-20 w-full rounded-xl" />
-        </template>
-        <template v-else-if="records.length">
-          <NuxtLink v-for="s in records" :key="s.studentId"
-            :to="`/transactions/student-ledger?search=${encodeURIComponent(s.studentName)}`"
-            class="block rounded-xl border border-default p-3">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <p class="truncate font-semibold text-highlighted">{{ s.studentName }}</p>
-                <p class="text-xs text-muted">{{ s.admissionNumber }} &middot; {{ s.className }}</p>
-              </div>
-              <UBadge :label="parseFeeCollectionStatus[s.status]" :color="parseFeeCollectionStatusColor[s.status]"
-                variant="subtle" size="sm" />
-            </div>
-            <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
-              <div>
-                <p class="text-muted">Expected</p>
-                <p class="font-medium">{{ format(s.expected) }}</p>
-              </div>
-              <div>
-                <p class="text-muted">Paid</p>
-                <p class="font-medium text-success">{{ format(s.paid) }}</p>
-              </div>
-              <div>
-                <p class="text-muted">Balance</p>
-                <p class="font-medium" :class="s.balance > 0 ? 'text-error' : ''">{{ format(s.balance) }}</p>
-              </div>
-            </div>
-          </NuxtLink>
-        </template>
-        <template v-else>
-          <div class="flex flex-col items-center justify-center py-14">
-            <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400" />
-            <p class="text-sm text-gray-500">No students found for this filter.</p>
-          </div>
-        </template>
+    <UCard v-if="loading">
+      <div class="space-y-3">
+        <USkeleton class="h-8 w-64" />
+        <USkeleton v-for="i in 8" :key="i" class="h-8 w-full" />
       </div>
+    </UCard>
 
-      <template #footer>
-        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
-          <Showing :meta="meta" />
-          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
+    <template v-else-if="rows.length">
+      <div id="student-balances-preview" class="rounded-lg bg-white px-2 text-gray-900">
+        <div class="mb-4 border-b-4 border-primary-500 pb-5 pt-6 text-center sm:pt-8">
+          <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
+          <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>
+          <p class="mt-1 text-sm font-semibold text-gray-600">Student Fee Balances</p>
+          <div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
+            <span>Academic Year: {{ academicYearLabel }}</span>
+            <span>Term: {{ termLabel }}</span>
+            <span v-if="filters.classSessionId">Class: {{ classLabel }}</span>
+            <span v-if="filters.status">Status: {{ parseFeeCollectionStatus[filters.status] }}</span>
+          </div>
         </div>
-      </template>
+
+        <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div v-for="t in tiles" :key="t.label" class="rounded-xl bg-primary-50 p-3 text-center">
+            <p class="text-xs text-gray-500">{{ t.label }}</p>
+            <p class="text-lg font-bold text-primary-600">{{ t.value }}</p>
+          </div>
+        </div>
+
+        <FeeReportInsightSection title="Key Insights" :items="insights" />
+
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-max border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="border border-gray-200 p-2.5 text-center font-semibold">#</th>
+                <th class="border border-gray-200 p-2.5 text-left font-semibold">Student</th>
+                <th class="border border-gray-200 p-2.5 text-left font-semibold">Admission No.</th>
+                <th class="border border-gray-200 p-2.5 text-left font-semibold">Class</th>
+                <th class="border border-gray-200 p-2.5 text-right font-semibold">Expected</th>
+                <th class="border border-gray-200 p-2.5 text-right font-semibold">Paid</th>
+                <th class="border border-gray-200 p-2.5 text-right font-semibold">Balance</th>
+                <th class="border border-gray-200 p-2.5 text-center font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(s, i) in rows" :key="s.studentId" :class="s.balance > 0 ? 'bg-red-50' : ''">
+                <td class="border border-gray-200 p-2.5 text-center">{{ i + 1 }}</td>
+                <td class="border border-gray-200 p-2.5">{{ s.studentName }}</td>
+                <td class="border border-gray-200 p-2.5">{{ s.admissionNumber }}</td>
+                <td class="border border-gray-200 p-2.5">{{ s.className }}</td>
+                <td class="border border-gray-200 p-2.5 text-right">{{ format(s.expected) }}</td>
+                <td class="border border-gray-200 p-2.5 text-right">{{ format(s.paid) }}</td>
+                <td class="border border-gray-200 p-2.5 text-right font-semibold"
+                  :class="s.balance > 0 ? 'text-red-600' : 'text-gray-700'">{{ format(s.balance) }}</td>
+                <td class="border border-gray-200 p-2.5 text-center">{{ parseFeeCollectionStatus[s.status] }}</td>
+              </tr>
+              <tr class="bg-gray-50 font-semibold">
+                <td class="border border-gray-200 p-2.5" colspan="4">Total ({{ rows.length }} students)</td>
+                <td class="border border-gray-200 p-2.5 text-right">{{ format(totals.expected) }}</td>
+                <td class="border border-gray-200 p-2.5 text-right">{{ format(totals.paid) }}</td>
+                <td class="border border-gray-200 p-2.5 text-right">{{ format(totals.balance) }}</td>
+                <td class="border border-gray-200 p-2.5" />
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="mt-6 text-center text-[10px] uppercase tracking-widest text-gray-300">
+          Generated by Skultem &middot; {{ generatedDate }}
+        </p>
+      </div>
+    </template>
+
+    <UCard v-else>
+      <div class="flex flex-col items-center justify-center py-14 text-center">
+        <UIcon name="i-lucide-users" class="mb-3 size-10 text-muted" />
+        <p class="text-sm font-medium text-highlighted">No students found for this filter.</p>
+      </div>
     </UCard>
   </div>
 </template>
 
 <script setup lang="ts">
-const route = useRoute()
-const router = useRouter()
-
 const academicYearStore = useAcademicYearStore()
 const termStore = useTermStore()
 const classSessionStore = useClassSessionStore()
 const feeStore = useFeeStore()
-const store = useFeeReportStore()
+const { school } = useSchoolInfo()
+const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 const { format } = useMoney()
 const { success, error: toastError } = useNotify()
 
@@ -141,17 +130,17 @@ const sortOptions = [
 const DEFAULT_SORT = 'BALANCE:desc'
 const sortBy = ref(DEFAULT_SORT)
 
-const columns = [
-  { accessorKey: 'studentName', header: 'Student' },
-  { accessorKey: 'className', header: 'Class' },
-  { accessorKey: 'expected', header: 'Expected' },
-  { accessorKey: 'paid', header: 'Paid' },
-  { accessorKey: 'balance', header: 'Balance' },
-  { accessorKey: 'status', header: 'Status' },
+const statusOptions = [
+  { label: 'Paid', value: 'PAID' },
+  { label: 'Partially Paid', value: 'PARTIALLY_PAID' },
+  { label: 'No Payment', value: 'NO_PAYMENT' },
 ]
 
-const localClassSessions = ref<ClassSession[]>([])
+const rows = ref<StudentFeeBalance[]>([])
+const loading = ref(true)
+const downloading = ref(false)
 const exporting = ref(false)
+const localClassSessions = ref<ClassSession[]>([])
 
 const academicYears = computed(() => academicYearStore.list)
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
@@ -162,17 +151,50 @@ const classSessions = computed(() => localClassSessions.value.map(e => {
 }))
 const feeCategories = computed(() => feeStore.records.map(c => ({ label: c.name, value: c.id })))
 
-const records = computed(() => store.studentBalances)
-const meta = computed(() => store.studentBalancesMeta)
-const loading = computed(() => store.loading)
+const schoolName = computed(() => school.value?.name || 'Skultem')
+const generatedDate = computed(() => new Date().toLocaleDateString())
+const academicYearLabel = computed(() =>
+  academicYears.value.find(y => y.value === filters.academicYearId)?.label || academicYearStore.activeYear?.name || '—')
+const termLabel = computed(() => terms.value.find(t => t.value === filters.termId)?.label || 'Whole Year')
+const classLabel = computed(() => classSessions.value.find(c => c.value === filters.classSessionId)?.label || '—')
 
-const statusOptions = [
-  { label: 'Paid', value: 'PAID' },
-  { label: 'Partially Paid', value: 'PARTIALLY_PAID' },
-  { label: 'No Payment', value: 'NO_PAYMENT' },
-]
+const totals = computed(() => rows.value.reduce(
+  (t, s) => ({ expected: t.expected + s.expected, paid: t.paid + s.paid, balance: t.balance + s.balance }),
+  { expected: 0, paid: 0, balance: 0 }))
 
-// The drawer edits year/term/class/status/fee type/balance range and the sort order as one object.
+const tiles = computed(() => [
+  { label: 'Students', value: String(rows.value.length) },
+  { label: 'Expected', value: format(totals.value.expected) },
+  { label: 'Paid', value: format(totals.value.paid) },
+  { label: 'Outstanding', value: format(totals.value.balance) },
+])
+
+// Plain derivations of the rows already on the page.
+const insights = computed(() => {
+  const list: { text: string; color: string }[] = []
+  const owing = rows.value.filter(s => s.balance > 0)
+  const none = rows.value.filter(s => s.status === 'NO_PAYMENT')
+  if (!rows.value.length) return list
+
+  if (owing.length) {
+    const top = [...owing].sort((a, b) => b.balance - a.balance)[0]!
+    list.push({
+      text: `${owing.length} of ${rows.value.length} students still owe a balance; ${top.studentName} owes the most at ${format(top.balance)}.`,
+      color: 'warning',
+    })
+  } else {
+    list.push({ text: 'Every student listed has paid in full.', color: 'success' })
+  }
+  if (none.length) {
+    list.push({
+      text: `${none.length} student${none.length === 1 ? ' has' : 's have'} made no payment at all yet.`,
+      color: 'error',
+    })
+  }
+  return list
+})
+
+// The drawer edits the filters and the sort order as one object.
 const drawerModel = computed(() => ({ ...filters, sortBy: sortBy.value }))
 
 function applyDrawer(value: Record<string, string>) {
@@ -182,7 +204,6 @@ function applyDrawer(value: Record<string, string>) {
 }
 
 const filterFields = computed(() => [
-  { key: 'academicYearId', label: 'Academic Year', type: 'select' as const, options: academicYears.value, placeholder: 'Active year' },
   { key: 'termId', label: 'Term', type: 'select' as const, options: terms.value, placeholder: 'Whole year' },
   { key: 'classSessionId', label: 'Class', type: 'select' as const, options: classSessions.value, placeholder: 'Every class' },
   { key: 'status', label: 'Payment Status', type: 'select' as const, options: statusOptions, placeholder: 'Every status' },
@@ -192,29 +213,34 @@ const filterFields = computed(() => [
   { key: 'sortBy', label: 'Sort by', type: 'select' as const, options: sortOptions, default: DEFAULT_SORT, required: true },
 ])
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (value) => updateQuery({ page: value }),
-})
-const size = ref(runtimeConf().limit)
-
-function updateQuery(newQuery: Record<string, any>) {
-  router.replace({ query: { ...route.query, ...newQuery } })
-}
-
-async function fetchRecords() {
-  const [sortField, sortDirection] = sortBy.value.split(':')
-  await store.fetchStudentBalances(page.value, size.value, {
-    academicYearId: filters.academicYearId || undefined,
-    termId: filters.termId || undefined,
-    classSessionId: filters.classSessionId || undefined,
-    status: filters.status || undefined,
-    feeCategoryId: filters.feeCategoryId || undefined,
-    balanceMin: filters.balanceMin || undefined,
-    balanceMax: filters.balanceMax || undefined,
-    sortBy: sortField,
-    direction: sortDirection,
-  })
+// A report lists everyone matching the filters, so every page is fetched rather than paging on screen.
+async function loadReport() {
+  loading.value = true
+  try {
+    const [sortField, sortDirection] = sortBy.value.split(':')
+    const all: StudentFeeBalance[] = []
+    for (let p = 1; ; p++) {
+      const res = await FeeReportApi().getStudentBalances(p, 500, {
+        academicYearId: filters.academicYearId || undefined,
+        termId: filters.termId || undefined,
+        classSessionId: filters.classSessionId || undefined,
+        status: filters.status || undefined,
+        feeCategoryId: filters.feeCategoryId || undefined,
+        balanceMin: filters.balanceMin || undefined,
+        balanceMax: filters.balanceMax || undefined,
+        sortBy: sortField,
+        direction: sortDirection,
+      })
+      if (!res) break
+      all.push(...res.data)
+      if (p >= (res.meta?.totalPages ?? 1) || !res.data.length) break
+    }
+    rows.value = all
+  } catch (err: any) {
+    toastError(err?.message || 'Failed to load student balances')
+  } finally {
+    loading.value = false
+  }
 }
 
 async function loadClasses() {
@@ -222,10 +248,25 @@ async function loadClasses() {
   localClassSessions.value = classSessionStore.records
 }
 
-async function exportReport() {
+async function downloadPdf() {
+  if (!rows.value.length) return
+  downloading.value = true
+  try {
+    await logoReady() // the print-safe logo must be in before the PDF is drawn
+    const { $generatePdf } = useNuxtApp()
+    await $generatePdf('#student-balances-preview',
+      `student-fee-balances-${termLabel.value}`.replace(/[^a-z0-9-_]/gi, '-'), { landscape: true })
+    success('Report downloaded')
+  } catch (err: any) {
+    toastError(err?.message || 'Failed to generate PDF')
+  } finally {
+    downloading.value = false
+  }
+}
+
+async function exportCsv() {
   exporting.value = true
   try {
-    const [sortField, sortDirection] = sortBy.value.split(':')
     const { blob, filename } = await ReportApi().exportStudentFeeBalances('csv', {
       academicYearId: filters.academicYearId || undefined,
       termId: filters.termId || undefined,
@@ -242,25 +283,14 @@ async function exportReport() {
   }
 }
 
-watch(page, fetchRecords)
 watch([() => filters.termId, () => filters.classSessionId, () => filters.status, () => filters.feeCategoryId,
-  () => filters.balanceMin, () => filters.balanceMax, sortBy], () => {
-  updateQuery({ page: 1 })
-  if (page.value === 1) fetchRecords()
-})
-watch(() => filters.academicYearId, async () => {
-  await loadClasses()
-  updateQuery({ page: 1 })
-  if (page.value === 1) fetchRecords()
-})
+  () => filters.balanceMin, () => filters.balanceMax, sortBy], loadReport)
 
 onMounted(async () => {
+  loadLogo() // not awaited - fetches in the background, doesn't block the report's own data
+
   useAppStore().setTitle('Student Balances')
   document.title = 'Student Balances | Skultem'
-
-  if (!route.query.page || !route.query.size) {
-    updateQuery({ page: page.value })
-  }
 
   await academicYearStore.fetchAll(1, 100)
   filters.academicYearId = academicYearStore.viewingYearId || academicYearStore.activeYear?.id || ''
@@ -268,7 +298,7 @@ onMounted(async () => {
   await termStore.fetchAll(1, 100)
   await feeStore.fetchAll(1, 100)
   await loadClasses()
-  await fetchRecords()
+  await loadReport()
 })
 
 definePageMeta({

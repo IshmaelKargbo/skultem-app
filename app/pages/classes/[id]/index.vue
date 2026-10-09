@@ -59,14 +59,13 @@
                     <!-- Actions -->
                     <div class="flex shrink-0 flex-wrap items-center justify-center gap-2">
                         <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
-                        <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="deleteItems"
+                        <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
                             :content="{ align: 'end' }">
-                            <UButton variant="soft" size="sm" color="error" icon="i-lucide-trash-2" label="Delete"
+                            <UButton variant="soft" size="sm" color="neutral" icon="i-lucide-ellipsis" label="More"
                                 trailing-icon="i-lucide-chevron-down" />
                         </UDropdownMenu>
-                        <ClassPromotionSetting :id="session?.clazzId || ''" />
-                        <UButton v-if="canManagePromotion" @click="promote" variant="soft" size="sm" color="primary"
-                            :icon="PROMOTE_STUDENTS_ICON" label="Promotions" />
+                        <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''"
+                            hide-trigger />
 
                         <template v-if="isTeacherViewer && (isMasterOfThisClass || isSubjectTeacherOfThisClass)">
                             <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm"
@@ -79,34 +78,9 @@
             </div>
         </UCard>
 
-        <UCard v-if="canManagePromotion && classTeachers.length" :ui="{ body: 'p-0 sm:p-0' }">
-            <template #header>
-                <div class="flex items-center gap-2">
-                    <UIcon name="i-lucide-user-round-check" class="size-4 text-primary" />
-                    <h3 class="text-sm font-semibold">Class Masters</h3>
-                </div>
-            </template>
 
-            <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                <div v-for="master in classTeachers" :key="master.id" class="flex flex-wrap items-center gap-3 p-3">
-                    <UAvatar :src="master.photo" :alt="master.name" size="md"
-                        class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
-
-                    <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-medium">{{ master.name }}</p>
-                        <p v-if="master.assignment" class="truncate md:text-[11px] text-gray-500 dark:text-gray-400">
-                            {{ master.assignment }}
-                        </p>
-                    </div>
-
-                    <UButton size="xs" color="error" variant="soft" icon="i-lucide-user-round-x" label="Unassign"
-                        :loading="unassigningMasterId === master.id" @click="onRemoveClassMaster(master.id)" />
-                </div>
-            </div>
-        </UCard>
-
-        <ConfirmDeleteModal v-model:open="deleteSessionOpen" :title="`Delete ${sessionName}`"
-            :item-name="sessionName" :confirm-label="`Delete ${sessionName}`"
+        <ConfirmDeleteModal v-model:open="deleteSessionOpen" :title="`Delete ${sessionName}`" :item-name="sessionName"
+            :confirm-label="`Delete ${sessionName}`"
             description="Removes only this section - with its class teacher, subject assignments and setup. The class's other sections are not touched. Only possible while no students are placed in it - move them first."
             :on-confirm="confirmDeleteSession" />
 
@@ -153,7 +127,8 @@
                             :subtitle="row.original.admissionNumber || 'No Admission No'" />
 
                         <UTooltip v-if="needsAttention(row.original)" :text="attentionReason(row.original)">
-                            <UIcon :name="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
+                            <UIcon
+                                :name="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
                                 class="size-4 shrink-0" :class="attentionStyle(row.original)?.text" />
                         </UTooltip>
                     </div>
@@ -216,7 +191,8 @@
                                         <UTooltip class="hidden md:visible" v-if="needsAttention(student)"
                                             :text="attentionReason(student)" :open="openAttentionId === student.id"
                                             @update:open="(v) => openAttentionId = v ? student.id : null">
-                                            <UIcon :name="attentionOf(student)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
+                                            <UIcon
+                                                :name="attentionOf(student)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
                                                 class="size-4 shrink-0" :class="attentionStyle(student)?.text"
                                                 @click.stop="openAttentionId = openAttentionId === student.id ? null : student.id" />
                                         </UTooltip>
@@ -225,7 +201,8 @@
                                     <p class="truncate text-xs-base text-muted">
                                         {{ student.admissionNumber || 'No Admission No' }}
                                     </p>
-                                    <p class="text-[9px] truncate" :class="attentionStyle(student)?.text">{{ attentionReason(student) }}</p>
+                                    <p class="text-[9px] truncate" :class="attentionStyle(student)?.text">{{
+                                        attentionReason(student) }}</p>
                                 </div>
                             </div>
 
@@ -269,6 +246,32 @@
                 <p class="text-sm font-semibold text-highlighted">Student list is only visible to school staff</p>
                 <p class="max-w-xs text-xs text-muted">You can see your own child's details from your dashboard.</p>
                 <UButton to="/" label="Back to Dashboard" icon="i-lucide-arrow-left" color="primary" variant="soft" />
+            </div>
+        </UCard>
+
+        <UCard v-if="canManagePromotion && classTeachers.length" :ui="{ body: 'p-0 sm:p-0' }">
+            <template #header>
+                <div class="flex items-center gap-2">
+                    <UIcon name="i-lucide-user-round-check" class="size-4 text-primary" />
+                    <h3 class="text-sm font-semibold">Class Masters</h3>
+                </div>
+            </template>
+
+            <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="master in classTeachers" :key="master.id" class="flex flex-wrap items-center gap-3 p-3">
+                    <UAvatar :src="master.photo" :alt="master.name" size="md"
+                        class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
+
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium">{{ master.name }}</p>
+                        <p v-if="master.assignment" class="truncate md:text-[11px] text-gray-500 dark:text-gray-400">
+                            {{ master.assignment }}
+                        </p>
+                    </div>
+
+                    <UButton size="xs" color="error" variant="soft" icon="i-lucide-user-round-x" label="Unassign"
+                        :loading="unassigningMasterId === master.id" @click="onRemoveClassMaster(master.id)" />
+                </div>
             </div>
         </UCard>
     </div>
@@ -475,7 +478,19 @@ const sessionName = computed(() => [
     session.value?.streamName && session.value.streamName !== 'N/A' ? session.value.streamName : ''
 ].filter(Boolean).join(' '))
 
-const deleteItems = computed(() => [[
+const promotionSettingOpen = ref(false)
+
+const actionItems = computed(() => [[
+    {
+        label: 'Promotions', icon: PROMOTE_STUDENTS_ICON,
+        disabled: classTeachers.value.length === 0,
+        onSelect: () => promote()
+    },
+    {
+        label: 'Promotion Settings', icon: 'i-lucide-settings',
+        onSelect: () => { promotionSettingOpen.value = true }
+    }
+], [
     {
         label: `Delete ${sessionName.value}`, icon: 'i-lucide-trash-2', color: 'error' as const,
         onSelect: () => { deleteSessionOpen.value = true }

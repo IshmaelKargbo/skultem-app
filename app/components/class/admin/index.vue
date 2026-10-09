@@ -16,6 +16,8 @@
                                 :active-count="activeFilterCount" />
                         </div>
                     </div>
+                    <UButton label="Arrange" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
+                        :disabled="classStore.records.length < 2" @click="arrangeOpen = true" />
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
@@ -119,6 +121,8 @@
                 </template>
             </div>
         </UCard>
+
+        <ClassReorder v-model:open="arrangeOpen" :classes="classStore.records" @saved="fetchRecords" />
     </div>
 </template>
 <script setup lang="ts">
@@ -126,6 +130,8 @@ const route = useRoute();
 const router = useRouter();
 
 const store = useClassSessionStore();
+const classStore = useClassStore();
+const arrangeOpen = ref(false);
 const sectionStore = useSectionStore();
 const streamStore = useStreamStore();
 const { records: data, meta, loading } = storeToRefs(store);
@@ -227,5 +233,6 @@ onMounted(() => {
 
     sectionStore.fetchAll(0, 0);
     streamStore.fetchAll(0, 0);
+    classStore.fetchAll(1, 200);
 });
 </script>

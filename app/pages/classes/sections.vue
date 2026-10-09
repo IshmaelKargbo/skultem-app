@@ -20,6 +20,14 @@ watch(searchInput, (val) => {
 
 const filterState = ref(false);
 
+// The panel ranks every section, not just the page of the table that is showing.
+const arrangeOpen = ref(false);
+const allSections = ref<Section[]>([]);
+async function loadAllSections() {
+    const res = await SectionApi().getAll(1, 200);
+    allSections.value = res?.data ?? [];
+}
+
 function toggleFilter() {
     filterState.value = !filterState.value;
 }
@@ -59,6 +67,7 @@ function updateQuery(newQuery: Record<string, any>) {
 async function fetchRecord() {
     loading.value = true;
     await store.fetchAll(page.value, size.value, search.value || undefined);
+    await loadAllSections();
     loading.value = false;
 }
 
@@ -97,6 +106,8 @@ definePageMeta({
                     <div class="flex p-4 justify-between items-center">
                         <div class="flex space-x-3 flex-1">
                             <ClassSectionAdd />
+                            <UButton label="Arrange" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
+                                :disabled="allSections.length < 2" @click="arrangeOpen = true" />
                         </div>
 
                         <div>
@@ -199,5 +210,7 @@ definePageMeta({
                 </div>
             </template>
         </UCard>
+
+        <ClassSectionReorder v-model:open="arrangeOpen" :sections="allSections" @saved="fetchRecord" />
     </div>
 </template>
