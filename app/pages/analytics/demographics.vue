@@ -3,7 +3,7 @@
     <Heading title="Student Demographics" subtitle="Gender and religion breakdown for management reporting.">
       <div class="flex flex-wrap gap-2">
         <UButton icon="i-lucide-printer" variant="soft" @click="() => window.print()">Print</UButton>
-        <UButton icon="i-lucide-download" color="primary" variant="soft" :loading="downloading" @click="downloadPdf">
+        <UButton icon="i-lucide-download" color="primary" :loading="downloading" @click="downloadPdf">
           Export PDF
         </UButton>
       </div>

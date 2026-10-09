@@ -192,7 +192,7 @@ definePageMeta({
                   <p class="text-sm font-semibold text-highlighted">Download the template</p>
                   <p class="mt-0.5 text-xs text-muted">It has every column, plus example rows using your class names.</p>
                 </div>
-                <UButton block color="primary" variant="soft" icon="i-lucide-download" label="Download template"
+                <UButton block color="primary" icon="i-lucide-download" label="Download template"
                   @click="downloadTemplate" />
               </div>
             </div>

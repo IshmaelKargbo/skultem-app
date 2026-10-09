@@ -9,12 +9,7 @@
     </Heading>
 
     <UCard>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <UFormField label="Academic Year">
-          <USelectMenu v-model="filters.academicYearId" :items="academicYears" value-key="value" label-key="label"
-            placeholder="Active year" class="w-full" />
-        </UFormField>
-
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <UFormField label="Term">
           <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label"
             placeholder="Select term" class="w-full" />
@@ -255,6 +250,9 @@ watch(() => [filters.classSessionId, filters.date], loadRegister)
 watch(() => filters.academicYearId, loadClasses)
 
 watch(() => filters.classSessionId, id => loadLogo(localClassSessions.value.find(c => c.id === id)?.classLevel ?? null)) // that class's section logo
+
+// No year dropdown on this page: reports follow the header's year switcher (viewing year).
+watch(() => academicYearStore.viewingYearId || academicYearStore.activeYear?.id || '', (id) => { filters.academicYearId = id })
 
 onMounted(async () => {
   loadLogo() // not awaited - fetches in the background, doesn't block the report's own data

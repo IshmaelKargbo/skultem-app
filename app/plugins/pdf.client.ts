@@ -234,7 +234,7 @@ async function inlineImagesAsDataUrls(container: HTMLElement) {
 // for example) must not be clamped to a fixed 1123px or everything past that
 // point (signatures, footer, ...) gets silently cut off instead of flowing
 // onto a second PDF page.
-function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElement, height: number) {
+function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElement, height: number, width = 794) {
   clonedDocument
     .querySelectorAll('style, link[rel="stylesheet"]')
     .forEach((node) => node.remove());
@@ -243,15 +243,15 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
   clonedDocument.documentElement.style.color = "#111827";
   clonedDocument.documentElement.style.margin = "0";
   clonedDocument.documentElement.style.padding = "0";
-  clonedDocument.documentElement.style.width = "794px";
-  clonedDocument.documentElement.style.minWidth = "794px";
+  clonedDocument.documentElement.style.width = `${width}px`;
+  clonedDocument.documentElement.style.minWidth = `${width}px`;
   clonedDocument.documentElement.style.height = `${height}px`;
   clonedDocument.documentElement.style.overflow = "hidden";
   clonedDocument.body.innerHTML = "";
   clonedDocument.body.style.margin = "0";
   clonedDocument.body.style.padding = "0";
-  clonedDocument.body.style.width = "794px";
-  clonedDocument.body.style.minWidth = "794px";
+  clonedDocument.body.style.width = `${width}px`;
+  clonedDocument.body.style.minWidth = `${width}px`;
   clonedDocument.body.style.height = `${height}px`;
   clonedDocument.body.style.overflow = "hidden";
   clonedDocument.body.style.background = "#ffffff";
@@ -263,7 +263,7 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
   clonedElement.style.zIndex = "auto";
   clonedElement.style.opacity = "1";
   clonedElement.style.transform = "none";
-  clonedElement.style.width = "794px";
+  clonedElement.style.width = `${width}px`;
   clonedElement.style.minHeight = `${height}px`;
   clonedElement.style.overflow = "hidden";
   clonedElement.style.background = "#ffffff";
@@ -281,7 +281,15 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
 export default defineNuxtPlugin(() => {
   return {
     provide: {
-      generatePdf: async (selector: string, name = "receipt") => {
+      generatePdf: async (selector: string, name = "receipt", options: { landscape?: boolean } = {}) => {
+        // Portrait A4 is 794x1123px at 96dpi; landscape swaps them. Nothing else changes between the two.
+        const landscape = !!options.landscape;
+        const pagePxWidth = landscape ? 1123 : 794;
+        // Minimum capture height = what fits inside the PDF page margins (10mm each side), not the full
+        // page: landscape's full 794px scales to ~196mm but only 190mm is usable, so a short document
+        // spilled 6mm of blank white onto a second page. Portrait's 1123px already fits.
+        const pagePxHeight = landscape ? 760 : 1123;
+
         const element = document.querySelector(selector) as HTMLElement;
         if (!element) return;
 
@@ -312,8 +320,8 @@ export default defineNuxtPlugin(() => {
         cloned.style.top = "0";
         cloned.style.zIndex = "-1";
         cloned.style.opacity = "0";
-        cloned.style.width = "794px";
-        cloned.style.minHeight = "1123px";
+        cloned.style.width = `${pagePxWidth}px`;
+        cloned.style.minHeight = `${pagePxHeight}px`;
         cloned.style.overflow = "hidden";
         cloned.style.background = "#ffffff";
         cloned.style.color = "#111827";
@@ -337,7 +345,7 @@ export default defineNuxtPlugin(() => {
           // Real content height, not a fixed one page's worth - anything past a
           // single A4 page (1123px at 96dpi) used to be silently clipped instead
           // of flowing onto a second PDF page.
-          const measuredHeight = Math.max(1123, Math.ceil(cloned.scrollHeight));
+          const measuredHeight = Math.max(pagePxHeight, Math.ceil(cloned.scrollHeight));
 
           canvas = await html2canvas(cloned, {
             scale: 2,
@@ -345,13 +353,13 @@ export default defineNuxtPlugin(() => {
             allowTaint: true,
             backgroundColor: "#ffffff",
             logging: false,
-            width: 794,
+            width: pagePxWidth,
             height: measuredHeight,
-            windowWidth: 794,
+            windowWidth: pagePxWidth,
             windowHeight: measuredHeight,
             scrollX: 0,
             scrollY: 0,
-            onclone: (clonedDocument, clonedElement) => isolateClonedDocument(clonedDocument, clonedElement, measuredHeight),
+            onclone: (clonedDocument, clonedElement) => isolateClonedDocument(clonedDocument, clonedElement, measuredHeight, pagePxWidth),
             ignoreElements: (el) => el.tagName === "STYLE" && el.parentElement === cloned,
           });
         } finally {
@@ -364,13 +372,13 @@ export default defineNuxtPlugin(() => {
         const imgData = canvas.toDataURL("image/jpeg", 1);
 
         const pdf = new jsPDF({
-          orientation: "p",
+          orientation: landscape ? "l" : "p",
           unit: "mm",
           format: "a4",
         });
 
-        const pageWidth = 210;
-        const pageHeight = 297;
+        const pageWidth = landscape ? 297 : 210;
+        const pageHeight = landscape ? 210 : 297;
         const margin = 10;
         // A page break falls wherever the source content happens to measure exactly one page's
         // worth of height - almost never a clean gap, usually mid-table-row. The plain `margin`

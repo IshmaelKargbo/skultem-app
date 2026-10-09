@@ -139,6 +139,24 @@ export interface WeeklyGenderAttendance {
   girlsAttendancePercentage: number
 }
 
+export interface GenderAttendanceTotals {
+  boysPresent: number
+  girlsPresent: number
+  boysRecorded: number
+  girlsRecorded: number
+  boysAttendancePercentage: number
+  girlsAttendancePercentage: number
+  overallAttendancePercentage: number
+}
+
+export interface GenderAttendanceSummary {
+  period: 'WEEK' | 'MONTH' | 'TERM' | 'YEAR'
+  startDate: string
+  endDate: string
+  totals: GenderAttendanceTotals
+  classes: { classId: string, className: string, totals: GenderAttendanceTotals }[]
+}
+
 export interface ReligionCount {
   label: string
   count: number
@@ -172,6 +190,9 @@ export const useAcademicReportStore = defineStore('academicReport', {
 
     weeklyGenderAttendance: null as WeeklyGenderAttendance | null,
     loadingWeeklyGenderAttendance: false,
+
+    genderAttendanceSummary: null as GenderAttendanceSummary | null,
+    loadingGenderAttendanceSummary: false,
 
     demographics: null as StudentDemographics | null,
     loadingDemographics: false
@@ -233,6 +254,15 @@ export const useAcademicReportStore = defineStore('academicReport', {
         this.weeklyGenderAttendance = await AcademicReportApi().getWeeklyGenderAttendance(classId, filters) || null
       } finally {
         this.loadingWeeklyGenderAttendance = false
+      }
+    },
+
+    async fetchGenderAttendanceSummary(filters: { period: string, academicYearId?: string, termId?: string, classId?: string, date?: string }) {
+      this.loadingGenderAttendanceSummary = true
+      try {
+        this.genderAttendanceSummary = await AcademicReportApi().getGenderAttendanceSummary(filters) || null
+      } finally {
+        this.loadingGenderAttendanceSummary = false
       }
     },
 

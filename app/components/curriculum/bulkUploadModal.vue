@@ -167,7 +167,7 @@ watch(open, (val) => {
           description="Columns: class, subject, term, week, topic, subTopic (optional), objectives (optional). Each row is one week - repeat the same class/subject/term across rows to add more weeks to that scheme (created once, reused). Separate more than one learning objective in the same cell with '|', e.g. 'Count to 10|Recognise numerals 1-10'. Class and subject must match names in Skultem exactly; a class with more than one section or stream needs its full name, e.g. 'SSS 1 A Art'. A week number that already exists for that scheme is skipped, not duplicated."
         />
 
-        <UButton variant="soft" color="neutral" icon="lucide:download" label="Download Template"
+        <UButton color="primary" icon="lucide:download" label="Download Template"
           @click="downloadTemplate" />
 
         <div>

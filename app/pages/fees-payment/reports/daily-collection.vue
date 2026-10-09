@@ -4,7 +4,7 @@
 
     <Heading title="Daily Collection" subtitle="What was collected on a day, or across a date range, by payment method.">
       <div class="flex gap-2">
-        <UButton icon="i-lucide-download" variant="outline" color="neutral" class="justify-center"
+        <UButton icon="i-lucide-download" color="primary" class="justify-center"
           :loading="exportingCsv" @click="exportTransactions">
           Export CSV
         </UButton>

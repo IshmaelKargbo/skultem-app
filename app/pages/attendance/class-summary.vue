@@ -1,22 +1,16 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
     <Heading title="Class Summary" subtitle="Compare attendance across every class in the school at once.">
-      <UButton icon="i-lucide-printer" variant="outline" color="neutral" class="justify-center"
-        :disabled="!summary" @click="printSummary">
-        Print
-      </UButton>
-      <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
-        :disabled="!summary" @click="downloadPdf">
-        Export PDF
-      </UButton>
+      <div class="flex items-center w-100 gap-2">
+        <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label" placeholder="All Terms" />
+        <UButton icon="i-lucide-download" color="primary" class="justify-center whitespace-nowrap" :loading="downloading"
+          :disabled="!summary" @click="downloadPdf">
+          Download PDF
+        </UButton>
+      </div>
     </Heading>
 
-    <UCard>
-      <UFormField label="Term" class="max-w-xs">
-        <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label"
-          placeholder="All Terms" class="w-full" />
-      </UFormField>
-    </UCard>
+
 
     <UCard v-if="loading">
       <div class="space-y-3">
@@ -58,7 +52,8 @@
             <p class="text-lg font-bold text-primary-600">{{ summary.schoolAverageAttendance }}%</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Below {{ thresholdText(summary?.classes.map(c => c.threshold) ?? [], threshold) }}</p>
+            <p class="text-xs text-gray-500">Below {{thresholdText(summary?.classes.map(c => c.threshold) ?? [],
+              threshold)}}</p>
             <p class="text-lg font-bold text-primary-600">{{ summary.classesBelowThreshold }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
@@ -86,7 +81,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="c in summary.classes" :key="`${c.classId}-${c.sectionId}-${c.streamId}`"
+              <tr v-for="c in sortedClasses" :key="`${c.classId}-${c.sectionId}-${c.streamId}`"
                 :class="c.belowThreshold ? 'bg-red-50' : ''">
                 <td class="border border-gray-200 p-2.5">{{ c.className }}</td>
                 <td class="border border-gray-200 p-2.5 text-center">{{ c.totalStudents }}</td>
@@ -136,6 +131,8 @@ const terms = computed(() => [
 ])
 
 const summary = computed(() => attendanceStore.classSummary)
+// Highest attendance first.
+const sortedClasses = computed(() => sortByDesc(summary.value?.classes, c => c.attendancePercentage))
 const loading = computed(() => attendanceStore.loadingClassSummary)
 
 const academicYearLabel = computed(() =>

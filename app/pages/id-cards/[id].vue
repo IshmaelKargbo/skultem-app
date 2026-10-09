@@ -8,7 +8,7 @@
           Card Design
         </UButton>
 
-        <UButton icon="i-lucide-download" variant="outline" color="neutral" :loading="downloading"
+        <UButton icon="i-lucide-download" color="primary" :loading="downloading"
           class="justify-center" @click="downloadPdf">
           Download PDF
         </UButton>

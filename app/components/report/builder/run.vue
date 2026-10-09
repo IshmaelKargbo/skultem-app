@@ -14,10 +14,10 @@
                     <p>Export Report</p>
                     <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <UButton :icon="DOWNLOAD_ICON" label="Export CSV" size="lg" class="w-full flex justify-center"
-                            color="neutral" variant="outline" :loading="exportingCsv" :disabled="exportingPdf"
+                            color="primary" :loading="exportingCsv" :disabled="exportingPdf"
                             @click="exportReport('csv')" />
                         <UButton :icon="DOWNLOAD_ICON" label="Export PDF" size="lg" class="w-full flex justify-center"
-                            color="neutral" variant="outline" :loading="exportingPdf" :disabled="exportingCsv"
+                            color="primary" :loading="exportingPdf" :disabled="exportingCsv"
                             @click="exportReport('pdf')" />
                     </div>
                 </div>

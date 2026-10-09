@@ -4,7 +4,7 @@
 
     <Heading title="Student Balances" subtitle="Every student's current fee position, without opening them one by one.">
       <div class="flex gap-2">
-        <UButton icon="i-lucide-download" variant="outline" color="neutral" class="justify-center"
+        <UButton icon="i-lucide-download" color="primary" class="justify-center"
           :loading="exporting" @click="exportReport">
           Export CSV
         </UButton>

@@ -96,10 +96,9 @@ const summary = computed(() => teacherAttendanceStore.monthlySummary)
 const loading = computed(() => teacherAttendanceStore.loadingMonthlySummary)
 
 const filteredSummary = computed(() => {
-  if (!search.value.trim()) return summary.value
-
   const query = search.value.trim().toLowerCase()
-  return summary.value.filter(t => t.teacherName.toLowerCase().includes(query))
+  const rows = query ? summary.value.filter(t => t.teacherName.toLowerCase().includes(query)) : summary.value
+  return sortByDesc(rows, t => t.attendancePercentage) // highest attendance first
 })
 
 const monthLabel = computed(() => {

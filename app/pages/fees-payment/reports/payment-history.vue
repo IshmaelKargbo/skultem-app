@@ -3,7 +3,7 @@
     <FeeReportSectionNav />
 
     <Heading title="Payment History" subtitle="Every school-fee payment recorded during a period.">
-      <UButton icon="i-lucide-download" variant="outline" color="neutral" class="justify-center"
+      <UButton icon="i-lucide-download" color="primary" class="justify-center"
         :loading="exporting" @click="exportReport">
         Export CSV
       </UButton>

@@ -59,16 +59,16 @@
                 </h3>
               </div>
 
-              <UButton v-if="!settings.remarkScale.length" size="xs" variant="soft" icon="i-lucide-wand-sparkles"
-                @click="useSuggestedRemarks">
-                Use suggested
+              <UButton size="xs" variant="soft" icon="i-lucide-rotate-ccw" @click="useSuggestedRemarks">
+                Restore defaults
               </UButton>
             </div>
           </template>
 
           <p class="text-sm text-muted -mt-1 mb-4">
             The remark is picked from the student's average, so teachers don't have to write "very good" on every
-            card. The class master can still add their own remark on top.
+            card. We start you with a default set - change any range or remark, or delete the ones you don't want. The
+            class master can still add their own remark on top.
           </p>
 
           <div v-if="settings.remarkScale.length" class="space-y-3">
@@ -86,7 +86,7 @@
             <p v-if="remarkScaleError" class="text-sm text-error">{{ remarkScaleError }}</p>
           </div>
 
-          <p v-else class="text-sm text-muted">No ranges yet - cards only show what the teacher writes.</p>
+          <p v-else class="text-sm text-muted">No ranges - cards only show what the teacher writes. Use "Restore defaults" to bring the standard set back.</p>
 
           <UButton class="mt-4" size="sm" variant="outline" icon="i-lucide-plus" @click="addRemarkBand">
             Add range

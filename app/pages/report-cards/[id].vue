@@ -3,14 +3,6 @@
 
     <Heading :title="record?.studentName || 'Report Card'"
       subtitle="Preview, print or download this student's report card.">
-      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/report-cards" class="justify-center">
-        Back
-      </UButton>
-
-      <UButton icon="i-lucide-printer" variant="outline" color="neutral" class="justify-center" @click="printCard">
-        Print
-      </UButton>
-
       <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         @click="downloadPdf">
         Download PDF
@@ -428,6 +420,7 @@ async function downloadPdf() {
 
 onMounted(async () => {
   appStore.setTitle('Report Card')
+  appStore.setBack('/report-cards')
   await fetchRecord()
 })
 

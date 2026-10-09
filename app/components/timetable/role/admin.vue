@@ -13,6 +13,7 @@
           :loading="classLoading"
           class="w-full md:w-72"
         />
+        <TimetableDownload v-if="session" :title="`${session.clazz} (${session.sectionName})`" />
       </div>
     </Heading>
 

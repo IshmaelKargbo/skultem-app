@@ -8,12 +8,7 @@
     </Heading>
 
     <UCard>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <UFormField label="Academic Year">
-          <USelectMenu v-model="filters.academicYearId" :items="academicYears" value-key="value" label-key="label"
-            placeholder="Active year" class="w-full" />
-        </UFormField>
-
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <UFormField label="Term">
           <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label"
             placeholder="Select term" class="w-full" />
@@ -95,7 +90,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="s in summary" :key="s.studentId" :class="s.belowThreshold ? 'bg-red-50' : ''">
+              <tr v-for="s in sortedSummary" :key="s.studentId" :class="s.belowThreshold ? 'bg-red-50' : ''">
                 <td class="border border-gray-200 p-2.5">{{ s.studentName }}</td>
                 <td class="border border-gray-200 p-2.5">{{ s.className }}</td>
                 <td class="border border-gray-200 p-2.5 text-center">{{ s.schoolDays }}</td>
@@ -150,6 +145,8 @@ const classSessions = computed(() => localClassSessions.value.map(e => {
 }))
 
 const summary = computed(() => attendanceStore.monthlySummary)
+// Highest attendance first.
+const sortedSummary = computed(() => sortByDesc(summary.value, s => s.attendancePercentage))
 // The class's section may have its own minimum, so read it from the data rather than the school's.
 const effectiveThreshold = computed(() => thresholdText(summary.value.map(s => s.threshold), threshold.value))
 const loading = computed(() => attendanceStore.loadingMonthlySummary)
@@ -223,6 +220,9 @@ watch(() => [filters.classSessionId, filters.month], loadSummary)
 watch(() => filters.academicYearId, loadClasses)
 
 watch(() => filters.classSessionId, id => loadLogo(localClassSessions.value.find(c => c.id === id)?.classLevel ?? null)) // that class's section logo
+
+// No year dropdown on this page: reports follow the header's year switcher (viewing year).
+watch(() => academicYearStore.viewingYearId || academicYearStore.activeYear?.id || '', (id) => { filters.academicYearId = id })
 
 onMounted(async () => {
   loadLogo() // not awaited - fetches in the background, doesn't block the report's own data

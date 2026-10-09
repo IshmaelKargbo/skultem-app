@@ -131,10 +131,9 @@ const loading = computed(() => teacherAttendanceStore.loadingTermSummary)
 
 const filteredTeachers = computed(() => {
   const teachers = summary.value?.teachers || []
-  if (!search.value.trim()) return teachers
-
   const query = search.value.trim().toLowerCase()
-  return teachers.filter(t => t.teacherName.toLowerCase().includes(query))
+  const rows = query ? teachers.filter(t => t.teacherName.toLowerCase().includes(query)) : teachers
+  return sortByDesc(rows, t => t.attendancePercentage) // highest attendance first
 })
 
 const generatedDate = computed(() => new Date().toLocaleDateString())

@@ -122,3 +122,28 @@ export type CreateTimetableDTO = {
     day: string
     color: string
 }
+// Design of the downloadable timetable PDF (Timetable > Design). accentColor null/'' = the school's
+// brand colour. Mirrors the backend's TimetableSettingDTO.
+export type TimetableSetting = {
+    title: string
+    accentColor: string | null
+    orientation: 'LANDSCAPE' | 'PORTRAIT'
+    showLogo: boolean
+    showIcons: boolean
+    showTeacher: boolean
+    showRoom: boolean
+    showPeriodTimes: boolean
+    footerNote: string
+}
+
+export const DEFAULT_TIMETABLE_SETTING: TimetableSetting = {
+    title: 'SCHOOL TIMETABLE',
+    accentColor: null,
+    orientation: 'LANDSCAPE',
+    showLogo: true,
+    showIcons: true,
+    showTeacher: true,
+    showRoom: true,
+    showPeriodTimes: true,
+    footerNote: ''
+}

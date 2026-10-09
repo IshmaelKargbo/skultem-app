@@ -4,6 +4,7 @@
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
                     :loading="classLoading" class="w-full md:w-72" />
+                <TimetableDownload v-if="session" :title="session.className" />
             </div>
         </Heading>
 

@@ -140,7 +140,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in monthlyPayload" :key="t.teacherId">
+                <tr v-for="t in sortedMonthly" :key="t.teacherId">
                   <td class="border border-gray-200 p-2.5">{{ t.teacherName }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ t.workingDays }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ t.present }}</td>
@@ -193,7 +193,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in termPayload!.teachers" :key="t.teacherId">
+                <tr v-for="t in sortedTermTeachers" :key="t.teacherId">
                   <td class="border border-gray-200 p-2.5">{{ t.teacherName }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ t.workingDays }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ t.present }}</td>
@@ -270,6 +270,9 @@ const report = computed(() => teacherAttendanceStore.managementReport)
 const dailyPayload = computed(() => report.value?.reportType === 'DAILY_REGISTER' ? report.value.payload as TeacherAttendanceRoster : null)
 const monthlyPayload = computed(() => report.value?.reportType === 'MONTHLY_SUMMARY' ? report.value.payload as TeacherAttendanceSummaryRow[] : [])
 const termPayload = computed(() => report.value?.reportType === 'TERM_SUMMARY' ? report.value.payload as TermTeacherAttendanceSummary : null)
+// Highest attendance first.
+const sortedMonthly = computed(() => sortByDesc(monthlyPayload.value, t => t.attendancePercentage))
+const sortedTermTeachers = computed(() => sortByDesc(termPayload.value?.teachers, t => t.attendancePercentage))
 
 const isEmptyReport = computed(() => {
   if (!report.value) return false

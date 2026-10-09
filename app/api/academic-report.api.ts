@@ -87,6 +87,15 @@ export const AcademicReportApi = () => {
       }
     },
 
+    getGenderAttendanceSummary: async (filters: { period: string, academicYearId?: string, termId?: string, classId?: string, date?: string }) => {
+      try {
+        const res = await $api(`/report/academic/attendance/gender-summary?${toQuery(filters)}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     getDemographics: async (filters: { academicYearId?: string, classId?: string, level?: string }) => {
       try {
         const res = await $api(`/report/academic/demographics?${toQuery(filters)}`) as any

@@ -81,28 +81,61 @@
                     </div>
                 </div>
 
-            </UCard>
+                <div class="mt-6 flex flex-col gap-3 border-t border-default pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm text-muted">{{ generateHint }}</p>
 
-            <!-- Options -->
-            <UCard>
-
-                <template #header>
-                    <h2 class="font-semibold">
-                        Include
-                    </h2>
-                </template>
-
-                <div class="space-y-5">
-
-                    <UCheckbox v-model="form.includeAttendance" label="Attendance"
-                        description="Attendance percentage for the term" />
-
-                    <UCheckbox v-model="form.includeRanking" label="Class Ranking"
-                        description="Each student's position in class" />
-
+                    <UButton icon="i-lucide-file-text" color="primary" class="justify-center" :loading="generating"
+                        :disabled="!canGenerate" @click="generateReportCards">
+                        Generate Report Cards
+                    </UButton>
                 </div>
 
             </UCard>
+
+            <div class="space-y-6">
+
+                <!-- Options -->
+                <UCard>
+
+                    <template #header>
+                        <h2 class="font-semibold">
+                            Include
+                        </h2>
+                    </template>
+
+                    <div class="space-y-5">
+
+                        <UCheckbox v-model="form.includeAttendance" label="Attendance"
+                            description="Attendance percentage for the term" />
+
+                        <UCheckbox v-model="form.includeRanking" label="Class Ranking"
+                            description="Each student's position in class" />
+
+                    </div>
+
+                </UCard>
+
+                <!-- Recap of what will be generated -->
+                <UCard>
+
+                    <template #header>
+                        <h2 class="font-semibold">
+                            Summary
+                        </h2>
+                    </template>
+
+                    <dl class="space-y-3 text-sm">
+                        <div v-for="row in recap" :key="row.label" class="flex items-start justify-between gap-4">
+                            <dt class="text-muted">{{ row.label }}</dt>
+                            <dd class="text-right font-medium" :class="row.value ? '' : 'text-muted'">
+                                {{ row.value || 'Not selected' }}
+                            </dd>
+                        </div>
+                    </dl>
+
+                </UCard>
+
+            </div>
 
         </div>
 
@@ -117,8 +150,8 @@
                         </h2>
 
                         <p class="text-sm text-muted">
-                            {{ result.generated }} report card{{ result.generated === 1 ? '' : 's' }} generated for this
-                            class and term.
+                            {{ result.generated }} report card{{ result.generated === 1 ? '' : 's' }} generated for
+                            {{ resultMeta?.title }}.
                         </p>
                     </div>
 
@@ -153,7 +186,8 @@
             </div>
 
             <div class="mt-8 flex flex-wrap gap-3">
-                <UButton icon="i-lucide-eye" color="primary" size="lg" to="/report-cards">
+                <UButton icon="i-lucide-eye" color="primary" size="lg"
+                    :to="{ path: '/report-cards', query: resultMeta?.query }">
                     View Report Cards
                 </UButton>
             </div>
@@ -271,7 +305,58 @@ const isTeacherOnly = computed(() =>
 const classes = computed(() => isTeacherOnly.value
     ? masterClasses.value
     : classStore.records.map(e => ({ label: e.name, value: e.id })))
-const terms = computed(() => termStore.records.map(e => ({ label: e.name, value: e.id })))
+// Only the terms of the academic year being viewed - the whole-year option already follows that year, and a
+// term from another year can't be what the user means. Falls back to every term if none are tagged to it.
+const yearTerms = computed(() => {
+    const inYear = termStore.records.filter(t => t.academicYear?.id === viewingYear.value?.id)
+    return inYear.length ? inYear : termStore.records
+})
+const terms = computed(() => yearTerms.value.map(e => ({ label: e.name, value: e.id })))
+
+function pickDefaultTerm() {
+    if (form.termId && yearTerms.value.some(t => t.id === form.termId)) return
+    form.termId = (yearTerms.value.find(t => t.status === 'ACTIVE') ?? yearTerms.value[0])?.id || ''
+}
+
+watch(yearTerms, pickDefaultTerm)
+
+// A teacher with exactly one class (or a school with one class) needn't pick it.
+watch(classes, (list) => {
+    if (!form.classId && list.length === 1) form.classId = list[0]!.value
+}, { immediate: true })
+
+const labelOf = (list: { label: string, value: string }[], id: string) => list.find(e => e.value === id)?.label || ''
+const scopeText = computed(() => {
+    if (form.scope === 'YEAR') return `All terms of ${viewingYear.value?.name || 'the academic year'}`
+    if (form.scope === 'ASSESSMENTS') {
+        const names = assessmentOptions.value.filter(a => form.assessmentIds.includes(a.id)).map(a => a.name)
+        return names.length ? names.join(' + ') : ''
+    }
+    return 'Whole term'
+})
+
+const recap = computed(() => [
+    { label: 'Class', value: [labelOf(classes.value, form.classId), labelOf(streams.value, form.streamId), labelOf(sections.value, form.sectionId)].filter(Boolean).join(' · ') },
+    { label: form.scope === 'YEAR' ? 'Academic year' : 'Term', value: form.scope === 'YEAR' ? (viewingYear.value?.name || '') : labelOf(terms.value, form.termId) },
+    { label: 'Covers', value: scopeText.value },
+    { label: 'Attendance', value: form.includeAttendance ? 'Included' : 'Left out' },
+    { label: 'Class ranking', value: form.includeRanking ? 'Included' : 'Left out' }
+])
+
+const generateHint = computed(() => {
+    if (!form.classId) return 'Select a class to continue.'
+    if (form.scope !== 'YEAR' && !form.termId) return 'Select a term to continue.'
+    if (form.scope === 'ASSESSMENTS' && !form.assessmentIds.length) return 'Pick at least one assessment.'
+    return 'Ready. Students who already have a card for this are refreshed with the latest scores - their remarks are kept.'
+})
+
+// What the shown result was generated for; the result is dropped as soon as the selection changes so an old
+// summary never sits under a different class or term.
+const resultMeta = ref<{ title: string, query: Record<string, string> } | null>(null)
+watch(() => [form.classId, form.streamId, form.sectionId, form.termId, form.scope, form.assessmentIds.join(',')], () => {
+    result.value = null
+    resultMeta.value = null
+})
 
 async function generateReportCards() {
     if (!canGenerate.value) {
@@ -298,6 +383,15 @@ async function generateReportCards() {
         if (!res) return
 
         result.value = res
+        resultMeta.value = {
+            title: recap.value.filter(r => r.value).slice(0, 2).map(r => r.value).join(' · '),
+            query: {
+                classId: form.classId,
+                ...(form.scope !== 'YEAR' && form.termId ? { termId: form.termId } : {}),
+                ...(form.streamId ? { streamId: form.streamId } : {}),
+                ...(form.sectionId ? { sectionId: form.sectionId } : {})
+            }
+        }
 
         if (res.generated > 0) {
             success(`${res.generated} report card${res.generated === 1 ? '' : 's'} generated successfully`)

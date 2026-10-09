@@ -57,7 +57,7 @@ export function useMenu() {
           roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
         {
-          label: 'Weekly Attendance by Gender', to: '/attendance/weekly-gender', icon: 'i-lucide-venus-and-mars',
+          label: 'Attendance by Gender', to: '/attendance/gender-attendance', icon: 'i-lucide-venus-and-mars',
           roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
       ]
@@ -155,6 +155,7 @@ export function useMenu() {
       subNavs: [
         { label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true },
         { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON },
+        { label: 'Design', to: '/timetable/design', icon: 'i-lucide-palette' },
       ]
     },
 
