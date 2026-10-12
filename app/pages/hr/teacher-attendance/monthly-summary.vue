@@ -42,6 +42,8 @@
           <p class="mt-1 text-sm font-semibold text-gray-600">Staff Monthly Attendance Summary</p>
           <div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
             <span>Month: {{ monthLabel }}</span>
+            <span v-if="term">Term: {{ term.name }}</span>
+            <span>Total School Days (term start to date): {{ totalSchoolDays }}</span>
           </div>
         </div>
 
@@ -82,6 +84,7 @@
 
 <script setup lang="ts">
 const teacherAttendanceStore = useTeacherAttendanceStore()
+const termStore = useTermStore()
 const { school } = useSchoolInfo()
 
 const filters = reactive({
@@ -99,6 +102,26 @@ const filteredSummary = computed(() => {
   const query = search.value.trim().toLowerCase()
   const rows = query ? summary.value.filter(t => t.teacherName.toLowerCase().includes(query)) : summary.value
   return sortTeachersByWorkingDays(rows) // most working days first
+})
+
+// The term the chosen month falls in, else the active one.
+const term = computed(() => {
+  const [year, month] = filters.month.split('-').map(Number)
+  if (year && month) {
+    const monthStart = new Date(Date.UTC(year, month - 1, 1))
+    const monthEnd = new Date(Date.UTC(year, month, 0))
+    const match = termStore.records.find(t => new Date(t.startDate) <= monthEnd && new Date(t.endDate) >= monthStart)
+    if (match) return match
+  }
+  return termStore.records.find(t => t.status === 'ACTIVE') || null
+})
+// Mon-Fri days from the term's start up to today (or the term's end, if it is over) - how many days
+// teachers were expected in. Holidays aren't excluded.
+const totalSchoolDays = computed(() => {
+  if (!term.value) return 0
+  const today = new Date()
+  const end = term.value.endDate && new Date(term.value.endDate) < today ? term.value.endDate : today
+  return countWeekdays(term.value.startDate, end)
 })
 
 const monthLabel = computed(() => {
@@ -150,7 +173,7 @@ onMounted(async () => {
   useAppStore().setBack('/hr')
   document.title = 'Monthly Summary | HR | Skultem'
 
-  await loadSummary()
+  await Promise.all([loadSummary(), termStore.fetchAll(1, 100)])
 })
 
 definePageMeta({
