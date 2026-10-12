@@ -84,7 +84,7 @@
             <div v-else-if="groups.length" class="space-y-3">
                 <div v-for="group in groups" :key="group.key"
                     class="overflow-hidden rounded-xl border border-default border-l-4"
-                    :class="group.passed === group.items.length ? 'border-l-success-500' : 'border-l-warning-500'">
+                    :class="group.failed ? 'border-l-warning-500' : group.pending ? 'border-l-neutral-400' : 'border-l-success-500'">
                     <div
                         class="flex w-full flex-col md:flex-row gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
                         @click="toggle(group.key)">
@@ -95,18 +95,18 @@
                                     class="size-4 shrink-0 text-muted" />
 
                                 <UIcon
-                                    :name="group.passed === group.items.length ? 'i-lucide-check-circle-2' : 'i-lucide-book-open'"
+                                    :name="!group.failed && !group.pending ? 'i-lucide-check-circle-2' : 'i-lucide-book-open'"
                                     class="size-4 shrink-0"
-                                    :class="group.passed === group.items.length ? 'text-success-500' : 'text-primary-500'" />
+                                    :class="!group.failed && !group.pending ? 'text-success-500' : 'text-primary-500'" />
 
                                 <h4 class="truncate font-semibold">
                                     {{ group.title }}
                                 </h4>
                             </div>
 
-                            <UBadge :color="group.passed === group.items.length ? 'success' : 'warning'" variant="solid"
+                            <UBadge :color="group.failed ? 'warning' : group.pending ? 'neutral' : 'success'" variant="solid"
                                 size="sm" class="shrink-0 rounded-full">
-                                {{ group.passed === group.items.length ? 'All Passed' : `${group.failed} Attention` }}
+                                {{ group.failed ? `${group.failed} Attention` : group.pending ? `${group.pending} Pending` : 'All Passed' }}
                             </UBadge>
                         </div>
 
@@ -206,14 +206,6 @@
                 </p>
             </div>
 
-            <template #footer>
-                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 items-center justify-between">
-                    <Showing :meta="meta" />
-
-                    <UPagination v-model:page="page" size="md" :page-size="meta?.size" :items-per-page="meta?.size"
-                        :total="meta?.total" show-edges />
-                </div>
-            </template>
         </UCard>
 
         <GradesCaSupport class="mt-4" :student-name="record?.givenNames" />
@@ -228,12 +220,14 @@ definePageMeta({
 const store = useStudentStore()
 const reportStore = useReportStore()
 const { record, activeCycle } = storeToRefs(store)
-const { grades, meta } = storeToRefs(reportStore)
+const { grades } = storeToRefs(reportStore)
+
+// No pagination: request every subject for the selected term in one page.
+const ALL_SUBJECTS = 1000
 const gradeColor = (grade: string | null) => grade === 'A' ? 'success'
     : grade === 'B' ? 'primary' : grade === 'C' ? 'warning' : grade === null ? 'neutral' : 'error'
 const loading = ref(true)
 const route = useRoute()
-const router = useRouter()
 const state = reactive({
     term: ''
 })
@@ -245,21 +239,27 @@ const terms = computed(() =>
     })) || []
 )
 
-const summary = computed(() => {
-    const list = grades.value || []
-    const total = list.length
-    const numericScores = list
-        .map((g: any) => Number(g.score ?? 0))
-        .filter((n: number) => !Number.isNaN(n))
+// A grade with no score hasn't been submitted yet, so it is neither passed nor failed.
+const isSubmitted = (g: any) => g.score !== null && g.score !== undefined
 
-    const passed = list.filter((g: any) => Number(g.score ?? 0) >= 50).length
-    const failed = Math.max(total - passed, 0)
-    const average = numericScores.length
-        ? (numericScores.reduce((sum: number, n: number) => sum + n, 0) / numericScores.length).toFixed(1)
+function tally(list: any[]) {
+    const submitted = list.filter(isSubmitted)
+    const scores = submitted.map((g: any) => Number(g.score)).filter((n: number) => !Number.isNaN(n))
+    const passed = submitted.filter((g: any) => Number(g.score) >= 50).length
+    const failed = submitted.length - passed
+    const average = scores.length
+        ? (scores.reduce((sum: number, n: number) => sum + n, 0) / scores.length).toFixed(1)
         : '0.0'
 
+    return { passed, failed, pending: list.length - submitted.length, average }
+}
+
+const summary = computed(() => {
+    const list = grades.value || []
+    const { passed, failed, average } = tally(list)
+
     return {
-        subjects: total,
+        subjects: list.length,
         passed,
         failed,
         average
@@ -278,12 +278,7 @@ const groups = computed(() => {
 
     return Array.from(map.entries())
         .map(([key, items]) => {
-            const scores = items.map((item: any) => Number(item.score ?? 0)).filter((n: number) => !Number.isNaN(n))
-            const passed = items.filter((item: any) => Number(item.score ?? 0) >= 50).length
-            const failed = Math.max(items.length - passed, 0)
-            const average = scores.length
-                ? (scores.reduce((sum: number, n: number) => sum + n, 0) / scores.length).toFixed(1)
-                : '0.0'
+            const { passed, failed, pending, average } = tally(items)
             const position = Number((items[0] as any)?.level ?? Number.MAX_SAFE_INTEGER)
 
             return {
@@ -292,6 +287,7 @@ const groups = computed(() => {
                 items,
                 passed,
                 failed,
+                pending,
                 average,
                 position
             }
@@ -310,29 +306,6 @@ watch(groups, newGroups => {
 function toggle(key: string) {
     if (expandedKeys.value.has(key)) expandedKeys.value.delete(key)
     else expandedKeys.value.add(key)
-}
-
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
-
-const size = computed<number>({
-    get: () => Number(route.query.size ?? 6),
-    set: (val) => updateQuery({ size: val })
-})
-
-function updateQuery(newQuery: Record<string, any>) {
-    const merged = { ...route.query, ...newQuery }
-
-    if (
-        merged.page === route.query.page &&
-        merged.size === route.query.size
-    ) {
-        return
-    }
-
-    router.replace({ query: merged })
 }
 
 async function fetchCycle() {
@@ -372,8 +345,8 @@ async function fetchRecord() {
                 }
             ]
         },
-        page.value,
-        size.value
+        1,
+        ALL_SUBJECTS
     )
 
     loading.value = false
@@ -390,7 +363,7 @@ watch(
 )
 
 watch(
-    () => [record.value?.id, state.term, page.value, size.value],
+    () => [record.value?.id, state.term],
     async () => {
         await fetchRecord()
     },
