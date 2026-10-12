@@ -271,8 +271,8 @@ const dailyPayload = computed(() => report.value?.reportType === 'DAILY_REGISTER
 const monthlyPayload = computed(() => report.value?.reportType === 'MONTHLY_SUMMARY' ? report.value.payload as TeacherAttendanceSummaryRow[] : [])
 const termPayload = computed(() => report.value?.reportType === 'TERM_SUMMARY' ? report.value.payload as TermTeacherAttendanceSummary : null)
 // Highest attendance first.
-const sortedMonthly = computed(() => sortByDesc(monthlyPayload.value, t => t.attendancePercentage))
-const sortedTermTeachers = computed(() => sortByDesc(termPayload.value?.teachers, t => t.attendancePercentage))
+const sortedMonthly = computed(() => sortTeachersByWorkingDays(monthlyPayload.value))
+const sortedTermTeachers = computed(() => sortTeachersByWorkingDays(termPayload.value?.teachers))
 
 const isEmptyReport = computed(() => {
   if (!report.value) return false

@@ -98,7 +98,7 @@ const loading = computed(() => teacherAttendanceStore.loadingMonthlySummary)
 const filteredSummary = computed(() => {
   const query = search.value.trim().toLowerCase()
   const rows = query ? summary.value.filter(t => t.teacherName.toLowerCase().includes(query)) : summary.value
-  return sortByDesc(rows, t => t.attendancePercentage) // highest attendance first
+  return sortTeachersByWorkingDays(rows) // most working days first
 })
 
 const monthLabel = computed(() => {

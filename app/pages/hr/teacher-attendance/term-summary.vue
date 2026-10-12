@@ -133,7 +133,7 @@ const filteredTeachers = computed(() => {
   const teachers = summary.value?.teachers || []
   const query = search.value.trim().toLowerCase()
   const rows = query ? teachers.filter(t => t.teacherName.toLowerCase().includes(query)) : teachers
-  return sortByDesc(rows, t => t.attendancePercentage) // highest attendance first
+  return sortTeachersByWorkingDays(rows) // most working days first
 })
 
 const generatedDate = computed(() => new Date().toLocaleDateString())

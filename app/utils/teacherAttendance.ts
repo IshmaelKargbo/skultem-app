@@ -88,6 +88,15 @@ export type TeacherAttendanceSummaryRow = {
     attendancePercentage: number | null
 }
 
+// Teachers with the most working days first; ties fall back to the higher attendance percentage.
+export function sortTeachersByWorkingDays<T extends { workingDays: number, attendancePercentage: number | null }>(
+    rows: readonly T[] | null | undefined
+): T[] {
+    return [...(rows ?? [])].sort((a, b) =>
+        (b.workingDays ?? 0) - (a.workingDays ?? 0)
+        || (b.attendancePercentage ?? Number.NEGATIVE_INFINITY) - (a.attendancePercentage ?? Number.NEGATIVE_INFINITY))
+}
+
 // Mirrors TermTeacherAttendanceSummaryDTO.
 export type TermTeacherAttendanceSummary = {
     teachers: TeacherAttendanceSummaryRow[]
