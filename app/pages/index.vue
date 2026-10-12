@@ -9,7 +9,6 @@
 </template>
 <script setup lang="ts">
 const { can } = useAuth()
-
 const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
 if (!onAdminPortal && can(Role.SYSTEM_ADMIN)) {

@@ -182,5 +182,4 @@ function handleError() {
 .animate-fade-up {
     animation: fade-up 0.45s ease both;
 }
-
 </style>
