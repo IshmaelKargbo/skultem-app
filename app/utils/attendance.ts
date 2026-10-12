@@ -169,3 +169,20 @@ export function thresholdText(values: (number | null | undefined)[], fallback: n
     if (distinct.length === 1) return `${distinct[0]}%`
     return `their section's minimum`
 }
+
+// Mon-Fri days from `start` to `end` inclusive (ISO yyyy-mm-dd), i.e. calendar school days with
+// weekends removed. Holidays aren't known here, so this is the ceiling the recorded days sit under.
+export function countWeekdays(start: string | Date | null | undefined, end: string | Date | null | undefined): number {
+    if (!start || !end) return 0
+    const from = new Date(start)
+    const to = new Date(end)
+    if (isNaN(from.getTime()) || isNaN(to.getTime()) || from > to) return 0
+    const day = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()))
+    const last = Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate())
+    let count = 0
+    for (; day.getTime() <= last; day.setUTCDate(day.getUTCDate() + 1)) {
+        const dow = day.getUTCDay()
+        if (dow !== 0 && dow !== 6) count++
+    }
+    return count
+}
