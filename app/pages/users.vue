@@ -85,7 +85,6 @@ definePageMeta({
     <Heading title="System Admins" subtitle="People with full access across every school.">
       <UButton label="Add Admin" icon="i-lucide-user-plus" @click="addModal = true" />
     </Heading>
-
     <SystemAdminAddAdminModal v-model:open="addModal" @created="runSearch" />
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
