@@ -185,7 +185,7 @@ const schema = yup.object({
   assignments: yup.array().of(
     yup.object({
       subjectId: yup.string().required("Subject is required"),
-      teacherIds: yup.array().min(1, "At least one teacher is required"),
+      teacherIds: yup.array().of(yup.string()).default([]),
     })
   ),
 });
@@ -268,8 +268,11 @@ async function onSubmit() {
     saving.value = true;
 
     const assignments = state.assignments.flatMap((row) =>
-      row.teacherIds.map((teacherId) => ({
-        id: existingAssignmentIds.value[assignmentKey(row.subjectId, teacherId)] ?? null,
+      (row.teacherIds ?? []).map((teacherId) => ({
+        id:
+          existingAssignmentIds.value[
+          assignmentKey(row.subjectId, teacherId)
+          ] ?? null,
         teacherId,
         subjectId: row.subjectId,
       }))
