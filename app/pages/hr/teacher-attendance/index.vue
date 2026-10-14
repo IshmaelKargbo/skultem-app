@@ -112,7 +112,7 @@
             :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)" variant="soft"
             class="rounded-full" />
 
-          <UDropdownMenu v-else :items="statusMenuItems(row.teacher.id)" :content="{ align: 'end' }">
+          <UDropdownMenu v-else-if="!isToday" :items="statusMenuItems(row.teacher.id)" :content="{ align: 'end' }">
             <UButton :label="statusBadgeLabel(row.teacher.id)" trailing-icon="i-lucide-chevron-down" size="xs"
               variant="soft" :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)"
               class="rounded-full" />
