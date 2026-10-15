@@ -138,14 +138,6 @@ watch(search, (value) => {
     clearTimeout(timeout)
 
     timeout = setTimeout(async () => {
-        await router.replace({
-            query: {
-                ...route.query,
-                search: value || undefined,
-                page: 1
-            }
-        })
-
         await focusSearch()
     }, 500)
 })
