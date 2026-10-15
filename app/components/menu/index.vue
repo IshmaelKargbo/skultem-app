@@ -7,7 +7,7 @@
     <!-- Header (fixed height) -->
     <template #header>
       <NuxtLink to="/" class="flex min-w-0 items-center gap-2">
-        <img v-if="school?.logo" :src="school.logo" :alt="school.name || 'School logo'"
+        <img v-if="!onAdminPortal && school?.logo" :src="school.logo" :alt="school.name || 'School logo'"
           class="h-9 w-9 shrink-0 rounded-lg object-contain" />
 
         <template v-else>
@@ -15,12 +15,10 @@
           <img src="/menu-light.svg" alt="Skultem" class="h-7 shrink-0 hidden dark:block" />
         </template>
 
-        <div v-if="onAdminPortal" class="min-w-0">
-          <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
-            Skultem
-          </p>
-          <p class="truncate text-xs leading-tight text-muted">System Admin</p>
-        </div>
+        <!-- The Skultem logo already spells the name, so the system admin only gets its role beside it. -->
+        <UBadge v-if="onAdminPortal" color="primary" variant="subtle" size="sm" class="shrink-0">
+          System Admin
+        </UBadge>
 
         <div v-else-if="school?.logo" class="min-w-0">
           <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
