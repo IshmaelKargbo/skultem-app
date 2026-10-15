@@ -260,7 +260,7 @@ onMounted(() => {
 
                 <UFormField name="enrollmentType" label="Enrollment Type" required>
                     <USelectMenu v-model="form.enrollmentType" value-key="value" :items="enrollmentTypes"
-                        :leading-icon="ENROLLMENT_ICON" />
+                        placeholder="Select enrollment type" :leading-icon="ENROLLMENT_ICON" class="w-full" />
                     <template #help>
                         <p class="text-sm text-muted">
                             Select the type of enrollment for the student. This determines required fields and subject
@@ -270,14 +270,16 @@ onMounted(() => {
                 </UFormField>
 
                 <UFormField name="admissionDate" label="Admission Date" required>
-                    <UInput type="date" v-model="form.admissionDate" :leading-icon="CALENDAR_ICON" />
+                    <UInput type="date" v-model="form.admissionDate" placeholder="Select admission date"
+                        :leading-icon="CALENDAR_ICON" />
                     <template #help>
                         The date the student is officially admitted. Cannot be a future date.
                     </template>
                 </UFormField>
 
                 <UFormField name="classId" label="Grade / Class" required>
-                    <USelectMenu v-model="form.classId" value-key="value" :items="classes" :leading-icon="CLASS_ICON" />
+                    <USelectMenu v-model="form.classId" value-key="value" :items="classes" placeholder="Select grade / class"
+                        :leading-icon="CLASS_ICON" class="w-full" />
                     <template #help>
                         <p class="text-sm text-muted">
                             Select the grade or class the student will be enrolled in. Subject options will be based on

@@ -123,6 +123,9 @@ export const useClassStore = defineStore('class', {
     updateTemplate(classId: string, templateId: string) {
       return ClassApi().updateTemplate(classId, templateId)
     },
+    syncAssessments(classId: string) {
+      return ClassApi().syncAssessments(classId)
+    },
     async setNextClass(id: string, nextClass: string) {
       const res = await ClassApi().setNextClass(id, nextClass)
       if (res && this.record?.id === id) this.record = res

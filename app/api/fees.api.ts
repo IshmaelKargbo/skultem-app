@@ -122,6 +122,13 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
+    deleteDiscount: async (id: string) => {
+      try {
+        return await $api(`/fee/discount/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAllPayments: async (page: number, size: number) => {
       try {
         const res = await $api(`/payment?page=${page}&size=${size}`) as any

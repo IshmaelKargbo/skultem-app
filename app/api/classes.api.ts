@@ -374,6 +374,21 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
+    syncAssessments: async (classId: string) => {
+      try {
+        const res = await $api(`/class/${classId}/assessments/sync`, { method: 'POST' }) as any
+        return res.data as {
+          students: number
+          studentsUpdated: number
+          assessmentsCreated: number
+          subjectsWithoutTeacher: string[]
+          failed: number
+          firstError: string | null
+        }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     setNextClass: async (id: string, nextClass: string) => {
       try {
         const res = await $api('/class/next', {

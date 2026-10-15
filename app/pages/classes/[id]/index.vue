@@ -61,8 +61,8 @@
                         <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
                         <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
                             :content="{ align: 'end' }">
-                            <UButton variant="soft" size="sm" color="neutral" icon="i-lucide-ellipsis" label="More"
-                                trailing-icon="i-lucide-chevron-down" />
+                            <UButton variant="soft" size="sm" color="neutral" label="More"
+                                trailing-icon="i-lucide-ellipsis" />
                         </UDropdownMenu>
                         <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''"
                             hide-trigger />
@@ -489,6 +489,10 @@ const actionItems = computed(() => [[
     {
         label: 'Promotion Settings', icon: 'i-lucide-settings',
         onSelect: () => { promotionSettingOpen.value = true }
+    },
+    {
+        label: 'Create missing assessments', icon: 'i-lucide-refresh-cw',
+        onSelect: () => syncAssessments()
     }
 ], [
     {
@@ -500,6 +504,25 @@ const actionItems = computed(() => [[
         onSelect: () => { deleteOpen.value = true }
     }
 ]])
+
+// Fills in the assessments students in this class are missing (existing ones are never touched).
+async function syncAssessments() {
+    if (!session.value?.clazzId) return
+    const res = await classStore.syncAssessments(session.value.clazzId)
+    if (!res) return
+
+    const missing = res.subjectsWithoutTeacher?.length
+        ? ` No teacher is assigned yet for: ${res.subjectsWithoutTeacher.join(', ')}.`
+        : ''
+    const failed = res.failed ? ` ${res.failed} student(s) failed: ${res.firstError}.` : ''
+
+    if (res.assessmentsCreated > 0) {
+        success(`Created assessments for ${res.studentsUpdated} of ${res.students} student(s).${missing}${failed}`)
+    } else {
+        success(`Nothing new to create for ${res.students} student(s).${missing}${failed}`)
+    }
+    await fetchClass()
+}
 
 async function confirmDeleteSession() {
     if (!session.value) return

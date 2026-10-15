@@ -79,6 +79,8 @@ export type FeeDiscount = {
     applied: string
     expires: string
     totalSaved: string
+    // One discount can cover several fees (e.g. first and second term school fees).
+    fees: { feeName: string, term: string, value: string, saved: string }[]
 }
 
 export type RecordPaymentDto = {
@@ -211,9 +213,8 @@ export type UpdateFeeStructureDto = {
 
 export type CreateFeeDiscountDto = {
     studentId: string
-    feeId: string
+    fees: { feeId: string, value: number }[]
     name: string
-    value: number
     kind: string
     reason: string
     expiryDate: string

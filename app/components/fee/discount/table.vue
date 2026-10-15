@@ -13,6 +13,24 @@ const { records: data, meta } = storeToRefs(store)
 const editRcord = ref<FeeDiscount | null>(null)
 const editState = ref(false)
 
+const toast = useToast()
+const deleteTarget = ref<FeeDiscount | null>(null)
+const deleteOpen = ref(false)
+
+// Deleting removes the discount from every fee it covers and restores each fee's full amount.
+async function removeDiscount() {
+  if (!deleteTarget.value) return
+  try {
+    await store.delete(deleteTarget.value.id)
+    toast.add({ description: 'Discount deleted successfully', color: 'success' })
+    await store.fetchAll(page.value, size.value)
+    refreshReport()
+  } catch (err: any) {
+    toast.add({ description: err.message || 'Failed to delete discount', color: 'error' })
+    throw err
+  }
+}
+
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
@@ -96,6 +114,11 @@ function getRowItems(row: Row<FeeDiscount>) {
     {
       label: 'Delete Record',
       icon: 'i-lucide-trash',
+      color: 'error' as const,
+      onSelect: () => {
+        deleteTarget.value = row.original
+        deleteOpen.value = true
+      }
     }
   ]
 }
@@ -128,7 +151,7 @@ onMounted(async () => {
       <div class="flex space-x-3">
         <div class="flex flex-1 space-x-3">
           <UInput placeholder="Search by name" />
-          <FeeDiscountAdd :refresh-report="refreshReport" />
+          <UButton icon="prime:plus" label="Create Discount" to="/fees-payment/discounts/add" />
         </div>
         <TableViewToggle v-model="view" />
       </div>
@@ -154,6 +177,10 @@ onMounted(async () => {
           <p class="text-xs text-mute">
             {{ row.original.reason || 'Fetch' }}
           </p>
+          <div class="flex flex-wrap gap-1 pt-1">
+            <UBadge v-for="f in row.original.fees" :key="`${f.term}-${f.feeName}`" color="neutral" variant="outline"
+              size="sm" :label="`${f.term} · ${f.feeName} · ${f.value}`" />
+          </div>
         </div>
       </template>
 
@@ -297,6 +324,7 @@ onMounted(async () => {
               <div class="min-w-0">
                 <h3 class="truncate text-sm font-semibold">{{ item.name }}</h3>
                 <p class="truncate text-xs-base text-gray-500">{{ item.student }}</p>
+                <p class="truncate text-xs text-gray-400">{{ item.fees?.length || 0 }} fee(s)</p>
               </div>
             </div>
 
@@ -412,5 +440,8 @@ onMounted(async () => {
           :total="meta.total" show-edges />
       </div>
     </template>
+    <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete Discount"
+      :item-name="deleteTarget.name" :on-confirm="removeDiscount"
+      :description="`This removes the discount from all ${deleteTarget.fees?.length || 0} fee(s) it covers and restores their full amounts.`" />
   </UCard>
 </template>

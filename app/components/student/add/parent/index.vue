@@ -97,8 +97,13 @@
 
                         <UFormField name="existingGuardianId" label="Select Guardian" required>
                             <USelectMenu :loading="loading" v-model="form.existingGuardianId" :items="existingGuardians"
-                                value-key="value" option-attribute="label" placeholder="Select guardian"
-                                :leading-icon="SEARCH_ICON" />
+                                v-model:search-term="guardianSearch" ignore-filter value-key="value"
+                                placeholder="Search guardian by name or phone" :leading-icon="SEARCH_ICON"
+                                class="w-full">
+                                <template #empty>
+                                    {{ loading ? 'Searching...' : 'No guardian found. Try another name or phone number.' }}
+                                </template>
+                            </USelectMenu>
                             <template #help>
                                 Search for a guardian already registered in the system by name or phone number.
                             </template>
@@ -302,12 +307,32 @@ const relationships = [
     { label: 'Other', value: 'OTHER' }
 ]
 
-const existingGuardians = computed(() =>
-    records.value.map(e => ({
-        label: `${e.givenNames} ${e.familyName} - ${e.phone}`,
-        value: e.id
-    }))
-)
+const guardianLabel = (e: Parent) => [`${e.givenNames ?? ''} ${e.familyName ?? ''}`.trim() || e.name, e.phone].filter(Boolean).join(' - ')
+
+// The last guardian picked, kept so the menu can still show their label after a new search replaces the list.
+const pickedGuardian = ref<{ label: string, value: string } | null>(null)
+
+const existingGuardians = computed(() => {
+    const items = records.value.map(e => ({ label: guardianLabel(e), value: e.id }))
+    const picked = pickedGuardian.value
+    return picked && picked.value === form.existingGuardianId && !items.some(i => i.value === picked.value)
+        ? [picked, ...items]
+        : items
+})
+
+watch(() => form.existingGuardianId, (id) => {
+    const found = records.value.find(e => e.id === id)
+    if (found) pickedGuardian.value = { label: guardianLabel(found), value: found.id }
+})
+
+// Searched on the server (25 at a time) rather than loading every parent in the school up front.
+const guardianSearch = ref('')
+let guardianTimer: ReturnType<typeof setTimeout>
+watch(guardianSearch, (term) => {
+    clearTimeout(guardianTimer)
+    guardianTimer = setTimeout(() => store.fetchAll(1, 25, term?.trim() || undefined), 300)
+})
+onBeforeUnmount(() => clearTimeout(guardianTimer))
 
 function next() {
     emit('next', { ...form })
@@ -334,6 +359,6 @@ watch(
 watch(form, (value) => emit('change', { ...value }), { deep: true, immediate: true })
 
 onMounted(async () => {
-    await store.fetchAll(0, 0)
+    await store.fetchAll(1, 25)
 })
 </script>

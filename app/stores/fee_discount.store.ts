@@ -25,6 +25,9 @@ export const useFeeDiscountStore = defineStore('feeDiscount', {
     create(payload: CreateFeeDiscountDto) {
       return FeeApi().createDiscount(payload)
     },
+    delete(id: string) {
+      return FeeApi().deleteDiscount(id)
+    },
     countStudentsByFee(id: string) {
       return FeeApi().countByStudentsByFee(id)
     },

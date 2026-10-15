@@ -8,7 +8,7 @@
                 </div>
                 <div class="px-3 py-2">
                     <UInput ref="searchInput" v-model="search" placeholder="Search students..."
-                        :leading-icon="SEARCH_ICON" :disabled="isLoading" size="lg" />
+                        :leading-icon="SEARCH_ICON" size="lg" />
                 </div>
             </div>
         </template>
@@ -71,21 +71,25 @@ const selected = ref<Student | null>(null)
 const meta = ref<Meta>()
 const searchInput = ref()
 
-const search = ref((route.query.search as string) || '')
+// Search lives only in this variable - typing never touches the URL.
+const search = ref('')
+const currentPage = ref(Number(route.query.page ?? 1))
 
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 let timeout: ReturnType<typeof setTimeout>
 
 const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
+    get: () => currentPage.value,
     set: async (value) => {
+        currentPage.value = value
         await router.replace({
             query: {
                 ...route.query,
                 page: value
             }
         })
+        await loadData()
     }
 })
 
@@ -106,7 +110,7 @@ const loadData = async () => {
 
     try {
         const res = await store.fetchAllAndReturn(page.value, size.value,
-            (route.query.search as string) || ''
+            search.value.trim()
         )
 
         if (res) {
@@ -134,20 +138,27 @@ function select(row: Student) {
     })
 }
 
-watch(search, (value) => {
+watch(search, () => {
     clearTimeout(timeout)
 
     timeout = setTimeout(async () => {
+        currentPage.value = 1
+        await loadData()
         await focusSearch()
-    }, 500)
+    }, 400)
 })
 
+// Pagination (and any outside change to the page in the URL) reloads the list.
 watch(
-    () => [route.query.page, route.query.size, route.query.search],
+    () => [route.query.page, route.query.size],
     async () => {
+        // The pagination setter already loaded this page itself.
+        if (Number(route.query.page ?? 1) === currentPage.value && records.value.length) return
+        currentPage.value = Number(route.query.page ?? 1)
         await loadData()
         await focusSearch()
     },
     { immediate: true }
 )
+onBeforeUnmount(() => clearTimeout(timeout))
 </script>

@@ -12,9 +12,8 @@
                     <p class="md:hidden uppercase text-muted font-semibold">Summery</p>
                     <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
                         @assigned="refreshFees" />
-                    <FeeDiscountAdd v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student-id="student.id"
-                        :refresh-report="refreshFees" trigger-label="Discount" trigger-variant="outline"
-                        trigger-size="sm" trigger-icon="mdi:discount-outline" trigger-color="neutral" />
+                    <UButton v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :to="discountLink" label="Discount"
+                        variant="outline" size="sm" icon="mdi:discount-outline" color="neutral" />
                 </div>
             </template>
 
@@ -37,9 +36,8 @@
                         <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap">
                             <FeeStudentAssign v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student="student"
                                 @assigned="refreshFees" />
-                            <FeeDiscountAdd v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :student-id="student.id"
-                                :refresh-report="refreshFees" trigger-label="Apply Discount" trigger-variant="outline"
-                                trigger-size="sm" trigger-icon="mdi:discount-outline" trigger-color="neutral" />
+                            <UButton v-if="can([Role.ACCOUNTANT, Role.SUPER_ADMIN])" :to="discountLink" label="Apply Discount"
+                                variant="outline" size="sm" icon="mdi:discount-outline" color="neutral" />
                         </div>
                     </div>
                 </div>
@@ -107,6 +105,11 @@ const { student, embedded } = defineProps<{
     embedded?: boolean
 }>()
 const { can } = useAuth()
+
+const discountLink = computed(() => ({
+    path: '/fees-payment/discounts/add',
+    query: { studentId: student?.id, name: student ? `${student.givenNames} ${student.familyName}` : '' }
+}))
 const store = useStudentStore()
 const { loading } = storeToRefs(store)
 const feesState = ref<{
