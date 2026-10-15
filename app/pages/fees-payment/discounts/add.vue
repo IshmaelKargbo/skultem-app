@@ -112,7 +112,7 @@
             <div v-for="f in selectedFees" :key="f.feeId"
               class="grid items-center gap-3 rounded-md border border-default p-3 sm:grid-cols-[1fr_11rem]">
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{{ f.feeName }}</p>
+                <p class="truncate text-sm font-medium">{{ feeLabel(f) }}</p>
                 <p class="text-xs text-muted">Outstanding {{ format(Number(f.outstanding)) }}</p>
               </div>
               <UInput :model-value="valueFor(f.feeId) ?? undefined" type="number" class="w-full"
@@ -186,6 +186,8 @@ const lockedStudentName = computed(() => (route.query.name as string) || "Select
 const isLoading = ref(false);
 const formRef = ref<any>(null);
 
+const feeLabel = (f: StudentFee) => (f.term ? `${f.term} · ${f.feeName}` : f.feeName);
+
 const selectedFees = computed(() => fees.value.filter((f) => state.feeIds.includes(f.feeId)));
 
 // A fee follows the default value until it is given one of its own.
@@ -218,7 +220,7 @@ const summary = computed(() => {
   const rows = selectedFees.value.map((f) => {
     const outstanding = Number(f.outstanding);
     const discount = Math.min(discountOn(f.feeId, outstanding), outstanding);
-    return { id: f.feeId, label: f.feeName, outstanding, discount, remaining: outstanding - discount };
+    return { id: f.feeId, label: feeLabel(f), outstanding, discount, remaining: outstanding - discount };
   });
   return {
     rows,
@@ -293,7 +295,7 @@ async function fetchRecords() {
 
     fees.value = result;
     categories.value = result.map((s: StudentFee) => ({
-      label: `${s.feeName} (${format(s.total)}) - ${format(s.outstanding)}`,
+      label: `${s.term ? s.term + ' · ' : ''}${s.feeName} (${format(s.total)}) - ${format(s.outstanding)}`,
       outstanding: s.outstanding,
       total: s.total,
       name: s.feeName,
@@ -305,7 +307,47 @@ async function fetchRecords() {
   }
 }
 
-const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch();
+// Students are searched on the server (25 at a time) as the user types - the whole roster is never
+// loaded or filtered in the browser. The picked student is remembered so the menu keeps showing their
+// name after the list is replaced by a new search.
+const studentSearchTerm = ref("");
+const studentsLoading = ref(false);
+const foundStudents = ref<{ label: string; value: string }[]>([]);
+const pickedStudent = ref<{ label: string; value: string } | null>(null);
+
+const students = computed(() => {
+  const picked = pickedStudent.value;
+  return picked && picked.value === state.studentId && !foundStudents.value.some((s) => s.value === picked.value)
+    ? [picked, ...foundStudents.value]
+    : foundStudents.value;
+});
+
+let studentRequest = 0;
+async function searchStudents(term: string) {
+  const id = ++studentRequest;
+  studentsLoading.value = true;
+  try {
+    const res = (await StudentApi().getAll(term.trim(), 1, 25)) as any;
+    if (id !== studentRequest) return;
+    foundStudents.value = (res?.data || []).map((x: Student) => ({
+      label: `${x.givenNames} ${x.familyName}`,
+      value: x.id,
+    }));
+  } finally {
+    if (id === studentRequest) studentsLoading.value = false;
+  }
+}
+
+let studentTimer: ReturnType<typeof setTimeout>;
+watch(studentSearchTerm, (term) => {
+  clearTimeout(studentTimer);
+  studentTimer = setTimeout(() => searchStudents(term), 300);
+});
+onBeforeUnmount(() => clearTimeout(studentTimer));
+
+onMounted(() => {
+  if (!lockedStudent.value) searchStudents("");
+});
 
 type FeeDiscountForm = {
   studentId: string;
@@ -326,6 +368,14 @@ const state = reactive<FeeDiscountForm>({
   reason: "",
   studentId: "",
 });
+
+watch(
+  () => state.studentId,
+  (id) => {
+    const found = foundStudents.value.find((x) => x.value === id);
+    if (found) pickedStudent.value = found;
+  }
+);
 
 const schema = yup.object({
   studentId: yup.string().required("Student is required"),
@@ -360,9 +410,9 @@ const onSubmit = async (_event: FormSubmitEvent<FeeDiscountForm>) => {
 
     for (const f of selectedFees.value) {
       const v = Number(valueFor(f.feeId));
-      if (!v || v <= 0) throw new Error(`Enter a value for ${f.feeName}`);
-      if (state.kind === "PERCENTAGE" && (v < 1 || v > 100)) throw new Error(`${f.feeName}: percentage must be between 1 and 100`);
-      if (state.kind !== "PERCENTAGE" && v > Number(f.outstanding)) throw new Error(`${f.feeName}: discount is more than the outstanding balance`);
+      if (!v || v <= 0) throw new Error(`Enter a value for ${feeLabel(f)}`);
+      if (state.kind === "PERCENTAGE" && (v < 1 || v > 100)) throw new Error(`${feeLabel(f)}: percentage must be between 1 and 100`);
+      if (state.kind !== "PERCENTAGE" && v > Number(f.outstanding)) throw new Error(`${feeLabel(f)}: discount is more than the outstanding balance`);
     }
 
     await store.create({

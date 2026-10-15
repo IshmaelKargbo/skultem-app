@@ -130,10 +130,13 @@
                                     <p class="truncate text-[11px] text-muted">{{ subject.teacher }}</p>
                                 </div>
                                 <div class="flex shrink-0 items-center gap-2">
-                                    <span class="text-sm">
+                                    <span v-if="isSubmitted(subject)" class="text-sm">
                                         {{ subject.score }}% <span class="text-muted">({{ subject.weightScore }}%)</span>
                                     </span>
-                                    <UBadge size="sm" variant="soft" :color="gradeColor(subject.grade)">
+                                    <UBadge v-if="!isSubmitted(subject)" size="sm" variant="soft" color="neutral">
+                                        Pending
+                                    </UBadge>
+                                    <UBadge v-else size="sm" variant="soft" :color="gradeColor(subject.grade)">
                                         {{ subject.grade || 'N/A' }}
                                     </UBadge>
                                 </div>
@@ -164,13 +167,16 @@
                                         {{ subject.teacher }}
                                     </td>
                                     <td class="px-4 py-2.5 text-right">
-                                        {{ subject.score }}%
+                                        {{ isSubmitted(subject) ? `${subject.score}%` : '—' }}
                                     </td>
                                     <td class="px-4 py-2.5 text-right">
-                                        {{ subject.weightScore }}%
+                                        {{ isSubmitted(subject) ? `${subject.weightScore}%` : '—' }}
                                     </td>
                                     <td class="px-4 py-2.5 text-right">
-                                        <UBadge size="sm" variant="soft" :color="subject.grade === 'A'
+                                        <UBadge v-if="!isSubmitted(subject)" size="sm" variant="soft" color="neutral">
+                                            Pending
+                                        </UBadge>
+                                        <UBadge v-else size="sm" variant="soft" :color="subject.grade === 'A'
                                             ? 'success'
                                             : subject.grade === 'B'
                                                 ? 'primary'
@@ -239,8 +245,10 @@ const terms = computed(() =>
     })) || []
 )
 
-// A grade with no score hasn't been submitted yet, so it is neither passed nor failed.
-const isSubmitted = (g: any) => g.score !== null && g.score !== undefined
+// Until the teacher submits an assessment for a subject its score is just an unfilled 0, so it is
+// neither passed nor failed. Only submitted (or later) assessments count.
+const RELEASED = ['SUBMITTED', 'APPROVED', 'COMPLETED']
+const isSubmitted = (g: any) => RELEASED.includes(g.status) && g.score !== null && g.score !== undefined
 
 function tally(list: any[]) {
     const submitted = list.filter(isSubmitted)

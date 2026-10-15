@@ -29,7 +29,9 @@
             </div>
             <div class="flex items-center justify-between text-[11px]">
                 <span class="text-muted">Paid <span class="font-medium text-highlighted">{{
-                    format(student.feeDetail.paid) }}</span></span>
+                    format(student.feeDetail.paid) }}</span>
+                    <span v-if="discount > 0" class="text-purple-500"> · Discount {{ format(discount) }}</span>
+                </span>
                 <span :class="student.feeDetail.balance > 0 ? 'font-medium text-error' : 'font-medium text-success'">
                     {{ student.feeDetail.balance > 0 ? `${format(student.feeDetail.balance)} due` : 'Settled' }}
                 </span>
@@ -65,9 +67,14 @@ const statusStyles: Record<string, { label: string, color: 'success' | 'warning'
 
 const statusStyle = computed(() => statusStyles[student.feeDetail.status] ?? statusStyles.Pending)
 
+const discount = computed(() => Number(student.feeDetail.discount || 0))
+
+// Progress is measured against what is actually owed - the total less any discount - so a student who
+// has paid everything they owe reads 100%, not the fraction of the undiscounted total.
 const progressPct = computed(() => {
-    if (!student.feeDetail.total) return 0
-    return Math.min(100, Math.round((student.feeDetail.paid / student.feeDetail.total) * 100))
+    const payable = student.feeDetail.total - discount.value
+    if (payable <= 0) return student.feeDetail.total > 0 ? 100 : 0
+    return Math.min(100, Math.round((student.feeDetail.paid / payable) * 100))
 })
 
 const progressColor = computed(() => {

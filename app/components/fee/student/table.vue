@@ -87,14 +87,16 @@ const parseStatusColor: Record<string, string> = {
   "Paid": "text-success",
   "Partial": "text-warning",
   "Overdue": "text-error",
-  "Unpaid": "text-muted"
+  "Unpaid": "text-muted",
+  "Pending": "text-muted"
 }
 
 const parseBatchStatusColor: Record<string, string> = {
   "Paid": "success",
   "Partial": "warning",
   "Overdue": "error",
-  "Unpaid": "neutral"
+  "Unpaid": "neutral",
+  "Pending": "neutral"
 }
 </script>
 
@@ -148,7 +150,7 @@ const parseBatchStatusColor: Record<string, string> = {
 
               <div class="space-y-1 text-right">
                 <p class="text-sm font-bold text-info">
-                  {{ format(item.total | 0) }}
+                  {{ format(item.amount || 0) }}
                 </p>
                 <UBadge size="sm" variant="soft" :color="parseBatchStatusColor[item.status]" :label="item.status" />
               </div>
@@ -165,7 +167,7 @@ const parseBatchStatusColor: Record<string, string> = {
               </div>
               <div>
                 <p class="text-muted">Discount</p>
-                <p class="font-semibold text-purple-500">{{ format(item.discount || 0) }}</p>
+                <p class="font-semibold text-purple-500">{{ item.discount > 0 ? `- ${format(item.discount)}` : '—' }}</p>
               </div>
             </div>
           </div>
@@ -220,7 +222,9 @@ const parseBatchStatusColor: Record<string, string> = {
           <p class="text-orange-400">{{ format(row.original.outstanding || 0) }}</p>
         </template>
         <template #discount-cell="{ row }">
-          <p class="text-purple-400">{{ format(row.original.discount || 0) }}</p>
+          <p :class="row.original.discount > 0 ? 'font-medium text-purple-500' : 'text-muted'">
+            {{ row.original.discount > 0 ? `- ${format(row.original.discount)}` : '—' }}
+          </p>
         </template>
       </UTable>
     </div>

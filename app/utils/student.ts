@@ -21,6 +21,8 @@ export type Student = {
         balance: number
         paid: number
         status: string
+        // What discounts take off the total; the amount actually owed is total - discount.
+        discount?: number
     }
     classSize: number
     sessionId: string

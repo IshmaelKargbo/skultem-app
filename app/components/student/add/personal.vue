@@ -31,10 +31,10 @@
                 </UFormField>
 
                 <UFormField name="dob" label="Date of Birth" required>
-                    <UInput v-model="form.dob" type="date" :leading-icon="CALENDAR_ICON" />
+                    <UInput v-model="form.dob" type="date" :max="latestDob" :leading-icon="CALENDAR_ICON" />
                     <template #help>
                         <p class="text-sm text-muted">
-                            Select the student's date of birth. Must be a past date.
+                            Select the student's date of birth. Must be a past date, at least 1 year ago.
                         </p>
                     </template>
                 </UFormField>
@@ -116,6 +116,13 @@ const emit = defineEmits<{
     change: [typeof form]
 }>()
 
+// The latest allowed date of birth: exactly one year ago today (yyyy-mm-dd).
+const latestDob = (() => {
+    const d = new Date()
+    d.setFullYear(d.getFullYear() - 1)
+    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')
+})()
+
 const schema = yup.object({
     givenNames: yup.string().required('Given names are required'),
     familyName: yup.string().required('Family name is required'),
@@ -126,7 +133,8 @@ const schema = yup.object({
             const today = new Date()
             today.setHours(0, 0, 0, 0)
             return dob < today
-        }),
+        })
+        .test('one-year', 'Student must be at least 1 year old', value => !value || value <= latestDob),
     gender: yup.string().required('Gender is required'),
     religion: yup.string().required('Religion is required'),
     nationality: yup.string().required('Nationality is required'),
