@@ -12,8 +12,8 @@ const recordsByDate = ref<Record<string, string>>({})
 const eventsByDate = ref<Record<string, CalendarEntry[]>>({})
 
 const eventDotClass: Record<CalendarEntryType, string> = {
-    EVENT: 'bg-secondary-500',
-    HOLIDAY: 'bg-purple-500'
+    EVENT: 'bg-primary',
+    HOLIDAY: 'bg-success'
 }
 
 const statusStyles: Record<string, { circle: string, text: string, dot: string }> = {
@@ -140,11 +140,45 @@ function eventsOf(key: string) {
     return eventsByDate.value[key] || []
 }
 
+// Tapping a day with something on shows it below, like the dashboard's event calendar; otherwise the
+// month's events are listed.
+const selectedKey = ref<string | null>(null)
+
+const listed = computed(() => {
+    if (selectedKey.value) return eventsOf(selectedKey.value)
+
+    const seen = new Map<string, CalendarEntry>()
+    for (const list of Object.values(eventsByDate.value)) for (const e of list) seen.set(e.id, e)
+    return [...seen.values()].sort((a, b) => a.startDate.localeCompare(b.startDate))
+})
+
+const listedLabel = computed(() => {
+    if (!selectedKey.value) return `In ${cursor.value.toLocaleDateString(undefined, { month: 'long' })}`
+    const [y, m, d] = selectedKey.value.split('-').map(Number)
+    return `On ${new Date(y!, m! - 1, d!).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}`
+})
+
+const shortDate = (iso: string, opts: Intl.DateTimeFormatOptions) =>
+    eventDayBoundary(iso).toLocaleDateString(undefined, opts)
+
+function whenText(e: CalendarEntry) {
+    const same = e.startDate.slice(0, 10) === (e.endDate || e.startDate).slice(0, 10)
+    const f = { month: 'short', day: 'numeric' } as const
+    return same ? 'All day' : `${shortDate(e.startDate, f)} - ${shortDate(e.endDate, f)}`
+}
+
+function selectDay(key: string) {
+    if (!eventsOf(key).length) return
+    selectedKey.value = selectedKey.value === key ? null : key
+}
+
 function goPrevMonth() {
+    selectedKey.value = null
     cursor.value = addMonths(cursor.value, -1)
 }
 
 function goNextMonth() {
+    selectedKey.value = null
     cursor.value = addMonths(cursor.value, 1)
 }
 
@@ -331,6 +365,8 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
             <div class="grid grid-cols-7">
                 <div v-for="(cell, i) in calendarCells" :key="cell?.key ?? `blank-${i}`"
                     class="flex min-h-20 flex-col items-center gap-1.5 border-b border-r border-default p-2 [&:nth-child(7n)]:border-r-0"
+                    :class="[cell && eventsOf(cell.key).length ? 'cursor-pointer hover:bg-elevated/50' : '', cell && selectedKey === cell.key ? 'bg-elevated/60 ring-2 ring-inset ring-primary/40' : '']"
+                    @click="cell && selectDay(cell.key)"
                 >
                     <template v-if="cell">
                         <span
@@ -384,14 +420,43 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <span class="h-2 w-2 rounded-full bg-secondary-500" />
+                    <span class="h-2 w-2 rounded-full bg-primary" />
                     <span class="text-xs text-muted">Event</span>
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <span class="h-2 w-2 rounded-full bg-purple-500" />
+                    <span class="h-2 w-2 rounded-full bg-success" />
                     <span class="text-xs text-muted">Holiday</span>
                 </div>
+            </div>
+
+            <!-- What's on -->
+            <div class="border-t border-default px-4 pb-4 pt-3">
+                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted">{{ listedLabel }}</p>
+
+                <p v-if="!listed.length" class="py-3 text-center text-xs text-muted">
+                    {{ selectedKey ? 'Nothing on this day.' : 'No events or holidays this month.' }}
+                </p>
+                <ul v-else class="space-y-2">
+                    <li v-for="e in listed" :key="e.id" class="flex items-start gap-3 rounded-lg bg-elevated/40 px-3 py-2">
+                        <div class="flex w-10 shrink-0 flex-col items-center rounded-md bg-default py-1 ring-1 ring-default">
+                            <span class="text-[10px] uppercase text-muted">{{ shortDate(e.startDate, { month: 'short' }) }}</span>
+                            <span class="text-sm font-semibold leading-none text-highlighted">{{ shortDate(e.startDate, { day: 'numeric' }) }}</span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <p class="truncate text-sm font-medium text-highlighted">{{ e.title }}</p>
+                                <UBadge size="sm" variant="subtle" :color="e.type === 'HOLIDAY' ? 'success' : 'primary'">
+                                    {{ e.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
+                                </UBadge>
+                                <CommunicateSectionBadge :section-id="e.managementSectionId" />
+                            </div>
+                            <p class="truncate text-xs text-muted">
+                                {{ whenText(e) }}<template v-if="e.location"> · {{ e.location }}</template>
+                            </p>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
