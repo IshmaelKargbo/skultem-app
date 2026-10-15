@@ -20,27 +20,24 @@
 
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex flex-wrap items-center gap-2 px-4 py-3">
+        <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div class="flex min-w-0 flex-1 items-center gap-2">
-            <UInput v-model="search" :icon="SEARCH_ICON"
+            <UInput v-model="searchInput" :icon="SEARCH_ICON"
               :placeholder="cardType === 'student' ? 'Search by name or admission no' : 'Search by name or staff ID'"
               class="min-w-0 flex-1" />
-            <USelectMenu v-if="cardType === 'student'" v-model="selectedClass" value-key="value" :items="classOptions"
-              placeholder="Class" :loading="classLoading" clear class="hidden w-44 sm:block" />
+            <StudentFilterDrawer v-if="cardType === 'student'" v-model:class-id="classId" v-model:gender="gender"
+              v-model:sort="sort" :class-options="classOptions" :sort-options="studentSortOptions"
+              :active-count="activeFilterCount" :default-sort="studentDefaultSort" />
+            <TeacherFilterDrawer v-else v-model:gender="gender" v-model:sort="sort" :sort-options="staffSortOptions"
+              :active-count="activeFilterCount" :default-sort="staffDefaultSort" />
           </div>
-          <div class="flex items-center gap-2">
-            <UButton icon="i-lucide-x" variant="soft" color="neutral" aria-label="Clear filters" @click="resetFilters" />
-            <UButton icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
-              class="hidden md:flex">
-              Card Design
-            </UButton>
-            <UButton icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
-              aria-label="Card Design" class="md:hidden" />
-            <TableViewToggle v-model="tableView" />
-          </div>
-          <!-- Class filter on a phone: its own row so the search box keeps its width. -->
-          <USelectMenu v-if="cardType === 'student'" v-model="selectedClass" value-key="value" :items="classOptions"
-            placeholder="Class" :loading="classLoading" clear class="w-full sm:hidden" />
+          <UButton icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
+            class="hidden md:flex">
+            Card Design
+          </UButton>
+          <UButton icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
+            aria-label="Card Design" class="md:hidden" />
+          <TableViewToggle v-model="tableView" />
         </div>
       </template>
 
@@ -115,7 +112,6 @@
                 </div>
                 <div class="flex shrink-0 items-center gap-2 self-center">
                   <UIcon name="i-lucide-eye" class="size-4 text-muted" />
-                  <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
                 </div>
               </div>
             </div>
@@ -157,8 +153,42 @@ const { records: classes, loading: classLoading } = storeToRefs(classStore)
 
 const tableView = ref<'table' | 'card'>('table')
 const cardType = ref<'student' | 'staff'>('student')
+const searchInput = ref('')
 const search = ref('')
-const selectedClass = ref('')
+const classId = ref('')
+const gender = ref('')
+
+// Students and staff sort on different fields, so each has its own list and default.
+const studentSortOptions = [
+  { label: 'Name (A-Z)', value: 'givenNames:asc' },
+  { label: 'Name (Z-A)', value: 'givenNames:desc' },
+  { label: 'Newest First', value: 'createdAt:desc' },
+  { label: 'Oldest First', value: 'createdAt:asc' }
+]
+const studentDefaultSort = 'createdAt:desc'
+const staffSortOptions = [
+  { label: 'Name (A-Z)', value: 'user.givenName:asc' },
+  { label: 'Name (Z-A)', value: 'user.givenName:desc' },
+  { label: 'Newest First', value: 'createdAt:desc' },
+  { label: 'Oldest First', value: 'createdAt:asc' }
+]
+const staffDefaultSort = 'createdAt:desc'
+const sort = ref(studentDefaultSort)
+const sortBy = computed(() => sort.value.split(':')[0])
+const sortDirection = computed(() => sort.value.split(':')[1])
+
+const activeFilterCount = computed(() => [
+  cardType.value === 'student' ? classId.value : '',
+  gender.value,
+  sort.value !== (cardType.value === 'student' ? studentDefaultSort : staffDefaultSort)
+].filter(Boolean).length)
+
+// Debounced so every keystroke doesn't fire a request.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { search.value = val }, 350)
+})
 
 const meta = computed(() => (cardType.value === 'staff' ? teacherMeta.value : studentMeta.value))
 const loading = computed(() => (cardType.value === 'staff' ? teacherLoading.value : studentLoading.value))
@@ -173,11 +203,20 @@ const page = computed<number>({
 const size = ref(runtimeConf().limit)
 
 async function fetchRecords() {
-  if (cardType.value === 'staff') await teacherStore.fetchAll(page.value, size.value, search.value)
-  else await studentStore.fetchAll(page.value, size.value, search.value)
+  if (cardType.value === 'staff') {
+    await teacherStore.fetchAll(page.value, size.value, search.value, sortBy.value, sortDirection.value, gender.value || undefined)
+  } else {
+    await studentStore.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value, gender.value || undefined)
+  }
 }
 
-watch([page, size, search, cardType], fetchRecords, { immediate: true })
+watch([page, size], fetchRecords, { immediate: true })
+
+// A new search / filter starts again from page 1; if already there the page watch won't fire, so fetch directly.
+watch([search, classId, gender, sort, cardType], () => {
+  if (page.value === 1) fetchRecords()
+  else page.value = 1
+})
 
 const columns = computed(() => [
   { accessorKey: 'name', header: cardType.value === 'student' ? 'Student' : 'Staff' },
@@ -194,7 +233,6 @@ function setCardType(type: 'student' | 'staff') {
   if (cardType.value === type) return
   cardType.value = type
   resetFilters()
-  page.value = 1
 }
 
 const filteredRecords = computed(() => {
@@ -209,8 +247,7 @@ const filteredRecords = computed(() => {
     }))
   }
 
-  const filtered = selectedClass.value ? students.value.filter(s => s.classId === selectedClass.value) : students.value
-  return filtered.map(s => ({
+  return students.value.map(s => ({
     id: s.id,
     name: `${s.givenNames} ${s.familyName}`,
     subtitle: s.className,
@@ -220,9 +257,13 @@ const filteredRecords = computed(() => {
   }))
 })
 
+// Switching between students and staff drops every filter (the two lists don't share sort fields).
 function resetFilters() {
+  searchInput.value = ''
   search.value = ''
-  selectedClass.value = ''
+  classId.value = ''
+  gender.value = ''
+  sort.value = cardType.value === 'student' ? studentDefaultSort : staffDefaultSort
 }
 
 onMounted(() => {

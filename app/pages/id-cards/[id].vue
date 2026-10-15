@@ -16,7 +16,7 @@
     </Heading>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <USkeleton class="h-80 w-full max-w-[420px] rounded-[28px]" />
+      <USkeleton class="h-80 w-full max-w-105 rounded-[28px]" />
     </div>
 
     <IdCardsIDCardPreview v-else-if="template" v-model:side="side" :template="template" :is-pdf-capture="isPdfCapture"

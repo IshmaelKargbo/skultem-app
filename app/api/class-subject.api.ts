@@ -2,7 +2,7 @@ export const ClassSubjectApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (page: number, size: number, classId?: string, mandatory?: boolean, query?: string, sortBy?: string, direction?: string) => {
+    getAll: async (page: number, size: number, classId?: string, mandatory?: boolean, query?: string, sortBy?: string, direction?: string, streamId?: string, sectionId?: string) => {
       try {
         const params = new URLSearchParams({ page: String(page), size: String(size) })
         if (classId) params.set('classId', classId)
@@ -10,6 +10,8 @@ export const ClassSubjectApi = () => {
         if (query) params.set('query', query)
         if (sortBy) params.set('sortBy', sortBy)
         if (direction) params.set('direction', direction)
+        if (streamId) params.set('streamId', streamId)
+        if (sectionId) params.set('sectionId', sectionId)
 
         const res = await $api(`/class-subject?${params}`) as any
 

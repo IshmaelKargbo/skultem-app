@@ -60,6 +60,8 @@
       }" />
     </div>
 
+    <AttendanceTeacherTrend ref="trendRef" />
+
     <!-- Register -->
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
@@ -219,6 +221,7 @@ const date = ref(today)
 const historyPage = ref(1)
 const historySize = ref(7)
 const search = ref('')
+const trendRef = ref<{ reload: () => void } | null>(null)
 
 const isToday = computed(() => date.value === today)
 const marks = reactive<Record<string, { status: TeacherAttendanceStatus | null, note: string }>>({})
@@ -277,6 +280,7 @@ async function saveAttendance() {
     await store.mark(date.value, pendingChanges.value)
     notify.success('Attendance saved successfully')
     store.fetchHistory(historyPage.value, historySize.value)
+    trendRef.value?.reload()
   } catch (err: any) {
     notify.error(err?.message || 'Failed to save attendance')
   }

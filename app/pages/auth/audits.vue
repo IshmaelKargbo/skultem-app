@@ -3,33 +3,15 @@
         <AuthSectionNav />
         <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div>
-                    <div class="flex items-center justify-between gap-3 px-4 py-3">
-                        <div>
-                            <p>Audit Logs</p>
-                            <p class="text-xs text-muted">Who did what, and when</p>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <TableViewToggle v-model="view" />
-                            <UButton @click="filterState = !filterState"
-                                :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
-                                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-                        </div>
+                <div class="flex items-center justify-between gap-2 px-4 py-3">
+                    <div class="flex min-w-0 flex-1 items-center gap-2">
+                        <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search this page by action, user, email or IP"
+                            class="min-w-0 flex-1" />
+                        <FilterDrawer v-model="filters" :fields="filterFields" title="Filter audit logs"
+                            description="Narrow the list by status" />
                     </div>
 
-                    <!-- Always shown from md up; on mobile it opens with the filter button -->
-                    <div :class="filterState ? 'flex' : 'hidden'"
-                        class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
-                        <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
-                            <USelectMenu class="w-full" v-model="status" value-key="value" label-key="label"
-                                :items="statusOptions" placeholder="All Statuses" clear />
-                            <UInput v-model="search" :icon="SEARCH_ICON" class="md:col-span-2"
-                                placeholder="Search this page by action, user, email or IP" />
-                        </div>
-                        <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                            :disabled="!hasActiveFilters" @click="resetFilters" />
-                    </div>
+                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
@@ -223,6 +205,7 @@
 </template>
 
 <script setup lang="ts">
+import type { FilterField } from '~/components/filter/Drawer.vue'
 const view = ref<'table' | 'card'>('table')
 const store = useAuditStore()
 const { records, meta, loading } = storeToRefs(store)
@@ -240,19 +223,22 @@ const columns = [
 // these narrow the logs on the page that's loaded. -------------------------------------------------
 const search = ref('')
 const status = ref('')
-const filterState = ref(false) // the filter row's open/closed state on mobile
 
 const statusOptions = [
     { label: 'Success', value: 'SUCCESS' },
     { label: 'Failure', value: 'FAILURE' },
 ]
 
-const hasActiveFilters = computed(() => !!search.value || !!status.value)
+// Status lives in the shared filter drawer (same as the class list); search stays in the header.
+const filters = computed<Record<string, string>>({
+    get: () => ({ status: status.value }),
+    set: (v) => { status.value = v.status ?? '' }
+})
+const filterFields = computed<FilterField[]>(() => [
+    { key: 'status', label: 'Status', type: 'select', options: statusOptions, placeholder: 'All Statuses' }
+])
 
-function resetFilters() {
-    search.value = ''
-    status.value = ''
-}
+const hasActiveFilters = computed(() => !!search.value || !!status.value)
 
 function statusColor(value: string): 'success' | 'error' {
     return value === 'SUCCESS' ? 'success' : 'error'

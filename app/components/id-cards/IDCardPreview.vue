@@ -23,10 +23,10 @@
       <!-- ID CARD: FRONT -->
       <!-- ═════════════════════════════════════════════════════════════ -->
       <div v-if="side === 'front'" class="id-card-face" :class="[
-        'relative w-full overflow-hidden bg-white shadow-[0_20px_50px_-12px_rgb(0_0_0_/_0.25)] ring-1 ring-black/5 rounded-[20px]',
+        'relative w-full overflow-hidden bg-white border-solid rounded-[20px]',
         settings.layout === 'vertical' ? 'max-w-[340px]' : 'max-w-[560px]',
         isPdfCapture && 'pdf-capture'
-      ]">
+      ]" :style="cardBorderStyle">
 
         <!-- Background image layer -->
         <div v-if="settings.bgImageUrl" class="pointer-events-none absolute inset-0 z-0" :style="{
@@ -43,16 +43,16 @@
 
           <div class="relative flex items-center justify-between gap-3">
             <div class="min-w-0">
-              <p class="text-lg font-black uppercase leading-tight tracking-wide"
-                :style="{ color: settings.headerTextColor }">
+              <p class="text-xl font-black uppercase leading-tight tracking-wide"
+                :style="{ color: '#000000' }">
                 {{
                   template.school.name
                 }}
               </p>
-              <p class="mt-1.5 text-[10px] font-medium uppercase tracking-[0.2em]"
-                :style="{ color: settings.headerTextColor, opacity: 0.8 }">
+              <p class="school-motto mt-1.5 whitespace-nowrap text-[13px] font-semibold tracking-wide"
+                :style="{ color: '#000000', lineHeight: '18px', height: '18px' }">
                 {{
-                  template.school.tagline || `${cardTypeLabel} Identification`
+                  capitalizeFirst(template.school.tagline) || `${cardTypeLabel} Identification`
                 }}
               </p>
             </div>
@@ -63,8 +63,8 @@
         </div>
 
         <div v-if="settings.layout !== 'vertical'"
-          class="absolute z-50 top-3 right-3 sm:top-5 sm:right-5 flex h-20 w-20 sm:h-36 sm:w-36 items-center justify-center overflow-hidden bg-white"
-          :style="{ '--tw-ring-color': settings.headerTextColor + '30', borderRadius: (settings.logoRadius ?? 50) + '%' }">
+          class="absolute z-50 top-3 right-3 sm:top-5 sm:right-5 flex h-[calc(6rem*var(--ls))] w-[calc(6rem*var(--ls))] sm:h-[calc(10rem*var(--ls))] sm:w-[calc(10rem*var(--ls))] items-center justify-center overflow-hidden bg-white"
+          :style="{ '--tw-ring-color': settings.headerTextColor + '30', borderRadius: (settings.logoRadius ?? 50) + '%', '--ls': (settings.logoBoxSize || 100) / 100, padding: (settings.logoPadding || 0) + 'px' }">
           <!-- Fixed-size white container; the logo is fitted inside it (object-contain keeps its
                proportions) and scaled by the Logo size setting, so an oversized logo never
                overflows the container. -->
@@ -76,10 +76,12 @@
           <!-- Photo -->
           <div :class="settings.layout === 'horizontal' ? 'shrink-0 -mt-0.5 pr-0 sm:pr-1' : 'flex justify-center -mt-2'">
             <div :class="[
-              'overflow-hidden border-[3px] shadow-md',
-              settings.layout === 'horizontal' ? 'h-24 w-20 sm:h-32 sm:w-26' : 'mx-auto h-24 w-24',
-              settings.profileShape === 'round' ? 'rounded-full' : 'rounded-xl'
-            ]" :style="{ borderColor: settings.headerColor }">
+              'overflow-hidden border-solid bg-white',
+              settings.layout === 'horizontal'
+                ? 'h-[calc(7rem*var(--ps))] w-[calc(6rem*var(--ps))] sm:h-[calc(10rem*var(--ps))] sm:w-[calc(8rem*var(--ps))]'
+                : 'mx-auto h-[calc(8rem*var(--ps))] w-[calc(8rem*var(--ps))]',
+              settings.profileShape === 'round' ? 'rounded-full' : 'rounded-lg'
+            ]" :style="{ borderColor: settings.headerColor, borderWidth: (settings.photoBorder ?? 0) + 'px', '--ps': (settings.photoSize || 100) / 100, padding: (settings.photoPadding || 0) + 'px' }">
               <!-- No crossorigin attribute - R2's public bucket URL sends no CORS headers (see
                    R2StorageService.downloadAsDataUri), so tagging this crossorigin="anonymous"
                    makes the browser refuse to load it at all rather than just tainting a canvas
@@ -88,8 +90,8 @@
                    data: URI right before capturing (see getBrandingAssets() in pages/id-cards/[id].vue);
                    the photo isn't part of that swap yet, so it may still be missing from exported
                    PDFs even though it now displays correctly on screen. -->
-              <img v-if="person.photo" :src="person.photo" alt="" class="h-full w-full bg-white object-cover" />
-              <div v-else class="flex h-full w-full items-center justify-center"
+              <img v-if="person.photo" :src="person.photo" alt="" :class="['h-full w-full bg-white object-cover', settings.profileShape === 'round' ? 'rounded-full' : 'rounded-lg']" />
+              <div v-else :class="['flex h-full w-full items-center justify-center', settings.profileShape === 'round' ? 'rounded-full' : 'rounded-lg']"
                 :style="{ backgroundImage: `linear-gradient(to bottom right, ${settings.headerColor}22, ${settings.headerColor}44)` }">
                 <span class="text-xl font-bold" :style="{ color: settings.headerColor }">{{
                   initials
@@ -103,12 +105,12 @@
             <div :class="settings.layout === 'vertical' ? 'inline-block text-left' : 'space-y-0.5'">
               <template v-for="field in activeFields" :key="field.key">
                 <div v-if="field.enabled && field.cardSlot === 'front'"
-                  class="flex gap-1.5 text-[11px] leading-5 items-center">
-                  <span class="w-14 sm:w-[4.5rem] shrink-0 whitespace-nowrap font-medium text-gray-500">{{
+                  class="flex gap-1.5 text-[13px] items-center whitespace-nowrap" style="height: 24px;">
+                  <span class="w-24 shrink-0 whitespace-nowrap font-semibold text-black">{{
                     cardLabel(field.label)
                   }}</span>
-                  <span class="shrink-0 text-gray-300">:</span>
-                  <span class="min-w-0 truncate font-bold" style="line-height: 22px;"
+                  <span class="shrink-0 font-bold text-black">:</span>
+                  <span class="shrink-0 whitespace-nowrap font-bold" style="line-height: 24px;"
                     :style="{ color: settings.primaryTextColor }">
                     {{
                       person[field.key] ?? '—'
@@ -123,7 +125,7 @@
         <!-- ═════════ RIBBON + BARCODE + SIGNATURE ═════════ -->
         <div class="relative z-10 flex items-end justify-between gap-3 px-5 pb-4">
           <div class="-skew-x-12  px-4 py-2" :style="{ backgroundColor: settings.headerColor }">
-            <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-white">
+            <span class="inline-block text-[13px] font-bold uppercase tracking-widest text-black">
               <span class="inline-block skew-x-12"
                 style="line-height: 16px; position: relative; top: -5px;">{{ cardTypeLabel }}</span>
             </span>
@@ -135,7 +137,7 @@
           <div class="shrink-0 px-3 pt-1.5 pb-1 text-center">
             <img v-if="template.school.signature" :src="template.school.signature" alt="Principal's signature"
               class="mx-auto object-contain" :style="signatureStyle(2)" />
-            <p v-else class="text-lg leading-none text-gray-600 italic"
+            <p v-else class="text-xl leading-none text-black italic"
               style="font-family: 'Brush Script MT', cursive; line-height: 25px;">
               {{
                 template.school.principal
@@ -143,7 +145,7 @@
                 'Principal'
               }}
             </p>
-            <p class="mt-1 border-t-2 text-[9px] font-bold uppercase tracking-widest"
+            <p class="mt-1 border-t-2 text-[11px] font-bold uppercase tracking-widest"
               :style="{ borderColor: settings.headerColor, color: settings.headerColor }">
               Principal
             </p>
@@ -152,11 +154,11 @@
 
         <!-- ═════════ FOOTER ═════════ -->
         <div
-          class="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 h-10 text-center text-[10px] font-medium"
-          :style="{ backgroundColor: settings.footerColor, color: settings.headerTextColor }">
+          class="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 h-11 text-center text-[12px] font-semibold"
+          :style="{ backgroundColor: settings.footerColor, color: '#000000' }">
           <!-- ADDRESS -->
           <div v-if="footerAddress" class="inline-flex items-center gap-1 footer-position">
-            <svg class="block size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            <svg class="block size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path
                 d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
@@ -172,8 +174,9 @@
       </div>
 
       <div v-else
-        class="id-card-face relative w-full overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgb(0_0_0_/_0.25)] ring-1 ring-black/5"
-        :class="[settings.layout === 'vertical' ? 'max-w-[340px]' : 'max-w-[560px]', isPdfCapture && 'pdf-capture']">
+        class="id-card-face relative w-full overflow-hidden rounded-[20px] bg-white border-solid"
+        :class="[settings.layout === 'vertical' ? 'max-w-[340px]' : 'max-w-[560px]', isPdfCapture && 'pdf-capture']"
+        :style="cardBorderStyle">
 
         <!-- Background image layer - same configurable image as the front (Background section in
              settings), instead of the fixed faint school-crest watermark this used to show. -->
@@ -187,8 +190,8 @@
         <!-- ═════════ HEADER ═════════ -->
         <div class="relative overflow-hidden px-5 pb-11 pt-5 text-center"
           :style="{ backgroundColor: settings.headerColor }">
-          <p class="relative mt-2.5 text-xs font-bold uppercase tracking-[0.3em]"
-            :style="{ color: settings.headerTextColor }">
+          <p class="relative mt-2.5 text-sm font-bold uppercase tracking-[0.3em]"
+            :style="{ color: '#000000' }">
             {{ cardTypeLabel }} Information
           </p>
           <div class="absolute -bottom-10 left-1/2 h-16 w-[135%] -translate-x-1/2 rounded-[50%] bg-white" />
@@ -198,9 +201,9 @@
         <div :class="['relative z-10 px-4 sm:px-5 pb-4 pt-1', settings.layout === 'horizontal' && 'grid grid-cols-1 sm:grid-cols-2 gap-x-5']">
 
           <div v-if="cardType === 'staff'">
-            <div class="flex gap-2 items-center text-[11px] leading-5">
-              <span class="w-20 shrink-0 font-medium text-gray-400">Phone</span>
-              <span class="shrink-0 text-gray-300">:</span>
+            <div class="flex gap-2 items-center text-[13px] leading-5">
+              <span class="w-24 shrink-0 font-semibold text-black">Phone</span>
+              <span class="shrink-0 font-bold text-black">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
                 formatPhoneSL(person.phone)
                 ||
@@ -208,9 +211,9 @@
               }}</span>
             </div>
             <!-- A staff member's emergency contact is the school itself. -->
-            <div class="flex gap-2 items-center text-[11px] leading-5">
-              <span class="w-20 shrink-0 font-medium text-gray-400">Emergency</span>
-              <span class="shrink-0 text-gray-300">:</span>
+            <div class="flex gap-2 items-center text-[13px] leading-5">
+              <span class="w-24 shrink-0 font-semibold text-black">Emergency</span>
+              <span class="shrink-0 font-bold text-black">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
                 formatPhoneSL(template.school.phone)
                 ||
@@ -219,18 +222,18 @@
             </div>
           </div>
           <div v-else>
-            <div class="flex gap-2 items-center text-[11px] leading-5">
-              <span class="w-20 shrink-0 font-medium text-gray-400">Phone</span>
-              <span class="shrink-0 text-gray-300">:</span>
+            <div class="flex gap-2 items-center text-[13px] leading-5">
+              <span class="w-24 shrink-0 font-semibold text-black">Phone</span>
+              <span class="shrink-0 font-bold text-black">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
                 formatPhoneSL(person.parentContact)
                 ||
                 '—'
               }}</span>
             </div>
-            <div class="flex gap-2 items-center text-[11px] leading-5">
-              <span class="w-20 shrink-0 font-medium text-gray-400">Emergency</span>
-              <span class="shrink-0 text-gray-300">:</span>
+            <div class="flex gap-2 items-center text-[13px] leading-5">
+              <span class="w-24 shrink-0 font-semibold text-black">Emergency</span>
+              <span class="shrink-0 font-bold text-black">:</span>
               <span class="truncate font-bold" :style="{ color: settings.primaryTextColor, lineHeight: '25px' }">{{
                 formatPhoneSL(template.school.phone)
                 ||
@@ -240,11 +243,11 @@
           </div>
 
           <div :class="settings.layout === 'horizontal' && 'mt-0'">
-            <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+            <p class="text-[12px] font-bold uppercase tracking-widest text-black">
               School
               Address
             </p>
-            <p class="mt-1 text-[11px] font-medium leading-5 text-gray-700">
+            <p class="mt-1 text-[13px] font-semibold leading-5 text-black">
               {{
                 template.school.address
                 ||
@@ -262,12 +265,12 @@
                   d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
                 <path d="m9 12 2 2 4-4" />
               </svg>
-              <h4 class="text-xs font-semibold text-gray-900" style="line-height: 24px; position: relative; top: -6px;">
+              <h4 class="text-sm font-bold text-black" style="line-height: 24px; position: relative; top: -6px;">
                 Important
                 Notice
               </h4>
             </div>
-            <ul class="space-y-0.5 text-[10px] leading-4 text-gray-600">
+            <ul class="space-y-0.5 text-[12px] font-semibold leading-4 text-black">
               <li>
                 •
                 Property
@@ -304,11 +307,11 @@
             <div class="shrink-0 px-3 pt-1.5 pb-1 text-center">
               <img v-if="template.school.signature" :src="template.school.signature" alt="Principal's signature"
                 class="mx-auto object-contain" :style="signatureStyle(1.75)" />
-              <p v-else class="text-base leading-none text-gray-600 italic"
-                style="font-family: 'Brush Script MT', cursive; line-height: 22px;">
+              <p v-else class="text-lg leading-none text-black italic"
+                style="font-family: 'Brush Script MT', cursive; line-height: 24px;">
                 {{ template.school.principal || 'Principal' }}
               </p>
-              <p class="mt-1 border-t-2 text-[8px] font-bold uppercase tracking-widest"
+              <p class="mt-1 border-t-2 text-[10px] font-bold uppercase tracking-widest"
                 :style="{ borderColor: settings.headerColor, color: settings.headerColor }">
                 Authorized Signature
               </p>
@@ -318,11 +321,11 @@
 
         <!-- ═════════ FOOTER ═════════ -->
         <div
-          class="relative flex flex-wrap h-10 items-center justify-center gap-x-4 gap-y-1 px-4 text-center text-[10px] font-medium py-3"
-          :style="{ backgroundColor: settings.footerColor, color: settings.headerTextColor }">
+          class="relative flex flex-wrap h-11 items-center justify-center gap-x-4 gap-y-1 px-4 text-center text-[12px] font-semibold py-3"
+          :style="{ backgroundColor: settings.footerColor, color: '#000000' }">
           <!-- ADDRESS -->
           <div v-if="footerAddress" class="inline-flex items-center gap-1 footer-position">
-            <svg class="block size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            <svg class="block size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path
                 d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
@@ -376,6 +379,12 @@ interface Template {
   logoSize?: number
   logoRadius?: number
   signatureSize?: number
+  photoSize?: number
+  photoPadding?: number
+  photoBorder?: number
+  cardBorder?: number
+  logoBoxSize?: number
+  logoPadding?: number
   accentColor: string
   accentColorDark: string
   school: {
@@ -451,7 +460,30 @@ function formatPhoneSL(raw?: string | null) {
   return `+232 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
 }
 
-const person = computed<any>(() => (props.cardType === 'staff' ? props.template.staff : props.template.student) || {})
+const rawPerson = computed<any>(() => (props.cardType === 'staff' ? props.template.staff : props.template.student) || {})
+
+// Names and gender are stored in whatever case they were typed in (often "MALE" / all caps) -
+// show them with just the first letter of each word capitalised on the card.
+function capitalizeWords(value: unknown) {
+  if (typeof value !== 'string') return value
+  return value.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase())
+}
+
+const cardBorderStyle = computed(() => ({
+  borderColor: props.settings.headerColor,
+  borderWidth: (props.settings.cardBorder ?? 0) + 'px'
+}))
+
+function capitalizeFirst(value?: string) {
+  const v = (value || '').trim()
+  return v.charAt(0).toUpperCase() + v.slice(1)
+}
+
+const person = computed<any>(() => ({
+  ...rawPerson.value,
+  name: capitalizeWords(rawPerson.value.name),
+  gender: capitalizeWords(rawPerson.value.gender)
+}))
 // "Admission No." is wider than the label column and wrapped onto two lines; schools' saved card
 // designs still carry that label, so it's shortened here rather than only in the default.
 const cardLabel = (label: string) => (label === 'Admission No.' ? 'Adm. No.' : label)
@@ -505,6 +537,12 @@ const barcodeBars = computed(() => {
 .pdf-capture .footer-text {
   position: relative;
   top: -5px;
+}
+
+.pdf-capture .school-motto {
+  /* PDF/print capture (html2canvas) draws this line ~20px lower than the on-screen layout. */
+  position: relative;
+  top: -23px;
 }
 
 .pdf-capture .footer-position {

@@ -59,10 +59,14 @@
       </div>
     </UCard>
 
+    <!-- Staff attendance trend -->
+    <AttendanceTeacherTrend />
+    
     <!-- Today's staff attendance -->
     <UCard>
       <DashboardAdminStaffAttendance />
     </UCard>
+
 
     <!-- Recent leave requests -->
     <UCard :ui="{ body: 'p-0 sm:p-0' }">

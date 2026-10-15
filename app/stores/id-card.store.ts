@@ -30,6 +30,16 @@ export interface IdCardVisualSettings {
     logoRadius: number
     // Principal signature size as a % of the default
     signatureSize: number
+    // Photo container size as a % of the default, and padding (px) between its border and the photo
+    photoSize: number
+    photoPadding: number
+    // Photo container border thickness (px), 0 = none
+    photoBorder: number
+    // Border thickness around the whole card (px), 0 = none
+    cardBorder: number
+    // Logo container size as a % of the default, and its inner padding (px)
+    logoBoxSize: number
+    logoPadding: number
 }
 
 const DEFAULT_STAFF_FIELDS: IdCardField[] = [
@@ -46,8 +56,8 @@ const DEFAULT_SETTINGS: IdCardVisualSettings = {
     profileShape: 'square',
     headerColor: '#1878c5',
     footerColor: '#1878c5',
-    headerTextColor: '#ffffff',
-    primaryTextColor: '#111827',
+    headerTextColor: '#000000',
+    primaryTextColor: '#000000',
     widthMm: 85,
     heightMm: 54,
     bgImageUrl: '',
@@ -58,7 +68,13 @@ const DEFAULT_SETTINGS: IdCardVisualSettings = {
     validityYears: 1,
     logoSize: 100,
     logoRadius: 50,
-    signatureSize: 100
+    signatureSize: 100,
+    photoSize: 100,
+    photoPadding: 0,
+    photoBorder: 0,
+    cardBorder: 0,
+    logoBoxSize: 100,
+    logoPadding: 0
 }
 
 export const useIdCardStore = defineStore('idCard', {
@@ -94,7 +110,13 @@ export const useIdCardStore = defineStore('idCard', {
                     validityYears: res.validityYears || 1,
                     logoSize: res.logoSize || 100,
                     logoRadius: res.logoRadius ?? 50,
-                    signatureSize: res.signatureSize || 100
+                    signatureSize: res.signatureSize || 100,
+                    photoSize: res.photoSize || 100,
+                    photoPadding: res.photoPadding ?? 0,
+                    photoBorder: res.photoBorder ?? 0,
+                    cardBorder: res.cardBorder ?? 0,
+                    logoBoxSize: res.logoBoxSize || 100,
+                    logoPadding: res.logoPadding ?? 0
                 })
 
                 try {

@@ -1,16 +1,27 @@
 <script setup lang="ts">
+import type { FilterField } from "~/components/filter/Drawer.vue";
 const view = ref<'table' | 'card'>('table')
 const showDuplicate = ref(false);
 const route = useRoute();
 const router = useRouter();
 const store = useClassSubjectStore();
 const clazzStore = useClassStore();
+const streamStore = useStreamStore();
+const sectionStore = useSectionStore();
 const { records: data, meta, loading } = storeToRefs(store);
 
 const UButton = resolveComponent("UButton");
 
 const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
+
+const streamOptions = computed(() =>
+  streamStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
+
+const sectionOptions = computed(() =>
+  sectionStore.records.map((e) => ({ label: e.name, value: e.id }))
 );
 
 const mandatoryOptions = [
@@ -46,14 +57,10 @@ const page = computed<number>({
 });
 
 const size = ref(runtimeConf().limit);
-const filterState = ref(false);
-
-function toggleFilter() {
-  filterState.value = !filterState.value;
-}
-
 const classId = ref(String(route.query.classId ?? ""));
 const mandatory = ref(String(route.query.mandatory ?? ""));
+const streamId = ref(String(route.query.streamId ?? ""));
+const sectionId = ref(String(route.query.sectionId ?? ""));
 const searchInput = ref(String(route.query.search ?? ""));
 const search = ref(searchInput.value);
 
@@ -68,21 +75,29 @@ const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
 const sortBy = computed(() => sort.value.split(":")[0]);
 const sortDirection = computed(() => sort.value.split(":")[1]);
 
-const hasActiveFilters = computed(
-  () => !!classId.value || !!mandatory.value || !!search.value || sort.value !== DEFAULT_SORT
-);
-
-function resetFilters() {
-  classId.value = "";
-  mandatory.value = "";
-  searchInput.value = "";
-  search.value = "";
-  sort.value = DEFAULT_SORT;
-}
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } });
 }
+
+// Class, type and sort live in the shared filter drawer (same as the class list).
+const filters = computed<Record<string, string>>({
+  get: () => ({ classId: classId.value, sectionId: sectionId.value, streamId: streamId.value, mandatory: mandatory.value, sort: sort.value }),
+  set: (v) => {
+    classId.value = v.classId ?? "";
+    mandatory.value = v.mandatory ?? "";
+    sectionId.value = v.sectionId ?? "";
+    streamId.value = v.streamId ?? "";
+    sort.value = v.sort || DEFAULT_SORT;
+  },
+});
+const filterFields = computed<FilterField[]>(() => [
+  { key: "classId", label: "Class", type: "select", options: classOptions.value, placeholder: "All Classes" },
+  { key: "sectionId", label: "Section", type: "select", options: sectionOptions.value, placeholder: "All Sections" },
+  { key: "streamId", label: "Stream", type: "select", options: streamOptions.value, placeholder: "All Streams" },
+  { key: "mandatory", label: "Type", type: "select", options: mandatoryOptions, placeholder: "All Types" },
+  { key: "sort", label: "Sort by", type: "select", options: sortOptions, default: DEFAULT_SORT, required: true },
+]);
 
 // Debounced so every keystroke doesn't fire a request.
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -102,7 +117,9 @@ async function fetchRecord() {
     mandatory.value === "" ? undefined : mandatory.value === "true",
     search.value || undefined,
     sortBy.value,
-    sortDirection.value
+    sortDirection.value,
+    streamId.value || undefined,
+    sectionId.value || undefined
   );
   loading.value = false;
 }
@@ -115,10 +132,12 @@ watch(
   { immediate: true }
 );
 
-watch([classId, mandatory, search, sort], () => {
+watch([classId, mandatory, streamId, sectionId, search, sort], () => {
   updateQuery({
     classId: classId.value || undefined,
     mandatory: mandatory.value || undefined,
+    streamId: streamId.value || undefined,
+    sectionId: sectionId.value || undefined,
     search: search.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
     page: 1,
@@ -133,6 +152,8 @@ onMounted(async () => {
   })
 
   clazzStore.fetchAll(0, 0);
+  streamStore.fetchAll(0, 0);
+  sectionStore.fetchAll(0, 0);
   useAppStore().setTitle('Class Subjects')
   document.title = 'Class Subjects | Subject | Skultem'
 })
@@ -146,63 +167,19 @@ definePageMeta({
     <SubjectSectionNav />
     <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <div class="flex px-4 py-3 items-center justify-between gap-3">
-            <div class="flex flex-1 space-x-2">
-              <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject"
-                :icon="ASSIGN_ICON" />
-              <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
-              <UButton color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..."
-                icon="lucide:copy" @click="showDuplicate = true" />
-              <UButton color="neutral" variant="outline" class="md:hidden" icon="lucide:copy"
-                @click="showDuplicate = true" />
-            </div>
-
-            <div>
+          <div class="flex px-4 py-3 items-center justify-between gap-2">
+              <div class="flex flex-1 items-center gap-2">
+                  <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject" :icon="ASSIGN_ICON" />
+                  <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
+                  <UButton color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..." icon="lucide:copy" @click="showDuplicate = true" />
+                  <UButton color="neutral" variant="outline" class="md:hidden" icon="lucide:copy" @click="showDuplicate = true" />
+                  <div class="flex flex-1 items-center gap-2">
+                      <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by class, subject, or stream..." class="flex-1" />
+                      <FilterDrawer v-model="filters" :fields="filterFields" title="Filter class subjects" description="Narrow the list by class or type, or change the sort" />
+                  </div>
+              </div>
               <TableViewToggle v-model="view" />
-              <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
-                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-            </div>
           </div>
-
-          <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-5">
-              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
-                placeholder="All Classes" clear />
-              <USelectMenu v-model="mandatory" value-key="value" label-key="label" :items="mandatoryOptions"
-                placeholder="All Types" clear />
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <div class="flex space-x-1 sm:col-span-2">
-                <UInput v-model="searchInput" :icon="SEARCH_ICON"
-                  placeholder="Search by class, subject, or stream..." class="flex-1" />
-                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                  :disabled="!hasActiveFilters" @click="resetFilters" />
-              </div>
-            </div>
-            <div class="hidden md:block">
-              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
-          </div>
-          <div v-if="filterState"
-            class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-5">
-              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
-                placeholder="All Classes" clear />
-              <USelectMenu v-model="mandatory" value-key="value" label-key="label" :items="mandatoryOptions"
-                placeholder="All Types" clear />
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <div class="flex space-x-1 sm:col-span-2">
-                <UInput v-model="searchInput" :icon="SEARCH_ICON"
-                  placeholder="Search by class, subject, or stream..." class="flex-1" />
-                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                  :disabled="!hasActiveFilters" @click="resetFilters" />
-              </div>
-            </div>
-          </div>
-        </div>
       </template>
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>

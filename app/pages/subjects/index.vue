@@ -3,48 +3,15 @@
         <SubjectSectionNav />
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div>
-                    <div class="flex px-4 py-3 justify-between items-center gap-3">
-                        <div class="flex space-x-2 flex-1 items-center">
-                            <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
-                        </div>
-
-                        <div>
-                            <TableViewToggle v-model="view" />
-                            <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
-                                variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
+                <div class="flex px-4 py-3 items-center justify-between gap-2">
+                    <div class="flex flex-1 items-center gap-2">
+                        <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
+                        <div class="flex flex-1 items-center gap-2">
+                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code" class="flex-1" />
+                            <FilterDrawer v-model="filters" :fields="filterFields" title="Filter subjects" description="Change how subjects are sorted" />
                         </div>
                     </div>
-
-                    <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                                placeholder="Sort by" />
-                            <div class="flex space-x-1 sm:col-span-2">
-                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
-                                    class="flex-1" />
-                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                                    :disabled="!hasActiveFilters" @click="resetFilters" />
-                            </div>
-                        </div>
-                        <div class="hidden md:block">
-                            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                                :disabled="!hasActiveFilters" @click="resetFilters" />
-                        </div>
-                    </div>
-                    <div v-if="filterState"
-                        class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                            <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                                placeholder="Sort by" />
-                            <div class="flex space-x-1 sm:col-span-2">
-                                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code"
-                                    class="flex-1" />
-                                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                                    :disabled="!hasActiveFilters" @click="resetFilters" />
-                            </div>
-                        </div>
-                    </div>
+                    <TableViewToggle v-model="view" />
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
@@ -126,18 +93,14 @@
     </div>
 </template>
 <script setup lang="ts">
+import type { FilterField } from "~/components/filter/Drawer.vue";
 import { nextTick } from "vue";
 import type { Row } from "@tanstack/vue-table";
 
 const view = ref<"table" | "card">("table");
-const filterState = ref(false);
 const route = useRoute();
 const router = useRouter();
 const { can } = useAuth();
-
-function toggleFilter() {
-    filterState.value = !filterState.value;
-}
 
 const editRcord = ref<Subject | null>(null);
 const editState = ref(false);
@@ -232,13 +195,15 @@ const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
 const sortBy = computed(() => sort.value.split(":")[0]);
 const sortDirection = computed(() => sort.value.split(":")[1]);
 
-const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT_SORT);
 
-function resetFilters() {
-    searchInput.value = "";
-    search.value = "";
-    sort.value = DEFAULT_SORT;
-}
+// The sort lives in the shared filter drawer (same as the class list); the page keeps its own refs.
+const filters = computed<Record<string, string>>({
+    get: () => ({ sort: sort.value }),
+    set: (v) => { sort.value = v.sort || DEFAULT_SORT },
+});
+const filterFields = computed<FilterField[]>(() => [
+    { key: "sort", label: "Sort by", type: "select", options: sortOptions, default: DEFAULT_SORT, required: true },
+]);
 
 // Debounced so every keystroke doesn't fire a request.
 let searchTimer: ReturnType<typeof setTimeout> | undefined;

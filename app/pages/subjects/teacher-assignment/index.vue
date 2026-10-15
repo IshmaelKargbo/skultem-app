@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { FilterField } from "~/components/filter/Drawer.vue";
 const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
@@ -52,12 +53,6 @@ const page = computed<number>({
 });
 
 const size = ref(runtimeConf().limit);
-const filterState = ref(false);
-
-function toggleFilter() {
-  filterState.value = !filterState.value;
-}
-
 // Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
 // why a v-model bound straight to a computed setter that triggers router.replace() reads as
 // "picking an option/typing does nothing". These still seed from the URL on load and push back
@@ -83,21 +78,25 @@ const sort = ref(String(route.query.sort ?? DEFAULT_SORT));
 const sortBy = computed(() => sort.value.split(":")[0]);
 const sortDirection = computed(() => sort.value.split(":")[1]);
 
-const hasActiveFilters = computed(
-  () => !!classId.value || !!streamId.value || !!search.value || sort.value !== DEFAULT_SORT
-);
-
-function resetFilters() {
-  classId.value = "";
-  streamId.value = "";
-  searchInput.value = "";
-  search.value = "";
-  sort.value = DEFAULT_SORT;
-}
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } });
 }
+
+// Class, stream and sort live in the shared filter drawer (same as the class list).
+const filters = computed<Record<string, string>>({
+  get: () => ({ classId: classId.value, streamId: streamId.value, sort: sort.value }),
+  set: (v) => {
+    classId.value = v.classId ?? "";
+    streamId.value = v.streamId ?? "";
+    sort.value = v.sort || DEFAULT_SORT;
+  },
+});
+const filterFields = computed<FilterField[]>(() => [
+  { key: "classId", label: "Class", type: "select", options: classOptions.value, placeholder: "All Classes" },
+  { key: "streamId", label: "Stream", type: "select", options: streamOptions.value, placeholder: "All Streams" },
+  { key: "sort", label: "Sort by", type: "select", options: sortOptions, default: DEFAULT_SORT, required: true },
+]);
 
 // Debounced so every keystroke doesn't fire a request.
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -163,59 +162,17 @@ definePageMeta({
     <SubjectSectionNav />
     <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <div class="flex px-4 py-3 items-center justify-between gap-3">
-            <div class="flex items-center flex-1 space-x-2">
-              <UButton to="/subjects/teacher-assignment/add" class="md:flex hidden justify-center" color="primary"
-                label="Assign Subject" :icon="TEACHER_ICON" />
-              <UButton to="/subjects/teacher-assignment/add" class="md:hidden" color="primary" :icon="ASSIGN_ICON" />
-            </div>
-
-            <div>
+          <div class="flex px-4 py-3 items-center justify-between gap-2">
+              <div class="flex flex-1 items-center gap-2">
+                  <UButton to="/subjects/teacher-assignment/add" class="md:flex hidden justify-center" color="primary" label="Assign Subject" :icon="TEACHER_ICON" />
+                  <UButton to="/subjects/teacher-assignment/add" class="md:hidden" color="primary" :icon="ASSIGN_ICON" />
+                  <div class="flex flex-1 items-center gap-2">
+                      <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by teacher or subject..." class="flex-1" />
+                      <FilterDrawer v-model="filters" :fields="filterFields" title="Filter assignments" description="Narrow the list by class or stream, or change the sort" />
+                  </div>
+              </div>
               <TableViewToggle v-model="view" />
-              <UButton @click="toggleFilter" :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
-                :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-            </div>
           </div>
-
-          <div class="border-t hidden p-4 border-default md:flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-5">
-              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
-                placeholder="All Classes" clear />
-              <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
-                placeholder="All Streams" clear />
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <div class="flex space-x-1 sm:col-span-2">
-                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by teacher or subject..."
-                  class="flex-1" />
-                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                  :disabled="!hasActiveFilters" @click="resetFilters" />
-              </div>
-            </div>
-            <div class="hidden md:block">
-              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
-          </div>
-          <div v-if="filterState"
-            class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-5">
-              <USelectMenu v-model="classId" value-key="value" label-key="label" :items="classOptions"
-                placeholder="All Classes" clear />
-              <USelectMenu v-model="streamId" value-key="value" label-key="label" :items="streamOptions"
-                placeholder="All Streams" clear />
-              <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions"
-                placeholder="Sort by" />
-              <div class="flex space-x-1 sm:col-span-2">
-                <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by teacher or subject..."
-                  class="flex-1" />
-                <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
-                  :disabled="!hasActiveFilters" @click="resetFilters" />
-              </div>
-            </div>
-          </div>
-        </div>
       </template>
       <UTable v-if="view === 'table'" class="md:block hidden" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>

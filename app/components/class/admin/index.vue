@@ -16,7 +16,7 @@
                                 :active-count="activeFilterCount" />
                         </div>
                     </div>
-                    <UButton label="Arrange" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
+                    <UButton icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
                         :disabled="classStore.records.length < 2" @click="arrangeOpen = true" />
                     <TableViewToggle v-model="view" />
                 </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { FilterField } from '~/components/filter/Drawer.vue'
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
@@ -95,7 +96,6 @@ const columns = [
 const search = ref('')
 const role = ref('')
 const status = ref('')
-const filterState = ref(false) // the filter row's open/closed state on mobile
 
 const roleOptions = Object.entries(parseRole).map(([value, label]) => ({ label, value }))
 const statusOptions = [
@@ -103,13 +103,20 @@ const statusOptions = [
   { label: 'Inactive', value: 'INACTIVE' },
 ]
 
-const hasActiveFilters = computed(() => !!search.value || !!role.value || !!status.value)
+// Role and status live in the shared filter drawer (same as the class list); search stays in the header.
+const filters = computed<Record<string, string>>({
+  get: () => ({ role: role.value, status: status.value }),
+  set: (v) => {
+    role.value = v.role ?? ''
+    status.value = v.status ?? ''
+  }
+})
+const filterFields = computed<FilterField[]>(() => [
+  { key: 'role', label: 'Role', type: 'select', options: roleOptions, placeholder: 'All Roles' },
+  { key: 'status', label: 'Status', type: 'select', options: statusOptions, placeholder: 'All Statuses' }
+])
 
-function resetFilters() {
-  search.value = ''
-  role.value = ''
-  status.value = ''
-}
+const hasActiveFilters = computed(() => !!search.value || !!role.value || !!status.value)
 
 function statusOf(user: User) {
   return user.schoolStatus ?? user.status
@@ -230,33 +237,17 @@ definePageMeta({
     <AuthSectionNav />
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
-        <div>
-          <div class="flex items-center justify-between gap-3 px-4 py-3">
-            <div>
-              <p class="font-semibold">Users</p>
-              <p class="text-xs-base text-muted">Everyone with access to your school</p>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <TableViewToggle v-model="view" />
-              <UButton @click="filterState = !filterState" :icon="!filterState ? FILTER_ICON : CLOSE_ICON"
-                variant="outline" :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-              <AuthUsersAdd />
-            </div>
+        <div class="flex items-center justify-between gap-2 px-4 py-3">
+          <div class="flex min-w-0 flex-1 items-center gap-2">
+            <AuthUsersAdd />
+            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search this page by name or email"
+              class="min-w-0 flex-1" />
+            <FilterDrawer v-model="filters" :fields="filterFields" title="Filter users"
+              description="Narrow the list by role or status" />
           </div>
 
-          <!-- Always shown from md up; on mobile it opens with the filter button -->
-          <div :class="filterState ? 'flex' : 'hidden'"
-            class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
-            <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
-              <USelectMenu class="w-full" v-model="role" value-key="value" label-key="label" :items="roleOptions"
-                placeholder="All Roles" clear />
-              <USelectMenu class="w-full" v-model="status" value-key="value" label-key="label"
-                :items="statusOptions" placeholder="All Statuses" clear />
-              <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search this page by name or email" />
-            </div>
-            <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-              :disabled="!hasActiveFilters" @click="resetFilters" />
+          <div class="flex items-center gap-2">
+            <TableViewToggle v-model="view" />
           </div>
         </div>
       </template>

@@ -9,11 +9,11 @@ export const useClassSubjectStore = defineStore('classSubject', {
   }),
 
   actions: {
-    async fetchAll(page: number = 1, size: number = runtimeConf().limit, classId?: string, mandatory?: boolean, query?: string, sortBy?: string, direction?: string) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, classId?: string, mandatory?: boolean, query?: string, sortBy?: string, direction?: string, streamId?: string, sectionId?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await ClassSubjectApi().getAll(page, size, classId, mandatory, query, sortBy, direction) as any
+        const response = await ClassSubjectApi().getAll(page, size, classId, mandatory, query, sortBy, direction, streamId, sectionId) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

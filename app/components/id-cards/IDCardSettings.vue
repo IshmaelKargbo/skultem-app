@@ -151,7 +151,7 @@
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-badge" class="size-5 text-primary" />
-            <h3 class="font-semibold">Logo & Signature</h3>
+            <h3 class="font-semibold">Logo, Photo & Signature</h3>
           </div>
         </template>
 
@@ -325,6 +325,12 @@ interface Settings {
   logoSize?: number
   logoRadius?: number
   signatureSize?: number
+  photoSize?: number
+  photoPadding?: number
+  photoBorder?: number
+  cardBorder?: number
+  logoBoxSize?: number
+  logoPadding?: number
 }
 
 const props = withDefaults(defineProps<{
@@ -417,8 +423,20 @@ function clearBgImage() {
 const sizeSliders = [
   { key: 'logoSize', label: 'Logo size', unit: '%', min: 30, max: 100, step: 5, def: 100, minLabel: 'Smaller', maxLabel: 'Fits container',
     hint: 'The logo sits inside a fixed white container on the card. Reduce the size if your logo is too big or touches the edges.' },
+  { key: 'photoBorder', label: 'Photo border', unit: 'px', min: 0, max: 12, step: 1, def: 0, minLabel: 'None', maxLabel: 'Thick',
+    hint: 'Thickness of the header-coloured border around the photo container.' },
+  { key: 'cardBorder', label: 'Card border', unit: 'px', min: 0, max: 12, step: 1, def: 0, minLabel: 'No border', maxLabel: 'Thick',
+    hint: 'Border around the whole ID card, in the header colour. Leave at 0 for no border.' },
+  { key: 'logoBoxSize', label: 'Logo container size', unit: '%', min: 60, max: 160, step: 5, def: 100, minLabel: 'Smaller', maxLabel: 'Larger',
+    hint: 'Size of the white box that holds the school logo (horizontal layout).' },
+  { key: 'logoPadding', label: 'Logo container padding', unit: 'px', min: 0, max: 24, step: 1, def: 0, minLabel: 'None', maxLabel: 'More space',
+    hint: 'Space between the edge of the logo container and the logo.' },
   { key: 'logoRadius', label: 'Logo container roundness', unit: '%', min: 0, max: 50, step: 5, def: 50, minLabel: 'Square', maxLabel: 'Circle',
     hint: 'How rounded the corners of the white logo container are.' },
+  { key: 'photoSize', label: 'Photo container size', unit: '%', min: 60, max: 160, step: 5, def: 100, minLabel: 'Smaller', maxLabel: 'Larger',
+    hint: 'Size of the box that holds the student / staff photo.' },
+  { key: 'photoPadding', label: 'Photo padding', unit: 'px', min: 0, max: 24, step: 1, def: 0, minLabel: 'None', maxLabel: 'More space',
+    hint: 'White space between the photo container border and the photo itself.' },
   { key: 'signatureSize', label: 'Signature size', unit: '%', min: 50, max: 200, step: 5, def: 100, minLabel: 'Smaller', maxLabel: 'Larger',
     hint: 'Size of the principal signature on the card.' }
 ] as const
