@@ -37,7 +37,7 @@
           :items="terms"
           placeholder="Select Term"
           v-model="state.termId"
-          @change="fetchStudents"
+          @change="onTermChange"
         />
         <USelectMenu
           value-key="value"
@@ -88,7 +88,7 @@
             :items="terms"
             placeholder="Select Term"
             v-model="state.termId"
-            @change="fetchStudents"
+            @change="onTermChange"
           />
           <USelectMenu
             value-key="value"
@@ -133,6 +133,16 @@
     </UCard>
 
     <GradesReturnedNotice :assessments="assessments" />
+
+    <!-- A class that has no assessments in this term: say why instead of showing an empty table. -->
+    <UAlert
+      v-if="!loading && state.teacherSubjectId && state.termId && !assessments.length"
+      color="neutral"
+      variant="soft"
+      icon="lucide:calendar-range"
+      title="No assessments for this class in this term"
+      description="A class that joins part-way through the year isn't graded for the earlier terms (set on its assessment template under 'When does grading begin?'). Pick the term it starts in, or check that the class's subjects and teachers are assigned."
+    />
 
     <!-- Assessments opened as Continuous Assessment are recorded here rather than typed into the grid. -->
     <UCard v-if="continuousAssessments.length">
@@ -311,9 +321,32 @@ const teachers = ref<{ label: string; value: string }[]>([]);
 const terms = computed(() =>
   termStore.records.map((e) => ({ label: e.name, value: e.id }))
 );
+// Classes with assessments in the chosen term - a class that joins later isn't listed for the earlier terms.
+const gradedSessionIds = ref<Set<string> | null>(null);
 const classes = computed(() =>
-  classSessionStore.records.map((e) => ({ label: parseClassSession(e), value: e.id }))
+  classSessionStore.records
+    .filter((e) => !gradedSessionIds.value || gradedSessionIds.value.has(e.id))
+    .map((e) => ({ label: parseClassSession(e), value: e.id }))
 );
+
+async function loadGraded() {
+  if (!state.termId) return;
+  const res = await store.fetchTermGraded(state.termId);
+  gradedSessionIds.value = res ? new Set(res.classSessionIds) : null;
+}
+
+// Changing the term re-lists the classes; if the chosen class isn't graded in it, move to the first that is.
+async function onTermChange() {
+  await loadGraded();
+  if (!state.classId || classes.value.some((c) => c.value === state.classId)) return fetchStudents();
+  state.classId = classes.value[0]?.value || "";
+  if (state.classId) return fetchRecord();
+  state.teacherSubjectId = "";
+  teachers.value = [];
+  rows.value = [];
+  assessments.value = [];
+  columns.value = [];
+}
 const editableAssessments = computed(() =>
   assessments.value.filter((a) => isEditableStatus(a.status as ScoreStatus))
 );
@@ -496,7 +529,7 @@ const statusSummary = computed<StatusCard[]>(() => {
 function calculateWeightedTotal(row: any) {
   return completedAssessmentIds.value.reduce((sum, assessmentId) => {
     const score = row.scores.find((s: any) => s.assessment === assessmentId);
-    return sum + score.weightScore;
+    return sum + (score?.weightScore ?? 0);
   }, 0);
 }
 
@@ -853,13 +886,17 @@ onMounted(async () => {
   loadingSubject.value = false;
   loadingClass.value = false;
 
+  // Open on the term that is running, not whichever is listed first.
   if (terms.value.length > 0) {
-    state.termId = terms.value[0]?.value || "";
+    const active = termStore.records.find((e) => e.status === "ACTIVE");
+    state.termId = active?.id || terms.value[0]?.value || "";
   }
 
-  // default select first class and trigger teacher fetch
-  if (classSessionStore.records.length) {
-    state.classId = classSessionStore.records[0]?.id || "";
+  await loadGraded();
+
+  // default select first class (that is graded this term) and trigger teacher fetch
+  if (classes.value.length) {
+    state.classId = classes.value[0]?.value || "";
     await fetchRecord();
   }
 });

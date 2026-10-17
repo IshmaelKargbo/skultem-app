@@ -6,6 +6,25 @@ export type AssessmentTemplate = {
     assessments: Assessment[],
     createdAt: string,
     updatedAt: string
+    // How the template scores its tests (for the list).
+    scoring?: TemplateScoring | null
+    // The term (1, 2, 3) students of classes using this template start being graded in.
+    startsInTerm?: number
+}
+
+export type TemplateScoring = {
+    structure: AssessmentStructure
+    caPercentage: number
+    formalPercentage: number
+    // How many named CA parts it has, and whether one of them comes from the attendance register.
+    parts: number
+    attendance: boolean
+    // Tests or terms with their own setup.
+    overrides: number
+    // No setup of its own - follows the school-wide one.
+    inherited: boolean
+    // Tests that use CA (a template's own setup lists them; every other test is a single score).
+    caTests?: number
 }
 
 export type Assessment = {
@@ -106,6 +125,12 @@ export type AssessmentScore = {
 }
 
 export type AssessmentStructure = "SIMPLE" | "CA_AND_TEST"
+
+// One named part of the continuous assessment ("Attendance", "Assignment") and its share of the WHOLE assessment.
+// The parts plus the formal test total 100. Part n is CA recording no. n.
+// source: MANUAL = the teacher records it; ATTENDANCE = filled in from the attendance register (days present or
+// late over the term's school days) and read-only.
+export type CaComponent = { name: string, weight: number, source?: 'MANUAL' | 'ATTENDANCE' }
 export type CaFrequency = "DAILY" | "WEEKLY" | "MID_WEEK" | "CUSTOM"
 
 // What one student's CA assessment was opened with (frozen - later configuration changes don't touch it)
@@ -127,6 +152,9 @@ export type ContinuousBreakdown = {
     caSubmitted: boolean
     // Recording slots (1 = Week 1) that are locked: completed for every student and closed to editing.
     lockedWeeks: number[]
+    // Named, weighted CA parts (empty when the CA is plain equal recordings) and the formal part's own name.
+    caComponents?: CaComponent[]
+    formalLabel?: string | null
 }
 
 export type AssessmentConfiguration = {
@@ -146,6 +174,11 @@ export type AssessmentConfiguration = {
     updatedBy: string | null
     // Per-term, per-assessment overrides (anything not listed follows the defaults).
     plan: AssessmentPlanItem[]
+    // The CA split into named, weighted parts (empty = equal recordings) and the formal part's name.
+    caComponents: CaComponent[]
+    formalLabel: string | null
+    // Set when this is an assessment template's own configuration.
+    assessmentTemplateId?: string | null
 }
 
 export type AssessmentPlanItem = {
@@ -153,6 +186,9 @@ export type AssessmentPlanItem = {
     assessmentName: string
     usesCa: boolean
     caEntries: number
+    // This assessment's own CA parts (they replace the defaults' and set its CA/formal split).
+    caComponents?: CaComponent[]
+    formalLabel?: string | null
 }
 
 export type SaveAssessmentConfigurationDto = {
@@ -162,6 +198,8 @@ export type SaveAssessmentConfigurationDto = {
     caFrequency?: CaFrequency | null
     caEntries?: number
     plan?: AssessmentPlanItem[]
+    caComponents?: CaComponent[]
+    formalLabel?: string | null
     // Also move assessments nobody has graded yet onto the new setup (default true).
     applyToUnstarted?: boolean
 }
@@ -203,10 +241,44 @@ export function caRecordingLabel(frequency: CaFrequency, n: number) {
 
 // The same arithmetic the server uses (ContinuousAssessmentCalculator) - only to preview a row while a
 // teacher types; the server's answer is what is saved.
-export function caComponentOf(recordings: (number | null | undefined)[]): number | null {
-    const given = recordings.filter((v): v is number => v !== null && v !== undefined && !Number.isNaN(v))
-    if (!given.length) return null
-    return Math.round(given.reduce((a, b) => a + b, 0) / given.length)
+export function caComponentOf(recordings: (number | null | undefined)[], weights?: number[]): number | null {
+    if (!weights?.length) {
+        const given = recordings.filter((v): v is number => v !== null && v !== undefined && !Number.isNaN(v))
+        if (!given.length) return null
+        return Math.round(given.reduce((a, b) => a + b, 0) / given.length)
+    }
+    // Weighted by each part's share, over the parts recorded so far.
+    let sum = 0, weightSum = 0
+    recordings.forEach((v, i) => {
+        const w = weights[i]
+        if (v === null || v === undefined || Number.isNaN(v) || !w) return
+        sum += v * w
+        weightSum += w
+    })
+    return weightSum ? Math.round(sum / weightSum) : null
+}
+
+// What one recording is called: the part's own name ("Attendance") when the CA has named parts, else "Week 3".
+export function caPartLabel(c: { caFrequency: CaFrequency, caComponents?: CaComponent[] }, n: number) {
+    return c.caComponents?.[n - 1]?.name ?? caRecordingLabel(c.caFrequency, n)
+}
+
+// "parts" for named parts, else the frequency's unit ("weeks").
+export function caPartsNoun(c: { caFrequency: CaFrequency, caComponents?: CaComponent[] }) {
+    return c.caComponents?.length ? { singular: 'Part', plural: 'parts' } : CA_UNITS[c.caFrequency]
+}
+
+// Part n is filled in from the attendance register (read-only for the teacher).
+export function caPartIsAuto(c: { caComponents?: CaComponent[] } | null | undefined, n: number) {
+    return c?.caComponents?.[n - 1]?.source === 'ATTENDANCE'
+}
+
+export function caFormalName(c?: { formalLabel?: string | null } | null) {
+    return c?.formalLabel || 'Formal test'
+}
+
+export function caWeights(c?: { caComponents?: CaComponent[] } | null) {
+    return c?.caComponents?.map(p => p.weight) ?? []
 }
 
 export function caPoints(component: number | null | undefined, percentage: number) {
@@ -477,4 +549,25 @@ export type ReopenAssessmentDto = {
     assessmentId: string
     termId: string
     note: string
+}
+
+// What is wrong with a set of CA parts, or '' when they are usable: named, unique, each 1-99%, and leaving room
+// for the formal test (the parts total 1-99%).
+export function partsProblem(parts: CaComponent[]): string {
+    if (!parts.length) return 'Add at least one part.'
+    const names = new Set<string>()
+    let total = 0
+    if (parts.filter(p => p.source === 'ATTENDANCE').length > 1) return 'Only one part can come from attendance.'
+    for (const p of parts) {
+        const name = (p.name ?? '').trim()
+        if (!name) return 'Every part needs a name.'
+        if (/[|:;\n]/.test(name)) return `“${name}” can't contain | : ; or a line break.`
+        if (names.has(name.toLowerCase())) return `“${name}” is listed twice.`
+        names.add(name.toLowerCase())
+        const w = Number(p.weight)
+        if (!Number.isInteger(w) || w < 1 || w > 99) return `“${name}” must be worth a whole number from 1% to 99%.`
+        total += w
+    }
+    if (total > 99) return `The parts total ${total}% - that leaves nothing for the final part. Keep them under 100%.`
+    return ''
 }

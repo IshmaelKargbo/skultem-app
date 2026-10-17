@@ -26,33 +26,21 @@
         }" />
       </div>
 
-      <UCard v-if="!assessmentLoading && (topSubject || bottomSubject)" :ui="{
-        body: 'p-1'
-      }">
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div v-if="topSubject" class="flex items-start gap-3 rounded-xl bg-success-50 p-4 dark:bg-success-500/10">
-            <UIcon name="lucide:trophy" class="mt-0.5 size-5 shrink-0 text-success" />
-            <div class="space-y-0.5">
-              <p class="text-sm font-semibold text-success">Strongest in {{ topSubject.name }}</p>
-              <p class="text-xs-base text-muted">
-                {{ studentFirstName }} is scoring {{ Math.round(topSubject.score) }}% ({{ topSubject.grade || '—' }})
-                - the strongest subject this term.
-              </p>
-            </div>
-          </div>
-
-          <div v-if="bottomSubject" class="flex items-start gap-3 rounded-xl bg-warning-50 p-4 dark:bg-warning-500/10">
-            <UIcon name="lucide:life-buoy" class="mt-0.5 size-5 shrink-0 text-warning" />
-            <div class="space-y-0.5">
-              <p class="text-sm font-semibold text-warning">Failing {{ bottomSubject.name }}</p>
-              <p class="text-xs text-muted">
-                Currently at {{ Math.round(bottomSubject.score) }}% ({{ bottomSubject.grade || '—' }}){{
-                  bottomSubject.trend === 'DROPPED' ? ' and trending down' : '' }} - may need extra support.
-              </p>
-            </div>
-          </div>
+      <!-- The one thing worth acting on -->
+      <div v-if="!assessmentLoading && bottomSubject"
+        class="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-4">
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+          <UIcon name="lucide:life-buoy" class="size-5" />
+        </span>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-highlighted">Needs support in {{ bottomSubject.name }}</p>
+          <p class="text-xs text-muted">
+            {{ studentFirstName || 'The student' }} is at {{ Math.round(bottomSubject.score) }}%
+            ({{ bottomSubject.grade || 'no grade' }}), below the 50% pass line{{
+              bottomSubject.trend === 'DROPPED' ? ' and still dropping' : '' }}.
+          </p>
         </div>
-      </UCard>
+      </div>
 
       <!-- Trends -->
       <div class="grid gap-4 md:grid-cols-2 md:gap-5">
@@ -61,60 +49,83 @@
       </div>
 
       <!-- Subject breakdown -->
-      <div v-if="breakdown.length" class="space-y-3">
-        <h3 class="px-1 text-sm font-semibold text-highlighted">Subject Breakdown</h3>
-
-        <UCard :ui="{ body: 'p-0 sm:p-0' }" v-for="row in breakdown" :key="row.id" class="cursor-pointer"
-          @click="toggle(row.id)">
-          <div class="flex items-center justify-between p-3">
-            <div class="flex min-w-0 space-x-3 items-center">
-              <UAvatar size="lg" :alt="row.name" />
-
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{{ row.name }}</p>
-                <div class="flex items-center gap-1.5 mt-0.5">
-                  <UIcon :name="parseTrend[row.trend]?.icon" :class="`size-3.5 text-${parseTrend[row.trend]?.color}`" />
-                  <p :class="`text-[11px] text-${parseTrend[row.trend]?.color}`">{{ parseTrend[row.trend]?.label }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-end space-x-3">
-              <div class="flex items-center">
-                <UBadge v-if="row.grade" :label="row.grade" :color="gradeColor(row.grade)" variant="subtle" />
-              </div>
-              <div class="flex space-x-2 items-center">
-                <div class="hidden w-28 flex-col items-end gap-1 sm:flex">
-                  <p class="text-sm font-semibold">{{ Math.round(row.score) }}%</p>
-                  <UProgress :model-value="row.score" :color="gradeColor(row.grade)" size="sm" />
-                </div>
-
-                <UIcon :name="expanded[row.id] ? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'"
-                  class="text-lg text-mute" variant="link" />
-              </div>
-            </div>
+      <UCard v-if="sortedBreakdown.length" :ui="{ header: 'px-4 py-3', body: 'p-0 sm:p-0' }">
+        <template #header>
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="font-semibold text-highlighted">Subject breakdown</h3>
+            <p class="text-xs text-muted">Highest first · tap a subject for its assessments</p>
           </div>
+        </template>
 
-          <template v-if="expanded[row.id]" #footer>
-            <div v-if="row.scores.length" class="space-y-1">
-              <div v-for="(score, i) in row.scores" :key="i" class="flex items-center justify-between py-1.5" :class="{
-                'border-b border-gray-100 dark:border-gray-800': i + 1 < row.scores.length
-              }">
-                <p class="text-sm">{{ score.name }}</p>
-                <div class="flex items-center gap-2">
-                  <p class="text-xs-base font-medium">
-                    <span>{{ score.score ?? '-' }}</span>
-                    <span class="text-muted"> ({{ score.weightScore ?? '-' }})</span>
-                  </p>
-                  <UIcon v-if="score.trend" :name="parseTrend[score.trend]?.icon"
-                    :class="`size-3.5 text-${parseTrend[score.trend]?.color}`" />
+        <ul class="divide-y divide-default">
+          <li v-for="row in sortedBreakdown" :key="row.id">
+            <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+              :aria-expanded="!!expanded[row.id]" @click="toggle(row.id)">
+              <UIcon :name="expanded[row.id] ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                class="size-4 shrink-0 text-muted" />
+
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-highlighted">{{ row.name }}</p>
+                <p v-if="parseTrend[row.trend]" class="mt-0.5 flex items-center gap-1 text-[11px]"
+                  :class="parseTrend[row.trend].text">
+                  <UIcon :name="parseTrend[row.trend].icon" class="size-3.5" />
+                  {{ parseTrend[row.trend].label }}
+                </p>
+              </div>
+
+              <div class="hidden w-40 sm:block">
+                <div class="h-1.5 overflow-hidden rounded-full bg-elevated">
+                  <div class="h-full rounded-full" :class="barOf(row.score)"
+                    :style="{ width: `${Math.min(100, Math.round(row.score))}%` }" />
                 </div>
               </div>
+              <p class="w-12 shrink-0 text-right text-sm font-semibold tabular-nums text-highlighted">
+                {{ Math.round(row.score) }}%</p>
+              <UBadge class="w-9 shrink-0 justify-center" variant="subtle" size="md"
+                :color="row.grade ? gradeColor(row.grade) : 'neutral'" :label="row.grade || '-'" />
+            </button>
+
+            <div v-if="expanded[row.id]" class="border-l-2 border-t border-l-primary/40 border-t-default bg-neutral-100 px-4 py-3 shadow-inner dark:bg-neutral-800/60 sm:pl-11">
+              <template v-if="row.scores.length">
+                <div class="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-1 text-[11px] uppercase tracking-wide text-muted">
+                  <span>Assessment</span><span class="text-right">Score</span>
+                  <span class="w-16 text-right">Change</span><span class="w-5" />
+                </div>
+                <div v-for="(score, i) in row.scores" :key="i"
+                  class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 border-t border-default/60 py-1.5 text-sm first:border-0">
+                  <div class="min-w-0">
+                    <p class="truncate">{{ score.name }}</p>
+                    <div v-if="score.score != null" class="mt-1 h-1 w-full max-w-48 overflow-hidden rounded-full bg-elevated">
+                      <div class="h-full rounded-full" :class="barOf(Number(score.score))"
+                        :style="{ width: `${Math.min(100, Number(score.score))}%` }" />
+                    </div>
+                  </div>
+                  <span class="text-right tabular-nums">
+                    <span class="font-medium text-highlighted">{{ score.score ?? '-' }}</span>
+                    <span class="text-xs text-muted"> counts {{ score.weightScore ?? '-' }}</span>
+                  </span>
+                  <span class="w-16 text-right text-xs font-medium tabular-nums"
+                    :class="changeAt(row.scores, i) === null ? 'text-muted' : changeAt(row.scores, i)! > 0 ? 'text-success' : changeAt(row.scores, i)! < 0 ? 'text-error' : 'text-muted'">
+                    <template v-if="changeAt(row.scores, i) === null">-</template>
+                    <template v-else>{{ changeAt(row.scores, i)! > 0 ? '+' : '' }}{{ changeAt(row.scores, i) }} pts</template>
+                  </span>
+                  <span class="flex w-5 justify-center">
+                    <UIcon v-if="score.trend && parseTrend[score.trend]" :name="parseTrend[score.trend].icon"
+                      class="size-3.5" :class="parseTrend[score.trend].text" />
+                  </span>
+                </div>
+                <p v-if="spanOf(row.scores) !== null" class="border-t border-default/60 pt-2 text-xs text-muted">
+                  First to latest:
+                  <span class="font-semibold"
+                    :class="spanOf(row.scores)! > 0 ? 'text-success' : spanOf(row.scores)! < 0 ? 'text-error' : 'text-highlighted'">
+                    {{ spanOf(row.scores)! > 0 ? '+' : '' }}{{ spanOf(row.scores) }} pts</span>
+                </p>
+              </template>
+              <p v-else class="py-2 text-xs text-muted">No assessments yet for this subject.</p>
             </div>
-            <p v-else class="py-2 text-center text-xs text-muted">No assessments yet for this subject.</p>
-          </template>
-        </UCard>
-      </div>
+          </li>
+        </ul>
+      </UCard>
 
       <UCard v-else-if="!assessmentLoading" class="py-14">
         <div class="flex flex-col items-center justify-center text-center space-y-4">
@@ -234,10 +245,28 @@ watch(
 )
 
 const parseTrend: Record<string, any> = {
-  IMPROVED: { icon: IMPROVED_ICON, color: 'success', label: 'Improved' },
-  STABLE: { icon: STABLE_ICON, color: 'neutral', label: 'Stable' },
-  DROPPED: { icon: DROPPED_ICON, color: 'error', label: 'Dropped' }
+  IMPROVED: { icon: IMPROVED_ICON, text: 'text-success', label: 'Improved' },
+  STABLE: { icon: STABLE_ICON, text: 'text-muted', label: 'Steady' },
+  DROPPED: { icon: DROPPED_ICON, text: 'text-error', label: 'Dropped' }
 }
+
+const sortedBreakdown = computed(() => [...breakdown.value].sort((a, b) => b.score - a.score))
+// Points gained or lost against the assessment before it; null for the first one or when a mark is missing.
+function changeAt(scores: any[], i: number): number | null {
+  const cur = scores[i]?.score
+  const prev = scores[i - 1]?.score
+  if (i === 0 || cur == null || prev == null) return null
+  return Math.round((Number(cur) - Number(prev)) * 10) / 10
+}
+
+// Overall movement from the first marked assessment to the latest one.
+function spanOf(scores: any[]): number | null {
+  const marked = scores.filter(x => x.score != null)
+  if (marked.length < 2) return null
+  return Math.round((Number(marked[marked.length - 1].score) - Number(marked[0].score)) * 10) / 10
+}
+
+const barOf = (score: number) => score < 50 ? 'bg-error' : score < 70 ? 'bg-warning' : 'bg-success'
 
 const rankReady = ref(false)
 const rank = ref('—')

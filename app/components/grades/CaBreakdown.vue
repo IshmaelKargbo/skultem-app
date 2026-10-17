@@ -2,7 +2,7 @@
   <div v-if="c" class="rounded-lg border border-default bg-elevated/30 px-3 py-2 text-xs">
     <div v-if="empty" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted">
       <span v-if="c.caPercentage === 0">No CA or formal test marks recorded yet · CA is for monitoring only - the formal test is the whole mark</span>
-      <span v-else>No CA or formal test marks recorded yet · {{ c.caPercentage }}% classwork + {{ c.formalPercentage }}% formal test</span>
+      <span v-else>No CA or formal test marks recorded yet · {{ c.caPercentage }}% classwork + {{ c.formalPercentage }}% {{ caFormalName(c).toLowerCase() }}</span>
       <UBadge v-if="progress" size="sm" variant="subtle" color="warning" icon="lucide:clock">{{ progress }}</UBadge>
     </div>
     <div v-else class="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -16,7 +16,7 @@
         <span v-else class="font-medium text-highlighted">none recorded yet</span>
       </span>
       <span class="text-muted">
-        Formal test
+        {{ caFormalName(c) }}
         <template v-if="c.formalScore != null">
           <span class="font-semibold text-highlighted">{{ c.formalScore }}%</span>
           <span class="text-muted">= {{ c.formalPoints }}/{{ c.formalPercentage }} of the mark</span>
@@ -33,7 +33,15 @@
         {{ CA_TREND_LABEL[trend.trend] }}
       </UBadge>
     </div>
-    <p v-if="!empty && recorded.length" class="mt-1 text-muted">
+    <!-- Named parts: each one with its mark and share, e.g. Attendance 80 (20%). -->
+    <p v-if="!empty && c.caComponents?.length" class="mt-1 text-muted">
+      <span v-for="(part, i) in c.caComponents" :key="part.name" class="mr-3 inline-block">
+        {{ part.name }}
+        <span class="font-medium text-highlighted">{{ c.caEntryScores?.[i] ?? '-' }}</span>
+        <span class="text-[10px]">({{ part.weight }}%)</span>
+      </span>
+    </p>
+    <p v-else-if="!empty && recorded.length" class="mt-1 text-muted">
       {{ CA_UNITS[c.caFrequency].singular }}-by-{{ CA_UNITS[c.caFrequency].singular.toLowerCase() }}:
       <span class="font-medium text-highlighted">{{ recorded.join(' · ') }}</span>
     </p>

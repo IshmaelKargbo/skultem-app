@@ -88,130 +88,113 @@ function submit() {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Go live - first, so it's the first thing anyone opening this section sees. -->
-    <section class="rounded-xl border p-4 sm:p-5"
-      :class="included.size ? 'border-error/30 bg-error/5' : 'border-primary/30 bg-primary/5'">
-      <div class="flex items-start gap-3">
-        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl"
+  <div class="space-y-6">
+    <!-- Summary: what going live will do -->
+    <section class="overflow-hidden rounded-2xl border"
+      :class="included.size ? 'border-error/30' : 'border-primary/30'">
+      <div class="flex items-start gap-4 p-4 sm:p-5"
+        :class="included.size ? 'bg-error/5' : 'bg-primary/5'">
+        <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl"
           :class="included.size ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'">
           <UIcon name="i-lucide-rocket" class="size-5" />
         </div>
         <div class="min-w-0 flex-1 space-y-1">
-          <p class="font-semibold text-highlighted">Ready to go live?</p>
+          <p class="text-base font-semibold text-highlighted">Ready to go live?</p>
           <p class="text-sm text-toned">
             <template v-if="included.size">
-              {{ recordsToClear }} test record{{ recordsToClear === 1 ? '' : 's' }} from
-              {{ included.size }} group{{ included.size === 1 ? '' : 's' }} below will be permanently removed.
+              <span class="font-semibold text-error">{{ recordsToClear }} test record{{ recordsToClear === 1 ? '' : 's' }}</span>
+              across {{ included.size }} group{{ included.size === 1 ? '' : 's' }} will be permanently removed.
             </template>
             <template v-else-if="!hasAnyData">
               There's no test data yet - going live just switches playground mode off.
             </template>
             <template v-else>
-              Nothing is ticked below, so every record is kept as real data.
+              Nothing is selected, so every record is kept as real data.
             </template>
           </p>
-          <p v-if="clearingSetup" class="text-xs font-medium text-error">
-            This includes school setup you'll need to recreate before enrolling students.
-          </p>
-          <p class="text-xs text-muted">
-            Always kept: subjects, academic years, fee categories, staff, materials and branding.
+          <p v-if="clearingSetup" class="flex items-center gap-1 text-xs font-medium text-error">
+            <UIcon name="i-lucide-triangle-alert" class="size-3.5" />
+            Includes school setup you'll need to recreate before enrolling students.
           </p>
         </div>
       </div>
-
-      <UAlert v-if="readonly" class="mt-4" color="neutral" variant="subtle" icon="i-lucide-lock"
-        title="Only the owner, a proprietor or a super admin can take the school live." />
-
-      <div v-else class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <UFormField class="flex-1" :label="`Type ${summary.domain} to confirm`">
-          <UInput v-model="confirmation" :placeholder="summary.domain" class="w-full" autocomplete="off"
-            :disabled="submitting" @keyup.enter="submit" />
-        </UFormField>
-        <UButton :color="included.size ? 'error' : 'primary'" icon="i-lucide-rocket" :loading="submitting"
-          :disabled="!confirmed" class="justify-center"
-          :label="included.size ? 'Clear selected data & go live' : 'Go live now'" @click="submit" />
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-default bg-default px-4 py-2.5 text-xs text-muted sm:px-5">
+        <UIcon name="i-lucide-shield-check" class="size-3.5 text-success" />
+        <span class="font-medium text-toned">Always kept:</span>
+        <span>subjects, academic years, fee categories, staff, materials and branding</span>
       </div>
     </section>
 
     <!-- What to clear -->
-    <section class="space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-2">
+    <section v-for="group in [
+      { id: 'data', title: 'Test records', hint: 'Tick what was only for testing. Anything unticked is kept as real data.', items: dataCategories, tools: true },
+      { id: 'setup', title: 'School setup', hint: 'Optional - only tick these to rebuild your classes or subjects from scratch.', items: setupCategories, tools: false },
+    ].filter(g => g.items.length)" :key="group.id" class="space-y-3">
+      <div class="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <p class="text-sm font-semibold text-highlighted">Choose what to clear</p>
-          <p class="text-xs text-muted">Tick what was only for testing. Anything left unticked is kept as real data.</p>
+          <p class="text-sm font-semibold text-highlighted">{{ group.title }}</p>
+          <p class="text-xs text-muted">{{ group.hint }}</p>
         </div>
-        <div v-if="!readonly" class="flex gap-2">
-          <UButton size="xs" variant="ghost" color="neutral" label="Select all" @click="selectAll" />
+        <div v-if="group.tools && !readonly" class="flex gap-1">
+          <UButton size="xs" variant="soft" color="neutral" label="Select all" @click="selectAll" />
           <UButton size="xs" variant="ghost" color="neutral" label="Keep all" @click="selectNone" />
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-        <label v-for="category in dataCategories" :key="category.key"
-          class="flex gap-3 rounded-xl border p-3 transition-colors"
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label v-for="category in group.items" :key="category.key"
+          class="group relative flex gap-3 rounded-2xl border p-4 transition-all"
           :class="[
-            included.has(category.key) ? 'border-error/40 bg-error/5' : 'border-default',
-            readonly || requiredBy(category.key) ? 'cursor-default' : 'cursor-pointer hover:bg-muted/40'
+            included.has(category.key) ? 'border-error/40 bg-error/5 shadow-sm' : 'border-default bg-default',
+            readonly || requiredBy(category.key) ? 'cursor-default' : 'cursor-pointer hover:border-accented hover:shadow-sm'
           ]">
-          <UCheckbox :model-value="included.has(category.key)" color="error" class="mt-0.5"
-            :disabled="readonly || !!requiredBy(category.key)"
-            @update:model-value="(v) => toggle(category.key, v)" />
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors"
+            :class="included.has(category.key) ? 'bg-error/10 text-error' : 'bg-elevated text-muted'">
+            <UIcon :name="PLAYGROUND_CATEGORY_META[category.key].icon" class="size-5" />
+          </div>
 
-          <div class="min-w-0 flex-1 space-y-1">
-            <div class="flex items-center gap-2">
-              <UIcon :name="PLAYGROUND_CATEGORY_META[category.key].icon" class="size-4 shrink-0 text-muted" />
-              <p class="text-sm font-medium text-highlighted">{{ PLAYGROUND_CATEGORY_META[category.key].label }}</p>
+          <div class="min-w-0 flex-1 space-y-2">
+            <div>
+              <p class="text-sm font-semibold text-highlighted">{{ PLAYGROUND_CATEGORY_META[category.key].label }}</p>
+              <p class="text-xs text-muted">{{ PLAYGROUND_CATEGORY_META[category.key].description }}</p>
             </div>
-            <p class="text-xs text-muted">{{ PLAYGROUND_CATEGORY_META[category.key].description }}</p>
-            <div class="flex flex-wrap gap-1 pt-0.5">
+            <div class="flex flex-wrap gap-1">
               <UBadge v-for="(count, label) in category.counts" :key="label" size="sm" variant="subtle"
-                color="neutral" :class="count > 0 ? '' : 'opacity-60'">
-                {{ count }} {{ label }}
+                :color="count > 0 ? 'neutral' : 'neutral'" :class="count > 0 ? '' : 'opacity-50'">
+                <span class="font-semibold">{{ count }}</span>&nbsp;{{ label }}
               </UBadge>
             </div>
-            <p v-if="requiredBy(category.key)" class="text-xs text-error">
+            <p v-if="requiredBy(category.key)" class="flex items-center gap-1 text-xs text-error">
+              <UIcon name="i-lucide-link" class="size-3" />
               Cleared along with {{ PLAYGROUND_CATEGORY_META[requiredBy(category.key)!.key].label.toLowerCase() }}
             </p>
           </div>
+
+          <UCheckbox :model-value="included.has(category.key)" color="error"
+            :disabled="readonly || !!requiredBy(category.key)"
+            @update:model-value="(v) => toggle(category.key, v)" />
         </label>
       </div>
+    </section>
 
-      <div v-if="setupCategories.length" class="space-y-2 pt-2">
+    <!-- Confirm -->
+    <section class="rounded-2xl border border-default bg-elevated/40 p-4 sm:p-5">
+      <UAlert v-if="readonly" color="neutral" variant="subtle" icon="i-lucide-lock"
+        title="Only the owner, a proprietor or a super admin can take the school live." />
+
+      <div v-else class="space-y-3">
         <div>
-          <p class="text-sm font-semibold text-highlighted">Setup <span class="font-normal text-muted">(optional)</span></p>
-          <p class="text-xs text-muted">
-            Only tick these if you want to rebuild your class or subject setup from scratch.
-          </p>
+          <p class="text-sm font-semibold text-highlighted">Confirm</p>
+          <p class="text-xs text-muted">This can't be undone. Type the school's domain to continue.</p>
         </div>
-        <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <label v-for="category in setupCategories" :key="category.key"
-            class="flex gap-3 rounded-xl border p-3 transition-colors"
-            :class="[
-              included.has(category.key) ? 'border-error/40 bg-error/5' : 'border-default',
-              readonly || requiredBy(category.key) ? 'cursor-default' : 'cursor-pointer hover:bg-muted/40'
-            ]">
-            <UCheckbox :model-value="included.has(category.key)" color="error" class="mt-0.5"
-              :disabled="readonly || !!requiredBy(category.key)"
-              @update:model-value="(v) => toggle(category.key, v)" />
-
-            <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex items-center gap-2">
-                <UIcon :name="PLAYGROUND_CATEGORY_META[category.key].icon" class="size-4 shrink-0 text-muted" />
-                <p class="text-sm font-medium text-highlighted">{{ PLAYGROUND_CATEGORY_META[category.key].label }}</p>
-              </div>
-              <p class="text-xs text-muted">{{ PLAYGROUND_CATEGORY_META[category.key].description }}</p>
-              <div class="flex flex-wrap gap-1 pt-0.5">
-                <UBadge v-for="(count, label) in category.counts" :key="label" size="sm" variant="subtle"
-                  color="neutral" :class="count > 0 ? '' : 'opacity-60'">
-                  {{ count }} {{ label }}
-                </UBadge>
-              </div>
-              <p v-if="requiredBy(category.key)" class="text-xs text-error">
-                Cleared along with {{ PLAYGROUND_CATEGORY_META[requiredBy(category.key)!.key].label.toLowerCase() }}
-              </p>
-            </div>
-          </label>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <UFormField class="flex-1" :label="`Type ${summary.domain} to confirm`">
+            <UInput v-model="confirmation" :placeholder="summary.domain" class="w-full" size="lg"
+              autocomplete="off" :disabled="submitting" @keyup.enter="submit" />
+          </UFormField>
+          <UButton size="lg" :color="included.size ? 'error' : 'primary'" icon="i-lucide-rocket"
+            :loading="submitting" :disabled="!confirmed" class="justify-center"
+            :label="included.size ? 'Clear selected data & go live' : 'Go live now'" @click="submit" />
         </div>
       </div>
     </section>

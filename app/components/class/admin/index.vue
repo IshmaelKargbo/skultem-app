@@ -22,7 +22,8 @@
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+                :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5' }">
                 <template #empty-state>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -30,34 +31,69 @@
                     </div>
                 </template>
                 <template #clazz-cell="{ row }">
-                    <div>
-                        <div class="flex items-center gap-1.5">
-                            <p class="font-medium text-highlighted">{{ row.original.clazz }}</p>
-
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="text-[15px] font-semibold tracking-tight text-highlighted">{{ row.original.clazz }}</p>
                             <UTooltip v-if="row.original.needsAttention" :delay-duration="0" arrow
                                 text="At least one student here has low attendance or is below the pass mark">
-                                <UBadge size="xs" variant="subtle" color="warning" icon="i-lucide-alert-triangle"
-                                    label="Needs Attention" />
+                                <span class="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">
+                                    <span class="size-1.5 rounded-full bg-warning" />Needs attention
+                                </span>
                             </UTooltip>
                         </div>
+                        <p class="mt-0.5 text-xs text-muted">{{ parseLevel[row.original.classLevel] || row.original.classLevel }}</p>
                     </div>
                 </template>
-                <template #classLevel-cell="{ row }">
-                    <p>{{ parseLevel[row.original.classLevel] }}</p>
-                </template>
-                <template #totalStudent-cell="{ row }">
-                    <UBadge variant="subtle" color="secondary" size="lg" :trailing-icon="STUDENT_ICON"
-                        :label="`${row.original.totalStudent} -`" />
+                <template #sectionName-cell="{ row }">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span v-if="row.original.sectionName"
+                            class="rounded-md bg-elevated px-2 py-0.5 text-xs font-medium text-highlighted ring-1 ring-default">
+                            {{ row.original.sectionName }}</span>
+                        <span v-if="row.original.streamId && row.original.streamName !== 'N/A'"
+                            class="rounded-md bg-info/10 px-2 py-0.5 text-xs font-medium text-info">{{ row.original.streamName }}</span>
+                        <span v-if="!row.original.sectionName && !(row.original.streamId && row.original.streamName !== 'N/A')"
+                            class="text-muted">-</span>
+                    </div>
                 </template>
                 <template #teacherName-cell="{ row }">
-                    <p class="max-w-40 truncate" :title="row.original.teacherName">{{ formatTeacherNames(row.original.teacherName) || 'No Teacher Assigned' }}</p>
+                    <div v-if="formatTeacherNames(row.original.teacherName)" class="flex min-w-0 items-center gap-2.5">
+                        <UAvatar :alt="formatTeacherNames(row.original.teacherName)" size="sm" />
+                        <p class="max-w-44 truncate text-sm" :title="row.original.teacherName">
+                            {{ formatTeacherNames(row.original.teacherName) }}</p>
+                    </div>
+                    <span v-else class="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">
+                        <span class="size-1.5 rounded-full bg-warning" />Unassigned
+                    </span>
+                </template>
+                <template #totalStudent-cell="{ row }">
+                    <span v-if="row.original.totalStudent"
+                        class="inline-flex min-w-9 items-center justify-center rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold tabular-nums text-primary">
+                        {{ row.original.totalStudent }}</span>
+                    <span v-else class="text-xs text-muted">No students</span>
+                </template>
+                <template #fees-cell="{ row }">
+                    <template v-if="row.original.feeDetail">
+                        <div v-if="canSeeAmounts && Number(row.original.feeDetail.total) > 0" class="w-32">
+                            <p class="text-sm font-medium tabular-nums text-highlighted">
+                                {{ feePercent(row.original) }}% <span class="text-xs font-normal text-muted">collected</span></p>
+                            <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
+                                <div class="h-full rounded-full" :class="feePercent(row.original) >= 75 ? 'bg-success' : feePercent(row.original) >= 40 ? 'bg-warning' : 'bg-error'"
+                                    :style="{ width: `${feePercent(row.original)}%` }" />
+                            </div>
+                        </div>
+                        <UBadge v-else-if="row.original.feeDetail.status" size="sm" variant="subtle"
+                            :label="row.original.feeDetail.status"
+                            :color="parseFeeStatusColor[row.original.feeDetail.status] || 'neutral'" />
+                        <span v-else class="text-muted">-</span>
+                    </template>
+                    <span v-else class="text-muted">-</span>
                 </template>
                 <template #loading>
                     <TableLoading :size="columns.length" />
                 </template>
                 <template #actions-cell="{ row }">
-                    <UButton @click="viewClass(row.original)" size="sm" variant="ghost" color="success"
-                        class="cursor-pointer" :icon="VIEW_ICON" />
+                    <UButton @click="viewClass(row.original)" size="sm" variant="ghost" color="neutral"
+                        class="cursor-pointer" icon="i-lucide-chevron-right" aria-label="Open class" />
                 </template>
             </UTable>
             <div class="md:p-4 md:space-y-4"
@@ -147,14 +183,21 @@ const streamOptions = computed(() =>
 );
 
 const columns = [
-    { accessorKey: 'clazz', header: 'Name' },
-    { accessorKey: 'classLevel', header: 'Level' },
+    { accessorKey: 'clazz', header: 'Class' },
     { accessorKey: 'sectionName', header: 'Section' },
-    { accessorKey: 'streamName', header: 'Stream' },
+    { accessorKey: 'teacherName', header: 'Class master' },
     { accessorKey: 'totalStudent', header: 'Students' },
-    { accessorKey: 'teacherName', header: 'Class Teacher' },
-    { id: 'actions', meta: { class: { td: 'text-right' } } }
+    { id: 'fees', header: 'Fees' },
+    { id: 'actions', header: '', meta: { class: { td: 'text-right' } } }
 ];
+
+const { can } = useAuth();
+// Only the owner and principal see fee figures; everyone else sees the state only.
+const canSeeAmounts = computed(() => can([Role.OWNER, Role.PRINCIPAL]));
+const feePercent = (c: ClassSession) => {
+    const total = Number(c.feeDetail?.total)
+    return total > 0 ? Math.min(100, Math.round((Number(c.feeDetail.paid) / total) * 100)) : 0
+};
 
 function viewClass(row: ClassSession) {
     router.push(classRosterUrl(row.clazzId, row.streamId, row.id));

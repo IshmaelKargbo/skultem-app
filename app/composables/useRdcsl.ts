@@ -18,5 +18,12 @@ export function useRdcsl() {
         return toOptions(rdcsl.regionDistricts(region) ?? [])
     }
 
-    return { regionOptions, districtOptions }
+    // Chiefdoms are scoped to the selected district the same way. `current` is a value already saved on a record
+    // (older schools were typed in freely) - kept in the list so editing one doesn't blank it out.
+    function chiefdomOptions(district?: string | null, current?: string | null): Option[] {
+        const options = district ? toOptions(rdcsl.districtChiefdoms(district) ?? []) : []
+        return current && !options.some((o) => o.value === current) ? [{ label: current, value: current }, ...options] : options
+    }
+
+    return { regionOptions, districtOptions, chiefdomOptions }
 }

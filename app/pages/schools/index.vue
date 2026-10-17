@@ -1,6 +1,4 @@
 <script setup lang="ts">
-const route = useRoute();
-const router = useRouter();
 const store = useSystemStore();
 const { schools, schoolsMeta } = storeToRefs(store);
 const platformStore = usePlatformStore();
@@ -59,44 +57,39 @@ const columns = [
   { id: "actions", meta: { class: { td: "text-right" } } },
 ];
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val }),
-});
-
-const query = computed<string>({
-  get: () => String(route.query.query ?? ""),
-  set: (val) => updateQuery({ query: val || undefined, page: 1 }),
-});
-
+// Filters live in local state, not the URL.
+const page = ref(1);
+const searchInput = ref("");
+const query = ref("");
+const statusFilter = ref("");
+const typeFilter = ref("");
 const size = ref(10);
-const hasActiveFilters = computed(() => !!query.value);
 
-function updateQuery(newQuery: Record<string, any>) {
-  router.replace({ query: { ...route.query, ...newQuery } });
-}
-
-function resetFilters() {
-  updateQuery({ query: undefined, page: 1 });
-}
+const activeFilterCount = computed(() => [statusFilter.value, typeFilter.value].filter(Boolean).length);
 
 async function fetchSchools() {
   loading.value = true;
-  await store.fetchSchools(page.value, size.value, query.value || undefined);
+  await store.fetchSchools(page.value, size.value, {
+    query: query.value || undefined,
+    status: statusFilter.value || undefined,
+    type: typeFilter.value || undefined,
+  });
   loading.value = false;
 }
 
-watch(() => page.value, () => fetchSchools());
-watch(() => query.value, () => {
+watch(page, () => fetchSchools());
+
+// Any change to what's being asked for starts again from the first page.
+watch([query, statusFilter, typeFilter], () => {
   if (page.value === 1) fetchSchools();
+  else page.value = 1;
 });
 
-const searchInput = ref(query.value);
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 watch(searchInput, (val) => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    query.value = val;
+    query.value = val.trim();
   }, 350);
 });
 
@@ -135,7 +128,6 @@ onMounted(async () => {
   useAppStore().setTitle("System Admin · Schools");
   useAppStore().setBack(false);
   document.title = "Schools | System Admin | Skultem";
-  searchInput.value = query.value;
 
   await Promise.all([fetchSchools(), platformStore.fetchFeeSettings()]);
 });
@@ -152,18 +144,14 @@ definePageMeta({
     </Heading>
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-sm font-semibold text-highlighted">Schools</h2>
-            <TableViewToggle v-model="view" />
-          </div>
-
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div class="flex gap-3 items-center">
+          <div class="flex items-center gap-2 flex-1">
             <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search by name or domain..."
-              class="sm:col-span-2" />
-            <UButton icon="i-lucide-x" variant="outline" color="neutral" label="Clear"
-              :disabled="!hasActiveFilters" @click="() => { searchInput = ''; resetFilters(); }" />
+              class="flex-1" />
+            <SystemAdminSchoolFilterDrawer v-model:status="statusFilter" v-model:type="typeFilter"
+              :active-count="activeFilterCount" />
           </div>
+          <TableViewToggle v-model="view" />
         </div>
       </template>
 
@@ -259,7 +247,8 @@ definePageMeta({
               </UDropdownMenu>
             </div>
 
-            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-default p-3 text-xs text-muted">
+            <div
+              class="flex flex-wrap items-center justify-between gap-2 border-t border-default p-3 text-xs text-muted">
               <div class="flex flex-wrap gap-1">
                 <UBadge variant="subtle" :color="STATUS_COLOR[school.status]" :label="clean(school.status)" />
                 <UBadge v-if="school.testSchool" variant="subtle" color="warning" icon="i-lucide-flask-conical"
@@ -288,23 +277,11 @@ definePageMeta({
       </template>
     </UCard>
 
-    <SystemAdminPlatformFeeModal
-      v-if="platformFeeTarget"
-      v-model:open="platformFeeModal"
-      :school-id="platformFeeTarget.id"
-      :school-name="platformFeeTarget.name"
-    />
+    <SystemAdminPlatformFeeModal v-if="platformFeeTarget" v-model:open="platformFeeModal"
+      :school-id="platformFeeTarget.id" :school-name="platformFeeTarget.name" />
 
-    <SystemAdminGoLiveModal
-      v-if="goLiveTarget"
-      v-model:open="goLiveModal"
-      :school="goLiveTarget"
-    />
+    <SystemAdminGoLiveModal v-if="goLiveTarget" v-model:open="goLiveModal" :school="goLiveTarget" />
 
-    <SystemAdminEditSchoolModal
-      v-if="editTarget"
-      v-model:open="editModal"
-      :school="editTarget"
-    />
+    <SystemAdminEditSchoolModal v-if="editTarget" v-model:open="editModal" :school="editTarget" />
   </div>
 </template>

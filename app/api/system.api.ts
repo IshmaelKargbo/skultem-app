@@ -14,10 +14,24 @@ export const SystemApi = () => {
         useHandleError(err)
       }
     },
-    listSchools: async (page: number, size: number, query?: string) => {
+    getInsights: async (days: number = 30) => {
+      try {
+        const res = await $api(`/system/insights?days=${days}`) as any
+
+        if (!res)
+          throw new Error('Failed to fetch system insights')
+
+        return res.data as SystemInsights
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    listSchools: async (page: number, size: number, filters: SchoolFilters = {}) => {
       try {
         let params = ''
-        if (query) params += `&query=${encodeURIComponent(query)}`
+        if (filters.query) params += `&query=${encodeURIComponent(filters.query)}`
+        if (filters.status) params += `&status=${filters.status}`
+        if (filters.type) params += `&type=${filters.type}`
         const res = await $api(`/school?page=${page}&size=${size}${params}`) as any
 
         if (!res)

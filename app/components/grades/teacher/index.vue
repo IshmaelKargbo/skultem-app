@@ -70,6 +70,16 @@
 
     <GradesReturnedNotice :assessments="assessments" />
 
+    <!-- A class that has no assessments in this term: say why instead of showing an empty table. -->
+    <UAlert
+      v-if="!loading && state.teacherSubjectId && state.termId && !assessments.length"
+      color="neutral"
+      variant="soft"
+      icon="lucide:calendar-range"
+      title="No assessments for this class in this term"
+      description="A class that joins part-way through the year isn't graded for the earlier terms (set on its assessment template under 'When does grading begin?'). Pick the term it starts in, or check that the class's subjects and teachers are assigned."
+    />
+
     <!-- Assessments opened as Continuous Assessment are recorded here rather than typed into the grid. -->
     <UCard v-if="continuousAssessments.length">
       <div class="space-y-4">
@@ -192,14 +202,36 @@ const UBadge = resolveComponent('UBadge')
 const { error: toastError, success: toastSuccess, info } = useNotify()
 
 const records = ref<TeacherSubject[]>([])
+// Only the class subjects that have assessments in the chosen term (a class joining later has none in earlier terms).
+const gradedSubjectIds = ref<Set<string> | null>(null)
+async function loadGraded() {
+  if (!state.termId) return
+  const res = await store.fetchTermGraded(state.termId)
+  gradedSubjectIds.value = res ? new Set(res.teacherSubjectIds) : null
+}
 const subjects = computed(() =>
-  records.value.map(e => ({
+  records.value
+    .filter(e => !gradedSubjectIds.value || gradedSubjectIds.value.has(e.id))
+    .map(e => ({
     label: `${e.subjectName} - ${e.className}(${e.sectionName})`,
     value: e.id
   }))
 )
 
 const term = computed(() => termStore.records.find(e => e.status == 'ACTIVE'))
+
+// When the term changes, re-list the subjects graded in it and keep the selection on one of them.
+watch(() => state.termId, async () => {
+  await loadGraded()
+  if (state.teacherSubjectId && !subjects.value.some(x => x.value === state.teacherSubjectId)) {
+    state.teacherSubjectId = subjects.value[0]?.value || ''
+    if (!state.teacherSubjectId) {
+      rows.value = []
+      assessments.value = []
+      columns.value = []
+    }
+  }
+}, { immediate: true })
 
 const terms = computed(() => termStore.records.map(e => ({ label: e.name, value: e.id })))
 const editableAssessments = computed(() => assessments.value.filter(a => isEditableStatus(a.status as ScoreStatus)))
@@ -344,7 +376,7 @@ const statusSummary = computed<StatusCard[]>(() => {
 function calculateWeightedTotal(row: any) {
   return completedAssessmentIds.value.reduce((sum, assessmentId) => {
     const score = row.scores.find((s: any) => s.assessment === assessmentId)
-    return sum + score.weightScore
+    return sum + (score?.weightScore ?? 0)
   }, 0)
 }
 

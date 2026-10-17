@@ -5,7 +5,11 @@ export default defineAppConfig({
       secondary: "secondary",
       neutral: "gray",
     },
-
+    drawer: {
+      slots: {
+        overlay: 'bg-black/50 backdrop-blur-[2.5px]',
+      }
+    },
     checkbox: {
       variants: {
         variant: {
@@ -67,8 +71,15 @@ export default defineAppConfig({
     modal: {
       slots: {
         base: 'rounded-2xl bg-white dark:bg-gray-900',
-        overlay: 'bg-black/50',
+        overlay: 'bg-black/50 backdrop-blur-[2.5px]',
       },
+      variants: {
+        overlay: {
+          true: {
+            overlay: 'bg-black/50 backdrop-blur-[2.5px]',
+          },
+        }
+      }
     },
 
     select: {

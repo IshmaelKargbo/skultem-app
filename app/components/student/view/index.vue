@@ -18,8 +18,12 @@
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
                             <template v-else>
-                                <img :src="photo" :alt="name" class="h-20 w-20 rounded-xl bg-white object-cover md:h-24 md:w-24"
-                                    :class="{ 'opacity-50': uploadingPhoto }" />
+                                <button type="button" class="block cursor-zoom-in" aria-label="View full photo"
+                                    @click="photoOpen = true">
+                                    <img :src="photo" :alt="name" class="h-20 w-20 rounded-xl bg-white object-cover md:h-24 md:w-24"
+                                        :class="{ 'opacity-50': uploadingPhoto }" />
+                                </button>
+                                <PhotoViewer v-model:open="photoOpen" :src="record?.photo" :name="name" />
 
                                 <div v-if="uploadingPhoto"
                                     class="absolute inset-1.5 flex items-center justify-center rounded-xl">
@@ -68,37 +72,28 @@
                                 </UTooltip>
                             </div>
 
-                            <!-- Admission -->
-                            <div v-if="!loading"
-                                class="mt-1 flex items-center justify-center flex-wrap gap-1.5 text-xs text-dimmed">
-                                <p>{{ record?.admissionNumber || 'Not assigned' }}</p>
-                                <div class="flex space-x-2">
-                                    <p>-</p>
-                                    <p>{{ record?.className || 'No class assigned' }}</p>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <p>-</p>
-                                    <p>{{ clean(record?.gender || '') }}</p>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <p>-</p>
-                                    <p>{{ clean(record?.nationality || '') }}</p>
-                                </div>
+                            <!-- Admission, class, gender, nationality -->
+                            <div v-if="!loading" class="mt-1.5 flex flex-wrap items-center justify-center gap-1.5 md:justify-start">
+                                <UBadge color="neutral" variant="subtle" size="sm" icon="i-lucide-hash"
+                                    :label="record?.admissionNumber || 'No admission no'" />
+                                <UBadge :color="record?.className ? 'primary' : 'neutral'" variant="subtle" size="sm"
+                                    :icon="CLASS_ICON" :label="record?.className || 'No class assigned'" />
+                                <span class="text-xs text-muted">
+                                    {{ details }}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex shrink-0 items-center gap-2 justify-center">
-                        <StudentChangeClass v-if="record && !loading && canChangeClass && !hasLeft" :student-id="record.id"
-                            :student-name="name" />
-                        <UButton v-if="record && !loading" :to="`/students/${record.id}/edit`" size="sm" color="primary"
-                            :icon="EDIT_ICON" label="Edit Student" />
-                        <UDropdownMenu v-if="record && !loading && exitActions.length" :items="exitActions"
+                    <div class="flex shrink-0 items-center justify-center gap-2">
+                        <UDropdownMenu v-if="record && !loading && actionItems.length" :items="actionItems"
                             :content="{ align: 'end' }">
-                            <UButton size="sm" color="neutral" variant="outline" icon="lucide:ellipsis-vertical"
-                                aria-label="More student actions" />
+                            <UButton size="sm" color="neutral" variant="outline" label="Actions"
+                                trailing-icon="i-lucide-chevron-down" />
                         </UDropdownMenu>
+                        <StudentChangeClass v-if="record && !loading && canChangeClass && !hasLeft" ref="changeClassRef"
+                            :student-id="record.id" :student-name="name" hide-trigger />
                     </div>
                 </div>
             </div>
@@ -151,6 +146,20 @@ definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.TEACHER]
 })
 
+// "12 years · Female · Sierra Leonean" - the facts people look for under the name.
+const details = computed(() => {
+    const dob = record.value?.dateOfBirth ? new Date(record.value.dateOfBirth) : null
+    let age = ''
+    if (dob && !isNaN(dob.getTime())) {
+        const today = new Date()
+        let years = today.getFullYear() - dob.getFullYear()
+        const m = today.getMonth() - dob.getMonth()
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) years--
+        age = `${years} ${years === 1 ? 'year' : 'years'}`
+    }
+    return [age, clean(record.value?.gender || ''), clean(record.value?.nationality || '')].filter(Boolean).join(' · ')
+})
+
 const hasLeft = computed(() => studentHasLeft(record.value?.status))
 
 // Matches POST /student/{id}/withdraw|expel|reinstate (ADMIN/OWNER/PROPRIETOR); permanent delete is
@@ -166,6 +175,19 @@ function openExit(mode: 'withdraw' | 'expel' | 'reinstate') {
     exitMode.value = mode
     showExit.value = true
 }
+
+const changeClassRef = ref<{ open: () => void } | null>(null)
+
+// Everything you can do to this student, in one menu: change it, move it, then the serious ones.
+const actionItems = computed(() => {
+    const first: any[] = [{
+        label: 'Edit student', icon: EDIT_ICON, onSelect: () => navigateTo(`/students/${record.value?.id}/edit`)
+    }]
+    if (canChangeClass.value && !hasLeft.value) {
+        first.push({ label: 'Change class', icon: CLASS_ICON, onSelect: () => changeClassRef.value?.open() })
+    }
+    return [first, ...exitActions.value]
+})
 
 const exitActions = computed(() => {
     const groups: any[][] = []
@@ -197,6 +219,7 @@ const photo = computed(() => {
 })
 
 const uploadingPhoto = ref(false)
+const photoOpen = ref(false)
 
 async function onPhotoChange(event: Event) {
     const input = event.target as HTMLInputElement

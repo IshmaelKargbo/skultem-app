@@ -12,7 +12,7 @@ const emit = defineEmits<{
 
 const store = useSystemStore()
 const { error: toastError, success: toastSuccess } = useNotify()
-const { regionOptions, districtOptions } = useRdcsl()
+const { regionOptions, districtOptions, chiefdomOptions } = useRdcsl()
 
 const open = computed({
   get: () => props.open,
@@ -38,7 +38,7 @@ const schema = yup.object({
   city: yup.string().required("City is required"),
   region: yup.string().required("Region is required"),
   district: yup.string().required("District is required"),
-  chiefdom: yup.string().min(5, "Chiefdom must be at least 5 characters").required("Chiefdom is required"),
+  chiefdom: yup.string().required("Chiefdom is required"),
 });
 
 // Re-seed the form with this school's current profile every time the modal opens - same pattern
@@ -63,6 +63,16 @@ const region = computed({
   set: (value: string) => {
     state.region = value;
     state.district = "";
+    state.chiefdom = "";
+  },
+});
+
+// Same for the chiefdom when the district is changed by hand.
+const district = computed({
+  get: () => state.district,
+  set: (value: string) => {
+    state.district = value;
+    state.chiefdom = "";
   },
 });
 
@@ -132,13 +142,16 @@ async function onSubmit() {
             </UFormField>
 
             <UFormField label="District" name="district" required>
-              <USelectMenu v-model="state.district" value-key="value" :items="districtOptions(state.region)"
+              <USelectMenu v-model="district" value-key="value" :items="districtOptions(state.region)"
                 :placeholder="state.region ? 'Select district' : 'Select a region first'" class="w-full"
                 :disabled="loading || !state.region" />
             </UFormField>
 
             <UFormField label="Chiefdom" name="chiefdom" required>
-              <UInput v-model="state.chiefdom" class="w-full" :disabled="loading" />
+              <USelectMenu v-model="state.chiefdom" value-key="value"
+                :items="chiefdomOptions(state.district, state.chiefdom)"
+                :placeholder="state.district ? 'Select chiefdom' : 'Select a district first'" class="w-full"
+                :disabled="loading || !state.district" />
             </UFormField>
           </div>
         </UForm>

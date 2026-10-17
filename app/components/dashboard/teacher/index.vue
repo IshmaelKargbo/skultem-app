@@ -1,44 +1,6 @@
 <template>
     <div class="px-4 space-y-4 md:px-6">
-        <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
-            <div class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
-
-            <div class="px-5 pb-5">
-                <div class="-mt-12 flex min-w-0 items-end gap-4 md:-mt-14">
-                    <div class="relative shrink-0 rounded-2xl hidden md:block bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
-                        <UAvatar :src="user?.photo || undefined" :alt="user?.givenNames" size="3xl"
-                            class="h-16 w-16 rounded-xl md:h-24 md:w-24" />
-                    </div>
-
-                    <div class="min-w-0 pb-0.5 md:pb-1">
-                        <h2 class="truncate text-xl font-bold tracking-tight text-highlighted md:text-2xl">
-                            {{ greeting }}, {{ user?.givenNames || 'there' }} <span aria-hidden="true">👋</span>
-                        </h2>
-
-                        <div class="mt-2 flex flex-wrap items-center gap-2">
-                            <span class="text-sm text-muted">{{ today }}</span>
-
-                            <span class="size-1 rounded-full bg-dimmed" />
-
-                            <UBadge v-if="isInstalled(ModuleKey.STAFF_HR)" :color="clockBadgeColor" variant="subtle" size="xs" class="rounded-full">
-                                <span class="mr-1.5 size-1.5 rounded-full" :class="`bg-${clockBadgeColor}`" />
-                                {{ clockStatusText }}
-                            </UBadge>
-
-                            <template v-if="hasSubjects || hasClassMaster">
-                                <span class="size-1 rounded-full bg-dimmed" />
-                                <span class="text-sm text-muted">{{ totalClassCount }} class{{ totalClassCount === 1 ? '' : 'es' }}</span>
-                            </template>
-
-                            <UBadge v-if="totalAttentionCount > 0" color="warning" variant="subtle" size="xs"
-                                class="rounded-full" icon="i-lucide-alert-triangle">
-                                {{ totalAttentionCount }} need{{ totalAttentionCount === 1 ? 's' : '' }} attention
-                            </UBadge>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </UCard>
+        <DashboardWelcome />
 
         <!-- LOADING -->
         <UCard v-if="initialLoading">
@@ -124,6 +86,46 @@
             </div>
 
             <div class="space-y-4 lg:sticky lg:top-4 lg:self-start">
+                <!-- MY CLASSES -->
+                <UCard :ui="{ header: 'px-4 py-3', body: 'p-0 sm:p-0' }">
+                    <template #header>
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="font-semibold text-highlighted">My classes</h3>
+                            <NuxtLink to="/classes" class="text-xs font-medium text-primary hover:underline">View all</NuxtLink>
+                        </div>
+                    </template>
+
+                    <ul class="divide-y divide-default">
+                        <li v-for="c in classMasterAssignments" :key="`m-${c.classMasterId}`">
+                            <NuxtLink :to="classRosterUrl(c.classId, c.streamId, c.sessionId)"
+                                class="flex items-center gap-3 px-4 py-3 transition hover:bg-elevated/40">
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold text-highlighted">{{ c.sessionName || c.className }}</p>
+                                    <p class="text-xs text-muted">
+                                        {{ c.studentCount }} {{ c.studentCount === 1 ? 'student' : 'students' }}
+                                    </p>
+                                </div>
+                                <UBadge v-if="attentionByClassId[c.classId]" color="warning" variant="subtle" size="sm"
+                                    icon="i-lucide-alert-triangle" :label="`${attentionByClassId[c.classId]}`" />
+                                <UBadge color="primary" variant="subtle" size="sm" label="Class master" />
+                                <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 text-muted" />
+                            </NuxtLink>
+                        </li>
+                        <li v-for="c in subjectOnlyClasses" :key="`s-${c.sessionId}`">
+                            <NuxtLink :to="classRosterUrl(c.classId, c.streamId, c.sessionId)"
+                                class="flex items-center gap-3 px-4 py-3 transition hover:bg-elevated/40">
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold text-highlighted">
+                                        {{ c.className }}<template v-if="c.sectionName"> {{ c.sectionName }}</template></p>
+                                    <p class="truncate text-xs text-muted">{{ c.subjects.join(', ') }}</p>
+                                </div>
+                                <UBadge color="neutral" variant="subtle" size="sm" label="Subject" />
+                                <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 text-muted" />
+                            </NuxtLink>
+                        </li>
+                    </ul>
+                </UCard>
+
                 <!-- QUICK ACTIONS -->
                 <UCard>
                     <SectionHeading title="Quick Actions" subtitle="Jump straight to the thing you came here to do." class="mb-3" />
@@ -193,36 +195,6 @@ const { loading } = storeToRefs(store)
 const { user } = storeToRefs(userStore)
 const { myToday } = storeToRefs(teacherAttendanceStore)
 
-const hour = new Date().getHours()
-
-const greeting = computed(() => {
-    if (hour < 12) return 'Good morning'
-    if (hour < 17) return 'Good afternoon'
-    return 'Good evening'
-})
-
-const today = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
-
-// Read-only view onto the same clock-in/out store ClockInOut owns and fetches -
-// this just surfaces its status as a badge in the hero banner so a teacher doesn't
-// have to scan down the page to see whether they've clocked in today. Warning while
-// unclocked is a gentle nudge, same as every other "needs action" badge in the app.
-const clockBadgeColor = computed<'success' | 'primary' | 'warning' | 'neutral'>(() => {
-    if (!myToday.value) return 'neutral'
-    if (myToday.value.clockedInAt && myToday.value.clockedOutAt) return 'success'
-    if (myToday.value.clockedInAt) return 'primary'
-    return 'warning'
-})
-
-const clockStatusText = computed(() => {
-    if (!myToday.value) return 'Checking clock status…'
-    if (myToday.value.clockedInAt && myToday.value.clockedOutAt) return 'Day complete'
-    if (myToday.value.clockedInAt) {
-        return `Clocked in at ${formatTime(myToday.value.clockedInAt)}`
-    }
-    return 'Not clocked in yet'
-})
-
 const records = ref<TeacherSubject[]>([])
 const state = reactive<{ clazz: string, term: string, assessment: string }>({
     clazz: '',
@@ -268,9 +240,14 @@ const myClasses = computed(() => {
 })
 
 // --- Class master ---
+// Classes I only teach a subject in (the ones I'm class master of are listed separately above them).
 const classMasterAssignments = ref<TeacherClassMaster[]>([])
 const loadingAssignments = ref(true)
 const loadingSubjects = ref(true)
+const subjectOnlyClasses = computed(() => {
+    const masterSessions = new Set(classMasterAssignments.value.map(a => a.sessionId))
+    return myClasses.value.filter(c => !masterSessions.has(c.sessionId))
+})
 const hasClassMaster = computed(() => classMasterAssignments.value.length > 0)
 const initialLoading = computed(() => loadingAssignments.value || loadingSubjects.value)
 

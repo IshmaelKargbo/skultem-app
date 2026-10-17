@@ -259,6 +259,58 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
+    // The term students of classes using this template start being graded in (SSS 1 joining in the second term).
+    // Earlier terms get no assessments and no fees; untouched assessments already created for them are cleared.
+    setTemplateStartsInTerm: async (templateId: string, termNumber: number) => {
+      try {
+        await $api(`/assessment/template/${templateId}/starts-in-term`, { method: 'PUT', body: { termNumber } })
+        return true
+      } catch (err: any) {
+        useHandleError(err)
+        return false
+      }
+    },
+    // The classes / class subjects that have assessments in a term - a class joining later has none in earlier terms.
+    getTermGraded: async (termId: string) => {
+      try {
+        const res = await $api(`/assessment/term/${termId}/graded`) as any
+        return res?.data as { classSessionIds: string[], teacherSubjectIds: string[] }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // What an edit of this template would touch: the classes using it, tests already submitted, marks entered.
+    getTemplateUsage: async (templateId: string) => {
+      try {
+        const res = await $api(`/assessment/template/${templateId}/usage`) as any
+        return res?.data as { classNames: string[], submittedTests: number, markedScores: number }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Edits a template in place and carries the change to the classes using it. Returns the reason instead of
+    // toasting, because "Confirm to change it anyway" is answered with a dialog, not an error message.
+    updateTemplate: async (templateId: string, payload: {
+      name?: string, passMark?: number, description?: string,
+      assessments: { id?: string, name: string, weight: number }[], force?: boolean
+    }) => {
+      try {
+        await $api(`/assessment/template/${templateId}`, { method: 'PUT', body: payload })
+        return { ok: true as const, message: '' }
+      } catch (err: any) {
+        return { ok: false as const, message: String(err?.data?.message || err?.message || 'Failed to update the template') }
+      }
+    },
+    // Only a template no class uses and nothing was recorded with. The message says why when it can't go.
+    deleteTemplate: async (templateId: string) => {
+      try {
+        await $api(`/assessment/template/${templateId}`, { method: 'DELETE' })
+        return true
+      } catch (err: any) {
+        useHandleError(err)
+        return false
+      }
+    },
     assign: async (templateId: string, payload: AssignAssessmentsDto) => {
       try {
         return await $api(`/assessment/template/${templateId}/assignment`, {
@@ -309,23 +361,22 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getConfigurations: async () => {
+    // One assessment template's scoring setup (a template nobody has set up shows what it follows now).
+    getTemplateConfiguration: async (templateId: string) => {
       try {
-        const res = await $api('/assessment-configuration') as any
+        const res = await $api(`/assessment-configuration/templates/${templateId}`) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment configuration')
 
-        return res.data as AssessmentConfiguration[]
+        return res.data as AssessmentConfiguration
       } catch (err: any) {
         useHandleError(err)
       }
     },
-    // sectionId omitted = the whole school (schools without sections).
-    saveConfiguration: async (payload: SaveAssessmentConfigurationDto, sectionId?: string | null) => {
+    saveConfiguration: async (payload: SaveAssessmentConfigurationDto, templateId: string) => {
       try {
-        const query = sectionId ? `?sectionId=${encodeURIComponent(sectionId)}` : ''
-        const res = await $api(`/assessment-configuration${query}`, {
+        const res = await $api(`/assessment-configuration/templates/${templateId}`, {
           method: 'PUT',
           body: payload
         }) as any
@@ -338,12 +389,11 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    // Moves every still-blank assessment in the section onto the configuration just saved - anything
-    // with even one recorded score is left exactly as it is. sectionId omitted = the whole school.
-    applyConfigurationToUnstarted: async (sectionId?: string | null) => {
+    // Moves every still-blank assessment of the template onto the setup just saved - anything with even one
+    // recorded score is left exactly as it is.
+    applyConfigurationToUnstarted: async (templateId: string) => {
       try {
-        const query = sectionId ? `?sectionId=${encodeURIComponent(sectionId)}` : ''
-        const res = await $api(`/assessment-configuration/apply-to-unstarted${query}`, {
+        const res = await $api(`/assessment-configuration/templates/${templateId}/apply-to-unstarted`, {
           method: 'POST'
         }) as any
 
@@ -353,6 +403,19 @@ export const AssessmentApi = () => {
         return res.data as { refreshed: number, skipped: number }
       } catch (err: any) {
         useHandleError(err)
+      }
+    },
+    // Refreshes the CA part that comes from attendance (present or late days over the term's school days).
+    syncAttendanceCa: async (teacherSubjectId: string, payload: { assessmentId: string, termId: string }) => {
+      try {
+        const res = await $api(`/assessment/continuous/${teacherSubjectId}/sync-attendance`, {
+          method: 'POST',
+          body: payload
+        }) as any
+        return Number(res?.data ?? 0)
+      } catch (err: any) {
+        useHandleError(err)
+        return 0
       }
     },
     // Closes the CA step (every recording in for every student) so the formal test can be entered.

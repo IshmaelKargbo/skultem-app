@@ -1,6 +1,7 @@
 <template>
   <USlideover :dismissible="false" :open="open" @update:open="open = $event">
     <UButton
+      v-if="!hideTrigger"
       color="neutral"
       variant="soft"
       size="sm"
@@ -111,7 +112,7 @@ import * as yup from "yup";
 import { reactive, ref, computed, onMounted } from "vue";
 import type { FormSubmitEvent } from "#ui/types";
 
-const props = defineProps<{ classId: string }>();
+const props = defineProps<{ classId: string; hideTrigger?: boolean }>();
 const emit = defineEmits<{ updated: [] }>();
 
 const store = useClassStore();
@@ -165,6 +166,8 @@ const schema = yup.object({
 const close = () => {
   open.value = false;
 };
+
+defineExpose({ openEdit: () => openEdit() });
 
 const openEdit = async () => {
   open.value = true;

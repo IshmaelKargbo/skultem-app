@@ -1,5 +1,6 @@
 <template>
     <div class="px-4 sm:px-6  space-y-4">
+        <DashboardWelcome />
         <section class="rounded-2xl bg-white/80 p-4 shadow ring-2 ring-gray-100 dark:bg-gray-900 dark:ring-gray-800 sm:p-5 lg:p-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="space-y-1.5">
@@ -21,6 +22,7 @@
                 </div>
             </div>
         </section>
+        <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
         <DashboardAccountantReport />
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
             <DashboardAccountantRevenue />
@@ -31,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+const { isInstalled } = useModules()
 onMounted(() => {
     useAppStore().setTitle('Dashboard')
     document.title = "Dashboard | Skultem"

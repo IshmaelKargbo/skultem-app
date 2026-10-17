@@ -1,6 +1,6 @@
 <template>
     <UModal v-model:open="open">
-        <UButton :icon="CLASS_ICON" color="neutral" variant="outline" size="sm" label="Change Class"
+        <UButton v-if="!hideTrigger" :icon="CLASS_ICON" color="neutral" variant="outline" size="sm" label="Change Class"
             @click="onOpen" />
 
         <template #content>
@@ -89,6 +89,7 @@ interface OptionalGroup {
 const props = defineProps<{
     studentId: string
     studentName: string
+    hideTrigger?: boolean
 }>()
 
 const emit = defineEmits<{ changed: [] }>()
@@ -145,6 +146,8 @@ const optionalSelectionComplete = computed(() =>
 const canSubmit = computed(() =>
     !!enrollment.value && !!selectedSession.value && !loadingSubjects.value && optionalSelectionComplete.value
 )
+
+defineExpose({ open: () => onOpen() })
 
 async function onOpen() {
     open.value = true

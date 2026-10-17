@@ -23,7 +23,7 @@ const allItems: NavItem[] = [
   { label: 'Monthly Summary', to: '/hr/teacher-attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
   { label: 'Term Summary', to: '/hr/teacher-attendance/term-summary', icon: TERM_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
   { label: 'Management Reports', to: '/hr/teacher-attendance/management-reports', icon: INSPECTION_REPORT_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER] },
+  { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.TEACHER] },
   { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] },
 ]
 

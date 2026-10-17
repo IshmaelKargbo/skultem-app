@@ -16,6 +16,7 @@ const columns = [
   { id: "contact", header: "Contact" },
   { id: "location", header: "Location" },
   { id: "interest", header: "Interest" },
+  { id: "lead", header: "Follow-up" },
   { accessorKey: "createdAt", header: "Requested" },
 ];
 
@@ -90,6 +91,21 @@ definePageMeta({
           </div>
         </template>
 
+        <template #lead-cell="{ row }">
+          <div v-if="row.original.lead" class="space-y-1">
+            <UBadge size="xs" variant="subtle" :color="leadStatus(row.original.lead.status).color"
+              :icon="leadStatus(row.original.lead.status).icon" :label="leadStatus(row.original.lead.status).label" />
+            <p class="text-xs text-muted">
+              {{ row.original.lead.assignedToName || 'Unassigned' }}
+            </p>
+            <p v-if="row.original.lead.demoStatus === 'SCHEDULED' && row.original.lead.demoAt" class="text-xs text-muted">
+              Demo {{ formatDateTime(row.original.lead.demoAt) }}
+            </p>
+            <UButton :to="`/leads/${row.original.lead.id}`" size="xs" variant="link" label="Open lead" trailing-icon="i-lucide-arrow-right" class="p-0" />
+          </div>
+          <span v-else class="text-xs text-muted">—</span>
+        </template>
+
         <template #createdAt-cell="{ row }">
           <p class="text-xs text-muted">{{ formatDateTime(row.original.createdAt) }}</p>
         </template>
@@ -130,6 +146,14 @@ definePageMeta({
                 <UBadge size="xs" variant="subtle" color="info" :label="req.priority" />
               </div>
               <span>{{ formatDateTime(req.createdAt) }}</span>
+            </div>
+
+            <div v-if="req.lead" class="flex items-center justify-between gap-2 border-t border-default p-3 text-xs">
+              <span class="flex items-center gap-2">
+                <UBadge size="xs" variant="subtle" :color="leadStatus(req.lead.status).color" :label="leadStatus(req.lead.status).label" />
+                <span class="text-muted">{{ req.lead.assignedToName || 'Unassigned' }}</span>
+              </span>
+              <UButton :to="`/leads/${req.lead.id}`" size="xs" variant="link" label="Open lead" trailing-icon="i-lucide-arrow-right" class="p-0" />
             </div>
           </UCard>
         </template>

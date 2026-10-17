@@ -37,6 +37,13 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
+    async fetchTermGraded(termId: string) {
+      try {
+        return await AssessmentApi().getTermGraded(termId)
+      } catch {
+        return undefined
+      }
+    },
     async fetchAllAssessments(subjectId: string, termId: string) {
       this.loading = true
       this.error = null

@@ -1,7 +1,5 @@
 <template>
     <div class="space-y-4 px-4 md:px-6">
-        <Heading title="My Profile" subtitle="Your account details and photo." />
-
         <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
             <div
                 class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />
@@ -15,8 +13,12 @@
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
                             <template v-else>
-                                <UAvatar :src="user?.photo || undefined" :alt="name" size="3xl"
-                                    class="h-20 w-20 rounded-xl md:h-24 md:w-24" :class="{ 'opacity-50': uploadingPhoto }" />
+                                <button type="button" class="block cursor-zoom-in" aria-label="View full photo"
+                                    @click="photoOpen = true">
+                                    <UAvatar :src="user?.photo || undefined" :alt="name" size="3xl"
+                                        class="h-20 w-20 rounded-xl md:h-24 md:w-24" :class="{ 'opacity-50': uploadingPhoto }" />
+                                </button>
+                                <PhotoViewer v-model:open="photoOpen" :src="user?.photo" :name="name" />
 
                                 <div v-if="uploadingPhoto" class="absolute inset-1.5 flex items-center justify-center rounded-xl">
                                     <UIcon name="i-lucide-loader-circle" class="animate-spin text-lg text-primary" />
@@ -98,6 +100,7 @@ const store = useUserStore()
 const { user, meLoading: loading } = storeToRefs(store)
 
 const uploadingPhoto = ref(false)
+const photoOpen = ref(false)
 
 const name = computed(() => {
     if (!user.value) return ''

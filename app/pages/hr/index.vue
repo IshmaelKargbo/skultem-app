@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4 px-4 md:px-6">
     <Heading title="Human Resource" subtitle="Staff attendance and leave, at a glance.">
-      <UButton icon="i-lucide-log-in" to="/hr/teacher-attendance/clock-in" label="Clock In / Out" variant="soft" />
+      <UButton v-if="canClockIn" icon="i-lucide-log-in" to="/hr/teacher-attendance/clock-in" label="Clock In / Out" variant="soft" />
       <UButton icon="i-lucide-calendar-plus" to="/hr/leave/add" label="Request Leave" />
     </Heading>
 
@@ -116,13 +116,17 @@
 const leaveStore = useLeaveStore()
 const { records: leaveRecords, loading: loadingLeave, summary: leaveSummary, loadingSummary: loadingLeaveSummary } = storeToRefs(leaveStore)
 
-const quickActions = [
+const { can } = useAuth()
+// Owner, proprietor and principal don't clock in.
+const canClockIn = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.TEACHER]))
+
+const quickActions = computed(() => [
   { label: 'Teacher Attendance', icon: ATTENDANCE_ICON, to: '/hr/teacher-attendance' },
-  { label: 'Clock In / Out', icon: 'i-lucide-log-in', to: '/hr/teacher-attendance/clock-in' },
+  ...(canClockIn.value ? [{ label: 'Clock In / Out', icon: 'i-lucide-log-in', to: '/hr/teacher-attendance/clock-in' }] : []),
   { label: 'Leave Requests', icon: LAYERS_ICON, to: '/hr/leave' },
   { label: 'Request Leave', icon: 'i-lucide-calendar-plus', to: '/hr/leave/add' },
   { label: 'Attendance Settings', icon: 'i-lucide-map-pin', to: '/hr/teacher-attendance/settings' },
-]
+])
 
 function teacherName(teacher?: Teacher) {
   if (!teacher) return ''

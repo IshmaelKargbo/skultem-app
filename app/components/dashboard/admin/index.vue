@@ -1,5 +1,7 @@
 <template>
     <div class="px-4 md:px-6 space-y-4">
+        <DashboardWelcome />
+        <DashboardTeacherClockInOut v-if="canClockIn && isInstalled(ModuleKey.STAFF_HR)" />
         <DashboardAdminReport />
         <UCard>
             <div class="grid gap-3 md:grid-cols-4 grid-cols-2">
@@ -60,6 +62,9 @@
 
 <script setup lang="ts">
 const { isInstalled } = useModules()
+const { can } = useAuth()
+// Owner, proprietor and principal share this dashboard but don't clock in; admin does.
+const canClockIn = computed(() => can(Role.ADMIN))
 
 onMounted(() => {
     useAppStore().setTitle('Dashboard')

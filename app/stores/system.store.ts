@@ -5,6 +5,9 @@ export const useSystemStore = defineStore('system', {
     stats: { totalSchools: 0, totalUsers: 0, totalStudents: 0 } as SystemStats,
     statsLoading: false,
 
+    insights: null as SystemInsights | null,
+    insightsLoading: false,
+
     schools: [] as SystemSchool[],
     schoolsMeta: {} as Meta,
     schoolsLoading: false,
@@ -29,10 +32,19 @@ export const useSystemStore = defineStore('system', {
       }
     },
 
-    async fetchSchools(page: number = 1, size: number = runtimeConf().limit, query?: string) {
+    async fetchInsights(days: number = 30) {
+      this.insightsLoading = true
+      try {
+        this.insights = await SystemApi().getInsights(days) ?? null
+      } finally {
+        this.insightsLoading = false
+      }
+    },
+
+    async fetchSchools(page: number = 1, size: number = runtimeConf().limit, filters: SchoolFilters = {}) {
       this.schoolsLoading = true
       try {
-        const response = await SystemApi().listSchools(page, size, query) as any
+        const response = await SystemApi().listSchools(page, size, filters) as any
         this.schools = response?.data || []
         this.schoolsMeta = response?.meta || {} as Meta
       } finally {

@@ -152,13 +152,23 @@
               {{ section.tier }}
             </p>
 
-            <p v-if="section.label"
+            <button v-if="section.label && section.collapsible" type="button"
+              class="mb-2 flex w-full items-center gap-2 px-1 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-muted"
+              :aria-expanded="!isFolded(section)" @click="toggleSection(section.id)">
+              {{ section.label }}
+              <UBadge v-if="section.badge" size="xs" variant="subtle" color="warning" :label="section.badge"
+                class="normal-case tracking-normal" />
+              <span class="h-px flex-1 bg-default" />
+              <UIcon name="i-lucide-chevron-down" class="size-4 shrink-0 transition-transform duration-200"
+                :class="isFolded(section) ? '-rotate-90' : ''" />
+            </button>
+            <p v-else-if="section.label"
               class="mb-2 flex items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
               {{ section.label }}
               <span class="h-px flex-1 bg-default" />
             </p>
 
-            <ul class="space-y-2">
+            <ul v-show="!isFolded(section)" class="space-y-2">
               <li v-for="item in section.items" :key="item.label + (item.to ?? '')"
                 class="rounded-3xl border border-gray-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.03]">
                 <!-- Group with sub-pages: an accordion -->
@@ -195,6 +205,14 @@
                   </div>
                 </template>
 
+                <!-- Planned but not built yet -->
+                <div v-else-if="item.soon"
+                  class="flex items-center gap-4 rounded-3xl px-5 py-4 text-gray-500 opacity-60 dark:text-gray-400">
+                  <UIcon :name="item.icon" class="size-6 shrink-0" aria-hidden="true" />
+                  <span class="truncate text-[16px] font-medium">{{ item.label }}</span>
+                  <UBadge size="xs" variant="subtle" color="neutral" label="Soon" class="ml-auto shrink-0" />
+                </div>
+
                 <!-- Single page: a direct link -->
                 <NuxtLink v-else-if="item.to" :to="item.to" :aria-current="isItemActive(item) ? 'page' : undefined"
                   class="flex items-center gap-4 rounded-3xl px-5 py-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
@@ -208,6 +226,13 @@
               </li>
             </ul>
           </div>
+
+          <button v-if="upcomingCount" type="button"
+            class="mt-5 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 dark:border-white/15 dark:text-gray-400"
+            @click="showUpcoming = !showUpcoming">
+            <UIcon :name="showUpcoming ? 'i-lucide-eye-off' : 'i-lucide-eye'" class="size-4" />
+            {{ showUpcoming ? 'Hide upcoming pages' : `Show upcoming pages (${upcomingCount})` }}
+          </button>
         </nav>
       </div>
     </template>
@@ -223,7 +248,7 @@
 </template>
 
 <script setup lang="ts">
-import type { NavItem, SubNavItem } from '~/composables/useMenu'
+import type { MenuSection, NavItem, SubNavItem } from '~/composables/useMenu'
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -231,7 +256,12 @@ const { user } = storeToRefs(userStore);
 const { activeRole, can, setActiveRole } = useAuth();
 const { canInstall, install } = usePwaInstall();
 const { ensureLoaded: ensureClassMasterLoaded } = useClassMaster();
-const { menuSections, onAdminPortal } = useMenu();
+const { menuSections, onAdminPortal, showUpcoming, upcomingCount, collapsed, toggleSection } = useMenu();
+
+// A folded group stays open while the page you are on belongs to it.
+const holdsCurrentPage = (section: MenuSection) =>
+  section.items.some((item) => item.to && (item.to === "/" ? route.path === "/" : route.path === item.to || route.path.startsWith(`${item.to}/`)));
+const isFolded = (section: MenuSection) => !!section.collapsible && !!collapsed.value[section.id] && !holdsCurrentPage(section);
 const { canSwitch: canSwitchSection } = useSectionView();
 
 const route = useRoute();

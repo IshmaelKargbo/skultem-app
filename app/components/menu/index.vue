@@ -15,12 +15,7 @@
           <img src="/menu-light.svg" alt="Skultem" class="h-7 shrink-0 hidden dark:block" />
         </template>
 
-        <!-- The Skultem logo already spells the name, so the system admin only gets its role beside it. -->
-        <UBadge v-if="onAdminPortal" color="primary" variant="subtle" size="sm" class="shrink-0">
-          System Admin
-        </UBadge>
-
-        <div v-else-if="school?.logo" class="min-w-0">
+        <div v-if="school?.logo" class="min-w-0">
           <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
             {{ school.name }}
           </p>
@@ -42,15 +37,37 @@
           {{ section.tier }}
         </p>
 
-        <p v-if="section.label"
-          class="mb-2 flex items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+        <button v-if="section.label && section.collapsible" type="button"
+          class="mb-2 flex w-full items-center gap-2 px-3 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-muted transition hover:text-highlighted"
+          :title="section.hint" :aria-expanded="!isFolded(section)" @click="toggleSection(section.id)">
           {{ section.label }}
+          <UBadge v-if="section.badge" size="xs" variant="subtle" color="warning" :label="section.badge"
+            class="normal-case tracking-normal" />
+          <span class="h-px flex-1 bg-default" />
+          <UIcon name="i-lucide-chevron-down" class="size-3.5 shrink-0 transition-transform duration-200"
+            :class="isFolded(section) ? '-rotate-90' : ''" />
+        </button>
+        <p v-else-if="section.label"
+          class="mb-2 flex items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted"
+          :title="section.hint">
+          {{ section.label }}
+          <UBadge v-if="section.badge" size="xs" variant="subtle" color="warning" :label="section.badge"
+            class="normal-case tracking-normal" />
           <span class="h-px flex-1 bg-default" />
         </p>
 
-      <ul class="space-y-2">
+      <ul v-show="!isFolded(section)" class="space-y-2">
         <li v-for="item in section.items" :key="item.label + (item.to ?? '')">
-          <MenuItem :label="item.label" :to="item.to" :exact="item.exact" :subNavs="item.subNavs">
+          <!-- Planned but not built yet -->
+          <div v-if="item.soon" class="flex min-h-11 cursor-not-allowed items-center justify-between gap-2 rounded-xl border-2 border-transparent px-3 py-2 text-xs text-muted opacity-60 md:text-sm"
+            title="Coming soon">
+            <span class="flex min-w-0 items-center gap-2.5">
+              <UIcon class="h-5 w-5 shrink-0" :name="item.icon" />
+              <span class="truncate">{{ item.label }}</span>
+            </span>
+            <UBadge size="xs" variant="subtle" color="neutral" label="Soon" />
+          </div>
+          <MenuItem v-else :label="item.label" :to="item.to" :exact="item.exact" :subNavs="item.subNavs">
             <template #icon>
               <UIcon class="w-5 h-5" :name="item.icon" />
             </template>
@@ -72,6 +89,14 @@
         </li>
       </ul>
       </div>
+
+      <!-- The system admin's planned pages stay out of the way until asked for -->
+      <button v-if="upcomingCount" type="button"
+        class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-default px-3 py-2 text-xs text-muted transition hover:border-primary-300 hover:text-primary"
+        @click="showUpcoming = !showUpcoming">
+        <UIcon :name="showUpcoming ? 'i-lucide-eye-off' : 'i-lucide-eye'" class="size-4" />
+        {{ showUpcoming ? 'Hide upcoming pages' : `Show upcoming pages (${upcomingCount})` }}
+      </button>
     </div>
     <template #footer>
       <MenuNoticeBoard />
@@ -80,14 +105,20 @@
 </template>
 
 <script setup lang="ts">
-import type { SubNavItem } from '~/composables/useMenu'
+import type { MenuSection, SubNavItem } from '~/composables/useMenu'
 
 const { school, hydrateFromCache } = useSchoolInfo()
 hydrateFromCache()
 
 const { can } = useAuth()
 const { ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
-const { menuSections, onAdminPortal } = useMenu()
+const { menuSections, onAdminPortal, showUpcoming, upcomingCount, collapsed, toggleSection } = useMenu()
+const route = useRoute()
+
+// A folded group stays open while the page you are on belongs to it.
+const holdsCurrentPage = (section: MenuSection) =>
+  section.items.some((item) => item.to && (item.to === '/' ? route.path === '/' : route.path === item.to || route.path.startsWith(`${item.to}/`)))
+const isFolded = (section: MenuSection) => !!section.collapsible && !!collapsed.value[section.id] && !holdsCurrentPage(section)
 
 onMounted(() => {
   ensureClassMasterLoaded()

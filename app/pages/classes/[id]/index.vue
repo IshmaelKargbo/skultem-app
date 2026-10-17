@@ -1,83 +1,77 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
-        <!-- Banner -->
-        <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
-            <div
-                class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />
-
-            <div class="px-5 pb-5">
-                <div class="-mt-10 flex flex-col gap-2 md:-mt-12 md:flex-row md:justify-between">
-                    <!-- Identity -->
-                    <div class="flex flex-col md:flex-row items-center min-w-0 gap-4">
-                        <div
-                            class="shrink-0 rounded-2xl bg-default p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
-                            <USkeleton v-if="loading" class="h-16 w-16 rounded-xl md:h-20 md:w-20" />
-
-                            <div v-else
-                                class="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10 md:h-20 md:w-20">
-                                <UIcon :name="CLASS_ICON" class="size-7 text-primary md:size-9" />
-                            </div>
-                        </div>
-
-                        <div
-                            class="min-w-0 pb-0.5 md:pb-1 flex flex-col justify-center md:justify-baseline md:items-start items-center">
-                            <USkeleton v-if="loading" class="h-6 w-40 md:h-7 md:w-56" />
-
-                            <h2 v-else class="truncate text-xl font-bold tracking-tight text-highlighted md:text-2xl">
-                                {{ session?.clazz || 'Class' }}
-                            </h2>
-
-                            <div v-if="loading" class="mt-1 flex items-center gap-2">
-                                <USkeleton class="h-5 w-24 rounded-full" />
-                            </div>
-
-                            <div v-else-if="record?.terminal" class="mt-1 flex items-center justify-center gap-2">
-                                <UBadge color="warning" variant="subtle" size="xs" class="rounded-full">
-                                    Terminal Class
-                                </UBadge>
-                            </div>
-
-                            <div v-if="!loading"
-                                class="mt-1 flex items-center justify-center flex-wrap gap-1.5 text-xs text-dimmed">
-                                <p>{{ session?.classLevel || 'No Level' }}</p>
-                                <div class="flex space-x-2">
-                                    <p>-</p>
-                                    <p>{{ session?.sectionName || 'No Section' }}</p>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <p>-</p>
-                                    <p>{{ session?.streamName || 'No Stream' }}</p>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <p>-</p>
-                                    <p>{{ session?.totalStudent ?? 0 }} Students</p>
-                                </div>
-                            </div>
-                        </div>
+    <div class="space-y-3 px-4 md:px-6">
+        <!-- Header: who this class is, and what you can do with it -->
+        <UCard>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <UIcon :name="CLASS_ICON" class="size-6" />
+                </span>
+                <div class="min-w-0">
+                    <USkeleton v-if="loading" class="h-6 w-44" />
+                    <div v-else class="flex flex-wrap items-center gap-2">
+                        <h2 class="truncate text-xl font-bold tracking-tight text-highlighted md:text-2xl">
+                            {{ session?.clazz || className || 'Class' }}
+                        </h2>
+                        <UBadge v-if="session?.sectionName" color="primary" variant="subtle" size="md">
+                            Section {{ session.sectionName }}
+                        </UBadge>
+                        <UBadge v-if="session?.streamName && session.streamName !== 'N/A'" color="info" variant="subtle"
+                            size="md">{{ session.streamName }}</UBadge>
+                        <UBadge v-if="record?.terminal" color="warning" variant="subtle" size="sm">Graduating class</UBadge>
                     </div>
-
-                    <!-- Actions -->
-                    <div class="flex shrink-0 flex-wrap items-center justify-center gap-2">
-                        <ClassEdit v-if="canManagePromotion" :class-id="classId" @updated="fetchClass" />
-                        <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
-                            :content="{ align: 'end' }">
-                            <UButton variant="soft" size="sm" color="neutral" label="More"
-                                trailing-icon="i-lucide-ellipsis" />
-                        </UDropdownMenu>
-                        <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''"
-                            hide-trigger />
-
-                        <template v-if="isTeacherViewer && (isMasterOfThisClass || isSubjectTeacherOfThisClass)">
-                            <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm"
-                                color="neutral" label="Curriculum" icon="i-lucide-book-open" />
-                            <UButton :to="`/timetable?session=${session?.id}`" variant="soft" size="sm" color="neutral"
-                                label="Timetable" icon="i-lucide-calendar-days" />
+                    <p v-if="!loading" class="mt-0.5 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+                        <span>{{ session?.classLevel || 'No level' }}</span>
+                        <template v-if="classTeachers.length">
+                            <span>·</span>
+                            <span>Class master: {{ classTeachers.map(t => t.name).join(', ') }}</span>
                         </template>
-                    </div>
+                        <template v-if="canViewRoster && !studentsLoading">
+                            <span>·</span>
+                            <span>{{ students.length }} {{ students.length === 1 ? 'student' : 'students' }}</span>
+                        </template>
+                    </p>
                 </div>
             </div>
+
+            <div class="flex shrink-0 flex-wrap items-center gap-2">
+                <template v-if="isTeacherViewer && (isMasterOfThisClass || isSubjectTeacherOfThisClass)">
+                    <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm" color="neutral"
+                        label="Curriculum" icon="i-lucide-book-open" />
+                    <UButton :to="`/timetable?session=${session?.id}`" variant="soft" size="sm" color="neutral"
+                        label="Timetable" icon="i-lucide-calendar-days" />
+                </template>
+                <ClassEdit v-if="canManagePromotion" ref="classEditRef" :class-id="classId" hide-trigger @updated="fetchClass" />
+                <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
+                    :content="{ align: 'end' }">
+                    <UButton variant="soft" size="sm" color="neutral" label="More" trailing-icon="i-lucide-ellipsis" />
+                </UDropdownMenu>
+                <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''" hide-trigger />
+            </div>
+        </div>
         </UCard>
 
+        <USlideover v-model:open="assignMasterOpen" :dismissible="false" title="Assign Class Master"
+            :description="`Choose the teacher who will be class master of ${sessionName}.`">
+            <template #body>
+                <UFormField label="Teacher" required>
+                    <USelectMenu v-model="masterTeacherId" value-key="value" :items="masterTeacherOptions"
+                        placeholder="Select teacher" class="w-full" :disabled="assigningMaster">
+                        <template #leading>
+                            <UIcon name="i-lucide-user-round" class="text-muted" />
+                        </template>
+                    </USelectMenu>
+                </UFormField>
+            </template>
+            <template #footer>
+                <div class="flex gap-3">
+                    <UButton icon="lucide:save" label="Assign" :loading="assigningMaster" :disabled="!masterTeacherId"
+                        @click="onAssignClassMaster" />
+                    <UButton label="Cancel" variant="outline" color="neutral" :disabled="assigningMaster"
+                        @click="assignMasterOpen = false" />
+                </div>
+            </template>
+        </USlideover>
 
         <ConfirmDeleteModal v-model:open="deleteSessionOpen" :title="`Delete ${sessionName}`" :item-name="sessionName"
             :confirm-label="`Delete ${sessionName}`"
@@ -89,189 +83,230 @@
             description="Removes this class with all of its sections and streams, subjects and setup. Only possible while no students have been placed in it - move them to another class first."
             :on-confirm="confirmDeleteClass" />
 
-        <UCard v-if="loading || canViewRoster" :ui="{ body: 'sm:p-0 p-0' }">
-            <template #header>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <UIcon name="i-lucide-users" class="size-4 text-primary" />
-                        <h3 class="text-sm font-semibold">Students</h3>
-                        <UBadge variant="soft" color="neutral">{{ students.length }}</UBadge>
-                    </div>
+        <!-- At a glance -->
+        <div v-if="canViewRoster" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <UIcon name="i-lucide-users" class="size-6" />
+                </span>
+                <div class="min-w-0">
+                    <p class="text-xs text-muted">Students</p>
+                    <p class="text-2xl font-bold leading-tight text-highlighted">{{ students.length }}</p>
+                    <p class="truncate text-xs text-muted">{{ genderSummary }}</p>
+                </div>
+            </div>
 
+            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info">
+                    <UIcon name="i-lucide-calendar-check" class="size-6" />
+                </span>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs text-muted">Attendance</p>
+                    <p class="text-2xl font-bold leading-tight text-highlighted">{{ avgAttendance === null ? '-' : `${avgAttendance}%` }}</p>
+                    <UProgress v-if="avgAttendance !== null" class="mt-1.5" size="xs" :model-value="avgAttendance"
+                        :color="avgAttendance >= 75 ? 'success' : 'warning'" />
+                    <p v-else class="text-xs text-muted">Nothing recorded yet</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+                    <UIcon name="i-lucide-star" class="size-6" />
+                </span>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs text-muted">Average score</p>
+                    <p class="text-2xl font-bold leading-tight text-highlighted">{{ avgScore === null ? '-' : `${avgScore}%` }}</p>
+                    <UProgress v-if="avgScore !== null" class="mt-1.5" size="xs" :model-value="avgScore"
+                        :color="avgScore >= 50 ? 'success' : 'warning'" />
+                    <p v-else class="text-xs text-muted">No approved tests yet</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                    <UIcon name="i-lucide-user-round-check" class="size-6" />
+                </span>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs text-muted">{{ classTeachers.length > 1 ? 'Class masters' : 'Class master' }}</p>
+                    <div v-if="classTeachers.length" class="mt-1 space-y-1">
+                        <div v-for="master in classTeachers" :key="master.id" class="flex items-center gap-2">
+                            <UAvatar :src="master.photo" :alt="master.name" size="xs" />
+                            <span class="min-w-0 flex-1 truncate text-sm font-semibold text-highlighted">{{ master.name }}</span>
+                            <UButton v-if="canManagePromotion" icon="i-lucide-user-round-x" size="xs" color="neutral"
+                                variant="ghost" aria-label="Unassign class master"
+                                :loading="unassigningMasterId === master.id" @click="onRemoveClassMaster(master.id)" />
+                        </div>
+                    </div>
+                    <p v-else class="mt-1 text-sm text-muted">Not assigned</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What to look at first -->
+        <ClassInsights v-if="canViewRoster && !studentsLoading" :students="students" :attention="attentionByStudentId"
+            :attendance-by-name="attendanceByName" :performance-by-name="performanceByName"
+            :subject-scores="subjectScores" :class-id="classId" />
+
+        <!-- Students -->
+        <UCard v-if="loading || canViewRoster" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+            <template #header>
+                <div class="flex flex-wrap items-center gap-2 px-4 py-3">
                     <div class="flex items-center gap-2">
-                        <UTooltip text="Rank this page highest average score first">
-                            <UButton :icon="PERFORMANCE_ICON" size="sm" :variant="sortByPerformance ? 'solid' : 'soft'"
-                                :color="sortByPerformance ? 'primary' : 'neutral'" label="Sort by Performance"
+                        <h3 class="font-semibold text-highlighted">Students</h3>
+                        <UBadge variant="soft" color="neutral">{{ filteredStudents.length }}</UBadge>
+                    </div>
+                    <div class="ml-auto flex w-full items-center gap-2 sm:w-auto">
+                        <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search students" class="flex-1 sm:w-64" />
+                        <UTooltip v-if="attentionCount" text="Show only students who need attention">
+                            <UButton icon="i-lucide-alert-triangle" size="md" :color="onlyAttention ? 'warning' : 'neutral'"
+                                :variant="onlyAttention ? 'solid' : 'outline'" :label="String(attentionCount)"
+                                @click="onlyAttention = !onlyAttention" />
+                        </UTooltip>
+                        <UTooltip text="Highest average first">
+                            <UButton :icon="PERFORMANCE_ICON" size="md" :color="sortByPerformance ? 'primary' : 'neutral'"
+                                :variant="sortByPerformance ? 'solid' : 'outline'" aria-label="Sort by performance"
                                 @click="sortByPerformance = !sortByPerformance" />
                         </UTooltip>
-
-                        <TableViewToggle v-model="view" />
                     </div>
                 </div>
             </template>
 
-            <!-- Desktop Table -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="displayStudents"
-                :loading="studentsLoading"
+            <UTable class="hidden md:block" :columns="columns" :data="filteredStudents" :loading="studentsLoading"
                 :meta="{ class: { tr: (row: any) => attentionStyle(row.original) ? `border-l-4 ${attentionStyle(row.original)!.border}` : '' } }">
-                <template #empty-state>
-                    <div class="flex flex-col items-center gap-2 py-10">
-                        <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
-                        <p class="text-gray-500 dark:text-gray-400">No students enrolled in this class.</p>
-                    </div>
+                <template #rank-cell="{ row }">
+                    <span class="text-xs font-semibold tabular-nums"
+                        :class="sortByPerformance && !search && !onlyAttention && row.index < 3 && performanceOf(row.original) !== undefined ? 'text-primary' : 'text-muted'">
+                        {{ row.index + 1 }}
+                    </span>
                 </template>
                 <template #name-cell="{ row }">
-                    <div class="flex items-center gap-2">
-                        <StudentIdentityCell :given-names="row.original.givenNames"
-                            :family-name="row.original.familyName" :photo="row.original.photo"
-                            :subtitle="row.original.admissionNumber || 'No Admission No'" />
-
-                        <UTooltip v-if="needsAttention(row.original)" :text="attentionReason(row.original)">
-                            <UIcon
-                                :name="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
-                                class="size-4 shrink-0" :class="attentionStyle(row.original)?.text" />
-                        </UTooltip>
-                    </div>
+                    <StudentIdentityCell :given-names="row.original.givenNames"
+                        :family-name="row.original.familyName" :photo="row.original.photo"
+                        :subtitle="row.original.admissionNumber || 'No admission number'" />
                 </template>
-                <template #dateOfBirth-cell="{ row }">
-                    <p>{{ formatDate(row.original.dateOfBirth) || 'N/A' }}</p>
+                <template #age-cell="{ row }">
+                    <span v-if="ageOf(row.original.dateOfBirth) !== null" class="text-sm tabular-nums">
+                        {{ ageOf(row.original.dateOfBirth) }} <span class="text-xs text-muted">yrs</span>
+                    </span>
+                    <span v-else class="text-muted">-</span>
                 </template>
                 <template #gender-cell="{ row }">
                     <UBadge :label="parseGender[row.original.gender] || 'N/A'"
-                        :color="parseGenderColor[row.original.gender]" variant="outline" />
+                        :color="parseGenderColor[row.original.gender]" variant="subtle" size="sm" />
+                </template>
+                <template #attendance-cell="{ row }">
+                    <div v-if="attendanceOf(row.original) !== undefined" class="w-28">
+                        <p class="text-sm font-medium tabular-nums"
+                            :class="attendanceOf(row.original)! < 75 ? 'text-warning' : 'text-highlighted'">
+                            {{ attendanceOf(row.original) }}%</p>
+                        <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
+                            <div class="h-full rounded-full"
+                                :class="attendanceOf(row.original)! < 75 ? 'bg-warning' : 'bg-success'"
+                                :style="{ width: `${Math.min(100, attendanceOf(row.original)!)}%` }" />
+                        </div>
+                    </div>
+                    <span v-else class="text-muted">-</span>
+                </template>
+                <template #average-cell="{ row }">
+                    <div v-if="performanceOf(row.original) !== undefined" class="w-28">
+                        <p class="text-sm font-medium tabular-nums text-highlighted">
+                            {{ Math.round(performanceOf(row.original)!) }}</p>
+                        <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
+                            <div class="h-full rounded-full"
+                                :class="performanceOf(row.original)! < 50 ? 'bg-error' : performanceOf(row.original)! < 70 ? 'bg-warning' : 'bg-primary'"
+                                :style="{ width: `${Math.min(100, performanceOf(row.original)!)}%` }" />
+                        </div>
+                    </div>
+                    <span v-else class="text-muted">-</span>
                 </template>
                 <template #guardian-cell="{ row }">
-                    <p>{{ `${row.original.guardian?.givenNames || ''} ${row.original.guardian?.familyName || ''}`.trim()
-                        || '-' }}</p>
+                    <div v-if="guardianOf(row.original).name" class="min-w-0">
+                        <p class="truncate text-sm font-medium text-highlighted">{{ guardianOf(row.original).name }}</p>
+                        <p v-if="guardianOf(row.original).phone" class="truncate text-xs text-muted">
+                            {{ guardianOf(row.original).phone }}</p>
+                    </div>
+                    <span v-else class="text-muted">-</span>
                 </template>
                 <template #status-cell="{ row }">
-                    <UBadge :label="parseStatus[row.original.status] || row.original.status"
-                        :color="parseStatusColor[row.original.status]" variant="soft" />
+                    <UTooltip v-if="needsAttention(row.original)" :text="attentionReason(row.original)">
+                        <UBadge size="sm" variant="subtle"
+                            :color="attentionOf(row.original)?.severity === 'CRITICAL' ? 'error' : attentionOf(row.original)?.severity === 'WATCH' ? 'neutral' : 'warning'"
+                            :icon="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
+                            :label="attentionOf(row.original)?.severity === 'CRITICAL' ? 'Critical' : attentionOf(row.original)?.severity === 'WATCH' ? 'Watch' : 'Needs attention'" />
+                    </UTooltip>
+                    <UBadge v-else size="sm" variant="subtle" color="success" label="On track" />
+                </template>
+                <template #actions-cell="{ row }">
+                    <UButton :to="`/students/${row.original.id}?back=/classes/${route.params.id}`" size="sm"
+                        variant="ghost" color="neutral" icon="i-lucide-chevron-right" aria-label="Open student" />
                 </template>
                 <template #loading>
                     <TableLoading :size="columns.length" />
                 </template>
-                <template #actions-cell="{ row }">
-                    <UButton :to="`/students/${row.original.id}?back=/classes/${route.params.id}`" size="sm"
-                        variant="ghost" color="success" class="cursor-pointer" :icon="VIEW_ICON" />
+                <template #empty-state>
+                    <div class="flex flex-col items-center gap-2 py-10">
+                        <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
+                        <p class="text-gray-500 dark:text-gray-400">
+                            {{ search || onlyAttention ? 'No student matches.' : 'No students enrolled in this class.' }}
+                        </p>
+                    </div>
                 </template>
             </UTable>
 
-            <!-- Mobile / Card -->
-            <div class="md:p-4 md:space-y-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
-                <!-- Loading -->
+            <!-- Phone -->
+            <div class="md:hidden">
                 <template v-if="studentsLoading">
-                    <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
-                        <div class="flex items-center gap-3">
-                            <USkeleton class="size-10 shrink-0 rounded-full" />
-
-                            <div class="min-w-0 flex-1 space-y-2">
-                                <USkeleton class="h-4 w-36 rounded-md" />
-                                <USkeleton class="h-3 w-24 rounded-md" />
-                            </div>
-                        </div>
+                    <div v-for="i in 6" :key="i" class="flex items-center gap-3 border-b border-default p-3">
+                        <USkeleton class="size-10 shrink-0 rounded-full" />
+                        <div class="flex-1 space-y-2"><USkeleton class="h-4 w-36" /><USkeleton class="h-3 w-24" /></div>
                     </div>
                 </template>
-
-                <!-- Data -->
-                <template v-else-if="displayStudents.length">
-                    <div v-for="student in displayStudents" :key="student.id"
-                        class="cursor-pointer border-b md:border md:rounded-2xl border-default p-3"
-                        :class="attentionStyle(student) ? `md:border-l-4 border-l-2 ${attentionStyle(student)!.border}` : ''"
+                <template v-else-if="filteredStudents.length">
+                    <button v-for="student in filteredStudents" :key="student.id" type="button"
+                        class="flex w-full items-center gap-3 border-b border-default p-3 text-left last:border-0"
+                        :class="attentionStyle(student) ? `border-l-2 ${attentionStyle(student)!.border}` : ''"
                         @click="navigateTo(`/students/${student.id}?back=/classes/${route.params.id}`)">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex min-w-0 items-center gap-3">
-                                <UAvatar class="size-10" :src="student.photo"
-                                    :alt="`${student.givenNames} ${student.familyName}`" loading="lazy" />
-                                <div class="min-w-0">
-                                    <h3
-                                        class="flex items-center gap-1.5 truncate md:text-base font-bold text-highlighted">
-                                        {{ student.givenNames }} {{ student.familyName }}
-                                        <UTooltip class="hidden md:visible" v-if="needsAttention(student)"
-                                            :text="attentionReason(student)" :open="openAttentionId === student.id"
-                                            @update:open="(v) => openAttentionId = v ? student.id : null">
-                                            <UIcon
-                                                :name="attentionOf(student)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
-                                                class="size-4 shrink-0" :class="attentionStyle(student)?.text"
-                                                @click.stop="openAttentionId = openAttentionId === student.id ? null : student.id" />
-                                        </UTooltip>
-                                    </h3>
-
-                                    <p class="truncate text-xs-base text-muted">
-                                        {{ student.admissionNumber || 'No Admission No' }}
-                                    </p>
-                                    <p class="text-[9px] truncate" :class="attentionStyle(student)?.text">{{
-                                        attentionReason(student) }}</p>
-                                </div>
-                            </div>
-
-                            <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 self-center text-muted" />
+                        <UAvatar class="size-10" :src="student.photo" :alt="`${student.givenNames} ${student.familyName}`" />
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-semibold text-highlighted">{{ student.givenNames }} {{ student.familyName }}</p>
+                            <p class="truncate text-xs text-muted">
+                                {{ student.admissionNumber || 'No admission number' }}
+                                <template v-if="attendanceOf(student) !== undefined"> · {{ attendanceOf(student) }}% attendance</template>
+                                <template v-if="performanceOf(student) !== undefined"> · avg {{ Math.round(performanceOf(student)!) }}</template>
+                            </p>
+                            <p v-if="needsAttention(student)" class="truncate text-[11px]" :class="attentionStyle(student)?.text">
+                                {{ attentionReason(student) }}
+                            </p>
                         </div>
-                    </div>
+                        <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 text-muted" />
+                    </button>
                 </template>
-
-                <!-- Empty -->
-                <template v-else>
-                    <div class="col-span-full flex flex-col items-center gap-2 py-10">
-                        <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
-                        <p class="text-gray-500 dark:text-gray-400">No students enrolled in this class.</p>
-                    </div>
-                </template>
+                <div v-else class="flex flex-col items-center gap-2 py-10">
+                    <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400" />
+                    <p class="text-gray-500">{{ search || onlyAttention ? 'No student matches.' : 'No students enrolled in this class.' }}</p>
+                </div>
             </div>
-
         </UCard>
 
         <UCard v-else-if="isTeacherViewer">
             <div class="flex flex-col items-center gap-3 py-10 text-center">
-                <div
-                    class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
-                    <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
-                </div>
-                <p class="text-sm font-semibold text-highlighted">Student list is only visible to staff of this class
-                </p>
-                <p class="max-w-xs text-xs text-muted">You're not the class master or a subject teacher here. Head to My
-                    Classes
-                    to see the ones you teach.</p>
+                <span class="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+                    <UIcon name="i-lucide-lock" class="text-2xl text-primary" />
+                </span>
+                <p class="text-sm font-semibold text-highlighted">Student list is only visible to staff of this class</p>
+                <p class="max-w-xs text-xs text-muted">You're not the class master or a subject teacher here. Head to My Classes to see the ones you teach.</p>
                 <UButton to="/classes" label="My Classes" :icon="CLASS_ICON" color="primary" variant="soft" />
             </div>
         </UCard>
 
         <UCard v-else-if="isParentViewer">
             <div class="flex flex-col items-center gap-3 py-10 text-center">
-                <div
-                    class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
-                    <UIcon name="i-lucide-lock" class="text-3xl text-primary-500" />
-                </div>
+                <span class="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+                    <UIcon name="i-lucide-lock" class="text-2xl text-primary" />
+                </span>
                 <p class="text-sm font-semibold text-highlighted">Student list is only visible to school staff</p>
                 <p class="max-w-xs text-xs text-muted">You can see your own child's details from your dashboard.</p>
                 <UButton to="/" label="Back to Dashboard" icon="i-lucide-arrow-left" color="primary" variant="soft" />
-            </div>
-        </UCard>
-
-        <UCard v-if="canManagePromotion && classTeachers.length" :ui="{ body: 'p-0 sm:p-0' }">
-            <template #header>
-                <div class="flex items-center gap-2">
-                    <UIcon name="i-lucide-user-round-check" class="size-4 text-primary" />
-                    <h3 class="text-sm font-semibold">Class Masters</h3>
-                </div>
-            </template>
-
-            <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                <div v-for="master in classTeachers" :key="master.id" class="flex flex-wrap items-center gap-3 p-3">
-                    <UAvatar :src="master.photo" :alt="master.name" size="md"
-                        class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
-
-                    <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-medium">{{ master.name }}</p>
-                        <p v-if="master.assignment" class="truncate md:text-[11px] text-gray-500 dark:text-gray-400">
-                            {{ master.assignment }}
-                        </p>
-                    </div>
-
-                    <UButton size="xs" color="error" variant="soft" icon="i-lucide-user-round-x" label="Unassign"
-                        :loading="unassigningMasterId === master.id" @click="onRemoveClassMaster(master.id)" />
-                </div>
             </div>
         </UCard>
     </div>
@@ -301,8 +336,9 @@ const view = ref<'table' | 'card'>('table')
 const widgetStore = useWidgetStore()
 const performanceByName = ref<Record<string, number>>({})
 const attendanceByName = ref<Record<string, number>>({})
+const subjectScores = ref<{ name: string, score: number }[]>([])
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
-const sortByPerformance = ref(false)
+const sortByPerformance = ref(true)
 const openAttentionId = ref<string | null>(null)
 
 function studentFullName(s: Student) {
@@ -383,21 +419,50 @@ const displayStudents = computed(() => {
     })
 })
 
+// The class's real marks: the average of each student's (or subject's) 0-100 scores over tests that have been approved.
+// Locked and draft tests are left out - their rows are 0 until someone marks them, which would drag every average down.
+async function approvedAverages(groupBy: 'student' | 'subject'): Promise<Record<string, number>> {
+    const statuses = ['APPROVED', 'COMPLETED']
+    const widgets = await Promise.all(statuses.map(status => widgetStore.runAnalytic({
+        entity: 'assessments',
+        title: 'Approved scores',
+        filters: [
+            { field: 'studentAssessment.enrollment.clazz.id', value: classId.value, operator: 'EQUALS', type: 'select' },
+            { field: 'cycle.status', value: status, operator: 'EQUALS', type: 'select' }
+        ],
+        metrics: [
+            { name: 'Average Score', aggregation: 'avg', field: 'score', tags: { groupBy } },
+            { name: 'Count', aggregation: 'count', field: 'score', tags: { groupBy } }
+        ],
+        chartType: 'bar'
+    }).catch(() => null)))
+
+    // Combine the two statuses as a weighted average (by how many scores each had).
+    const sums: Record<string, { total: number, count: number }> = {}
+    for (const res of widgets) {
+        const w = res?.data ?? res
+        const rows: { label: string, avg: number, count: number }[] = Array.isArray(w)
+            ? w.map((r: any) => ({ label: String(r[groupBy]), avg: Number(r['Average Score']), count: Number(r['Count'] ?? 1) }))
+            : (w?.labels || []).map((label: string, i: number) => ({
+                label, avg: Number(w.datasets?.[0]?.data?.[i] ?? 0), count: Number(w.datasets?.[1]?.data?.[i] ?? 1)
+            }))
+        for (const r of rows) {
+            if (!Number.isFinite(r.avg) || !(r.count > 0)) continue
+            const entry = sums[r.label] ?? (sums[r.label] = { total: 0, count: 0 })
+            entry.total += r.avg * r.count
+            entry.count += r.count
+        }
+    }
+    const out: Record<string, number> = {}
+    for (const [label, v] of Object.entries(sums)) out[label] = Math.round(v.total / v.count * 10) / 10
+    return out
+}
+
 async function fetchRosterInsights() {
     if (!canViewRoster.value || !classId.value) return
     try {
-        const [performance, attendance] = await Promise.all([
-            widgetStore.runAnalytic({
-                entity: 'assessments',
-                title: 'Student Performance',
-                filters: [
-                    { field: 'studentAssessment.enrollment.clazz.id', value: classId.value, operator: 'EQUALS', type: 'select' }
-                ],
-                metrics: [
-                    { name: 'Average Score', aggregation: 'avg', field: 'weightScore', tags: { groupBy: 'student' } }
-                ],
-                chartType: 'bar'
-            }),
+        const [performance, attendance, subjectsRes] = await Promise.all([
+            approvedAverages('student'),
             widgetStore.runAnalytic({
                 entity: 'attendances',
                 title: 'Student Attendance',
@@ -406,24 +471,23 @@ async function fetchRosterInsights() {
                 ],
                 metrics: [
                     { name: 'Present', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Present' } },
+                    // Present or late counts as attending - the same rule the attendance reports use.
+                    { name: 'Late', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Late' } },
                     { name: 'Total', aggregation: 'count', field: 'state', tags: { groupBy: 'student' } }
                 ],
                 chartType: 'bar'
-            })
+            }),
+            approvedAverages('subject').catch(() => ({} as Record<string, number>)) // a bonus line - never let it take the rest down
         ])
 
-        const performanceWidget = performance?.data ?? performance
-        const performanceMap: Record<string, number> = {}
-        performanceWidget?.labels?.forEach((label: string, i: number) => {
-            performanceMap[label] = Number(performanceWidget.datasets?.[0]?.data?.[i] ?? 0)
-        })
-        performanceByName.value = performanceMap
+        subjectScores.value = Object.entries(subjectsRes).map(([name, score]) => ({ name, score }))
+        performanceByName.value = performance
 
         const attendanceWidget = attendance?.data ?? attendance
         const attendanceMap: Record<string, number> = {}
         attendanceWidget?.labels?.forEach((label: string, i: number) => {
-            const present = Number(attendanceWidget.datasets?.[0]?.data?.[i] ?? 0)
-            const total = Number(attendanceWidget.datasets?.[1]?.data?.[i] ?? 0)
+            const present = Number(attendanceWidget.datasets?.[0]?.data?.[i] ?? 0) + Number(attendanceWidget.datasets?.[1]?.data?.[i] ?? 0)
+            const total = Number(attendanceWidget.datasets?.[2]?.data?.[i] ?? 0)
             if (total > 0) attendanceMap[label] = Math.round((present / total) * 1000) / 10
         })
         attendanceByName.value = attendanceMap
@@ -445,13 +509,68 @@ const parseStatusColor: Record<string, string> = {
 }
 
 const columns = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'dateOfBirth', header: 'Date of Birth' },
-    { accessorKey: 'gender', header: 'Gender' },
-    { accessorKey: 'guardian', header: 'Guardian' },
-    { accessorKey: 'status', header: 'Status' },
-    { id: 'actions', meta: { class: { td: 'text-right' } } }
+    { id: 'rank', header: '#', meta: { class: { th: 'w-10', td: 'w-10' } } },
+    { id: 'name', header: 'Student' },
+    { id: 'age', header: 'Age' },
+    { id: 'gender', header: 'Gender' },
+    { id: 'guardian', header: 'Guardian' },
+    { id: 'attendance', header: 'Attendance' },
+    { id: 'average', header: 'Average' },
+    { id: 'status', header: 'Status' },
+    { id: 'actions', header: '', meta: { class: { td: 'text-right' } } }
 ]
+
+// The linked parent account first; otherwise the father/mother recorded on the student.
+function guardianOf(s: Student): { name: string, phone: string } {
+    const g = s.guardian
+    const linked = g ? (`${g.givenNames ?? ''} ${g.familyName ?? ''}`.trim() || g.name || '') : ''
+    if (linked) return { name: linked, phone: g?.phone || '' }
+
+    const f = s.family
+    if (f?.fatherName) return { name: f.fatherName, phone: f.fatherContact || '' }
+    if (f?.motherName) return { name: f.motherName, phone: f.motherContact || '' }
+    return { name: '', phone: '' }
+}
+
+// Whole years since the date of birth; null when missing or invalid.
+function ageOf(dob?: string) {
+    if (!dob) return null
+    const birth = new Date(dob)
+    if (isNaN(birth.getTime())) return null
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return age
+}
+
+// --- The list: search, "needs attention" and sort ---
+const search = ref('')
+const onlyAttention = ref(false)
+const attendanceOf = (s: Student) => attendanceByName.value[studentFullName(s)]
+const attentionCount = computed(() => students.value.filter(needsAttention).length)
+const filteredStudents = computed(() => {
+    const text = search.value.trim().toLowerCase()
+    return displayStudents.value.filter((s) => {
+        if (onlyAttention.value && !needsAttention(s)) return false
+        return !text || studentFullName(s).toLowerCase().includes(text)
+            || (s.admissionNumber || '').toLowerCase().includes(text)
+    })
+})
+
+// --- At a glance ---
+const average = (values: number[]) => values.length
+    ? Math.round(values.reduce((sum, v) => sum + v, 0) / values.length * 10) / 10 : null
+const avgAttendance = computed(() => average(Object.values(attendanceByName.value)))
+const avgScore = computed(() => {
+    const v = average(Object.values(performanceByName.value))
+    return v === null ? null : Math.round(v)
+})
+const genderSummary = computed(() => {
+    const boys = students.value.filter(s => s.gender === 'MALE').length
+    const girls = students.value.filter(s => s.gender === 'FEMALE').length
+    return students.value.length ? `${boys} boys · ${girls} girls` : 'No students yet'
+})
 
 const classTeachers = computed(() => {
     return (overview.value?.classMasters || []).map((master) => {
@@ -480,7 +599,18 @@ const sessionName = computed(() => [
 
 const promotionSettingOpen = ref(false)
 
+const classEditRef = ref<{ openEdit: () => void } | null>(null)
+
 const actionItems = computed(() => [[
+    {
+        label: 'Edit class', icon: EDIT_ICON,
+        onSelect: () => classEditRef.value?.openEdit()
+    },
+    {
+        label: classTeachers.value.length ? 'Add class master' : 'Assign class master',
+        icon: 'i-lucide-user-round-plus',
+        onSelect: () => { assignMasterOpen.value = true }
+    },
     {
         label: 'Promotions', icon: PROMOTE_STUDENTS_ICON,
         disabled: classTeachers.value.length === 0,
@@ -546,6 +676,43 @@ async function confirmDeleteClass() {
         // Left open on purpose: the backend's reason (e.g. it still has students) is what to read.
         toastError(err?.message || 'Unable to delete the class')
         throw err
+    }
+}
+
+const assignMasterOpen = ref(false)
+const assigningMaster = ref(false)
+const masterTeacherId = ref('')
+const teacherStore = useTeacherStore()
+
+// Teachers who are not already a class master of this class.
+const masterTeacherOptions = computed(() => {
+    const taken = new Set((overview.value?.classMasters || []).map((m: any) => m.teacher?.id))
+    return (teacherStore.records || [])
+        .filter((t: any) => !taken.has(t.id))
+        .map((t: any) => ({ label: teacherLabel(t), value: t.id }))
+})
+
+watch(assignMasterOpen, (open) => {
+    if (open) teacherStore.fetchAll(0, 0)
+    else masterTeacherId.value = ''
+})
+
+async function onAssignClassMaster() {
+    if (!masterTeacherId.value || !session.value) return
+    assigningMaster.value = true
+    try {
+        await classStore.assignClassMaster(classId.value, {
+            teacherId: masterTeacherId.value,
+            sectionId: session.value.sectionId || '',
+            streamId: session.value.streamId || ''
+        })
+        success('The class master has been assigned successfully.')
+        assignMasterOpen.value = false
+        await classStore.fetchOverview(classId.value, viewingYear.value?.id || '', stream.value, sessionId.value)
+    } catch (err: any) {
+        toastError(err?.message || 'Unable to assign the class master')
+    } finally {
+        assigningMaster.value = false
     }
 }
 

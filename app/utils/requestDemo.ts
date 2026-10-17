@@ -14,6 +14,8 @@ export type DemoRequest = CreateRequestDemoPayload & {
     id: string
     createdAt: string
     updatedAt: string
+    // The lead (status, owner, demo date) this request was made into.
+    lead?: Lead | null
 }
 
 export const demoWalkthroughFormats = [

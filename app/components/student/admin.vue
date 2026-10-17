@@ -43,38 +43,126 @@ const parseStatusColor: Record<string, string> = {
 };
 
 const columns = [
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ row }: any) => {
-      return `${row.original.givenNames} ${row.original.familyName}`
-    },
-  },
-  {
-    accessorKey: "dateOfBirth",
-    header: "Date of Birth",
-  },
-  {
-    accessorKey: "gender",
-    header: "Gender",
-  },
-  {
-    accessorKey: "className",
-    header: "Class",
-  },
-  {
-    accessorKey: "parent",
-    header: "Guardian",
-  },
-  {
-    id: "actions",
-    meta: {
-      class: {
-        td: "text-right",
-      },
-    },
-  },
+  { id: "name", header: "Student" },
+  { id: "guardian", header: "Guardian" },
+  { id: "attendance", header: "Attendance" },
+  { id: "average", header: "Average" },
+  { id: "fees", header: "Fees" },
+  { id: "actions", header: "", meta: { class: { td: "text-right" } } },
 ];
+
+const { format } = useMoney()
+const { can } = useAuth()
+// Only the owner and principal see what a student has paid or owes; everyone else sees the state only.
+const canSeeAmounts = computed(() => can([Role.OWNER, Role.PRINCIPAL]))
+const widgetStore = useWidgetStore()
+const attendanceByName = ref<Record<string, number>>({})
+const performanceByName = ref<Record<string, number>>({})
+
+const fullName = (s: Student) => `${s.givenNames} ${s.familyName}`.trim()
+const attendanceOf = (s: Student) => attendanceByName.value[fullName(s)]
+const performanceOf = (s: Student) => performanceByName.value[fullName(s)]
+
+function feePaidPercent(s: Student) {
+  const f = s.feeDetail
+  if (!f || !Number(f.total)) return 0
+  return Math.min(100, Math.round((Number(f.paid) / Number(f.total)) * 100))
+}
+
+// School-wide figures, the same way the class page works them out (matched on student name).
+async function approvedAverages(): Promise<Record<string, number>> {
+  const widgets = await Promise.all(['APPROVED', 'COMPLETED'].map(status => widgetStore.runAnalytic({
+    entity: 'assessments',
+    title: 'Approved scores',
+    filters: [{ field: 'cycle.status', value: status, operator: 'EQUALS', type: 'select' }],
+    metrics: [
+      { name: 'Average Score', aggregation: 'avg', field: 'score', tags: { groupBy: 'student' } },
+      { name: 'Count', aggregation: 'count', field: 'score', tags: { groupBy: 'student' } }
+    ],
+    chartType: 'bar'
+  }).catch(() => null)))
+
+  const sums: Record<string, { total: number, count: number }> = {}
+  for (const res of widgets) {
+    const w = res?.data ?? res
+    const rows: { label: string, avg: number, count: number }[] = Array.isArray(w)
+      ? w.map((r: any) => ({ label: String(r.student), avg: Number(r['Average Score']), count: Number(r['Count'] ?? 1) }))
+      : (w?.labels || []).map((label: string, i: number) => ({
+        label, avg: Number(w.datasets?.[0]?.data?.[i] ?? 0), count: Number(w.datasets?.[1]?.data?.[i] ?? 1)
+      }))
+    for (const r of rows) {
+      if (!Number.isFinite(r.avg) || !(r.count > 0)) continue
+      const entry = sums[r.label] ?? (sums[r.label] = { total: 0, count: 0 })
+      entry.total += r.avg * r.count
+      entry.count += r.count
+    }
+  }
+  const out: Record<string, number> = {}
+  for (const [label, v] of Object.entries(sums)) out[label] = Math.round(v.total / v.count * 10) / 10
+  return out
+}
+
+async function fetchInsights() {
+  try {
+    const [performance, attendance] = await Promise.all([
+      approvedAverages(),
+      widgetStore.runAnalytic({
+        entity: 'attendances',
+        title: 'Student Attendance',
+        filters: [],
+        metrics: [
+          { name: 'Present', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Present' } },
+          { name: 'Late', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Late' } },
+          { name: 'Total', aggregation: 'count', field: 'state', tags: { groupBy: 'student' } }
+        ],
+        chartType: 'bar'
+      })
+    ])
+    performanceByName.value = performance
+
+    const w = attendance?.data ?? attendance
+    const map: Record<string, number> = {}
+    w?.labels?.forEach((label: string, i: number) => {
+      const present = Number(w.datasets?.[0]?.data?.[i] ?? 0) + Number(w.datasets?.[1]?.data?.[i] ?? 0)
+      const total = Number(w.datasets?.[2]?.data?.[i] ?? 0)
+      if (total > 0) map[label] = Math.round((present / total) * 1000) / 10
+    })
+    attendanceByName.value = map
+  } catch (err) {
+    console.error('Failed to load student insights', err)
+  }
+}
+
+// "ADM-001 · JSS 1 · 12 yrs" - the identifiers a school looks for, on one line.
+function subtitleOf(s: Student) {
+  const age = ageOf(s.dateOfBirth)
+  return [s.admissionNumber || 'No admission no', s.className || 'Not placed', age !== null ? `${age} yrs` : '']
+    .filter(Boolean).join(' · ')
+}
+
+// Whole years since the date of birth; null when missing or invalid.
+function ageOf(dob?: string) {
+  if (!dob) return null
+  const birth = new Date(dob)
+  if (isNaN(birth.getTime())) return null
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
+// The linked parent account first; otherwise the father/mother recorded on the student.
+function guardianOf(s: Student): { name: string, phone: string } {
+  const g = s.guardian
+  const linked = g ? (`${g.givenNames ?? ''} ${g.familyName ?? ''}`.trim() || g.name || '') : ''
+  if (linked) return { name: linked, phone: g?.phone || '' }
+
+  const f = s.family
+  if (f?.fatherName) return { name: f.fatherName, phone: f.fatherContact || '' }
+  if (f?.motherName) return { name: f.motherName, phone: f.motherContact || '' }
+  return { name: '', phone: '' }
+}
 
 function view(row: Student) {
   router.push(`/students/${row.id}`);
@@ -132,6 +220,7 @@ onMounted(async () => {
   }
 
   clazzStore.fetchAll(0, 0)
+  fetchInsights();
   fetchRecord();
 });
 </script>
@@ -164,35 +253,76 @@ onMounted(async () => {
           </div>
         </div>
       </template>
-      <UTable v-if="tableView === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <UTable v-if="tableView === 'table'" class="hidden md:block" :ui="{ th: 'px-3', td: 'px-3 py-2.5' }" :columns="columns" :data="data" :loading="loading">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
             <p class="text-gray-500 dark:text-gray-400">No students found.</p>
           </div>
         </template>
-        <template #parent-cell="{ row }">
-          <p>
-            {{ row.original.guardian?.givenNames }} {{ row.original.guardian?.familyName }}
-          </p>
-        </template>
-        <template #gender-cell="{ row }">
-          <UBadge :label="parseGender[row.original.gender]" :color="parseGenderColor[row.original.gender]"
-            variant="outline" />
-        </template>
         <template #name-cell="{ row }">
-          <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
-            :photo="row.original.photo" :status="row.original.status"
-            :subtitle="`${row.original.admissionNumber || 'No Admission No'}`" />
+          <div class="flex min-w-0 items-center gap-2">
+            <StudentIdentityCell :given-names="row.original.givenNames" :family-name="row.original.familyName"
+              :photo="row.original.photo" :status="row.original.status" :subtitle="subtitleOf(row.original)" />
+            <UBadge v-if="row.original.status === 'INACTIVE' || row.original.status === 'DELETED'" size="sm"
+              variant="subtle" :color="row.original.status === 'INACTIVE' ? 'warning' : 'error'"
+              :label="parseStaus[row.original.status]" class="shrink-0" />
+          </div>
+        </template>
+        <template #guardian-cell="{ row }">
+          <div v-if="guardianOf(row.original).name" class="min-w-0 max-w-44">
+            <p class="truncate text-sm font-medium text-highlighted">{{ guardianOf(row.original).name }}</p>
+            <p v-if="guardianOf(row.original).phone" class="truncate text-xs text-muted">
+              {{ guardianOf(row.original).phone }}</p>
+          </div>
+          <span v-else class="text-sm text-warning">No guardian</span>
+        </template>
+        <template #attendance-cell="{ row }">
+          <div v-if="attendanceOf(row.original) !== undefined" class="w-20">
+            <p class="text-sm font-medium tabular-nums"
+              :class="attendanceOf(row.original)! < 75 ? 'text-warning' : 'text-highlighted'">
+              {{ attendanceOf(row.original) }}%</p>
+            <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
+              <div class="h-full rounded-full" :class="attendanceOf(row.original)! < 75 ? 'bg-warning' : 'bg-success'"
+                :style="{ width: `${Math.min(100, attendanceOf(row.original)!)}%` }" />
+            </div>
+          </div>
+          <span v-else class="text-muted">-</span>
+        </template>
+        <template #average-cell="{ row }">
+          <div v-if="performanceOf(row.original) !== undefined" class="w-20">
+            <p class="text-sm font-medium tabular-nums text-highlighted">{{ Math.round(performanceOf(row.original)!) }}</p>
+            <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
+              <div class="h-full rounded-full"
+                :class="performanceOf(row.original)! < 50 ? 'bg-error' : performanceOf(row.original)! < 70 ? 'bg-warning' : 'bg-primary'"
+                :style="{ width: `${Math.min(100, performanceOf(row.original)!)}%` }" />
+            </div>
+          </div>
+          <span v-else class="text-muted">-</span>
+        </template>
+        <template #fees-cell="{ row }">
+          <template v-if="row.original.feeDetail">
+            <div v-if="canSeeAmounts" class="w-28">
+              <p class="truncate text-sm font-medium tabular-nums"
+                :class="Number(row.original.feeDetail.balance) > 0 ? (row.original.feeDetail.status === 'Overdue' ? 'text-error' : 'text-highlighted') : 'text-success'">
+                {{ Number(row.original.feeDetail.balance) > 0 ? format(row.original.feeDetail.balance) : 'Cleared' }}
+              </p>
+              <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
+                <div class="h-full rounded-full" :class="row.original.feeDetail.status === 'Overdue' ? 'bg-error' : 'bg-success'"
+                  :style="{ width: `${feePaidPercent(row.original)}%` }" />
+              </div>
+            </div>
+            <UBadge v-else size="sm" variant="subtle" :label="row.original.feeDetail.status"
+              :color="parseFeeStatusColor[row.original.feeDetail.status] || 'neutral'" />
+          </template>
+          <span v-else class="text-muted">-</span>
         </template>
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
         <template #actions-cell="{ row }">
-          <div>
-            <UButton @click="view(row.original)" size="sm" variant="ghost" color="success" class="cursor-pointer"
-              :icon="VIEW_ICON" />
-          </div>
+          <UButton @click="view(row.original)" size="sm" variant="ghost" color="neutral" class="cursor-pointer"
+            icon="i-lucide-chevron-right" aria-label="Open student" />
         </template>
       </UTable>
       <div class="md:p-4  md:space-y-4"

@@ -10,7 +10,11 @@ const PUBLIC_PATHS = ['/request-demo']
 // school-tenant equivalent, so they're admin-portal-only. /logout, /profile, /reset-password and
 // /unauthorized are the account pages the portal's own header/drawer and the redirects below
 // send an admin to - leaving them out made "Sign out" 404 on the admin subdomain.
-const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests']
+const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests', '/testimonials', '/blog', '/contact-messages', '/announcements', '/leads', '/onboarding', '/fee-collection', '/roles', '/platform-settings', '/audit-logs', '/support', '/notifications', '/system-health']
+// The ones with no school-tenant equivalent - a 404 on a school's own subdomain.
+const ADMIN_PORTAL_ONLY_PATHS = ['/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests', '/testimonials', '/blog', '/contact-messages', '/announcements', '/leads', '/onboarding', '/fee-collection', '/roles', '/platform-settings', '/audit-logs']
+// The blog, leads and onboarding have a page per record (/blog/add, /leads/<id>, /onboarding/<id>) besides the list.
+const isBlogPath = (path: string) => ['/blog/', '/leads/', '/onboarding/', '/support/'].some((prefix) => path.startsWith(prefix))
 // Of those, the ones reachable without a token - signing in, and the one-time first-admin wizard.
 const ADMIN_PORTAL_PUBLIC_PATHS = ['/login', '/setup']
 
@@ -29,7 +33,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // The admin portal isn't any school's subdomain - there's no tenant to resolve here, and
     // every page outside ADMIN_PORTAL_PATHS simply doesn't exist on this host.
     if (onAdminPortal) {
-        if (!ADMIN_PORTAL_PATHS.includes(to.path)) {
+        if (!ADMIN_PORTAL_PATHS.includes(to.path) && !isBlogPath(to.path)) {
             return abortNavigation(createError({ statusCode: 404, message: 'Page not found' }))
         }
 
@@ -46,7 +50,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         // This closes what used to be a real route - a SYSTEM_ADMIN whose anchor SchoolUser row
         // happens to sit on some school's own subdomain could otherwise still reach the admin
         // pages from that tenant host directly, bypassing the admin subdomain entirely.
-        if (to.path === '/users' || to.path === '/schools' || to.path === '/schools/add' || to.path === '/calendar' || to.path === '/setup' || to.path === '/demo-requests') {
+        if (ADMIN_PORTAL_ONLY_PATHS.includes(to.path) || isBlogPath(to.path)) {
             return abortNavigation(createError({ statusCode: 404, message: 'Page not found' }))
         }
 
@@ -77,6 +81,17 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     if (requiredRole && activeRole.value) {
         if (!roleAllows(activeRole.value, requiredRole)) {
+            return navigateTo('/unauthorized')
+        }
+    }
+
+    // On the admin portal each page needs a platform permission (a billing manager has no business in the audit
+    // log). The server enforces it too; this just turns a doomed page load into a clean refusal.
+    if (onAdminPortal && token.value) {
+        const platform = usePlatformAccess()
+        await platform.load()
+        const needed = permissionForPath(to.path)
+        if (needed && platform.access.value && !platform.can(needed)) {
             return navigateTo('/unauthorized')
         }
     }

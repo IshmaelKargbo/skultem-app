@@ -7,6 +7,58 @@ export type SystemStats = {
     totalStudents: number
 }
 
+export type InsightDelta = { current: number, previous: number }
+
+export type InsightSchoolRow = {
+    id: string
+    name: string
+    domain: string
+    students: number
+    playground: boolean
+    // Only on the needs-attention list.
+    reason: string | null
+    createdAt: string | null
+}
+
+export type InsightRecentSchool = {
+    id: string
+    name: string
+    domain: string
+    status: string
+    playground: boolean
+    ownerName: string | null
+    createdAt: string | null
+}
+
+export type InsightActivity = {
+    id: string
+    action: string
+    status: 'SUCCESS' | 'FAILURE'
+    schoolName: string | null
+    userName: string | null
+    createdAt: string | null
+}
+
+// What the dashboard reads beyond the headline totals - see backend SystemInsightsUseCase.
+export type SystemInsights = {
+    // The period the growth numbers and demo count cover.
+    days: number
+    recentSchools: InsightRecentSchool[]
+    recentActivity: InsightActivity[]
+    leads: { open: number, awaitingFollowUp: number, unassigned: number, overdue: number } | null
+    onboarding: { inProgress: number, completed: number, overdueSteps: number } | null
+    // Null for an admin whose role has no support access.
+    support: { open: number, unassigned: number, urgent: number } | null
+    schools: { total: number, live: number, playground: number, inactive: number }
+    growth: { schools: InsightDelta, students: InsightDelta, users: InsightDelta, demoRequests: InsightDelta }
+    monthly: { month: string, schools: number, students: number, demoRequests: number }[]
+    topSchools: InsightSchoolRow[]
+    needsAttention: InsightSchoolRow[]
+    // The marketing figures are null for an admin whose role has no marketing access.
+    demos: { total: number, inPeriod: number } | null
+    content: { unreadMessages: number, publishedPosts: number, draftPosts: number, publishedTestimonials: number } | null
+}
+
 export type SystemSchoolOwner = {
     givenNames: string
     familyName: string
@@ -110,4 +162,12 @@ export type SaveNationalCalendarPayload = {
     startDate: string
     endDate: string
     terms: { name: string, startDate: string, endDate: string }[]
+}
+
+// What the Schools list can be narrowed by - sent as is, the backend ignores whatever is empty.
+export type SchoolFilters = {
+    query?: string
+    status?: string
+    // LIVE or PLAYGROUND
+    type?: string
 }

@@ -1,122 +1,161 @@
 <template>
-  <div class="space-y-6 px-4 md:px-6">
-    <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+  <div class="px-4 md:px-6">
+    <Heading title="Onboard a school" subtitle="Set up the school, its levels and its owner. The owner is emailed their login details." />
 
-      <!-- School -->
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-3">
-            <UIcon :name="SCHOOL_ICON" class="text-primary text-2xl" />
-            <div>
-              <p class="font-semibold">School</p>
-              <p class="text-sm text-muted hidden md:block">The school's name and login domain.</p>
+    <UForm :schema="schema" :state="state" class="mt-4 grid items-start gap-6 lg:grid-cols-3" @submit="onSubmit">
+      <div class="space-y-6 lg:col-span-2">
+
+        <!-- School -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-3">
+              <span class="flex size-8 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-school" class="size-4" /></span>
+              <div>
+                <p class="font-semibold">School</p>
+                <p class="hidden text-sm text-muted md:block">The school's name and login address.</p>
+              </div>
             </div>
+          </template>
+
+          <div class="grid gap-5 md:grid-cols-2">
+            <UFormField label="School name" name="name" required class="md:col-span-2">
+              <UInput v-model="state.name" placeholder="e.g. King's Way International School" class="w-full"
+                :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="Domain" name="domain" required class="md:col-span-2"
+              help="Staff, parents and students sign in at this address. Suggested from the name - change it if you like.">
+              <UInput :model-value="state.domain" placeholder="kingsway" class="w-full" :disabled="loading"
+                :ui="{ trailing: 'pe-3' }" @update:model-value="onDomainInput">
+                <template #trailing><span class="text-sm text-muted">.skultem.space</span></template>
+              </UInput>
+            </UFormField>
           </div>
-        </template>
+        </UCard>
 
-        <div class="grid gap-5 md:grid-cols-2">
-          <UFormField label="School Name" name="name" required>
-            <UInput v-model="state.name" placeholder="e.g. King's Way International School" class="w-full"
-              :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="Domain" name="domain" required help="Used for the school's login link">
-            <UInput v-model="state.domain" placeholder="e.g. kingsway" class="w-full" :disabled="loading" />
-          </UFormField>
-        </div>
-      </UCard>
-
-      <!-- Address -->
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-3">
-            <UIcon name="i-lucide-map-pin" class="text-primary text-2xl" />
-            <div>
-              <p class="font-semibold">Address</p>
-              <p class="text-sm text-muted hidden md:block">Where the school is located.</p>
+        <!-- Address -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-3">
+              <span class="flex size-8 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-map-pin" class="size-4" /></span>
+              <div>
+                <p class="font-semibold">Location</p>
+                <p class="hidden text-sm text-muted md:block">Where the school is. Pick the region first - district and chiefdom follow it.</p>
+              </div>
             </div>
+          </template>
+
+          <div class="grid gap-5 md:grid-cols-2">
+            <UFormField label="Street" name="street" required>
+              <UInput v-model="state.street" placeholder="e.g. 12 Wilkinson Road" class="w-full" :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="City" name="city" required>
+              <UInput v-model="state.city" placeholder="e.g. Freetown" class="w-full" :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="Region" name="region" required>
+              <USelectMenu v-model="state.region" value-key="value" :items="regionOptions" placeholder="Select region"
+                class="w-full" :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="District" name="district" required>
+              <USelectMenu v-model="state.district" value-key="value" :items="districtOptions(state.region)"
+                :placeholder="state.region ? 'Select district' : 'Select a region first'" class="w-full"
+                :disabled="loading || !state.region" />
+            </UFormField>
+
+            <UFormField label="Chiefdom" name="chiefdom" required class="md:col-span-2">
+              <USelectMenu v-model="state.chiefdom" value-key="value" :items="chiefdomOptions(state.district)"
+                :placeholder="state.district ? 'Select chiefdom' : 'Select a district first'" class="w-full"
+                :disabled="loading || !state.district" />
+            </UFormField>
           </div>
-        </template>
+        </UCard>
 
-        <div class="grid gap-5 md:grid-cols-2">
-          <UFormField label="Street" name="street" required class="md:col-span-2">
-            <UInput v-model="state.street" placeholder="e.g. 12 Wilkinson Road" class="w-full" :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="City" name="city" required>
-            <UInput v-model="state.city" placeholder="e.g. Freetown" class="w-full" :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="Region" name="region" required>
-            <USelectMenu v-model="state.region" value-key="value" :items="regionOptions" placeholder="Select region"
-              class="w-full" :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="District" name="district" required>
-            <USelectMenu v-model="state.district" value-key="value" :items="districtOptions(state.region)"
-              :placeholder="state.region ? 'Select district' : 'Select a region first'" class="w-full"
-              :disabled="loading || !state.region" />
-          </UFormField>
-
-          <UFormField label="Chiefdom" name="chiefdom" required>
-            <UInput v-model="state.chiefdom" placeholder="e.g. Freetown Municipality" class="w-full"
-              :disabled="loading" />
-          </UFormField>
+        <!-- Levels + management structure -->
+        <div ref="structureEl" class="scroll-mt-4">
+          <SettingsSchoolStructureEditor v-model="structure" :readonly="loading" :show-errors="showStructureErrors" />
         </div>
-      </UCard>
 
-      <!-- Levels + management structure -->
-      <div ref="structureEl" class="scroll-mt-4">
-        <SettingsSchoolStructureEditor v-model="structure" :readonly="loading" :show-errors="showStructureErrors" />
+        <!-- Owner -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-3">
+              <span class="flex size-8 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-user" class="size-4" /></span>
+              <div>
+                <p class="font-semibold">Owner</p>
+                <p class="hidden text-sm text-muted md:block">The person who runs the school on Skultem. They get the OWNER role.</p>
+              </div>
+            </div>
+          </template>
+
+          <div class="grid gap-5 md:grid-cols-2">
+            <UFormField label="Given names" name="givenNames" required>
+              <UInput v-model="state.givenNames" placeholder="e.g. Ishmael" class="w-full" :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="Family name" name="familyName" required>
+              <UInput v-model="state.familyName" placeholder="e.g. Kargbo" class="w-full" :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="Email" name="email" required>
+              <UInput v-model="state.email" type="email" icon="i-lucide-mail" placeholder="owner@example.com"
+                class="w-full" :disabled="loading" />
+            </UFormField>
+
+            <UFormField label="Phone" name="phone" required>
+              <UInput v-model="state.phone" icon="i-lucide-phone" placeholder="+232..." class="w-full" :disabled="loading" />
+            </UFormField>
+          </div>
+        </UCard>
+
+        <div class="flex justify-end gap-3 lg:hidden">
+          <UButton label="Cancel" color="neutral" variant="outline" to="/schools" />
+          <UButton type="submit" :loading="loading" icon="i-lucide-plus" label="Onboard school" />
+        </div>
       </div>
 
-      <!-- Owner -->
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-3">
-            <UIcon name="i-lucide-user" class="text-primary text-2xl" />
+      <!-- Summary -->
+      <aside class="space-y-4 lg:sticky lg:top-4">
+        <UCard>
+          <div class="space-y-4">
             <div>
-              <p class="font-semibold">Owner</p>
-              <p class="text-sm text-muted hidden md:block">
-                Created with the OWNER role and emailed a login link and temporary password.
+              <div class="flex items-center justify-between text-sm">
+                <p class="font-semibold text-highlighted">Ready to onboard</p>
+                <span class="text-muted">{{ progress }}%</span>
+              </div>
+              <UProgress class="mt-2" :model-value="progress" size="sm" />
+            </div>
+
+            <div class="rounded-xl bg-elevated p-3">
+              <p class="truncate text-sm font-semibold text-highlighted">{{ state.name || 'New school' }}</p>
+              <p class="truncate text-xs text-muted">{{ state.domain || 'domain' }}.skultem.space</p>
+              <p v-if="state.district" class="mt-1 truncate text-xs text-muted">
+                {{ [state.chiefdom, state.district, state.region].filter(Boolean).join(', ') }}
               </p>
             </div>
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-muted">What happens next</p>
+              <ul class="mt-2 space-y-2.5 text-sm">
+                <li class="flex gap-2.5"><UIcon name="i-lucide-mail" class="mt-0.5 size-4 shrink-0 text-muted" />
+                  <span>{{ state.email || 'The owner' }} is emailed a login link and a temporary password.</span></li>
+                <li class="flex gap-2.5"><UIcon name="i-lucide-hand-coins" class="mt-0.5 size-4 shrink-0 text-muted" />
+                  <span v-if="fee">The platform fee is set up for you: {{ format(fee.perYear) }} per student per year ({{ format(fee.perTerm) }} × {{ fee.termsPerYear }} terms).</span>
+                  <span v-else>The platform fee is set up for you automatically.</span></li>
+                <li class="flex gap-2.5"><UIcon name="i-lucide-calendar-days" class="mt-0.5 size-4 shrink-0 text-muted" />
+                  <span>The academic calendar is created from the national one.</span></li>
+              </ul>
+            </div>
+
+            <div class="flex flex-col gap-2 border-t border-default pt-4">
+              <UButton type="submit" block size="lg" :loading="loading" icon="i-lucide-plus" label="Onboard school" class="hidden lg:flex" />
+              <UButton label="Cancel" color="neutral" variant="ghost" block to="/schools" class="hidden lg:flex" />
+            </div>
           </div>
-        </template>
-
-        <div class="grid gap-5 md:grid-cols-2">
-          <UFormField label="Given Names" name="givenNames" required>
-            <UInput v-model="state.givenNames" placeholder="e.g. Ishmael" class="w-full" :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="Family Name" name="familyName" required>
-            <UInput v-model="state.familyName" placeholder="e.g. Kargbo" class="w-full" :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="Email" name="email" required>
-            <UInput v-model="state.email" type="email" placeholder="owner@example.com" class="w-full"
-              :disabled="loading" />
-          </UFormField>
-
-          <UFormField label="Phone" name="phone" required>
-            <UInput v-model="state.phone" placeholder="+232..." class="w-full" :disabled="loading" />
-          </UFormField>
-        </div>
-
-        <template #footer>
-          <p class="text-xs text-muted">
-            The owner will be emailed a login link and temporary password for
-            {{ state.domain || '<domain>' }}.skultem.space.
-          </p>
-        </template>
-      </UCard>
-
-      <!-- Footer -->
-      <div class="flex justify-end gap-3">
-        <UButton label="Cancel" color="neutral" variant="outline" to="/schools" />
-        <UButton type="submit" :loading="loading" icon="i-lucide-plus" label="Onboard School" />
-      </div>
-
+        </UCard>
+      </aside>
     </UForm>
   </div>
 </template>
@@ -126,7 +165,7 @@ import * as yup from "yup";
 
 const store = useSystemStore();
 const { error: toastError, success: toastSuccess } = useNotify();
-const { regionOptions, districtOptions } = useRdcsl();
+const { regionOptions, districtOptions, chiefdomOptions } = useRdcsl();
 
 const loading = ref(false);
 
@@ -151,12 +190,12 @@ const state = reactive({
 
 const schema = yup.object({
   name: yup.string().min(3, "School name must be at least 3 characters").required("School name is required"),
-  domain: yup.string().required("Domain is required"),
+  domain: yup.string().matches(/^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/, "Use 3-40 lowercase letters, numbers or hyphens").required("Domain is required"),
   street: yup.string().min(5, "Street must be at least 5 characters").required("Street is required"),
   city: yup.string().required("City is required"),
   region: yup.string().required("Region is required"),
   district: yup.string().required("District is required"),
-  chiefdom: yup.string().min(5, "Chiefdom must be at least 5 characters").required("Chiefdom is required"),
+  chiefdom: yup.string().required("Chiefdom is required"),
   givenNames: yup.string().min(2, "Given names must be at least 2 characters").required("Owner given names are required"),
   familyName: yup.string().min(2, "Family name must be at least 2 characters").required("Owner family name is required"),
   email: yup.string().email("Invalid email format").required("Owner email is required"),
@@ -167,6 +206,36 @@ const schema = yup.object({
 // region changes rather than leaving a mismatched region/district pair to slip through.
 watch(() => state.region, () => {
   state.district = "";
+});
+
+// ...and a chiefdom within its district.
+watch(() => state.district, () => {
+  state.chiefdom = "";
+});
+
+// The domain follows the school's name until someone types their own.
+const slugify = (value: string) =>
+  value.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+const domainEdited = ref(false);
+watch(() => state.name, (name) => {
+  if (!domainEdited.value) state.domain = slugify(name);
+});
+function onDomainInput(value: string) {
+  domainEdited.value = true;
+  state.domain = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+}
+
+// What every student will be charged, so whoever onboards a school knows what it starts on.
+const fee = ref<PlatformFeeOverview>();
+const { format } = useMoney();
+onMounted(async () => {
+  fee.value = await PlatformApi().platformFee().catch(() => undefined);
+});
+
+const progress = computed(() => {
+  const parts = [state.name, state.domain, state.street, state.city, state.region, state.district, state.chiefdom,
+    state.givenNames, state.familyName, state.email, state.phone, structure.value.levels.length ? "x" : ""];
+  return Math.round((parts.filter(Boolean).length / parts.length) * 100);
 });
 
 // The backend generates and emails the owner their real login password itself once the school is

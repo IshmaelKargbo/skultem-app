@@ -18,9 +18,13 @@
                             <USkeleton v-if="loading" class="h-20 w-20 rounded-xl md:h-24 md:w-24" />
 
                             <template v-else>
-                                <UAvatar :src="record?.user?.photo || undefined" :alt="name" size="3xl"
-                                    class="h-20 w-20 rounded-xl md:h-24 md:w-24"
-                                    :class="{ 'opacity-50': uploadingPhoto }" />
+                                <button type="button" class="block cursor-zoom-in" aria-label="View full photo"
+                                    @click="photoOpen = true">
+                                    <UAvatar :src="record?.user?.photo || undefined" :alt="name" size="3xl"
+                                        class="h-20 w-20 rounded-xl md:h-24 md:w-24"
+                                        :class="{ 'opacity-50': uploadingPhoto }" />
+                                </button>
+                                <PhotoViewer v-model:open="photoOpen" :src="record?.user?.photo" :name="name" />
 
                                 <div v-if="uploadingPhoto"
                                     class="absolute inset-1.5 flex items-center justify-center rounded-xl">
@@ -142,6 +146,7 @@ const statusColor = computed(() => {
 })
 
 const uploadingPhoto = ref(false)
+const photoOpen = ref(false)
 
 async function onPhotoChange(event: Event) {
     const input = event.target as HTMLInputElement

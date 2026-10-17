@@ -20,9 +20,13 @@ export interface NavItem {
   adminPortalOnly?: boolean
   // Shown to a teacher only while they're a class master of some class.
   classMasterOnly?: boolean
+  // Planned but not built yet: shown dimmed with a "Soon" tag, and no link.
+  soon?: boolean
+  // The platform permission a system admin needs to see this (admin portal only).
+  permission?: string
 }
 
-export type MenuSection = { id: string, tier: string, label: string, items: NavItem[] }
+export type MenuSection = { id: string, tier: string, label: string, items: NavItem[], hint?: string, badge?: string, collapsible?: boolean }
 
 export function useMenu() {
   const { can } = useAuth()
@@ -30,6 +34,12 @@ export function useMenu() {
   const moduleStore = useModuleStore()
   const { isClassMaster } = useClassMaster()
   const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
+  const platform = usePlatformAccess()
+  const platformCan = platform.can
+  // The menu loads the admin's permissions itself, so it never depends on a navigation having done it first.
+  if (onAdminPortal) {
+    onMounted(() => { platform.load() })
+  }
 
   const navItems: NavItem[] = [
     { label: 'Dashboard', to: '/', exact: true, icon: DASHBOARD_ICON },
@@ -127,7 +137,6 @@ export function useMenu() {
       subNavs: [
         { label: 'Grades', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true },
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
-        { label: 'Assessment Setup', to: '/grades/configuration', icon: 'lucide:sliders-horizontal' },
       ]
     },
 
@@ -285,19 +294,71 @@ export function useMenu() {
 
     {
       label: 'Schools', to: '/schools', icon: SCHOOL_ICON,
-      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'SCHOOLS'
     },
     {
       label: 'Demo Requests', to: '/demo-requests', icon: 'i-lucide-presentation',
-      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
+      label: 'Platform Fee Collection', to: '/fee-collection', icon: 'i-lucide-hand-coins',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'BILLING'
+    },
+    {
+      label: 'Leads & Follow-ups', to: '/leads', icon: 'i-lucide-target',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
+      label: 'School Onboarding', to: '/onboarding', icon: 'i-lucide-list-checks',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
+      label: 'Announcements', to: '/announcements', icon: 'i-lucide-megaphone',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'COMMUNICATION'
+    },
+    {
+      label: 'Testimonials', to: '/testimonials', icon: 'i-lucide-quote',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
+      label: 'Blog', to: '/blog', icon: 'i-lucide-newspaper',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
+      label: 'Contact Messages', to: '/contact-messages', icon: 'i-lucide-inbox',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
+      label: 'Support Tickets', to: '/support', icon: 'i-lucide-life-buoy',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'SUPPORT'
+    },
+    {
+      label: 'Notifications', to: '/notifications', icon: 'i-lucide-bell',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'COMMUNICATION'
+    },
+    {
+      label: 'System Health', to: '/system-health', icon: 'i-lucide-activity',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'HEALTH'
+    },
+    {
+      label: 'Roles & Permissions', to: '/roles', icon: 'i-lucide-shield-check',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'ROLES'
+    },
+    {
+      label: 'Platform Settings', to: '/platform-settings', icon: 'i-lucide-settings-2',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'SETTINGS'
+    },
+    {
+      label: 'Audit Logs', to: '/audit-logs', icon: 'i-lucide-scroll-text',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'AUDIT'
     },
     {
       label: 'Academic Calendar', to: '/calendar', icon: 'i-lucide-calendar-range',
-      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'SCHOOLS'
     },
     {
       label: 'Admins', to: '/users', icon: USERS_ICON,
-      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'ADMINS'
     },
     {
       label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN],
@@ -319,7 +380,7 @@ export function useMenu() {
         { label: 'Monthly Summary', to: '/hr/teacher-attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Term Summary', to: '/hr/teacher-attendance/term-summary', icon: TERM_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Management Reports', to: '/hr/teacher-attendance/management-reports', icon: INSPECTION_REPORT_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
-        { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.TEACHER, Role.SUPER_ADMIN] },
         { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
       ]
     },
@@ -372,7 +433,7 @@ export function useMenu() {
   const visibleNavItems = computed(() =>
     navItems
       .filter((item) => onAdminPortal
-        ? item.adminPortalOnly || !item.roles
+        ? (item.adminPortalOnly || !item.roles) && (!item.permission || platformCan(item.permission))
         : (!item.roles || can(item.roles)) && !item.adminPortalOnly
           && (!item.classMasterOnly || isClassMaster.value))
       .map((item) => {
@@ -410,6 +471,56 @@ export function useMenu() {
     { id: 'communication', label: 'Communication', items: ['Communicate'] },
   ]
 
+  // The system admin's menu. A plain string is a page that exists (matched by its label); an object is
+  // something planned that is not built yet - it only shows once "Show upcoming" is switched on.
+  type PlannedItem = { label: string, icon: string }
+  const ADMIN_PORTAL_GROUPS: { id: string, label: string, hint?: string, badge?: string, items: (string | PlannedItem)[] }[] = [
+    { id: 'overview', label: '', items: ['Dashboard'] },
+    {
+      id: 'platform', label: 'Platform Management', hint: 'Manage schools and platform access.',
+      items: [
+        'Schools', 'Admins',
+        'Roles & Permissions',
+        'Academic Calendar',
+        'Platform Settings',
+      ],
+    },
+    {
+      id: 'business', label: 'Business Management', hint: 'Manage the business side of Skultem.',
+      items: [
+        'Platform Fee Collection',
+        'School Onboarding',
+      ],
+    },
+    {
+      id: 'growth', label: 'Growth & Marketing', hint: 'Turn interest into paying schools.',
+      items: [
+        'Leads & Follow-ups',
+        'Demo Requests', 'Contact Messages', 'Blog', 'Testimonials',
+      ],
+    },
+    {
+      id: 'communication', label: 'Communication', hint: 'Communicate with schools and platform users.',
+      items: [
+        'Announcements',
+        'Notifications',
+      ],
+    },
+    {
+      id: 'operations', label: 'Support & Operations', hint: 'Help schools and keep the platform reliable.',
+      items: [
+        'Support Tickets',
+        'System Health',
+        'Audit Logs',
+      ],
+    },
+  ]
+
+  const isPlanned = (item: string | PlannedItem): item is PlannedItem => typeof item !== 'string'
+  // Remembered across the desktop sidebar and the mobile drawer, and across pages.
+  const showUpcoming = useState('menu-show-upcoming', () => false)
+  const upcomingCount = ADMIN_PORTAL_GROUPS.flatMap((group) => group.items).filter(isPlanned).length
+
   // The module a whole menu item (or group) belongs to, if all of it does.
   function moduleInfoFor(item: NavItem) {
     const paths = item.subNavs ? item.subNavs.map((nav) => nav.to) : item.to ? [item.to] : []
@@ -420,9 +531,27 @@ export function useMenu() {
   const menuSections = computed<MenuSection[]>(() => {
     const items = visibleNavItems.value
 
-    // The admin portal has nothing to group - a plain list.
+    // The system admin's menu: grouped by what the admin does there, in this order. A page that exists but
+    // is not listed (a new one nobody has placed yet) lands in a last group instead of disappearing.
     if (onAdminPortal) {
-      return [{ id: 'all', tier: '', label: '', items }]
+      const placed = new Set(ADMIN_PORTAL_GROUPS.flatMap((group) => group.items.filter((i) => !isPlanned(i))))
+      return [
+        ...ADMIN_PORTAL_GROUPS.map((group) => ({
+          id: group.id,
+          tier: '',
+          label: group.label,
+          hint: group.hint,
+          badge: group.badge,
+          collapsible: !!group.label,
+          // In the order the group lists them; planned ones only when asked for.
+          items: group.items
+            .map((entry) => isPlanned(entry)
+              ? (showUpcoming.value ? { label: entry.label, icon: entry.icon, soon: true } as NavItem : undefined)
+              : items.find((item) => item.label === entry))
+            .filter((item): item is NavItem => !!item),
+        })),
+        { id: 'other', tier: '', label: 'More', items: items.filter((item) => !placed.has(item.label)) },
+      ].filter((section) => section.items.length)
     }
 
     const essentials: NavItem[] = []
@@ -474,5 +603,9 @@ export function useMenu() {
     return [...essentialSections, ...moduleSections]
   })
 
-  return { menuSections, onAdminPortal }
+  // Which of the system admin's groups are folded away (remembered across pages).
+  const collapsed = useState<Record<string, boolean>>('menu-collapsed', () => ({}))
+  const toggleSection = (id: string) => { collapsed.value = { ...collapsed.value, [id]: !collapsed.value[id] } }
+
+  return { menuSections, onAdminPortal, showUpcoming, collapsed, toggleSection, upcomingCount: onAdminPortal ? upcomingCount : 0 }
 }

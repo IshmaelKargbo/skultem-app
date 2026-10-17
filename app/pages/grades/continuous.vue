@@ -7,7 +7,7 @@
         <UButton icon="lucide:chart-no-axes-combined" label="Class insight" color="neutral" variant="subtle"
           @click="insightOpen = true" />
         <UButton icon="lucide:calendar-check" color="neutral" variant="subtle"
-          :label="`${CA_UNITS[structure.caFrequency].plural} (${lockedCount}/${structure.caEntries} locked)`"
+          :label="`${caPartsNoun(structure).plural} (${lockedCount}/${structure.caEntries} locked)`"
           @click="weeksOpen = true" />
         <UButton to="/grades" icon="lucide:arrow-left" label="Back" color="neutral" variant="subtle" />
       </div>
@@ -38,7 +38,7 @@
             <UIcon name="lucide:chevron-right" class="size-4 text-muted" />
             <UBadge :color="allFormalIn ? 'success' : formalEditable ? 'primary' : 'neutral'" variant="subtle" size="lg"
               :icon="allFormalIn ? 'lucide:check-circle' : formalEditable ? 'lucide:circle-dot' : 'lucide:lock'">
-              {{ monitorOnly ? 'Formal test (the score)' : '2 · Formal test' }}
+              {{ monitorOnly ? `${caFormalName(structure)} (the score)` : `2 · ${caFormalName(structure)}` }}
             </UBadge>
           </div>
           <p class="text-xs text-muted sm:text-right">{{ progressText }}</p>
@@ -49,13 +49,16 @@
       <div class="space-y-3 md:hidden">
         <div v-for="row in rows" :key="row.id" class="rounded-xl border border-default p-3">
           <div class="mb-3 flex items-center justify-between gap-2">
-            <button type="button" class="min-w-0 text-left" @click="detailId = row.id">
+            <button type="button" class="flex min-w-0 items-center gap-2.5 text-left" @click="detailId = row.id">
+              <UAvatar :src="row.photo" :alt="row.name" size="lg" class="shrink-0 bg-white ring-1 ring-default" />
+              <span class="min-w-0">
               <p class="truncate text-sm font-semibold text-highlighted">{{ row.name }}</p>
               <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                 CA {{ preview(row).ca ?? '-' }}<span v-if="preview(row).ca !== null">%</span>
                 <UBadge v-if="strengthOf(preview(row).ca)" :color="strengthOf(preview(row).ca)!.color" variant="soft"
                   size="sm">{{ strengthOf(preview(row).ca)!.label }}</UBadge>
               </p>
+              </span>
             </button>
             <div class="shrink-0 rounded-xl border border-default bg-elevated/40 px-3 py-1 text-center">
               <p class="text-[10px] uppercase tracking-wide text-muted">Score</p>
@@ -67,22 +70,31 @@
             <div v-for="n in structure.caEntries" :key="n">
               <p class="mb-1 flex items-center gap-1 text-[11px] text-muted">
                 <UIcon v-if="isLocked(n)" name="lucide:lock" class="size-3 text-success" />
-                {{ caRecordingLabel(structure.caFrequency, n) }}
+                {{ caPartLabel(structure, n) }}
+                <span v-if="structure.caComponents?.length">({{ structure.caComponents[n - 1]?.weight }}%)</span>
+                <UBadge v-if="caPartIsAuto(structure, n)" size="sm" variant="subtle" color="info">from register</UBadge>
               </p>
-              <UInput v-if="caEditable && !isLocked(n)" v-model.number="form[row.id]!.entries[n - 1]" type="number"
+              <UInput v-if="caEditable && !isLocked(n) && !caPartIsAuto(structure, n)"
+                v-model.number="form[row.id]!.entries[n - 1]" type="number"
                 min="0" max="100" :ui="{ base: 'text-base' }" @update:model-value="clamp(row.id, n - 1)" />
               <p v-else class="rounded-lg bg-elevated/40 px-3 py-2 text-base">{{ form[row.id]?.entries[n - 1] ?? '-' }}</p>
+              <p v-if="structure.caComponents?.length" class="mt-0.5 text-[11px] text-muted">
+                ({{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }})
+              </p>
             </div>
           </div>
 
           <div class="mt-3 border-t border-dashed border-default pt-3">
-            <p class="mb-1 text-[11px] text-muted">Formal test (0-100)</p>
+            <p class="mb-1 text-[11px] text-muted">{{ caFormalName(structure) }} (0-100)</p>
             <UInput v-if="formalEditable" v-model.number="form[row.id]!.formal" type="number" min="0" max="100"
               :ui="{ base: 'text-base' }" @update:model-value="clampFormal(row.id)" />
             <p v-else-if="!caSubmitted && !monitorOnly" class="inline-flex items-center gap-1 text-xs text-muted">
               <UIcon name="lucide:lock" /> Opens after the CA is submitted
             </p>
             <p v-else class="rounded-lg bg-elevated/40 px-3 py-2 text-base">{{ form[row.id]?.formal ?? '-' }}</p>
+            <p v-if="!monitorOnly && (caSubmitted || formalEditable)" class="mt-0.5 text-[11px] text-muted">
+              ({{ fmt(preview(row).formalPts) }}/{{ structure.formalPercentage }})
+            </p>
           </div>
         </div>
       </div>
@@ -97,43 +109,52 @@
                 <th v-for="n in structure.caEntries" :key="n" class="px-2 py-3">
                   <span class="flex items-center gap-1 whitespace-nowrap">
                     <UIcon v-if="isLocked(n)" name="lucide:lock" class="text-success" />
-                    {{ caRecordingLabel(structure.caFrequency, n) }}
+                    {{ caPartLabel(structure, n) }}
+                    <span v-if="structure.caComponents?.length" class="text-[10px] normal-case text-muted">{{ structure.caComponents[n - 1]?.weight }}%</span>
+                    <UBadge v-if="caPartIsAuto(structure, n)" size="sm" variant="subtle" color="info">register</UBadge>
                   </span>
                 </th>
                 <th class="px-3 py-3">CA avg</th>
-                <th class="px-3 py-3">Formal test</th>
+                <th class="px-3 py-3">{{ caFormalName(structure) }}</th>
                 <th class="px-3 py-3">Score</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in rows" :key="row.id" class="border-b border-default last:border-0">
                 <td class="sticky left-0 bg-default px-4 py-2">
-                  <button type="button" class="flex items-center gap-2 text-left" @click="detailId = row.id">
+                  <button type="button" class="flex items-center gap-2.5 text-left" @click="detailId = row.id">
+                    <UAvatar :src="row.photo" :alt="row.name" size="md" class="shrink-0 bg-white ring-1 ring-default" />
                     <span class="font-medium text-highlighted whitespace-nowrap">{{ row.name }}</span>
                     <UIcon v-if="trendOf(row).trend === 'improving'" name="lucide:trending-up" class="size-4 text-success" />
                     <UIcon v-else-if="trendOf(row).trend === 'declining'" name="lucide:trending-down" class="size-4 text-error" />
                   </button>
                 </td>
-                <td v-for="n in structure.caEntries" :key="n" class="px-1 py-2">
-                  <UInput v-if="caEditable && !isLocked(n)" v-model.number="form[row.id]!.entries[n - 1]" type="number"
-                    min="0" max="100" class="w-20" :ui="{ base: 'text-base' }" @update:model-value="clamp(row.id, n - 1)" />
+                <td v-for="n in structure.caEntries" :key="n" class="px-1 py-2 whitespace-nowrap">
+                  <UInput v-if="caEditable && !isLocked(n) && !caPartIsAuto(structure, n)"
+                    v-model.number="form[row.id]!.entries[n - 1]" type="number"
+                    min="0" max="100" class="w-20 align-middle" :ui="{ base: 'text-base' }" @update:model-value="clamp(row.id, n - 1)" />
                   <span v-else class="px-2">{{ form[row.id]?.entries[n - 1] ?? '-' }}</span>
+                  <!-- The mark out of 100, then what it is worth: 100 on a 10% part = 100 (10/10) -->
+                  <span v-if="structure.caComponents?.length" class="text-xs text-muted">({{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }})</span>
                 </td>
                 <td class="px-3 py-2">
                   <span class="font-medium">{{ preview(row).ca ?? '-' }}</span>
                   <UBadge v-if="strengthOf(preview(row).ca)" :color="strengthOf(preview(row).ca)!.color" variant="soft"
                     size="sm" class="ml-1.5">{{ strengthOf(preview(row).ca)!.label }}</UBadge>
+                  <span v-if="!monitorOnly" class="ml-1 text-xs text-muted">({{ fmt(preview(row).caPts) }}/{{ structure.caPercentage }})</span>
                 </td>
-                <td class="px-3 py-2">
+                <td class="px-3 py-2 whitespace-nowrap">
                   <UInput v-if="formalEditable" v-model.number="form[row.id]!.formal" type="number" min="0" max="100"
-                    class="w-24" :ui="{ base: 'text-base' }" @update:model-value="clampFormal(row.id)" />
+                    class="w-24 align-middle" :ui="{ base: 'text-base' }" @update:model-value="clampFormal(row.id)" />
                   <span v-else-if="!caSubmitted && !monitorOnly" class="inline-flex items-center gap-1 text-xs text-muted">
                     <UIcon name="lucide:lock" /> after CA
                   </span>
                   <span v-else>{{ form[row.id]?.formal ?? '-' }}</span>
+                  <span v-if="!monitorOnly && (caSubmitted || formalEditable)" class="ml-1 text-xs text-muted">({{ fmt(preview(row).formalPts) }}/{{ structure.formalPercentage }})</span>
                 </td>
                 <td class="px-3 py-2">
                   <UBadge color="primary" variant="soft" size="lg">{{ preview(row).total }}</UBadge>
+                  <span class="ml-1 text-xs text-muted">(/100)</span>
                 </td>
               </tr>
             </tbody>
@@ -168,7 +189,7 @@
             <div>
               <p class="font-medium text-highlighted">CA is for monitoring</p>
               <p class="mt-0.5 text-muted">
-                Record {{ structure.caEntries }} {{ CA_UNITS[structure.caFrequency].plural.toLowerCase() }} of classwork to see how
+                Record {{ structure.caEntries }} {{ caPartsNoun(structure).plural.toLowerCase() }} of classwork to see how
                 strong each student is (Strong, Steady or Needs support). It never changes the score, and nothing waits
                 on it - you can enter the test and submit for approval at any time.
               </p>
@@ -178,12 +199,12 @@
             <div>
               <p class="font-medium text-highlighted">Step 1 · CA recordings ({{ structure.caPercentage }}%)</p>
               <p class="mt-0.5 text-muted">
-                Record {{ structure.caEntries }} {{ CA_UNITS[structure.caFrequency].plural.toLowerCase() }} for every student.
+                Record {{ structure.caEntries }} {{ caPartsNoun(structure).plural.toLowerCase() }} for every student.
                 Lock each one once everyone has a mark, then submit the CA - that closes the rest.
               </p>
             </div>
             <div>
-              <p class="font-medium text-highlighted">Step 2 · Formal test ({{ structure.formalPercentage }}%)</p>
+              <p class="font-medium text-highlighted">Step 2 · {{ caFormalName(structure) }} ({{ structure.formalPercentage }}%)</p>
               <p class="mt-0.5 text-muted">Opens once the CA is submitted. Enter one mark out of 100 for every student.</p>
             </div>
             <div>
@@ -203,7 +224,7 @@
     </UModal>
 
     <!-- Weeks: lock / unlock each recording. -->
-    <UModal v-model:open="weeksOpen" :title="structure ? `${CA_UNITS[structure.caFrequency].plural}` : 'Recordings'"
+    <UModal v-model:open="weeksOpen" :title="structure ? `${caPartsNoun(structure).plural}` : 'Recordings'"
       description="Lock a recording once every student has a mark for it, so it can't be changed later.">
       <template #body>
         <div v-if="structure" class="divide-y divide-default">
@@ -211,7 +232,7 @@
             <div class="flex min-w-0 items-center gap-2">
               <UIcon :name="isLocked(n) ? 'lucide:lock' : 'lucide:pencil-line'"
                 :class="isLocked(n) ? 'text-success' : 'text-muted'" />
-              <p class="text-sm font-medium">{{ caRecordingLabel(structure.caFrequency, n) }}</p>
+              <p class="text-sm font-medium">{{ caPartLabel(structure, n) }}</p>
               <span class="text-xs text-muted">{{ weekFilled(n) }}/{{ rows.length }} marked</span>
             </div>
             <UButton v-if="editable && !isLocked(n) && weekComplete(n)" size="sm" variant="subtle" color="success"
@@ -244,7 +265,7 @@
                 size="sm">{{ strengthOf(preview(detailRow).ca)!.label }}</UBadge>
             </div>
             <div class="rounded-xl bg-elevated/40 p-3">
-              <p class="text-xs text-muted">Formal test</p>
+              <p class="text-xs text-muted">{{ caFormalName(structure) }}</p>
               <p class="text-lg font-bold text-highlighted">{{ form[detailRow.id]?.formal ?? '-' }}</p>
             </div>
             <div class="rounded-xl bg-primary/10 p-3">
@@ -257,7 +278,7 @@
             <p class="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted">Recordings</p>
             <div class="flex flex-wrap gap-2">
               <span v-for="n in structure.caEntries" :key="n" class="rounded-lg border border-default px-2.5 py-1 text-xs">
-                <span class="text-muted">{{ caRecordingLabel(structure.caFrequency, n) }}:</span>
+                <span class="text-muted">{{ caPartLabel(structure, n) }}:</span>
                 <span class="ml-1 font-medium text-highlighted">{{ form[detailRow.id]?.entries[n - 1] ?? '-' }}</span>
               </span>
             </div>
@@ -285,7 +306,7 @@
       <template #content>
         <UCard>
           <template #header>
-            <h3 class="text-lg font-semibold">Unlock {{ structure ? caRecordingLabel(structure.caFrequency, unlockWeek) : '' }}</h3>
+            <h3 class="text-lg font-semibold">Unlock {{ structure ? caPartLabel(structure, unlockWeek) : '' }}</h3>
           </template>
           <div class="space-y-3">
             <UAlert color="warning" variant="soft" icon="lucide:shield-alert" title="This is recorded on the audit trail"
@@ -389,7 +410,17 @@ function resetForm() {
   }
 }
 
-async function load() {
+// Brings the attendance part up to date from the register (a no-op when the setup has no such part), so the
+// sheet always opens with current marks. Returns whether anything changed.
+async function syncAttendance() {
+  const s = structure.value
+  if (!s || !editable.value || s.caSubmitted || !s.caComponents?.some(c => c.source === 'ATTENDANCE')) return false
+  return (await AssessmentApi().syncAttendanceCa(teacherSubjectId.value, {
+    assessmentId: assessmentId.value, termId: termId.value
+  })) > 0
+}
+
+async function load(sync = true) {
   loading.value = true
   try {
     const [students, cycles] = await Promise.all([
@@ -399,6 +430,7 @@ async function load() {
     rows.value = students || []
     assessment.value = (cycles || []).find((a: Assessment) => a.id === assessmentId.value) || null
     resetForm()
+    if (sync && await syncAttendance()) return load(false)
   } catch (error: any) {
     toastError(error?.data?.message || error?.message || 'Failed to load the assessment')
   } finally {
@@ -420,10 +452,19 @@ function clampFormal(rowId: string) {
   if (f) f.formal = clampTo(f.formal)
 }
 
+// 77 -> "77", 28.8 -> "28.8", missing -> "-"
+function fmt(n: number | null | undefined) {
+  return n === null || n === undefined || Number.isNaN(n) ? '-' : String(Math.round(n * 10) / 10)
+}
+// What a mark out of 100 is worth in a part of that weight: 100 on a 10% part is 10.
+function ptsOf(mark: number | null | undefined, weight: number | undefined) {
+  return mark === null || mark === undefined || !weight ? '-' : fmt(mark * weight / 100)
+}
+
 function preview(row: StudentAssessment) {
   const s = structure.value, f = form[row.id]
   if (!s || !f) return { ca: null as number | null, caPts: 0, formalPts: 0, total: 0 }
-  const ca = caComponentOf(f.entries)
+  const ca = caComponentOf(f.entries, caWeights(s))
   return {
     ca,
     caPts: caPoints(ca, s.caPercentage),
@@ -458,7 +499,7 @@ const hint = computed(() => {
       : 'Enter the formal test for every student, then submit for approval. CA can be recorded any time and never changes the score.'
   if (!caSubmitted.value)
     return missingCa.value > 0
-      ? `${missingCa.value} CA recording${missingCa.value === 1 ? '' : 's'} still empty. Every ${structure.value ? CA_UNITS[structure.value.caFrequency].singular.toLowerCase() : 'recording'} needs a mark for every student before the CA can be submitted.`
+      ? `${missingCa.value} CA recording${missingCa.value === 1 ? '' : 's'} still empty. Every ${structure.value ? caPartsNoun(structure.value).singular.toLowerCase() : 'recording'} needs a mark for every student before the CA can be submitted.`
       : 'All CA recordings are in. Submit the CA to open the formal test.'
   return allFormalIn.value
     ? 'Everything is in. Submit for approval.'
@@ -473,7 +514,7 @@ function buildRecords() {
       scoreId: score.id,
       // Only what has been recorded - an empty box means "not yet", never "zero".
       // Locked weeks are closed - never sent back.
-      entries: caSubmitted.value ? [] : f.entries.flatMap((v, i) => v === null || isLocked(i + 1) ? [] : [{ entryNumber: i + 1, score: v }]),
+      entries: caSubmitted.value ? [] : f.entries.flatMap((v, i) => v === null || isLocked(i + 1) || caPartIsAuto(structure.value, i + 1) ? [] : [{ entryNumber: i + 1, score: v }]),
       formalScore: (caSubmitted.value || monitorOnly.value) ? f.formal : null
     }]
   })
@@ -507,7 +548,7 @@ async function lockWeek(week: number) {
     await AssessmentApi().lockContinuousWeek(teacherSubjectId.value, {
       assessmentId: assessmentId.value, termId: termId.value, week
     })
-    success(`${structure.value ? caRecordingLabel(structure.value.caFrequency, week) : 'Recording'} locked`)
+    success(`${structure.value ? caPartLabel(structure.value, week) : 'Recording'} locked`)
     await load()
   } catch (error: any) {
     toastError(error?.data?.message || error?.message || 'Failed to lock the recording')
