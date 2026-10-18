@@ -120,7 +120,7 @@ export const useSystemStore = defineStore('system', {
       }
     },
 
-    async addAdmin(payload: { email: string, password: string, givenNames: string, familyName: string }) {
+    async addAdmin(payload: { email: string, password: string, givenNames: string, familyName: string, role?: string }) {
       return await SystemApi().addAdmin(payload)
     },
 

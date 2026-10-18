@@ -167,7 +167,7 @@ export const SystemApi = () => {
     },
 
     // Another system admin, added by an existing one (see AddSystemAdminUseCase on the backend).
-    addAdmin: async (payload: { email: string, password: string, givenNames: string, familyName: string }) => {
+    addAdmin: async (payload: { email: string, password: string, givenNames: string, familyName: string, role?: string }) => {
       try {
         const res = await $api('/system/admins', { method: 'POST', body: payload }) as any
         return res.data

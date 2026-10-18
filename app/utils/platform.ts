@@ -13,6 +13,7 @@ export type PlatformRoleInfo = {
     label: string
     description: string
     permissions: PlatformPermission[]
+    custom: boolean
 }
 
 export type PlatformStaff = {

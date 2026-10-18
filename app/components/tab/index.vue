@@ -1,19 +1,32 @@
 <template>
   <div ref="container" class="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
     <div class="inline-flex min-w-max gap-1 rounded-3xl border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
-      <NuxtLink
-        v-for="tab in tabs"
-        :key="tab.to"
-        :to="tab.to"
-        :data-active="isActive(tab.to, tab.exact) || undefined"
-        class="flex items-center gap-1.5 rounded-3xl px-3 py-2 text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
-        :class="isActive(tab.to, tab.exact)
-          ? 'bg-secondary-100 text-secondary-600 font-semibold dark:bg-secondary-800 dark:text-secondary-200'
-          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-      >
-        <UIcon v-if="tab.icon" :name="tab.icon" class="size-4 shrink-0" />
-        {{ tab.label }}
-      </NuxtLink>
+      <template v-for="tab in tabs" :key="tab.key || tab.to || tab.label">
+        <NuxtLink
+          v-if="tab.to"
+          :to="tab.to"
+          :data-active="isActive(tab.to, tab.exact) || undefined"
+          class="flex items-center gap-1.5 rounded-3xl px-3 py-2 text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
+          :class="isActive(tab.to, tab.exact) ? activeClass : idleClass"
+        >
+          <UIcon v-if="tab.icon" :name="tab.icon" class="size-4 shrink-0" />
+          {{ tab.label }}
+        </NuxtLink>
+
+        <!-- No `to`: a tab that switches something on this page, driven by v-model -->
+        <button
+          v-else
+          type="button"
+          :data-active="tab.key === modelValue || undefined"
+          class="flex items-center gap-1.5 rounded-3xl px-3 py-2 text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
+          :class="tab.key === modelValue ? activeClass : idleClass"
+          @click="tab.key && emit('update:modelValue', tab.key)"
+        >
+          <UIcon v-if="tab.icon" :name="tab.icon" class="size-4 shrink-0" />
+          {{ tab.label }}
+          <UBadge v-if="tab.count !== undefined" size="sm" variant="subtle" :color="tab.warn && tab.count ? 'warning' : tab.key === modelValue ? 'secondary' : 'neutral'" :label="tab.count" />
+        </button>
+      </template>
     </div>
   </div>
 </template>
@@ -22,15 +35,24 @@
 import { useRoute } from 'vue-router'
 
 interface Tab {
+  key?: string
   label: string
-  to: string
+  to?: string
   exact?: boolean
   icon?: string
+  count?: number
+  warn?: boolean
 }
 
 const props = defineProps<{
   tabs: Tab[]
+  modelValue?: string
 }>()
+
+const emit = defineEmits<{ 'update:modelValue': [key: string] }>()
+
+const activeClass = 'bg-secondary-100 text-secondary-600 font-semibold dark:bg-secondary-800 dark:text-secondary-200'
+const idleClass = 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
 
 const route = useRoute()
 const container = ref<HTMLElement | null>(null)
@@ -59,4 +81,5 @@ function scrollActiveIntoView() {
 
 onMounted(scrollActiveIntoView)
 watch(() => route.path, scrollActiveIntoView)
+watch(() => props.modelValue, scrollActiveIntoView)
 </script>

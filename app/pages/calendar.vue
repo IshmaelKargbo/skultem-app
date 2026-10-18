@@ -4,32 +4,34 @@
       title="No calendar configured yet"
       description="Until you save one, new schools are created without an academic year or terms and have to set them up by hand." />
 
+    <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <Metric v-for="m in metrics" :key="m.label" :record="{ label: m.label, value: m.value, subtle: m.subtle, icon: m.icon, color: m.color, isReady: !loading }" />
+    </div>
+
     <UForm :schema="schema" :state="state" class="grid items-start gap-5 lg:grid-cols-3" @submit="onSubmit">
       <div class="space-y-5 lg:col-span-2">
         <UCard>
           <template #header>
             <div class="flex items-center gap-3">
-              <span class="flex size-8 items-center justify-center rounded-lg bg-elevated text-muted">
-                <UIcon name="i-lucide-calendar-range" class="size-4" />
+              <span class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <UIcon name="i-lucide-calendar-range" class="size-5" />
               </span>
               <div>
                 <p class="font-semibold">Academic year</p>
-                <p class="hidden text-sm text-muted md:block">Saving a new name makes it the current year; saving the
-                  same name edits it.</p>
+                <p class="hidden text-sm text-muted md:block">Saving a new name makes it the current year; saving the same name edits it.</p>
               </div>
             </div>
           </template>
 
           <div class="grid gap-5 md:grid-cols-3">
             <UFormField label="Name" name="name" required>
-              <UInput v-model="state.name" placeholder="e.g. 2025/2026" class="w-full" :disabled="saving" />
+              <UInput v-model="state.name" size="lg" icon="i-lucide-tag" placeholder="e.g. 2025/2026" class="w-full" :disabled="saving" />
             </UFormField>
             <UFormField label="Start date" name="startDate" required>
-              <UInput v-model="state.startDate" type="date" class="w-full" :disabled="saving" />
+              <UInput v-model="state.startDate" size="lg" type="date" class="w-full" :disabled="saving" />
             </UFormField>
             <UFormField label="End date" name="endDate" required>
-              <UInput v-model="state.endDate" type="date" class="w-full" :disabled="saving"
-                :min="state.startDate || undefined" />
+              <UInput v-model="state.endDate" size="lg" type="date" class="w-full" :disabled="saving" :min="state.startDate || undefined" />
             </UFormField>
           </div>
         </UCard>
@@ -38,28 +40,26 @@
           <template #header>
             <div class="flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <span class="flex size-8 items-center justify-center rounded-lg bg-elevated text-muted">
-                  <UIcon name="i-lucide-layers" class="size-4" />
+                <span class="flex size-10 items-center justify-center rounded-xl bg-secondary/15 text-secondary-600">
+                  <UIcon name="i-lucide-layers" class="size-5" />
                 </span>
                 <div>
                   <p class="font-semibold">Terms</p>
-                  <p class="hidden text-sm text-muted md:block">In order, inside the academic year, without overlapping.
-                    Up to {{ MAX_TERMS }}.</p>
+                  <p class="hidden text-sm text-muted md:block">In order, inside the academic year, without overlapping. Up to {{ MAX_TERMS }}.</p>
                 </div>
               </div>
-              <UButton label="Add term" icon="i-lucide-plus" color="neutral" variant="outline" size="sm"
-                :disabled="saving || state.terms.length >= MAX_TERMS" @click="addTerm" />
+              <UButton label="Add term" icon="i-lucide-plus" size="sm" :disabled="saving || state.terms.length >= MAX_TERMS" @click="addTerm" />
             </div>
           </template>
 
           <div class="space-y-4">
-            <div v-for="(term, index) in state.terms" :key="index" class="rounded-xl border border-default p-4">
-              <div class="mb-3 flex items-center justify-between">
-                <p class="flex items-center gap-2 text-sm font-semibold text-highlighted">
-                  <span class="flex size-6 items-center justify-center rounded-full bg-elevated text-xs text-toned">{{
-                    index + 1
-                  }}</span>
-                  {{ term.name || `Term ${index + 1}` }}
+            <div v-for="(term, index) in state.terms" :key="index" class="rounded-xl border border-l-4 border-default p-4" :class="colorOf(index).edge">
+              <div class="mb-3 flex items-center justify-between gap-2">
+                <p class="flex min-w-0 items-center gap-2 text-sm font-semibold text-highlighted">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full text-xs" :class="colorOf(index).soft">{{ index + 1 }}</span>
+                  <span class="truncate">{{ term.name || `Term ${index + 1}` }}</span>
+                  <UBadge v-if="weeksOf(term)" size="sm" variant="subtle" color="neutral" :label="`${weeksOf(term)} wk`" />
+                  <UBadge v-if="termState(term)" size="sm" variant="subtle" :color="termState(term)!.color" :label="termState(term)!.label" />
                 </p>
                 <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="sm" aria-label="Remove term"
                   :disabled="saving || state.terms.length <= 1" @click="removeTerm(index)" />
@@ -74,18 +74,16 @@
                 </UFormField>
                 <UFormField label="End date" :name="`terms.${index}.endDate`" required>
                   <UInput v-model="term.endDate" type="date" class="w-full" :disabled="saving"
-                    :min="term.startDate || termMin(index)" :max="state.endDate || undefined"
-                    @change="clampTerm(term)" />
+                    :min="term.startDate || termMin(index)" :max="state.endDate || undefined" @change="clampTerm(term)" />
                 </UFormField>
               </div>
             </div>
           </div>
 
           <template #footer>
-            <p class="text-xs text-muted">
-              A new school gets the term running today activated (which also sets up its platform fee), terms that
-              already
-              ended closed, and the rest upcoming.
+            <p class="flex items-start gap-1.5 text-xs text-muted">
+              <UIcon name="i-lucide-info" class="mt-0.5 size-3.5 shrink-0" />
+              A new school gets the term running today activated (which also sets up its platform fee), terms that already ended closed, and the rest upcoming.
             </p>
           </template>
         </UCard>
@@ -97,43 +95,42 @@
           <template #header>
             <div class="flex items-center justify-between gap-2">
               <h3 class="font-semibold text-highlighted">Year at a glance</h3>
-              <UBadge v-if="calendar" size="sm" variant="subtle" color="neutral" :label="`Saved: ${calendar.name}`" />
+              <UBadge v-if="calendar" size="sm" variant="subtle" color="primary" :label="`Saved: ${calendar.name}`" />
             </div>
           </template>
 
-          <p v-if="!timeline" class="py-6 text-center text-sm text-muted">Enter the year's start and end dates to see it
-            laid
-            out.</p>
+          <p v-if="!timeline" class="py-6 text-center text-sm text-muted">Enter the year's start and end dates to see it laid out.</p>
 
           <div v-else class="space-y-5">
             <div>
-              <div class="flex justify-between text-xs text-muted"><span>{{ fmt(state.startDate) }}</span><span>{{
-                fmt(state.endDate) }}</span></div>
-              <div class="relative mt-1.5 h-8 overflow-hidden rounded-lg bg-elevated">
+              <div class="relative h-10 overflow-hidden rounded-xl bg-elevated">
                 <div v-for="t in timeline.terms.filter(x => x.ok)" :key="t.key"
-                  class="absolute inset-y-1 flex items-center justify-center overflow-hidden rounded-md bg-primary text-[11px] font-medium text-white"
-                  :style="{ left: `${t.left}%`, width: `${t.width}%` }" :title="t.name">{{ t.key + 1 }}</div>
+                  class="absolute inset-y-1.5 flex items-center justify-center overflow-hidden rounded-lg text-[11px] font-semibold text-white"
+                  :class="colorOf(t.key).bar" :style="{ left: `${t.left}%`, width: `${t.width}%` }" :title="t.name">{{ t.key + 1 }}</div>
+                <div v-if="todayPct !== null" class="absolute inset-y-0 w-0.5 bg-error" :style="{ left: `${todayPct}%` }" title="Today" />
               </div>
-              <p class="mt-1.5 text-xs text-muted">{{ timeline.teachingWeeks }} of {{ timeline.totalWeeks }} weeks are
-                in
-                term. The gaps are the breaks.</p>
+              <div class="relative mt-1 h-4">
+                <span v-for="m in monthTicks" :key="m.left" class="absolute -translate-x-1/2 text-[10px] text-muted" :style="{ left: `${m.left}%` }">{{ m.label }}</span>
+              </div>
+              <div class="flex justify-between text-xs text-muted"><span>{{ fmt(state.startDate) }}</span><span>{{ fmt(state.endDate) }}</span></div>
+              <p v-if="todayPct !== null" class="mt-1.5 flex items-center gap-1.5 text-xs text-muted"><span class="h-3 w-0.5 bg-error" />Today</p>
             </div>
 
             <ul class="space-y-3">
               <li v-for="t in timeline.terms" :key="t.key" class="text-sm">
                 <p v-if="t.gapDays > 0" class="mb-2 flex items-center gap-1.5 text-xs text-muted">
-                  <UIcon name="i-lucide-sun" class="size-3.5" />{{ t.gapDays }} day{{ t.gapDays === 1 ? '' : 's' }}
-                  break
+                  <UIcon name="i-lucide-sun" class="size-3.5" />{{ t.gapDays }} day{{ t.gapDays === 1 ? '' : 's' }} break
                 </p>
                 <div class="flex items-start justify-between gap-2">
-                  <div class="min-w-0">
-                    <p class="truncate font-medium text-highlighted">{{ t.name }}</p>
-                    <p class="text-xs text-muted">{{ fmt(state.terms[t.key]!.startDate) }} – {{
-                      fmt(state.terms[t.key]!.endDate) }}</p>
+                  <div class="flex min-w-0 items-start gap-2.5">
+                    <span class="mt-1 size-2.5 shrink-0 rounded-full" :class="colorOf(t.key).bar" />
+                    <div class="min-w-0">
+                      <p class="truncate font-medium text-highlighted">{{ t.name }}</p>
+                      <p class="text-xs text-muted">{{ fmt(state.terms[t.key]!.startDate) }} – {{ fmt(state.terms[t.key]!.endDate) }}</p>
+                    </div>
                   </div>
                   <UBadge v-if="t.ok" size="sm" variant="subtle" color="neutral" :label="`${t.weeks} wk`" />
-                  <UBadge v-else-if="state.terms[t.key]!.startDate && state.terms[t.key]!.endDate" size="sm"
-                    variant="subtle" color="warning" label="Check dates" />
+                  <UBadge v-else-if="state.terms[t.key]!.startDate && state.terms[t.key]!.endDate" size="sm" variant="subtle" color="warning" label="Check dates" />
                 </div>
               </li>
             </ul>
@@ -144,7 +141,7 @@
           </template>
         </UCard>
 
-        <UCard :ui="{body: 'p-3 md:p-3'}">
+        <UCard :ui="{ body: 'p-3 md:p-3' }">
           <div class="flex justify-end gap-3">
             <UButton label="Reset" color="neutral" variant="outline" :disabled="saving" @click="fillFromCalendar" />
             <UButton type="submit" :loading="saving" icon="i-lucide-save" label="Save calendar" />
@@ -242,6 +239,56 @@ const timeline = computed(() => {
   });
   return { terms, totalWeeks: Math.round(span / DAY / 7), teachingWeeks: terms.reduce((n, t) => n + (t.ok ? t.weeks : 0), 0) };
 });
+
+// Each term keeps one colour everywhere: its card, its block on the timeline and the list beside it.
+const TERM_COLORS = [
+  { bar: 'bg-primary-500', soft: 'bg-primary/10 text-primary', edge: 'border-l-primary-500' },
+  { bar: 'bg-secondary-500', soft: 'bg-secondary/15 text-secondary-700', edge: 'border-l-secondary-500' },
+  { bar: 'bg-amber-500', soft: 'bg-amber-500/10 text-amber-600', edge: 'border-l-amber-500' }
+]
+const colorOf = (i: number) => TERM_COLORS[i % TERM_COLORS.length]!
+
+// "Today" on the timeline, and the first of each month along it.
+const todayPct = computed(() => {
+  const start = toMs(state.startDate), end = toMs(state.endDate)
+  const now = Date.parse(new Date().toISOString().slice(0, 10) + 'T00:00:00Z')
+  return end > start && now >= start && now <= end ? ((now - start) / (end - start)) * 100 : null
+})
+const monthTicks = computed(() => {
+  const start = toMs(state.startDate), end = toMs(state.endDate)
+  if (!(end > start)) return []
+  const ticks: { left: number, label: string }[] = []
+  const d = new Date(start)
+  d.setUTCDate(1)
+  d.setUTCMonth(d.getUTCMonth() + 1)
+  while (d.getTime() < end) {
+    ticks.push({ left: ((d.getTime() - start) / (end - start)) * 100, label: d.toLocaleString('en', { month: 'short', timeZone: 'UTC' }) })
+    d.setUTCMonth(d.getUTCMonth() + 1)
+  }
+  return ticks.length > 14 ? ticks.filter((_, i) => i % 2 === 0) : ticks
+})
+
+function termState(t: { startDate: string, endDate: string }) {
+  const today = new Date().toISOString().slice(0, 10)
+  if (!t.startDate || !t.endDate) return null
+  if (today < t.startDate) return { label: 'Upcoming', color: 'neutral' as const }
+  if (today > t.endDate) return { label: 'Ended', color: 'neutral' as const }
+  return { label: 'Running now', color: 'success' as const }
+}
+const weeksOf = (t: { startDate: string, endDate: string }) => {
+  const a = toMs(t.startDate), b = toMs(t.endDate)
+  return b > a ? Math.round((b - a) / DAY / 7) : 0
+}
+
+const metrics = computed(() => {
+  const tl = timeline.value
+  return [
+    { label: 'Academic year', value: state.name || '—', icon: 'i-lucide-calendar-range', color: 'primary' as const, subtle: state.startDate && state.endDate ? `${fmt(state.startDate)} – ${fmt(state.endDate)}` : 'Set the dates' },
+    { label: 'Terms', value: state.terms.length, icon: 'i-lucide-layers', color: 'info' as const, subtle: `Up to ${MAX_TERMS} allowed` },
+    { label: 'Weeks in term', value: tl?.teachingWeeks ?? 0, icon: 'i-lucide-book-open', color: 'success' as const, subtle: tl ? `of ${tl.totalWeeks} weeks in the year` : '' },
+    { label: 'Weeks of break', value: tl ? Math.max(0, tl.totalWeeks - tl.teachingWeeks) : 0, icon: 'i-lucide-sun', color: 'warning' as const, subtle: 'Between and around terms' }
+  ]
+})
 
 // A name suggestion for a year that has none yet, e.g. 2025/2026.
 watch(() => [state.startDate, state.endDate], ([a, b]) => {

@@ -37,15 +37,15 @@ watch(
     </aside>
 
     <!-- Application Area -->
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex relative min-w-0 flex-1 flex-col">
       <!-- Header -->
-      <Header class="shrink-0" />
+      <Header class="absolute left-0 right-0 z-[1100]" />
       <PlaygroundBanner class="shrink-0" />
 
       <!-- Scroll Container -->
       <main
         ref="scrollContainer"
-        class="min-h-0 flex-1 md:mt-1 overflow-y-auto overflow-x-hidden"
+        class="min-h-0 flex-1 md:mt-1 pt-20 overflow-y-auto overflow-x-hidden"
       >
         <div class="py-4">
           <slot />
@@ -53,7 +53,7 @@ watch(
       </main>
 
       <!-- Mobile Navigation -->
-      <MenuMobile class="shrink-0 z-20 pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:hidden" />
+      <MenuMobile class="absolute w-full bottom-0 z-[1100] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:hidden" />
     </div>
   </div>
 </template>

@@ -18,15 +18,27 @@ const statusFilters = [{ label: 'All', value: 'ALL' }, ...CONTACT_STATUS_OPTIONS
 const statusColor = (s: ContactStatus) => CONTACT_STATUS_OPTIONS.find(o => o.value === s)?.color ?? 'neutral'
 const statusLabel = (s: ContactStatus) => CONTACT_STATUS_OPTIONS.find(o => o.value === s)?.label ?? s
 
+// Five columns on a fixed layout, so the table always fits the screen instead of scrolling sideways. The school sits
+// with the sender, and the lead sits with the status.
+const col = (w: string) => ({ meta: { class: { th: w, td: w } } })
 const columns: TableColumn<ContactMessage>[] = [
-  { id: 'from', header: 'From' },
-  { id: 'school', header: 'School' },
+  { id: 'from', header: 'From', ...col('w-[28%]') },
   { id: 'challenge', header: 'Main challenge' },
-  { id: 'status', header: 'Status' },
-  { id: 'lead', header: 'Lead' },
-  { accessorKey: 'createdAt', header: 'Received' },
-  { id: 'actions', header: '' }
+  { id: 'status', header: 'Status', ...col('w-44') },
+  { accessorKey: 'createdAt', header: 'Received', ...col('w-28') },
+  { id: 'actions', header: '', ...col('w-14') }
 ]
+
+function ago(iso: string) {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins} min ago`
+  const hours = Math.round(mins / 60)
+  if (hours < 24) return `${hours} h ago`
+  const days = Math.round(hours / 24)
+  return days < 31 ? `${days} d ago` : formatDate(iso)
+}
+const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]!.toUpperCase()).join('') || '?'
 
 const load = () => store.fetchMessages(page.value, 10, status.value === 'ALL' ? undefined : status.value)
 
@@ -107,7 +119,8 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         <USelect v-model="status" :items="statusFilters" class="w-44" />
       </template>
 
-      <UTable :columns="columns" :data="messages" :loading="loading">
+      <UTable :columns="columns" :data="messages" :loading="loading"
+        :ui="{ base: 'table-fixed w-full', thead: 'bg-elevated/50', th: 'py-3 text-[11px] font-semibold uppercase tracking-wide text-muted', td: 'py-3.5 align-top', tr: 'hover:bg-primary/5 transition-colors' }">
         <template #empty-state>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-inbox" class="text-4xl text-gray-400" />
@@ -119,43 +132,44 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         </template>
 
         <template #from-cell="{ row }">
-          <div class="space-y-0.5">
-            <p class="font-medium" :class="row.original.status === 'NEW' ? 'text-highlighted' : ''">{{ row.original.name }}</p>
-            <a :href="`mailto:${row.original.email}`" class="block text-xs text-primary">{{ row.original.email }}</a>
-            <a v-if="row.original.phone" :href="`tel:${row.original.phone}`" class="block text-xs text-muted">{{ row.original.phone }}</a>
+          <div class="flex min-w-0 items-start gap-3">
+            <span class="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xs font-semibold text-primary">
+              {{ initials(row.original.name) }}
+              <span v-if="row.original.status === 'NEW'" class="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-default" title="New" />
+            </span>
+            <div class="min-w-0">
+              <p class="truncate text-sm" :class="row.original.status === 'NEW' ? 'font-semibold text-highlighted' : 'font-medium'">{{ row.original.name }}</p>
+              <p v-if="row.original.school" class="truncate text-xs font-medium text-highlighted">{{ row.original.school }}</p>
+              <a :href="`mailto:${row.original.email}`" class="block truncate text-xs text-primary">{{ row.original.email }}</a>
+              <a v-if="row.original.phone" :href="`tel:${row.original.phone}`" class="block truncate text-xs text-muted">{{ row.original.phone }}</a>
+            </div>
           </div>
         </template>
 
-        <template #school-cell="{ row }">
-          <p class="text-sm font-medium text-highlighted">{{ row.original.school || '—' }}</p>
-        </template>
-
         <template #challenge-cell="{ row }">
-          <button type="button" class="block max-w-md text-left" @click="view(row.original)">
-            <p class="line-clamp-2 text-sm text-muted">{{ row.original.challenge }}</p>
+          <button type="button" class="block w-full text-left" @click="view(row.original)">
+            <p class="line-clamp-3 text-sm text-muted hover:text-highlighted">{{ row.original.challenge }}</p>
           </button>
         </template>
 
         <template #status-cell="{ row }">
-          <UBadge size="sm" variant="subtle" :color="statusColor(row.original.status)" :label="statusLabel(row.original.status)" />
-        </template>
-
-        <template #lead-cell="{ row }">
-          <div v-if="row.original.lead" class="space-y-0.5">
-            <UBadge size="xs" variant="subtle" :color="leadStatus(row.original.lead.status).color" :label="leadStatus(row.original.lead.status).label" />
-            <p class="text-xs text-muted">{{ row.original.lead.assignedToName || 'Unassigned' }}</p>
+          <div class="space-y-1.5">
+            <UBadge size="sm" variant="subtle" :color="statusColor(row.original.status)" :label="statusLabel(row.original.status)" />
+            <p v-if="row.original.lead" class="flex items-center gap-1.5 text-xs text-muted">
+              <span class="size-2 shrink-0 rounded-full bg-primary-400" />
+              <span class="truncate">{{ leadStatus(row.original.lead.status).label }} · {{ row.original.lead.assignedToName || 'Unassigned' }}</span>
+            </p>
           </div>
-          <span v-else class="text-xs text-muted">—</span>
         </template>
 
         <template #createdAt-cell="{ row }">
-          <p class="text-xs text-muted">{{ formatDateTime(row.original.createdAt) }}</p>
+          <p class="whitespace-nowrap text-xs text-muted" :title="formatDateTime(row.original.createdAt)">{{ ago(row.original.createdAt) }}</p>
         </template>
 
         <template #actions-cell="{ row }">
           <div class="text-right">
             <UDropdownMenu :items="rowActions(row.original)" :content="{ align: 'end' }">
-              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" />
+              <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm" aria-label="Actions" />
             </UDropdownMenu>
           </div>
         </template>

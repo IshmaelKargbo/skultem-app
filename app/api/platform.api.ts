@@ -22,6 +22,14 @@ export const PlatformApi = () => {
     }
   }
 
+  const post = async <T>(url: string, body: unknown) => {
+    try {
+      return await $api(url, { method: 'POST', body }) as any as { data: T }
+    } catch (err: any) {
+      useHandleError(err)
+    }
+  }
+
   return {
     // National calendar and each school's platform fee override - see backend PlatformSettingController.
     getCalendar: async () => (await get<NationalCalendar>('/platform/calendar'))?.data,
@@ -29,6 +37,7 @@ export const PlatformApi = () => {
     listFeeSettings: async () => (await get<PlatformFeeSetting[]>('/platform/fee-setting'))?.data,
     updateFeeSetting: (schoolId: string, amount: number) => put<PlatformFeeSetting>(`/platform/${schoolId}/fee-setting`, { amount }),
     me: async () => (await get<PlatformAccess>('/system/me/access'))?.data,
+    createRole: async (body: { label: string, description: string, permissions: string[] }) => (await post<PlatformRoleInfo>('/system/roles', body))?.data,
     roles: async () => (await get<{ roles: PlatformRoleInfo[], staff: PlatformStaff[] }>('/system/roles'))?.data,
     assignRole: (userId: string, role: string) => put<PlatformStaff>(`/system/roles/${userId}`, { role }),
     platformFee: async () => (await get<PlatformFeeOverview>('/system/platform-fee'))?.data,

@@ -1,6 +1,6 @@
 <template>
-    <div class="px-4 pt-4 md:px-6">
-        <UCard class="shadow-none" :ui="{ body: 'sm:p-0 p-0' }">
+    <div class="px-6 pt-5 md:px-8">
+        <UCard class="shadow-none rounded-2xl bg-white/40 backdrop-blur-[5px] backdrop-saturate-150" :ui="{ body: 'sm:p-0 p-0' }">
             <div class="flex justify-between items-center">
                 <div class="flex space-x-2 px-3 py-2.5 items-center min-w-0 sm:px-5 sm:py-3">
                     <div>
