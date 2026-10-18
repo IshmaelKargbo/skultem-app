@@ -12,23 +12,25 @@
         dark:bg-gray-950/55
         dark:shadow-[0_8px_32px_rgba(0,0,0,0.35),0_1px_0_rgba(255,255,255,0.06)_inset]
       ">
-      <ul class="grid gap-1.5" :style="{
+      <ul ref="list" class="relative grid gap-1.5" :style="{
         gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))`
       }">
-        <li v-for="item in visibleItems" :key="item.to">
+        <!-- One highlight that slides from the tab you were on to the one you are on -->
+        <span v-if="pill" aria-hidden="true"
+          class="pointer-events-none absolute inset-y-0 left-0 rounded-3xl bg-primary-500/90 shadow-lg shadow-primary-500/20 ring-1 ring-white/20 backdrop-blur-xl dark:bg-primary-500/85 motion-reduce:transition-none"
+          :class="animate ? 'transition-[transform,width] duration-300 ease-[cubic-bezier(0.34,1.3,0.64,1)]' : ''"
+          :style="{ width: `${pill.width}px`, transform: `translateX(${pill.left}px)` }" />
+
+        <li v-for="item in visibleItems" :key="item.to" :ref="el => setItem(item.to, el as HTMLElement | null)" class="relative">
           <NuxtLink :to="item.to" class="
               flex min-h-15 flex-col items-center justify-center
               gap-1 rounded-3xl
-              backdrop-blur-[3px]
-              backdrop-saturate-150
-              text-gray-600/40
-              transition-all duration-200 ease-out
+              transition-colors duration-200 ease-out
               active:scale-95
               motion-reduce:transition-none
-              dark:text-gray-300
             " :class="isActive(item.to, item.exact)
-                ? 'bg-primary-500/90 text-white font-semibold shadow-lg shadow-primary-500/20 ring-1 ring-white/20 backdrop-blur-xl dark:bg-primary-500/85'
-                : 'hover:bg-white/40 hover:text-primary dark:hover:bg-white/10 dark:hover:text-primary-300'
+                ? 'font-semibold text-white'
+                : 'text-gray-500 hover:bg-white/40 hover:text-primary dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-primary-300'
               " :aria-current="isActive(item.to, item.exact) ? 'page' : undefined
               ">
             <UIcon :name="item.icon" class="text-lg" />
@@ -134,6 +136,35 @@ const visibleItems = computed(() =>
     // Nothing for a module this school hasn't installed (see utils/modules.ts).
     .filter((item) => isPathAvailable(item.to))
 )
+
+// The sliding highlight: measured from the active tab, so it follows any number of tabs and any screen width.
+const list = ref<HTMLElement | null>(null)
+const itemEls = new Map<string, HTMLElement>()
+const pill = ref<{ left: number, width: number } | null>(null)
+const animate = ref(false)
+
+function setItem(to: string, el: HTMLElement | null) {
+  if (el) itemEls.set(to, el)
+  else itemEls.delete(to)
+}
+
+function placePill() {
+  const active = visibleItems.value.find(i => isActive(i.to, i.exact))
+  const el = active && itemEls.get(active.to)
+  pill.value = el ? { left: el.offsetLeft, width: el.offsetWidth } : null
+}
+
+onMounted(() => {
+  nextTick(() => {
+    placePill()
+    // Only animate moves after the first placement, so it does not slide in from the left on load.
+    requestAnimationFrame(() => { animate.value = true })
+  })
+  window.addEventListener('resize', placePill)
+})
+onBeforeUnmount(() => window.removeEventListener('resize', placePill))
+watch(() => route.path, () => nextTick(placePill))
+watch(visibleItems, () => nextTick(placePill))
 
 function isActive(to: string, exact = false) {
   if (exact) return route.path === to
