@@ -43,6 +43,13 @@ export const SubjectApi = () => {
         useHandleError(err)
       }
     },
+    remove: async (id: string) => {
+      try {
+        return await $api(`/subject/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getOne: async (id: string) => {
       try {
         const res = await $api(`/subject/${id}`) as any

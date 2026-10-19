@@ -62,8 +62,10 @@
                                 </div>
                             </div>
 
-                            <UButton v-if="canEdit" :icon="EDIT_ICON" color="warning" variant="ghost" size="sm"
-                                class="shrink-0" aria-label="Edit subject" @click="editState = true; editRcord = value" />
+                            <UDropdownMenu v-if="canEdit" :items="rowActions(value)" :content="{ align: 'end' }">
+                                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm"
+                                    class="shrink-0" aria-label="Subject actions" />
+                            </UDropdownMenu>
                         </div>
                     </div>
                 </template>
@@ -90,6 +92,10 @@
         </UCard>
 
         <SubjectEdit v-model:open="editState" :record="editRcord" />
+
+        <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete Subject"
+            :item-name="deleteTarget.name" :on-confirm="confirmDelete"
+            description="This removes the subject from your catalog. A subject still used by a class, stream, teacher or student can't be deleted." />
     </div>
 </template>
 <script setup lang="ts">
@@ -106,6 +112,8 @@ const editRcord = ref<Subject | null>(null);
 const editState = ref(false);
 
 const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
+const { success, error: toastError } = useNotify();
 
 const canEdit = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]));
 
@@ -132,22 +140,45 @@ const columns = [
         cell: ({ row }: { row: Row<Subject> }) => {
             if (!canEdit.value) return null
 
-            return h(UButton, {
-                icon: EDIT_ICON,
-                color: "warning",
-                size: "sm",
-                variant: "ghost",
-                "aria-label": "Edit subject",
-                onClick: () => {
-                    editState.value = true;
-                    editRcord.value = row.original;
-                },
+            return h(UDropdownMenu, { items: rowActions(row.original), content: { align: "end" } }, {
+                default: () => h(UButton, {
+                    icon: "i-lucide-ellipsis-vertical",
+                    color: "neutral",
+                    size: "sm",
+                    variant: "ghost",
+                    "aria-label": "Subject actions",
+                }),
             });
         },
     },
 ];
 
 const store = useSubjectStore();
+
+// Edit and delete live in one actions menu per subject.
+const deleteTarget = ref<Subject | null>(null);
+const deleteOpen = ref(false);
+
+function rowActions(subject: Subject) {
+    return [
+        [{ label: "Edit", icon: EDIT_ICON, onSelect: () => { editRcord.value = subject; editState.value = true; } }],
+        [{ label: "Delete", icon: "i-lucide-trash-2", color: "error" as const, onSelect: () => { deleteTarget.value = subject; deleteOpen.value = true; } }],
+    ];
+}
+
+async function confirmDelete() {
+    if (!deleteTarget.value) return;
+    try {
+        await store.remove(deleteTarget.value.id);
+        success(`${deleteTarget.value.name} deleted`);
+        // The last subject on a page leaves it empty, so step back a page.
+        if (data.value.length === 1 && page.value > 1) page.value = page.value - 1;
+        else await fetchRecords();
+    } catch (err: any) {
+        toastError(err?.message || "Subject could not be deleted");
+        throw err;
+    }
+}
 const { records: data, meta, loading } = storeToRefs(store);
 const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
 const page = computed<number>({

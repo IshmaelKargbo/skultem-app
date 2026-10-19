@@ -31,14 +31,6 @@
                                     <UIcon name="i-lucide-loader-circle" class="animate-spin text-lg text-primary" />
                                 </div>
 
-                                <UTooltip v-else :delay-duration="0" arrow text="Upload photo">
-                                    <label
-                                        class="absolute -bottom-1 -right-1 flex size-7 cursor-pointer items-center justify-center rounded-full border-2 border-default bg-primary text-white shadow-md hover:bg-primary-600">
-                                        <UIcon name="i-lucide-camera" class="size-3.5" />
-                                        <input class="hidden" type="file" accept="image/png,image/jpeg,image/jpg"
-                                            @change="onPhotoChange">
-                                    </label>
-                                </UTooltip>
                             </template>
                         </div>
 
@@ -87,15 +79,13 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex shrink-0 items-center gap-2 justify-center">
-                        <UButton v-if="record && !loading && record.status !== 'DELETED'" size="sm" variant="soft"
-                            :color="record.status === 'ACTIVE' ? 'error' : 'success'"
-                            :icon="record.status === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
-                            :label="record.status === 'ACTIVE' ? 'Deactivate' : 'Reactivate'"
-                            @click="showStatusPrompt = true" />
-
-                        <UButton v-if="record && !loading" :to="`/teachers/edit/${record.id}`" size="sm" color="primary"
-                            :icon="EDIT_ICON" label="Edit Teacher" />
+                    <div class="flex shrink-0 items-center justify-center gap-2">
+                        <UDropdownMenu v-if="record && !loading" :items="actionItems" :content="{ align: 'end' }">
+                            <UButton size="sm" color="primary" icon="i-lucide-ellipsis" trailing-icon="i-lucide-chevron-down"
+                                label="Actions" />
+                        </UDropdownMenu>
+                        <input ref="photoInput" class="hidden" type="file" accept="image/png,image/jpeg,image/jpg"
+                            @change="onPhotoChange">
                     </div>
                 </div>
             </div>
@@ -147,6 +137,25 @@ const statusColor = computed(() => {
 
 const uploadingPhoto = ref(false)
 const photoOpen = ref(false)
+const photoInput = ref<HTMLInputElement | null>(null)
+
+// Everything you can do to this teacher, in one place.
+const actionItems = computed(() => {
+    const r = record.value
+    if (!r) return []
+    return [
+        [
+            { label: 'Edit teacher', icon: EDIT_ICON, to: `/teachers/edit/${r.id}` },
+            { label: 'View photo', icon: 'i-lucide-image', disabled: !r.user?.photo, onSelect: () => { photoOpen.value = true } },
+            { label: 'Upload photo', icon: 'i-lucide-camera', disabled: uploadingPhoto.value, onSelect: () => photoInput.value?.click() }
+        ],
+        ...(r.status !== 'DELETED' ? [[
+            r.status === 'ACTIVE'
+                ? { label: 'Deactivate', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }
+                : { label: 'Reactivate', icon: 'lucide:user-check', color: 'success' as const, onSelect: () => { showStatusPrompt.value = true } }
+        ]] : [])
+    ]
+})
 
 async function onPhotoChange(event: Event) {
     const input = event.target as HTMLInputElement
