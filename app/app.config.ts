@@ -43,7 +43,7 @@ export default defineAppConfig({
         variant: {
           outline: {
             root:
-              'bg-white/80 dark:bg-gray-900 ring-2 ring-gray-100 dark:ring-gray-800 shadow rounded-2xl shadow',
+              'bg-white/80 dark:bg-gray-900 ring-1 ring-default rounded-2xl shadow-none',
             base: 'text-gray-800 dark:text-gray-200',
           },
         },

@@ -147,7 +147,8 @@ const personalDetails = computed(() => ([
     { label: 'Date of Birth', icon: 'i-lucide-calendar-days', value: record.value?.dateOfBirth ? formatDate(record.value.dateOfBirth) : '' },
     { label: 'Religion', icon: 'i-lucide-heart', value: clean(record.value?.religion || '') },
     { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.city },
-    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street }
+    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street },
+    { label: 'Enrollment Type', icon: 'i-lucide-user-cog', value: ENROLLMENT_TYPES.find(t => t.value === record.value?.enrollmentType)?.label }
 ]))
 
 const guardianContact = computed(() => ([

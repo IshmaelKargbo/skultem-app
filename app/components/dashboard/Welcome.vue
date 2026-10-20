@@ -1,5 +1,5 @@
 <template>
-  <section class="rounded-2xl border border-default bg-default p-5 shadow-xs md:p-6">
+  <section class="rounded-2xl border border-default bg-default p-5 md:p-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div class="flex min-w-0 items-center gap-4">
         <UAvatar :src="user?.photo || undefined" :alt="user?.givenNames" size="3xl"

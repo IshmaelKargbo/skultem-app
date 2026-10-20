@@ -85,61 +85,28 @@
 
         <!-- At a glance -->
         <div v-if="canViewRoster" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
-                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <UIcon name="i-lucide-users" class="size-6" />
-                </span>
-                <div class="min-w-0">
-                    <p class="text-xs text-muted">Students</p>
-                    <p class="text-2xl font-bold leading-tight text-highlighted">{{ students.length }}</p>
-                    <p class="truncate text-xs text-muted">{{ genderSummary }}</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
-                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info">
-                    <UIcon name="i-lucide-calendar-check" class="size-6" />
-                </span>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs text-muted">Attendance</p>
-                    <p class="text-2xl font-bold leading-tight text-highlighted">{{ avgAttendance === null ? '-' : `${avgAttendance}%` }}</p>
-                    <UProgress v-if="avgAttendance !== null" class="mt-1.5" size="xs" :model-value="avgAttendance"
-                        :color="avgAttendance >= 75 ? 'success' : 'warning'" />
-                    <p v-else class="text-xs text-muted">Nothing recorded yet</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
-                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
-                    <UIcon name="i-lucide-star" class="size-6" />
-                </span>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs text-muted">Average score</p>
-                    <p class="text-2xl font-bold leading-tight text-highlighted">{{ avgScore === null ? '-' : `${avgScore}%` }}</p>
-                    <UProgress v-if="avgScore !== null" class="mt-1.5" size="xs" :model-value="avgScore"
-                        :color="avgScore >= 50 ? 'success' : 'warning'" />
-                    <p v-else class="text-xs text-muted">No approved tests yet</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4 rounded-2xl border border-default bg-default p-5 shadow-xs">
-                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-                    <UIcon name="i-lucide-user-round-check" class="size-6" />
-                </span>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs text-muted">{{ classTeachers.length > 1 ? 'Class masters' : 'Class master' }}</p>
-                    <div v-if="classTeachers.length" class="mt-1 space-y-1">
-                        <div v-for="master in classTeachers" :key="master.id" class="flex items-center gap-2">
-                            <UAvatar :src="master.photo" :alt="master.name" size="xs" />
-                            <span class="min-w-0 flex-1 truncate text-sm font-semibold text-highlighted">{{ master.name }}</span>
-                            <UButton v-if="canManagePromotion" icon="i-lucide-user-round-x" size="xs" color="neutral"
-                                variant="ghost" aria-label="Unassign class master"
-                                :loading="unassigningMasterId === master.id" @click="onRemoveClassMaster(master.id)" />
-                        </div>
-                    </div>
-                    <p v-else class="mt-1 text-sm text-muted">Not assigned</p>
-                </div>
-            </div>
+            <Metric :record="{
+                label: 'Students', value: students.length, subtle: genderSummary,
+                icon: 'i-lucide-users', color: 'primary', isReady: !studentsLoading
+            }" />
+            <Metric :record="{
+                label: 'Attendance', value: avgAttendance === null ? '-' : `${avgAttendance}%`,
+                subtle: avgAttendance === null ? 'Nothing recorded yet' : 'Average across the class',
+                subtileColor: avgAttendance !== null && avgAttendance < 75 ? 'warning' : undefined,
+                icon: 'i-lucide-calendar-check', color: avgAttendance !== null && avgAttendance < 75 ? 'warning' : 'info', isReady: !studentsLoading
+            }" />
+            <Metric :record="{
+                label: 'Average score', value: avgScore === null ? '-' : `${avgScore}%`,
+                subtle: avgScore === null ? 'No approved tests yet' : 'Across approved tests',
+                subtileColor: avgScore !== null && avgScore < 50 ? 'warning' : undefined,
+                icon: 'i-lucide-star', color: avgScore !== null && avgScore < 50 ? 'warning' : 'success', isReady: !studentsLoading
+            }" />
+            <Metric :record="{
+                label: classTeachers.length > 1 ? 'Class masters' : 'Class master',
+                value: classTeachers.length ? classTeachers[0]!.name : 'Not assigned',
+                subtle: classTeachers.length > 1 ? `+${classTeachers.length - 1} more` : '',
+                icon: 'i-lucide-user-round-check', color: 'secondary', isReady: !loading
+            }" />
         </div>
 
         <!-- What to look at first -->
@@ -624,7 +591,14 @@ const actionItems = computed(() => [[
         label: 'Create missing assessments', icon: 'i-lucide-refresh-cw',
         onSelect: () => syncAssessments()
     }
-], [
+],
+// One entry per class master, so any of them can still be unassigned.
+...(classTeachers.value.length ? [classTeachers.value.map(master => ({
+    label: `Remove ${master.name} as class master`, icon: 'i-lucide-user-round-x',
+    disabled: unassigningMasterId.value === master.id,
+    onSelect: () => onRemoveClassMaster(master.id)
+}))] : []),
+[
     {
         label: `Delete ${sessionName.value}`, icon: 'i-lucide-trash-2', color: 'error' as const,
         onSelect: () => { deleteSessionOpen.value = true }

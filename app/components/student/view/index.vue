@@ -78,6 +78,8 @@
                                     :label="record?.admissionNumber || 'No admission no'" />
                                 <UBadge :color="record?.className ? 'primary' : 'neutral'" variant="subtle" size="sm"
                                     :icon="CLASS_ICON" :label="record?.className || 'No class assigned'" />
+                                <UBadge v-if="enrollmentTypeLabel" color="secondary" variant="subtle" size="sm"
+                                    icon="i-lucide-user-cog" :label="enrollmentTypeLabel" />
                                 <span class="text-xs text-muted">
                                     {{ details }}
                                 </span>
@@ -178,6 +180,9 @@ function openExit(mode: 'withdraw' | 'expel' | 'reinstate') {
     exitMode.value = mode
     showExit.value = true
 }
+
+// How the student was admitted (new, transfer, re-enrolled, existing).
+const enrollmentTypeLabel = computed(() => ENROLLMENT_TYPES.find(t => t.value === record.value?.enrollmentType)?.label ?? '')
 
 const changeClassRef = ref<{ open: () => void } | null>(null)
 const changeTypeRef = ref<{ open: () => void } | null>(null)

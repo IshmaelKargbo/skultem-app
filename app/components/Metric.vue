@@ -6,20 +6,17 @@ const { record } = defineProps<{
         value: any
         subtle?: string
         icon: string
-        color: "success" | "warning" | "error" | "info" | "primary" | "neutral"
+        color: "success" | "warning" | "error" | "info" | "primary" | "secondary" | "neutral"
         subtileColor?: "success" | "warning" | "error" | "info" | "primary" | "neutral"
     }
 }>()
 
-const accentStyle = computed(() => ({
-    borderTopColor: `var(--ui-${record.color === 'neutral' ? 'border-accented' : record.color})`
-}))
 </script>
 
 <template>
     <UCard :ui="{
         body: 'p-3.5 md:p-4.5'
-    }" class="h-full overflow-hidden border-t-2" :style="accentStyle">
+    }" class="h-full overflow-hidden ring-1 ring-default">
         <div>
             <div v-if="!record.isReady" class="animate-pulse space-y-2">
                 <USkeleton class="h-7 w-24" />

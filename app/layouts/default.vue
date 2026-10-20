@@ -32,7 +32,9 @@ watch(
     class="flex h-dvh overflow-hidden bg-[--app-bg]"
   >
     <!-- Desktop Sidebar -->
-    <aside class="hidden w-72 shrink-0 p-4 pr-0.5 lg:block">
+    <!-- From xl up: below that (tablets, small laptops) the bottom bar and the slide-in menu are used, so pages keep
+         the full screen width for their own two- and three-column layouts. -->
+    <aside class="hidden shrink-0 p-4 pr-0.5 xl:block xl:w-64 2xl:w-72">
       <Menu />
     </aside>
 
@@ -47,13 +49,13 @@ watch(
         ref="scrollContainer"
         class="min-h-0 flex-1 md:mt-1 overflow-y-auto overflow-x-hidden"
       >
-        <div class="md:py-24 py-20">
+        <div class="pb-28 pt-20 md:pt-24 xl:pb-10">
           <slot />
         </div>
       </main>
 
       <!-- Mobile Navigation -->
-      <MenuMobile class="absolute w-full bottom-0 z-1100 pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:hidden" />
+      <MenuMobile class="absolute w-full bottom-0 z-1100 pb-[max(env(safe-area-inset-bottom),0.5rem)] xl:hidden" />
     </div>
   </div>
 </template>

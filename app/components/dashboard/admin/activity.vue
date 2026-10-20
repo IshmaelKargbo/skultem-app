@@ -57,7 +57,7 @@ const timeAgo = (iso: string) => {
 }
 
 onMounted(async () => {
-  const res = await dashboard.fetchAdminActivities(5)
+  const res = await dashboard.fetchAdminActivities(10)
   activities.value = Array.isArray(res) ? res : []
 })
 </script>
@@ -75,7 +75,7 @@ onMounted(async () => {
       <div v-else-if="dashboard.error" class="p-4 text-sm text-red-600">{{ dashboard.error }}</div>
       <div v-else-if="activities.length === 0" class="p-4 text-sm text-muted">No activity yet.</div>
       <div v-for="(item, index) in activities" :key="item.id"
-        class="flex gap-4 p-4 last:pb-0 dark:border-gray-800 border-b border-gray-100 last:border-0">
+        class="flex gap-4 p-4 dark:border-gray-800 border-b border-gray-100 last:border-0">
         <div class="mt-1.5 shrink-0">
           <div :class="[typeColor[item.type] || 'bg-slate-500', 'h-3 w-3 rounded-full']"></div>
         </div>

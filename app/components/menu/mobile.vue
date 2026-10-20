@@ -1,6 +1,7 @@
 <template>
   <div class="px-6">
-    <div class="
+    <div class="md:mx-auto md:max-w-3xl
+        
         rounded-4xl
         border border-white/50
         bg-white/10
