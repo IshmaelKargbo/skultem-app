@@ -81,7 +81,7 @@
                     <!-- Actions -->
                     <div class="flex shrink-0 items-center justify-center gap-2">
                         <UDropdownMenu v-if="record && !loading" :items="actionItems" :content="{ align: 'end' }">
-                            <UButton size="sm" color="primary" icon="i-lucide-ellipsis" trailing-icon="i-lucide-chevron-down"
+                            <UButton size="sm" color="neutral" variant="outline" trailing-icon="i-lucide-chevron-down"
                                 label="Actions" />
                         </UDropdownMenu>
                         <input ref="photoInput" class="hidden" type="file" accept="image/png,image/jpeg,image/jpg"

@@ -94,6 +94,9 @@
                         </UDropdownMenu>
                         <StudentChangeClass v-if="record && !loading && canChangeClass && !hasLeft" ref="changeClassRef"
                             :student-id="record.id" :student-name="name" hide-trigger />
+                        <StudentChangeEnrollmentType v-if="record && !loading && canChangeClass && !hasLeft"
+                            ref="changeTypeRef" :student-id="record.id" :student-name="name"
+                            :current="record.enrollmentType" />
                     </div>
                 </div>
             </div>
@@ -177,6 +180,7 @@ function openExit(mode: 'withdraw' | 'expel' | 'reinstate') {
 }
 
 const changeClassRef = ref<{ open: () => void } | null>(null)
+const changeTypeRef = ref<{ open: () => void } | null>(null)
 
 // Everything you can do to this student, in one menu: change it, move it, then the serious ones.
 const actionItems = computed(() => {
@@ -185,6 +189,7 @@ const actionItems = computed(() => {
     }]
     if (canChangeClass.value && !hasLeft.value) {
         first.push({ label: 'Change class', icon: CLASS_ICON, onSelect: () => changeClassRef.value?.open() })
+        first.push({ label: 'Change enrollment type', icon: 'i-lucide-user-cog', onSelect: () => changeTypeRef.value?.open() })
     }
     return [first, ...exitActions.value]
 })

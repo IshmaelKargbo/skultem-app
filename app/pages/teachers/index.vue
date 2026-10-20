@@ -201,8 +201,8 @@ definePageMeta({
           <div class="flex space-x-2 flex-1 items-center">
             <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" color="primary" :icon="ADD_ICON" />
 
-            <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral"
-              class="hidden md:flex" icon="i-lucide-briefcase" />
+            <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral" class="hidden md:flex"
+              icon="i-lucide-briefcase" />
 
             <UDropdownMenu :items="addItems" arrow :content="{ align: 'end' }" class="md:hidden">
               <UButton color="primary" :icon="ADD_ICON" />
@@ -211,8 +211,8 @@ definePageMeta({
             <div class="flex-1 border-default flex items-center gap-2">
               <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, staff ID, email or phone"
                 class="flex-1" />
-              <TeacherFilterDrawer v-model:gender="gender" v-model:sort="sort" :sort-options="sortOptions" :active-count="activeFilterCount"
-                :default-sort="DEFAULT_SORT" />
+              <TeacherFilterDrawer v-model:gender="gender" v-model:sort="sort" :sort-options="sortOptions"
+                :active-count="activeFilterCount" :default-sort="DEFAULT_SORT" />
             </div>
           </div>
 
@@ -244,7 +244,8 @@ definePageMeta({
               <p>{{ teacherName(row.original) }}</p>
 
               <p class="text-xs text-muted">
-                {{ row.original.staffId }}<template v-if="row.original.designation"> &middot; {{ row.original.designation }}</template>
+                {{ row.original.staffId }}<template v-if="row.original.designation"> &middot; {{
+                  row.original.designation }}</template>
               </p>
             </div>
           </div>
@@ -277,11 +278,8 @@ definePageMeta({
 
         <template #action-cell="{ row }">
           <div class="flex justify-end gap-1">
-            <UButton variant="ghost" color="success" :icon="VIEW_ICON" size="sm" class="cursor-pointer"
-              @click="openTeacher(row.original)" />
-
-            <UButton :to="`/teachers/edit/${row.original.id}`" variant="ghost" color="warning" :icon="EDIT_ICON"
-              size="sm" />
+            <UButton size="sm" variant="ghost" color="neutral" class="cursor-pointer" icon="i-lucide-chevron-right"
+              aria-label="Open teacher" @click="openTeacher(row.original)" />
           </div>
         </template>
       </UTable>
@@ -330,7 +328,8 @@ definePageMeta({
                 </div>
 
                 <div class="flex shrink-0 items-center gap-2 self-center">
-                  <UBadge :label="parseStatus[item.status]" :color="item.status === 'ACTIVE' ? 'success' : item.status === 'INACTIVE' ? 'error' : 'warning'"
+                  <UBadge :label="parseStatus[item.status]"
+                    :color="item.status === 'ACTIVE' ? 'success' : item.status === 'INACTIVE' ? 'error' : 'warning'"
                     variant="subtle" size="sm" />
                   <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
                 </div>

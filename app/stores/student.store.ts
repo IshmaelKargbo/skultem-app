@@ -191,6 +191,15 @@ export const useStudentStore = defineStore('student', {
       if (res && this.record?.id === id) this.record = res
       return res
     },
+    async changeEnrollmentType(studentId: string, enrollmentType: string) {
+      try {
+        return await StudentApi().changeEnrollmentType(studentId, enrollmentType)
+      } finally {
+        // Fees may have changed too, so reload the student either way.
+        const fresh = await StudentApi().getStudent(studentId) as any
+        if (fresh && this.record?.id === studentId) this.record = fresh
+      }
+    },
     async changeClass(studentId: string, enrollmentId: string, payload: ChangeClassDto, optionalSubjects: string[] = []) {
       try {
         const res = await StudentApi().changeClass(enrollmentId, payload)

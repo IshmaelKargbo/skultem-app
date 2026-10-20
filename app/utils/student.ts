@@ -30,6 +30,7 @@ export type Student = {
     rank: string
     house?: House
     status: string
+    enrollmentType?: 'NEW' | 'TRANSFER' | 'RE_ENROLLMENT' | 'EXISTING'
     // Why/when a WITHDRAWN or EXPELLED student left - empty for everyone else.
     exitReason?: string | null
     exitDate?: string | null
@@ -187,3 +188,16 @@ export type BulkStudentImportResult = {
     failed: number
     rows: BulkStudentImportRow[]
 }
+
+export type ChangeEnrollmentTypeResult = {
+    enrollmentType: string
+    feesAdded: string[]
+    feesRemoved: string[]
+}
+
+export const ENROLLMENT_TYPES = [
+    { label: 'New', value: 'NEW', description: 'A new admission. Charged the fees marked for new students.' },
+    { label: 'Transfer', value: 'TRANSFER', description: 'Joined from another school. Charged the fees marked for new students.' },
+    { label: 'Re-enrolled', value: 'RE_ENROLLMENT', description: 'Returning to the school. Charged the fees marked for returning students.' },
+    { label: 'Existing student', value: 'EXISTING', description: 'Already attends, only now entered in the system. Charged the fees marked for returning students.' }
+] as const

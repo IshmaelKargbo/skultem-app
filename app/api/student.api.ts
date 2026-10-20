@@ -198,6 +198,19 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    // Corrects how the student was admitted. Moving between "new" and "returning" also re-bills them - see
+    // ChangeStudentEnrollmentTypeUseCase for what it adds, removes and refuses.
+    changeEnrollmentType: async (id: string, enrollmentType: string) => {
+      try {
+        const res: { data: ChangeEnrollmentTypeResult } = await $api(`/student/${id}/enrollment-type`, {
+          method: 'PATCH',
+          body: { enrollmentType }
+        })
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     // Corrects the class a student was placed in by mistake - see ChangeEnrollmentClassUseCase for
     // what it refuses (anything already recorded against the old class) and what it rebuilds.
     changeClass: async (enrollmentId: string, payload: ChangeClassDto) => {
