@@ -288,7 +288,7 @@ const academic = reactive({
     admissionNumber: '',
     previousSchool: '',
     lastGradeCompleted: '',
-    selectedOptionIds: {} as Record<string, string>
+    selectedOptionIds: {} as Record<string, string | string[]>
 })
 
 const draft = useEnrollmentDraft()
@@ -462,7 +462,8 @@ async function submit(param: any) {
     try {
         loading.value = true
         const formData = new FormData()
-        const list = Object.values(academic.selectedOptionIds)
+        // A group can need several subjects, so each entry is a list (older saved drafts hold a single id).
+        const list = Object.values(academic.selectedOptionIds).flat().filter(Boolean)
 
         const data = {
             ...personal,

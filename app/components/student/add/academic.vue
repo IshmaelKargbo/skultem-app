@@ -21,7 +21,7 @@ const { state } = defineProps<{
         previousSchool: string
         lastGradeCompleted: string
         coreSubjects?: string[]
-        optionalSubjects?: Record<string, string>
+        optionalSubjects?: Record<string, string | string[]>
     }
 }>()
 
@@ -39,11 +39,21 @@ const form = reactive({
     admissionNumber: '',
     previousSchool: '',
     lastGradeCompleted: '',
-    optionalSubjects: {} as Record<string, string>
+    optionalSubjects: {} as Record<string, string[]>
 })
 
 const selectedCore = ref<string[]>([])
-const selectedOptional = reactive<Record<string, string>>({})
+// Each group takes as many subjects as its "select" says, so every group holds a list of picks.
+const selectedOptional = reactive<Record<string, string[]>>({})
+
+// A draft saved before groups took several picks holds a single id (or '') per group.
+const asList = (v: unknown): string[] => Array.isArray(v) ? v.filter(Boolean) as string[] : v ? [String(v)] : []
+
+const picked = (group: Group) => selectedOptional[group.id] ?? []
+const isFull = (group: Group) => picked(group).length >= group.select
+// Once a group has all its picks, the rest are greyed out until one is un-ticked.
+const checkItems = (group: Group) => group.subjects.map(s => ({ ...s, disabled: isFull(group) && !picked(group).includes(String(s.value)) }))
+const pickOne = (group: Group, value: unknown) => { selectedOptional[group.id] = value ? [String(value)] : [] }
 
 const coreSubjects = ref<ClassSubject[]>([])
 const optionalGroups = ref<Group[]>([])
@@ -89,11 +99,13 @@ const schema = yup.object({
             'Please select all required optional subjects',
             function (value: any) {
                 for (const group of optionalGroups.value) {
-                    const selected = value?.[group.id]
-                    if (!selected) {
+                    const chosen = asList(value?.[group.id]).length
+                    if (chosen !== group.select) {
                         return this.createError({
                             path: `optionalSubjects.${group.id}`,
-                            message: `Please select a subject for ${group.name}`
+                            message: group.select > 1
+                                ? `Select ${group.select} subjects for ${group.name} (${chosen} chosen)`
+                                : `Please select a subject for ${group.name}`
                         })
                     }
                 }
@@ -166,7 +178,7 @@ async function fetchSubjects(classId: string) {
 
         for (const group of groups) {
             if (!selectedOptional[group.id]) {
-                selectedOptional[group.id] = ''
+                selectedOptional[group.id] = []
             }
         }
     } else {
@@ -178,20 +190,8 @@ async function fetchSubjects(classId: string) {
 
         for (const group of groups) {
             if (!selectedOptional[group.id]) {
-                selectedOptional[group.id] = ''
+                selectedOptional[group.id] = []
             }
-        }
-    }
-
-    const res = await subjectStore.fetchAllByClassAndStream(clazz.clazzId, clazz.streamId, 0, 0)
-    const { core, groups } = splitSubjects(res)
-
-    coreSubjects.value = core
-    optionalGroups.value = groups
-
-    for (const group of groups) {
-        if (!selectedOptional[group.id]) {
-            selectedOptional[group.id] = ''
         }
     }
 }
@@ -208,7 +208,7 @@ watch(() => form.classId, async (val, oldVal) => {
     } else if (val) {
         selectedCore.value = []
         Object.keys(selectedOptional).forEach(key => {
-            selectedOptional[key] = ''
+            selectedOptional[key] = []
         })
         await fetchSubjects(val)
     }
@@ -219,8 +219,8 @@ watch(() => state, (val) => {
     Object.assign(form, val)
     selectedCore.value = val.coreSubjects || []
     if (val.optionalSubjects) {
-        Object.assign(selectedOptional, val.optionalSubjects)
-        form.optionalSubjects = { ...val.optionalSubjects }
+        for (const [groupId, v] of Object.entries(val.optionalSubjects)) selectedOptional[groupId] = asList(v)
+        form.optionalSubjects = { ...selectedOptional }
     }
 }, { immediate: true, deep: true })
 
@@ -379,12 +379,19 @@ onMounted(() => {
                             :label="group.select > 1 ? `Select ${group.select}` : 'Select One'" />
                     </div>
 
-                    <UFormField :name="`optionalSubjects.${group.id}`">
-                        <URadioGroup v-model="selectedOptional[group.id]" :items="group.subjects" value-key="value"
+                    <UFormField :name="`optionalSubjects.${group.id}`"
+                        :hint="group.select > 1 ? `${picked(group).length} of ${group.select} chosen` : undefined">
+                        <!-- Several picks: tick boxes, locked once the group is full -->
+                        <UCheckboxGroup v-if="group.select > 1" v-model="selectedOptional[group.id]" :items="checkItems(group)"
+                            value-key="value" variant="card" indicator="end" :ui="{
+                                fieldset: 'grid grid-cols-1 gap-3 md:grid-cols-2',
+                                item: 'w-full'
+                            }" />
+                        <URadioGroup v-else :model-value="picked(group)[0] ?? ''" :items="group.subjects" value-key="value"
                             orientation="vertical" variant="card" indicator="end" :ui="{
                                 wrapper: 'grid grid-cols-1 gap-3 md:grid-cols-2',
                                 item: 'w-full'
-                            }" />
+                            }" @update:model-value="pickOne(group, $event)" />
                     </UFormField>
                 </div>
 
