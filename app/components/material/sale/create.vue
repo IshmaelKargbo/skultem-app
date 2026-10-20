@@ -37,7 +37,7 @@ function defaultState() {
 
 const state = reactive(defaultState())
 
-const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch()
+const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch(25, () => [state.studentId])
 
 const materialOptions = computed(() =>
     materials.value.map(m => ({

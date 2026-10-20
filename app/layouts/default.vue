@@ -42,7 +42,6 @@ watch(
     <div class="flex relative min-w-0 flex-1 flex-col">
       <!-- Header -->
       <Header class="absolute left-0 right-0 z-1100" />
-      <PlaygroundBanner class="shrink-0 pt-18" />
 
       <!-- Scroll Container -->
       <main
@@ -50,6 +49,8 @@ watch(
         class="min-h-0 flex-1 md:mt-1 overflow-y-auto overflow-x-hidden"
       >
         <div class="pb-28 pt-20 md:pt-24 xl:pb-10">
+          <!-- In the flow, so it sits above the page and moves it down instead of covering it -->
+          <PlaygroundBanner />
           <slot />
         </div>
       </main>

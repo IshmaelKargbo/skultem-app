@@ -471,7 +471,7 @@ const methodOptions = [
     { label: 'Mobile Money', value: 'MOBILE_MONEY' }
 ]
 
-const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch()
+const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch(25, () => [state.studentId])
 
 const pinnedStudent = ref<{ label: string, value: string } | null>(null)
 

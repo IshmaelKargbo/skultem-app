@@ -21,7 +21,7 @@ const props = defineProps<{
 }>()
 
 // Only the student field needs the async student lookup.
-const { searchTerm: studentSearchTerm, students: studentOptions, loading: studentsLoading } = useStudentSearch()
+const { searchTerm: studentSearchTerm, students: studentOptions, loading: studentsLoading } = useStudentSearch(25, () => props.fields.filter(f => f.type === 'student').map(f => draft[f.key]))
 
 const model = defineModel<Record<string, string>>({ required: true })
 
