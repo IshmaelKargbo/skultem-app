@@ -198,6 +198,17 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    // Moves the student to another guardian: an existing one (parentId), or any account already at the
+    // school (userId - given a guardian profile from phone/street/city if they have none). See
+    // ChangeStudentGuardianUseCase.
+    changeGuardian: async (id: string, payload: ChangeGuardianDto) => {
+      try {
+        const res = await $api(`/student/${id}/guardian`, { method: 'PATCH', body: payload }) as any
+        return res.data as Student
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     // Corrects how the student was admitted. Moving between "new" and "returning" also re-bills them - see
     // ChangeStudentEnrollmentTypeUseCase for what it adds, removes and refuses.
     changeEnrollmentType: async (id: string, enrollmentType: string) => {

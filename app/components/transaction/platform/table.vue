@@ -19,7 +19,7 @@
         </template>
 
         <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
-            <template #empty-state>
+            <template #empty>
                 <div class="flex flex-col items-center gap-2 py-10">
                     <UIcon name="i-lucide-shield" class="text-4xl text-gray-400" />
                     <p class="text-gray-500">No platform fee entries yet.</p>

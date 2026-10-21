@@ -2,12 +2,14 @@
   <div>
     <div v-if="!isReady" class="skeleton-loader">Loading At-Risk Students...</div>
     <client-only v-else>
-      <ApexChart
-        type="bar"
-        :height="Math.max(300, labels.length * 55 + 100)"
-        :options="chartOptions"
-        :series="chartSeries"
-      />
+      <ChartScroll>
+        <ApexChart
+          type="bar"
+          :height="Math.max(300, labels.length * 55 + 100)"
+          :options="chartOptions"
+          :series="chartSeries"
+        />
+      </ChartScroll>
     </client-only>
   </div>
 </template>

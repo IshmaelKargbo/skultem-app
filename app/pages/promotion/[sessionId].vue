@@ -190,7 +190,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <div v-if="loading" class="space-y-3">
             <USkeleton class="h-20 w-full rounded-xl" />
             <USkeleton v-for="i in 4" :key="i" class="h-16 w-full rounded-xl" />

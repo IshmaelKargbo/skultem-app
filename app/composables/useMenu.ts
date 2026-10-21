@@ -70,6 +70,10 @@ export function useMenu() {
           label: 'Attendance by Gender', to: '/attendance/gender-attendance', icon: 'i-lucide-venus-and-mars',
           roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
+        {
+          label: 'Marking Compliance', to: '/attendance/marking-compliance', icon: 'i-lucide-clipboard-check',
+          roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+        },
       ]
     },
     { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON, roles: [Role.PARENT] },

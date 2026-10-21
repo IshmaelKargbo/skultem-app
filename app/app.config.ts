@@ -35,6 +35,8 @@ export default defineAppConfig({
         th: 'font-display uppercase light:text-muted text-[12.5px] dark:text-gray-500',
         td: 'text-gray-800 dark:text-gray-200',
         loading: 'p-0',
+        // Custom #empty blocks bring their own padding; the default "No data" text keeps Nuxt UI's
+        empty: 'has-[>div]:py-0',
       },
     },
 

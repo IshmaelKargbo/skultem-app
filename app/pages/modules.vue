@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <div class="grid items-start gap-4 lg:grid-cols-3">
       <!-- Left: summary, filters and every module -->
       <div class="min-w-0 space-y-4 lg:col-span-2">

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Salary Structures" subtitle="Manage teacher compensation packages.">
       <UButton variant="soft" color="neutral" icon="i-lucide-layout-template" to="/payroll/salary-templates"
         label="Salary Templates" />

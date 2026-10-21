@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <FeeReportSectionNav />
 
     <Heading title="Daily Collection" subtitle="What was collected on a day, or across a date range, by payment method.">
@@ -96,7 +96,7 @@
         <p class="p-4 pb-0 font-semibold">Transactions</p>
       </template>
       <UTable class="hidden md:block" :columns="txColumns" :data="transactions" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No transactions found.</p>

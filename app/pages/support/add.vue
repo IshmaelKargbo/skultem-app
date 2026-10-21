@@ -66,7 +66,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Open Ticket" subtitle="Record a request for help that came in by phone, email or in person.">
       <UButton variant="soft" color="neutral" to="/support" label="Cancel" :disabled="saving" />
       <UButton icon="i-lucide-save" label="Open ticket" :loading="saving" @click="save" />

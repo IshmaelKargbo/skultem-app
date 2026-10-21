@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-2xl space-y-4 px-4 md:px-6">
+  <div class="mx-auto max-w-2xl space-y-3 px-4 md:px-6">
 
     <Heading title="Start Payroll Run"
       subtitle="Every teacher with a salary structure set up will be included automatically — you can exclude anyone before generating." />

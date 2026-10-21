@@ -26,7 +26,10 @@
 
     <!-- Leaderboard Table -->
     <UCard>
-      <UTable :columns="columns" :data="leaderboard">
+      <UTable :columns="columns" :data="leaderboard" :loading="loading">
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
 
         <!-- Trend Column -->
         <template #trend-cell="{ row }">
@@ -52,7 +55,7 @@ const reportStore = useReportStore()
 const studentStore = useStudentStore()
 const classStore = useClassSessionStore()
 
-const { leaderboard } = storeToRefs(reportStore)
+const { leaderboard, loading } = storeToRefs(reportStore)
 const { activeCycle } = storeToRefs(studentStore)
 
 const state = reactive({

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Human Resource" subtitle="Staff attendance and leave, at a glance.">
       <UButton v-if="canClockIn" icon="i-lucide-log-in" to="/hr/teacher-attendance/clock-in" label="Clock In / Out" variant="soft" />
       <UButton icon="i-lucide-calendar-plus" to="/hr/leave/add" label="Request Leave" />

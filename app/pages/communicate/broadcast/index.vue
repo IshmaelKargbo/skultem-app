@@ -10,7 +10,7 @@ definePageMeta({
 </script>
 
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <Heading title="Compose Broadcast" subtitle="Send a message to students, parents, teachers or staff">
             <UButton to="/communicate/broadcast/history" label="Broadcast History" variant="outline" color="neutral" :icon="BROADCAST_HISTORY_ICON" />
         </Heading>

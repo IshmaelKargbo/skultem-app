@@ -75,7 +75,7 @@ watch(
         :loading="loading">
 
         <!-- Empty State -->
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:wallet-light" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No fee records found.</p>

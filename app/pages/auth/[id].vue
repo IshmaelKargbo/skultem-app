@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <!-- Profile banner -->
         <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
             <div

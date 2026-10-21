@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-4xl space-y-4 px-4 md:px-6">
+  <div class="mx-auto max-w-4xl space-y-3 px-4 md:px-6">
 
     <!-- Header (page chrome - not part of the printable document) -->
     <div class="flex flex-col gap-4 print:hidden md:flex-row md:items-center md:justify-between">
@@ -17,7 +17,7 @@
           Design
         </UButton>
 
-        <UButton icon="i-lucide-printer" variant="soft" @click="window.print()">
+        <UButton icon="i-lucide-printer" variant="soft" @click="printPage">
           Print
         </UButton>
 
@@ -27,9 +27,16 @@
       </div>
     </div>
 
-    <div v-if="!payslip" class="py-16 text-center text-sm text-muted">
-      Loading payslip…
-    </div>
+    <PayrollPayslipSkeleton v-if="loading" />
+
+    <UCard v-else-if="!payslip" class="py-16">
+      <div class="text-center">
+        <UIcon name="i-lucide-file-question" class="mx-auto text-5xl text-muted" />
+        <h3 class="mt-4 text-lg font-semibold">Couldn't load this payslip</h3>
+        <p class="mt-1 text-sm text-muted">{{ error || 'It may have been removed from this payroll run.' }}</p>
+        <UButton class="mt-4" icon="i-lucide-rotate-cw" variant="soft" label="Try again" @click="load" />
+      </div>
+    </UCard>
 
     <!-- The document itself - fixed at A4 size (794x1123), so on a phone-width viewport it's
          scaled down to fit (payslip-viewport measures the available width, payslip-frame/
@@ -85,7 +92,10 @@ onBeforeUnmount(() => {
 
 const route = useRoute()
 const store = usePayrollStore()
-const { currentPayslip: payslip } = storeToRefs(store)
+const { currentPayslip: payslip, error } = storeToRefs(store)
+// Local rather than "!payslip": fetchPayslip swallows its error and leaves currentPayslip null,
+// so "no payslip" alone can't tell a failed load from one still in flight.
+const loading = ref(true)
 const notify = useNotify()
 const { $generatePdf } = useNuxtApp()
 
@@ -98,6 +108,11 @@ const { settings } = storeToRefs(settingStore)
 // URI up front and use that everywhere, same fix already used for receipts/ID cards/report cards.
 const pdfLogo = ref<string | null>(null)
 const downloading = ref(false)
+
+// Templates can't reach browser globals like `window` directly, so the Print button calls this
+function printPage() {
+  window.print()
+}
 
 const runId = computed(() => route.params.id as string)
 const teacherId = computed(() => route.params.teacherId as string)
@@ -141,14 +156,21 @@ function sanitizeFilename(value: string) {
   return String(value).replace(/[^a-z0-9-_]/gi, '-')
 }
 
-watch([runId, teacherId], async ([r, t]) => {
+async function load() {
+  const r = runId.value
+  const t = teacherId.value
   if (!r || !t) return
 
-  await Promise.all([
-    store.fetchPayslip(r, t),
-    settingStore.loaded ? Promise.resolve() : settingStore.fetch().catch(() => {}),
-    loadPdfLogo()
-  ])
+  loading.value = true
+  try {
+    await Promise.all([
+      store.fetchPayslip(r, t),
+      settingStore.loaded ? Promise.resolve() : settingStore.fetch().catch(() => {}),
+      loadPdfLogo()
+    ])
+  } finally {
+    loading.value = false
+  }
 
   useAppStore().setTitle('Payslip')
   useAppStore().setBack(`/payroll/runs/${r}`)
@@ -159,7 +181,9 @@ watch([runId, teacherId], async ([r, t]) => {
   resizeObserver = resizeObserver || new ResizeObserver(scheduleMeasure)
   if (viewportRef.value) resizeObserver.observe(viewportRef.value)
   measure()
-}, { immediate: true })
+}
+
+watch([runId, teacherId], load, { immediate: true })
 
 definePageMeta({
   role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]

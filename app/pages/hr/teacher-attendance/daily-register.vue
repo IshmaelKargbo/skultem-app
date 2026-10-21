@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Daily Register" subtitle="View, print or export the staff attendance register for a specific date.">
       <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         :disabled="!roster" @click="downloadPdf">

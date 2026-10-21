@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
 
     <Heading title="Salary Templates" subtitle="Reusable compensation packages you can apply to any teacher.">
       <UButton variant="soft" color="neutral" to="/payroll/salaries" label="Back to Salaries" />

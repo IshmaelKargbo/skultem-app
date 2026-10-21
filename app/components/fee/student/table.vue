@@ -194,7 +194,7 @@ const parseBatchStatusColor: Record<string, string> = {
 
     <div class="hidden md:block">
       <UTable :columns="columns" :data="records" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
             <p class="text-gray-500 dark:text-gray-400">No fee found.</p>

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <AnalyticsAcademicFilterBar :filters="filters" :terms="terms" :class-options="classOptions"
       :subject-options="subjectOptions" :level-options="levelOptions" :class-loading="classStore.loading"
       :subject-loading="subjectStore.loading" />
@@ -28,7 +28,9 @@
             Performance trend: {{ trendBadge?.text }}
           </UBadge>
           <ClientOnly>
-            <ApexChart type="line" height="300" :options="trendChartOptions" :series="trendChartSeries" />
+            <ChartScroll>
+              <ApexChart type="line" height="300" :options="trendChartOptions" :series="trendChartSeries" />
+            </ChartScroll>
           </ClientOnly>
         </template>
       </UCard>

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Timetable Design" subtitle="Customise the timetable PDF that admins, teachers and parents download.">
       <div class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
         <UButton icon="i-lucide-rotate-ccw" color="neutral" variant="outline" class="justify-center" @click="reset">
@@ -13,7 +13,8 @@
 
     <TimetableSectionNav />
 
-    <div class="grid gap-6 lg:grid-cols-5">
+    <DesignSkeleton v-if="fetching" preview-wide />
+    <div v-show="!fetching" class="grid gap-6 lg:grid-cols-5">
       <!-- Controls -->
       <div class="space-y-6 lg:col-span-2">
         <UCard>
@@ -120,6 +121,7 @@ const { settings } = storeToRefs(store)
 const { school } = useSchoolInfo()
 
 const saving = ref(false)
+const fetching = ref(true)
 
 const orientations = [
   { value: 'LANDSCAPE', label: 'Landscape', icon: 'i-lucide-rectangle-horizontal' },
@@ -203,7 +205,7 @@ onMounted(async () => {
   if (viewportRef.value) observer.observe(viewportRef.value)
   measure()
 
-  await store.fetch(true)
+  await store.fetch(true).finally(() => { fetching.value = false })
   await nextTick()
   scheduleMeasure()
 })

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <!-- Section nav and the Student/Staff toggle share a row on desktop (nav left, toggle right); on a
          phone they stack, with the toggle spanning the full width. -->
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -44,7 +44,7 @@
       <!-- Table (desktop) -->
       <UTable v-if="tableView === 'table'" class="hidden md:block" :columns="columns" :data="filteredRecords"
         :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-id-card" class="text-4xl text-gray-400 dark:text-gray-500" />
             <p class="text-gray-500 dark:text-gray-400">

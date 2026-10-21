@@ -78,7 +78,7 @@ export const AcademicReportApi = () => {
       }
     },
 
-    getWeeklyGenderAttendance: async (classId: string, filters: { academicYearId?: string, weekOf?: string }) => {
+    getWeeklyGenderAttendance: async (classId: string, filters: { academicYearId?: string, weekOf?: string, sectionId?: string, streamId?: string }) => {
       try {
         const res = await $api(`/report/academic/class/${classId}/attendance/weekly-gender?${toQuery(filters)}`) as any
         return res.data
@@ -87,7 +87,7 @@ export const AcademicReportApi = () => {
       }
     },
 
-    getGenderAttendanceSummary: async (filters: { period: string, academicYearId?: string, termId?: string, classId?: string, date?: string }) => {
+    getGenderAttendanceSummary: async (filters: { period: string, academicYearId?: string, termId?: string, classId?: string, sectionId?: string, streamId?: string, level?: string, date?: string }) => {
       try {
         const res = await $api(`/report/academic/attendance/gender-summary?${toQuery(filters)}`) as any
         return res.data

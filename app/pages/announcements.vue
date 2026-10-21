@@ -166,14 +166,14 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Announcements" subtitle="Messages every user, in every school, sees on their notice board.">
       <UButton icon="i-lucide-megaphone" label="New Announcement" @click="startCreate" />
     </Heading>
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="items" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-megaphone" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No announcements yet.</p>

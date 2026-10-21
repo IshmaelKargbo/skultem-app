@@ -15,11 +15,11 @@
           <img src="/menu-light.svg" alt="Skultem" class="h-7 shrink-0 hidden dark:block" />
         </template>
 
-        <div v-if="school?.logo" class="min-w-0">
+        <div v-if="school?.logo && !onAdminPortal" class="min-w-0">
           <p class="truncate font-display text-base font-semibold leading-tight text-highlighted">
             {{ school.name }}
           </p>
-          <p v-if="school?.motto" class="truncate text-xs italic leading-tight text-muted">
+          <p v-if="school?.motto && !onAdminPortal" class="truncate text-xs italic leading-tight text-muted">
             {{ school.motto }}
           </p>
         </div>

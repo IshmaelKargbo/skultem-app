@@ -56,11 +56,15 @@ const { can } = useAuth()
 // Only the owner and principal see what a student has paid or owes; everyone else sees the state only.
 const canSeeAmounts = computed(() => can([Role.OWNER, Role.PRINCIPAL]))
 const widgetStore = useWidgetStore()
-const attendanceByName = ref<Record<string, number>>({})
+const termAttendance = ref<StudentTermAttendance | null>(null)
+const attendanceById = computed(() => new Map(termAttendance.value?.students.map(r => [r.studentId, r]) ?? []))
 const performanceByName = ref<Record<string, number>>({})
 
 const fullName = (s: Student) => `${s.givenNames} ${s.familyName}`.trim()
-const attendanceOf = (s: Student) => attendanceByName.value[fullName(s)]
+// Term to date, over every school day since the student enrolled (the term start, or later). An
+// enrolled student nobody has marked shows 0% - exactly what this column should make visible.
+const attendanceRowOf = (s: Student) => attendanceById.value.get(s.id)
+const attendanceOf = (s: Student) => attendanceRowOf(s)?.percentage ?? undefined
 const performanceOf = (s: Student) => performanceByName.value[fullName(s)]
 
 function feePaidPercent(s: Student) {
@@ -106,28 +110,11 @@ async function fetchInsights() {
   try {
     const [performance, attendance] = await Promise.all([
       approvedAverages(),
-      widgetStore.runAnalytic({
-        entity: 'attendances',
-        title: 'Student Attendance',
-        filters: [],
-        metrics: [
-          { name: 'Present', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Present' } },
-          { name: 'Late', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Late' } },
-          { name: 'Total', aggregation: 'count', field: 'state', tags: { groupBy: 'student' } }
-        ],
-        chartType: 'bar'
-      })
+      // No active term (e.g. between terms) just leaves the column empty.
+      AttendanceApi().getStudentTermAttendance().catch(() => null)
     ])
     performanceByName.value = performance
-
-    const w = attendance?.data ?? attendance
-    const map: Record<string, number> = {}
-    w?.labels?.forEach((label: string, i: number) => {
-      const present = Number(w.datasets?.[0]?.data?.[i] ?? 0) + Number(w.datasets?.[1]?.data?.[i] ?? 0)
-      const total = Number(w.datasets?.[2]?.data?.[i] ?? 0)
-      if (total > 0) map[label] = Math.round((present / total) * 1000) / 10
-    })
-    attendanceByName.value = map
+    termAttendance.value = attendance ?? null
   } catch (err) {
     console.error('Failed to load student insights', err)
   }
@@ -254,7 +241,7 @@ onMounted(async () => {
         </div>
       </template>
       <UTable v-if="tableView === 'table'" class="hidden md:block" :ui="{ th: 'px-3', td: 'px-3 py-2.5' }" :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
             <p class="text-gray-500 dark:text-gray-400">No students found.</p>
@@ -278,7 +265,9 @@ onMounted(async () => {
           <span v-else class="text-sm text-warning">No guardian</span>
         </template>
         <template #attendance-cell="{ row }">
-          <div v-if="attendanceOf(row.original) !== undefined" class="w-20">
+          <UTooltip v-if="attendanceOf(row.original) !== undefined" :delay-duration="0" arrow
+            :text="`${attendanceRowOf(row.original)!.presentOrLate} of ${attendanceRowOf(row.original)!.schoolDays} school days · ${termAttendance!.termName}${attendanceRowOf(row.original)!.countedFrom !== termAttendance!.startDate ? `, since enrolling ${attendanceRowOf(row.original)!.countedFrom}` : ' so far'}`">
+          <div class="w-20">
             <p class="text-sm font-medium tabular-nums"
               :class="attendanceOf(row.original)! < 75 ? 'text-warning' : 'text-highlighted'">
               {{ attendanceOf(row.original) }}%</p>
@@ -287,6 +276,7 @@ onMounted(async () => {
                 :style="{ width: `${Math.min(100, attendanceOf(row.original)!)}%` }" />
             </div>
           </div>
+          </UTooltip>
           <span v-else class="text-muted">-</span>
         </template>
         <template #average-cell="{ row }">

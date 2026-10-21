@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
 
     <Heading :title="isEdit ? 'Edit Salary' : 'Add Salary'" subtitle="Set up a compensation package for a teacher.">
       <UButton variant="soft" color="neutral" to="/payroll/salaries" label="Cancel" />

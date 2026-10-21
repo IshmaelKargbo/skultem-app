@@ -124,7 +124,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Audit Logs" subtitle="What happened on the platform, and who did it. Entries can't be changed or removed." />
 
     <div class="flex flex-wrap items-center gap-3">
@@ -151,7 +151,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       <UTable v-else :columns="columns" :data="rows" :loading="loading" @select="(_e: any, row: any) => view(row.original)"
         :meta="{ class: { tr: (row: any) => row.original.status === 'FAILURE' ? 'bg-error/5 cursor-pointer' : 'cursor-pointer' } }"
         :ui="{ base: 'table-fixed w-full', thead: 'bg-elevated/50', th: 'py-3 text-[11px] font-semibold uppercase tracking-wide text-muted', td: 'py-3.5 align-top', tr: 'hover:bg-primary/5 transition-colors' }">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-scroll-text" class="text-4xl text-gray-400" />
             <p class="text-gray-500">Nothing recorded for these filters.</p>

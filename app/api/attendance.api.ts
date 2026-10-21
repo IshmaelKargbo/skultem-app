@@ -128,6 +128,74 @@ export const AttendanceApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+
+    // Every class in the caller's scope at once - see GenerateInspectionReportUseCase#executeForAllClasses.
+    getInspectionReportForAllClasses: async (params: {
+      reportType: InspectionReportType
+      academicYearId?: string
+      termId?: string
+      date?: string
+      year?: number
+      month?: number
+    }) => {
+      try {
+        const query = new URLSearchParams({ reportType: params.reportType })
+        if (params.academicYearId) query.set('academicYearId', params.academicYearId)
+        if (params.termId) query.set('termId', params.termId)
+        if (params.date) query.set('date', params.date)
+        if (params.year != null) query.set('year', String(params.year))
+        if (params.month != null) query.set('month', String(params.month))
+
+        const res = await $api(`/attendance/inspection-report/all-classes?${query.toString()}`) as any
+
+        if (!res)
+          throw new Error('Failed to generate inspection report')
+
+        return res.data as ClassInspectionReport[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    // Errors are left to the caller: the students list just goes without the column when there's no
+    // active term, rather than toasting on every visit.
+    getStudentTermAttendance: async (params: { academicYearId?: string, termId?: string } = {}) => {
+      const query = new URLSearchParams()
+      if (params.academicYearId) query.set('academicYearId', params.academicYearId)
+      if (params.termId) query.set('termId', params.termId)
+      const res = await $api(`/attendance/term-to-date/students?${query.toString()}`) as any
+      return res?.data as StudentTermAttendance | undefined
+    },
+
+    // The class page roster - see getStudentTermAttendance.
+    getClassTermAttendance: async (classId: string, params: { academicYearId?: string, termId?: string } = {}) => {
+      const query = new URLSearchParams()
+      if (params.academicYearId) query.set('academicYearId', params.academicYearId)
+      if (params.termId) query.set('termId', params.termId)
+      const res = await $api(`/attendance/term-to-date/class/${classId}?${query.toString()}`) as any
+      return res?.data as StudentTermAttendance | undefined
+    },
+
+    // One student's term breakdown (profile + parent view). Errors left to the caller, like the list ones.
+    getStudentTermAttendanceDetail: async (studentId: string, params: { academicYearId?: string, termId?: string } = {}) => {
+      const query = new URLSearchParams()
+      if (params.academicYearId) query.set('academicYearId', params.academicYearId)
+      if (params.termId) query.set('termId', params.termId)
+      const res = await $api(`/attendance/term-to-date/student/${studentId}?${query.toString()}`) as any
+      return res?.data as StudentTermAttendanceDetail | undefined
+    },
+
+    getMarkingCompliance: async (params: { academicYearId?: string, termId?: string } = {}) => {
+      try {
+        const query = new URLSearchParams()
+        if (params.academicYearId) query.set('academicYearId', params.academicYearId)
+        if (params.termId) query.set('termId', params.termId)
+        const res = await $api(`/attendance/marking-compliance?${query.toString()}`) as any
+        return res.data as AttendanceMarkingCompliance
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

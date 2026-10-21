@@ -149,7 +149,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Leads & Follow-ups" subtitle="Every enquiry from the marketing site, worked until it becomes a school.">
       <UButton icon="i-lucide-user-plus" label="Add Lead" to="/leads/add" />
     </Heading>
@@ -235,7 +235,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
       <UTable v-else :columns="columns" :data="leads" :loading="loading"
         :ui="{ thead: 'bg-elevated/50', th: 'py-3 text-[11px] font-semibold uppercase tracking-wide text-muted', td: 'py-3.5', tr: 'hover:bg-primary/5 transition-colors' }">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-target" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No leads match.</p>

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Monthly Summary" subtitle="Staff attendance performance for every teacher over a month.">
       <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         :disabled="!summary.length" @click="downloadPdf">

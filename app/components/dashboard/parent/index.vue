@@ -1,5 +1,5 @@
 <template>
-    <div class="px-4 space-y-4 md:px-6">
+    <div class="px-4 space-y-3 md:px-6">
         <DashboardWelcome />
         <UCard>
             <div class="grid grid-cols-2 gap-2">
@@ -31,7 +31,7 @@
                 label: 'Class Rank', color: 'primary', value: rank, isReady: rankReady, icon: LEADER_ICON,
                 subtle: selected ? `Out of ${selected.classSize} in ${selected.className}` : undefined
             }" />
-            <DashboardParentAttendance :id="state.student" @ready="onAttendanceReady" />
+            <DashboardParentAttendance :id="state.student" :term="state.term" @ready="onAttendanceReady" />
             <DashboardParentFees :id="state.student" @ready="onFeeReady" />
         </div>
 

@@ -25,7 +25,9 @@ const options = computed(() => ({
 
 <template>
   <ClientOnly>
-    <ApexChart type="bar" :height="height" :options="options" :series="series.map(s => ({ name: s.name, data: s.data }))" />
+    <ChartScroll>
+      <ApexChart type="bar" :height="height" :options="options" :series="series.map(s => ({ name: s.name, data: s.data }))" />
+    </ChartScroll>
     <template #fallback>
       <USkeleton class="w-full" :style="{ height: `${height}px` }" />
     </template>

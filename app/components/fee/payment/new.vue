@@ -69,10 +69,15 @@
                         </div>
 
                         <!-- LOADING -->
-                        <div v-else-if="loadingFees" class="text-center py-10 text-sm text-muted">
-                            <div class="flex items-center justify-center gap-2">
-                                <UIcon name="i-lucide-loader-circle" class="animate-spin" />
-                                Loading outstanding fees…
+                        <div v-else-if="loadingFees" class="space-y-3">
+                            <USkeleton class="h-3 w-32" />
+                            <div v-for="i in 3" :key="i"
+                                class="flex items-center justify-between rounded-xl border-2 border-gray-200 p-3 dark:border-gray-800">
+                                <div class="space-y-1.5">
+                                    <USkeleton class="h-4 w-40" />
+                                    <USkeleton class="h-3 w-28" />
+                                </div>
+                                <USkeleton class="h-6 w-12 rounded-md" />
                             </div>
                         </div>
 

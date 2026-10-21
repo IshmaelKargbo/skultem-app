@@ -1,5 +1,5 @@
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <AuthSectionNav />
         <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
@@ -18,7 +18,7 @@
             <!-- Desktop table -->
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filtered"
                 :loading="loading">
-                <template #empty-state>
+                <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
                         <div
                             class="flex size-16 items-center justify-center rounded-3xl bg-gray-100 dark:bg-neutral-800">

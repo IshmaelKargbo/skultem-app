@@ -73,8 +73,23 @@ function toggleSelect(id: string) {
         <!-- Search -->
         <UInput v-model="search" icon="lucide:search" placeholder="Search by name or admission number" />
 
+        <!-- Loading -->
+        <template v-if="loading">
+            <div v-for="i in 7" :key="i" class="flex items-center justify-between rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+                <div class="flex items-center space-x-3">
+                    <USkeleton class="size-4 rounded" />
+                    <USkeleton class="size-8 rounded-full" />
+                    <div class="space-y-1.5">
+                        <USkeleton class="h-4 w-36" />
+                        <USkeleton class="h-3 w-20" />
+                    </div>
+                </div>
+                <USkeleton class="h-5 w-16 rounded-md" />
+            </div>
+        </template>
+
         <!-- Students -->
-        <div v-for="item in records" :key="item.id"
+        <div v-else v-for="item in records" :key="item.id"
             class="flex items-center justify-between border rounded-xl p-3 transition cursor-pointer" :class="[
                 isSelected(item.id)
                     ? 'border-primary bg-primary/5'

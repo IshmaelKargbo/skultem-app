@@ -73,27 +73,14 @@ const columns = [
         header: "Address",
     },
     {
-        id: "actions",
-        meta: { class: { td: "text-right" } },
+        id: "open",
+        meta: { class: { td: "text-right w-10" } },
     },
 ]
 
-const { can } = useAuth()
-// Matches PATCH /parent/{id} (ADMIN/OWNER/PROPRIETOR); permanent delete is owner-level only, like the backend.
-const canDelete = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
-
-const editTarget = ref<Parent | null>(null)
-const deleteTarget = ref<Parent | null>(null)
-
-const addEmailTarget = ref<Parent | null>(null)
-
-function openAddEmail(parent: Parent) {
-    addEmailTarget.value = parent
-}
-
-// Guardians can sign in with their phone number, so one without an email still gets portal
-// access once an admin hands them a password (they're asked to set their own on first login).
-const loginTarget = ref<Parent | null>(null)
+// Edit, add email, give login and delete live on the parent's own page (pages/parents/[id].vue) now -
+// the list just opens it.
+const parentLink = (parent: Parent) => `/parents/${parent.id}`
 
 const page = computed<number>({
     get: () => Number(route.query.page || 1),
@@ -161,7 +148,7 @@ watch(
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-                <template #empty-state>
+                <template #empty>
                     <div class="flex flex-col items-center justify-center py-14">
                         <UIcon name="i-lucide-users" class="mb-3 size-10 text-gray-400" />
 
@@ -169,15 +156,15 @@ watch(
                     </div>
                 </template>
                 <template #name-cell="{ row }">
-                    <div class="flex items-center gap-3">
+                    <NuxtLink :to="parentLink(row.original)" class="flex items-center gap-3 group">
                         <UAvatar icon="i-lucide-user" />
 
                         <div>
-                            <p>{{ row.original.name }}</p>
+                            <p class="font-medium group-hover:text-primary group-hover:underline">{{ row.original.name }}</p>
                             <p v-if="row.original.email" class="text-xs text-muted">{{ row.original.email }}</p>
                             <UBadge v-else size="xs" variant="subtle" color="warning" label="No Email" />
                         </div>
-                    </div>
+                    </NuxtLink>
                 </template>
                 <template #students-cell="{ row }">
                     <UBadge :label="`${row.original.students} Students`" variant="outline" />
@@ -194,17 +181,9 @@ watch(
                 <template #loading>
                     <TableLoading :size="columns.length" />
                 </template>
-                <template #actions-cell="{ row }">
-                    <div class="flex justify-end gap-1">
-                        <UButton @click="editTarget = row.original" size="sm" variant="ghost" color="neutral"
-                            label="Edit" :icon="EDIT_ICON" />
-                        <UButton v-if="!row.original.email" @click="openAddEmail(row.original)" size="sm"
-                            variant="ghost" color="warning" label="Add Email" :icon="EMAIL_ICON" />
-                        <UButton @click="loginTarget = row.original" size="sm" variant="ghost" color="neutral"
-                            label="Give login" icon="i-lucide-key-round" />
-                        <UButton v-if="canDelete" @click="deleteTarget = row.original" size="sm" variant="ghost"
-                            color="error" icon="lucide:trash-2" aria-label="Delete parent permanently" />
-                    </div>
+                <template #open-cell="{ row }">
+                    <UButton :to="parentLink(row.original)" size="sm" variant="ghost" color="neutral"
+                        icon="i-lucide-chevron-right" aria-label="View parent" />
                 </template>
             </UTable>
             <div class="md:p-4 md:space-y-4"
@@ -224,8 +203,8 @@ watch(
                 </template>
 
                 <template v-else-if="data?.length">
-                    <div v-for="parent in data" :key="parent.id"
-                        class="border-b md:border md:rounded-2xl border-default p-3">
+                    <NuxtLink v-for="parent in data" :key="parent.id" :to="parentLink(parent)"
+                        class="block border-b md:border md:rounded-2xl border-default p-3 transition-colors hover:bg-elevated/50">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="min-w-0">
@@ -246,20 +225,13 @@ watch(
                                 </div>
                             </div>
 
-                            <div class="flex shrink-0 flex-col items-end gap-1.5">
+                            <div class="flex shrink-0 items-center gap-1.5">
                                 <UBadge :label="STATUS_LABELS[parent.status]" :color="STATUS_COLORS[parent.status]"
                                     variant="subtle" size="sm" />
-                                <UButton @click="editTarget = parent" size="xs" variant="ghost" color="neutral"
-                                    label="Edit" :icon="EDIT_ICON" />
-                                <UButton v-if="!parent.email" @click="openAddEmail(parent)" size="xs" variant="ghost"
-                                    color="warning" label="Add Email" :icon="EMAIL_ICON" />
-                                <UButton @click="loginTarget = parent" size="xs" variant="ghost" color="neutral"
-                                    label="Give login" icon="i-lucide-key-round" />
-                                <UButton v-if="canDelete" @click="deleteTarget = parent" size="xs" variant="ghost"
-                                    color="error" label="Delete" icon="lucide:trash-2" />
+                                <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
                             </div>
                         </div>
-                    </div>
+                    </NuxtLink>
                 </template>
 
                 <!-- Empty -->
@@ -284,17 +256,5 @@ watch(
             </template>
         </UCard>
 
-        <ParentEdit v-if="editTarget" :open="!!editTarget" :parent="editTarget"
-            @update:open="(v) => { if (!v) editTarget = null }" @saved="fetchRecords" />
-
-        <ParentDeletePermanently v-if="deleteTarget" :open="!!deleteTarget" :parent="deleteTarget"
-            @update:open="(v) => { if (!v) deleteTarget = null }" @deleted="fetchRecords" />
-
-        <ParentAddEmail v-if="addEmailTarget" :open="!!addEmailTarget" :parent-id="addEmailTarget.id"
-            :parent-name="addEmailTarget.name" @update:open="(v) => { if (!v) addEmailTarget = null }" />
-
-        <AuthUsersResetPasswordPrompt v-if="loginTarget" :open="!!loginTarget" :user-id="loginTarget.userId"
-            :user-name="loginTarget.name" :sign-in-with="loginTarget.phone"
-            @update:open="(v) => { if (!v) loginTarget = null }" />
     </div>
 </template>

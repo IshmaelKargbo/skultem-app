@@ -79,6 +79,24 @@ export const ParentApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    // One guardian, for the parent view page.
+    getOne: async (id: string) => {
+      try {
+        const res = await $api(`/parent/${id}`) as any
+        return res.data as Parent
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // That guardian's children - the same list they see in their own portal.
+    getStudentsOf: async (id: string) => {
+      try {
+        const res = await $api(`/parent/${id}/students`) as any
+        return (res.data || []) as Student[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

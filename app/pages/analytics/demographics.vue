@@ -1,8 +1,8 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Student Demographics" subtitle="Gender and religion breakdown for management reporting.">
       <div class="flex flex-wrap gap-2">
-        <UButton icon="i-lucide-printer" variant="soft" @click="() => window.print()">Print</UButton>
+        <UButton icon="i-lucide-printer" variant="soft" @click="printPage">Print</UButton>
         <UButton icon="i-lucide-download" color="primary" :loading="downloading" @click="downloadPdf">
           Export PDF
         </UButton>
@@ -78,7 +78,9 @@
           </div>
           <div class="p-4">
             <ClientOnly>
-              <ApexChart type="bar" height="280" :options="religionChartOptions" :series="religionChartSeries" />
+              <ChartScroll>
+                <ApexChart type="bar" height="280" :options="religionChartOptions" :series="religionChartSeries" />
+              </ChartScroll>
             </ClientOnly>
           </div>
         </div>
@@ -107,6 +109,11 @@ const filters = reactive({
 })
 
 const downloading = ref(false)
+
+// Templates can't reach browser globals like `window` directly, so the Print button calls this
+function printPage() {
+  window.print()
+}
 const { logoSrc: reportLogo, loadLogo, ready: logoReady } = useReportLogo()
 const logoSrc = computed(() => reportLogo.value || school.value?.logo || '')
 

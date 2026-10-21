@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Teacher Progress" subtitle="Monitor curriculum coverage by teacher.">
       <UButton icon="i-lucide-refresh-cw" variant="outline" color="neutral" :loading="loading" label="Refresh"
         class="justify-center" @click="load" />

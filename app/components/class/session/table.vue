@@ -1,7 +1,7 @@
 <template>
     <UCard :ui="{ body: 'sm:p-0' }">
         <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-            <template #empty-state>
+            <template #empty>
                 <div class="flex flex-col items-center gap-2 py-10">
                     <UIcon name="i-lucide-calendar-plus" class="text-4xl text-gray-400 dark:text-gray-500" />
                     <p class="text-gray-500 dark:text-gray-400">No class sessions found for this academic year.</p>

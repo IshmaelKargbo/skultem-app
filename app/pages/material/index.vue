@@ -101,7 +101,7 @@ definePageMeta({
 })
 </script>
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <MaterialSectionNav />
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
@@ -119,7 +119,7 @@ definePageMeta({
             </template>
 
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-                <template #empty-state>
+                <template #empty>
                     <div class="flex flex-col items-center gap-3 py-16">
                         <div
                             class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">

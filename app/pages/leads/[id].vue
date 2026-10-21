@@ -185,7 +185,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <UCard v-if="notFound">
       <div class="flex flex-col items-center gap-2 py-10">
         <UIcon name="i-lucide-user-x" class="text-4xl text-gray-400" />

@@ -129,7 +129,7 @@ onMounted(() => {
 
     <!-- Desktop table -->
     <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
+      <template #empty>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="i-lucide-receipt" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No transactions found.</p>

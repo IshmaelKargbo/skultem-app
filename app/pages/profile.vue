@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
             <div
                 class="h-20 bg-linear-to-br from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 md:h-24" />

@@ -68,7 +68,9 @@ const chartSeries = computed(() => [{
           </UBadge>
 
           <ClientOnly>
-            <ApexChart type="line" height="260" :options="chartOptions" :series="chartSeries" />
+            <ChartScroll>
+              <ApexChart type="line" height="260" :options="chartOptions" :series="chartSeries" />
+            </ChartScroll>
           </ClientOnly>
         </template>
 

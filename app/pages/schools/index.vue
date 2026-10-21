@@ -138,7 +138,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="px-4 md:px-6 space-y-4">
+  <div class="px-4 md:px-6 space-y-3">
     <Heading title="Schools" subtitle="Onboard, edit and manage every school on the platform.">
       <UButton label="Onboard School" icon="i-lucide-plus" to="/schools/add" />
     </Heading>
@@ -156,7 +156,7 @@ definePageMeta({
       </template>
 
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="schools" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon :name="SCHOOL_ICON" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No schools found.</p>

@@ -1,37 +1,28 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
-    <UCard>
-      <div class="space-y-4">
+  <div class="space-y-3 px-4 md:px-6">
+    <!-- Toolbar in the Classes page style: period + date stay visible, the rest is in the filter drawer -->
+    <UCard :ui="{ body: 'px-4 py-3 sm:px-4 sm:py-3' }">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div class="flex flex-wrap items-center gap-2">
           <UButton v-for="p in periods" :key="p.value" :label="p.label" size="sm"
             :variant="filters.period === p.value ? 'solid' : 'outline'" @click="filters.period = p.value" />
-          <UButton label="Arrange classes" icon="i-lucide-arrow-up-down" size="sm" color="neutral" variant="soft"
-            class="ml-auto" :disabled="classStore.records.length < 2" @click="arrangeOpen = true" />
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField v-if="filters.period === 'WEEK'" label="Week of">
-            <UInput v-model="filters.date" type="date" class="w-full" />
-          </UFormField>
+        <div class="flex items-center gap-2">
+          <UInput v-if="filters.period === 'WEEK'" v-model="filters.date" type="date" aria-label="Week of"
+            class="flex-1 md:w-44 md:flex-none" />
+          <UInput v-else-if="filters.period === 'MONTH'" v-model="filters.month" type="month" aria-label="Month"
+            class="flex-1 md:w-44 md:flex-none" />
+          <USelectMenu v-else-if="filters.period === 'TERM'" v-model="filters.termId" :items="terms" value-key="value"
+            label-key="label" placeholder="Select term" class="flex-1 md:w-44 md:flex-none" />
+          <div v-else class="flex-1" />
 
-          <UFormField v-else-if="filters.period === 'MONTH'" label="Month">
-            <UInput v-model="filters.month" type="month" class="w-full" />
-          </UFormField>
-
-          <UFormField v-else-if="filters.period === 'TERM'" label="Term">
-            <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label"
-              placeholder="Select term" class="w-full" />
-          </UFormField>
-
-          <UFormField label="Class">
-            <USelectMenu v-model="filters.classId" :items="classes" :loading="classStore.loading" value-key="value"
-              label-key="label" class="w-full" />
-          </UFormField>
+          <AttendanceGenderFilterDrawer v-model:level="filters.level" v-model:class-id="filters.classId"
+            v-model:section-id="filters.sectionId" v-model:stream-id="filters.streamId" :classes="classStore.records"
+            :section-options="sectionOptions" :stream-options="streamOptions" :active-count="activeFilterCount" />
         </div>
       </div>
     </UCard>
-
-    <ClassReorder v-model:open="arrangeOpen" :classes="classStore.records" />
 
     <UCard v-if="loadingSummary">
       <div class="space-y-3">
@@ -58,7 +49,7 @@
       <UCard>
         <template #header>
           <div>
-            <h2 class="font-semibold">{{ filters.classId === ALL ? 'Every class' : summary.classes[0]?.className }}</h2>
+            <h2 class="font-semibold">{{ scopeLabel }}</h2>
             <p class="text-sm text-muted">{{ summary.startDate }} – {{ summary.endDate }} · present = present or late, counted per student per day</p>
           </div>
         </template>
@@ -77,8 +68,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="c in sortedClasses" :key="c.classId">
-                <td class="border border-default p-2.5">{{ c.className }}</td>
+              <tr v-for="c in sortedClasses" :key="genderClassRowKey(c)">
+                <td class="border border-default p-2.5">{{ genderClassRowLabel(c) }}</td>
                 <td class="border border-default p-2.5 text-center">{{ c.totals.boysPresent }}</td>
                 <td class="border border-default p-2.5 text-center">{{ c.totals.girlsPresent }}</td>
                 <td class="border border-default p-2.5 text-center">{{ c.totals.boysPresent + c.totals.girlsPresent }}</td>
@@ -104,7 +95,7 @@
     </template>
 
     <!-- Day-by-day breakdown, only for a single class in week view -->
-    <template v-if="filters.period === 'WEEK' && filters.classId !== ALL">
+    <template v-if="filters.period === 'WEEK' && filters.classId">
     <UCard v-if="loading">
       <div class="space-y-3">
         <USkeleton class="h-8 w-64" />
@@ -168,10 +159,10 @@
 </template>
 
 <script setup lang="ts">
-const ALL = '__all'
-
 const academicYearStore = useAcademicYearStore()
 const classStore = useClassStore()
+const sectionStore = useSectionStore()
+const streamStore = useStreamStore()
 const termStore = useTermStore()
 const reportStore = useAcademicReportStore()
 
@@ -191,50 +182,69 @@ const periods = [
 
 const today = new Date().toISOString().slice(0, 10)
 
+// level/classId/sectionId/streamId: '' means all, as in the Classes page filter drawer.
 const filters = reactive({
   period: 'WEEK' as 'WEEK' | 'MONTH' | 'TERM' | 'YEAR',
   academicYearId: '',
-  classId: ALL,
+  level: '',
+  classId: '',
+  sectionId: '',
+  streamId: '',
   date: today,
   month: today.slice(0, 7),
   termId: ''
 })
 
-const academicYears = computed(() => academicYearStore.list)
-const classes = computed(() => [
-  { label: 'All classes', value: ALL },
-  ...classStore.records.map(c => ({ label: c.name, value: c.id }))
-])
+const sectionOptions = computed(() => sectionStore.records.map(e => ({ label: e.name, value: e.id })))
+const streamOptions = computed(() => streamStore.records.map(e => ({ label: e.name, value: e.id })))
+const activeFilterCount = computed(() =>
+  [filters.level, filters.classId, filters.sectionId, filters.streamId].filter(Boolean).length)
+
 const terms = computed(() => termStore.records
   .filter(t => !filters.academicYearId || t.academicYear?.id === filters.academicYearId)
   .map(t => ({ label: t.name, value: t.id })))
 
-const arrangeOpen = ref(false)
+// Title for the per-class card, e.g. "JSS 1 · A · Science" or "Every class".
+const scopeLabel = computed(() => {
+  const parts = [
+    classStore.records.find(c => c.id === filters.classId)?.name,
+    sectionStore.records.find(s => s.id === filters.sectionId)?.name,
+    streamStore.records.find(s => s.id === filters.streamId)?.name
+  ].filter(Boolean)
+  return parts.length ? parts.join(' · ') : 'Every class'
+})
 
-// Lowest class rank first (JSS 1 before JSS 2 ...); the order is set with "Arrange classes".
+// Lowest class rank first (JSS 1 before JSS 2 ...), the order set on the Classes page. The sort is
+// stable, so a class's section/stream rows keep the server's section order within it.
 const sortedClasses = computed(() => {
   const rank = new Map(classStore.records.map(c => [c.id, c.levelOrder]))
   const of = (id: string) => rank.get(id) ?? Number.MAX_SAFE_INTEGER
   return [...(summary.value?.classes ?? [])].sort((a, b) => of(a.classId) - of(b.classId))
 })
 
-const classIdParam = () => (filters.classId === ALL ? undefined : filters.classId)
-
 async function loadReport() {
   if (filters.period === 'TERM' && !filters.termId) return
+
+  const scope = {
+    sectionId: filters.sectionId || undefined,
+    streamId: filters.streamId || undefined
+  }
 
   await reportStore.fetchGenderAttendanceSummary({
     period: filters.period,
     academicYearId: filters.academicYearId || undefined,
     termId: filters.period === 'TERM' ? filters.termId : undefined,
-    classId: classIdParam(),
+    classId: filters.classId || undefined,
+    level: filters.level || undefined,
+    ...scope,
     date: filters.period === 'MONTH' ? `${filters.month}-01` : filters.date || undefined
   })
 
-  if (filters.period === 'WEEK' && filters.classId !== ALL) {
+  if (filters.period === 'WEEK' && filters.classId) {
     await reportStore.fetchWeeklyGenderAttendance(filters.classId, {
       academicYearId: filters.academicYearId || undefined,
-      weekOf: filters.date || undefined
+      weekOf: filters.date || undefined,
+      ...scope
     })
   }
 }
@@ -247,7 +257,8 @@ watch(() => filters.academicYearId, () => {
   }
 })
 
-watch(() => [filters.period, filters.classId, filters.date, filters.month, filters.termId, filters.academicYearId], loadReport)
+watch(() => [filters.period, filters.level, filters.classId, filters.sectionId, filters.streamId, filters.date,
+  filters.month, filters.termId, filters.academicYearId], loadReport)
 
 // No year dropdown on this page: reports follow the header's year switcher (viewing year).
 watch(() => academicYearStore.viewingYearId || academicYearStore.activeYear?.id || '', (id) => { filters.academicYearId = id })
@@ -256,7 +267,13 @@ onMounted(async () => {
   useAppStore().setTitle('Attendance by Gender')
   document.title = 'Attendance by Gender | Skultem'
 
-  await Promise.all([academicYearStore.fetchAll(1, 100), classStore.fetchAll(1, 200), termStore.fetchAll(1, 100)])
+  await Promise.all([
+    academicYearStore.fetchAll(1, 100),
+    classStore.fetchAll(1, 200),
+    termStore.fetchAll(1, 100),
+    sectionStore.fetchAll(0, 0),
+    streamStore.fetchAll(0, 0)
+  ])
   filters.academicYearId = academicYearStore.viewingYearId || academicYearStore.activeYear?.id || ''
 
   await loadReport()

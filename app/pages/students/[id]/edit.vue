@@ -19,7 +19,8 @@
           </div>
         </template>
 
-        <div class="grid gap-5 md:grid-cols-2">
+        <FormSkeleton v-if="fetching" :fields="9" />
+        <div v-else class="grid gap-5 md:grid-cols-2">
           <UFormField label="Admission Number" name="admissionNumber" required>
             <UInput v-model="state.admissionNumber" placeholder="Enter admission number" :leading-icon="ID_CARD_ICON" />
           </UFormField>
@@ -78,6 +79,7 @@ const { success, error } = useNotify()
 const id = useRoute().params.id as string
 
 const isLoading = ref(false)
+const fetching = ref(true)
 const formRef = ref()
 
 type StudentForm = {
@@ -174,6 +176,7 @@ onMounted(async () => {
   document.title = 'Edit Student | Students | Skultem'
 
   await fetchRecord()
+  fetching.value = false
 })
 
 definePageMeta({

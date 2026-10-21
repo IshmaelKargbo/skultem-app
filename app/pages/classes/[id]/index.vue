@@ -44,7 +44,7 @@
                 <ClassEdit v-if="canManagePromotion" ref="classEditRef" :class-id="classId" hide-trigger @updated="fetchClass" />
                 <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
                     :content="{ align: 'end' }">
-                    <UButton variant="soft" size="sm" color="neutral" label="More" trailing-icon="i-lucide-ellipsis" />
+                    <UButton variant="soft" size="sm" color="neutral" label="Actions" trailing-icon="i-lucide-ellipsis" />
                 </UDropdownMenu>
                 <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''" hide-trigger />
             </div>
@@ -91,7 +91,7 @@
             }" />
             <Metric :record="{
                 label: 'Attendance', value: avgAttendance === null ? '-' : `${avgAttendance}%`,
-                subtle: avgAttendance === null ? 'Nothing recorded yet' : 'Average across the class',
+                subtle: avgAttendance === null ? 'No school days yet this term' : `${termAttendance?.termName ?? 'This term'}, over every school day so far`,
                 subtileColor: avgAttendance !== null && avgAttendance < 75 ? 'warning' : undefined,
                 icon: 'i-lucide-calendar-check', color: avgAttendance !== null && avgAttendance < 75 ? 'warning' : 'info', isReady: !studentsLoading
             }" />
@@ -111,7 +111,7 @@
 
         <!-- What to look at first -->
         <ClassInsights v-if="canViewRoster && !studentsLoading" :students="students" :attention="attentionByStudentId"
-            :attendance-by-name="attendanceByName" :performance-by-name="performanceByName"
+            :attendance-by-id="attendanceById" :performance-by-name="performanceByName"
             :subject-scores="subjectScores" :class-id="classId" />
 
         <!-- Students -->
@@ -210,7 +210,7 @@
                 <template #loading>
                     <TableLoading :size="columns.length" />
                 </template>
-                <template #empty-state>
+                <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
                         <p class="text-gray-500 dark:text-gray-400">
@@ -302,7 +302,14 @@ const view = ref<'table' | 'card'>('table')
 
 const widgetStore = useWidgetStore()
 const performanceByName = ref<Record<string, number>>({})
-const attendanceByName = ref<Record<string, number>>({})
+// Term to date over every school day so far (not just recorded days) - see GetStudentTermAttendanceUseCase.
+const termAttendance = ref<StudentTermAttendance | null>(null)
+// Each student over the school days since they enrolled; someone nobody has marked is 0%. Students
+// with no school days yet (enrolled today) are left out rather than shown as 0%.
+const attendanceById = computed<Record<string, number>>(() => Object.fromEntries(
+    (termAttendance.value?.students ?? [])
+        .filter(r => r.percentage !== null)
+        .map(r => [r.studentId, r.percentage as number])))
 const subjectScores = ref<{ name: string, score: number }[]>([])
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const sortByPerformance = ref(true)
@@ -430,34 +437,15 @@ async function fetchRosterInsights() {
     try {
         const [performance, attendance, subjectsRes] = await Promise.all([
             approvedAverages('student'),
-            widgetStore.runAnalytic({
-                entity: 'attendances',
-                title: 'Student Attendance',
-                filters: [
-                    { field: 'enrollment.clazz.id', value: classId.value, operator: 'EQUALS', type: 'select' }
-                ],
-                metrics: [
-                    { name: 'Present', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Present' } },
-                    // Present or late counts as attending - the same rule the attendance reports use.
-                    { name: 'Late', aggregation: 'count', field: 'state', tags: { groupBy: 'student', field: 'state', value: 'Late' } },
-                    { name: 'Total', aggregation: 'count', field: 'state', tags: { groupBy: 'student' } }
-                ],
-                chartType: 'bar'
-            }),
+            // No active term (e.g. between terms) just leaves attendance empty.
+            AttendanceApi().getClassTermAttendance(classId.value).catch(() => null),
             approvedAverages('subject').catch(() => ({} as Record<string, number>)) // a bonus line - never let it take the rest down
         ])
 
         subjectScores.value = Object.entries(subjectsRes).map(([name, score]) => ({ name, score }))
         performanceByName.value = performance
 
-        const attendanceWidget = attendance?.data ?? attendance
-        const attendanceMap: Record<string, number> = {}
-        attendanceWidget?.labels?.forEach((label: string, i: number) => {
-            const present = Number(attendanceWidget.datasets?.[0]?.data?.[i] ?? 0) + Number(attendanceWidget.datasets?.[1]?.data?.[i] ?? 0)
-            const total = Number(attendanceWidget.datasets?.[2]?.data?.[i] ?? 0)
-            if (total > 0) attendanceMap[label] = Math.round((present / total) * 1000) / 10
-        })
-        attendanceByName.value = attendanceMap
+        termAttendance.value = attendance ?? null
     } catch (err) {
         console.error('Failed to load roster insights', err)
     }
@@ -514,7 +502,7 @@ function ageOf(dob?: string) {
 // --- The list: search, "needs attention" and sort ---
 const search = ref('')
 const onlyAttention = ref(false)
-const attendanceOf = (s: Student) => attendanceByName.value[studentFullName(s)]
+const attendanceOf = (s: Student) => attendanceById.value[s.id]
 const attentionCount = computed(() => students.value.filter(needsAttention).length)
 const filteredStudents = computed(() => {
     const text = search.value.trim().toLowerCase()
@@ -528,7 +516,7 @@ const filteredStudents = computed(() => {
 // --- At a glance ---
 const average = (values: number[]) => values.length
     ? Math.round(values.reduce((sum, v) => sum + v, 0) / values.length * 10) / 10 : null
-const avgAttendance = computed(() => average(Object.values(attendanceByName.value)))
+const avgAttendance = computed(() => average(Object.values(attendanceById.value)))
 const avgScore = computed(() => {
     const v = average(Object.values(performanceByName.value))
     return v === null ? null : Math.round(v)

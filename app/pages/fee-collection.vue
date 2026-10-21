@@ -64,7 +64,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="Platform fees could not be loaded">
       <template #actions>
         <UButton size="xs" color="error" variant="outline" label="Try again" @click="load" />
@@ -104,7 +104,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       </template>
 
       <UTable class="hidden md:block" :columns="columns" :data="rows" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-hand-coins" class="size-9 text-muted" />
             <p class="text-sm text-muted">{{ data?.items.length ? 'No school matches.' : 'No live schools yet.' }}</p>

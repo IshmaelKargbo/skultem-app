@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-const { student } = defineProps<{
+// termId: the term the summary covers (the parent view's term picker); omitted = the active term.
+const { student, termId } = defineProps<{
     student: Student | undefined
+    termId?: string
 }>()
 
 const reportStore = useReportStore()
@@ -96,7 +98,8 @@ const stats = computed(() => {
     }
 
     const total = counts.Present! + counts.Absent! + counts.Late! + counts.Excused!
-    const percent = total === 0 ? 0 : Math.round((counts.Present! / total) * 100)
+    // Present or late counts as attending - the same rule as every attendance report.
+    const percent = total === 0 ? 0 : Math.round(((counts.Present! + counts.Late!) / total) * 100)
 
     return {
         Present: counts.Present!,
@@ -108,17 +111,59 @@ const stats = computed(() => {
     }
 })
 
-const tiles = computed(() =>
-    (['Present', 'Absent', 'Late', 'Excused'] as const).map(key => ({
-        key,
-        value: stats.value[key]
-    }))
-)
+// Term so far, over every school day (see GetStudentTermAttendanceUseCase) - a day nobody marked shows
+// as "Not marked" instead of quietly dropping out of the percentage.
+const termSummary = ref<StudentTermAttendanceDetail | null>(null)
+const termLoading = ref(true)
+
+async function fetchTerm() {
+    termLoading.value = true
+    try {
+        termSummary.value = student?.id
+            ? await AttendanceApi().getStudentTermAttendanceDetail(student.id, { termId: termId || undefined }) ?? null
+            : null
+    } catch {
+        termSummary.value = null // e.g. no active term - the month's figures below stand in
+    } finally {
+        termLoading.value = false
+    }
+}
+
+const summaryLoading = computed(() => termLoading.value || (!termSummary.value && loading.value))
+// null: no school days to count yet (enrolled today) - shown as "-", not 0%.
+const summaryPercent = computed<number | null>(() => termSummary.value
+    ? (termSummary.value.percentage === null ? null : Math.round(termSummary.value.percentage))
+    : stats.value.percent)
+const summaryCaption = computed(() => {
+    const t = termSummary.value
+    if (t) {
+        const days = `${t.schoolDays} school day${t.schoolDays === 1 ? '' : 's'}`
+        // Joined after the term started: counted from their first day, not the term's.
+        return t.countedFrom !== t.startDate
+            ? `${t.termName} · ${days} since enrolling (${t.countedFrom} – ${t.asOf})`
+            : `${t.termName} · ${days} so far (${t.startDate} – ${t.asOf})`
+    }
+    return `${monthLabel.value} · recorded days only`
+})
+
+const tiles = computed(() => {
+    const t = termSummary.value
+    if (t) {
+        return [
+            { key: 'Present', value: t.present },
+            { key: 'Late', value: t.late },
+            { key: 'Absent', value: t.absent },
+            { key: 'Excused', value: t.excused },
+            { key: 'Not marked', value: t.notMarked }
+        ]
+    }
+    return (['Present', 'Absent', 'Late', 'Excused'] as const).map(key => ({ key, value: stats.value[key] }))
+})
 
 const RADIUS = 52
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
-const dashOffset = computed(() => CIRCUMFERENCE * (1 - stats.value.percent / 100))
+const dashOffset = computed(() => CIRCUMFERENCE * (1 - (summaryPercent.value ?? 0) / 100))
 
 function circleClass(key: string) {
     if (key === todayKey) return 'bg-primary-600 text-white'
@@ -270,6 +315,7 @@ async function fetchEvents() {
 }
 
 watch(() => [student?.id, cursor.value], fetchMonth, { immediate: true })
+watch(() => [student?.id, termId], fetchTerm, { immediate: true })
 watch(() => cursor.value, fetchEvents, { immediate: true })
 </script>
 
@@ -291,10 +337,10 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                         </svg>
 
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <USkeleton v-if="loading" class="h-7 w-12" />
+                            <USkeleton v-if="summaryLoading" class="h-7 w-12" />
 
                             <span v-else class="text-2xl font-bold text-highlighted">
-                                {{ stats.percent }}%
+                                {{ summaryPercent === null ? '-' : `${summaryPercent}%` }}
                             </span>
 
                             <span class="text-[10px] font-semibold uppercase tracking-wide text-muted">
@@ -317,19 +363,25 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                 </div>
 
                 <!-- Stat tiles -->
-                <div class="grid w-full flex-1 grid-cols-2 gap-3 md:grid-cols-4">
+                <div class="w-full flex-1 space-y-2">
+                <div class="text-xs text-muted">
+                    <USkeleton v-if="summaryLoading" class="h-3.5 w-56" />
+                    <template v-else>{{ summaryCaption }}</template>
+                </div>
+                <div class="grid w-full grid-cols-2 gap-3" :class="tiles.length === 5 ? 'md:grid-cols-5' : 'md:grid-cols-4'">
                     <div v-for="tile in tiles" :key="tile.key"
                         class="rounded-xl border-2 p-4 text-center"
                         :class="[
                             tile.key === 'Present' && 'border-success-200 bg-success-50 dark:border-success-800 dark:bg-success-950',
                             tile.key === 'Absent' && 'border-error-200 bg-error-50 dark:border-error-800 dark:bg-error-950',
                             tile.key === 'Late' && 'border-warning-200 bg-warning-50 dark:border-warning-800 dark:bg-warning-950',
-                            tile.key === 'Excused' && 'border-info-200 bg-info-50 dark:border-info-800 dark:bg-info-950'
+                            tile.key === 'Excused' && 'border-info-200 bg-info-50 dark:border-info-800 dark:bg-info-950',
+                            tile.key === 'Not marked' && 'col-span-2 border-default bg-elevated md:col-span-1'
                         ]"
                     >
-                        <USkeleton v-if="loading" class="mx-auto h-7 w-10" />
+                        <USkeleton v-if="summaryLoading" class="mx-auto h-7 w-10" />
 
-                        <h2 v-else class="text-2xl font-bold" :class="statusStyles[tile.key]?.text">
+                        <h2 v-else class="text-2xl font-bold" :class="statusStyles[tile.key]?.text ?? 'text-muted'">
                             {{ tile.value }}
                         </h2>
 
@@ -337,6 +389,7 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                             {{ tile.key }}
                         </p>
                     </div>
+                </div>
                 </div>
             </div>
         </div>

@@ -191,6 +191,11 @@ export const useStudentStore = defineStore('student', {
       if (res && this.record?.id === id) this.record = res
       return res
     },
+    async changeGuardian(studentId: string, payload: ChangeGuardianDto) {
+      const res = await StudentApi().changeGuardian(studentId, payload)
+      if (res && this.record?.id === studentId) this.record = res
+      return res
+    },
     async changeEnrollmentType(studentId: string, enrollmentType: string) {
       try {
         return await StudentApi().changeEnrollmentType(studentId, enrollmentType)

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <!-- What this is, in school terms -->
     <div class="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
       <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">

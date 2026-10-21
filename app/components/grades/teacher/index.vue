@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 md:px-6 space-y-4">
+  <div class="px-4 md:px-6 space-y-3">
     <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
       <div v-if="hasDraftAssessments" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
         <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"

@@ -73,7 +73,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Add Lead" subtitle="For someone who got in touch another way - a call, a visit or a referral.">
       <UButton variant="soft" color="neutral" to="/leads" label="Cancel" :disabled="saving" />
       <UButton icon="i-lucide-save" label="Save Lead" :loading="saving" @click="save" />

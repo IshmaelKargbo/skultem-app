@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <ReportCardSectionNav />
 
     <!-- Header -->
@@ -13,7 +13,8 @@
       </UButton>
     </Heading>
 
-    <div class="grid gap-6 lg:grid-cols-3">
+    <DesignSkeleton v-if="fetching" />
+    <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
 
       <!-- Left -->
       <div class="lg:col-span-2 space-y-6">
@@ -191,6 +192,7 @@ const store = useReportCardSettingStore()
 const { settings } = storeToRefs(store)
 
 const saving = ref(false)
+const fetching = ref(true)
 
 interface SectionConfig {
   key: 'showAttendance' | 'showRemarks' | 'showPosition' | 'showTeacherSignature' | 'showPrincipalSignature' | 'showGradeScale'
@@ -291,7 +293,7 @@ async function save() {
 
 onMounted(async () => {
   useAppStore().setTitle('Report Card Design')
-  await store.fetch()
+  await store.fetch().finally(() => { fetching.value = false })
 })
 
 definePageMeta({

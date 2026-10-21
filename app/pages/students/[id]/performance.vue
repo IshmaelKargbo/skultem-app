@@ -19,7 +19,7 @@
           label: 'Class Rank', color: 'primary', value: rank, isReady: rankReady, icon: LEADER_ICON,
           subtle: record ? `Out of ${record.classSize} in ${record.className}` : undefined
         }" />
-        <DashboardParentAttendance class="md:col-span-1 col-span-2" :id="studentId" />
+        <DashboardParentAttendance class="md:col-span-1 col-span-2" :id="studentId" :term="state.term" />
         <Metric class="md:col-span-1 col-span-2" :record="{
           label: 'Best Subject', color: 'success', value: topSubject?.name || 'N/A', isReady: !assessmentLoading,
           icon: TARGET_ICON, subtle: topSubject ? `${Math.round(topSubject.score)}% this term` : 'No assessments yet'
@@ -127,6 +127,24 @@
         </ul>
       </UCard>
 
+      <div v-else-if="assessmentLoading" class="space-y-3">
+        <USkeleton class="mx-1 h-4 w-32" />
+        <UCard v-for="i in 4" :key="i" :ui="{ body: 'p-0 sm:p-0' }">
+          <div class="flex items-center justify-between p-3">
+            <div class="flex items-center space-x-3">
+              <USkeleton class="size-10 rounded-full" />
+              <div class="space-y-1.5">
+                <USkeleton class="h-4 w-32" />
+                <USkeleton class="h-3 w-16" />
+              </div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <USkeleton class="h-5 w-10" />
+              <USkeleton class="h-5 w-8 rounded-full" />
+            </div>
+          </div>
+        </UCard>
+      </div>
       <UCard v-else-if="!assessmentLoading" class="py-14">
         <div class="flex flex-col items-center justify-center text-center space-y-4">
           <UIcon name="i-heroicons-document-text" class="text-4xl text-muted" />

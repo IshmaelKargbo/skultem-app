@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
 
         <div v-if="loading" class="space-y-4">
             <USkeleton class="h-24 w-full rounded-xl" />

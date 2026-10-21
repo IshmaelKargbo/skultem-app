@@ -43,3 +43,26 @@ export type CreateParentDto = {
     fatherName: string
     motherName: string
 }
+
+// PATCH /student/{id}/guardian - exactly one of parentId / userId. phone/street/city are only used when
+// userId has no guardian profile at the school yet; relationship blank keeps the previous one.
+export type ChangeGuardianDto = {
+    parentId?: string
+    userId?: string
+    phone?: string
+    street?: string
+    city?: string
+    relationship?: string
+}
+
+// How a guardian is related to a student - stored as the code (value). Shared by the add-student form
+// and Change guardian so both offer the same choices.
+export const RELATIONSHIPS = [
+    { label: 'Father', value: 'FATHER' },
+    { label: 'Mother', value: 'MOTHER' },
+    { label: 'Brother', value: 'BROTHER' },
+    { label: 'Sister', value: 'SISTER' },
+    { label: 'Guardian', value: 'GUARDIAN' },
+    { label: 'Grandparent', value: 'GRANDPARENT' },
+    { label: 'Other', value: 'OTHER' }
+]

@@ -10,7 +10,9 @@
     </div>
 
     <client-only v-else>
-      <ApexChart type="line" height="350" :options="chartOptions" :series="chartSeries" />
+      <ChartScroll>
+        <ApexChart type="line" height="350" :options="chartOptions" :series="chartSeries" />
+      </ChartScroll>
     </client-only>
   </div>
 </template>

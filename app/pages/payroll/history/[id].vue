@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-4xl space-y-4 px-4 md:px-6">
+  <div class="mx-auto max-w-4xl space-y-3 px-4 md:px-6">
 
     <!-- Header (page chrome - not part of the printable document) -->
     <div class="flex flex-col gap-4 print:hidden md:flex-row md:items-center md:justify-between">
@@ -13,7 +13,7 @@
       </div>
 
       <div v-if="payslip" class="flex flex-wrap gap-2">
-        <UButton icon="i-lucide-printer" variant="soft" @click="window.print()">
+        <UButton icon="i-lucide-printer" variant="soft" @click="printPage">
           Print
         </UButton>
 
@@ -23,9 +23,7 @@
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-muted">
-      Loading payslip…
-    </div>
+    <PayrollPayslipSkeleton v-if="loading" />
 
     <UCard v-else-if="!payslip" class="py-16">
       <div class="text-center">
@@ -58,6 +56,11 @@ const { settings } = storeToRefs(settingStore)
 // Same CORS-safe logo fetch as the admin payslip page - see that file for why.
 const pdfLogo = ref<string | null>(null)
 const downloading = ref(false)
+
+// Templates can't reach browser globals like `window` directly, so the Print button calls this
+function printPage() {
+  window.print()
+}
 const loading = ref(true)
 
 const runId = computed(() => route.params.id as string)

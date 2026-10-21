@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <FeeReportSectionNav />
 
     <Heading title="Outstanding Fees" subtitle="A focused view of money still owed to the school.">

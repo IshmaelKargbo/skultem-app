@@ -46,7 +46,7 @@ definePageMeta({
     </UCard>
   </div>
 
-  <div v-else class="p-4 md:px-6 overflow-y-auto h-full space-y-4 sm:space-y-5">
+  <div v-else class="p-4 md:px-6 overflow-y-auto h-full space-y-3">
     <Heading title="Book Details" :subtitle="book.title">
       <div class="flex items-center gap-2">
         <UButton :icon="BACK_ICON" label="Back" variant="outline" color="neutral" size="sm" @click="router.back()" />
@@ -162,7 +162,7 @@ definePageMeta({
           </template>
 
           <UTable :columns="columns" :data="history">
-            <template #empty-state>
+            <template #empty>
               <div class="flex flex-col items-center gap-3 py-16">
                 <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">
                   <UIcon name="i-lucide-history" class="text-3xl text-primary-500" />

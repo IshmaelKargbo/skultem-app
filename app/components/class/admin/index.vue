@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <ClassSectionNav />
 
         <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
@@ -24,7 +24,7 @@
 
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
                 :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5' }">
-                <template #empty-state>
+                <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
                         <p class="text-gray-500 dark:text-gray-400">No classes found.</p>

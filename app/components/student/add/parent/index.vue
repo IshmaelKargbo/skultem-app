@@ -297,15 +297,7 @@ const schema = yup.object({
     })
 })
 
-const relationships = [
-    { label: 'Father', value: 'FATHER' },
-    { label: 'Mother', value: 'MOTHER' },
-    { label: 'Brother', value: 'BROTHER' },
-    { label: 'Sister', value: 'SISTER' },
-    { label: 'Guardian', value: 'GUARDIAN' },
-    { label: 'Grandparent', value: 'GRANDPARENT' },
-    { label: 'Other', value: 'OTHER' }
-]
+const relationships = RELATIONSHIPS
 
 const guardianLabel = (e: Parent) => [`${e.givenNames ?? ''} ${e.familyName ?? ''}`.trim() || e.name, e.phone].filter(Boolean).join(' - ')
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <Heading title="Add Week" subtitle="Create weekly topics and learning objectives.">
             <div class="flex gap-3">
                 <UButton color="neutral" variant="outline" :icon="BACK_ICON" label="Back" @click="back" />

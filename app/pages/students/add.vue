@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <!-- Stepper -->
         <nav ref="stepperEl" aria-label="Enrollment progress" class="scroll-mt-4 rounded-2xl border border-default bg-default p-3 sm:p-4 md:py-6">
             <ol class="flex items-start">

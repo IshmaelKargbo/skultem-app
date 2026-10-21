@@ -166,7 +166,7 @@ definePageMeta({
 </script>
 
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <MaterialSectionNav />
         <!-- Summary -->
         <div class="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4">
@@ -202,7 +202,7 @@ definePageMeta({
             </template>
 
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-                <template #empty-state>
+                <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
                         <div
                             class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">

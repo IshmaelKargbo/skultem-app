@@ -233,7 +233,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <AuthSectionNav />
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
@@ -256,7 +256,7 @@ definePageMeta({
       <UTable v-if="view === 'table'" class="hidden md:block" :ui="{
         loading: 'py-0'
       }" :columns="columns" :data="filtered" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-3 py-14">
             <div class="flex size-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
               <UIcon name="i-lucide-users" class="size-7 text-gray-400" />

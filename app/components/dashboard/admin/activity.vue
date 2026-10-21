@@ -71,7 +71,18 @@ onMounted(async () => {
     </template>
 
     <div class="space-y-0">
-      <div v-if="dashboard.loading" class="p-4 text-sm text-muted">Loading…</div>
+      <template v-if="dashboard.loading">
+        <div v-for="i in 5" :key="i" class="flex gap-4 border-b border-gray-100 p-4 last:border-0 dark:border-gray-800">
+          <USkeleton class="mt-1.5 size-3 shrink-0 rounded-full" />
+          <div class="w-full space-y-1.5">
+            <USkeleton class="h-4 w-2/3" />
+            <div class="flex justify-between">
+              <USkeleton class="h-3 w-1/3" />
+              <USkeleton class="h-3 w-14" />
+            </div>
+          </div>
+        </div>
+      </template>
       <div v-else-if="dashboard.error" class="p-4 text-sm text-red-600">{{ dashboard.error }}</div>
       <div v-else-if="activities.length === 0" class="p-4 text-sm text-muted">No activity yet.</div>
       <div v-for="(item, index) in activities" :key="item.id"

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
 
     <Heading title="Edit Salary Template" subtitle="Changes only affect teachers set up from this template after you save.">
       <UButton variant="soft" color="neutral" to="/payroll/salary-templates" label="Cancel" />

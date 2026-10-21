@@ -10,7 +10,7 @@ const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 // Desktop columns are trimmed to what fits without horizontal scroll - level/section/stream live
 // in the detail modal opened via "actions" / tapping a row.
-const columns: TableColumn<ClassSession> = [
+const columns: TableColumn<ClassSession>[] = [
   {
     accessorKey: 'clazz',
     header: 'Name'
@@ -103,7 +103,10 @@ const detailFields = computed<ReportDetailField[]>(() => {
       </template>
 
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-      <template #empty-state>
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
+      <template #empty>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
           <p class="text-gray-500">No classes found.</p>

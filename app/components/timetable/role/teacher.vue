@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <Heading title="My Timetable" subtitle="View your weekly teaching schedule across your classes">
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <USelectMenu

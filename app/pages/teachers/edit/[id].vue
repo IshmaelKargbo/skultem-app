@@ -24,7 +24,8 @@
           </div>
         </template>
 
-        <div class="grid gap-5 md:grid-cols-2">
+        <FormSkeleton v-if="fetching" :fields="4" />
+        <div v-else class="grid gap-5 md:grid-cols-2">
 
           <UFormField label="Title" name="title" required>
             <USelectMenu v-model="state.title" value-key="value" placeholder="Mr " :items="titles"
@@ -85,7 +86,8 @@
           </div>
         </template>
 
-        <div class="grid gap-5 md:grid-cols-2">
+        <FormSkeleton v-if="fetching" :fields="4" />
+        <div v-else class="grid gap-5 md:grid-cols-2">
 
           <UFormField label="Email Address" name="email" required>
             <UInput disabled v-model="state.email" placeholder="teacher@example.com" leading-icon="i-lucide-mail" />
@@ -144,7 +146,8 @@
           </div>
         </template>
 
-        <div class="grid gap-5 md:grid-cols-2">
+        <FormSkeleton v-if="fetching" :fields="3" />
+        <div v-else class="grid gap-5 md:grid-cols-2">
 
           <UFormField label="Staff ID" name="staffId" required>
             <UInput v-model="state.staffId" placeholder="STAFF001" leading-icon="i-lucide-id-card" />
@@ -199,6 +202,7 @@ const { success, error } = useNotify()
 const id = useRoute().params.id as string
 
 const isLoading = ref(false)
+const fetching = ref(true)
 const formRef = ref()
 const record = ref<Teacher | undefined>()
 
@@ -333,6 +337,7 @@ async function fetchRecord() {
 
 onMounted(async () => {
   await fetchRecord()
+  fetching.value = false
   const res = await classStore.fetchAllUnassign(0, 0)
 
   if (!res) return

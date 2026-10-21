@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-full space-y-4 px-4 md:px-6">
+    <div class="min-h-full space-y-3 px-4 md:px-6">
         <!-- Profile banner -->
         <UCard :ui="{
             body: 'p-0 sm:p-0'
@@ -92,13 +92,19 @@
                         <UDropdownMenu v-if="record && !loading && actionItems.length" :items="actionItems"
                             :content="{ align: 'end' }">
                             <UButton size="sm" color="neutral" variant="outline" label="Actions"
-                                trailing-icon="i-lucide-chevron-down" />
+                                trailing-icon="i-lucide-settings-2" />
                         </UDropdownMenu>
                         <StudentChangeClass v-if="record && !loading && canChangeClass && !hasLeft" ref="changeClassRef"
                             :student-id="record.id" :student-name="name" hide-trigger />
                         <StudentChangeEnrollmentType v-if="record && !loading && canChangeClass && !hasLeft"
                             ref="changeTypeRef" :student-id="record.id" :student-name="name"
                             :current="record.enrollmentType" />
+                        <StudentChangeGuardian v-if="record && !loading && canManageGuardian" ref="changeGuardianRef"
+                            :student-id="record.id" :student-name="name" :current-guardian-id="record.guardian?.id"
+                            :current-relationship="record.relationship" />
+                        <!-- Edits the guardian themselves (name, phone, address) - shared with every child they have -->
+                        <ParentEdit v-if="record?.guardian && editGuardianOpen" v-model:open="editGuardianOpen"
+                            :parent="record.guardian" @saved="fetchStudent" />
                     </div>
                 </div>
             </div>
@@ -186,6 +192,10 @@ const enrollmentTypeLabel = computed(() => ENROLLMENT_TYPES.find(t => t.value ==
 
 const changeClassRef = ref<{ open: () => void } | null>(null)
 const changeTypeRef = ref<{ open: () => void } | null>(null)
+const changeGuardianRef = ref<{ open: () => void } | null>(null)
+// Same roles as PATCH /student/{id}/guardian and PATCH /parent/{id}.
+const canManageGuardian = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.SUPER_ADMIN]))
+const editGuardianOpen = ref(false)
 
 // Everything you can do to this student, in one menu: change it, move it, then the serious ones.
 const actionItems = computed(() => {
@@ -196,7 +206,14 @@ const actionItems = computed(() => {
         first.push({ label: 'Change class', icon: CLASS_ICON, onSelect: () => changeClassRef.value?.open() })
         first.push({ label: 'Change enrollment type', icon: 'i-lucide-user-cog', onSelect: () => changeTypeRef.value?.open() })
     }
-    return [first, ...exitActions.value]
+    const guardian: any[] = []
+    if (canManageGuardian.value) {
+        if (record.value?.guardian?.id) {
+            guardian.push({ label: 'Edit guardian', icon: 'i-lucide-user-pen', onSelect: () => { editGuardianOpen.value = true } })
+        }
+        guardian.push({ label: 'Change guardian', icon: 'i-lucide-users-round', onSelect: () => changeGuardianRef.value?.open() })
+    }
+    return [first, ...(guardian.length ? [guardian] : []), ...exitActions.value]
 })
 
 const exitActions = computed(() => {

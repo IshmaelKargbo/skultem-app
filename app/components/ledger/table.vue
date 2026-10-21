@@ -179,7 +179,10 @@ onMounted(() => {
 
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
         :ui="{ tfoot: 'bg-app-50/10' }">
-        <template #empty-state>
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
             <p class="text-gray-500">No ledger record found.</p>
@@ -213,6 +216,22 @@ onMounted(() => {
           <p class="mt-4 text-sm text-muted">
             No ledger records found
           </p>
+        </div>
+
+        <div v-else-if="loading" class="grid grid-cols-1 gap-4 space-y-0! p-4 md:grid-cols-2 lg:grid-cols-3">
+          <div v-for="i in size" :key="i" class="flex items-start justify-between gap-4 rounded-2xl border border-default p-4">
+            <div class="space-y-2">
+              <USkeleton class="h-4 w-32" />
+              <USkeleton class="h-3 w-40" />
+            </div>
+            <div class="flex flex-col items-end space-y-2">
+              <USkeleton class="h-4 w-20" />
+              <div class="flex gap-2">
+                <USkeleton class="h-3 w-14" />
+                <USkeleton class="h-5 w-16 rounded-full" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <template v-else>

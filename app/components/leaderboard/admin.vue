@@ -12,7 +12,10 @@
 
     <!-- Leaderboard Table -->
     <UCard>
-      <UTable :columns="columns" :data="leaderboard">
+      <UTable :columns="columns" :data="leaderboard" :loading="loading">
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
 
         <!-- Trend Column -->
         <template #trend-cell="{ row }">
@@ -32,7 +35,7 @@
 import type { TableColumn } from '@nuxt/ui'
 
 const reportStore = useReportStore()
-const { leaderboard } = storeToRefs(reportStore)
+const { leaderboard, loading } = storeToRefs(reportStore)
 
 const studentStore = useStudentStore()
 const { activeCycle } = storeToRefs(studentStore)

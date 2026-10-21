@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <!-- At a glance -->
         <div class="grid md:grid-cols-3 grid-cols-2 gap-3 md:gap-5">
             <Metric :record="{

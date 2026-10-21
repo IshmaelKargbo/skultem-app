@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 md:px-6 space-y-4">
+  <div class="px-4 md:px-6 space-y-3">
     <Heading title="Assessment Cycle"
       subtitle="Monitor assessment progress and control transitions between assessment stages">
       <UBadge v-if="allTermsCompleted" variant="soft" color="success" size="lg">

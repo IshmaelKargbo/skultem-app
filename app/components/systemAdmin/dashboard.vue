@@ -161,7 +161,7 @@ const humanize = (action: string) => {
 </script>
 
 <template>
-  <div class="px-4 md:px-6 space-y-4">
+  <div class="px-4 md:px-6 space-y-3">
     <!-- Period -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-sm text-muted">Platform overview across every school on Skultem.</p>

@@ -3,7 +3,7 @@
         body: 'sm:p-0'
     }">
         <UTable :columns="columns" :data="records" :loading="isLoading" class="w-full">
-            <template #empty-state>
+            <template #empty>
                 <div class="flex flex-col items-center gap-2 py-10">
                     <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
                     <p class="text-gray-500">No students found.</p>

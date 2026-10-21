@@ -136,7 +136,7 @@
 const props = defineProps<{
   students: Student[]
   attention: Record<string, StudentAttention>
-  attendanceByName: Record<string, number>
+  attendanceById: Record<string, number>
   performanceByName: Record<string, number>
   subjectScores: { name: string, score: number }[]
   // Attendance below this is flagged (the school's usual line).
@@ -168,7 +168,7 @@ const flagged = computed(() => props.students
   }))
 
 const withAttendance = computed(() => props.students
-  .map(student => ({ student, rate: props.attendanceByName[name(student)] }))
+  .map(student => ({ student, rate: props.attendanceById[student.id] }))
   .filter((x): x is { student: Student, rate: number } => x.rate !== undefined))
 const attendanceCount = computed(() => withAttendance.value.length)
 const lowAttendance = computed(() => withAttendance.value.filter(x => x.rate < threshold.value)

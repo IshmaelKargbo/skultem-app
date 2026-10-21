@@ -5,7 +5,9 @@
     </div>
 
     <client-only v-else>
-      <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+      <ChartScroll>
+        <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+      </ChartScroll>
     </client-only>
   </UCard>
 </template>

@@ -153,7 +153,7 @@ async function saveConfig() {
 </script>
 
 <template>
-    <div class="px-4 md:px-6 overflow-y-auto h-full space-y-4">
+    <div class="px-4 md:px-6 overflow-y-auto h-full space-y-3">
         <Heading title="Promotions"
             subtitle="Review class masters' promotion submissions and close out the academic year">
             <UButton to="/classes" variant="soft" color="primary" :icon="PROMOTE_STUDENTS_ICON"
@@ -273,7 +273,10 @@ async function saveConfig() {
             <!-- Desktop table -->
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="requests"
                 :loading="requestsLoading">
-                <template #empty-state>
+                <template #loading>
+                    <TableLoading :size="columns.length" />
+                </template>
+                <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon :name="PROMOTE_STUDENTS_ICON" class="text-4xl text-gray-400 dark:text-gray-500" />
                         <p class="text-gray-500 dark:text-gray-400">No promotion requests found.</p>

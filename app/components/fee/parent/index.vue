@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <Heading title="Fee History" subtitle="History of fee payments and transactions">
             <div class="md:w-72 w-full">
                 <USelectMenu v-model="state.student" value-key="value" :loading="loading" :items="children"

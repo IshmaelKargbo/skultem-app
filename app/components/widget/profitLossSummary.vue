@@ -6,7 +6,9 @@
       <p class="mt-2 text-sm text-muted">No profit &amp; loss data for this period yet.</p>
     </div>
     <client-only v-else>
-      <ApexChart type="line" height="350" :options="chartOptions" :series="chartSeries" />
+      <ChartScroll>
+        <ApexChart type="line" height="350" :options="chartOptions" :series="chartSeries" />
+      </ChartScroll>
     </client-only>
   </div>
 </template>

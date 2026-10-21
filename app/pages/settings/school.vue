@@ -1,5 +1,5 @@
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <Heading class="hidden md:block" title="School Settings"
             subtitle="Manage your school's profile, contact details and academic preferences">
             <div class="hidden gap-3 lg:flex">

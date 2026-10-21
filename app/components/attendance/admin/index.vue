@@ -1,5 +1,5 @@
 <template>
-    <div id="attendance-scroll" class="px-4 md:px-6 space-y-4">
+    <div id="attendance-scroll" class="px-4 md:px-6 space-y-3">
         <AttendanceReport />
         <AttendanceAdminMark />
         <AttendanceHistory />

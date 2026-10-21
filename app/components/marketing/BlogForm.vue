@@ -152,7 +152,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading :title="id ? 'Edit Post' : 'New Post'"
       subtitle="Write the post, add its photos, then publish it to the marketing site.">
       <UButton variant="soft" color="neutral" to="/blog" label="Cancel" :disabled="saving" />

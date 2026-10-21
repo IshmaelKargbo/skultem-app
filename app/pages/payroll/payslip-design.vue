@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
 
     <!-- Header -->
     <Heading title="Payslip Design" subtitle="Configure the payslip used across your school.">
@@ -10,7 +10,8 @@
 
     <PayrollSectionNav />
 
-    <div class="grid gap-6 lg:grid-cols-3">
+    <DesignSkeleton v-if="fetching" />
+    <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
 
       <!-- Left -->
       <div class="lg:col-span-2 space-y-6">
@@ -125,6 +126,7 @@ const store = usePayslipSettingStore()
 const { settings } = storeToRefs(store)
 
 const saving = ref(false)
+const fetching = ref(true)
 
 const MAX_PREVIEW_SCALE = 0.4
 const DOC_WIDTH = 794
@@ -230,7 +232,7 @@ onMounted(async () => {
   if (previewViewportRef.value) previewResizeObserver.observe(previewViewportRef.value)
   measurePreview()
 
-  await store.fetch()
+  await store.fetch().finally(() => { fetching.value = false })
   await nextTick()
   schedulePreviewMeasure()
 })

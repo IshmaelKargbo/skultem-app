@@ -6,7 +6,9 @@
       <p class="mt-2 text-sm text-muted">No fee collection data for this period yet.</p>
     </div>
     <client-only v-else>
-      <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+      <ChartScroll>
+        <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+      </ChartScroll>
     </client-only>
   </div>
 </template>
@@ -81,7 +83,7 @@ async function fetchRecord() {
         aggregation: "sum",
         name: "Paid",
         tags: {
-          groupBy: "clazz",
+          groupBy: "classSession",
           field: "status",
           value: "Paid",
           orderBy: "Paid",
@@ -93,7 +95,7 @@ async function fetchRecord() {
         aggregation: "sum",
         name: "Unpaid",
         tags: {
-          groupBy: "clazz",
+          groupBy: "classSession",
           field: "status",
           value: "Pending",
         },
@@ -103,7 +105,7 @@ async function fetchRecord() {
         aggregation: "sum",
         name: "Partial",
         tags: {
-          groupBy: "clazz",
+          groupBy: "classSession",
           field: "status",
           value: "Partial",
         },

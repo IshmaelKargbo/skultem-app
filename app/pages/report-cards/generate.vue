@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <ReportCardSectionNav />
 
         <ReportCardClassMasterOnly>
@@ -62,7 +62,15 @@
 
                     <div v-if="form.scope === 'ASSESSMENTS'" class="rounded-xl border border-default p-4">
                         <p v-if="!form.classId" class="text-sm text-muted">Select a class to choose its assessments.</p>
-                        <p v-else-if="loadingAssessments" class="text-sm text-muted">Loading assessments...</p>
+                        <div v-else-if="loadingAssessments" class="space-y-3">
+                            <USkeleton class="h-3 w-3/4" />
+                            <div class="grid gap-2 sm:grid-cols-2">
+                                <div v-for="i in 4" :key="i" class="flex items-center gap-2">
+                                    <USkeleton class="size-4 rounded" />
+                                    <USkeleton class="h-3.5 w-32" />
+                                </div>
+                            </div>
+                        </div>
                         <p v-else-if="!assessmentOptions.length" class="text-sm text-muted">
                             This class has no assessments set up.
                         </p>

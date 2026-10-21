@@ -1,5 +1,5 @@
 <template>
-    <div class="px-4 md:px-6 overflow-y-auto h-full space-y-4">
+    <div class="px-4 md:px-6 overflow-y-auto h-full space-y-3">
         <BehaviourSectionNav />
         <BehaviourReport ref="reportRef" :clazz="state.classId" />
         <BehaviourTable :state="state" />

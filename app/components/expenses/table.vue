@@ -105,7 +105,7 @@ onMounted(async () => {
 
       <!-- Desktop -->
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-2 py-12">
             <div class="flex size-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
               <UIcon name="i-lucide-receipt" class="text-2xl text-gray-400" />

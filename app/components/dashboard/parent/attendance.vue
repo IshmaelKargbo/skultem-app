@@ -2,73 +2,41 @@
     <Metric :record="{
         label: 'Attendance Rate',
         color: 'info',
-        value: `${attendanceRate}%`,
+        value: summary?.percentage != null ? `${summary.percentage}%` : '-',
         isReady: isReady,
         icon: ATTENDANCE_ICON,
-        subtle: 'Based on all attendance records'
+        subtle: summary
+            ? `${summary.termName} · ${summary.present + summary.late} of ${summary.schoolDays} school days`
+            : 'No term in progress'
     }" />
 </template>
 
 <script setup lang="ts">
-const store = useWidgetStore()
-const { id } = defineProps<{
+// Term so far over every school day (see GetStudentTermAttendanceUseCase) - the same figure as the
+// student's attendance page, so unmarked days count against it rather than dropping out.
+// term: the selected term (parent dashboard's picker); omitted = the active term.
+const { id, term } = defineProps<{
     id: string
+    term?: string
 }>()
 
 const emit = defineEmits<{ ready: [value: number] }>()
 
 const isReady = ref(false)
-const attendanceRate = ref("0.0")
+const summary = ref<StudentTermAttendanceDetail | null>(null)
 
 async function fetchRecord() {
-    const res = await store.runAnalytic({
-        entity: "attendances",
-        title: "Attendance Rate",
-        filters: [
-            {
-                field: 'enrollment.student.id',
-                value: id,
-                operator: 'EQUALS',
-                type: 'select'
-            },
-            {
-                field: 'enrollment.student.id',
-                value: id,
-                operator: 'EQUALS',
-                type: 'select'
-            }
-        ],
-        metrics: [
-            {
-                name: "Present",
-                aggregation: "percentage",
-                field: "state",
-                tags: { field: "state", value: "Present" }
-            },
-            {
-                name: "Late",
-                aggregation: "percentage",
-                field: "state",
-                tags: { field: "state", value: "Late" }
-            }
-        ],
-        chartType: "stat"
-    })
-
-    const widget = res?.data ?? res
-    if (!widget?.datasets) return
-
-    const present = Number(widget.datasets[0]?.data?.[0] ?? 0)
-    const late = Number(widget.datasets[1]?.data?.[0] ?? 0)
-
-    const rate = Math.min(present + late, 100)
-    attendanceRate.value = rate.toFixed(1)
-
-    isReady.value = true
-    emit('ready', rate)
+    if (!id) return
+    isReady.value = false
+    try {
+        summary.value = await AttendanceApi().getStudentTermAttendanceDetail(id, { termId: term || undefined }) ?? null
+    } catch {
+        summary.value = null // e.g. between terms
+    } finally {
+        isReady.value = true
+    }
+    emit('ready', summary.value?.percentage ?? 0)
 }
 
-watch(() => id, async () => {
-    await fetchRecord()
-}, { immediate: true })
+watch(() => [id, term], fetchRecord, { immediate: true })
 </script>

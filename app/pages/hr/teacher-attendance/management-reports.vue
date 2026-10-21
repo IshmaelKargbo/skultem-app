@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Management Reports"
       subtitle="Generate a staff attendance document for internal school management use.">
       <UButton icon="i-lucide-file-text" color="primary" :loading="generating" :disabled="!canGenerate"
@@ -34,12 +34,7 @@
       </div>
     </UCard>
 
-    <UCard v-if="generating">
-      <div class="flex flex-col items-center justify-center py-14 text-center">
-        <UIcon name="i-lucide-loader-circle" class="mb-3 size-8 animate-spin text-primary" />
-        <p class="text-sm font-medium text-highlighted">Generating report...</p>
-      </div>
-    </UCard>
+    <ReportSkeleton v-if="generating" :stats="5" />
 
     <UCard v-else-if="!report">
       <div class="flex flex-col items-center justify-center py-14 text-center">

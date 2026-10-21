@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading :title="personName || 'ID Card Preview'"
       :subtitle="`Preview and print this ${cardType}'s identification card.`">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">

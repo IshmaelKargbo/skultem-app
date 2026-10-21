@@ -161,6 +161,15 @@ export type InspectionReport = {
     reportType: InspectionReportType
     payload: DailyAttendanceRegister | StudentAttendanceSummary[] | TermAttendanceSummary
 }
+
+// Mirrors ClassInspectionReportDTO - one class's block in an "All classes" inspection report.
+export type ClassInspectionReport = {
+    classSessionId: string
+    className: string
+    sectionName: string | null
+    streamName: string | null
+    report: InspectionReport
+}
 // "75" when every value agrees, otherwise a phrase for mixed thresholds (each section sets its own).
 // `fallback` is the school's own minimum, used when there is nothing to read a value from yet.
 export function thresholdText(values: (number | null | undefined)[], fallback: number): string {
@@ -185,4 +194,65 @@ export function countWeekdays(start: string | Date | null | undefined, end: stri
         if (dow !== 0 && dow !== 6) count++
     }
     return count
+}
+
+// Gender attendance summary rows are per class + section + stream: "JSS 1 · A", "SSS 1 · A · Science".
+// "N/A" is how a missing stream shows up elsewhere in the app, so it's treated as no stream here too.
+export function genderClassRowLabel(row: { className: string, sectionName?: string | null, streamName?: string | null }) {
+    return [row.className, row.sectionName, row.streamName !== 'N/A' ? row.streamName : null].filter(Boolean).join(' · ')
+}
+
+export function genderClassRowKey(row: { classId: string, sectionId?: string | null, streamId?: string | null }) {
+    return `${row.classId}|${row.sectionId ?? ''}|${row.streamId ?? ''}`
+}
+
+// Mirrors StudentTermAttendanceDTO - term-to-date attendance over every school day so far.
+export type StudentTermAttendance = {
+    termId: string
+    termName: string
+    startDate: string
+    asOf: string
+    schoolDays: number
+    // Every enrolled student; schoolDays counts from countedFrom (term start, or later enrollment),
+    // and percentage is null while that's still 0.
+    students: { studentId: string, countedFrom: string, schoolDays: number, presentOrLate: number, percentage: number | null }[]
+}
+
+// Mirrors AttendanceMarkingComplianceDTO - how completely each class's register is marked this term.
+export type AttendanceMarkingCompliance = {
+    termId: string
+    termName: string
+    startDate: string
+    asOf: string
+    schoolDays: number
+    classes: {
+        classSessionId: string
+        className: string
+        sectionName: string | null
+        streamName: string | null
+        classMasters: string[]
+        // Owed from countedFrom (the later of term start and the class's first student); null = no students.
+        countedFrom: string | null
+        schoolDays: number
+        markedDays: number
+        percentage: number | null
+        lastMarked: string | null
+        missingDays: string[]
+    }[]
+}
+
+// Mirrors StudentTermAttendanceDetailDTO - one student's term so far, over every school day.
+export type StudentTermAttendanceDetail = {
+    termId: string
+    termName: string
+    startDate: string
+    asOf: string
+    countedFrom: string
+    schoolDays: number
+    present: number
+    late: number
+    absent: number
+    excused: number
+    notMarked: number
+    percentage: number | null
 }

@@ -1,7 +1,8 @@
 <template>
     <UCard>
         <div class="space-y-2 text-center">
-            <p class="text-2xl font-display font-semibold">{{ count }}</p>
+            <USkeleton v-if="!isReady" class="mx-auto h-8 w-10" />
+            <p v-else class="text-2xl font-display font-semibold">{{ count }}</p>
             <p>{{ grade }} Grades</p>
         </div>
     </UCard>

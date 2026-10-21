@@ -1,5 +1,5 @@
 <template>
-    <div class="px-4 md:px-6 space-y-4">
+    <div class="px-4 md:px-6 space-y-3">
         <FeeSectionNav />
         <FeePaymentNew :initial-student-id="initialStudentId" @complete="refresh" />
         <DashboardAccountantTable ref="paymentRef" />

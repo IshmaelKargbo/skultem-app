@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <UCard>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
         <UFormField label="Report Type">
@@ -52,12 +52,7 @@
       </div>
     </UCard>
 
-    <UCard v-if="generating">
-      <div class="flex flex-col items-center justify-center py-14 text-center">
-        <UIcon name="i-lucide-loader-circle" class="mb-3 size-8 animate-spin text-primary" />
-        <p class="text-sm font-medium text-highlighted">Generating report...</p>
-      </div>
-    </UCard>
+    <ReportSkeleton v-if="generating" :stats="4" />
 
     <UCard v-else-if="!hasReport">
       <div class="flex flex-col items-center justify-center py-14 text-center">
@@ -132,8 +127,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="c in sortedGenderClasses" :key="c.classId">
-                  <td class="border border-gray-200 p-2.5">{{ c.className }}</td>
+                <tr v-for="c in sortedGenderClasses" :key="genderClassRowKey(c)">
+                  <td class="border border-gray-200 p-2.5">{{ genderClassRowLabel(c) }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ c.totals.boysPresent }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ c.totals.girlsPresent }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ c.totals.boysPresent + c.totals.girlsPresent }}</td>
@@ -162,35 +157,41 @@
           </p>
         </template>
 
+        <!-- Body: one block per class - a single block for one class, every class for "All classes" -->
+        <template v-else-if="!isGender">
+        <section v-for="(block, i) in reportBlocks" :key="block.key"
+          :class="{ 'mt-10 border-t-2 border-gray-200 pt-6': i > 0 }">
+        <h3 v-if="reportBlocks.length > 1" class="mb-4 text-base font-bold">{{ block.label }}</h3>
+
         <!-- Body: Daily Register -->
-        <template v-else-if="report?.reportType === 'DAILY_REGISTER'">
+        <template v-if="block.daily">
           <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Present</p>
-              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.presentCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ block.daily!.presentCount }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Absent</p>
-              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.absentCount + dailyPayload!.excusedCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ block.daily!.absentCount + block.daily!.excusedCount }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Late</p>
-              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.lateCount }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ block.daily!.lateCount }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Students</p>
-              <p class="text-xl font-bold text-primary-600">{{ dailyPayload!.totalStudents }}</p>
+              <p class="text-xl font-bold text-primary-600">{{ block.daily!.totalStudents }}</p>
             </div>
           </div>
 
           <div class="mb-6 grid grid-cols-2 gap-3">
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Boys Present</p>
-              <p class="text-lg font-bold text-primary-600">{{ dailyPayload!.presentBoys }} / {{ dailyPayload!.totalBoys }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.daily!.presentBoys }} / {{ block.daily!.totalBoys }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Girls Present</p>
-              <p class="text-lg font-bold text-primary-600">{{ dailyPayload!.presentGirls }} / {{ dailyPayload!.totalGirls }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.daily!.presentGirls }} / {{ block.daily!.totalGirls }}</p>
             </div>
           </div>
 
@@ -205,7 +206,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="r in dailyPayload!.records" :key="r.enrollmentId">
+                <tr v-for="r in block.daily!.records" :key="r.enrollmentId">
                   <td class="border border-gray-200 p-2.5">{{ r.studentName }}</td>
                   <td class="border border-gray-200 p-2.5">{{ dailyStatusLabel(r) }}</td>
                   <td class="border border-gray-200 p-2.5">{{ r.recordedBy || '—' }}</td>
@@ -217,15 +218,15 @@
         </template>
 
         <!-- Body: Monthly Summary -->
-        <template v-else-if="report?.reportType === 'MONTHLY_SUMMARY'">
+        <template v-else-if="block.monthly">
           <div class="mb-6 grid grid-cols-2 gap-3">
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Boys Attendance</p>
-              <p class="text-lg font-bold text-primary-600">{{ monthlyGenderTotals.presentBoys }} / {{ monthlyGenderTotals.totalBoys }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.monthlyTotals.presentBoys }} / {{ block.monthlyTotals.totalBoys }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Girls Attendance</p>
-              <p class="text-lg font-bold text-primary-600">{{ monthlyGenderTotals.presentGirls }} / {{ monthlyGenderTotals.totalGirls }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.monthlyTotals.presentGirls }} / {{ block.monthlyTotals.totalGirls }}</p>
             </div>
           </div>
 
@@ -242,7 +243,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="s in sortedMonthly" :key="s.studentId" :class="s.belowThreshold ? 'bg-red-50' : ''">
+                <tr v-for="s in block.monthly" :key="s.studentId" :class="s.belowThreshold ? 'bg-red-50' : ''">
                   <td class="border border-gray-200 p-2.5">{{ s.studentName }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ s.schoolDays }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ s.present }}</td>
@@ -259,42 +260,42 @@
         </template>
 
         <!-- Body: Term Summary -->
-        <template v-else>
+        <template v-else-if="block.term">
           <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Students</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalStudents }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.totalStudents }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Avg. Attendance</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.averageAttendance }}%</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.averageAttendance }}%</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
-              <p class="text-xs text-gray-500">Below {{ thresholdText([termPayload?.threshold], threshold) }}</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.studentsBelowThreshold }}</p>
+              <p class="text-xs text-gray-500">Below {{ thresholdText([block.term?.threshold], threshold) }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.studentsBelowThreshold }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Present</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalPresent }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.totalPresent }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Absent</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalAbsent }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.totalAbsent }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Total Late</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.totalLate }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.totalLate }}</p>
             </div>
           </div>
 
           <div class="mb-6 grid grid-cols-2 gap-3">
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Boys Attendance</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.presentBoys }} / {{ termPayload!.totalBoys }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.presentBoys }} / {{ block.term!.totalBoys }}</p>
             </div>
             <div class="rounded-xl bg-primary-50 p-3 text-center">
               <p class="text-xs text-gray-500">Girls Attendance</p>
-              <p class="text-lg font-bold text-primary-600">{{ termPayload!.presentGirls }} / {{ termPayload!.totalGirls }}</p>
+              <p class="text-lg font-bold text-primary-600">{{ block.term!.presentGirls }} / {{ block.term!.totalGirls }}</p>
             </div>
           </div>
 
@@ -311,7 +312,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="s in sortedTermStudents" :key="s.studentId" :class="s.belowThreshold ? 'bg-red-50' : ''">
+                <tr v-for="s in block.termStudents" :key="s.studentId" :class="s.belowThreshold ? 'bg-red-50' : ''">
                   <td class="border border-gray-200 p-2.5">{{ s.studentName }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ s.schoolDays }}</td>
                   <td class="border border-gray-200 p-2.5 text-center">{{ s.present }}</td>
@@ -325,6 +326,8 @@
               </tbody>
             </table>
           </div>
+        </template>
+        </section>
         </template>
 
         <!-- Footer: Skultem-generated, not an official Ministry document - deliberately no MBSSE
@@ -367,12 +370,16 @@
 const academicYearStore = useAcademicYearStore()
 const termStore = useTermStore()
 const classSessionStore = useClassSessionStore()
-const attendanceStore = useAttendanceStore()
 const { school } = useSchoolInfo()
 const { threshold } = useAttendanceThreshold()
 const { success, error: toastError } = useNotify()
 
 type ReportKind = InspectionReportType | 'GENDER_SUMMARY'
+
+// "All classes" for the Daily Register / Monthly / Term Summary reports: the same per-class report
+// is generated for every class session in scope and printed one block per class - no separate
+// school-wide calculation, so the numbers always match each class's own report.
+const ALL_CLASSES = '__all'
 
 const reportStore = useAcademicReportStore()
 const classStore = useClassStore()
@@ -397,7 +404,7 @@ const form = reactive({
   genderClassId: '__all',
   academicYearId: '',
   termId: '',
-  classSessionId: '',
+  classSessionId: ALL_CLASSES,
   date: new Date().toISOString().split('T')[0] as string,
   month: new Date().toISOString().slice(0, 7)
 })
@@ -410,11 +417,15 @@ const { logoSrc, loadLogo, ready: logoReady } = useReportLogo()
 
 const academicYears = computed(() => academicYearStore.list)
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
-const classSessions = computed(() => localClassSessions.value.map(e => {
+const sessionLabel = (e: Pick<ClassSession, 'clazz' | 'sectionName' | 'streamName'>) => {
   let label = `${e.clazz} (${e.sectionName})`
   if (e.streamName !== 'N/A') label += ` - ${e.streamName}`
-  return { label, value: e.id }
-}))
+  return label
+}
+const classSessions = computed(() => [
+  { label: 'All classes', value: ALL_CLASSES },
+  ...localClassSessions.value.map(e => ({ label: sessionLabel(e), value: e.id }))
+])
 
 const isGender = computed(() => form.reportType === 'GENDER_SUMMARY')
 const genderSummary = computed(() => isGender.value ? reportStore.genderAttendanceSummary : null)
@@ -423,42 +434,56 @@ const genderClasses = computed(() => [
   ...classStore.records.map(c => ({ label: c.name, value: c.id }))
 ])
 
-const report = computed(() => isGender.value ? null : attendanceStore.inspectionReport)
+// The generated per-class reports, in class-dropdown order (one entry unless "All classes").
+const generatedReports = ref<{ key: string, label: string, report: InspectionReport }[]>([])
 // Header details are captured when a report is generated, so editing a filter afterwards can't relabel
 // the report on screen; the report is only shown while its type matches the selected Report Type.
 const meta = ref<{ kind: ReportKind, title: string, academicYear: string, term: string | null, className: string, period: string, generated: string } | null>(null)
 const hasReport = computed(() => !!meta.value && meta.value.kind === form.reportType
-  && (isGender.value ? !!genderSummary.value : !!report.value))
-const dailyPayload = computed(() => report.value?.reportType === 'DAILY_REGISTER' ? report.value.payload as DailyAttendanceRegister : null)
-const monthlyPayload = computed(() => report.value?.reportType === 'MONTHLY_SUMMARY' ? report.value.payload as StudentAttendanceSummary[] : [])
-const termPayload = computed(() => report.value?.reportType === 'TERM_SUMMARY' ? report.value.payload as TermAttendanceSummary : null)
+  && (isGender.value ? !!genderSummary.value : generatedReports.value.length > 0))
 
 // Monthly Summary's payload is a plain per-student array (no stats wrapper on the backend), so
 // the gender split is computed here the same way monthly-summary.vue does it - bounded to one
 // class's roster, cheap either way.
-const monthlyGenderTotals = computed(() => {
-  const boys = monthlyPayload.value.filter(s => s.gender === 'MALE')
-  const girls = monthlyPayload.value.filter(s => s.gender === 'FEMALE')
+function monthlyGenderTotals(rows: StudentAttendanceSummary[]) {
+  const boys = rows.filter(s => s.gender === 'MALE')
+  const girls = rows.filter(s => s.gender === 'FEMALE')
   return {
     totalBoys: boys.length,
     totalGirls: girls.length,
     presentBoys: boys.reduce((sum, s) => sum + s.present + s.late, 0),
     presentGirls: girls.reduce((sum, s) => sum + s.present + s.late, 0)
   }
-})
+}
+
+// Everything a report block renders, per class. Classes with no students are left out, so an
+// "All classes" report doesn't print a run of empty tables.
+const reportBlocks = computed(() => generatedReports.value.flatMap(({ key, label, report }) => {
+  const daily = report.reportType === 'DAILY_REGISTER' ? report.payload as DailyAttendanceRegister : null
+  const monthlyRows = report.reportType === 'MONTHLY_SUMMARY' ? report.payload as StudentAttendanceSummary[] : null
+  const term = report.reportType === 'TERM_SUMMARY' ? report.payload as TermAttendanceSummary : null
+
+  const empty = daily ? daily.totalStudents === 0 : monthlyRows ? monthlyRows.length === 0 : !term || term.students.length === 0
+  if (empty) return []
+
+  return [{
+    key,
+    label,
+    daily,
+    // Ranking-style tables list the highest attendance first.
+    monthly: monthlyRows ? sortByDesc(monthlyRows, s => s.attendancePercentage) : null,
+    monthlyTotals: monthlyGenderTotals(monthlyRows ?? []),
+    term,
+    termStudents: term ? sortByDesc(term.students, s => s.attendancePercentage) : []
+  }]
+}))
 
 // Ranking-style tables list the highest attendance first.
 const sortedGenderClasses = computed(() => sortByDesc(genderSummary.value?.classes, c => c.totals.overallAttendancePercentage))
-const sortedMonthly = computed(() => sortByDesc(monthlyPayload.value, s => s.attendancePercentage))
-const sortedTermStudents = computed(() => sortByDesc(termPayload.value?.students, s => s.attendancePercentage))
 
 const isEmptyReport = computed(() => {
   if (isGender.value) return !!genderSummary.value && genderSummary.value.classes.length === 0
-  if (!report.value) return false
-  if (dailyPayload.value) return dailyPayload.value.totalStudents === 0
-  if (report.value.reportType === 'MONTHLY_SUMMARY') return monthlyPayload.value.length === 0
-  if (termPayload.value) return termPayload.value.students.length === 0
-  return false
+  return generatedReports.value.length > 0 && reportBlocks.value.length === 0
 })
 
 const canGenerate = computed(() => {
@@ -519,7 +544,10 @@ async function loadClasses() {
   try {
     await classSessionStore.fetchAll(1, 200, form.academicYearId || undefined)
     localClassSessions.value = classSessionStore.records
-    if (!form.classSessionId) form.classSessionId = localClassSessions.value[0]?.id || ''
+    // A session from the previous year doesn't exist in this one.
+    if (form.classSessionId !== ALL_CLASSES && !localClassSessions.value.some(c => c.id === form.classSessionId)) {
+      form.classSessionId = ALL_CLASSES
+    }
   } finally {
     loadingClasses.value = false
   }
@@ -555,14 +583,34 @@ async function generate() {
     }
 
     const [year, month] = form.month.split('-').map(Number)
-    await attendanceStore.fetchInspectionReport({
-      reportType: form.reportType,
-      classSessionId: form.classSessionId,
+    const params = {
+      reportType: form.reportType as InspectionReportType,
       termId: form.reportType === 'TERM_SUMMARY' ? form.termId : undefined,
       date: form.reportType === 'DAILY_REGISTER' ? form.date : undefined,
       year: form.reportType === 'MONTHLY_SUMMARY' ? year : undefined,
       month: form.reportType === 'MONTHLY_SUMMARY' ? month : undefined
-    })
+    }
+
+    // One request either way. "All classes" is built on the server in one go, so a failure leaves
+    // no report at all rather than a document quietly missing some classes - and never the previous one.
+    generatedReports.value = []
+    if (form.classSessionId === ALL_CLASSES) {
+      const all = await AttendanceApi().getInspectionReportForAllClasses({
+        ...params,
+        academicYearId: form.academicYearId || undefined
+      })
+      if (!all) return
+      generatedReports.value = all.map(c => ({
+        key: c.classSessionId,
+        label: sessionLabel({ clazz: c.className, sectionName: c.sectionName ?? '', streamName: c.streamName ?? 'N/A' }),
+        report: c.report
+      }))
+    } else {
+      const session = localClassSessions.value.find(c => c.id === form.classSessionId)
+      const report = await AttendanceApi().getInspectionReport({ ...params, classSessionId: form.classSessionId })
+      if (!report) return
+      generatedReports.value = [{ key: form.classSessionId, label: session ? sessionLabel(session) : '', report }]
+    }
     snapshotMeta()
   } catch (err: any) {
     toastError(err?.message || 'Failed to generate report')

@@ -83,7 +83,7 @@ async function togglePin(notice: Notice) {
 </script>
 
 <template>
-  <div class="px-4 md:px-6 space-y-4">
+  <div class="px-4 md:px-6 space-y-3">
     <CommunicateSectionNav />
     <UCard :ui="{
       body: 'p-0 sm:p-0'

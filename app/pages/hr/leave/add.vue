@@ -1,5 +1,5 @@
 <template>
-  <div class=" space-y-4 px-4 md:px-6">
+  <div class=" space-y-3 px-4 md:px-6">
     <UForm ref="formRef" :state="state" :schema="schema" class="space-y-4" @submit="onSubmit">
 
       <!-- Teacher - admin only, teachers file for themselves -->

@@ -51,7 +51,7 @@ function remove(hostel: Hostel) {
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="data">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-3 py-16">
             <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
               <UIcon :name="HOSTEL_ICON" class="text-4xl text-primary-500" />

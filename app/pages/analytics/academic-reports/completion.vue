@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <AnalyticsAcademicFilterBar :filters="filters" :terms="terms" :class-options="classOptions"
       :subject-options="subjectOptions" :level-options="levelOptions" :class-loading="classStore.loading"
       :subject-loading="subjectStore.loading" />
@@ -16,7 +16,7 @@
     <div v-else class="space-y-4 rounded-lg">
       <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <UTable :data="completion" :columns="completionColumns" :loading="loadingCompletion" class="hidden md:block">
-          <template #empty-state>
+          <template #empty>
             <div class="flex flex-col items-center gap-2 py-10">
               <UIcon name="i-lucide-clipboard-check" class="text-4xl text-gray-400" />
               <p class="text-gray-500">No assessments scheduled for this selection yet.</p>

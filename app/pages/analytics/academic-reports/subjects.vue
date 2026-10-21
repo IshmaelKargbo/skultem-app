@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <AnalyticsAcademicFilterBar :filters="filters" :terms="terms" :class-options="classOptions"
       :subject-options="subjectOptions" :level-options="levelOptions" :class-loading="classStore.loading"
       :subject-loading="subjectStore.loading" />
@@ -19,13 +19,15 @@
           <h2 class="font-semibold">Average Score by Subject</h2>
         </template>
         <ClientOnly>
-          <ApexChart type="bar" height="280" :options="subjectChartOptions" :series="subjectChartSeries" />
+          <ChartScroll>
+            <ApexChart type="bar" height="280" :options="subjectChartOptions" :series="subjectChartSeries" />
+          </ChartScroll>
         </ClientOnly>
       </UCard>
 
       <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <UTable :data="pagedSubjects" :columns="subjectColumns" :loading="loadingReport" class="hidden md:block">
-          <template #empty-state>
+          <template #empty>
             <div class="flex flex-col items-center gap-2 py-10">
               <UIcon name="i-lucide-book-open" class="text-4xl text-gray-400" />
               <p class="text-gray-500">No approved subject data for this selection yet.</p>

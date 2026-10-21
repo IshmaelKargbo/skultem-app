@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Class Summary" subtitle="Compare attendance across every class in the school at once.">
       <div class="flex items-center w-100 gap-2">
         <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label" placeholder="All Terms" />

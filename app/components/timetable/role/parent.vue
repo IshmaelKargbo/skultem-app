@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <Heading title="Class Timetables" subtitle="Manage weekly timetables for classes and sections">
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"

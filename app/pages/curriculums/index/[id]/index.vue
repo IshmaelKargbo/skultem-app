@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <Heading :title="scheme ? `${scheme.subject} (${scheme.session})` : 'Weekly Topics & Objectives'"
       :subtitle="scheme ? `${scheme.term} · Manage weekly curriculum coverage and lesson objectives.` : 'Manage weekly curriculum coverage and lesson objectives.'">
       <div class="flex flex-wrap items-center gap-3">
@@ -79,6 +79,8 @@
     </div>
 
 
+    <CurriculumWeekSkeleton v-else-if="loading" />
+
     <!-- Empty -->
     <UCard v-else class="py-20">
       <div class="text-center">
@@ -101,7 +103,7 @@
 <script setup lang="ts">
 const store = useWeekStore()
 const schemeStore = useSchemeOfWorkStore()
-const { records } = storeToRefs(store)
+const { records, loading } = storeToRefs(store)
 const { record: scheme } = storeToRefs(schemeStore)
 const { can } = useAuth()
 const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))

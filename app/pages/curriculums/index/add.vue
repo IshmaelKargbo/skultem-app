@@ -1,5 +1,5 @@
 <template>
-  <UForm ref="formRef" :state="state" :schema="schema" class="px-4 md:px-6 space-y-4" @submit="onSubmit">
+  <UForm ref="formRef" :state="state" :schema="schema" class="px-4 md:px-6 space-y-3" @submit="onSubmit">
     <div class="grid gap-6 xl:grid-cols-3">
       <div class="space-y-4 xl:col-span-2">
         <!-- Basic Information -->

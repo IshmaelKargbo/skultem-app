@@ -69,7 +69,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="md:px-6 px-4 space-y-4">
+  <div class="md:px-6 px-4 space-y-3">
       <Heading title="Fees Collected" subtitle="Create custom reports and explore your school data">
         <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:w-105 w-full space-x-3 ">
           <USelectMenu :loading="classStore.loading" :items="classes" value-key="value" v-model="state.classId"

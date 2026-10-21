@@ -99,7 +99,7 @@ definePageMeta({
       </template>
 
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="records" :loading="loading">
-        <template #empty-state>
+        <template #empty>
           <div class="flex flex-col items-center gap-3 py-16">
             <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
               <UIcon name="lucide:wallet-cards" class="text-4xl text-primary-500" />

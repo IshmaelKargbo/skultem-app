@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <!-- Section nav and the Student/Staff toggle share a row on desktop (nav left, toggle right); on a
          phone they stack, with the toggle spanning the full width. -->
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -18,7 +18,8 @@
       </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
+    <DesignSkeleton v-if="fetching" preview-wide />
+    <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
       <!-- Left: the settings form -->
       <div>
         <IdCardsIDCardSettings
@@ -55,6 +56,7 @@
 const router = useRouter()
 const { success, error: toastError } = useNotify()
 const store = useIdCardStore()
+const fetching = ref(true)
 const { school, hydrateFromCache } = useSchoolInfo()
 
 // The branding the preview shows: the section the user is in (the one an owner is viewing, or the
@@ -219,7 +221,7 @@ onMounted(async () => {
   loadStructure().catch(() => {})
   loadMyScope().catch(() => {})
   SchoolApi().get('current').then((res) => { fullSchool.value = res }).catch(() => {})
-  await store.fetch()
+  await store.fetch().finally(() => { fetching.value = false })
   Object.assign(uiSettings, store.settings)
 })
 

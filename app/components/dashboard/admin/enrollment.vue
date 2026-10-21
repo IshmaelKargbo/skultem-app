@@ -4,7 +4,9 @@
             Loading Enrollment Stats...
         </div>
         <client-only v-else>
-            <ApexChart v-if="isReady" type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+            <ChartScroll v-if="isReady">
+              <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+            </ChartScroll>
         </client-only>
     </div>
 </template>

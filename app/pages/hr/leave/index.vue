@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-4 px-4 md:px-6">
+    <div class="space-y-3 px-4 md:px-6">
         <Heading :title="isAdmin ? 'Leave Management' : 'My Leave Requests'"
             :subtitle="isAdmin ? 'Track and manage employee leave requests.' : 'Submit and track your own leave requests.'">
             <UButton icon="i-lucide-plus" to="/hr/leave/add" label="New Request" />

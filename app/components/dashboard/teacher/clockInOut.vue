@@ -1,5 +1,21 @@
 <template>
     <UCard :ui="{ body: 'space-y-4' }">
+        <!-- Until today's record arrives the card can't know whether to offer Clock In or Clock Out -->
+        <template v-if="loadingMyToday && !myToday">
+            <div class="flex items-center gap-3">
+                <USkeleton class="size-10 shrink-0 rounded-xl" />
+                <div class="flex-1 space-y-1.5">
+                    <USkeleton class="h-4 w-36" />
+                    <USkeleton class="h-3.5 w-48" />
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <USkeleton class="h-10 flex-1 rounded-md" />
+                <USkeleton class="size-10 rounded-md" />
+            </div>
+        </template>
+
+        <template v-else>
         <div class="flex items-center gap-3">
             <div class="flex size-10 shrink-0 items-center justify-center rounded-xl" :class="stateIconBg">
                 <UIcon :name="stateIcon" class="size-5" :class="stateIconColor" />
@@ -59,6 +75,7 @@
 
         <UAlert v-if="lastError" color="error" variant="soft" icon="i-lucide-alert-circle" :title="lastErrorTitle"
             :description="lastError" />
+        </template>
     </UCard>
 </template>
 

@@ -2,7 +2,9 @@
   <div v-if="!isReady" class="skeleton-loader">
     Loading Attendance Stats...
   </div>
-  <ApexChart v-else type="area" height="350" :options="chartOptions" :series="chartSeries" />
+  <ChartScroll v-else>
+    <ApexChart type="area" height="350" :options="chartOptions" :series="chartSeries" />
+  </ChartScroll>
 </template>
 
 <script setup lang="ts">

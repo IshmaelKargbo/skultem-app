@@ -1,12 +1,13 @@
 <template>
-  <div id="attendance-scroll" class="px-4 md:px-6 space-y-4">
+  <div id="attendance-scroll" class="px-4 md:px-6 space-y-3">
     <Heading title="Mark Attendance" subtitle="Mark staff present, absent or late, or clock them in/out.">
-      <div class="flex w-100 items-center gap-2">
-          <UInput v-model="date" type="date" :max="today" />
+      <div class="flex w-full items-center gap-2 md:w-auto">
+        <UInput v-model="date" type="date" :max="today" class="min-w-0 flex-1 md:w-44 md:flex-none" />
         <UButton variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance"
-          label="Location Settings" />
+          label="Location Settings" class="shrink-0" />
       </div>
-      <UButton icon="i-lucide-save" :loading="saving" :disabled="!pendingChanges.length" @click="saveAttendance">
+      <UButton icon="i-lucide-save" class="justify-center" :loading="saving" :disabled="!pendingChanges.length"
+        @click="saveAttendance">
         Save Attendance
       </UButton>
     </Heading>
@@ -86,57 +87,69 @@
       </div>
 
       <div v-else-if="filteredEntries.length" class="divide-y divide-gray-200 dark:divide-gray-800">
-        <div v-for="row in filteredEntries" :key="row.teacher.id" class="flex flex-wrap items-center gap-3 p-3">
+        <!-- One grid per row: on a phone the status sits top-right beside the name and the actions get
+             their own full-width line under it; from md up everything lines up on a single row. -->
+        <div v-for="row in filteredEntries" :key="row.teacher.id"
+          class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2.5 p-3 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center">
           <UAvatar :src="row.teacher.user?.photo || undefined" :alt="teacherName(row.teacher)" size="md"
-            loading="lazy" class="ring-1 ring-gray-200 dark:ring-gray-700 shrink-0" />
+            loading="lazy" class="ring-1 ring-gray-200 dark:ring-gray-700" />
 
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0">
             <p class="truncate text-sm font-medium">{{ teacherName(row.teacher) }}</p>
             <p class="truncate text-[11px] text-gray-500 dark:text-gray-400">{{ row.teacher.staffId }}</p>
 
             <p v-if="row.clockedInAt"
-              class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+              class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-500 dark:text-gray-400">
               <span class="inline-flex items-center gap-1">
-                <UIcon name="i-lucide-log-in" class="size-3" />
-                {{ row.clockInByAdmin ? 'Clocked in by admin' : 'Self clocked in' }} {{ formatTime(row.clockedInAt) }}
+                <UIcon name="i-lucide-log-in" class="size-3 shrink-0" />
+                {{ row.clockInByAdmin ? 'In by admin' : 'In' }} {{ formatTime(row.clockedInAt) }}
               </span>
               <span v-if="row.clockedOutAt" class="inline-flex items-center gap-1">
-                <UIcon name="i-lucide-log-out" class="size-3" />
-                {{ row.clockOutByAdmin ? 'out by admin' : 'out' }} {{ formatTime(row.clockedOutAt) }}
+                <UIcon name="i-lucide-log-out" class="size-3 shrink-0" />
+                {{ row.clockOutByAdmin ? 'Out by admin' : 'Out' }} {{ formatTime(row.clockedOutAt) }}
               </span>
             </p>
-            <p v-if="row.recordedBy" class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+            <p v-if="row.recordedBy" class="mt-0.5 truncate text-[11px] text-gray-500 dark:text-gray-400">
               Marked by {{ row.recordedBy }}
             </p>
           </div>
 
-          <UBadge v-if="row.clockedInAt" :label="statusBadgeLabel(row.teacher.id)"
-            :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)" variant="soft"
-            class="rounded-full" />
-
-          <UDropdownMenu v-else-if="!isToday" :items="statusMenuItems(row.teacher.id)" :content="{ align: 'end' }">
-            <UButton :label="statusBadgeLabel(row.teacher.id)" trailing-icon="i-lucide-chevron-down" size="xs"
-              variant="soft" :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)"
+          <!-- Status: top-right on a phone, its own column on desktop -->
+          <div class="justify-self-end">
+            <UBadge v-if="row.clockedInAt" :label="statusBadgeLabel(row.teacher.id)"
+              :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)" variant="soft"
               class="rounded-full" />
-          </UDropdownMenu>
 
-          <UInput v-if="!row.clockedInAt && marks[row.teacher.id]?.status === 'EXCUSED'"
-            v-model="marks[row.teacher.id]!.note" placeholder="Reason (optional)" class="w-full sm:w-48" />
+            <UDropdownMenu v-else-if="!isToday" :items="statusMenuItems(row.teacher.id)" :content="{ align: 'end' }">
+              <UButton :label="statusBadgeLabel(row.teacher.id)" trailing-icon="i-lucide-chevron-down" size="xs"
+                variant="soft" :color="teacherAttendanceStatusColor(marks[row.teacher.id]?.status)"
+                class="rounded-full" />
+            </UDropdownMenu>
+          </div>
 
-          <template v-if="isToday">
-            <UButton v-if="!row.clockedInAt" size="xs" icon="i-lucide-log-in" label="Clock In"
-              :loading="adminClockingTeacherId === row.teacher.id" @click="onAdminClockIn(row.teacher.id)" />
+          <!-- Reason + actions: a full-width line under the name on a phone, the last column on desktop -->
+          <div v-if="(!row.clockedInAt && marks[row.teacher.id]?.status === 'EXCUSED') || isToday"
+            class="col-span-2 col-start-2 flex flex-col gap-2 md:col-span-1 md:col-start-auto md:flex-row md:items-center md:justify-end">
+            <UInput v-if="!row.clockedInAt && marks[row.teacher.id]?.status === 'EXCUSED'"
+              v-model="marks[row.teacher.id]!.note" placeholder="Reason (optional)" class="w-full md:w-48" />
 
-            <template v-else>
-              <UButton v-if="!row.clockedOutAt" size="xs" color="neutral" variant="outline" icon="i-lucide-log-out"
-                label="Clock Out" :loading="adminClockingTeacherId === row.teacher.id"
-                @click="onAdminClockOut(row.teacher.id)" />
+            <div v-if="isToday" class="flex gap-2">
+              <UButton v-if="!row.clockedInAt" size="sm" icon="i-lucide-log-in" label="Clock In"
+                class="flex-1 justify-center md:flex-none" :loading="adminClockingTeacherId === row.teacher.id"
+                @click="onAdminClockIn(row.teacher.id)" />
 
-              <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-rotate-ccw"
-                :label="row.clockedOutAt ? 'Undo Clock Out' : 'Undo Clock In'"
-                :loading="unclockingTeacherId === row.teacher.id" @click="onAdminUnclock(row.teacher.id)" />
-            </template>
-          </template>
+              <template v-else>
+                <UButton v-if="!row.clockedOutAt" size="sm" color="neutral" variant="outline" icon="i-lucide-log-out"
+                  label="Clock Out" class="flex-1 justify-center md:flex-none"
+                  :loading="adminClockingTeacherId === row.teacher.id" @click="onAdminClockOut(row.teacher.id)" />
+
+                <UButton size="sm" color="neutral" variant="ghost" icon="i-lucide-rotate-ccw"
+                  :label="row.clockedOutAt ? 'Undo Clock Out' : 'Undo Clock In'"
+                  class="flex-1 justify-center md:flex-none"
+                  :loading="unclockingTeacherId === row.teacher.id" @click="onAdminUnclock(row.teacher.id)" />
+              </template>
+            </div>
+          </div>
         </div>
       </div>
 

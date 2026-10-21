@@ -11,7 +11,7 @@ const academicYearStore = useAcademicYearStore()
 
 const router = useRouter()
 const route = useRoute()
-const { records, meta } = storeToRefs(store)
+const { records, meta, loading } = storeToRefs(store)
 const { records: subjectRecords } = storeToRefs(subjectStore)
 const { records: teacherSubjectRecords } = storeToRefs(teacherSubjectStore)
 const { termList: terms } = storeToRefs(academicYearStore)
@@ -223,7 +223,17 @@ onMounted(() => {
             </div>
 
             <div class="space-y-4 p-3 md:p-0">
-                <NuxtLink v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
+                <template v-if="loading">
+                    <div v-for="i in 5" :key="i" class="flex items-center justify-between gap-3 rounded-xl border border-default p-3">
+                        <div class="space-y-2">
+                            <USkeleton class="h-4 w-48" />
+                            <USkeleton class="h-3 w-36" />
+                        </div>
+                        <USkeleton class="h-5 w-16 rounded-full" />
+                    </div>
+                </template>
+
+                <NuxtLink v-else v-for="scheme in records" :key="scheme.id" :to="`/curriculums/${scheme.id}`"
                     class="flex items-center justify-between gap-3 rounded-xl border border-default p-3 transition-colors hover:border-primary/40 hover:bg-muted/40">
                     <div class="flex items-center gap-2">
                         <div>
@@ -250,7 +260,7 @@ onMounted(() => {
                     </div>
                 </NuxtLink>
 
-                <div v-if="!records.length" class="flex flex-col items-center gap-3 py-10 text-center">
+                <div v-if="!loading && !records.length" class="flex flex-col items-center gap-3 py-10 text-center">
                     <div class="flex size-12 items-center justify-center rounded-2xl bg-muted/40 text-muted">
                         <UIcon name="i-lucide-book-open" class="size-6" />
                     </div>

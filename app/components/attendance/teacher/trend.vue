@@ -34,7 +34,9 @@
     </div>
 
     <ClientOnly v-else>
-      <ApexChart type="area" height="300" :options="chartOptions" :series="series" />
+      <ChartScroll>
+        <ApexChart type="area" height="300" :options="chartOptions" :series="series" />
+      </ChartScroll>
     </ClientOnly>
   </UCard>
 </template>

@@ -2,7 +2,9 @@
   <div v-if="!isReady" class="skeleton-loader">
     Loading Class Performance...
   </div>
-  <ApexChart v-else type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+  <ChartScroll v-else>
+    <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+  </ChartScroll>
 </template>
 
 <script setup lang="ts">
@@ -89,7 +91,7 @@ async function loadData() {
           name: "Average Score",
           aggregation: "avg",
           field: "weightScore",
-          tags: { groupBy: "clazz", "orderBy": "weightScore", order: "desc" }
+          tags: { groupBy: "classSession", "orderBy": "weightScore", order: "desc" }
         }
       ],
       chartType: "bar"

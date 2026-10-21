@@ -154,7 +154,18 @@ export interface GenderAttendanceSummary {
   startDate: string
   endDate: string
   totals: GenderAttendanceTotals
-  classes: { classId: string, className: string, totals: GenderAttendanceTotals }[]
+  classes: GenderAttendanceClassRow[]
+}
+
+// One row per class + section + stream; streamId/streamName are null when the class has no stream.
+export interface GenderAttendanceClassRow {
+  classId: string
+  className: string
+  sectionId: string
+  sectionName: string
+  streamId: string | null
+  streamName: string | null
+  totals: GenderAttendanceTotals
 }
 
 export interface ReligionCount {
@@ -248,7 +259,7 @@ export const useAcademicReportStore = defineStore('academicReport', {
       }
     },
 
-    async fetchWeeklyGenderAttendance(classId: string, filters: { academicYearId?: string, weekOf?: string }) {
+    async fetchWeeklyGenderAttendance(classId: string, filters: { academicYearId?: string, weekOf?: string, sectionId?: string, streamId?: string }) {
       this.loadingWeeklyGenderAttendance = true
       try {
         this.weeklyGenderAttendance = await AcademicReportApi().getWeeklyGenderAttendance(classId, filters) || null
@@ -257,7 +268,7 @@ export const useAcademicReportStore = defineStore('academicReport', {
       }
     },
 
-    async fetchGenderAttendanceSummary(filters: { period: string, academicYearId?: string, termId?: string, classId?: string, date?: string }) {
+    async fetchGenderAttendanceSummary(filters: { period: string, academicYearId?: string, termId?: string, classId?: string, sectionId?: string, streamId?: string, level?: string, date?: string }) {
       this.loadingGenderAttendanceSummary = true
       try {
         this.genderAttendanceSummary = await AcademicReportApi().getGenderAttendanceSummary(filters) || null

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
     <UAlert color="primary" variant="soft" icon="i-lucide-info" title="They won't be sent login credentials"
       description="A record is still created for them under the hood - that's what payroll and attendance run off - but they're never emailed a password. If this person will log in themselves, use Add Teacher instead." />
 

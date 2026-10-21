@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
 
     <Heading title="Salary Details" subtitle="View teacher compensation and payroll history.">
       <UButton v-if="salary" icon="i-lucide-pencil" variant="soft" :to="`/payroll/salaries/add?teacherId=${salary.teacher.id}`" label="Edit Salary" />

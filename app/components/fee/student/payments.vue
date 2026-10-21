@@ -98,7 +98,7 @@
 
         <div class="hidden md:block">
           <UTable :columns="columns" :data="records" :loading="isLoading">
-            <template #empty-state>
+            <template #empty>
               <div class="flex flex-col items-center gap-2 py-10">
                 <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
                 <p class="text-gray-500">No ledger record found.</p>

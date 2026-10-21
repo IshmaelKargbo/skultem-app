@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 md:px-6 space-y-4">
+  <div class="px-4 md:px-6 space-y-3">
     <Heading :title="assessment ? `${assessment.name} - Continuous Assessment` : 'Continuous Assessment'"
       :subtitle="subtitle">
       <div v-if="structure" class="flex flex-wrap items-center gap-2">
