@@ -213,8 +213,8 @@ export type StudentTermAttendance = {
     startDate: string
     asOf: string
     schoolDays: number
-    // Every enrolled student; schoolDays counts from countedFrom (term start, or later enrollment),
-    // and percentage is null while that's still 0.
+    // Every enrolled student; schoolDays counts from countedFrom (always the term start, whenever they
+    // enrolled), and percentage is null while that's still 0.
     students: { studentId: string, countedFrom: string, schoolDays: number, presentOrLate: number, percentage: number | null }[]
 }
 
