@@ -66,7 +66,7 @@
             <div v-for="student in sortedStudentScores" :key="student.id" class="rounded-xl border border-default p-3">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex min-w-0 items-center gap-2">
-                  <UAvatar size="xs" :alt="student.student" :text="studentInitials(student.student)"
+                  <UAvatar size="xs" :src="student.studentPhoto || undefined" :alt="student.student" :text="studentInitials(student.student)"
                     class="shrink-0 ring-1 ring-default" />
                   <div class="min-w-0">
                     <p class="truncate text-sm font-medium text-highlighted">{{ student.student }}</p>
@@ -98,6 +98,7 @@
                     <div class="flex items-center gap-2">
                       <UAvatar
                         size="xs"
+                        :src="student.studentPhoto || undefined"
                         :alt="student.student"
                         :text="studentInitials(student.student)"
                         class="shrink-0 ring-1 ring-default"

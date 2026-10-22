@@ -115,6 +115,8 @@ export type AssessmentScore = {
     assessment: string
     score: number
     student: string
+    // The student's profile photo URL, null when none was uploaded.
+    studentPhoto?: string | null
     weight: number
     weightScore: number
     trend?: string
