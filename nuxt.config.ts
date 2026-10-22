@@ -139,7 +139,10 @@ export default defineNuxtConfig({
   },
 
   pwa: {
-    registerType: 'autoUpdate',
+    // 'prompt', not 'autoUpdate': a deploy used to take over every open tab and reload it on the spot - mid-form
+    // included, which read as the app "reloading by itself" after sitting open. Now the new version waits and is
+    // applied at a safe moment (the next page change, or the "Reload" button) - see plugins/pwa-refresh.client.ts.
+    registerType: 'prompt',
 
     includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'splash/*.png'],
 
@@ -173,8 +176,9 @@ export default defineNuxtConfig({
       globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
 
       cleanupOutdatedCaches: true,
-      clientsClaim: true,
-      skipWaiting: true
+      // No skipWaiting / clientsClaim: the waiting version only activates when pwa-refresh.client.ts asks it to.
+      clientsClaim: false,
+      skipWaiting: false
     },
 
     manifest: {

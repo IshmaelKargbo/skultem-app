@@ -1,44 +1,61 @@
+// Applies a new deploy without ever reloading the page out from under someone.
+//
+// It used to reload on `controllerchange` the moment a new service worker took over - with registerType
+// 'autoUpdate' + skipWaiting/clientsClaim that happened whenever a deploy landed while a tab sat open (and once more
+// on a first visit, when the worker first claimed the page), so the app "reloaded by itself", losing any half-filled
+// form. Now (registerType 'prompt' in nuxt.config.ts) the new version waits, and is applied:
+//   * on the next page change - the user is leaving this screen anyway, so nothing is lost; or
+//   * when they press "Reload" on the notice shown as soon as it is ready.
+// Still production only: the dev service worker's precache isn't content-stable and flags an "update" on nearly
+// every request (that was an infinite reload loop once - see the pwa block in nuxt.config.ts).
 export default defineNuxtPlugin((nuxtApp) => {
-  if (!import.meta.client || !('serviceWorker' in navigator) || !nuxtApp.$pwa) {
+  if (import.meta.dev || !('serviceWorker' in navigator) || !nuxtApp.$pwa) {
     return
   }
 
-  // `devOptions.enabled: true` (nuxt.config.ts) keeps the service worker + manifest real under
-  // `nuxt dev` too, deliberately, so a phone can install/splash-screen against the dev server -
-  // but the dev SW's precache manifest isn't content-stable across requests the way a production
-  // build's is, so it can flag "an update is available" on nearly every request. Auto-reloading
-  // on every controllerchange turned that into a genuine infinite loop: reload -> app remounts ->
-  // dev SW sees another "update" -> controllerchange -> reload -> ... each cycle re-fires every
-  // page's onMounted fetches (that's the flood of identical requests you'd see in the console)
-  // until the tab runs out of memory and crashes. Vite's own HMR already handles live-reloading
-  // for real code changes in dev, so this auto-reload is only needed - and only safe - in
-  // production, where the manifest is actually stable and an update means an update.
-  if (import.meta.dev) {
-    return
+  // @vite-pwa/nuxt's reactive state - typed as {} through the plugin injection.
+  const pwa = nuxtApp.$pwa as unknown as { needRefresh: boolean, updateServiceWorker: (reloadPage?: boolean) => Promise<void> }
+  let applying = false
+  let notified = false
+
+  // Activates the waiting version, then reloads once it is in control.
+  const apply = () => {
+    if (applying || !pwa.needRefresh) return
+    applying = true
+    void pwa.updateServiceWorker(true)
   }
-
-  let isReloading = false
-
-  const reloadPage = () => {
-    if (isReloading) {
-      return
-    }
-
-    isReloading = true
-    window.location.reload()
-  }
-
-  navigator.serviceWorker.addEventListener('controllerchange', reloadPage)
 
   watch(
-    () => nuxtApp.$pwa?.needRefresh,
+    () => pwa.needRefresh,
     (needRefresh) => {
-      if (!needRefresh || isReloading) {
-        return
-      }
-
-      void nuxtApp.$pwa?.updateServiceWorker()
+      if (!needRefresh || notified) return
+      notified = true
+      useToast().add({
+        title: 'A new version of Skultem is ready',
+        description: 'It will load on your next page change, or reload now.',
+        color: 'info',
+        icon: 'lucide:refresh-cw',
+        duration: 0,
+        actions: [{ label: 'Reload', color: 'primary', onClick: apply }]
+      })
     },
     { immediate: true }
   )
+
+  // A full load of the destination instead of the in-app route change, once the new version is in control - loading
+  // it earlier would be served by the old worker and bring the old build straight back.
+  useRouter().beforeEach((to, from) => {
+    if (!pwa.needRefresh || applying || to.fullPath === from.fullPath) return
+    applying = true
+    let done = false
+    const go = () => {
+      if (done) return
+      done = true
+      window.location.assign(to.fullPath)
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', go, { once: true })
+    setTimeout(go, 3000) // never leave the user stuck if activation stalls
+    void pwa.updateServiceWorker(false)
+    return false
+  })
 })
