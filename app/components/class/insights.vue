@@ -185,8 +185,11 @@ const streaks = computed(() => props.students
 const ranked = computed(() => props.students
   .map(student => ({ student, score: props.performanceById[student.id] }))
   .filter((x): x is { student: Student, score: number } => x.score !== undefined)
-  .map(x => ({ ...x, score: Math.round(x.score) }))
-  .sort((a, b) => b.score - a.score))
+  // Same order as the class table: average, then attendance on a tie.
+  .sort((a, b) => b.score - a.score
+    || (props.attendanceById[b.student.id] ?? -1) - (props.attendanceById[a.student.id] ?? -1)
+    || name(a.student).localeCompare(name(b.student)))
+  .map(x => ({ ...x, score: Math.round(x.score) })))
 
 const classAverage = computed(() => ranked.value.length
   ? Math.round(ranked.value.reduce((sum, x) => sum + x.score, 0) / ranked.value.length) : 0)

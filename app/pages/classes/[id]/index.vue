@@ -134,7 +134,7 @@
                                 :variant="onlyAttention ? 'solid' : 'outline'" :label="String(attentionCount)"
                                 @click="onlyAttention = !onlyAttention" />
                         </UTooltip>
-                        <UTooltip text="Highest average first, students needing attention last">
+                        <UTooltip text="Highest average first (ties by attendance), students needing attention last">
                             <UButton :icon="PERFORMANCE_ICON" size="md" :color="sortByPerformance ? 'primary' : 'neutral'"
                                 :variant="sortByPerformance ? 'solid' : 'outline'" aria-label="Sort by performance"
                                 @click="sortByPerformance = !sortByPerformance" />
@@ -400,26 +400,23 @@ async function fetchAttention() {
     }
 }
 
-// Highest approved average first; students without one yet go last.
+// Highest approved average first; students without one yet go last. Equal averages are split by term
+// attendance (higher first, no attendance yet counts lowest).
 function byAverage(a: Student, b: Student) {
     const pa = performanceOf(a)
     const pb = performanceOf(b)
     if (pa == null && pb == null) return 0
     if (pa == null) return 1
     if (pb == null) return -1
-    return pb - pa
+    return pb - pa || (attendanceById.value[b.id] ?? -1) - (attendanceById.value[a.id] ?? -1)
 }
 
-// Position in class by approved average this term - equal averages share a place (1, 2, 2, 4).
-// Students with no approved marks yet have no position.
+// Position in class by approved average this term, ties broken by attendance - every student gets their own place
+// (1, 2, 3, 4), never a shared one; level on both, it falls to name order. No approved marks yet = no position.
 const positionById = computed<Record<string, number>>(() => {
-    const ranked = students.value.filter(s => performanceOf(s) !== undefined).sort(byAverage)
-    const out: Record<string, number> = {}
-    ranked.forEach((s, i) => {
-        const prev = ranked[i - 1]
-        out[s.id] = prev && performanceOf(prev) === performanceOf(s) ? out[prev.id]! : i + 1
-    })
-    return out
+    const ranked = students.value.filter(s => performanceOf(s) !== undefined)
+        .sort((a, b) => byAverage(a, b) || studentFullName(a).localeCompare(studentFullName(b)))
+    return Object.fromEntries(ranked.map((s, i) => [s.id, i + 1]))
 })
 
 // Students who need attention sit at the bottom; each group is ordered by approved average.
@@ -429,7 +426,7 @@ const displayStudents = computed(() => {
     return [...students.value].sort((a, b) => {
         const fa = needsAttention(a) ? 1 : 0
         const fb = needsAttention(b) ? 1 : 0
-        return fa - fb || byAverage(a, b)
+        return fa - fb || byAverage(a, b) || studentFullName(a).localeCompare(studentFullName(b))
     })
 })
 
