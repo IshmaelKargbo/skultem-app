@@ -260,9 +260,9 @@ export const ClassApi = () => {
         useHandleError(err)
       }
     },
-    getOverview: async (id: string) => {
+    getOverview: async (id: string, academicYear?: string) => {
       try {
-        const res = await $api(`/class/${id}/overview`) as any
+        const res = await $api(`/class/${id}/overview${academicYear ? `?academicYearId=${academicYear}` : ''}`) as any
 
         if (!res)
           throw new Error('Failed to fetch class overview')

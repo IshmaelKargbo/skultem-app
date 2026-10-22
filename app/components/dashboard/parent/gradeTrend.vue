@@ -19,6 +19,9 @@ const { id } = defineProps<{
   id: string
 }>()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
+// Dark value labels (light on a dark card) instead of ApexCharts' default white.
+const colorMode = useColorMode()
+const labelColor = computed(() => colorMode.value === 'dark' ? '#f3f4f6' : '#111827')
 
 const isReady = ref(false)
 const labels = ref<string[]>([])
@@ -65,7 +68,9 @@ const chartOptions = computed(() => ({
     bar: {
       borderRadius: 6,
       columnWidth: "45%",
-      distributed: true
+      distributed: true,
+      // Values sit just above each bar, where they read on any bar colour.
+      dataLabels: { position: "top" }
     }
   },
 
@@ -77,7 +82,9 @@ const chartOptions = computed(() => ({
 
   dataLabels: {
     enabled: true,
-    formatter: (val: number) => `${Math.round(val)}%`
+    formatter: (val: number) => `${Math.round(val)}%`,
+    offsetY: -20,
+    style: { fontWeight: 600, colors: [labelColor.value] }
   }
 }))
 

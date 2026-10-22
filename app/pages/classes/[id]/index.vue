@@ -22,9 +22,9 @@
                     </div>
                     <p v-if="!loading" class="mt-0.5 flex flex-wrap items-center gap-x-2 text-sm text-muted">
                         <span>{{ session?.classLevel || 'No level' }}</span>
-                        <template v-if="classTeachers.length">
+                        <template v-if="masterNames.length">
                             <span>·</span>
-                            <span>Class master: {{ classTeachers.map(t => t.name).join(', ') }}</span>
+                            <span>Class master: {{ masterNames.join(', ') }}</span>
                         </template>
                         <template v-if="canViewRoster && !studentsLoading">
                             <span>·</span>
@@ -102,10 +102,10 @@
                 icon: 'i-lucide-star', color: avgScore !== null && avgScore < passMark ? 'warning' : 'success', isReady: !studentsLoading
             }" />
             <Metric :record="{
-                label: classTeachers.length > 1 ? 'Class masters' : 'Class master',
-                value: classTeachers.length ? classTeachers[0]!.name : 'Not assigned',
-                subtle: classTeachers.length > 1 ? `+${classTeachers.length - 1} more` : '',
-                icon: 'i-lucide-user-round-check', color: 'secondary', isReady: !loading
+                label: masterNames.length > 1 ? 'Class masters' : 'Class master',
+                value: masterNames.length ? masterNames[0]! : 'Not assigned',
+                subtle: masterNames.length > 1 ? `+${masterNames.length - 1} more` : '',
+                icon: 'i-lucide-user-round-check', color: 'secondary', isReady: !loading && !overviewLoading
             }" />
         </div>
 
@@ -301,7 +301,7 @@ const userStore = useUserStore()
 
 const stream = computed(() => (route.query.stream as string) || '')
 const sessionId = computed(() => (route.query.session as string) || '')
-const { record, session, overview, loading } = storeToRefs(classStore)
+const { record, session, overview, loading, overviewLoading } = storeToRefs(classStore)
 const { classRecords: students, loading: studentsLoading } = storeToRefs(studentStore)
 
 const view = ref<'table' | 'card'>('table')
@@ -575,6 +575,13 @@ const classTeachers = computed(() => {
 
         return { id: master.id, name, assignment, sessionId: master.session?.id, isMe, photo }
     })
+})
+
+// Names for the header and the Class master tile: the overview's masters, else the ones the loaded class session
+// already carries - so a failed or empty overview can't hide a master the class really has.
+const masterNames = computed(() => {
+    if (classTeachers.value.length) return classTeachers.value.map(t => t.name)
+    return (session.value?.teacherName || '').split(',').map(n => n.trim()).filter(n => n && n !== 'N/A')
 })
 
 const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))

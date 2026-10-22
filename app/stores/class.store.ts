@@ -6,6 +6,7 @@ export const useClassStore = defineStore('class', {
     record: undefined as Clazz | undefined,
     session: undefined as ClassSession | undefined,
     overview: undefined as ClassOverview | undefined,
+    overviewLoading: false,
     meta: {} as Meta,
     loading: false,
     error: null as string | null
@@ -61,13 +62,17 @@ export const useClassStore = defineStore('class', {
     },
     async fetchOverview(id: string, academicYear: string, stream?: string, sessionId?: string) {
       this.overview = undefined
+      this.overviewLoading = true
       try {
         if (stream || sessionId)
           this.overview = await ClassApi().getSssOverview(id, academicYear, stream || '', sessionId)
         else
-          this.overview = await ClassApi().getOverview(id)
+          // The year being viewed - masters belong to that year's session, not always the active year's.
+          this.overview = await ClassApi().getOverview(id, academicYear)
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch class overview'
+      } finally {
+        this.overviewLoading = false
       }
     },
     create(payload: CreateClassDto) {
