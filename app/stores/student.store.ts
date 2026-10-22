@@ -8,6 +8,10 @@ export const useStudentStore = defineStore('student', {
     meta: {} as Meta,
     classRecords: [] as Student[],
     classMeta: {} as Meta,
+    // The class page roster's own loading flag and request counter - kept apart from `loading`, which other actions
+    // share, and so a slow response for the class just left can't land on the one opened after it.
+    classLoading: false,
+    classRequest: 0,
     loading: true,
     error: null as string | null
   }),
@@ -124,17 +128,30 @@ export const useStudentStore = defineStore('student', {
       }
     },
     async fetchByClassAndStream(classId: string, streamId: string | undefined, page: number = 1, size: number = runtimeConf().limit, sectionId?: string) {
-      this.loading = true
+      const request = ++this.classRequest
+      // Never show the previous roster while this one loads.
+      this.classRecords = []
+      this.classMeta = {} as Meta
+      this.classLoading = true
       this.error = null
       try {
         const response = await StudentApi().getByClass(classId, streamId, page, size, sectionId) as any
+        if (request !== this.classRequest) return
         this.classRecords = response.data || []
         this.classMeta = response.meta || {} as Meta
       } catch (err: any) {
+        if (request !== this.classRequest) return
         this.error = err.data?.message || 'Failed to fetch students for class'
       } finally {
-        this.loading = false
+        if (request === this.classRequest) this.classLoading = false
       }
+    },
+    // Forget the class page roster (leaving the page or switching class), and drop any request still in flight.
+    clearClassRoster() {
+      this.classRequest++
+      this.classRecords = []
+      this.classMeta = {} as Meta
+      this.classLoading = false
     },
     async getAllStudentOutstandingFeesById(id: string) {
       this.loading = true

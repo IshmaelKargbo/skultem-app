@@ -302,7 +302,10 @@ const userStore = useUserStore()
 const stream = computed(() => (route.query.stream as string) || '')
 const sessionId = computed(() => (route.query.session as string) || '')
 const { record, session, overview, loading, overviewLoading } = storeToRefs(classStore)
-const { classRecords: students, loading: studentsLoading } = storeToRefs(studentStore)
+const { classRecords: students, classLoading } = storeToRefs(studentStore)
+// Loading until this class's own roster is in - including while the exact section is still being resolved.
+const studentsLoading = computed(() => classLoading.value
+    || (canViewRoster.value && !!sessionId.value && session.value?.id !== sessionId.value))
 
 const view = ref<'table' | 'card'>('table')
 
@@ -387,8 +390,11 @@ function attentionReason(s: Student) {
 
 async function fetchAttention() {
     if (!canViewRoster.value || !classId.value) return
+    const forClass = classId.value
     try {
-        const res = await ClassApi().getAttention(classId.value)
+        const res = await ClassApi().getAttention(forClass)
+        // Moved on to another class while this was loading - its own request fills the page.
+        if (classId.value !== forClass) return
         const map: Record<string, StudentAttention> = {}
         res?.students?.forEach((s: StudentAttention) => { map[s.studentId] = s })
         attentionByStudentId.value = map
@@ -473,15 +479,18 @@ async function approvedAverages(groupBy: 'student' | 'subject', termId?: string)
 
 async function fetchRosterInsights() {
     if (!canViewRoster.value || !classId.value) return
+    const forClass = classId.value
     try {
         // No active term (e.g. between terms) just leaves attendance empty.
-        const attendance = await AttendanceApi().getClassTermAttendance(classId.value).catch(() => null)
+        const attendance = await AttendanceApi().getClassTermAttendance(forClass).catch(() => null)
+        if (classId.value !== forClass) return
         termAttendance.value = attendance ?? null
 
         // A bonus line - never let it take the rest down. Scoped to the term, like the student averages.
         const subjectsRes = attendance?.termId
             ? await approvedAverages('subject', attendance.termId).catch(() => ({} as Record<string, number>))
             : {}
+        if (classId.value !== forClass) return
         subjectScores.value = Object.entries(subjectsRes).map(([name, score]) => ({ name, score }))
     } catch (err) {
         console.error('Failed to load roster insights', err)
@@ -757,7 +766,8 @@ const canViewRoster = computed(() => {
     return !isTeacherViewer.value || isMasterOfThisClass.value || isSubjectTeacherOfThisClass.value
 })
 
-watch(canViewRoster, (val) => { if (val) { fetchRosterInsights(); fetchAttention() } }, { immediate: true })
+// Per class, not just once: switching class reloads its flags, averages and attendance.
+watch([classId, canViewRoster], ([, val]) => { if (val) { fetchRosterInsights(); fetchAttention() } }, { immediate: true })
 
 const promotionRequests = ref<Record<string, PromotionRequest | null>>({})
 const promotionStatusLoading = ref(false)
@@ -806,6 +816,26 @@ async function fetchStudents() {
     if (sessionId.value && session.value?.id !== sessionId.value) return
     await studentStore.fetchByClassAndStream(classId.value, stream.value, 0, 0, session.value?.sectionId)
 }
+
+// Everything shown for one class - cleared on switching class or leaving, so the next class starts from a loading
+// state instead of briefly showing the previous class's students, flags and figures.
+function resetClassView() {
+    studentStore.clearClassRoster()
+    classStore.session = undefined
+    classStore.overview = undefined
+    performanceById.value = {}
+    averagesTermName.value = null
+    termAttendance.value = null
+    subjectScores.value = []
+    attentionByStudentId.value = {}
+    attentionThresholds.value = null
+    search.value = ''
+    onlyAttention.value = false
+}
+
+// 'sync' so it clears before the watchers below start loading the new class.
+watch(classId, (now, before) => { if (before && now !== before) resetClassView() }, { flush: 'sync' })
+onBeforeUnmount(resetClassView)
 
 watch([classId, viewingYear, stream, sessionId], fetchClass, { immediate: true })
 watch([classId, canViewRoster, stream, () => session.value?.id], fetchStudents, { immediate: true })
