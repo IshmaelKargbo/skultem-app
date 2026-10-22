@@ -36,7 +36,7 @@ const chartOptions = computed(() => ({
     style: { fontWeight: 600 }
   },
   subtitle: {
-    text: "Average score per subject",
+    text: "Average approved assessment score per term",
     align: "left",
     style: {
       fontSize: "12px",
@@ -48,9 +48,9 @@ const chartOptions = computed(() => ({
     labels: { style: { fontSize: "12px" } }
   },
   yaxis: {
-    title: { text: "Average Score" },
+    title: { text: "Average Score (%)" },
     labels: {
-      formatter: (val: number) => val.toFixed(2)
+      formatter: (val: number) => `${Math.round(val)}%`
     }
   },
 
@@ -71,13 +71,13 @@ const chartOptions = computed(() => ({
 
   tooltip: {
     y: {
-      formatter: (val: number) => val.toFixed(2)
+      formatter: (val: number) => `${Math.round(val)}%`
     }
   },
 
   dataLabels: {
     enabled: true,
-    formatter: (val: number) => val.toFixed(2)
+    formatter: (val: number) => `${Math.round(val)}%`
   }
 }))
 
@@ -91,6 +91,13 @@ async function loadData() {
           field: "studentAssessment.enrollment.student.id",
           value: id,
           operator: "EQUALS",
+          type: "select"
+        },
+        // Unmarked work comes back as 0 and would drag every term down.
+        {
+          field: "cycle.status",
+          values: ['APPROVED', 'COMPLETED', 'LOCKED'],
+          operator: "IN_LIST",
           type: "select"
         }
       ],

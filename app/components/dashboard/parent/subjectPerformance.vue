@@ -1,7 +1,13 @@
 <template>
   <UCard>
-    <div v-if="!isReady" class="skeleton-loader">
+    <div v-if="!isReady || loading" class="skeleton-loader">
       Loading Subject Performance...
+    </div>
+
+    <div v-else-if="rows && !rows.length" class="flex h-[350px] flex-col items-center justify-center gap-2 text-center">
+      <UIcon name="lucide:bar-chart-3" class="size-8 text-muted" />
+      <p class="text-sm font-semibold text-highlighted">Subject Performance</p>
+      <p class="text-xs text-muted">No approved assessments for this term yet.</p>
     </div>
 
     <client-only v-else>
@@ -14,7 +20,14 @@
 
 <script setup lang="ts">
 const store = useWidgetStore()
-const { id, term } = defineProps<{ id: string | undefined, term: string | undefined }>()
+// rows: subject scores already worked out by the caller (the student performance page's breakdown) - charted as
+// given, so the chart and the breakdown below it always agree. Without it the chart fetches its own.
+const { id, term, rows, loading = false } = defineProps<{
+  id: string | undefined
+  term: string | undefined
+  rows?: { name: string, score: number }[]
+  loading?: boolean
+}>()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
 const isReady = ref(false)
@@ -38,7 +51,7 @@ const chartOptions = computed(() => ({
   },
 
   subtitle: {
-    text: "Average score per subject",
+    text: rows ? "Weighted score per subject, approved assessments only" : "Average score per subject",
     align: "left",
     style: {
       fontSize: "12px",
@@ -92,6 +105,13 @@ const chartOptions = computed(() => ({
 }))
 
 async function loadData() {
+  if (rows) {
+    labels.value = rows.map(r => r.name)
+    colors.value = generateColors(labels.value.length)
+    chartSeries.value = [{ name: 'Score', data: rows.map(r => r.score) }]
+    isReady.value = true
+    return
+  }
   if (id == '' || term == '') return
   try {
     const payload = {
@@ -108,6 +128,13 @@ async function loadData() {
           field: 'cycle.term.id',
           value: term,
           operator: "EQUALS",
+          type: "select"
+        },
+        // Unmarked work comes back as 0 - only settled scores belong in the chart.
+        {
+          field: "cycle.status",
+          values: ['APPROVED', 'COMPLETED', 'LOCKED'],
+          operator: "IN_LIST",
           type: "select"
         }
       ],
@@ -141,7 +168,7 @@ async function loadData() {
 }
 
 watch(
-  () => [id, term],
+  () => [id, term, rows],
   async () => {
     isReady.value = false
     await loadData()

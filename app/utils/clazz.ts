@@ -78,6 +78,9 @@ export type ClassAttention = {
     // ...and those on WATCH: a recent dip the term as a whole doesn't back up.
     watchCount: number
     students: StudentAttention[]
+    // The cut-offs behind the flags: term average below passMark, or recent attendance below attendanceThreshold (%).
+    passMark: number
+    attendanceThreshold: number
 }
 
 export type FlaggedClass = {

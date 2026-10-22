@@ -11,7 +11,12 @@
 
     <!-- At a glance -->
     <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
-      <DashboardParentAvarage :term="term" :session-id="selected?.sessionId || ''" :id="state.student" />
+      <Metric :record="{
+        label: 'Term Average', color: 'success', value: termAverage == null ? 'N/A' : `${termAverage}%`,
+        isReady: !assessmentLoading, icon: STUDENT_ICON,
+        subtle: termAverage == null ? 'No approved assessments yet'
+          : `Across ${assessedSubjects.length} subject${assessedSubjects.length === 1 ? '' : 's'}`
+      }" />
       <Metric :record="{
         label: 'Class Rank', color: 'primary', value: rank, isReady: rankReady, icon: LEADER_ICON,
         subtle: selected ? `Out of ${selected.classSize} in ${selected.className}` : undefined
@@ -19,7 +24,7 @@
       <DashboardParentAttendance :id="state.student" :term="state.term" />
       <Metric :record="{
         label: 'Best Subject', color: 'success', value: topSubject?.name || 'N/A', isReady: !assessmentLoading,
-        icon: TARGET_ICON, subtle: topSubject ? `${Math.round(topSubject.score)}% this term` : 'No assessments yet'
+        icon: TARGET_ICON, subtle: topSubject ? `${topSubject.score}% this term` : 'No approved assessments yet'
       }" />
     </div>
 
@@ -32,7 +37,7 @@
           <div class="space-y-0.5">
             <p class="text-sm font-semibold text-success">Doing great in {{ topSubject.name }}</p>
             <p class="text-xs text-muted">
-              {{ studentFirstName }} is scoring {{ Math.round(topSubject.score) }}% ({{ topSubject.grade || '—' }})
+              {{ studentFirstName }} is scoring {{ topSubject.score }}% ({{ topSubject.grade || '—' }})
               - the strongest subject this term.
             </p>
           </div>
@@ -43,8 +48,9 @@
           <div class="space-y-0.5">
             <p class="text-sm font-semibold text-warning">Could use some support in {{ bottomSubject.name }}</p>
             <p class="text-xs text-muted">
-              Currently at {{ Math.round(bottomSubject.score) }}% ({{ bottomSubject.grade || '—' }}){{
-                bottomSubject.trend === 'DROPPED' ? ' and trending down' : '' }} - worth checking in on together.
+              Currently at {{ bottomSubject.score }}% ({{ bottomSubject.grade || '—' }}), below the
+              {{ bottomSubject.passMark }}% pass mark{{ bottomSubject.trend === 'DROPPED' ? ' and dropped on the latest test' : '' }}
+              - worth checking in on together.
             </p>
           </div>
         </div>
@@ -54,7 +60,8 @@
     <!-- Trends -->
     <div class="grid gap-4 md:grid-cols-2 md:gap-5">
       <DashboardParentGradeTrend :id="state.student" />
-      <DashboardParentSubjectPerformance :term="state.term" :id="state.student" />
+      <DashboardParentSubjectPerformance :term="state.term" :id="state.student" :rows="chartRows"
+        :loading="assessmentLoading" />
     </div>
 
     <!-- Subject breakdown -->
@@ -69,21 +76,25 @@
 
             <div class="min-w-0">
               <p class="truncate text-sm font-medium">{{ row.name }}</p>
-              <div class="flex items-center gap-1.5">
-                <UIcon :name="parseTrend[row.trend]?.icon" :class="`size-3.5 text-${parseTrend[row.trend]?.color}`" />
-                <p :class="`text-[11px] text-${parseTrend[row.trend]?.color}`">{{ parseTrend[row.trend]?.label }}</p>
+              <div class="flex items-center gap-1.5 text-[11px] text-muted">
+                <span>{{ row.assessed }} of {{ row.total }} graded</span>
+                <template v-if="row.trend && parseTrend[row.trend]">
+                  <span>&middot;</span>
+                  <UIcon :name="parseTrend[row.trend].icon" :class="`size-3.5 text-${parseTrend[row.trend].color}`" />
+                  <span :class="`text-${parseTrend[row.trend].color}`">{{ parseTrend[row.trend].label }}</span>
+                </template>
               </div>
             </div>
           </div>
 
           <div class="flex items-end space-x-3">
             <div class="flex items-center">
-              <UBadge v-if="row.grade" :label="row.grade" :color="gradeColor(row.grade)" variant="subtle" />
+              <UBadge v-if="row.grade" :label="row.grade" :color="gradeColor(row.grade ?? undefined)" variant="subtle" />
             </div>
             <div class="flex space-x-2 items-center">
               <div class="hidden w-28 flex-col items-end gap-1 sm:flex">
-                <p class="text-sm font-semibold">{{ Math.round(row.score) }}%</p>
-                <UProgress :model-value="row.score" :color="gradeColor(row.grade)" size="sm" />
+                <p class="text-sm font-semibold">{{ row.score == null ? '-' : `${row.score}%` }}</p>
+                <UProgress v-if="row.score != null" :model-value="row.score" :color="gradeColor(row.grade ?? undefined)" size="sm" />
               </div>
 
               <UIcon :name="expanded[row.id] ? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'"
@@ -100,8 +111,8 @@
               <p class="text-sm">{{ score.name }}</p>
               <div class="flex items-center gap-2">
                 <p class="text-sm font-medium">
-                  <span>{{ score.score ?? '-' }}</span>
-                  <span class="text-muted"> ({{ score.weightScore ?? '-' }})</span>
+                  <span>{{ score.score ?? '-' }}%</span>
+                  <span v-if="score.weight" class="text-xs text-muted"> {{ score.weightScore }} of {{ score.weight }} pts</span>
                 </p>
                 <UIcon v-if="score.trend" :name="parseTrend[score.trend]?.icon"
                   :class="`size-3.5 text-${parseTrend[score.trend]?.color}`" />
@@ -201,7 +212,18 @@ const subtitle = computed(() =>
 // The subjects with the highest/lowest score this term - only counted once real assessments
 // exist for them, so a freshly-added subject with no grades yet doesn't get flagged as "needs
 // support" just for being empty.
-const assessedSubjects = computed(() => breakdown.value.filter(row => row.scores.length > 0))
+const assessedSubjects = computed(() =>
+  breakdown.value.filter((row): row is Breakdown & { score: number } => row.score != null)
+)
+
+// Mean of the subject scores, the way a report card averages a term.
+const termAverage = computed(() =>
+  assessedSubjects.value.length
+    ? Math.round(assessedSubjects.value.reduce((sum, row) => sum + row.score, 0) / assessedSubjects.value.length)
+    : null
+)
+
+const chartRows = computed(() => assessedSubjects.value.map(row => ({ name: row.name, score: row.score })))
 
 const topSubject = computed(() =>
   assessedSubjects.value.length

@@ -122,9 +122,13 @@
                         <h3 class="font-semibold text-highlighted">Students</h3>
                         <UBadge variant="soft" color="neutral">{{ filteredStudents.length }}</UBadge>
                     </div>
+                    <p v-if="attentionRule" class="order-last w-full text-xs text-muted sm:order-none sm:w-auto">
+                        <UIcon name="i-lucide-alert-triangle" class="mr-1 inline size-3.5 align-[-2px] text-warning" />
+                        {{ attentionRule }}
+                    </p>
                     <div class="ml-auto flex w-full items-center gap-2 sm:w-auto">
                         <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search students" class="flex-1 sm:w-64" />
-                        <UTooltip v-if="attentionCount" text="Show only students who need attention">
+                        <UTooltip v-if="attentionCount" :text="`Show only students who need attention${attentionRule ? ` - ${attentionRule.toLowerCase()}` : ''}`">
                             <UButton icon="i-lucide-alert-triangle" size="md" :color="onlyAttention ? 'warning' : 'neutral'"
                                 :variant="onlyAttention ? 'solid' : 'outline'" :label="String(attentionCount)"
                                 @click="onlyAttention = !onlyAttention" />
@@ -312,6 +316,13 @@ const attendanceById = computed<Record<string, number>>(() => Object.fromEntries
         .map(r => [r.studentId, r.percentage as number])))
 const subjectScores = ref<{ name: string, score: number }[]>([])
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
+const attentionThresholds = ref<{ passMark: number, attendance: number } | null>(null)
+// What gets a student flagged in this class, from the same cut-offs the backend applies.
+const attentionRule = computed(() => {
+    const t = attentionThresholds.value
+    if (!t) return ''
+    return `Flagged below a ${t.passMark}% term average or ${Math.round(t.attendance)}% recent attendance`
+})
 const sortByPerformance = ref(true)
 const openAttentionId = ref<string | null>(null)
 
@@ -375,6 +386,7 @@ async function fetchAttention() {
         const map: Record<string, StudentAttention> = {}
         res?.students?.forEach((s: StudentAttention) => { map[s.studentId] = s })
         attentionByStudentId.value = map
+        attentionThresholds.value = res ? { passMark: res.passMark, attendance: res.attendanceThreshold } : null
     } catch (err) {
         console.error('Failed to load class attention', err)
     }

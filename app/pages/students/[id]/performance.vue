@@ -14,7 +14,12 @@
 
       <!-- At a glance -->
       <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
-        <DashboardParentAvarage :term="term" :session-id="record?.sessionId || ''" :id="studentId" />
+        <Metric :record="{
+          label: 'Term Average', color: 'success', value: termAverage == null ? 'N/A' : `${termAverage}%`,
+          isReady: !assessmentLoading, icon: STUDENT_ICON,
+          subtle: termAverage == null ? 'No approved assessments yet'
+            : `Across ${assessedSubjects.length} subject${assessedSubjects.length === 1 ? '' : 's'}`
+        }" />
         <Metric :record="{
           label: 'Class Rank', color: 'primary', value: rank, isReady: rankReady, icon: LEADER_ICON,
           subtle: record ? `Out of ${record.classSize} in ${record.className}` : undefined
@@ -22,7 +27,7 @@
         <DashboardParentAttendance class="md:col-span-1 col-span-2" :id="studentId" :term="state.term" />
         <Metric class="md:col-span-1 col-span-2" :record="{
           label: 'Best Subject', color: 'success', value: topSubject?.name || 'N/A', isReady: !assessmentLoading,
-          icon: TARGET_ICON, subtle: topSubject ? `${Math.round(topSubject.score)}% this term` : 'No assessments yet'
+          icon: TARGET_ICON, subtle: topSubject ? `${topSubject.score}% this term` : 'No approved assessments yet'
         }" />
       </div>
 
@@ -35,9 +40,9 @@
         <div class="min-w-0">
           <p class="text-sm font-semibold text-highlighted">Needs support in {{ bottomSubject.name }}</p>
           <p class="text-xs text-muted">
-            {{ studentFirstName || 'The student' }} is at {{ Math.round(bottomSubject.score) }}%
-            ({{ bottomSubject.grade || 'no grade' }}), below the 50% pass line{{
-              bottomSubject.trend === 'DROPPED' ? ' and still dropping' : '' }}.
+            {{ studentFirstName || 'The student' }} is at {{ bottomSubject.score }}%
+            ({{ bottomSubject.grade || 'no grade' }}), below the {{ bottomSubject.passMark }}% pass mark{{
+              bottomSubject.trend === 'DROPPED' ? ' and dropped on the latest test' : '' }}.
           </p>
         </div>
       </div>
@@ -45,7 +50,8 @@
       <!-- Trends -->
       <div class="grid gap-4 md:grid-cols-2 md:gap-5">
         <DashboardParentGradeTrend :id="studentId" />
-        <DashboardParentSubjectPerformance :term="state.term" :id="studentId" />
+        <DashboardParentSubjectPerformance :term="state.term" :id="studentId" :rows="chartRows"
+          :loading="assessmentLoading" />
       </div>
 
       <!-- Subject breakdown -->
@@ -66,52 +72,55 @@
 
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-medium text-highlighted">{{ row.name }}</p>
-                <p v-if="parseTrend[row.trend]" class="mt-0.5 flex items-center gap-1 text-[11px]"
-                  :class="parseTrend[row.trend].text">
-                  <UIcon :name="parseTrend[row.trend].icon" class="size-3.5" />
-                  {{ parseTrend[row.trend].label }}
+                <p class="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
+                  <span>{{ row.assessed }} of {{ row.total }} assessment{{ row.total === 1 ? '' : 's' }} graded</span>
+                  <template v-if="row.trend && parseTrend[row.trend]">
+                    <span>&middot;</span>
+                    <span class="flex items-center gap-1" :class="parseTrend[row.trend].text">
+                      <UIcon :name="parseTrend[row.trend].icon" class="size-3.5" />
+                      {{ parseTrend[row.trend].label }}
+                    </span>
+                  </template>
                 </p>
               </div>
 
               <div class="hidden w-40 sm:block">
-                <div class="h-1.5 overflow-hidden rounded-full bg-elevated">
-                  <div class="h-full rounded-full" :class="barOf(row.score)"
-                    :style="{ width: `${Math.min(100, Math.round(row.score))}%` }" />
+                <div v-if="row.score != null" class="h-1.5 overflow-hidden rounded-full bg-elevated">
+                  <div class="h-full rounded-full" :class="barOf(row.score, row.passMark)"
+                    :style="{ width: `${Math.min(100, row.score)}%` }" />
                 </div>
               </div>
-              <p class="w-12 shrink-0 text-right text-sm font-semibold tabular-nums text-highlighted">
-                {{ Math.round(row.score) }}%</p>
+              <p class="w-12 shrink-0 text-right text-sm font-semibold tabular-nums"
+                :class="row.score == null ? 'text-muted' : 'text-highlighted'">
+                {{ row.score == null ? '-' : `${row.score}%` }}</p>
               <UBadge class="w-9 shrink-0 justify-center" variant="subtle" size="md"
                 :color="row.grade ? gradeColor(row.grade) : 'neutral'" :label="row.grade || '-'" />
             </button>
 
             <div v-if="expanded[row.id]" class="border-l-2 border-t border-l-primary/40 border-t-default bg-neutral-100 px-4 py-3 shadow-inner dark:bg-neutral-800/60 sm:pl-11">
               <template v-if="row.scores.length">
-                <div class="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-1 text-[11px] uppercase tracking-wide text-muted">
+                <div class="grid grid-cols-[1fr_auto_auto] gap-x-4 pb-1 text-[11px] uppercase tracking-wide text-muted">
                   <span>Assessment</span><span class="text-right">Score</span>
-                  <span class="w-16 text-right">Change</span><span class="w-5" />
+                  <span class="w-16 text-right">Change</span>
                 </div>
                 <div v-for="(score, i) in row.scores" :key="i"
-                  class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 border-t border-default/60 py-1.5 text-sm first:border-0">
+                  class="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 border-t border-default/60 py-1.5 text-sm first:border-0">
                   <div class="min-w-0">
                     <p class="truncate">{{ score.name }}</p>
                     <div v-if="score.score != null" class="mt-1 h-1 w-full max-w-48 overflow-hidden rounded-full bg-elevated">
-                      <div class="h-full rounded-full" :class="barOf(Number(score.score))"
+                      <div class="h-full rounded-full" :class="barOf(Number(score.score), row.passMark)"
                         :style="{ width: `${Math.min(100, Number(score.score))}%` }" />
                     </div>
                   </div>
                   <span class="text-right tabular-nums">
-                    <span class="font-medium text-highlighted">{{ score.score ?? '-' }}</span>
-                    <span class="text-xs text-muted"> counts {{ score.weightScore ?? '-' }}</span>
+                    <span class="font-medium text-highlighted">{{ score.score ?? '-' }}%</span>
+                    <span v-if="score.weight" class="block text-[11px] text-muted">
+                      {{ score.weightScore }} of {{ score.weight }} pts</span>
                   </span>
                   <span class="w-16 text-right text-xs font-medium tabular-nums"
                     :class="changeAt(row.scores, i) === null ? 'text-muted' : changeAt(row.scores, i)! > 0 ? 'text-success' : changeAt(row.scores, i)! < 0 ? 'text-error' : 'text-muted'">
                     <template v-if="changeAt(row.scores, i) === null">-</template>
                     <template v-else>{{ changeAt(row.scores, i)! > 0 ? '+' : '' }}{{ changeAt(row.scores, i) }} pts</template>
-                  </span>
-                  <span class="flex w-5 justify-center">
-                    <UIcon v-if="score.trend && parseTrend[score.trend]" :name="parseTrend[score.trend].icon"
-                      class="size-3.5" :class="parseTrend[score.trend].text" />
                   </span>
                 </div>
                 <p v-if="spanOf(row.scores) !== null" class="border-t border-default/60 pt-2 text-xs text-muted">
@@ -121,7 +130,8 @@
                     {{ spanOf(row.scores)! > 0 ? '+' : '' }}{{ spanOf(row.scores) }} pts</span>
                 </p>
               </template>
-              <p v-else class="py-2 text-xs text-muted">No assessments yet for this subject.</p>
+              <p v-else class="py-2 text-xs text-muted">
+                No approved assessments yet - {{ row.total }} still being marked or awaiting approval.</p>
             </div>
           </li>
         </ul>
@@ -203,7 +213,19 @@ const subtitle = computed(() =>
     : "A clear picture of this student's progress, term by term"
 )
 
-const assessedSubjects = computed(() => breakdown.value.filter(row => row.scores.length > 0))
+// Subjects with at least one approved assessment - the only ones with a score to compare.
+const assessedSubjects = computed(() =>
+  breakdown.value.filter((row): row is Breakdown & { score: number } => row.score != null)
+)
+
+// Mean of the subject scores, the way a report card averages a term.
+const termAverage = computed(() =>
+  assessedSubjects.value.length
+    ? Math.round(assessedSubjects.value.reduce((sum, row) => sum + row.score, 0) / assessedSubjects.value.length)
+    : null
+)
+
+const chartRows = computed(() => assessedSubjects.value.map(row => ({ name: row.name, score: row.score })))
 
 const topSubject = computed(() =>
   assessedSubjects.value.length
@@ -268,7 +290,8 @@ const parseTrend: Record<string, any> = {
   DROPPED: { icon: DROPPED_ICON, text: 'text-error', label: 'Dropped' }
 }
 
-const sortedBreakdown = computed(() => [...breakdown.value].sort((a, b) => b.score - a.score))
+// Highest first; subjects with nothing approved yet last.
+const sortedBreakdown = computed(() => [...breakdown.value].sort((a, b) => (b.score ?? -1) - (a.score ?? -1)))
 // Points gained or lost against the assessment before it; null for the first one or when a mark is missing.
 function changeAt(scores: any[], i: number): number | null {
   const cur = scores[i]?.score
@@ -284,7 +307,7 @@ function spanOf(scores: any[]): number | null {
   return Math.round((Number(marked[marked.length - 1].score) - Number(marked[0].score)) * 10) / 10
 }
 
-const barOf = (score: number) => score < 50 ? 'bg-error' : score < 70 ? 'bg-warning' : 'bg-success'
+const barOf = (score: number, passMark = 50) => score < passMark ? 'bg-error' : score < 70 ? 'bg-warning' : 'bg-success'
 
 const rankReady = ref(false)
 const rank = ref('—')

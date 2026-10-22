@@ -95,14 +95,18 @@ export type LeaderBoard = {
 export type Breakdown = {
     id: string
     name: string
-    score: number
+    // Weighted percentage over the assessments approved so far - null until one is.
+    score: number | null
     scores: AssessmentScore[]
-    show: boolean
-    trend: string
-    grade: string
-    // Whether the subject's cumulative weighted score clears the pass mark it was graded
-    // against - undefined for older cached data fetched before this field existed.
-    passed?: boolean
+    // Latest approved test against the one before it - null with fewer than two.
+    trend: string | null
+    grade: string | null
+    // Whether score clears passMark - null until something is approved.
+    passed: boolean | null
+    passMark: number
+    // Assessments approved so far, out of all this subject has this term.
+    assessed: number
+    total: number
 }
 
 export type ApprovalRequestDTO = {
