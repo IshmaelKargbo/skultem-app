@@ -40,6 +40,8 @@ export type ClassSession = {
     sectionId: string
     teacherName: string
     teacherId: string
+    // The first class master's profile photo - null when none was uploaded.
+    teacherPhoto?: string | null
     totalStudent: number
     classLevel: string
     feeDetail: {
@@ -81,6 +83,9 @@ export type ClassAttention = {
     // The cut-offs behind the flags: term average below passMark, or recent attendance below attendanceThreshold (%).
     passMark: number
     attendanceThreshold: number
+    // studentId -> average of approved scores this term (what the academic flag is judged on).
+    averages: Record<string, number>
+    termName: string | null
 }
 
 export type FlaggedClass = {

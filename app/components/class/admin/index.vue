@@ -57,7 +57,8 @@
                 </template>
                 <template #teacherName-cell="{ row }">
                     <div v-if="formatTeacherNames(row.original.teacherName)" class="flex min-w-0 items-center gap-2.5">
-                        <UAvatar :alt="formatTeacherNames(row.original.teacherName)" size="sm" />
+                        <UAvatar :src="row.original.teacherPhoto || undefined" :alt="formatTeacherNames(row.original.teacherName)"
+                            size="sm" />
                         <p class="max-w-44 truncate text-sm" :title="row.original.teacherName">
                             {{ formatTeacherNames(row.original.teacherName) }}</p>
                     </div>

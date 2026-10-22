@@ -111,7 +111,7 @@
               <li v-for="s in needSupport" :key="s.student.id" class="flex items-center gap-2 text-sm">
                 <span class="w-5 text-xs text-muted">{{ s.position }}</span>
                 <button type="button" class="min-w-0 flex-1 truncate text-left hover:underline" @click="open(s.student)">{{ name(s.student) }}</button>
-                <span class="shrink-0 font-semibold" :class="s.score < 50 ? 'text-error' : 'text-warning'">{{ s.score }}%</span>
+                <span class="shrink-0 font-semibold" :class="s.score < passMark ? 'text-error' : 'text-warning'">{{ s.score }}%</span>
               </li>
             </ol>
           </div>
@@ -137,14 +137,18 @@ const props = defineProps<{
   students: Student[]
   attention: Record<string, StudentAttention>
   attendanceById: Record<string, number>
-  performanceByName: Record<string, number>
+  // studentId -> average of approved scores this term.
+  performanceById: Record<string, number>
   subjectScores: { name: string, score: number }[]
-  // Attendance below this is flagged (the school's usual line).
+  // Attendance below this is flagged (the school's or section's line, from the attention check).
   threshold?: number
+  // The class's pass mark - averages under it are shown as failing.
+  passMark?: number
   classId: string
 }>()
 
-const threshold = computed(() => props.threshold ?? 75)
+const threshold = computed(() => Math.round(props.threshold ?? 75))
+const passMark = computed(() => props.passMark ?? 50)
 const SEVERITY_DOT = { CRITICAL: 'bg-error', NEEDS_ATTENTION: 'bg-warning', WATCH: 'bg-neutral' } as const
 const RANK = { CRITICAL: 0, NEEDS_ATTENTION: 1, WATCH: 2 } as const
 
@@ -179,7 +183,7 @@ const streaks = computed(() => props.students
   .sort((a, b) => b.days - a.days))
 
 const ranked = computed(() => props.students
-  .map(student => ({ student, score: props.performanceByName[name(student)] }))
+  .map(student => ({ student, score: props.performanceById[student.id] }))
   .filter((x): x is { student: Student, score: number } => x.score !== undefined)
   .map(x => ({ ...x, score: Math.round(x.score) }))
   .sort((a, b) => b.score - a.score))

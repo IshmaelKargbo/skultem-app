@@ -97,9 +97,9 @@
             }" />
             <Metric :record="{
                 label: 'Average score', value: avgScore === null ? '-' : `${avgScore}%`,
-                subtle: avgScore === null ? 'No approved tests yet' : 'Across approved tests',
-                subtileColor: avgScore !== null && avgScore < 50 ? 'warning' : undefined,
-                icon: 'i-lucide-star', color: avgScore !== null && avgScore < 50 ? 'warning' : 'success', isReady: !studentsLoading
+                subtle: avgScore === null ? 'No approved tests yet this term' : `${averagesTermName || 'This term'}, approved tests`,
+                subtileColor: avgScore !== null && avgScore < passMark ? 'warning' : undefined,
+                icon: 'i-lucide-star', color: avgScore !== null && avgScore < passMark ? 'warning' : 'success', isReady: !studentsLoading
             }" />
             <Metric :record="{
                 label: classTeachers.length > 1 ? 'Class masters' : 'Class master',
@@ -111,8 +111,9 @@
 
         <!-- What to look at first -->
         <ClassInsights v-if="canViewRoster && !studentsLoading" :students="students" :attention="attentionByStudentId"
-            :attendance-by-id="attendanceById" :performance-by-name="performanceByName"
-            :subject-scores="subjectScores" :class-id="classId" />
+            :attendance-by-id="attendanceById" :performance-by-id="performanceById"
+            :subject-scores="subjectScores" :class-id="classId"
+            :threshold="attentionThresholds?.attendance" :pass-mark="attentionThresholds?.passMark" />
 
         <!-- Students -->
         <UCard v-if="loading || canViewRoster" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
@@ -133,7 +134,7 @@
                                 :variant="onlyAttention ? 'solid' : 'outline'" :label="String(attentionCount)"
                                 @click="onlyAttention = !onlyAttention" />
                         </UTooltip>
-                        <UTooltip text="Highest average first">
+                        <UTooltip text="Highest average first, students needing attention last">
                             <UButton :icon="PERFORMANCE_ICON" size="md" :color="sortByPerformance ? 'primary' : 'neutral'"
                                 :variant="sortByPerformance ? 'solid' : 'outline'" aria-label="Sort by performance"
                                 @click="sortByPerformance = !sortByPerformance" />
@@ -145,9 +146,10 @@
             <UTable class="hidden md:block" :columns="columns" :data="filteredStudents" :loading="studentsLoading"
                 :meta="{ class: { tr: (row: any) => attentionStyle(row.original) ? `border-l-4 ${attentionStyle(row.original)!.border}` : '' } }">
                 <template #rank-cell="{ row }">
+                    <!-- Class position by approved average - stays the student's real rank wherever the row sits. -->
                     <span class="text-xs font-semibold tabular-nums"
-                        :class="sortByPerformance && !search && !onlyAttention && row.index < 3 && performanceOf(row.original) !== undefined ? 'text-primary' : 'text-muted'">
-                        {{ row.index + 1 }}
+                        :class="(positionById[row.original.id] ?? 99) <= 3 ? 'text-primary' : 'text-muted'">
+                        {{ positionById[row.original.id] ?? '-' }}
                     </span>
                 </template>
                 <template #name-cell="{ row }">
@@ -184,7 +186,7 @@
                             {{ Math.round(performanceOf(row.original)!) }}</p>
                         <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
                             <div class="h-full rounded-full"
-                                :class="performanceOf(row.original)! < 50 ? 'bg-error' : performanceOf(row.original)! < 70 ? 'bg-warning' : 'bg-primary'"
+                                :class="performanceOf(row.original)! < passMark ? 'bg-error' : performanceOf(row.original)! < 70 ? 'bg-warning' : 'bg-primary'"
                                 :style="{ width: `${Math.min(100, performanceOf(row.original)!)}%` }" />
                         </div>
                     </div>
@@ -305,7 +307,10 @@ const { classRecords: students, loading: studentsLoading } = storeToRefs(student
 const view = ref<'table' | 'card'>('table')
 
 const widgetStore = useWidgetStore()
-const performanceByName = ref<Record<string, number>>({})
+// studentId -> average of approved scores this term, from the attention check itself - the same number a flag is
+// judged on, so the column, the flag and the class average always agree.
+const performanceById = ref<Record<string, number>>({})
+const averagesTermName = ref<string | null>(null)
 // Term to date over every school day so far (not just recorded days) - see GetStudentTermAttendanceUseCase.
 const termAttendance = ref<StudentTermAttendance | null>(null)
 // Each student over the school days since they enrolled; someone nobody has marked is 0%. Students
@@ -317,6 +322,7 @@ const attendanceById = computed<Record<string, number>>(() => Object.fromEntries
 const subjectScores = ref<{ name: string, score: number }[]>([])
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const attentionThresholds = ref<{ passMark: number, attendance: number } | null>(null)
+const passMark = computed(() => attentionThresholds.value?.passMark ?? 50)
 // What gets a student flagged in this class, from the same cut-offs the backend applies.
 const attentionRule = computed(() => {
     const t = attentionThresholds.value
@@ -331,7 +337,7 @@ function studentFullName(s: Student) {
 }
 
 function performanceOf(s: Student) {
-    return performanceByName.value[studentFullName(s)]
+    return performanceById.value[s.id]
 }
 
 function attentionOf(s: Student) {
@@ -387,34 +393,58 @@ async function fetchAttention() {
         res?.students?.forEach((s: StudentAttention) => { map[s.studentId] = s })
         attentionByStudentId.value = map
         attentionThresholds.value = res ? { passMark: res.passMark, attendance: res.attendanceThreshold } : null
+        performanceById.value = res?.averages ?? {}
+        averagesTermName.value = res?.termName ?? null
     } catch (err) {
         console.error('Failed to load class attention', err)
     }
 }
 
+// Highest approved average first; students without one yet go last.
+function byAverage(a: Student, b: Student) {
+    const pa = performanceOf(a)
+    const pb = performanceOf(b)
+    if (pa == null && pb == null) return 0
+    if (pa == null) return 1
+    if (pb == null) return -1
+    return pb - pa
+}
+
+// Position in class by approved average this term - equal averages share a place (1, 2, 2, 4).
+// Students with no approved marks yet have no position.
+const positionById = computed<Record<string, number>>(() => {
+    const ranked = students.value.filter(s => performanceOf(s) !== undefined).sort(byAverage)
+    const out: Record<string, number> = {}
+    ranked.forEach((s, i) => {
+        const prev = ranked[i - 1]
+        out[s.id] = prev && performanceOf(prev) === performanceOf(s) ? out[prev.id]! : i + 1
+    })
+    return out
+})
+
+// Students who need attention sit at the bottom; each group is ordered by approved average.
 const displayStudents = computed(() => {
     if (!sortByPerformance.value) return students.value
 
     return [...students.value].sort((a, b) => {
-        const pa = performanceOf(a)
-        const pb = performanceOf(b)
-        if (pa == null && pb == null) return 0
-        if (pa == null) return 1
-        if (pb == null) return -1
-        return pb - pa
+        const fa = needsAttention(a) ? 1 : 0
+        const fb = needsAttention(b) ? 1 : 0
+        return fa - fb || byAverage(a, b)
     })
 })
 
 // The class's real marks: the average of each student's (or subject's) 0-100 scores over tests that have been approved.
 // Locked and draft tests are left out - their rows are 0 until someone marks them, which would drag every average down.
-async function approvedAverages(groupBy: 'student' | 'subject'): Promise<Record<string, number>> {
+async function approvedAverages(groupBy: 'student' | 'subject', termId?: string): Promise<Record<string, number>> {
     const statuses = ['APPROVED', 'COMPLETED']
     const widgets = await Promise.all(statuses.map(status => widgetStore.runAnalytic({
         entity: 'assessments',
         title: 'Approved scores',
         filters: [
             { field: 'studentAssessment.enrollment.clazz.id', value: classId.value, operator: 'EQUALS', type: 'select' },
-            { field: 'cycle.status', value: status, operator: 'EQUALS', type: 'select' }
+            { field: 'cycle.status', value: status, operator: 'EQUALS', type: 'select' },
+            // The class id spans every year it has run - the term keeps this to the current students' marks.
+            ...(termId ? [{ field: 'cycle.term.id', value: termId, operator: 'EQUALS', type: 'select' }] : [])
         ],
         metrics: [
             { name: 'Average Score', aggregation: 'avg', field: 'score', tags: { groupBy } },
@@ -447,17 +477,15 @@ async function approvedAverages(groupBy: 'student' | 'subject'): Promise<Record<
 async function fetchRosterInsights() {
     if (!canViewRoster.value || !classId.value) return
     try {
-        const [performance, attendance, subjectsRes] = await Promise.all([
-            approvedAverages('student'),
-            // No active term (e.g. between terms) just leaves attendance empty.
-            AttendanceApi().getClassTermAttendance(classId.value).catch(() => null),
-            approvedAverages('subject').catch(() => ({} as Record<string, number>)) // a bonus line - never let it take the rest down
-        ])
-
-        subjectScores.value = Object.entries(subjectsRes).map(([name, score]) => ({ name, score }))
-        performanceByName.value = performance
-
+        // No active term (e.g. between terms) just leaves attendance empty.
+        const attendance = await AttendanceApi().getClassTermAttendance(classId.value).catch(() => null)
         termAttendance.value = attendance ?? null
+
+        // A bonus line - never let it take the rest down. Scoped to the term, like the student averages.
+        const subjectsRes = attendance?.termId
+            ? await approvedAverages('subject', attendance.termId).catch(() => ({} as Record<string, number>))
+            : {}
+        subjectScores.value = Object.entries(subjectsRes).map(([name, score]) => ({ name, score }))
     } catch (err) {
         console.error('Failed to load roster insights', err)
     }
@@ -530,7 +558,7 @@ const average = (values: number[]) => values.length
     ? Math.round(values.reduce((sum, v) => sum + v, 0) / values.length * 10) / 10 : null
 const avgAttendance = computed(() => average(Object.values(attendanceById.value)))
 const avgScore = computed(() => {
-    const v = average(Object.values(performanceByName.value))
+    const v = average(Object.values(performanceById.value))
     return v === null ? null : Math.round(v)
 })
 const genderSummary = computed(() => {
