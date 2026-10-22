@@ -30,69 +30,67 @@
   <template v-else>
     <!-- Clock-in location, radius and network belong to Staff & HR; the alert threshold below is core. -->
     <template v-if="hrInstalled">
-    <UAlert v-if="isSectionBased" color="info" variant="subtle" icon="lucide:map-pin"
-      title="Each section can have its own clock-in location"
-      description="This is the school-wide location. Staff limited to a section clock in at that section's own location (set under Section Branding); staff not limited to any section can clock in at any of them. This one is used by sections that haven't set their own." />
-    <UAlert v-if="!locationConfigured" color="warning" variant="subtle" icon="lucide:triangle-alert"
-      title="Not set up yet" description="Teachers can't clock in until a location is picked on the map and saved here." />
-    <UCard>
-      <template #header>
-        <p>Clock-In Location</p>
-      </template>
-
-      <ClientOnly>
-        <SettingsAttendanceLocationMap ref="locationMap" v-model:latitude="state.latitude"
-          v-model:longitude="state.longitude" :radius-meters="state.radiusMeters" :configured="locationConfigured" />
-        <template #fallback>
-          <div class="flex h-72 items-center justify-center rounded-lg border border-default sm:h-96">
-            <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
-          </div>
+      <UAlert v-if="!locationConfigured" color="warning" variant="subtle" icon="lucide:triangle-alert"
+        title="Not set up yet"
+        description="Teachers can't clock in until a location is picked on the map and saved here." />
+      <UCard>
+        <template #header>
+          <p>Clock-In Location</p>
         </template>
-      </ClientOnly>
 
-      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <UFormField required label="Latitude">
-          <UInput v-model.number="state.latitude" type="number" step="any" class="w-full" />
+        <ClientOnly>
+          <SettingsAttendanceLocationMap ref="locationMap" v-model:latitude="state.latitude"
+            v-model:longitude="state.longitude" :radius-meters="state.radiusMeters" :configured="locationConfigured" />
+          <template #fallback>
+            <div class="flex h-72 items-center justify-center rounded-lg border border-default sm:h-96">
+              <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
+            </div>
+          </template>
+        </ClientOnly>
+
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <UFormField required label="Latitude">
+            <UInput v-model.number="state.latitude" type="number" step="any" class="w-full" />
+          </UFormField>
+
+          <UFormField required label="Longitude">
+            <UInput v-model.number="state.longitude" type="number" step="any" class="w-full" />
+          </UFormField>
+        </div>
+
+        <UButton class="mt-4" variant="soft" icon="lucide:crosshair" :loading="locating" @click="useCurrentLocation">
+          Use My Current Location
+        </UButton>
+        <p class="mt-2 text-xs text-muted">Search for the address, click the map, or drag the pin
+          to set the school's location - or press this button while standing there.</p>
+      </UCard>
+
+      <UCard>
+        <template #header>
+          <p>Allowed Radius</p>
+        </template>
+        <UFormField required label="Radius (metres)"
+          help="How far from the school a teacher can be and still clock in. Shown as the shaded circle on the map above.">
+          <UInput v-model.number="state.radiusMeters" type="number" min="10" class="w-full" />
+        </UFormField>
+      </UCard>
+
+      <UCard>
+        <template #header>
+          <p>Network Restriction</p>
+        </template>
+        <UFormField label="Allowed IP Addresses"
+          help="Comma-separated IPs and/or ranges (e.g. 41.66.12.5, 192.168.1.0/24). Leave blank to skip this check - location alone will decide.">
+          <UTextarea v-model="state.allowedIps" :rows="2" placeholder="e.g. 41.66.12.5, 192.168.1.0/24"
+            class="w-full" />
         </UFormField>
 
-        <UFormField required label="Longitude">
-          <UInput v-model.number="state.longitude" type="number" step="any" class="w-full" />
-        </UFormField>
-      </div>
-
-      <UButton class="mt-4" variant="soft" icon="lucide:crosshair" :loading="locating" @click="useCurrentLocation">
-        Use My Current Location
-      </UButton>
-      <p class="mt-2 text-xs text-muted">Search for the address, click the map, or drag the pin
-        to set the school's location - or press this button while standing there.</p>
-    </UCard>
-
-    <UCard>
-      <template #header>
-        <p>Allowed Radius</p>
-      </template>
-      <UFormField required label="Radius (metres)"
-        help="How far from the school a teacher can be and still clock in. Shown as the shaded circle on the map above.">
-        <UInput v-model.number="state.radiusMeters" type="number" min="10" class="w-full" />
-      </UFormField>
-    </UCard>
-
-    <UCard>
-      <template #header>
-        <p>Network Restriction</p>
-      </template>
-      <UFormField label="Allowed IP Addresses"
-        help="Comma-separated IPs and/or ranges (e.g. 41.66.12.5, 192.168.1.0/24). Leave blank to skip this check - location alone will decide.">
-        <UTextarea v-model="state.allowedIps" :rows="2" placeholder="e.g. 41.66.12.5, 192.168.1.0/24"
-          class="w-full" />
-      </UFormField>
-
-      <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
-        <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
-        When set, a clock-in must come from the school's own network as well as be within range
-        - a second layer against someone clocking in for a colleague from elsewhere.
-      </p>
-    </UCard>
+        <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
+          <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
+          When set, a clock-in must come from the school's own network as well as be within range
+          - a second layer against someone clocking in for a colleague from elsewhere.
+        </p>
+      </UCard>
     </template>
 
     <UCard>
@@ -101,8 +99,7 @@
       </template>
       <UFormField label="Minimum Attendance %"
         help="Students below this attendance percentage are flagged as 'needs attention' across the class view, student profile and attendance reports.">
-        <UInput v-model.number="attendanceThresholdModel" type="number" min="0" max="100" step="0.1"
-          class="w-full" />
+        <UInput v-model.number="attendanceThresholdModel" type="number" min="0" max="100" step="0.1" class="w-full" />
       </UFormField>
     </UCard>
 

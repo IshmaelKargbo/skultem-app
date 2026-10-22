@@ -1,8 +1,5 @@
 <template>
   <div class="space-y-4">
-    <UAlert color="info" variant="subtle" icon="lucide:info" title="Each section can have its own identity"
-      description="Anything you leave empty here uses the school's own logo, principal, signature or address. Reports, report cards, receipts, ID cards and payslips for a section's classes and staff print that section's details, and staff clock in at their section's own location." />
-
     <UCard v-if="loading">
       <USkeleton class="h-40 w-full" />
     </UCard>

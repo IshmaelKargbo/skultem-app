@@ -177,7 +177,7 @@
                 <span class="flex-1 text-left text-sm font-medium">My Profile</span>
               </UButton>
 
-              <UButton v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" icon="lucide:settings" variant="ghost"
+              <UButton v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" icon="lucide:settings" variant="ghost"
                 color="neutral" size="md"
                 class="group w-full justify-start rounded-xl px-3 py-2.5 md:hover:bg-primary-100 dark:md:hover:bg-primary-900/60 md:hover:border-primary-300 hover:text-primary-600 dark:hover:text-primary-200 border-transparent cursor-pointer   "
                 to="/settings/school" @click="drawerOpen = false">

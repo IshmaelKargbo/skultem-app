@@ -79,7 +79,7 @@ const { can, activeRole } = useAuth()
 const { viewingSection } = useSectionView()
 
 const canSwitchYear = computed(() => can([Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
-const canManageSettings = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const canManageSettings = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]))
 const isSystemAdmin = computed(() => can(Role.SYSTEM_ADMIN))
 
 const academicYearStore = useAcademicYearStore()

@@ -44,7 +44,9 @@
                     <nav class="space-y-1">
                         <button v-for="item in sections" :key="item.key" type="button"
                             class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors"
-                            :class="active === item.key ? 'bg-primary text-inverted font-medium' : 'text-toned hover:bg-muted/50'"
+                            :class="active === item.key
+                                ? 'text-toned hover:bg-muted/50 lg:bg-primary lg:text-inverted lg:font-medium lg:hover:bg-primary'
+                                : 'text-toned hover:bg-muted/50'"
                             @click="selectSection(item.key)">
                             <UIcon :name="item.icon" class="size-4 shrink-0" />
                             <span class="flex-1">{{ item.label }}</span>

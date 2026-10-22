@@ -165,7 +165,7 @@ const humanize = (action: string) => {
     <!-- Period -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-sm text-muted">Platform overview across every school on Skultem.</p>
-      <USelect v-model="days" :items="periods" value-key="value" class="w-44" icon="i-lucide-calendar-range" />
+      <USelect v-model="days" :items="periods" value-key="value" class="md:w-64" icon="i-lucide-calendar-range" />
     </div>
 
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="Some figures could not be loaded"
@@ -176,7 +176,7 @@ const humanize = (action: string) => {
     </UAlert>
 
     <!-- Stats -->
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-3 grid-cols-2 xl:grid-cols-3">
       <Metric :record="{
         color: 'primary',
         icon: SCHOOL_ICON,
@@ -251,7 +251,7 @@ const humanize = (action: string) => {
           isReady: !!insights || !insightsLoading,
         }" />
       </NuxtLink>
-      <Metric v-if="insights?.demos" :record="{
+      <Metric class="col-span-2 lg:col-span-1" v-if="insights?.demos" :record="{
         color: 'warning',
         icon: 'i-lucide-presentation',
         label: 'New demo requests',
