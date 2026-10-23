@@ -44,6 +44,17 @@ export const MarketingApi = () => {
     },
     createPost: (dto: SaveBlogPostDto) => send('/marketing/blog', 'POST', dto),
     // One photo per call; the URL it comes back with is added to the post's photos.
+    // The testimonial author's photo - returns its URL for photoUrl.
+    uploadTestimonialPhoto: async (file: File) => {
+      try {
+        const body = new FormData()
+        body.append('photo', file)
+        const res = await $api('/marketing/testimonials/photo', { method: 'POST', body }) as any
+        return res.data.url as string
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     uploadPostImage: async (file: File) => {
       try {
         const body = new FormData()

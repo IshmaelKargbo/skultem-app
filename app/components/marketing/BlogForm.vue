@@ -26,12 +26,13 @@ const isBlankHtml = (html: string) => !html.replace(/<[^>]*>/g, '').trim() && !/
 // The formatting buttons above the writing area.
 const toolbarItems = [
   [{ kind: 'undo', icon: 'i-lucide-undo' }, { kind: 'redo', icon: 'i-lucide-redo' }],
+  // Headings as their own buttons (they were hidden in a menu). H1 is left out on purpose: the post title is the
+  // page's H1, so section headings start at H2 - one H1 per page is what search engines expect.
   [
-    { icon: 'i-lucide-heading', tooltip: { text: 'Headings' }, content: { align: 'start' as const }, items: [
-      { kind: 'heading', level: 2, icon: 'i-lucide-heading-2', label: 'Heading 2' },
-      { kind: 'heading', level: 3, icon: 'i-lucide-heading-3', label: 'Heading 3' },
-      { kind: 'paragraph', icon: 'i-lucide-pilcrow', label: 'Paragraph' }
-    ] }
+    { kind: 'heading', level: 2, icon: 'i-lucide-heading-2', tooltip: { text: 'Heading' } },
+    { kind: 'heading', level: 3, icon: 'i-lucide-heading-3', tooltip: { text: 'Subheading' } },
+    { kind: 'heading', level: 4, icon: 'i-lucide-heading-4', tooltip: { text: 'Small heading' } },
+    { kind: 'paragraph', icon: 'i-lucide-pilcrow', tooltip: { text: 'Normal text' } }
   ],
   [
     { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold', tooltip: { text: 'Bold' } },

@@ -28,6 +28,32 @@ const emptyForm = (): SaveTestimonialDto => ({
 const open = ref(false)
 const editingId = ref<string | null>(null)
 const form = reactive<SaveTestimonialDto>(emptyForm())
+
+// The author's photo is uploaded on pick and its URL kept in form.photoUrl until the testimonial is saved.
+const photoInput = ref<HTMLInputElement | null>(null)
+const photoUploading = ref(false)
+function removePhoto() {
+  form.photoUrl = ''
+}
+async function onPhotoPicked(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = '' // lets the same file be picked again after a remove
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    toastError('Only image files can be uploaded')
+    return
+  }
+  photoUploading.value = true
+  try {
+    const url = await MarketingApi().uploadTestimonialPhoto(file)
+    if (url) form.photoUrl = url
+  } catch (err: any) {
+    toastError(err?.message || 'The photo could not be uploaded')
+  } finally {
+    photoUploading.value = false
+  }
+}
 const saving = ref(false)
 
 function startCreate() {
@@ -206,8 +232,17 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
             <UTextarea v-model="form.quote" :rows="5" autoresize maxlength="2000" class="w-full"
               placeholder="What they said about Skultem" />
           </UFormField>
-          <UFormField label="Photo URL" help="Optional link to a picture of the author.">
-            <UInput v-model="form.photoUrl" placeholder="https://..." class="w-full" />
+          <UFormField label="Photo" help="Optional - a picture of the author, shown beside the quote.">
+            <div class="flex items-center gap-3">
+              <UAvatar :src="form.photoUrl || undefined" :alt="form.authorName || 'Author'" size="3xl" />
+              <div class="flex flex-wrap gap-2">
+                <UButton :label="form.photoUrl ? 'Change photo' : 'Upload photo'" icon="i-lucide-upload" size="sm"
+                  color="neutral" variant="outline" :loading="photoUploading" @click="photoInput?.click()" />
+                <UButton v-if="form.photoUrl" label="Remove" icon="i-lucide-trash-2" size="sm" color="error"
+                  variant="ghost" :disabled="photoUploading" @click="removePhoto" />
+              </div>
+              <input ref="photoInput" type="file" accept="image/*" class="hidden" @change="onPhotoPicked">
+            </div>
           </UFormField>
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField label="Rating">
@@ -224,7 +259,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       </template>
       <template #footer>
         <div class="flex gap-3">
-          <UButton icon="i-lucide-save" label="Save" :loading="saving" @click="save" />
+          <UButton icon="i-lucide-save" label="Save" :loading="saving" :disabled="photoUploading" @click="save" />
           <UButton label="Cancel" variant="outline" color="neutral" :disabled="saving" @click="open = false" />
         </div>
       </template>

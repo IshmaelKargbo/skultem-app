@@ -216,10 +216,12 @@ const hasContent = computed(() => !!post?.content && post.content.replace(/<[^>]
 .blog-preview-content :deep(p) { margin: 0 0 1em; }
 .blog-preview-content :deep(h1),
 .blog-preview-content :deep(h2),
-.blog-preview-content :deep(h3) { color: var(--ui-text-highlighted); font-weight: 700; line-height: 1.25; margin: 1.6em 0 0.6em; }
+.blog-preview-content :deep(h3),
+.blog-preview-content :deep(h4) { color: var(--ui-text-highlighted); font-weight: 700; line-height: 1.25; margin: 1.6em 0 0.6em; }
 .blog-preview-content :deep(h1) { font-size: 1.75rem; }
 .blog-preview-content :deep(h2) { font-size: 1.4rem; }
 .blog-preview-content :deep(h3) { font-size: 1.15rem; }
+.blog-preview-content :deep(h4) { font-size: 1rem; }
 .blog-preview-content :deep(ul) { list-style: disc; padding-left: 1.5em; margin: 0 0 1em; }
 .blog-preview-content :deep(ol) { list-style: decimal; padding-left: 1.5em; margin: 0 0 1em; }
 .blog-preview-content :deep(li) { margin: 0.25em 0; }
