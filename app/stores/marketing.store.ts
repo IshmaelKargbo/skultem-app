@@ -4,6 +4,8 @@ export const useMarketingStore = defineStore('marketing', {
   state: () => ({
     testimonials: [] as Testimonial[],
     testimonialsMeta: {} as Meta,
+    videos: [] as MarketingVideo[],
+    videosMeta: {} as Meta,
     posts: [] as BlogPost[],
     postsMeta: {} as Meta,
     messages: [] as ContactMessage[],
@@ -19,6 +21,16 @@ export const useMarketingStore = defineStore('marketing', {
         const res = await MarketingApi().listTestimonials(page, size)
         this.testimonials = res?.data || []
         this.testimonialsMeta = res?.meta || {} as Meta
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchVideos(page = 1, size = 10) {
+      this.loading = true
+      try {
+        const res = await MarketingApi().listVideos(page, size)
+        this.videos = res?.data || []
+        this.videosMeta = res?.meta || {} as Meta
       } finally {
         this.loading = false
       }

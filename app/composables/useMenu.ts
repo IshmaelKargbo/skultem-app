@@ -325,6 +325,10 @@ export function useMenu() {
       roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
     },
     {
+      label: 'Videos', to: '/videos', icon: 'i-lucide-youtube',
+      roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
+    },
+    {
       label: 'Blog', to: '/blog', icon: 'i-lucide-newspaper',
       roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'MARKETING'
     },

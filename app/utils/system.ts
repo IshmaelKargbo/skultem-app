@@ -33,7 +33,7 @@ export type InsightRecentSchool = {
 export type InsightActivity = {
     id: string
     action: string
-    status: 'SUCCESS' | 'FAILURE'
+    status: 'SUCCESS' | 'FAILURE' | 'REJECTED'
     schoolName: string | null
     userName: string | null
     createdAt: string | null

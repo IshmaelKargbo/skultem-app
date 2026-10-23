@@ -373,8 +373,8 @@ const humanize = (action: string) => {
         <p v-else-if="!insights?.recentActivity.length" class="py-8 text-center text-sm text-muted">Nothing recorded yet.</p>
         <ul v-else class="divide-y divide-default">
           <li v-for="a in insights.recentActivity" :key="a.id" class="flex items-start gap-3 px-4 py-2.5">
-            <span class="mt-1.5 size-2 shrink-0 rounded-full" :class="a.status === 'FAILURE' ? 'bg-error' : 'bg-success'"
-              :title="a.status === 'FAILURE' ? 'Failed' : 'Succeeded'" />
+            <span class="mt-1.5 size-2 shrink-0 rounded-full" :class="a.status === 'FAILURE' ? 'bg-error' : a.status === 'REJECTED' ? 'bg-warning' : 'bg-success'"
+              :title="a.status === 'FAILURE' ? 'Failed' : a.status === 'REJECTED' ? 'Rejected' : 'Succeeded'" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm text-highlighted">{{ humanize(a.action) }}</p>
               <p class="truncate text-xs text-muted">

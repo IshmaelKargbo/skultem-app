@@ -10,7 +10,7 @@ export type AuditLog = {
     deviceType?: string | null
     os?: string | null
     browser?: string | null
-    status: 'SUCCESS' | 'FAILURE'
+    status: 'SUCCESS' | 'FAILURE' | 'REJECTED'
     details?: string | null
     createdAt: string
 }

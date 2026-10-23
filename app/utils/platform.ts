@@ -77,7 +77,7 @@ export type PlatformFeeCollections = {
 export type AuditEntry = {
     id: string
     action: string
-    status: 'SUCCESS' | 'FAILURE'
+    status: 'SUCCESS' | 'FAILURE' | 'REJECTED'
     details: string | null
     schoolId: string | null
     schoolName: string | null
@@ -95,7 +95,7 @@ export type AuditEntry = {
 // keeps someone from landing on a page they can't use.
 const PAGE_PERMISSIONS: [string, PlatformPermission][] = [
     ['/blog', 'MARKETING'], ['/leads', 'MARKETING'], ['/onboarding', 'MARKETING'], ['/demo-requests', 'MARKETING'],
-    ['/contact-messages', 'MARKETING'], ['/testimonials', 'MARKETING'], ['/announcements', 'COMMUNICATION'],
+    ['/contact-messages', 'MARKETING'], ['/testimonials', 'MARKETING'], ['/videos', 'MARKETING'], ['/announcements', 'COMMUNICATION'],
     ['/fee-collection', 'BILLING'], ['/schools', 'SCHOOLS'], ['/calendar', 'SCHOOLS'], ['/users', 'ADMINS'],
     ['/roles', 'ROLES'], ['/platform-settings', 'SETTINGS'], ['/audit-logs', 'AUDIT'],
     ['/support', 'SUPPORT'], ['/notifications', 'COMMUNICATION'], ['/system-health', 'HEALTH']

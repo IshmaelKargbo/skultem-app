@@ -56,8 +56,18 @@ const columns: TableColumn<AuditEntry>[] = [
 const statusTabs = [
   { key: 'ALL', label: 'All activity', icon: 'i-lucide-list' },
   { key: 'SUCCESS', label: 'Succeeded', icon: 'i-lucide-circle-check' },
-  { key: 'FAILURE', label: 'Failed', icon: 'i-lucide-circle-x' }
+  { key: 'FAILURE', label: 'Failed', icon: 'i-lucide-circle-x' },
+  // Refused by a rule (duplicate phone, admission number in use...) - the system worked, the input didn't pass.
+  { key: 'REJECTED', label: 'Rejected', icon: 'i-lucide-ban' }
 ]
+
+// How each outcome looks: failures (real errors) red, rejections (input refused) amber.
+const STATUS_STYLE = {
+  SUCCESS: { color: 'success', icon: 'i-lucide-circle-check', label: 'Succeeded', tile: 'bg-primary/10 text-primary', text: 'text-muted', row: '' },
+  FAILURE: { color: 'error', icon: 'i-lucide-circle-x', label: 'Failed', tile: 'bg-error/10 text-error', text: 'font-medium text-error', row: 'bg-error/5' },
+  REJECTED: { color: 'warning', icon: 'i-lucide-ban', label: 'Rejected', tile: 'bg-warning/10 text-warning', text: 'font-medium text-warning', row: 'bg-warning/5' }
+} as const
+const statusStyle = (status: string) => STATUS_STYLE[status as keyof typeof STATUS_STYLE] ?? STATUS_STYLE.SUCCESS
 const rangePicks = [{ label: 'Today', days: 0 }, { label: '7 days', days: 6 }, { label: '30 days', days: 29 }]
 const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 function pickRange(days: number) {
@@ -149,7 +159,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       </UAlert>
 
       <UTable v-else :columns="columns" :data="rows" :loading="loading" @select="(_e: any, row: any) => view(row.original)"
-        :meta="{ class: { tr: (row: any) => row.original.status === 'FAILURE' ? 'bg-error/5 cursor-pointer' : 'cursor-pointer' } }"
+        :meta="{ class: { tr: (row: any) => `${statusStyle(row.original.status).row} cursor-pointer` } }"
         :ui="{ base: 'table-fixed w-full', thead: 'bg-elevated/50', th: 'py-3 text-[11px] font-semibold uppercase tracking-wide text-muted', td: 'py-3.5 align-top', tr: 'hover:bg-primary/5 transition-colors' }">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -169,7 +179,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         <template #action-cell="{ row }">
           <button type="button" class="flex w-full max-w-lg items-start gap-3 text-left" @click="view(row.original)">
             <span class="flex size-9 shrink-0 items-center justify-center rounded-xl"
-              :class="row.original.status === 'FAILURE' ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'">
+              :class="statusStyle(row.original.status).tile">
               <UIcon :name="actionIcon(row.original.action)" class="size-4" />
             </span>
             <span class="min-w-0">
@@ -177,7 +187,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
                 <span class="text-sm font-medium text-highlighted">{{ humanize(row.original.action) }}</span>
                 <UBadge v-if="isSensitive(row.original.action)" size="sm" variant="subtle" color="warning" icon="i-lucide-shield-alert" label="Sensitive" />
               </span>
-              <span class="mt-0.5 line-clamp-2 block text-xs" :class="row.original.status === 'FAILURE' ? 'font-medium text-error' : 'text-muted'">{{ row.original.details }}</span>
+              <span class="mt-0.5 line-clamp-2 block text-xs" :class="statusStyle(row.original.status).text">{{ row.original.details }}</span>
             </span>
           </button>
         </template>
@@ -201,9 +211,8 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         </template>
 
         <template #status-cell="{ row }">
-          <UBadge size="sm" variant="subtle" :color="row.original.status === 'FAILURE' ? 'error' : 'success'"
-            :icon="row.original.status === 'FAILURE' ? 'i-lucide-circle-x' : 'i-lucide-circle-check'"
-            :label="row.original.status === 'FAILURE' ? 'Failed' : 'Succeeded'" />
+          <UBadge size="sm" variant="subtle" :color="statusStyle(row.original.status).color"
+            :icon="statusStyle(row.original.status).icon" :label="statusStyle(row.original.status).label" />
         </template>
       </UTable>
 
@@ -220,7 +229,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         <dl v-if="selected" class="space-y-3 text-sm">
           <div><dt class="text-xs text-muted">When</dt><dd>{{ selected.createdAt ? formatDateTime(selected.createdAt) : '—' }}</dd></div>
           <div><dt class="text-xs text-muted">Result</dt>
-            <dd><UBadge size="xs" variant="subtle" :color="selected.status === 'FAILURE' ? 'error' : 'success'" :label="selected.status === 'FAILURE' ? 'Failed' : 'Succeeded'" /></dd></div>
+            <dd><UBadge size="xs" variant="subtle" :color="statusStyle(selected.status).color" :label="statusStyle(selected.status).label" /></dd></div>
           <div><dt class="text-xs text-muted">Who</dt><dd>{{ selected.userName || '—' }}<span v-if="selected.userEmail" class="text-muted"> · {{ selected.userEmail }}</span></dd></div>
           <div><dt class="text-xs text-muted">School</dt><dd>{{ selected.schoolName || 'Platform' }}</dd></div>
           <div><dt class="text-xs text-muted">Details</dt><dd class="whitespace-pre-wrap break-words">{{ selected.details || '—' }}</dd></div>

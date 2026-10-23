@@ -1,4 +1,4 @@
-// The system admin's side of the marketing site's content (testimonials, blog, contact messages).
+// The system admin's side of the marketing site's content (testimonials, videos, blog, contact messages).
 export const MarketingApi = () => {
   const { $api } = useNuxtApp()
 
@@ -27,6 +27,11 @@ export const MarketingApi = () => {
     createTestimonial: (dto: SaveTestimonialDto) => send('/marketing/testimonials', 'POST', dto),
     updateTestimonial: (id: string, dto: SaveTestimonialDto) => send(`/marketing/testimonials/${id}`, 'PUT', dto),
     deleteTestimonial: (id: string) => send(`/marketing/testimonials/${id}`, 'DELETE'),
+
+    listVideos: (p: number, size: number) => page(`/marketing/videos?page=${p}&size=${size}`),
+    createVideo: (dto: SaveMarketingVideoDto) => send('/marketing/videos', 'POST', dto),
+    updateVideo: (id: string, dto: SaveMarketingVideoDto) => send(`/marketing/videos/${id}`, 'PUT', dto),
+    deleteVideo: (id: string) => send(`/marketing/videos/${id}`, 'DELETE'),
 
     listPosts: (p: number, size: number) => page(`/marketing/blog?page=${p}&size=${size}`),
     getPost: (id: string) => $api(`/marketing/blog/${id}`).then((res: any) => res.data as BlogPost).catch(useHandleError),

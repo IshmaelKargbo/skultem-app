@@ -139,7 +139,7 @@
                 <template v-else-if="filtered.length">
                     <UCard v-for="item in filtered" :key="item.id"
                         class="overflow-hidden rounded-2xl border-t-2 transition-shadow hover:shadow-md"
-                        :style="{ borderTopColor: item.status === 'SUCCESS' ? 'var(--ui-success)' : 'var(--ui-error)' }"
+                        :style="{ borderTopColor: `var(--ui-${statusColor(item.status)})` }"
                         :ui="{ body: 'p-0 sm:p-0' }">
                         <div class="space-y-4 p-5">
                             <div class="flex items-start gap-3">
@@ -227,6 +227,7 @@ const status = ref('')
 const statusOptions = [
     { label: 'Success', value: 'SUCCESS' },
     { label: 'Failure', value: 'FAILURE' },
+    { label: 'Rejected', value: 'REJECTED' },
 ]
 
 // Status lives in the shared filter drawer (same as the class list); search stays in the header.
@@ -240,8 +241,9 @@ const filterFields = computed<FilterField[]>(() => [
 
 const hasActiveFilters = computed(() => !!search.value || !!status.value)
 
-function statusColor(value: string): 'success' | 'error' {
-    return value === 'SUCCESS' ? 'success' : 'error'
+// Rejected (input refused by a rule) shows amber, apart from real failures.
+function statusColor(value: string): 'success' | 'error' | 'warning' {
+    return value === 'SUCCESS' ? 'success' : value === 'REJECTED' ? 'warning' : 'error'
 }
 
 const filtered = computed(() => {

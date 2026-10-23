@@ -25,6 +25,41 @@ export type SaveTestimonialDto = {
     displayOrder: number
 }
 
+// A YouTube video on the marketing site - MarketingVideoDTO. The links and thumbnail are built by the server from
+// youtubeId.
+export type MarketingVideo = {
+    id: string
+    title: string
+    description: string | null
+    youtubeId: string
+    watchUrl: string
+    embedUrl: string
+    thumbnailUrl: string
+    featured: boolean
+    published: boolean
+    displayOrder: number
+    createdAt: string
+    updatedAt: string
+}
+
+export type SaveMarketingVideoDto = {
+    title: string
+    description: string
+    // Any YouTube link (watch, youtu.be, shorts, embed) or the bare video id.
+    youtubeUrl: string
+    featured: boolean
+    published: boolean
+    displayOrder: number
+}
+
+// The video id from a YouTube link, for the form's live preview - the server does the real check.
+export function youtubeIdOf(value: string): string | null {
+    const v = value.trim()
+    if (/^[\w-]{11}$/.test(v)) return v
+    const m = v.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/|v\/))([\w-]{11})/)
+    return m ? m[1]! : null
+}
+
 export type BlogPost = {
     id: string
     title: string

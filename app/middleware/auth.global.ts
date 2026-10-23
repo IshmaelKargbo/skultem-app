@@ -10,9 +10,9 @@ const PUBLIC_PATHS = ['/request-demo']
 // school-tenant equivalent, so they're admin-portal-only. /logout, /profile, /reset-password and
 // /unauthorized are the account pages the portal's own header/drawer and the redirects below
 // send an admin to - leaving them out made "Sign out" 404 on the admin subdomain.
-const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests', '/testimonials', '/blog', '/contact-messages', '/announcements', '/leads', '/onboarding', '/fee-collection', '/roles', '/platform-settings', '/audit-logs', '/support', '/notifications', '/system-health']
+const ADMIN_PORTAL_PATHS = ['/', '/login', '/logout', '/profile', '/reset-password', '/unauthorized', '/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests', '/testimonials', '/videos', '/blog', '/contact-messages', '/announcements', '/leads', '/onboarding', '/fee-collection', '/roles', '/platform-settings', '/audit-logs', '/support', '/notifications', '/system-health']
 // The ones with no school-tenant equivalent - a 404 on a school's own subdomain.
-const ADMIN_PORTAL_ONLY_PATHS = ['/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests', '/testimonials', '/blog', '/contact-messages', '/announcements', '/leads', '/onboarding', '/fee-collection', '/roles', '/platform-settings', '/audit-logs']
+const ADMIN_PORTAL_ONLY_PATHS = ['/users', '/schools', '/schools/add', '/calendar', '/setup', '/demo-requests', '/testimonials', '/videos', '/blog', '/contact-messages', '/announcements', '/leads', '/onboarding', '/fee-collection', '/roles', '/platform-settings', '/audit-logs']
 // The blog, leads and onboarding have a page per record (/blog/add, /leads/<id>, /onboarding/<id>) besides the list.
 const isBlogPath = (path: string) => ['/blog/', '/leads/', '/onboarding/', '/support/'].some((prefix) => path.startsWith(prefix))
 // Of those, the ones reachable without a token - signing in, and the one-time first-admin wizard.
