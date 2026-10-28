@@ -1,23 +1,19 @@
 <script setup lang="ts">
 type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
 
-const filterOptions: { label: string, value: ApprovalRequestStatusFilter }[] = [
-  { label: 'Pending', value: 'PENDING_REVIEW' },
-  { label: 'Approved', value: 'APPROVED' },
-  { label: 'Returned', value: 'RETURNED' }
-]
-
 const route = useRoute()
 const router = useRouter()
 
 const sessionStore = useTeacherStore()
 const store = useAssessmentStore()
+const classSessionStore = useClassSessionStore()
 
 const { records: teacherRecords } = storeToRefs(sessionStore)
 const { requests, meta } = storeToRefs(store)
 
 const isLoading = ref(false)
 const loadingSession = ref(true)
+const loadingClasses = ref(true)
 const summary = ref<AssessmentApprovalSummary | null>(null)
 
 const teachers = computed(() =>
@@ -27,7 +23,17 @@ const teachers = computed(() =>
   }))
 )
 
+// Class + section + stream, matching the name each record shows (e.g. "JSS 1 A Science").
+const classOptions = computed(() =>
+  classSessionStore.records.map(c => ({
+    label: [c.clazz, c.sectionName, c.streamId && c.streamName !== 'N/A' ? c.streamName : '']
+      .filter(Boolean).join(' '),
+    value: c.id
+  }))
+)
+
 const teacherId = ref(String(route.query.teacherId ?? ''))
+const classId = ref(String(route.query.classId ?? ''))
 const status = ref<ApprovalRequestStatusFilter>((route.query.status as ApprovalRequestStatusFilter) ?? '')
 const searchInput = ref(String(route.query.search ?? ''))
 const search = ref(searchInput.value)
@@ -39,16 +45,8 @@ const page = computed<number>({
 
 const size = ref(10)
 
-const hasActiveFilters = computed(
-  () => !!teacherId.value || !!status.value || !!search.value
-)
-
-function resetFilters() {
-  teacherId.value = ''
-  status.value = ''
-  searchInput.value = ''
-  search.value = ''
-}
+// What the filter drawer holds (search sits outside it).
+const activeFilterCount = computed(() => [teacherId.value, classId.value, status.value].filter(Boolean).length)
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
@@ -76,11 +74,12 @@ async function fetchRecords() {
   try {
     if (teacherId.value) {
       await store.fetchAllAssessmentApprovalRequest(
-        teacherId.value, page.value, size.value, status.value || undefined, search.value || undefined
+        teacherId.value, page.value, size.value, status.value || undefined, search.value || undefined,
+        classId.value || undefined
       )
     } else {
       await store.fetchAllSchoolAssessmentApprovalRequest(
-        page.value, size.value, status.value || undefined, search.value || undefined
+        page.value, size.value, status.value || undefined, search.value || undefined, classId.value || undefined
       )
     }
   } finally {
@@ -93,9 +92,10 @@ watch(teacherId, fetchSummary, { immediate: true })
 
 // Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
 // shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
-watch([teacherId, status, search], () => {
+watch([teacherId, classId, status, search], () => {
   updateQuery({
     teacherId: teacherId.value || undefined,
+    classId: classId.value || undefined,
     status: status.value || undefined,
     search: search.value || undefined,
     page: 1,
@@ -109,8 +109,11 @@ onMounted(async () => {
   document.title = 'Grade Approval Requests | Grades | Skultem'
 
   loadingSession.value = true
-  await sessionStore.fetchAll(0, 0)
-  loadingSession.value = false
+  loadingClasses.value = true
+  await Promise.all([
+    sessionStore.fetchAll(0, 0).finally(() => { loadingSession.value = false }),
+    classSessionStore.fetchAll(0, 0).finally(() => { loadingClasses.value = false }),
+  ])
 
   await fetchRecords()
 })
@@ -136,19 +139,13 @@ definePageMeta({
             </div>
           </div>
 
-          <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <USelectMenu v-model="teacherId" value-key="value" label-key="label" :items="teachers"
-                :loading="loadingSession" placeholder="All Teachers" clear />
-              <USelectMenu v-model="status" value-key="value" label-key="label" :items="filterOptions"
-                placeholder="All Statuses" clear />
-              <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
-                class="col-span-2 sm:col-span-2" />
-            </div>
-            <div>
-              <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-                :disabled="!hasActiveFilters" @click="resetFilters" />
-            </div>
+          <div class="border-t px-4 py-3 border-default flex items-center gap-2">
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
+              class="flex-1" />
+            <GradesApprovalFilterDrawer v-model:status="status" v-model:class-id="classId"
+              v-model:teacher-id="teacherId" :class-options="classOptions" :teacher-options="teachers"
+              :loading-classes="loadingClasses" :loading-teachers="loadingSession"
+              :active-count="activeFilterCount" />
           </div>
         </div>
       </template>

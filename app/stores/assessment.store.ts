@@ -82,11 +82,11 @@ export const useAssessmentStore = defineStore('assessment', {
     },
     // School-wide - unlike fetchAllAssessmentApprovalRequest below (scoped to one teacher's
     // class), this is the admin approval view's default list.
-    async fetchAllSchoolAssessmentApprovalRequest(page: number, size: number, status?: string, search?: string) {
+    async fetchAllSchoolAssessmentApprovalRequest(page: number, size: number, status?: string, search?: string, classId?: string) {
       this.loading = true
       this.error = null
       try {
-        const { data, meta } = await AssessmentApi().getAllSchoolAssessmentApprovalRequest(page, size, status, search) as any
+        const { data, meta } = await AssessmentApi().getAllSchoolAssessmentApprovalRequest(page, size, status, search, classId) as any
         this.meta = meta
         this.requests = data
       } catch (err: any) {
@@ -103,14 +103,14 @@ export const useAssessmentStore = defineStore('assessment', {
         return null
       }
     },
-    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number, status?: string, search?: string) {
+    async fetchAllAssessmentApprovalRequest(teacherId: string, page: number, size: number, status?: string, search?: string, classId?: string) {
       if (!teacherId)
         return []
 
       this.loading = true
       this.error = null
       try {
-        const { data, meta } = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size, status, search) as any
+        const { data, meta } = await AssessmentApi().getAllAssessmentApprovalRequest(teacherId, page, size, status, search, classId) as any
         this.meta = meta
         this.requests = data
       } catch (err: any) {
@@ -130,11 +130,11 @@ export const useAssessmentStore = defineStore('assessment', {
         return null
       }
     },
-    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12, status?: string, search?: string) {
+    async fetchAllMeAssessmentApprovalRequest(page: number = 1, size: number = 12, status?: string, search?: string, classId?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size, status, search) as any
+        const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size, status, search, classId) as any
         return response || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch approval requests'

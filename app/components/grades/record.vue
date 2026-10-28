@@ -5,13 +5,17 @@
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                     <h3 class="min-w-0 truncate font-semibold text-highlighted">{{ record.subject }}</h3>
-                    <p>- {{ record.class }}</p>
+                    <span v-if="record.clazz"
+                        class="inline-flex shrink-0 items-center gap-1 rounded-md bg-elevated px-2 py-0.5 text-xs font-medium text-highlighted ring-1 ring-default">
+                        <UIcon name="i-lucide-school" class="size-3.5 text-muted" />{{ record.clazz }}
+                    </span>
                     <UBadge size="sm" variant="subtle" :color="statusColor(record.status)"
                         :label="statusLabel(record.status)" class="shrink-0" />
                 </div>
 
                 <p class="mt-0.5 truncate text-xs text-muted">
                     <span class="font-medium text-primary">{{ record.assessment }}</span> &middot; {{ record.term }}
+                    <template v-if="record.teacher"> &middot; {{ record.teacher }}</template>
                 </p>
 
                 <div class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs-base text-muted">

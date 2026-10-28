@@ -47,7 +47,10 @@ export type AssessmentApprovalRequest = {
     subject: string
     assessment: string
     term: string
-    class: string
+    // Full class name - class, section and stream (e.g. "JSS 1 A Science").
+    clazz: string
+    // The class session it was submitted for.
+    classId: string
     status: ApprovalRequestStatus
     studentCount: number
     avg: number

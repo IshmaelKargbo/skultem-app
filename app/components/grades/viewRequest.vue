@@ -12,10 +12,10 @@
           <div class="flex items-end gap-3">
             <div class="min-w-0 pb-0.5">
               <p class="text-xs font-medium uppercase tracking-wide text-muted">
-                {{ selected.subject }} &middot; {{ selected.class }}  &middot; {{ selected.assessment }} &middot; {{ selected.term }}
+                {{ selected.subject }} &middot; {{ selected.clazz }}  &middot; {{ selected.assessment }} &middot; {{ selected.term }}
               </p>
               <p class="text-lg font-bold text-highlighted">{{ selected.teacher }}</p>
-              <p class="text-sm text-muted">{{ selected.class }}</p>
+              <p class="text-sm text-muted">{{ selected.clazz }}</p>
             </div>
           </div>
 

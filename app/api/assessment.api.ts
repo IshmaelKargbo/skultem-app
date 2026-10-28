@@ -31,11 +31,12 @@ export const AssessmentApi = () => {
     },
     // School-wide - unlike getAllAssessmentApprovalRequest below (scoped to one teacher's class),
     // this is the admin approval view's default list.
-    getAllSchoolAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string) => {
+    getAllSchoolAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string, classId?: string) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (status) query.set('status', status)
         if (search) query.set('query', search)
+        if (classId) query.set('classId', classId)
 
         const res = await $api(`/assessment/approval?${query.toString()}`) as any
 
@@ -62,11 +63,12 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number, status?: string, search?: string) => {
+    getAllAssessmentApprovalRequest: async (teacherId: string, page: number, size: number, status?: string, search?: string, classId?: string) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (status) query.set('status', status)
         if (search) query.set('query', search)
+        if (classId) query.set('classId', classId)
 
         const res = await $api(`/assessment/approval/${teacherId}?${query.toString()}`) as any
 
@@ -105,11 +107,12 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getAllMeAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string) => {
+    getAllMeAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string, classId?: string) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (status) query.set('status', status)
         if (search) query.set('query', search)
+        if (classId) query.set('classId', classId)
 
         const res = await $api(`/assessment/approval/me?${query.toString()}`) as any
 
