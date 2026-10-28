@@ -295,7 +295,7 @@ export const AssessmentApi = () => {
     // toasting, because "Confirm to change it anyway" is answered with a dialog, not an error message.
     updateTemplate: async (templateId: string, payload: {
       name?: string, passMark?: number, description?: string,
-      assessments: { id?: string, name: string, weight: number }[], force?: boolean
+      assessments: { id?: string, name: string, weight: number, terms?: number[] }[], force?: boolean
     }) => {
       try {
         await $api(`/assessment/template/${templateId}`, { method: 'PUT', body: payload })

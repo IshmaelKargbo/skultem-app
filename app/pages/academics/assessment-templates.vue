@@ -66,8 +66,8 @@
         </template>
 
         <template #status-cell="{ row }">
-          <UBadge variant="subtle" :color="statusColor(calculateTotal(row.original.assessments))"
-            :label="statusLabel(calculateTotal(row.original.assessments))" />
+          <UBadge variant="subtle" :color="statusColor(calculateTotal(row.original))"
+            :label="statusLabel(calculateTotal(row.original))" />
         </template>
 
         <template #updatedAt-cell="{ row }">
@@ -122,8 +122,8 @@
                 <p class="line-clamp-1 text-xs text-muted">{{ item.description || 'No description' }}</p>
               </div>
               <div class="flex shrink-0 items-center gap-1" @click.stop>
-                <UBadge size="sm" variant="subtle" :color="statusColor(calculateTotal(item.assessments))"
-                  :label="statusLabel(calculateTotal(item.assessments))" />
+                <UBadge size="sm" variant="subtle" :color="statusColor(calculateTotal(item))"
+                  :label="statusLabel(calculateTotal(item))" />
                 <UDropdownMenu :items="getRowItems(item)" :content="{ align: 'end' }">
                   <UButton icon="i-lucide-ellipsis-vertical" color="neutral" size="xs" variant="ghost"
                     aria-label="More actions" />
@@ -200,8 +200,9 @@ const { success } = useNotify()
 const { records: data, meta, loading } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
-function calculateTotal(assessments: Assessment[]) {
-  return assessments?.reduce((sum, item) => sum + item.weight, 0) || 0
+// Each term's tests must share 100% (tests limited to some terms are checked term by term).
+function calculateTotal(t: AssessmentTemplate) {
+  return weightTotal(t.assessments, t.startsInTerm ?? 1)
 }
 function statusColor(total: number) {
   if (total === 100) return 'success'
@@ -215,10 +216,12 @@ function statusLabel(total: number) {
 }
 
 const itemsOf = (t: AssessmentTemplate) => [...(t.assessments ?? [])]
-  .sort((a, b) => a.position - b.position).map(a => ({ name: a.name, weight: a.weight }))
+  .sort((a, b) => a.position - b.position).map(a => ({ name: a.name, weight: a.weight, terms: a.terms ?? [] }))
 const summaryOf = (t: AssessmentTemplate) => {
   const items = itemsOf(t)
-  return items.length ? items.map(i => `${i.name} ${i.weight}%`).join(' · ') : 'No tests added yet'
+  return items.length
+    ? items.map(i => `${i.name} ${i.weight}%${i.terms.length ? ` (${termsLabel(i.terms)})` : ''}`).join(' · ')
+    : 'No tests added yet'
 }
 const isCa = (t: AssessmentTemplate) => t.scoring?.structure === 'CA_AND_TEST'
 const scoringLabel = (t: AssessmentTemplate) => !isCa(t) ? 'Simple scores'
@@ -236,7 +239,7 @@ const anyLateStart = computed(() => rows.value.some(t => (t.startsInTerm ?? 1) >
 // Scoring only earns a column once some template does more than plain scores (or starts later in the year).
 const showScoring = computed(() => !rows.value.length || anyCa.value || anyLateStart.value)
 const samePassMark = computed(() => many.value && allSame(t => t.passMark))
-const allBalanced = computed(() => many.value && rows.value.every(t => calculateTotal(t.assessments) === 100))
+const allBalanced = computed(() => many.value && rows.value.every(t => calculateTotal(t) === 100))
 const sameUpdated = computed(() => many.value && allSame(t => String(t.updatedAt ?? '').slice(0, 10)))
 
 const columns = computed(() => [
@@ -269,7 +272,7 @@ const hasActiveFilters = computed(() => !!search.value.trim() || activeFilterCou
 const filtered = computed(() => {
   const text = search.value.trim().toLowerCase()
   return (data.value ?? []).filter((t: AssessmentTemplate) => {
-    if (status.value && statusLabel(calculateTotal(t.assessments)) !== status.value) return false
+    if (status.value && statusLabel(calculateTotal(t)) !== status.value) return false
     if (scoring.value === 'SIMPLE' && isCa(t)) return false
     if (scoring.value === 'CA' && !isCa(t)) return false
     if (scoring.value === 'ATTENDANCE' && !t.scoring?.attendance) return false

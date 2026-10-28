@@ -32,6 +32,8 @@ export type Assessment = {
     name: string
     weight: number
     position: number
+    // Term numbers the test runs in; empty or missing = every term.
+    terms?: number[]
     status: string
     // The approver's note, set only while the assessment is RETURNED - what needs correcting.
     returnReason?: string | null
@@ -531,6 +533,40 @@ export type CreateAssessmentTemplateDto = {
 export type AssessmentAssignmentDto = {
     name: string
     weight: number
+    // Term numbers the test runs in; empty = every term.
+    terms?: number[]
+}
+
+// A test runs in every term unless it is limited to some (Test 1 + Test 2 in terms 1-2, an Exam alone in term 3).
+export function runsInTerm(a: { terms?: number[] | null }, term: number) {
+    return !a.terms?.length || a.terms.includes(term)
+}
+
+// Each graded term's share of the mark. A template whose tests all run in every term has one total; one with tests
+// limited to some terms is checked term by term (at least the usual three, more if a test names a later term).
+export function termWeightTotals(assessments: { weight: number, terms?: number[] | null }[], startsInTerm = 1) {
+    const last = Math.max(3, ...assessments.flatMap(a => a.terms ?? []))
+    const out: { term: number, total: number }[] = []
+    for (let t = Math.max(1, startsInTerm); t <= last; t++) {
+        out.push({ term: t, total: assessments.filter(a => runsInTerm(a, t)).reduce((s, a) => s + (Number(a.weight) || 0), 0) })
+    }
+    return out
+}
+
+// One number for "is this template balanced": the plain total, or for a term-limited template the first term that
+// isn't 100% (100 when every term is).
+export function weightTotal(assessments: { weight: number, terms?: number[] | null }[] | null | undefined, startsInTerm = 1) {
+    const list = assessments ?? []
+    if (!list.some(a => a.terms?.length)) return list.reduce((s, a) => s + (Number(a.weight) || 0), 0)
+    return termWeightTotals(list, startsInTerm).find(t => t.total !== 100)?.total ?? 100
+}
+
+// "Every term", "Term 3", "Terms 1 & 2" - or the school's own term names when given.
+export function termsLabel(terms: number[] | null | undefined, names?: Record<number, string>) {
+    if (!terms?.length) return 'Every term'
+    const sorted = [...terms].sort((a, b) => a - b)
+    if (names && sorted.every(t => names[t])) return sorted.map(t => names[t]).join(', ')
+    return sorted.length === 1 ? `Term ${sorted[0]}` : `Terms ${sorted.slice(0, -1).join(', ')} & ${sorted.at(-1)}`
 }
 
 export type AssignAssessmentsDto = {

@@ -33,12 +33,15 @@
                 <span class="size-2.5 shrink-0 rounded-full" :class="SEGMENTS[i % SEGMENTS.length]" />
                 <span class="truncate">{{ a.name }}</span>
                 <span v-if="scoredAsCa(a.name)" class="shrink-0 text-xs text-muted">· {{ scoredAsCa(a.name) }}</span>
+                <UBadge v-if="a.terms.length" size="sm" variant="subtle" color="neutral" :label="termsLabel(a.terms)" />
               </span>
               <span class="shrink-0 font-semibold">{{ a.weight }}%</span>
             </li>
             <li v-if="!items.length" class="py-3 text-center text-muted">No tests added yet.</li>
           </ul>
-          <p v-if="total !== 100" class="text-xs text-warning">The weights must total 100%.</p>
+          <p v-if="total !== 100" class="text-xs text-warning">
+            {{ items.some(a => a.terms.length) ? 'Each term\'s tests must total 100%.' : 'The weights must total 100%.' }}
+          </p>
         </section>
 
         <section class="space-y-2">
@@ -107,8 +110,8 @@ const config = ref<AssessmentConfiguration | null>(null)
 const loading = ref(false)
 
 const items = computed(() => [...(props.template?.assessments ?? [])]
-  .sort((a, b) => a.position - b.position).map(a => ({ name: a.name, weight: a.weight })))
-const total = computed(() => items.value.reduce((sum, a) => sum + a.weight, 0))
+  .sort((a, b) => a.position - b.position).map(a => ({ name: a.name, weight: a.weight, terms: a.terms ?? [] })))
+const total = computed(() => weightTotal(items.value, props.template?.startsInTerm ?? 1))
 
 // The tests that use CA, with their parts (a template's own setup lists exactly these).
 const caTests = computed(() => (config.value?.plan ?? []).filter(p => p.usesCa && p.caComponents?.length))

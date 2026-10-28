@@ -24,7 +24,7 @@
             :class="SEGMENTS[i % SEGMENTS.length]">{{ i + 1 }}</span>
           <div class="min-w-0">
             <p class="truncate font-semibold text-highlighted">
-              {{ row.name }} <span class="font-normal text-muted">· {{ row.weight }}% of the term</span>
+              {{ row.name }} <span class="font-normal text-muted">· {{ row.weight }}% of the term{{ row.terms.length ? ` · ${termsLabel(row.terms)}` : '' }}</span>
             </p>
             <p class="text-xs text-muted">
               {{ row.usesCa ? 'Built from the parts below' : 'Teachers enter one mark out of 100' }}
@@ -75,7 +75,7 @@ const props = defineProps<{
 
 const SEGMENTS = ['bg-primary', 'bg-info', 'bg-success', 'bg-warning', 'bg-secondary', 'bg-error']
 
-type Row = { name: string, weight: number, usesCa: boolean, parts: CaComponent[], formalLabel: string }
+type Row = { name: string, weight: number, terms: number[], usesCa: boolean, parts: CaComponent[], formalLabel: string }
 const rows = reactive<Row[]>([])
 
 const copyParts = (parts: CaComponent[]) => parts.map(p => ({ name: p.name, weight: p.weight, source: p.source ?? 'MANUAL' }))
@@ -89,7 +89,7 @@ const ofTerm = (share: number, testWeight: number) => Math.round(share * testWei
 const tests = computed(() => [...(props.template.assessments || [])]
   .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
   .filter(a => a.name?.trim())
-  .map(a => ({ name: a.name.trim(), weight: Number(a.weight) || 0 })))
+  .map(a => ({ name: a.name.trim(), weight: Number(a.weight) || 0, terms: a.terms ?? [] })))
 
 function fromConfig(name: string): Pick<Row, 'usesCa' | 'parts' | 'formalLabel'> {
   const entry = (props.config.plan || []).find(p => p.assessmentName.toLowerCase() === name.toLowerCase()
@@ -104,7 +104,7 @@ function syncRows() {
   const previous = new Map(rows.map(r => [r.name.toLowerCase(), r]))
   const next = tests.value.map((t) => {
     const keep = previous.get(t.name.toLowerCase())
-    return keep ? { ...keep, weight: t.weight } : { name: t.name, weight: t.weight, ...fromConfig(t.name) }
+    return keep ? { ...keep, weight: t.weight, terms: t.terms } : { name: t.name, weight: t.weight, terms: t.terms, ...fromConfig(t.name) }
   })
   rows.splice(0, rows.length, ...next)
 }

@@ -147,7 +147,25 @@
             </p>
           </div>
 
-          <div class="rounded-xl border p-3"
+          <!-- Tests limited to some terms: each term's tests share that term's 100% -->
+          <div v-if="perTerm" class="space-y-2">
+            <div v-for="t in termTotals" :key="t.term" class="rounded-xl border p-3"
+              :class="t.total === 100 ? 'border-success/40 bg-success/5' : 'border-default bg-elevated/40'">
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs text-muted">{{ t.label }} · share of the term mark</p>
+                  <p class="text-xl font-semibold" :class="t.total === 100 ? 'text-success' : 'text-warning'">
+                    {{ t.total }}%
+                  </p>
+                </div>
+                <UBadge :color="t.total === 100 ? 'success' : 'warning'" variant="subtle"
+                  :label="t.total === 100 ? 'Balanced' : t.total > 100 ? `${t.total - 100}% over` : `${100 - t.total}% left to share`" />
+              </div>
+              <AcademicsAssessmentTemplateWeightBar :items="t.items" />
+            </div>
+          </div>
+
+          <div v-else class="rounded-xl border p-3"
             :class="totalWeight === 100 ? 'border-success/40 bg-success/5' : 'border-default bg-elevated/40'">
             <div class="mb-2 flex items-center justify-between gap-3">
               <div>
@@ -180,21 +198,30 @@
                 <UButton icon="lucide:trash-2" color="error" variant="ghost" size="xs" aria-label="Remove"
                   :disabled="assignments.length === 1 || saving" @click="assignments.splice(i, 1)" />
               </div>
+              <div class="col-span-4 flex flex-wrap items-center gap-2 pl-8">
+                <span class="text-xs text-muted">Runs in</span>
+                <USelectMenu v-model="a.terms" multiple value-key="value" :items="startTermOptions" :search-input="false"
+                  placeholder="Every term" size="sm" class="min-w-40" :disabled="saving" />
+                <UButton v-if="a.terms.length" label="Every term" color="neutral" variant="link" size="xs"
+                  :disabled="saving" @click="() => { a.terms = [] }" />
+              </div>
             </div>
           </div>
 
           <div class="flex flex-wrap gap-2">
             <UButton icon="lucide:plus" label="Add assessment" color="neutral" variant="outline" :disabled="saving"
-              @click="assignments.push({ name: '', weight: 0 })" />
-            <UButton icon="lucide:wand-sparkles" label="Split evenly" color="info" variant="outline"
+              @click="assignments.push({ name: '', weight: 0, terms: [] })" />
+            <UButton v-if="!perTerm" icon="lucide:wand-sparkles" label="Split evenly" color="info" variant="outline"
               :disabled="saving" @click="splitEvenly" />
-            <UButton v-if="totalWeight !== 100 && assignments.length" icon="lucide:scale"
+            <UButton v-if="!perTerm && totalWeight !== 100 && assignments.length" icon="lucide:scale"
               label="Give the rest to the last one" color="neutral" variant="ghost" :disabled="saving"
               @click="balanceLast" />
           </div>
           <p class="text-xs text-muted">
             List the tests in the order they happen in a term. Each term, a student's marks from these tests are
-            combined by their weights into one term mark, so the weights must total exactly 100%.
+            combined by their weights into one term mark, so the weights must total exactly 100%. Tests run in every
+            term unless you limit them - for example Test 1 and Test 2 in the first two terms and an Exam alone in the
+            last. Then each term's own tests must total 100%.
           </p>
         </div>
 
@@ -240,7 +267,7 @@
             </div>
             <div class="rounded-xl bg-elevated/50 p-3">
               <p class="text-[11px] uppercase tracking-wide text-muted">Assessments</p>
-              <p class="font-semibold text-highlighted">{{ assignments.length }} · {{ totalWeight }}%</p>
+              <p class="font-semibold text-highlighted">{{ assignments.length }} · {{ perTerm ? '100% each term' : `${totalWeight}%` }}</p>
             </div>
           </div>
           <p v-if="details.description" class="text-sm text-muted">{{ details.description }}</p>
@@ -249,13 +276,15 @@
             <table class="w-full text-sm">
               <thead class="bg-elevated/50 text-left text-xs text-muted">
                 <tr><th class="px-4 py-2">#</th><th class="px-4 py-2">Assessment</th>
-                  <th class="px-4 py-2 text-right">Weight</th><th class="px-4 py-2">Scored as</th></tr>
+                  <th class="px-4 py-2 text-right">Weight</th><th v-if="perTerm" class="px-4 py-2">Runs in</th>
+                  <th class="px-4 py-2">Scored as</th></tr>
               </thead>
               <tbody>
                 <tr v-for="(a, i) in assignments" :key="i" class="border-t border-default">
                   <td class="px-4 py-2 text-muted">{{ i + 1 }}</td>
                   <td class="px-4 py-2 font-medium">{{ a.name }}</td>
                   <td class="px-4 py-2 text-right font-semibold text-primary">{{ a.weight }}%</td>
+                  <td v-if="perTerm" class="px-4 py-2 text-muted">{{ termsLabel(a.terms, termNameMap) }}</td>
                   <td class="px-4 py-2 text-muted">{{ scoredAs(a.name) }}</td>
                 </tr>
               </tbody>
@@ -420,13 +449,14 @@ const detailsSchema = yup.object({
   description: yup.string().trim().required('Template description is required')
 })
 
-const assignments = ref<{ id?: string, name: string, weight: number }[]>([{ name: '', weight: 0 }])
+// terms: the term numbers a test runs in; empty = every term.
+const assignments = ref<{ id?: string, name: string, weight: number, terms: number[] }[]>([{ name: '', weight: 0, terms: [] }])
 // Only for an existing template: how far it has been used (what an edit touches) and the confirmation dialog.
 const usage = ref<{ classNames: string[], submittedTests: number, markedScores: number } | null>(null)
 const forceOpen = ref(false)
 const forceMessage = ref('')
 const namedAssignments = computed(() => assignments.value.filter(a => a.name.trim() && Number(a.weight) > 0)
-  .map(a => ({ name: a.name.trim(), weight: Number(a.weight) })))
+  .map(a => ({ name: a.name.trim(), weight: Number(a.weight), terms: a.terms })))
 
 // Colours shared by the weight bar, the numbered rows and the summary, so a test is the same colour everywhere.
 const SEGMENTS = ['bg-primary', 'bg-info', 'bg-success', 'bg-warning', 'bg-secondary', 'bg-error']
@@ -439,21 +469,33 @@ const presets = [
   { title: 'Test 1 and a formal test', hint: 'Test 1 can hold attendance, assignments and class work (set in Scoring)', items: [
     { name: 'Test 1', weight: 50 }, { name: 'Formal Test', weight: 50 }] },
   { title: 'Classwork and an exam', hint: 'Continuous classwork counts towards the term', items: [
-    { name: 'Classwork', weight: 40 }, { name: 'Exam', weight: 60 }] }
-]
+    { name: 'Classwork', weight: 40 }, { name: 'Exam', weight: 60 }] },
+  { title: 'Two tests a term, an exam in the last', hint: 'Test 1 and Test 2 in the first two terms, the Exam alone in the third', items: [
+    { name: 'Test 1', weight: 50, terms: [1, 2] }, { name: 'Test 2', weight: 50, terms: [1, 2] },
+    { name: 'Exam', weight: 100, terms: [3] }] }
+] as { title: string, hint: string, items: { name: string, weight: number, terms?: number[] }[] }[]
 const selectedPreset = ref('')
 function usePreset(p: (typeof presets)[number]) {
-  assignments.value = p.items.map(i => ({ ...i }))
+  assignments.value = p.items.map(i => ({ name: i.name, weight: i.weight, terms: [...(i.terms ?? [])] }))
   selectedPreset.value = p.title
 }
 function clearAssessments() {
-  assignments.value = [{ name: '', weight: 0 }]
+  assignments.value = [{ name: '', weight: 0, terms: [] }]
   selectedPreset.value = ''
 }
 
 const termStore = useTermStore()
 const termNames = computed(() => (termStore.records || []).filter((t: any) => t.status !== 'CLOSED').map((t: any) => t.name))
 const totalWeight = computed(() => assignments.value.reduce((sum, a) => sum + (Number(a.weight) || 0), 0))
+
+// Some tests are limited to some terms: weights are then checked term by term, for the terms students are graded in.
+const perTerm = computed(() => assignments.value.some(a => a.terms?.length))
+const termNameMap = computed(() => Object.fromEntries(startTermOptions.value.map(o => [o.value, o.label])) as Record<number, string>)
+const termTotals = computed(() => startTermOptions.value.filter(o => o.value >= startsInTerm.value).map((o) => {
+  const items = namedAssignments.value.filter(a => runsInTerm(a, o.value))
+  return { term: o.value, label: o.label, items, total: items.reduce((sum, a) => sum + a.weight, 0) }
+}))
+const weightsBalanced = computed(() => perTerm.value ? termTotals.value.every(t => t.total === 100) : totalWeight.value === 100)
 
 function move(i: number, by: number) {
   const list = assignments.value
@@ -481,6 +523,11 @@ function assignmentsProblem(): string {
   if (list.some(a => !a.name)) return 'Every assessment needs a name.'
   if (new Set(list.map(a => a.name.toLowerCase())).size !== list.length) return 'Assessment names must be different from each other.'
   if (list.some(a => !(a.weight > 0 && a.weight <= 100))) return 'Every weight must be between 1% and 100%.'
+  if (perTerm.value) {
+    const off = termTotals.value.find(t => t.total !== 100)
+    if (off) return `${off.label}'s tests add up to ${off.total}% - each term's tests must total exactly 100%.`
+    return ''
+  }
   if (totalWeight.value !== 100) return `The weights add up to ${totalWeight.value}% - they must total exactly 100%.`
   return ''
 }
@@ -497,14 +544,15 @@ const draftTemplate = computed(() => ({
   id: editId.value || 'new',
   name: details.name,
   assessments: assignments.value.filter(a => a.name.trim()).map((a, i) => ({
-    id: String(i), name: a.name.trim(), weight: Number(a.weight), position: i + 1
+    id: String(i), name: a.name.trim(), weight: Number(a.weight), position: i + 1, terms: a.terms
   })) as Assessment[]
 }))
 
 const checklist = computed(() => [
   { label: 'Name and pass mark', done: !!details.name.trim() && details.passMark >= 0 },
-  { label: totalWeight.value === 100 ? 'Tests share 100% of the term mark'
-      : `Tests must total 100% (now ${totalWeight.value}%)`, done: !assignmentsProblem() },
+  { label: weightsBalanced.value ? (perTerm.value ? 'Each term\'s tests share 100% of its mark' : 'Tests share 100% of the term mark')
+      : perTerm.value ? 'Each term\'s tests must total 100%' : `Tests must total 100% (now ${totalWeight.value}%)`,
+    done: !assignmentsProblem() },
   { label: scoringVisited.value ? `Scoring: ${scoringChips.value.style}` : 'Scoring - plain scores unless you change it',
     done: true },
   { label: startsInTerm.value > 1 ? `Graded from ${startTermOptions.value.find(o => o.value === startsInTerm.value)?.label}`
@@ -579,7 +627,7 @@ async function submit(force = false) {
 
   saving.value = true
   try {
-    const list = assignments.value.map(a => ({ id: a.id, name: a.name.trim(), weight: Number(a.weight) }))
+    const list = assignments.value.map(a => ({ id: a.id, name: a.name.trim(), weight: Number(a.weight), terms: [...a.terms] }))
     let id = editId.value
     let assigned: any = true
 
@@ -605,7 +653,7 @@ async function submit(force = false) {
       })
       id = created?.data?.id
       if (!id) return // the API layer already showed why
-      assigned = await store.assign(id, { assignments: list.map(({ name, weight }) => ({ name, weight })) })
+      assigned = await store.assign(id, { assignments: list.map(({ name, weight, terms }) => ({ name, weight, terms })) })
     }
 
     const payload = scoringRef.value?.payload as SaveAssessmentConfigurationDto | undefined
@@ -651,8 +699,8 @@ async function loadForEdit() {
   startsInTerm.value = t.startsInTerm ?? 1
   savedStartsInTerm.value = startsInTerm.value
   assignments.value = [...(t.assessments || [])].sort((a, b) => a.position - b.position)
-    .map(a => ({ id: a.id, name: a.name, weight: a.weight }))
-  if (!assignments.value.length) assignments.value = [{ name: '', weight: 0 }]
+    .map(a => ({ id: a.id, name: a.name, weight: a.weight, terms: [...(a.terms ?? [])] }))
+  if (!assignments.value.length) assignments.value = [{ name: '', weight: 0, terms: [] }]
   usage.value = (await AssessmentApi().getTemplateUsage(t.id)) ?? null
   config.value = (await AssessmentApi().getTemplateConfiguration(t.id)) ?? baseConfig()
 }

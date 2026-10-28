@@ -71,7 +71,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p v-else-if="!assessmentOptions.length" class="text-sm text-muted">
+                        <p v-else-if="!termAssessmentOptions.length" class="text-sm text-muted">
                             This class has no assessments set up.
                         </p>
                         <div v-else class="space-y-3">
@@ -80,7 +80,7 @@
                                 only, or First Test + Second Test.
                             </p>
                             <div class="grid gap-2 sm:grid-cols-2">
-                                <UCheckbox v-for="a in assessmentOptions" :key="a.id"
+                                <UCheckbox v-for="a in termAssessmentOptions" :key="a.id"
                                     :model-value="form.assessmentIds.includes(a.id)"
                                     :label="`${a.name} (${a.weight}%)`"
                                     @update:model-value="toggleAssessment(a.id, $event as boolean)" />
@@ -320,6 +320,16 @@ const yearTerms = computed(() => {
     return inYear.length ? inYear : termStore.records
 })
 const terms = computed(() => yearTerms.value.map(e => ({ label: e.name, value: e.id })))
+
+// Only the tests that run in the chosen term (a template can sit an Exam alone in the last term).
+const selectedTermNumber = computed(() => yearTerms.value.find(t => t.id === form.termId)?.termNumber)
+const termAssessmentOptions = computed(() => selectedTermNumber.value
+    ? assessmentOptions.value.filter(a => runsInTerm(a, selectedTermNumber.value!))
+    : assessmentOptions.value)
+// A test picked for one term that doesn't run in the next one chosen is dropped from the selection.
+watch(termAssessmentOptions, (list) => {
+    form.assessmentIds = form.assessmentIds.filter(id => list.some(a => a.id === id))
+})
 
 function pickDefaultTerm() {
     if (form.termId && yearTerms.value.some(t => t.id === form.termId)) return

@@ -44,7 +44,8 @@ export type ReportCardFilters = {
     streamId?: string
 }
 
-export type ReportCardAssessmentOption = { id: string, name: string, weight: number, position: number }
+// terms: the term numbers the test runs in; empty = every term.
+export type ReportCardAssessmentOption = { id: string, name: string, weight: number, position: number, terms?: number[] }
 
 export interface ReportCardSummary {
     id: string
