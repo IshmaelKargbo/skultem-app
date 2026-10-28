@@ -303,7 +303,7 @@ async function fetchRecord() {
     if (!clazzId) return
 
     const list = streamId
-        ? await store.fetchAllByClassAndStream(clazzId, streamId, 0, 0)
+        ? await store.fetchAllByClassAndStream(clazzId, streamId, 0, 0, selectedClass.value?.sectionId)
         : await store.fetchAllByClass(clazzId, 0, 0)
 
     if (list?.length) {
@@ -332,13 +332,15 @@ async function onSubmit() {
     try {
         saving.value = true
 
-        await store.create(state.classId, {
+        const saved = await store.create(state.classId, {
             assignments: state.assignments.map(a => ({
                 subjectId: a.subjectId,
                 mandatory: a.mandatory,
                 groupId: a.groupId || ''
             }))
         })
+        // The API layer already showed the reason when it failed - don't also say it saved.
+        if (!saved) return
 
         toastSuccess('Class subjects assigned successfully')
         navigateTo('/subjects/class-subjects')

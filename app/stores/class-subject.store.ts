@@ -36,11 +36,11 @@ export const useClassSubjectStore = defineStore('classSubject', {
         this.loading = false
       }
     },
-    async fetchAllByClassAndStream(id: string, stream: string, page: number = 1, size: number = 6) {
+    async fetchAllByClassAndStream(id: string, stream: string, page: number = 1, size: number = 6, section?: string) {
       this.loading = true
       this.error = null
       try {
-        const response = await ClassSubjectApi().getAllByClass(id, stream, page, size) as any
+        const response = await ClassSubjectApi().getAllByClass(id, stream, page, size, section) as any
         return response.data || []
       } catch (err: any) {
         this.error = err.data?.message || 'Failed to fetch class subjects by class'

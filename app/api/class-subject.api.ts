@@ -27,9 +27,12 @@ export const ClassSubjectApi = () => {
         useHandleError(err)
       }
     },
-    getAllByClass: async (id: string, stream: string, page: number, size: number) => {
+    // `section` (optional) picks that section's teacher when a stream runs in several sections.
+    getAllByClass: async (id: string, stream: string, page: number, size: number, section?: string) => {
       try {
-        const res = await $api(`/class-subject/${id}?stream=${stream}&page=${page}&size=${size}`) as any
+        const params = new URLSearchParams({ stream: stream || '', page: String(page), size: String(size) })
+        if (section) params.set('section', section)
+        const res = await $api(`/class-subject/${id}?${params}`) as any
         if (!res)
           throw new Error('Failed to fetch class subjects by class')
 
