@@ -29,19 +29,23 @@
       <div v-else-if="runs.length" class="divide-y divide-default border-t border-default">
         <NuxtLink v-for="run in runs" :key="run.id" :to="`/payroll/runs/${run.id}`"
           class="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/40">
-          <div class="flex items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <UIcon name="i-lucide-wallet" class="size-5" />
-            </div>
-            <div>
-              <h3 class="font-medium">{{ run.period }}</h3>
-              <p class="text-xs text-muted">Pay date {{ formatDate(run.payDate) }}</p>
+          <div class="flex min-w-0 items-center gap-3">
+            <UBadge :color="payrollRunStatusColor(run.status)" variant="soft" :icon="statusMeta(run.status).icon"
+              size="xl" square class="shrink-0 rounded-lg p-2.5" />
+            <div class="min-w-0">
+              <h3 class="truncate font-medium text-highlighted">{{ run.period }}</h3>
+              <p class="truncate text-xs text-muted">
+                Pay date {{ formatDate(run.payDate) }} · {{ statusMeta(run.status).hint }}
+              </p>
             </div>
           </div>
 
-          <UBadge :color="payrollRunStatusColor(run.status)" variant="soft">
-            {{ clean(run.status) }}
-          </UBadge>
+          <div class="flex shrink-0 items-center gap-3">
+            <UBadge :color="payrollRunStatusColor(run.status)" variant="soft">
+              {{ clean(run.status) }}
+            </UBadge>
+            <UIcon name="i-lucide-chevron-right" class="hidden size-4 text-dimmed sm:block" />
+          </div>
         </NuxtLink>
       </div>
 
@@ -73,6 +77,16 @@ const { runs, runsMeta: meta, loadingRuns: loading } = storeToRefs(store)
 
 const route = useRoute()
 const router = useRouter()
+
+const STATUS_META: Record<PayrollRunStatus, { icon: string, hint: string }> = {
+  DRAFT: { icon: 'i-lucide-list-checks', hint: 'Needs review' },
+  GENERATED: { icon: 'i-lucide-lock', hint: 'Ready to publish' },
+  PUBLISHED: { icon: 'i-lucide-circle-check', hint: 'Payslips shared' },
+}
+
+function statusMeta(status: PayrollRunStatus) {
+  return STATUS_META[status] ?? STATUS_META.DRAFT
+}
 
 const statusOptions = [
   { label: 'Draft', value: 'DRAFT' },
@@ -146,6 +160,6 @@ onMounted(() => {
 onBeforeUnmount(() => clearTimeout(searchTimeout))
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

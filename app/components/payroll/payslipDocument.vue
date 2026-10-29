@@ -114,7 +114,8 @@ const props = withDefaults(defineProps<{
     showWatermark: true,
     showAmountInWords: true,
 })
-const { format } = useMoney()
+const { format: formatMoney } = useMoney()
+const format = (value?: number | null) => formatMoney(value ?? 0)
 const { tenant } = storeToRefs(useAppStore())
 
 const initials = computed(() => {

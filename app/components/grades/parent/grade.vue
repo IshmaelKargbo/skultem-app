@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 const store = useWidgetStore()
 const { id, term, grade } = defineProps<{
     id: string
@@ -58,7 +59,7 @@ async function fetchRecord() {
 
     const widget = res?.data ?? res
     const currentAverage = Number(widget?.datasets?.[0]?.data?.[0] ?? 0)
-    count.value = currentAverage.toFixed(0)
+    count.value = formatScore(currentAverage, '0')
 
     isReady.value = true
 }

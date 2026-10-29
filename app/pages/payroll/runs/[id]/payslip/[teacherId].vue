@@ -144,7 +144,7 @@ async function downloadPdf() {
   try {
     await pdfLogoReady
     await nextTick()
-    await $generatePdf('#payslip-document', `payslip-${sanitizeFilename(payslip.value.payrollRunPeriod)}-${sanitizeFilename(teacherName.value)}`)
+    await $generatePdf('#payslip-document', `payslip-${sanitizeFilename(payslip.value.payrollRunPeriod || '')}-${sanitizeFilename(teacherName.value)}`)
   } catch (err: any) {
     notify.error(err?.message || 'Unable to download payslip.')
   } finally {
@@ -186,7 +186,7 @@ async function load() {
 watch([runId, teacherId], load, { immediate: true })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

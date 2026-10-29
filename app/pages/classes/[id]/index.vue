@@ -183,7 +183,7 @@
                 <template #average-cell="{ row }">
                     <div v-if="performanceOf(row.original) !== undefined" class="w-28">
                         <p class="text-sm font-medium tabular-nums text-highlighted">
-                            {{ Math.round(performanceOf(row.original)!) }}</p>
+                            {{ formatScore(performanceOf(row.original)) }}</p>
                         <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
                             <div class="h-full rounded-full"
                                 :class="performanceOf(row.original)! < passMark ? 'bg-error' : performanceOf(row.original)! < 70 ? 'bg-warning' : 'bg-primary'"
@@ -245,7 +245,7 @@
                             <p class="truncate text-xs text-muted">
                                 {{ student.admissionNumber || 'No admission number' }}
                                 <template v-if="attendanceOf(student) !== undefined"> · {{ attendanceOf(student) }}% attendance</template>
-                                <template v-if="performanceOf(student) !== undefined"> · avg {{ Math.round(performanceOf(student)!) }}</template>
+                                <template v-if="performanceOf(student) !== undefined"> · avg {{ formatScore(performanceOf(student)) }}</template>
                             </p>
                             <p v-if="needsAttention(student)" class="truncate text-[11px]" :class="attentionStyle(student)?.text">
                                 {{ attentionReason(student) }}
@@ -308,6 +308,7 @@ const studentsLoading = computed(() => classLoading.value
     || (canViewRoster.value && !!sessionId.value && session.value?.id !== sessionId.value))
 
 const view = ref<'table' | 'card'>('table')
+const { formatScore, scoreValue } = useScoreFormat()
 
 const widgetStore = useWidgetStore()
 // studentId -> average of approved scores this term, from the attention check itself - the same number a flag is
@@ -565,7 +566,7 @@ const average = (values: number[]) => values.length
 const avgAttendance = computed(() => average(Object.values(attendanceById.value)))
 const avgScore = computed(() => {
     const v = average(Object.values(performanceById.value))
-    return v === null ? null : Math.round(v)
+    return v === null ? null : scoreValue(v)
 })
 const genderSummary = computed(() => {
     const boys = students.value.filter(s => s.gender === 'MALE').length

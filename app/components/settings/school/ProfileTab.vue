@@ -32,7 +32,7 @@
   </UCard>
   <UCard>
     <template #header>
-      <p>Grade Approval</p>
+      <p>Grades &amp; Scores</p>
     </template>
     <UFormField label="Who approves grades?"
       help="After a subject teacher submits grades, who signs them off before parents can see them. If your school has sections (for example primary and secondary), each section can choose differently under Section Branding.">
@@ -44,6 +44,20 @@
       An admin, proprietor or owner can always approve grades. A class master who also taught the subject can't approve
       their own, so those go to an admin as well.
     </p>
+
+    <div class="mt-5 flex items-start justify-between gap-4 border-t border-default pt-5">
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-highlighted">Round assessment scores</p>
+        <p class="mt-0.5 text-xs text-muted">
+          On: scores and averages show as whole numbers (26.7 shows as 27).
+          Off: they keep one decimal place (26.7 stays 26.7).
+        </p>
+        <p class="mt-2 text-xs text-muted">
+          Example: <span class="font-semibold text-highlighted">{{ state.roundAssessmentScores ? '27' : '26.7' }}%</span>
+        </p>
+      </div>
+      <USwitch v-model="state.roundAssessmentScores" aria-label="Round assessment scores" class="shrink-0" />
+    </div>
   </UCard>
   <UCard>
     <template #header>
@@ -120,6 +134,7 @@ defineProps<{
     principalName: string
     phone: string
     gradeApprover: string
+    roundAssessmentScores: boolean
     primaryColor: string
     secondaryColor: string
     genderComposition: string

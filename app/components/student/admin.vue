@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 const tableView = ref<'table' | 'card'>('table');
 const route = useRoute();
 const router = useRouter();
@@ -281,7 +282,7 @@ onMounted(async () => {
         </template>
         <template #average-cell="{ row }">
           <div v-if="performanceOf(row.original) !== undefined" class="w-20">
-            <p class="text-sm font-medium tabular-nums text-highlighted">{{ Math.round(performanceOf(row.original)!) }}</p>
+            <p class="text-sm font-medium tabular-nums text-highlighted">{{ formatScore(performanceOf(row.original)) }}</p>
             <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
               <div class="h-full rounded-full"
                 :class="performanceOf(row.original)! < 50 ? 'bg-error' : performanceOf(row.original)! < 70 ? 'bg-warning' : 'bg-primary'"

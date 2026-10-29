@@ -149,6 +149,12 @@
 <script setup lang="ts">
 const { success, error: toastError } = useNotify()
 const { setCachedSchool } = useSchoolCache()
+const { setSchool } = useSchoolInfo()
+
+// Saved settings take effect straight away (e.g. score rounding), without a reload.
+function refreshSchoolInfo(entry?: CachedSchool) {
+    if (entry) setSchool(entry)
+}
 
 type SchoolProfile = {
     name: string
@@ -168,6 +174,7 @@ type SchoolProfile = {
     attendanceMinDays: number
     attendanceStreakDays: number
     gradeApprover: string
+    roundAssessmentScores: boolean
     genderComposition: string
 }
 
@@ -189,6 +196,7 @@ const state = reactive<SchoolProfile>({
     attendanceMinDays: 5,
     attendanceStreakDays: 3,
     gradeApprover: 'CLASS_MASTER',
+    roundAssessmentScores: true,
     genderComposition: 'MIXED'
 })
 
@@ -308,6 +316,7 @@ async function saveAttendanceLocation() {
             attendanceMinDays: state.attendanceMinDays,
             attendanceStreakDays: state.attendanceStreakDays,
             gradeApprover: state.gradeApprover,
+            roundAssessmentScores: state.roundAssessmentScores,
             genderComposition: state.genderComposition
         })
 
@@ -317,7 +326,7 @@ async function saveAttendanceLocation() {
             state.attendanceMinDays = updated.attendanceMinDays ?? state.attendanceMinDays
             state.attendanceStreakDays = updated.attendanceStreakDays ?? state.attendanceStreakDays
             const domain = resolveTenantSlug(window.location.hostname)
-            if (domain) setCachedSchool(domain, updated)
+            if (domain) refreshSchoolInfo(setCachedSchool(domain, updated))
         }
 
         success('Attendance settings saved.')
@@ -371,6 +380,7 @@ function applySchool(school: any) {
     state.attendanceMinDays = school.attendanceMinDays ?? 5
     state.attendanceStreakDays = school.attendanceStreakDays ?? 3
     state.gradeApprover = school.gradeApprover ?? 'CLASS_MASTER'
+    state.roundAssessmentScores = school.roundAssessmentScores ?? true
     state.genderComposition = school.genderComposition ?? 'MIXED'
     logoUrl.value = school.logo ?? ''
     signatureUrl.value = school.principalSignature ?? ''
@@ -401,6 +411,7 @@ async function save() {
             attendanceMinDays: state.attendanceMinDays,
             attendanceStreakDays: state.attendanceStreakDays,
             gradeApprover: state.gradeApprover,
+            roundAssessmentScores: state.roundAssessmentScores,
             genderComposition: state.genderComposition
         })
 
@@ -423,7 +434,7 @@ async function save() {
         applyBrandColors(branded.primaryColor, branded.secondaryColor)
 
         const domain = resolveTenantSlug(window.location.hostname)
-        if (domain) setCachedSchool(domain, branded)
+        if (domain) refreshSchoolInfo(setCachedSchool(domain, branded))
 
         logoFile.value = undefined
         signatureFile.value = undefined

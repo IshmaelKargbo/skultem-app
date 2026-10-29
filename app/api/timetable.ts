@@ -180,6 +180,15 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
+    deleteTimetableEntry: async (id: string) => {
+      try {
+        return await $api(`/timetable/${id}`, {
+          method: 'DELETE'
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     deletePeriod: async (id: string) => {
       try {
         return await $api(`/timetable/period/${id}`, {

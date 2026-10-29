@@ -4,6 +4,6 @@
 await navigateTo('/payroll/salaries', { replace: true })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

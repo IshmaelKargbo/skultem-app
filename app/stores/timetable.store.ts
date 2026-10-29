@@ -107,20 +107,33 @@ export const useTimetableStore = defineStore('timetable', {
       const data = (res as any).data
       if (data) this.periods.push(data)
     },
+    // Adds or edits one subject in a period/day slot (index = position in the working days).
     async setTimetable(payload: CreateTimetableDTO, index: any) {
       const res = await TimetableApi().createTimetable(payload)
-      const domain = (res as any).data
-
+      const domain = (res as any)?.data as Timetable | undefined
       if (!domain) return
 
-      const periodIndex = this.periods.findIndex(e => e.id === payload.period)
-      if (periodIndex === -1) return
+      const period = this.periods.find(e => e.id === payload.period)
+      if (!period) return
 
-      this.periods[periodIndex].subjects ??= []
-      this.periods[periodIndex].subjects[index] = domain
+      const dayIndex = Number(index)
+      const slot = [...periodSlot(period, dayIndex)]
+      const at = slot.findIndex(t => t.id === domain.id)
+      if (at === -1) slot.push(domain)
+      else slot[at] = domain
+      setSlot(period, dayIndex, slot)
 
-      console.log(this.periods);
+      return domain
+    },
+    // Takes one subject out of a slot; any other options in it stay.
+    async removeTimetableEntry(periodId: string, index: any, entryId: string) {
+      await TimetableApi().deleteTimetableEntry(entryId)
 
+      const period = this.periods.find(e => e.id === periodId)
+      if (!period) return
+
+      const dayIndex = Number(index)
+      setSlot(period, dayIndex, periodSlot(period, dayIndex).filter(t => t.id !== entryId))
     },
     // id present -> update that template; absent -> create a new one. Either way, pick up the
     // server-persisted record (real id, and - for a first-ever save - isDefault/levels) instead
@@ -261,3 +274,11 @@ export const useTimetableStore = defineStore('timetable', {
     }
   }
 })
+
+// Keeps `slots` and the older one-per-day `subjects` list in step after a change.
+function setSlot(period: Period, dayIndex: number, slot: Timetable[]) {
+  period.slots ??= []
+  period.subjects ??= []
+  period.slots[dayIndex] = slot
+  period.subjects[dayIndex] = slot[0] as Timetable
+}

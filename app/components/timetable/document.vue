@@ -111,11 +111,13 @@ const headCell = computed(() => ({
           <template v-else>
             <td v-for="(_, i) in days" :key="i"
               :style="{ border: `1px solid ${line}`, padding: '8px', textAlign: 'center', verticalAlign: 'middle' }">
-              <template v-if="p.subjects?.[i]">
-                <div :style="{ fontWeight: 700, color: accent, fontSize: `${cellSize}px` }">{{ p.subjects[i]!.subject }}</div>
-                <div v-if="settings.showTeacher && p.subjects[i]!.teacher" :style="{ fontSize: `${smallSize}px`, color: '#4b5563', marginTop: '2px' }">{{ p.subjects[i]!.teacher }}</div>
-                <div v-if="settings.showRoom && p.subjects[i]!.room" :style="{ fontSize: `${smallSize}px`, color: '#6b7280' }">{{ p.subjects[i]!.room }}</div>
-              </template>
+              <!-- Options (e.g. PHE / RME) print one under the other, split by a dashed line -->
+              <div v-for="(entry, k) in periodSlot(p, i)" :key="entry.id"
+                :style="k > 0 ? { borderTop: `1px dashed ${line}`, marginTop: '4px', paddingTop: '4px' } : undefined">
+                <div :style="{ fontWeight: 700, color: accent, fontSize: `${cellSize}px` }">{{ entry.subject }}</div>
+                <div v-if="settings.showTeacher && entry.teacher" :style="{ fontSize: `${smallSize}px`, color: '#4b5563', marginTop: '2px' }">{{ entry.teacher }}</div>
+                <div v-if="settings.showRoom && entry.room" :style="{ fontSize: `${smallSize}px`, color: '#6b7280' }">{{ entry.room }}</div>
+              </div>
             </td>
           </template>
         </tr>

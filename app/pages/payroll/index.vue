@@ -40,24 +40,32 @@
       }" />
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Payroll cycle -->
     <UCard>
       <template #header>
         <div>
-          <h3 class="font-semibold">Quick Actions</h3>
-          <p class="text-sm text-muted">Frequently used actions.</p>
+          <h3 class="font-semibold">Payroll cycle</h3>
+          <p class="text-sm text-muted">Each month follows the same three steps.</p>
         </div>
       </template>
 
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-        <NuxtLink v-for="action in quickActions" :key="action.label" :to="action.to"
-          class="flex flex-col items-center gap-2 rounded-xl border border-default px-3 py-4 text-center transition-colors hover:border-primary/40 hover:bg-primary/5">
-          <span class="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
-            <UIcon :name="action.icon" class="size-5" />
-          </span>
-          <span class="text-xs font-medium leading-tight">{{ action.label }}</span>
-        </NuxtLink>
-      </div>
+      <ol class="grid gap-3 md:grid-cols-3">
+        <li v-for="(step, i) in cycle" :key="step.title">
+          <NuxtLink :to="step.to"
+            class="group flex h-full items-start gap-3 rounded-xl border border-default p-4 transition-colors hover:border-primary/40 hover:bg-primary/5">
+            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+              <UIcon :name="step.icon" class="size-5" />
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-muted">Step {{ i + 1 }}</p>
+              <p class="font-semibold text-highlighted">{{ step.title }}</p>
+              <p class="mt-0.5 text-xs text-muted">{{ step.description }}</p>
+            </div>
+            <UIcon name="i-lucide-arrow-right"
+              class="mt-1 size-4 shrink-0 text-dimmed transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+          </NuxtLink>
+        </li>
+      </ol>
     </UCard>
 
     <!-- Latest run + recent salaries -->
@@ -75,23 +83,24 @@
           <USkeleton class="h-24 w-full rounded-xl" />
         </div>
 
-        <div v-else-if="summary?.latestRun"
-          class="flex flex-col gap-4 rounded-xl border border-default p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h4 class="font-semibold">{{ summary.latestRun.period }}</h4>
-            <p class="text-xs text-muted">Pay date {{ formatDate(summary.latestRun.payDate) }}</p>
+        <div v-else-if="summary?.latestRun" class="space-y-4 rounded-xl border border-default p-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-lg font-semibold">{{ summary.latestRun.period }}</h4>
+                <UBadge :color="payrollRunStatusColor(summary.latestRun.status)" variant="soft">
+                  {{ clean(summary.latestRun.status) }}
+                </UBadge>
+              </div>
+              <p class="text-xs text-muted">Pay date {{ formatDate(summary.latestRun.payDate) }}</p>
+            </div>
+
+            <UButton size="sm" :variant="summary.latestRun.status === 'PUBLISHED' ? 'soft' : 'solid'"
+              trailing-icon="i-lucide-arrow-right" :to="`/payroll/runs/${summary.latestRun.id}`"
+              :label="nextStepLabel(summary.latestRun.status)" />
           </div>
 
-          <div class="flex items-center gap-3">
-            <UBadge :color="payrollRunStatusColor(summary.latestRun.status)" variant="soft">
-              {{ clean(summary.latestRun.status) }}
-            </UBadge>
-
-            <UButton size="sm" variant="soft" trailing-icon="i-lucide-arrow-right"
-              :to="`/payroll/runs/${summary.latestRun.id}`">
-              View Run
-            </UButton>
-          </div>
+          <PayrollRunProgress :status="summary.latestRun.status" />
         </div>
 
         <div v-else class="flex flex-col items-center gap-3 py-10 text-center">
@@ -139,13 +148,17 @@
 const store = usePayrollStore()
 const { summary, loadingSummary, salaries, loadingSalaries } = storeToRefs(store)
 
-const quickActions = [
-  { label: 'Add Salary', icon: 'i-lucide-user-plus', to: '/payroll/salaries/add' },
-  { label: 'Start Payroll Run', icon: 'i-lucide-play', to: '/payroll/runs/new' },
-  { label: 'Salary Structures', icon: 'i-lucide-wallet', to: '/payroll/salaries' },
-  { label: 'Payroll Runs', icon: 'i-lucide-history', to: '/payroll/runs' },
-  { label: 'Teacher Attendance', icon: ATTENDANCE_ICON, to: '/hr/teacher-attendance' },
+const cycle = [
+  { title: 'Set salaries', description: 'Give each staff member a salary structure, or reuse a template.', icon: 'i-lucide-banknote', to: '/payroll/salaries' },
+  { title: 'Start a run', description: 'Pick the period and pay date. Everyone with a salary is added.', icon: 'i-lucide-play', to: '/payroll/runs/new' },
+  { title: 'Generate & publish', description: 'Review who is paid, lock the numbers, then share payslips.', icon: 'i-lucide-send', to: '/payroll/runs' },
 ]
+
+function nextStepLabel(status: PayrollRunStatus) {
+  if (status === 'DRAFT') return 'Review & generate'
+  if (status === 'GENERATED') return 'Publish payslips'
+  return 'View run'
+}
 
 function teacherName(teacher?: Teacher) {
   if (!teacher) return ''
@@ -168,6 +181,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+const { scoreValue } = useScoreFormat()
 import { ref, watch } from "vue"
 
 const store = useWidgetStore()
@@ -69,7 +70,7 @@ async function fetchAssessments() {
 
   source.value = widget.labels.map((subject: string, index: number) => ({
     subject,
-    value: Math.round(widget.datasets[0].data[index])
+    value: scoreValue(widget.datasets[0].data[index])
   }))
 
   isReady.value = true

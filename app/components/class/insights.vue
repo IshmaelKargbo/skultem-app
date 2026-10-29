@@ -182,6 +182,8 @@ const streaks = computed(() => props.students
   .filter(x => x.days >= 3)
   .sort((a, b) => b.days - a.days))
 
+const { scoreValue } = useScoreFormat()
+
 const ranked = computed(() => props.students
   .map(student => ({ student, score: props.performanceById[student.id] }))
   .filter((x): x is { student: Student, score: number } => x.score !== undefined)
@@ -189,10 +191,10 @@ const ranked = computed(() => props.students
   .sort((a, b) => b.score - a.score
     || (props.attendanceById[b.student.id] ?? -1) - (props.attendanceById[a.student.id] ?? -1)
     || name(a.student).localeCompare(name(b.student)))
-  .map(x => ({ ...x, score: Math.round(x.score) })))
+  .map(x => ({ ...x, score: scoreValue(x.score) })))
 
 const classAverage = computed(() => ranked.value.length
-  ? Math.round(ranked.value.reduce((sum, x) => sum + x.score, 0) / ranked.value.length) : 0)
+  ? scoreValue(ranked.value.reduce((sum, x) => sum + x.score, 0) / ranked.value.length) : 0)
 
 const topStudents = computed(() => ranked.value.slice(0, 3))
 
@@ -209,6 +211,6 @@ const declining = computed(() => Object.values(props.attention).filter(a => a.ac
 const improving = computed(() => Object.values(props.attention).filter(a => a.academicTrend === 'IMPROVING').length)
 
 const subjects = computed(() => [...props.subjectScores]
-  .map(s => ({ name: s.name, score: Math.round(s.score) }))
+  .map(s => ({ name: s.name, score: scoreValue(s.score) }))
   .sort((a, b) => b.score - a.score))
 </script>

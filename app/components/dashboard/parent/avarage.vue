@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 import { ref, watch } from 'vue'
 
 const store = useWidgetStore()
@@ -59,7 +60,7 @@ async function fetchTermAverage() {
   message.value = `Assessment for ${term.name}`
   const widget = res?.data ?? res
   const currentAverage = Number(widget?.datasets?.[0]?.data?.[0] ?? 0)
-  termAverage.value = currentAverage.toFixed(0)
+  termAverage.value = formatScore(currentAverage, '0')
 
   isReady.value = true
   emit('ready', currentAverage)

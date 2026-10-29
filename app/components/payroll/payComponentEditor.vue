@@ -66,7 +66,7 @@ const { format } = useMoney()
                     @update:model-value="(v: string) => updateRow(row.key, { type: v as PayComponentType })" />
 
                 <UInput :model-value="row.value" type="number" min="0" class="w-full sm:w-28"
-                    @update:model-value="(v: string) => updateRow(row.key, { value: Number(v) || 0 })">
+                    @update:model-value="(v: string | number) => updateRow(row.key, { value: Number(v) || 0 })">
                     <template #trailing>
                         <span class="text-xs text-muted">{{ row.type === 'PERCENTAGE' ? '%' : 'Le' }}</span>
                     </template>

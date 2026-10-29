@@ -41,6 +41,7 @@ export function useBranding() {
         primaryColor: fetched.primaryColor,
         secondaryColor: fetched.secondaryColor,
         attendanceThreshold: fetched.attendanceThreshold ?? null,
+        roundAssessmentScores: fetched.roundAssessmentScores ?? true,
         testSchool: !!fetched.testSchool,
       }
 

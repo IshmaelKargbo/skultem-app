@@ -93,7 +93,7 @@
         </template>
 
         <template #average-cell="{ row }">
-          <p class="font-semibold text-primary">{{ row.original.average.toFixed(1) }}%</p>
+          <p class="font-semibold text-primary">{{ formatScore(row.original.average) }}%</p>
         </template>
 
         <template #overallGrade-cell="{ row }">
@@ -147,7 +147,7 @@
                   <p v-if="item.scopeLabel" class="truncate text-xs font-medium text-primary">{{ item.scopeLabel }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-lg font-bold text-primary">{{ item.average.toFixed(1) }}%</p>
+                  <p class="text-lg font-bold text-primary">{{ formatScore(item.average) }}%</p>
                   <p class="text-xs text-muted">Grade {{ item.overallGrade || 'N/A' }}</p>
                 </div>
               </div>
@@ -178,6 +178,7 @@
   </div>
 </template>
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 const { can } = useAuth()
 const { classOptions: masterClasses, ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
 const route = useRoute()

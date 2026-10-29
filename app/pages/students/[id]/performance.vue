@@ -174,6 +174,7 @@
   </StudentView>
 </template>
 <script setup lang="ts">
+const { scoreValue } = useScoreFormat()
 const route = useRoute()
 const store = useReportStore()
 const studentStore = useStudentStore()
@@ -221,7 +222,7 @@ const assessedSubjects = computed(() =>
 // Mean of the subject scores, the way a report card averages a term.
 const termAverage = computed(() =>
   assessedSubjects.value.length
-    ? Math.round(assessedSubjects.value.reduce((sum, row) => sum + row.score, 0) / assessedSubjects.value.length)
+    ? scoreValue(assessedSubjects.value.reduce((sum, row) => sum + row.score, 0) / assessedSubjects.value.length)
     : null
 )
 

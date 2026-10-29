@@ -121,7 +121,7 @@ watch(runId, async (id) => {
 }, { immediate: true })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

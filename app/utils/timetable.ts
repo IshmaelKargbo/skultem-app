@@ -100,8 +100,24 @@ export type Period = {
     isBreak: boolean
     isLunch: boolean
     subjects: Timetable[]
+    // One list per working day with every subject in that slot. More than one means students split
+    // between options at the same time (e.g. PHE or RME), each going to the one they take.
+    slots?: Timetable[][]
     createdAt: string
     updatedAt: string
+}
+
+// Every subject in a period on one day (index into the working days) - empty when it's free.
+export function periodSlot(period: Period, dayIndex: number): Timetable[] {
+    const slot = period.slots?.[dayIndex]
+    if (slot) return slot
+    const single = period.subjects?.[dayIndex]
+    return single ? [single] : []
+}
+
+// "PHE or RME" - how a slot with options reads in one line.
+export function slotTitle(slot: Timetable[]): string {
+    return slot.map(t => t.subject).join(' or ')
 }
 
 export type CreatePeriodDTO = {
@@ -121,6 +137,8 @@ export type CreateTimetableDTO = {
     room: string
     day: string
     color: string
+    // Set to edit that entry; leave out to add a subject (or another option) to the slot.
+    entry?: string
 }
 // Design of the downloadable timetable PDF (Timetable > Design). accentColor null/'' = the school's
 // brand colour. Mirrors the backend's TimetableSettingDTO.

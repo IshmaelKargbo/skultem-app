@@ -191,9 +191,11 @@ const mockPayslip: Payslip = {
   teacher: {
     id: 'preview',
     title: 'MR',
-    user: { id: 'preview', givenNames: 'Alieu', familyName: 'Kamara', email: '', roles: [], status: 'ACTIVE', createdAt: '', updatedAt: '' },
+    user: { id: 'preview', givenNames: 'Alieu', familyName: 'Kamara', email: '', roles: [], status: 'ACTIVE', photo: null, schoolStatus: null, createdAt: '', updatedAt: '' },
     gender: 'MALE',
     staffId: 'THR-2026-0001',
+    designation: 'Senior Teacher',
+    teaching: true,
     street: '',
     city: '',
     phone: '',
@@ -238,7 +240,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 

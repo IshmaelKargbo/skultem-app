@@ -267,6 +267,7 @@
 </template>
 
 <script setup lang="ts">
+const { scoreValue } = useScoreFormat()
 type GradeAssessmentForm = {
   classId: string;
   teacherSubjectId: string;
@@ -449,7 +450,7 @@ const workflowProgress = computed(() => {
     }
   }, 0);
 
-  return Math.round((score / total) * 100);
+  return scoreValue((score / total) * 100);
 });
 
 const workflowLabel = computed(() => {

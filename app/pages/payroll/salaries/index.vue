@@ -23,17 +23,87 @@
           <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions" placeholder="Sort by" />
         </div>
 
-        <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-          :disabled="!hasActiveFilters" @click="resetFilters" />
+        <div class="flex items-center gap-2">
+          <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+            :disabled="!hasActiveFilters" @click="resetFilters" />
+          <TableViewToggle v-model="view" />
+        </div>
+      </div>
+
+      <!-- Table view (desktop) -->
+      <UTable v-if="view === 'table' && (loading || salaries.length)" class="hidden border-t border-default md:block"
+        :columns="columns" :data="salaries" :loading="loading">
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+        <template #employee-cell="{ row }">
+          <div class="flex items-center gap-3">
+            <UAvatar size="sm" :src="row.original.teacher?.user?.photo || undefined"
+              :alt="teacherName(row.original.teacher)" loading="lazy" />
+            <div class="min-w-0">
+              <p class="truncate font-medium text-highlighted">{{ teacherName(row.original.teacher) }}</p>
+              <p class="truncate text-xs text-muted">{{ row.original.teacher?.staffId }}</p>
+            </div>
+          </div>
+        </template>
+        <template #templateName-cell="{ row }">
+          <UBadge v-if="row.original.templateName" variant="subtle" color="neutral" size="sm"
+            icon="i-lucide-layout-template">{{ row.original.templateName }}</UBadge>
+          <span v-else class="text-xs text-muted">Custom</span>
+        </template>
+        <template #basicSalary-cell="{ row }">{{ formatCurrency(row.original.basicSalary) }}</template>
+        <template #totalAllowances-cell="{ row }">
+          <span class="text-success">+ {{ formatCurrency(row.original.totalAllowances) }}</span>
+          <span class="ml-1 text-xs text-muted">({{ row.original.allowances.length }})</span>
+        </template>
+        <template #totalDeductions-cell="{ row }">
+          <span class="text-error">− {{ formatCurrency(row.original.totalDeductions) }}</span>
+          <span class="ml-1 text-xs text-muted">({{ row.original.deductions.length }})</span>
+        </template>
+        <template #netSalary-cell="{ row }">
+          <span class="font-semibold text-primary">{{ formatCurrency(row.original.netSalary) }}</span>
+        </template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UButton size="xs" variant="ghost" color="neutral" trailing-icon="i-lucide-arrow-right" label="View"
+              :to="`/payroll/salaries/${row.original.teacher.id}`" />
+          </div>
+        </template>
+      </UTable>
+
+      <!-- Table view (mobile list) -->
+      <div v-if="view === 'table' && (loading || salaries.length)" class="border-t border-default md:hidden">
+        <template v-if="loading">
+          <div v-for="i in 6" :key="i" class="flex items-center gap-3 border-b border-default px-4 py-3 last:border-0">
+            <USkeleton class="size-8 rounded-full" />
+            <div class="flex-1 space-y-2">
+              <USkeleton class="h-4 w-32" />
+              <USkeleton class="h-3 w-20" />
+            </div>
+            <USkeleton class="h-4 w-16" />
+          </div>
+        </template>
+        <NuxtLink v-for="s in salaries" v-else :key="s.id" :to="`/payroll/salaries/${s.teacher.id}`"
+          class="flex items-center gap-3 border-b border-default px-4 py-3 last:border-0 hover:bg-muted/40">
+          <UAvatar size="sm" :src="s.teacher?.user?.photo || undefined" :alt="teacherName(s.teacher)" loading="lazy" />
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-highlighted">{{ teacherName(s.teacher) }}</p>
+            <p class="truncate text-xs text-muted">{{ s.teacher?.staffId }}<template v-if="s.templateName"> · {{ s.templateName }}</template></p>
+          </div>
+          <div class="shrink-0 text-right">
+            <p class="text-sm font-bold text-primary">{{ formatCurrency(s.netSalary) }}</p>
+            <p class="text-[11px] text-muted">net / month</p>
+          </div>
+        </NuxtLink>
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
+      <div v-if="view === 'card' && loading" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
         <USkeleton v-for="i in 6" :key="i" class="h-60 w-full rounded-xl" />
       </div>
 
       <!-- Salaries -->
-      <div v-else-if="salaries.length" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
+      <div v-else-if="view === 'card' && salaries.length" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
         <UCard v-for="s in salaries" :key="s.id">
           <div class="space-y-4">
 
@@ -83,7 +153,7 @@
       </div>
 
       <!-- Empty -->
-      <UCard v-else class="border-none py-16 shadow-none">
+      <UCard v-if="!loading && !salaries.length" class="border-none py-16 shadow-none">
         <div class="flex flex-col items-center gap-3 text-center">
           <UIcon name="i-lucide-wallet" class="text-4xl text-muted" />
           <h3 class="font-semibold">{{ hasActiveFilters ? 'No matches found' : 'No salary structures yet' }}</h3>
@@ -111,6 +181,20 @@ const { salaries, salariesMeta: meta, loadingSalaries: loading, summary } = stor
 
 const route = useRoute()
 const router = useRouter()
+
+// Table is easier to scan with many staff; cards are kept for anyone who prefers them.
+const view = ref<'table' | 'card'>('table')
+
+const right = { class: { th: 'text-right', td: 'text-right' } }
+const columns = [
+  { id: 'employee', header: 'Employee' },
+  { accessorKey: 'templateName', header: 'Template' },
+  { accessorKey: 'basicSalary', header: 'Basic', meta: right },
+  { accessorKey: 'totalAllowances', header: 'Allowances', meta: right },
+  { accessorKey: 'totalDeductions', header: 'Deductions', meta: right },
+  { accessorKey: 'netSalary', header: 'Net Salary', meta: right },
+  { id: 'actions', header: '' },
+]
 
 const sortOptions = [
   { label: 'Newest First', value: 'createdAt:desc' },
@@ -181,6 +265,6 @@ onMounted(() => {
 onBeforeUnmount(() => clearTimeout(searchTimeout))
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

@@ -14,6 +14,8 @@ export type CachedSchool = {
   primaryColor: string | null
   secondaryColor: string | null
   attendanceThreshold: number | null
+  // Show assessment scores as whole numbers (true) or with one decimal (false) - see useScoreFormat.
+  roundAssessmentScores: boolean
   // Playground mode (see utils/playground.ts) - drives the banner in layouts/default.vue.
   testSchool: boolean
 }
@@ -38,7 +40,7 @@ export function useSchoolCache() {
     }
   }
 
-  function setCachedSchool(domain: string, school: Partial<CachedSchool> & { id: string }) {
+  function setCachedSchool(domain: string, school: Partial<CachedSchool> & { id: string }): CachedSchool | undefined {
     if (!domain || typeof localStorage === 'undefined') return
 
     const entry: CachedSchool = {
@@ -51,6 +53,7 @@ export function useSchoolCache() {
       primaryColor: school.primaryColor ?? null,
       secondaryColor: school.secondaryColor ?? null,
       attendanceThreshold: school.attendanceThreshold ?? null,
+      roundAssessmentScores: school.roundAssessmentScores ?? true,
       testSchool: school.testSchool ?? false,
     }
 
@@ -60,6 +63,7 @@ export function useSchoolCache() {
       // Storage full or blocked (quota, private browsing) - caching is a nice-to-have, never
       // worth failing the caller over.
     }
+    return entry
   }
 
   return { getCachedSchool, setCachedSchool }

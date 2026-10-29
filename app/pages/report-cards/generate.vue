@@ -188,7 +188,7 @@
 
                 <div class="rounded-2xl bg-muted/40 p-4">
                     <p class="text-xs text-muted">Class Average</p>
-                    <p class="mt-1 text-2xl font-bold">{{ result.classAverage.toFixed(1) }}%</p>
+                    <p class="mt-1 text-2xl font-bold">{{ formatScore(result.classAverage) }}%</p>
                 </div>
 
             </div>
@@ -223,6 +223,7 @@
 
 
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 const appStore = useAppStore()
 const { success, error } = useNotify()
 const reportCardStore = useReportCardStore()

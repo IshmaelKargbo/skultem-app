@@ -19,12 +19,12 @@ interface NavItem {
 // Spans both /payroll/* and /hr/* routes - matches the sidebar's single "Payroll" group exactly,
 // role-for-role against each page's own definePageMeta.
 const allItems: NavItem[] = [
-  { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Salary Templates', to: '/payroll/salary-templates', icon: 'i-lucide-layout-template', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR] },
-  { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER] }
+  { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+  { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+  { label: 'Salary Templates', to: '/payroll/salary-templates', icon: 'i-lucide-layout-template', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+  { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+  { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+  { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] }
 ]
 
 const items = computed(() => allItems.filter(item => can(item.roles)))

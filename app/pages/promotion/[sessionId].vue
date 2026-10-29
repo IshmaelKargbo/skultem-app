@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+const { formatScore } = useScoreFormat()
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
@@ -283,7 +284,7 @@ onMounted(() => {
                                                 <span class="size-1 rounded-full bg-dimmed" />
                                                 <span
                                                     :class="passMark != null && row.average < passMark ? 'text-error font-medium' : 'text-success font-medium'">
-                                                    {{ Math.round(row.average) }}% average
+                                                    {{ formatScore(row.average) }}% average
                                                 </span>
                                             </template>
                                             <template v-else>

@@ -28,7 +28,7 @@
 
         <div class="mt-5 rounded-2xl border border-primary/10 bg-primary/5 p-5 text-center">
           <p class="text-xs uppercase tracking-wide text-muted">Average Score</p>
-          <h2 class="mt-2 text-3xl font-bold text-primary">{{ item.average.toFixed(1) }}%</h2>
+          <h2 class="mt-2 text-3xl font-bold text-primary">{{ formatScore(item.average) }}%</h2>
         </div>
 
         <div class="mt-5 grid grid-cols-2 gap-3">
@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 const parentStore = useParentStore()
 const reportCardStore = useReportCardStore()
 

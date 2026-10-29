@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+const { formatScore } = useScoreFormat()
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
@@ -216,7 +217,7 @@ onMounted(() => {
                                     <p class="truncate font-medium text-highlighted">{{ item.studentName }}</p>
                                     <span v-if="item.average != null" class="text-xs"
                                         :class="passMark != null && item.average < passMark ? 'text-error font-medium' : 'text-success font-medium'">
-                                        {{ Math.round(item.average) }}% average
+                                        {{ formatScore(item.average) }}% average
                                     </span>
                                 </div>
                                 <p class="truncate text-xs text-muted">Admission No. {{ item.admissionNumber }}</p>

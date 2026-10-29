@@ -41,7 +41,7 @@
               </div>
               <div class="flex items-center justify-between py-2.5">
                 <dt class="text-sm text-muted">Average</dt>
-                <dd class="text-sm font-medium">{{ record.average.toFixed(1) }}%</dd>
+                <dd class="text-sm font-medium">{{ formatScore(record.average) }}%</dd>
               </div>
               <div v-if="record.settings.showPosition" class="flex items-center justify-between py-2.5">
                 <dt class="text-sm text-muted">Position</dt>
@@ -66,7 +66,7 @@
 
             <!-- Picked from the school's score ranges; the class master's own remark goes under it. -->
             <div v-if="record.gradeRemark" class="mb-3 rounded-lg bg-muted/40 p-3">
-              <p class="text-xs font-medium uppercase tracking-wide text-muted">Automatic remark ({{ record.average.toFixed(1) }}%)</p>
+              <p class="text-xs font-medium uppercase tracking-wide text-muted">Automatic remark ({{ formatScore(record.average) }}%)</p>
               <p class="mt-1 text-sm">{{ record.gradeRemark }}</p>
             </div>
 
@@ -182,7 +182,7 @@
                       <td v-for="col in assessmentColumns" :key="col" class="border border-gray-200 p-2.5 text-center">
                         {{ cellScore(subject, col) }}
                       </td>
-                      <td class="border border-gray-200 p-2.5 text-center font-semibold">{{ subject.score }}</td>
+                      <td class="border border-gray-200 p-2.5 text-center font-semibold">{{ formatScore(subject.score) }}</td>
                       <td class="border border-gray-200 p-2.5 text-center font-bold"
                         :style="{ color: gradeColor(subject.grade) }">
                         {{ subject.grade || 'N/A' }}
@@ -196,7 +196,7 @@
                         {{ isYearCard ? 'Final Average (all terms)' : 'Overall Average' }}
                       </td>
                       <td class="border border-gray-200 p-2.5 text-center font-semibold" colspan="2">
-                        {{ record.average.toFixed(1) }}%
+                        {{ formatScore(record.average) }}%
                       </td>
                     </tr>
                   </tfoot>
@@ -282,6 +282,7 @@
 </template>
 
 <script setup lang="ts">
+const { formatScore } = useScoreFormat()
 const route = useRoute()
 const appStore = useAppStore()
 const { success, error: toastError } = useNotify()
@@ -324,7 +325,7 @@ const isYearCard = computed(() => !!record.value?.subjects.some(s => s.termScore
 
 function cellScore(subject: ReportCardSubject, col: string) {
   return isYearCard.value
-    ? subject.termScores?.find(t => t.term === col)?.score ?? '—'
+    ? formatScore(subject.termScores?.find(t => t.term === col)?.score, '—')
     : subject.assessments?.find(a => a.name === col)?.score ?? '—'
 }
 

@@ -46,34 +46,8 @@
 
       <!-- Right -->
       <div class="space-y-4 lg:sticky lg:top-6 lg:self-start">
-        <UCard class="overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
-          <div class="bg-primary p-6 text-center text-inverted">
-            <p class="text-sm opacity-80">Net Salary (preview)</p>
-            <h1 class="mt-3 text-4xl font-bold">{{ formatCurrency(netSalary) }}</h1>
-            <p class="mt-2 text-xs opacity-75">
-              {{ formatCurrency(grossSalary) }} gross − {{ formatCurrency(totalDeductions) }} deductions
-            </p>
-          </div>
-
-          <div class="space-y-2 p-4 text-sm">
-            <div class="flex justify-between">
-              <span class="text-muted">Basic Salary</span>
-              <span class="font-medium">{{ formatCurrency(state.basicSalary) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-muted">Allowances ({{ state.allowances.length }})</span>
-              <span class="font-medium text-success">+ {{ formatCurrency(totalAllowances) }}</span>
-            </div>
-            <div class="flex justify-between border-t border-default pt-2">
-              <span class="text-muted">Gross Salary</span>
-              <span class="font-medium">{{ formatCurrency(grossSalary) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-muted">Deductions ({{ state.deductions.length }})</span>
-              <span class="font-medium text-error">- {{ formatCurrency(totalDeductions) }}</span>
-            </div>
-          </div>
-        </UCard>
+        <PayrollNetPreview :basic="state.basicSalary" :allowances="totalAllowances" :deductions="totalDeductions"
+          :allowance-count="state.allowances.length" :deduction-count="state.deductions.length" />
       </div>
 
     </UForm>
@@ -83,7 +57,6 @@
 
 <script setup lang="ts">
 import * as yup from 'yup'
-import type { FormSubmitEvent } from '#ui/types'
 
 const router = useRouter()
 const notify = useNotify()
@@ -111,21 +84,13 @@ const schema = yup.object({
 
 const totalAllowances = computed(() => state.allowances.reduce((sum, a) => sum + resolvePayComponent(a, state.basicSalary || 0), 0))
 const totalDeductions = computed(() => state.deductions.reduce((sum, d) => sum + resolvePayComponent(d, state.basicSalary || 0), 0))
-const grossSalary = computed(() => (Number(state.basicSalary) || 0) + totalAllowances.value)
-const netSalary = computed(() => grossSalary.value - totalDeductions.value)
-
-const { format } = useMoney()
-
-function formatCurrency(value?: number | null) {
-  return format(value || 0)
-}
 
 function stripRow(row: PayComponentRow): PayComponent {
   const { key, resolvedAmount, ...rest } = row
   return rest
 }
 
-async function onSubmit(event: FormSubmitEvent<typeof state>) {
+async function onSubmit() {
   saving.value = true
   try {
     await store.createSalaryTemplate({
@@ -150,6 +115,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

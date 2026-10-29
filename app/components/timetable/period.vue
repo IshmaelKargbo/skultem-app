@@ -39,10 +39,7 @@ const selectedDayName = computed(() => {
 })
 
 const selectedDayPeriods = computed(() =>
-  periods.value.map((periodItem) => {
-    const subject = periodItem.subjects?.[selectedDayIndex.value]
-    return { periodItem, subject }
-  })
+  periods.value.map(periodItem => ({ periodItem, slot: periodSlot(periodItem, selectedDayIndex.value) }))
 )
 
 watch(days, (value) => {
@@ -56,33 +53,39 @@ watch(days, (value) => {
   }
 }, { immediate: true })
 
-function openSubject(periodItem: Period, dayIndex: number) {
-  if (!isAdmin) return
+// The subjects already in the slot being edited - lets the form explain options and avoid clashes.
+const currentSlot = ref<Timetable[]>([])
 
-  const subject = periodItem.subjects?.[dayIndex]
-  if (!subject) return
+function openSubject(periodItem: Period, dayIndex: number, entry: Timetable) {
+  if (!isAdmin) return
 
   period.value = periodItem.id
   day.value = days.value[dayIndex]
   index.value = String(dayIndex)
+  currentSlot.value = periodSlot(periodItem, dayIndex)
   selectedSubject.value = {
-    ...subject,
-    color: subject.color || colorOptions[0].value,
+    ...entry,
+    color: entry.color || colorOptions[0]!.value,
   }
   subjectModal.value = true
 }
 
+// Adds a subject to a free slot, or another option to a filled one (e.g. RME beside PHE).
 function addSubject(periodItem: Period, dayIndex: number) {
   if (!isAdmin) return
 
+  const slot = periodSlot(periodItem, dayIndex)
   period.value = periodItem.id
   day.value = days.value[dayIndex]
   index.value = String(dayIndex)
+  currentSlot.value = slot
+  // A new option gets a colour the slot isn't using yet, so options are easy to tell apart.
+  const used = new Set(slot.map(t => t.color))
   selectedSubject.value = {
     subject: '',
     teacher: '',
     room: '',
-    color: colorOptions[0].value,
+    color: (colorOptions.find(c => !used.has(c.value)) ?? colorOptions[0]!).value,
   }
   subjectModal.value = true
 }
@@ -160,7 +163,7 @@ function editPeriodRecord(periodItem: Period) {
       </div>
 
       <article
-        v-for="{ periodItem, subject } in selectedDayPeriods"
+        v-for="{ periodItem, slot } in selectedDayPeriods"
         :key="periodItem.id"
         class="rounded-3xl border border-default bg-white p-4 shadow-sm dark:bg-neutral-950"
       >
@@ -212,69 +215,15 @@ function editPeriodRecord(periodItem: Period) {
           </div>
         </div>
 
-        <button
-          v-else-if="subject"
-          type="button"
-          class="mt-4 block w-full text-left"
-          @click="openSubject(periodItem, selectedDayIndex)"
-        >
-          <div
-            class="rounded-2xl border p-4 shadow-sm transition-transform duration-200 active:scale-[0.99]"
-            :class="subject.color"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
-                  {{ selectedDayName }}
-                </p>
-                <h5 class="truncate font-semibold leading-tight">
-                  {{ subject.subject }}
-                </h5>
-              </div>
-
-              <UIcon v-if="isAdmin" name="i-lucide-pencil" class="size-4 text-muted" />
-            </div>
-
-            <div class="mt-3 space-y-1.5 text-xs text-muted">
-              <div class="flex min-w-0 items-center gap-1.5">
-                <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
-                <span class="truncate">{{ subject.teacher || '—' }}</span>
-              </div>
-
-              <div class="flex min-w-0 items-center gap-1.5">
-                <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
-                <span class="truncate">{{ subject.room || '—' }}</span>
-              </div>
-            </div>
-          </div>
-        </button>
-
-        <button
-          v-else-if="isAdmin"
-          type="button"
-          class="mt-4 flex w-full items-center justify-between rounded-2xl border-2 border-dashed border-default px-4 py-4 text-left text-muted transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
-          @click="addSubject(periodItem, selectedDayIndex)"
-        >
-          <div>
-            <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
-              {{ selectedDayName }}
-            </p>
-            <p class="mt-0.5 text-sm font-medium">
-              Add subject
-            </p>
-          </div>
-
-          <UIcon name="i-lucide-plus" class="size-5" />
-        </button>
-
-        <div v-else class="mt-4 rounded-2xl border-2 border-dashed border-default px-4 py-4 text-muted">
-          <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
-            {{ selectedDayName }}
-          </p>
-          <p class="mt-0.5 text-sm font-medium">
-            Free period
-          </p>
-        </div>
+        <TimetableSlotCard
+          v-else
+          class="mt-4"
+          :slot="slot"
+          :is-admin="isAdmin"
+          :label="selectedDayName"
+          @edit="(entry) => openSubject(periodItem, selectedDayIndex, entry)"
+          @add="addSubject(periodItem, selectedDayIndex)"
+        />
       </article>
     </div>
 
@@ -362,103 +311,14 @@ function editPeriodRecord(periodItem: Period) {
               <td
                 v-for="(dayName, dayIndex) in days"
                 :key="dayName"
-                class="p-3"
+                class="p-3 align-top"
               >
-                <UPopover
-                  v-if="periodItem.subjects?.[dayIndex]"
-                  mode="hover"
-                  :open-delay="300"
-                  :close-delay="100"
-                  :content="{ side: 'top', align: 'center', sideOffset: 8 }"
-                >
-                  <button
-                    type="button"
-                    class="group w-full min-w-0 text-left"
-                    @click="openSubject(periodItem, dayIndex)"
-                  >
-                    <div
-                      class="relative h-28 overflow-hidden rounded-2xl contain-[inline-size] border p-4 shadow transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      :class="periodItem.subjects[dayIndex].color"
-                    >
-                      <h4 class="truncate pr-4 font-semibold leading-tight">
-                        {{ periodItem.subjects[dayIndex].subject }}
-                      </h4>
-
-                      <div class="mt-3 space-y-1.5 text-xs text-muted">
-                        <div class="flex min-w-0 items-center gap-1.5">
-                          <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
-                          <span class="truncate">{{ periodItem.subjects[dayIndex].teacher || '—' }}</span>
-                        </div>
-
-                        <div class="flex min-w-0 items-center gap-1.5">
-                          <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
-                          <span class="truncate">{{ periodItem.subjects[dayIndex].room || '—' }}</span>
-                        </div>
-                      </div>
-
-                      <UIcon
-                        v-if="isAdmin"
-                        name="i-lucide-pencil"
-                        class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover:opacity-100"
-                      />
-                    </div>
-                  </button>
-
-                  <template #content>
-                    <div class="w-64 space-y-3 p-4 text-sm">
-                      <div>
-                        <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
-                          {{ clean(dayName) }} · {{ periodItem.name }}
-                        </p>
-                        <h4 class="mt-0.5 wrap-break-word font-semibold leading-snug">
-                          {{ periodItem.subjects[dayIndex].subject }}
-                        </h4>
-                      </div>
-
-                      <div class="space-y-1.5 text-xs text-muted">
-                        <div class="flex items-start gap-1.5">
-                          <UIcon name="i-lucide-clock" class="mt-px size-3.5 shrink-0" />
-                          <span>{{ periodItem.startTime }} – {{ periodItem.endTime }}</span>
-                        </div>
-                        <div class="flex items-start gap-1.5">
-                          <UIcon name="i-lucide-user-round" class="mt-px size-3.5 shrink-0" />
-                          <span class="wrap-break-word">{{ periodItem.subjects[dayIndex].teacher || '—' }}</span>
-                        </div>
-                        <div class="flex items-start gap-1.5">
-                          <UIcon name="i-lucide-map-pin" class="mt-px size-3.5 shrink-0" />
-                          <span class="wrap-break-word">{{ periodItem.subjects[dayIndex].room || '—' }}</span>
-                        </div>
-                      </div>
-
-                      <p v-if="isAdmin" class="border-t border-default pt-2 text-[11px] text-muted">
-                        Click the card to edit
-                      </p>
-                    </div>
-                  </template>
-                </UPopover>
-
-                <button
-                  v-else-if="isAdmin"
-                  type="button"
-                  class="flex h-28 w-full items-center justify-center rounded-2xl border-2 border-dashed border-default text-muted transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  @click="addSubject(periodItem, dayIndex)"
-                >
-                  <div class="flex flex-col items-center gap-1.5">
-                    <UIcon name="i-lucide-plus" class="size-5" />
-                    <span class="text-xs font-medium">
-                      Add Subject
-                    </span>
-                  </div>
-                </button>
-
-                <div v-else class="flex h-28 w-full items-center justify-center rounded-2xl border-2 border-dashed border-default text-muted">
-                  <div class="flex flex-col items-center gap-1.5">
-                    <UIcon name="i-lucide-ban" class="size-5" />
-                    <span class="text-xs font-medium">
-                      Free Period
-                    </span>
-                  </div>
-                </div>
+                <TimetableSlotCard
+                  :slot="periodSlot(periodItem, dayIndex)"
+                  :is-admin="isAdmin"
+                  @edit="(entry) => openSubject(periodItem, dayIndex, entry)"
+                  @add="addSubject(periodItem, dayIndex)"
+                />
               </td>
             </template>
           </tr>
@@ -470,6 +330,7 @@ function editPeriodRecord(periodItem: Period) {
   <TimetableAddTimetable
     v-model:open="subjectModal"
     :state="selectedSubject"
+    :slot="currentSlot"
     :index="index"
     :period="period"
     :day="day"

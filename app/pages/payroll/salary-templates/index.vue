@@ -15,17 +15,80 @@
           <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions" placeholder="Sort by" />
         </div>
 
-        <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
-          :disabled="!hasActiveFilters" @click="resetFilters" />
+        <div class="flex items-center gap-2">
+          <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
+            :disabled="!hasActiveFilters" @click="resetFilters" />
+          <TableViewToggle v-model="view" />
+        </div>
+      </div>
+
+      <!-- Table view (desktop) -->
+      <UTable v-if="view === 'table' && (loading || templates.length)" class="hidden border-t border-default md:block"
+        :columns="columns" :data="templates" :loading="loading">
+        <template #loading>
+          <TableLoading :size="columns.length" />
+        </template>
+        <template #name-cell="{ row }">
+          <NuxtLink :to="`/payroll/salary-templates/edit/${row.original.id}`" class="flex items-center gap-3">
+            <UBadge variant="soft" icon="i-lucide-layout-template" square class="shrink-0 rounded-lg" />
+            <span class="font-medium text-highlighted hover:text-primary">{{ row.original.name }}</span>
+          </NuxtLink>
+        </template>
+        <template #basicSalary-cell="{ row }">{{ formatCurrency(row.original.basicSalary) }}</template>
+        <template #totalAllowances-cell="{ row }">
+          <span class="text-success">+ {{ formatCurrency(row.original.totalAllowances) }}</span>
+          <span class="ml-1 text-xs text-muted">({{ row.original.allowances.length }})</span>
+        </template>
+        <template #totalDeductions-cell="{ row }">
+          <span class="text-error">− {{ formatCurrency(row.original.totalDeductions) }}</span>
+          <span class="ml-1 text-xs text-muted">({{ row.original.deductions.length }})</span>
+        </template>
+        <template #netSalary-cell="{ row }">
+          <span class="font-semibold text-primary">{{ formatCurrency(row.original.netSalary) }}</span>
+        </template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end gap-1">
+            <UButton size="xs" variant="ghost" color="neutral" :icon="EDIT_ICON" aria-label="Edit template"
+              :to="`/payroll/salary-templates/edit/${row.original.id}`" />
+            <UButton size="xs" variant="ghost" color="error" :icon="DELETE_ICON" aria-label="Delete template"
+              @click="remove(row.original)" />
+          </div>
+        </template>
+      </UTable>
+
+      <!-- Table view (mobile list) -->
+      <div v-if="view === 'table' && (loading || templates.length)" class="border-t border-default md:hidden">
+        <template v-if="loading">
+          <div v-for="i in 5" :key="i" class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
+            <div class="space-y-2">
+              <USkeleton class="h-4 w-32" />
+              <USkeleton class="h-3 w-20" />
+            </div>
+            <USkeleton class="h-4 w-16" />
+          </div>
+        </template>
+        <NuxtLink v-for="t in templates" v-else :key="t.id" :to="`/payroll/salary-templates/edit/${t.id}`"
+          class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0 hover:bg-muted/40">
+          <div class="min-w-0">
+            <p class="truncate text-sm font-semibold text-highlighted">{{ t.name }}</p>
+            <p class="truncate text-xs text-muted">
+              Basic {{ formatCurrency(t.basicSalary) }} · {{ t.allowances.length }} allowances · {{ t.deductions.length }} deductions
+            </p>
+          </div>
+          <div class="shrink-0 text-right">
+            <p class="text-sm font-bold text-primary">{{ formatCurrency(t.netSalary) }}</p>
+            <p class="text-[11px] text-muted">net</p>
+          </div>
+        </NuxtLink>
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
+      <div v-if="view === 'card' && loading" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
         <USkeleton v-for="i in 6" :key="i" class="h-52 w-full rounded-xl" />
       </div>
 
       <!-- Templates -->
-      <div v-else-if="templates.length" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
+      <div v-else-if="view === 'card' && templates.length" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
         <UCard v-for="t in templates" :key="t.id">
           <div class="space-y-4">
             <div class="flex items-start justify-between gap-2">
@@ -66,7 +129,7 @@
       </div>
 
       <!-- Empty -->
-      <UCard v-else class="border-none py-16 shadow-none">
+      <UCard v-if="!loading && !templates.length" class="border-none py-16 shadow-none">
         <div class="flex flex-col items-center gap-3 text-center">
           <UIcon name="i-lucide-layout-template" class="text-4xl text-muted" />
           <h3 class="font-semibold">{{ hasActiveFilters ? 'No matches found' : 'No salary templates yet' }}</h3>
@@ -100,6 +163,18 @@ const { success: toastSuccess, error: toastError } = useNotify()
 
 const route = useRoute()
 const router = useRouter()
+
+const view = ref<'table' | 'card'>('table')
+
+const right = { class: { th: 'text-right', td: 'text-right' } }
+const columns = [
+  { accessorKey: 'name', header: 'Template' },
+  { accessorKey: 'basicSalary', header: 'Basic', meta: right },
+  { accessorKey: 'totalAllowances', header: 'Allowances', meta: right },
+  { accessorKey: 'totalDeductions', header: 'Deductions', meta: right },
+  { accessorKey: 'netSalary', header: 'Net Salary', meta: right },
+  { id: 'actions', header: '' },
+]
 
 const sortOptions = [
   { label: 'Name: A to Z', value: 'name:asc' },
@@ -186,6 +261,6 @@ onMounted(() => {
 onBeforeUnmount(() => clearTimeout(searchTimeout))
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
