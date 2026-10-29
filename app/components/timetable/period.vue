@@ -236,14 +236,14 @@ function editPeriodRecord(periodItem: Period) {
             </div>
 
             <div class="mt-3 space-y-1.5 text-xs text-muted">
-              <div class="flex items-center gap-1.5">
-                <UIcon name="i-lucide-user-round" class="size-3.5" />
-                <span>{{ subject.teacher || '—' }}</span>
+              <div class="flex min-w-0 items-center gap-1.5">
+                <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
+                <span class="truncate">{{ subject.teacher || '—' }}</span>
               </div>
 
-              <div class="flex items-center gap-1.5">
-                <UIcon name="i-lucide-map-pin" class="size-3.5" />
-                <span>{{ subject.room || '—' }}</span>
+              <div class="flex min-w-0 items-center gap-1.5">
+                <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
+                <span class="truncate">{{ subject.room || '—' }}</span>
               </div>
             </div>
           </div>
@@ -364,39 +364,78 @@ function editPeriodRecord(periodItem: Period) {
                 :key="dayName"
                 class="p-3"
               >
-                <button
+                <UPopover
                   v-if="periodItem.subjects?.[dayIndex]"
-                  type="button"
-                  class="group w-full text-left"
-                  @click="openSubject(periodItem, dayIndex)"
+                  mode="hover"
+                  :open-delay="300"
+                  :close-delay="100"
+                  :content="{ side: 'top', align: 'center', sideOffset: 8 }"
                 >
-                  <div
-                    class="relative h-28 rounded-2xl border p-4 shadow transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    :class="periodItem.subjects[dayIndex].color"
+                  <button
+                    type="button"
+                    class="group w-full min-w-0 text-left"
+                    @click="openSubject(periodItem, dayIndex)"
                   >
-                    <h4 class="font-semibold leading-tight">
-                      {{ periodItem.subjects[dayIndex].subject }}
-                    </h4>
+                    <div
+                      class="relative h-28 overflow-hidden rounded-2xl contain-[inline-size] border p-4 shadow transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      :class="periodItem.subjects[dayIndex].color"
+                    >
+                      <h4 class="truncate pr-4 font-semibold leading-tight">
+                        {{ periodItem.subjects[dayIndex].subject }}
+                      </h4>
 
-                    <div class="mt-3 space-y-1.5 text-xs text-muted">
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-lucide-user-round" class="size-3.5" />
-                        {{ periodItem.subjects[dayIndex].teacher || '—' }}
+                      <div class="mt-3 space-y-1.5 text-xs text-muted">
+                        <div class="flex min-w-0 items-center gap-1.5">
+                          <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
+                          <span class="truncate">{{ periodItem.subjects[dayIndex].teacher || '—' }}</span>
+                        </div>
+
+                        <div class="flex min-w-0 items-center gap-1.5">
+                          <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
+                          <span class="truncate">{{ periodItem.subjects[dayIndex].room || '—' }}</span>
+                        </div>
                       </div>
 
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-lucide-map-pin" class="size-3.5" />
-                        {{ periodItem.subjects[dayIndex].room || '—' }}
-                      </div>
+                      <UIcon
+                        v-if="isAdmin"
+                        name="i-lucide-pencil"
+                        class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover:opacity-100"
+                      />
                     </div>
+                  </button>
 
-                    <UIcon
-                      v-if="isAdmin"
-                      name="i-lucide-pencil"
-                      class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover:opacity-100"
-                    />
-                  </div>
-                </button>
+                  <template #content>
+                    <div class="w-64 space-y-3 p-4 text-sm">
+                      <div>
+                        <p class="text-[11px] font-medium uppercase tracking-wide text-muted">
+                          {{ clean(dayName) }} · {{ periodItem.name }}
+                        </p>
+                        <h4 class="mt-0.5 wrap-break-word font-semibold leading-snug">
+                          {{ periodItem.subjects[dayIndex].subject }}
+                        </h4>
+                      </div>
+
+                      <div class="space-y-1.5 text-xs text-muted">
+                        <div class="flex items-start gap-1.5">
+                          <UIcon name="i-lucide-clock" class="mt-px size-3.5 shrink-0" />
+                          <span>{{ periodItem.startTime }} – {{ periodItem.endTime }}</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                          <UIcon name="i-lucide-user-round" class="mt-px size-3.5 shrink-0" />
+                          <span class="wrap-break-word">{{ periodItem.subjects[dayIndex].teacher || '—' }}</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                          <UIcon name="i-lucide-map-pin" class="mt-px size-3.5 shrink-0" />
+                          <span class="wrap-break-word">{{ periodItem.subjects[dayIndex].room || '—' }}</span>
+                        </div>
+                      </div>
+
+                      <p v-if="isAdmin" class="border-t border-default pt-2 text-[11px] text-muted">
+                        Click the card to edit
+                      </p>
+                    </div>
+                  </template>
+                </UPopover>
 
                 <button
                   v-else-if="isAdmin"

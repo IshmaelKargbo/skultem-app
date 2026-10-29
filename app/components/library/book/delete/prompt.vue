@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [boolean]
+  deleted: []
 }>()
 
 const open = computed({
@@ -23,8 +24,10 @@ function close() {
 async function remove() {
   try {
     loading.value = true
-    useLibraryStore().deleteBook(props.bookId)
+    await useLibraryStore().deleteBook(props.bookId)
+    useNotify().success(`"${props.bookTitle}" deleted`)
     close()
+    emit('deleted')
   } catch (error: any) {
     useNotify().error(error?.message || 'Failed to delete book')
   } finally {

@@ -4,7 +4,7 @@ import * as yup from 'yup'
 const { book } = defineProps<{ book?: Book }>()
 
 const store = useLibraryStore()
-const { categories } = storeToRefs(store)
+const { categoryOptions } = storeToRefs(store)
 const { success: toastSuccess, error: toastError } = useNotify()
 
 const isEdit = computed(() => !!book)
@@ -12,30 +12,36 @@ const open = ref(false)
 const isLoading = ref(false)
 const formRef = ref()
 
-const categoryOptions = computed(() => categories.value.map(e => ({ label: e.name, value: e.id })))
 
 function defaultState() {
   return {
     title: book?.title || '',
     author: book?.author || '',
-    isbn: book?.isbn || '',
-    publisher: book?.publisher || '',
+    isbn: book?.isbn ?? '',
+    publisher: book?.publisher ?? '',
     categoryId: book?.category.id || '',
     totalCopies: book?.totalCopies ?? 1,
-    shelf: book?.shelf || ''
+    shelf: book?.shelf ?? ''
   }
 }
 
 const state = reactive(defaultState())
 
+// Refill from the latest book each time the form opens, and make sure the category list is loaded.
+watch(open, (isOpen) => {
+  if (!isOpen) return
+  Object.assign(state, defaultState())
+  if (!categoryOptions.value.length) store.fetchCategoryOptions()
+})
+
 const schema = yup.object({
   title: yup.string().required('Title is required'),
   author: yup.string().required('Author is required'),
-  isbn: yup.string().required('ISBN is required'),
-  publisher: yup.string().required('Publisher is required'),
+  isbn: yup.string().max(32, 'ISBN must not exceed 32 characters'),
+  publisher: yup.string(),
   categoryId: yup.string().required('Category is required'),
-  totalCopies: yup.number().min(1, 'At least 1 copy is required').required(),
-  shelf: yup.string().required('Shelf location is required')
+  totalCopies: yup.number().typeError('Enter a number').integer('Enter a whole number').min(1, 'At least 1 copy is required').required(),
+  shelf: yup.string().max(50, 'Shelf must not exceed 50 characters')
 })
 
 function close() {
@@ -43,17 +49,15 @@ function close() {
   Object.assign(state, defaultState())
 }
 
+// Lets a parent open the form from its own control (e.g. an actions menu) with no trigger button.
+defineExpose({ open: () => { open.value = true } })
+
 async function onSubmit() {
   isLoading.value = true
 
   try {
-    if (isEdit.value && book) {
-      store.updateBook({ id: book.id, ...state })
-      toastSuccess('Book updated successfully')
-    } else {
-      store.createBook(state)
-      toastSuccess('Book added successfully')
-    }
+    await store.saveBook({ ...state }, book?.id)
+    toastSuccess(isEdit.value ? 'Book updated successfully' : 'Book added successfully')
     close()
   } catch (err: any) {
     toastError(err?.message || 'Something went wrong')
@@ -94,11 +98,11 @@ async function onSubmit() {
           <UInput v-model="state.author" placeholder="e.g. Chinua Achebe" :disabled="isLoading" class="w-full" />
         </UFormField>
 
-        <UFormField label="ISBN" name="isbn" required>
+        <UFormField label="ISBN" name="isbn">
           <UInput v-model="state.isbn" placeholder="e.g. 978-0385474542" :disabled="isLoading" class="w-full" />
         </UFormField>
 
-        <UFormField label="Publisher" name="publisher" required>
+        <UFormField label="Publisher" name="publisher">
           <UInput v-model="state.publisher" placeholder="e.g. Heinemann" :disabled="isLoading" class="w-full" />
         </UFormField>
 
@@ -110,7 +114,7 @@ async function onSubmit() {
           <UInput v-model.number="state.totalCopies" type="number" min="1" :disabled="isLoading" class="w-full" />
         </UFormField>
 
-        <UFormField label="Shelf" name="shelf" required>
+        <UFormField label="Shelf" name="shelf">
           <UInput v-model="state.shelf" placeholder="e.g. A1" :disabled="isLoading" class="w-full" />
         </UFormField>
       </UForm>

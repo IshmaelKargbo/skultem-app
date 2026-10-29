@@ -101,6 +101,16 @@ const navItems: NavItem[] = [
   },
 
   {
+    label: 'Books', to: '/library/books', icon: BOOK_ICON,
+    roles: [Role.LIBRARIAN]
+  },
+
+  {
+    label: 'Loans', to: '/library/issue', icon: ISSUE_BOOK_ICON,
+    roles: [Role.LIBRARIAN]
+  },
+
+  {
     label: 'Transactions', to: '/transactions', icon: 'i-lucide-book-open',
     roles: [Role.ACCOUNTANT]
   },

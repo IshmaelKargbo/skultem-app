@@ -314,6 +314,7 @@ const roleDesc: Record<string, string> = {
   TEACHER: "Classes & students",
   PARENT: "Child progress",
   ACCOUNTANT: "Finance & fees",
+  LIBRARIAN: "Books & loans",
   SYSTEM_ADMIN: "Platform-wide control",
 };
 
@@ -324,6 +325,7 @@ const roleIcons: Record<string, string> = {
   TEACHER: "lucide:book-open",
   PARENT: "lucide:users",
   ACCOUNTANT: "lucide:calculator",
+  LIBRARIAN: "lucide:library",
   SYSTEM_ADMIN: "lucide:shield-check",
 };
 // const colorMode = useColorMode(); // theme toggle disabled — see commented "Appearance" block above

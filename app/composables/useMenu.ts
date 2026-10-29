@@ -174,7 +174,7 @@ export function useMenu() {
 
     {
       label: 'Communicate', icon: COMMUNICATE_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true },
         { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON },
@@ -411,6 +411,17 @@ export function useMenu() {
         { label: 'Category', to: '/material/category', icon: MAIN_CATEGORY_ICON },
       ]
     },
+    {
+      label: 'Library', icon: LIBRARY_ICON,
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.TEACHER],
+      subNavs: [
+        { label: 'Dashboard', to: '/library', icon: LIBRARY_ICON, exact: true },
+        { label: 'Books', to: '/library/books', icon: BOOK_ICON },
+        { label: 'Issue / Return', to: '/library/issue', icon: ISSUE_BOOK_ICON },
+        { label: 'Categories', to: '/library/categories', icon: MAIN_CATEGORY_ICON },
+        { label: 'Settings', to: '/library/settings', icon: TIMETABLE_SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN] },
+      ]
+    },
 
     {
       label: 'Academics', icon: ACADEMIC_ICON,
@@ -560,6 +571,25 @@ export function useMenu() {
         })),
         { id: 'other', tier: '', label: 'More', items: items.filter((item) => !placed.has(item.label)) },
       ].filter((section) => section.items.length)
+    }
+
+    // The librarian's portal has only a few pages, so every group is laid out flat: its pages are
+    // listed directly under a section heading instead of behind a dropdown. Home already shows the
+    // library dashboard, so the library's own Dashboard link would only repeat it.
+    const rank = (id: string) => id === 'Dashboard' ? 0 : id === 'Library' ? 1 : 2
+    if (can(Role.LIBRARIAN)) {
+      return items
+        .map((item): MenuSection => {
+          if (!item.subNavs) return { id: item.label, tier: '', label: '', items: [item] }
+
+          const pages = item.subNavs
+            .filter((nav) => (!nav.roles || can(nav.roles)) && nav.to !== '/library')
+            .map((nav): NavItem => ({ label: nav.label, to: nav.to, icon: nav.icon, exact: nav.exact }))
+          return { id: item.label, tier: '', label: item.label, items: pages }
+        })
+        .filter((section) => section.items.length)
+        // Dashboard, then the library itself, then everything else (communication).
+        .sort((a, b) => rank(a.id) - rank(b.id))
     }
 
     const essentials: NavItem[] = []

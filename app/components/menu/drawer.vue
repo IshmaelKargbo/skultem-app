@@ -287,6 +287,7 @@ const roleDesc: Record<string, string> = {
   TEACHER: "Classes & students",
   PARENT: "Child progress",
   ACCOUNTANT: "Finance & fees",
+  LIBRARIAN: "Books & loans",
   SYSTEM_ADMIN: "Platform-wide control",
 };
 
@@ -296,6 +297,7 @@ const roleIcons: Record<string, string> = {
   TEACHER: "lucide:graduation-cap",
   PARENT: "lucide:users",
   ACCOUNTANT: "lucide:calculator",
+  LIBRARIAN: "lucide:library",
   SYSTEM_ADMIN: "lucide:shield-check",
 };
 

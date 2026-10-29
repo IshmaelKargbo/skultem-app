@@ -29,6 +29,7 @@ export const ModuleKey = {
     ID_CARDS: 'id-cards',
     ATHLETIC_HOUSES: 'athletic-houses',
     MATERIALS_AND_SUPPLIES: 'materials-and-supplies',
+    LIBRARY: 'library',
     ANALYTICS: 'analytics',
 } as const
 
@@ -45,6 +46,7 @@ export const MODULE_ICON: StringMap = {
     [ModuleKey.ID_CARDS]: 'i-lucide-id-card',
     [ModuleKey.ATHLETIC_HOUSES]: 'i-lucide-trophy',
     [ModuleKey.MATERIALS_AND_SUPPLIES]: 'i-lucide-package',
+    [ModuleKey.LIBRARY]: 'i-lucide-library',
     [ModuleKey.ANALYTICS]: 'i-lucide-bar-chart-3',
 }
 
@@ -86,6 +88,7 @@ const ROUTE_MODULES: [string, string | null][] = [
     ['/id-cards', ModuleKey.ID_CARDS],
     ['/athletic-house', ModuleKey.ATHLETIC_HOUSES],
     ['/material', ModuleKey.MATERIALS_AND_SUPPLIES],
+    ['/library', ModuleKey.LIBRARY],
     ['/analytics', ModuleKey.ANALYTICS],
     ['/analytics/financial-reports', null],
 ]

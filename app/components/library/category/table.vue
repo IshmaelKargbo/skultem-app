@@ -1,106 +1,157 @@
 <script setup lang="ts">
 const store = useLibraryStore()
-const { categories } = storeToRefs(store)
+const { canManage } = useLibraryAccess()
+const { categories, categoriesMeta: meta, categoriesLoading: loading } = storeToRefs(store)
 
+const value = ref('')
 const search = ref('')
+const page = ref(1)
+const size = runtimeConf().limit
 const deleteModal = ref(false)
 const selected = ref<BookCategory>()
 
-const data = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return categories.value
-
-  return categories.value.filter(e =>
-    e.name.toLowerCase().includes(q) || e.description.toLowerCase().includes(q)
-  )
-})
-
-const bookCount = (categoryId: string) =>
-  useLibraryStore().books.filter(b => b.category.id === categoryId).length
-
-const columns = [
+const columns = computed(() => [
   { accessorKey: 'name', header: 'Category' },
   { accessorKey: 'description', header: 'Description' },
   { id: 'books', header: 'Books' },
-  { id: 'actions', meta: { class: { td: 'text-right' } } }
-]
+  ...(canManage.value ? [{ id: 'actions', meta: { class: { td: 'text-right' } } }] : [])
+])
 
 function remove(category: BookCategory) {
   selected.value = category
   deleteModal.value = true
 }
+
+function load() {
+  return store.fetchCategories(page.value, size, search.value)
+}
+
+let timeout: ReturnType<typeof setTimeout>
+watch(value, (val) => {
+  clearTimeout(timeout)
+  timeout = setTimeout(() => { search.value = val.trim() }, 400)
+})
+
+watch(search, () => {
+  if (page.value === 1) load()
+  else page.value = 1
+})
+
+watch(page, load)
+
+onMounted(load)
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center gap-3">
-      <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search categories..." class="w-full sm:w-72" />
+  <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <template #header>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" class="w-full sm:w-72" />
+        <LibraryCategoryAdd v-if="canManage" />
+      </div>
+    </template>
+
+    <!-- Desktop table -->
+    <UTable class="hidden md:block" :columns="columns" :data="categories" :loading="loading">
+      <template #name-cell="{ row }">
+        <div>
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white">{{ row.original.name }}</p>
+            <p class="text-xs text-gray-500">Book Category</p>
+          </div>
+        </div>
+      </template>
+
+      <template #description-cell="{ row }">
+        <p class="max-w-md text-sm text-gray-500 line-clamp-2">
+          {{ row.original.description || 'No description available.' }}
+        </p>
+      </template>
+
+      <template #books-cell="{ row }">
+        <UBadge color="neutral" variant="subtle" :icon="BOOK_ICON">
+          {{ row.original.bookCount }} {{ row.original.bookCount === 1 ? 'book' : 'books' }}
+        </UBadge>
+      </template>
+
+      <template #actions-cell="{ row }">
+        <div class="flex justify-end gap-1">
+          <LibraryCategoryAdd :category="row.original" />
+          <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(row.original)" />
+        </div>
+      </template>
+
+      <template #empty>
+        <div class="flex flex-col items-center gap-3 py-16">
+          <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
+            <UIcon name="lucide:folder-open" class="text-4xl text-primary-500" />
+          </div>
+
+          <div class="text-center">
+            <h3 class="font-semibold text-gray-900 dark:text-white">No categories found</h3>
+            <p class="mt-1 text-sm text-gray-500">Create categories to organize the library's books.</p>
+          </div>
+        </div>
+      </template>
+
+      <template #loading>
+        <TableLoading :size="columns.length" />
+      </template>
+    </UTable>
+
+    <!-- Mobile list -->
+    <div class="md:hidden">
+      <template v-if="loading">
+        <div v-for="i in 5" :key="i" class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0 space-y-2">
+              <USkeleton class="h-4 w-32" />
+              <USkeleton class="h-3 w-40" />
+            </div>
+            <div class="flex gap-1">
+              <USkeleton class="h-7 w-7 rounded-full" />
+              <USkeleton class="h-7 w-7 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template v-else-if="categories.length">
+        <div v-for="item in categories" :key="item.id" class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <div class="flex items-center gap-2">
+                <h3 class="truncate text-sm font-semibold">{{ item.name }}</h3>
+                <UBadge size="sm" color="neutral" variant="subtle">{{ item.bookCount }}</UBadge>
+              </div>
+              <p class="truncate text-xs text-muted">{{ item.description || 'No description available.' }}</p>
+            </div>
+
+            <div v-if="canManage" class="flex shrink-0 items-center gap-1">
+              <LibraryCategoryAdd :category="item" />
+              <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(item)" />
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="flex flex-col items-center py-16 text-center">
+        <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
+          <UIcon name="lucide:folder-open" class="size-10 text-muted" />
+        </div>
+        <h3 class="mt-4 text-sm font-semibold">No categories found</h3>
+        <p class="mt-1 text-sm text-muted">Create categories to organize the library's books.</p>
+      </div>
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
-      <UTable :columns="columns" :data="data">
-        <template #empty>
-          <div class="flex flex-col items-center gap-3 py-16">
-            <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
-              <UIcon :name="BOOK_CATEGORY_ICON" class="text-4xl text-primary-500" />
-            </div>
+    <template v-if="meta.total" #footer>
+      <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
+        <Showing :meta="meta" />
+        <UPagination v-model:page="page" size="sm" :items-per-page="meta.size" :total="meta.total" show-edges />
+      </div>
+    </template>
 
-            <div class="text-center">
-              <h3 class="font-semibold text-highlighted">
-                No categories found
-              </h3>
-
-              <p class="mt-1 text-sm text-muted">
-                Create categories to organize the library's books.
-              </p>
-            </div>
-          </div>
-        </template>
-
-        <template #name-cell="{ row }">
-          <div class="flex items-center gap-3">
-            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-              <UIcon :name="BOOK_CATEGORY_ICON" class="text-primary-500" />
-            </div>
-
-            <p class="font-medium text-highlighted">
-              {{ row.original.name }}
-            </p>
-          </div>
-        </template>
-
-        <template #description-cell="{ row }">
-          <p class="max-w-md text-sm text-muted line-clamp-2">
-            {{ row.original.description || 'No description available.' }}
-          </p>
-        </template>
-
-        <template #books-cell="{ row }">
-          <UBadge color="neutral" variant="subtle">
-            {{ bookCount(row.original.id) }}
-          </UBadge>
-        </template>
-
-        <template #actions-cell="{ row }">
-          <div class="flex justify-end gap-1">
-            <LibraryCategoryAdd :category="row.original" />
-
-            <UButton
-              :icon="DELETE_ICON"
-              size="xs"
-              color="error"
-              variant="ghost"
-              @click="remove(row.original)"
-            />
-          </div>
-        </template>
-      </UTable>
-    </UCard>
-
-    <LibraryCategoryDeletePrompt
-      v-model:open="deleteModal"
-      :category-id="selected?.id || ''"
-      :category-name="selected?.name || ''"
-    />
-  </div>
+    <LibraryCategoryDeletePrompt v-model:open="deleteModal" :category-id="selected?.id || ''"
+      :category-name="selected?.name || ''" />
+  </UCard>
 </template>

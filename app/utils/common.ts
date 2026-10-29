@@ -330,7 +330,8 @@ export enum Role {
     ADMIN = 'ADMIN',
     TEACHER = 'TEACHER',
     PARENT = 'PARENT',
-    ACCOUNTANT = 'ACCOUNTANT'
+    ACCOUNTANT = 'ACCOUNTANT',
+    LIBRARIAN = 'LIBRARIAN'
 }
 
 const SUPER_ADMIN_COVERS: string[] = [Role.OWNER, Role.PROPRIETOR]
@@ -361,6 +362,10 @@ export const roles = [
     {
         label: 'Accountant',
         value: Role.ACCOUNTANT.toString()
+    },
+    {
+        label: 'Librarian',
+        value: Role.LIBRARIAN.toString()
     }
 ]
 
@@ -498,7 +503,8 @@ export const parseRole: StringMap = {
     ADMIN: 'Admin',
     TEACHER: 'Teacher',
     PARENT: 'Parent',
-    ACCOUNTANT: 'Accounttant'
+    ACCOUNTANT: 'Accountant',
+    LIBRARIAN: 'Librarian'
 }
 
 export const parseRoleColor: StringMap = {
@@ -508,7 +514,8 @@ export const parseRoleColor: StringMap = {
     ADMIN: 'info',
     TEACHER: 'neutral',
     PARENT: 'primary',
-    ACCOUNTANT: 'error'
+    ACCOUNTANT: 'error',
+    LIBRARIAN: 'info'
 }
 
 export const parseRoleIcon: StringMap = {
@@ -519,7 +526,8 @@ export const parseRoleIcon: StringMap = {
     PRINCIPAL: 'lucide:briefcase-business',
     TEACHER: 'fluent:hat-graduation-24-regular',
     PARENT: 'fluent:people-24-regular',
-    ACCOUNTANT: 'fluent:calculator-24-regular'
+    ACCOUNTANT: 'fluent:calculator-24-regular',
+    LIBRARIAN: 'lucide:library'
 }
 
 export function clean(str: string) {

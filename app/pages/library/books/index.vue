@@ -1,19 +1,18 @@
 <script lang="ts" setup>
 onMounted(() => {
-    useAppStore().setTitle('Manage Books')
-    document.title = 'Manage Books | Skultem'
+    useAppStore().setTitle('Books')
+    document.title = 'Books | Library | Skultem'
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+    // Teachers can look things up; the manage actions are hidden for them (useLibraryAccess).
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.TEACHER]
 })
 </script>
 
 <template>
-    <div class="p-4 md:px-6 overflow-y-auto h-full space-y-3">
-        <Heading title="Manage Books" subtitle="Add, edit and track the library's book catalog">
-            <LibraryBookAdd />
-        </Heading>
+    <div class="px-4 md:px-6 space-y-3">
+        <LibrarySectionNav />
         <LibraryBookTable />
     </div>
 </template>

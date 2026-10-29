@@ -23,7 +23,8 @@ function close() {
 async function remove() {
   try {
     loading.value = true
-    useLibraryStore().deleteCategory(props.categoryId)
+    await useLibraryStore().deleteCategory(props.categoryId)
+    useNotify().success(`"${props.categoryName}" deleted`)
     close()
   } catch (error: any) {
     useNotify().error(error?.message || 'Failed to delete category')

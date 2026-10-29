@@ -31,9 +31,6 @@ watch(
     v-else
     class="flex h-dvh overflow-hidden bg-[--app-bg]"
   >
-    <!-- Desktop Sidebar -->
-    <!-- From xl up: below that (tablets, small laptops) the bottom bar and the slide-in menu are used, so pages keep
-         the full screen width for their own two- and three-column layouts. -->
     <aside class="hidden shrink-0 p-4 pr-0.5 xl:block xl:w-64 2xl:w-72">
       <Menu />
     </aside>

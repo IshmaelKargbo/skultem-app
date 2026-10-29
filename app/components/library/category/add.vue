@@ -16,9 +16,16 @@ const state = reactive({
   description: category?.description || ''
 })
 
+// Refill from the latest category each time the form opens.
+watch(open, (isOpen) => {
+  if (!isOpen) return
+  state.name = category?.name || ''
+  state.description = category?.description || ''
+})
+
 const schema = yup.object({
   name: yup.string().required('Category name is required'),
-  description: yup.string().required('Description is required')
+  description: yup.string().max(500, 'Description must not exceed 500 characters')
 })
 
 function close() {
@@ -31,13 +38,8 @@ async function onSubmit() {
   isLoading.value = true
 
   try {
-    if (isEdit.value && category) {
-      store.updateCategory({ id: category.id, ...state })
-      toastSuccess('Category updated successfully')
-    } else {
-      store.createCategory(state)
-      toastSuccess('Category created successfully')
-    }
+    await store.saveCategory({ ...state }, category?.id)
+    toastSuccess(isEdit.value ? 'Category updated successfully' : 'Category created successfully')
     close()
   } catch (err: any) {
     toastError(err?.message || 'Something went wrong')
@@ -72,7 +74,7 @@ async function onSubmit() {
           <UInput v-model="state.name" placeholder="e.g. Fiction" :disabled="isLoading" class="w-full" />
         </UFormField>
 
-        <UFormField label="Description" name="description" required>
+        <UFormField label="Description" name="description">
           <UTextarea
             v-model="state.description"
             placeholder="Briefly describe this category"
