@@ -43,7 +43,12 @@ export default defineNuxtPlugin(() => {
 
         return newToken as string
       })
-      .catch(() => null)
+      .catch((error: any) => {
+        // No answer at all (offline, server unreachable): the session may still be fine, so don't log
+        // the user out over a dropped connection - let the request fail with a connection message.
+        if (!error?.response && noResponseMessage(error)) throw error
+        return null
+      })
       .finally(() => {
         refreshPromise = null
       })
@@ -107,7 +112,7 @@ export default defineNuxtPlugin(() => {
     }
   }
 
-  const api = async <T>(request: any, options: Record<string, any> = {}): Promise<T> => {
+  const send = async <T>(request: any, options: Record<string, any> = {}): Promise<T> => {
     const requestUrl = typeof request === "string" ? request : request?.toString?.() || ""
     const isRefreshRequest = requestUrl.includes("/auth/refresh")
     const hasRetried = Boolean(options._retried)
@@ -147,6 +152,24 @@ export default defineNuxtPlugin(() => {
           Authorization: `Bearer ${newToken}`,
         },
       })
+    }
+  }
+
+  // A request that failed because of the connection or a server outage gets a message people can act on
+  // (utils/network-error.ts). The backend's own messages are left as they are.
+  const api = async <T>(request: any, options: Record<string, any> = {}): Promise<T> => {
+    try {
+      return await send<T>(request, options)
+    } catch (error: any) {
+      const friendly = connectionErrorMessage(error)
+      if (friendly) {
+        try {
+          error.message = friendly
+        } catch {
+          throw new Error(friendly, { cause: error })
+        }
+      }
+      throw error
     }
   }
 

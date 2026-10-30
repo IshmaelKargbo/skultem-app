@@ -30,12 +30,12 @@ export const ReportApi = () => {
     const { accessToken } = useAuthCookies()
     const url = buildUrl(path, params)
 
-    const res = await fetch(url, {
+    const res = await fetchOrExplain(url, {
       headers: accessToken.value ? { Authorization: `Bearer ${accessToken.value}` } : {}
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to download report (${res.status})`)
+      throw await downloadError(res, 'Failed to download report')
     }
 
     const blob = await res.blob()
@@ -54,7 +54,7 @@ export const ReportApi = () => {
     const { accessToken } = useAuthCookies()
     const url = buildUrl(path, params)
 
-    const res = await fetch(url, {
+    const res = await fetchOrExplain(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export const ReportApi = () => {
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to download report (${res.status})`)
+      throw await downloadError(res, 'Failed to download report')
     }
 
     const blob = await res.blob()

@@ -39,10 +39,10 @@ export const LibraryAttendanceApi = () => {
     const apiBase = /\/api\/v\d+$/.test(configured) ? configured : `${configured}/api/v1`
     const { accessToken } = useAuthCookies()
 
-    const res = await fetch(`${apiBase}${base}${path}?${query(params)}`, {
+    const res = await fetchOrExplain(`${apiBase}${base}${path}?${query(params)}`, {
       headers: accessToken.value ? { Authorization: `Bearer ${accessToken.value}` } : {}
     })
-    if (!res.ok) throw new Error(`Failed to download the report (${res.status})`)
+    if (!res.ok) throw await downloadError(res, 'Failed to download the report')
 
     const disposition = res.headers.get('content-disposition') || ''
     const filename = disposition.includes('filename=')
