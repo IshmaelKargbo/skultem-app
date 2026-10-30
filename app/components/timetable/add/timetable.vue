@@ -26,7 +26,27 @@
           </ul>
         </div>
 
-        <UFormField label="Subject" name="subject" required>
+        <!-- A Library period takes the whole period, so it's only offered when nothing else is in the slot. -->
+        <UFormField v-if="!isOption" label="This period is">
+          <div class="grid grid-cols-2 gap-2">
+            <button v-for="k in kinds" :key="k.value" type="button"
+              class="flex items-center gap-2 rounded-xl border p-3 text-left text-sm transition-colors"
+              :class="state.kind === k.value ? 'border-primary bg-primary/5 text-highlighted' : 'border-default text-muted hover:border-primary/50'"
+              @click="() => { state.kind = k.value }">
+              <UIcon :name="k.icon" class="size-4 shrink-0" :class="state.kind === k.value ? 'text-primary' : ''" />
+              <span>
+                <span class="block font-medium">{{ k.label }}</span>
+                <span class="block text-xs text-muted">{{ k.hint }}</span>
+              </span>
+            </button>
+          </div>
+        </UFormField>
+
+        <UAlert v-if="state.kind === 'LIBRARY'" color="neutral" variant="soft" :icon="LIBRARY_ICON"
+          title="The whole class goes to the library"
+          description="The librarian sees this period every week under Library → Attendance → Class Sessions and takes the register. No teacher is needed." />
+
+        <UFormField v-if="state.kind === 'SUBJECT'" label="Subject" name="subject" required>
           <USelectMenu v-model="state.subject" :items="subjectItems" value-key="value" label-key="label"
             placeholder="Select a subject" class="w-full" />
         </UFormField>
@@ -60,7 +80,7 @@
     </template>
 
     <template #footer>
-      <UButton v-if="isEdit" class="mr-auto" :label="others.length ? 'Remove option' : 'Remove subject'"
+      <UButton v-if="isEdit" class="mr-auto" :label="others.length ? 'Remove option' : state.kind === 'LIBRARY' ? 'Remove Library period' : 'Remove subject'"
         color="error" variant="ghost" :icon="DELETE_ICON" :loading="removing" :disabled="loading"
         @click="remove" />
 
@@ -69,7 +89,7 @@
       <UButton
         :loading="loading"
         :disabled="removing"
-        :label="isEdit ? 'Save Changes' : isOption ? 'Add Option' : 'Add Subject'"
+        :label="isEdit ? 'Save Changes' : isOption ? 'Add Option' : state.kind === 'LIBRARY' ? 'Add Library Period' : 'Add Subject'"
         color="primary"
         @click="formRef?.submit?.()"
       />
@@ -79,15 +99,22 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 interface TimetableForm {
+  kind: TimetableKind
   subject: string
   room: string
   color: string
 }
 
+const kinds: { value: TimetableKind, label: string, hint: string, icon: string }[] = [
+  { value: 'SUBJECT', label: 'A lesson', hint: 'Taught by the subject teacher', icon: BOOK_ICON },
+  { value: 'LIBRARY', label: 'Library period', hint: 'Run by the librarian', icon: LIBRARY_ICON }
+]
+
 const loading = ref(false)
 const props = defineProps<{
   open: boolean, period: string | undefined, day: string | undefined, index: string | undefined, state?: {
     id?: string,
+    kind?: TimetableKind,
     roomId: string,
     subjectId: string,
     color: string
@@ -105,8 +132,8 @@ const others = computed(() => (props.slot ?? []).filter(t => t.id !== props.stat
 const isOption = computed(() => others.value.length > 0)
 
 const title = computed(() => {
-  if (isEdit.value) return isOption.value ? 'Edit Option' : 'Edit Subject'
-  return isOption.value ? 'Add Option' : 'Add Subject'
+  if (isEdit.value) return isOption.value ? 'Edit Option' : state.kind === 'LIBRARY' ? 'Edit Library Period' : 'Edit Subject'
+  return isOption.value ? 'Add Option' : 'Add to Timetable'
 })
 
 const subjectModal = computed({
@@ -138,7 +165,12 @@ const roomItems = computed(() => {
 const roomClash = computed(() => others.value.find(t => t.roomId && t.roomId === state.room))
 
 const schema = yup.object({
-  subject: yup.string().required('Subject is required'),
+  // A Library period has no subject.
+  subject: yup.string().when('kind', {
+    is: 'SUBJECT',
+    then: s => s.required('Subject is required'),
+    otherwise: s => s.notRequired()
+  }),
   room: yup.string().required('Room is required')
 })
 
@@ -156,6 +188,7 @@ const colorOptions = [
 const defaultColor = colorOptions[colorOptions.length - 1]!.value
 
 const state = reactive<TimetableForm>({
+  kind: 'SUBJECT',
   subject: '',
   room: '',
   color: defaultColor,
@@ -167,7 +200,8 @@ async function save() {
     loading.value = true
     const saved = await store.setTimetable({
       period: props.period || '',
-      subject: state.subject,
+      kind: state.kind,
+      subject: state.kind === 'LIBRARY' ? '' : state.subject,
       day: props.day || '',
       room: state.room,
       color: state.color,
@@ -181,7 +215,8 @@ async function save() {
   }
 }
 
-function syncState(value?: { roomId: string; subjectId: string; color: string }) {
+function syncState(value?: { kind?: TimetableKind; roomId: string; subjectId: string; color: string }) {
+  state.kind = value?.kind === 'LIBRARY' ? 'LIBRARY' : 'SUBJECT'
   state.subject = value?.subjectId || ''
   state.room = value?.roomId || ''
   state.color = value?.color || defaultColor

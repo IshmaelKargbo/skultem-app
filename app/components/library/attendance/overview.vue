@@ -2,6 +2,9 @@
 const store = useLibraryAttendanceStore()
 const { overview } = storeToRefs(store)
 const ready = computed(() => !!overview.value)
+// Same roles the backend lets edit the timetable (TimetableController).
+const { can } = useAuth()
+const canEditTimetable = computed(() => can([Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER, Role.PROPRIETOR]))
 
 function load() {
   store.fetchOverview().catch(() => { })
@@ -35,7 +38,7 @@ onMounted(load)
         label: 'Class Sessions Today',
         isReady: ready,
         value: overview?.sessionsToday ?? 0,
-        subtle: overview?.librarySubjectName ? `From ${overview.librarySubjectName} periods` : 'No Library subject chosen',
+        subtle: overview?.libraryPeriods ? `${overview.libraryPeriods} Library periods a week on the timetable` : 'No Library periods on the timetable',
         icon: LIBRARY_SESSION_ICON
       }" />
       <Metric :record="{
@@ -48,11 +51,13 @@ onMounted(load)
       }" />
     </div>
 
-    <UAlert v-if="ready && !overview?.librarySubjectId" color="warning" variant="soft" icon="i-lucide-info"
-      title="Choose the school's Library subject"
-      description="Class library sessions come from the timetable periods for that subject. Pick it in Library Settings.">
-      <template #actions>
-        <UButton to="/library/settings" size="xs" color="warning" variant="solid" label="Library Settings" />
+    <UAlert v-if="ready && !overview?.libraryPeriods" color="warning" variant="soft" icon="i-lucide-info"
+      title="No Library periods on the timetable yet"
+      :description="canEditTimetable
+        ? 'On the timetable, click a period for a class and choose Library period. Each one shows up here every week for the librarian to start.'
+        : 'Ask the school admin to add Library periods to the timetable. Each one shows up here every week for you to start.'">
+      <template v-if="canEditTimetable" #actions>
+        <UButton to="/timetable" size="xs" color="warning" variant="solid" label="Open Timetable" />
       </template>
     </UAlert>
   </div>

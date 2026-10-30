@@ -20,14 +20,17 @@ const sessions = ref<LibrarySession[]>([])
 const loading = ref(false)
 const openingKey = ref('')
 
+// Latest day first; within a day, periods stay in the order the server gives them (by period time).
 const byDate = computed(() => {
-  const groups: { date: string, rows: LibrarySession[] }[] = []
+  const groups = new Map<string, LibrarySession[]>()
   for (const s of sessions.value) {
-    const last = groups[groups.length - 1]
-    if (last && last.date === s.date) last.rows.push(s)
-    else groups.push({ date: s.date, rows: [s] })
+    const rows = groups.get(s.date)
+    if (rows) rows.push(s)
+    else groups.set(s.date, [s])
   }
-  return groups
+  return [...groups.entries()]
+    .map(([date, rows]) => ({ date, rows }))
+    .sort((a, b) => b.date.localeCompare(a.date))
 })
 
 let request = 0
@@ -134,11 +137,12 @@ onMounted(load)
       </div>
       <h3 class="font-semibold text-gray-900 dark:text-white">No library sessions</h3>
       <p class="max-w-md text-sm text-muted">
-        <template v-if="overview && !overview.librarySubjectId">
-          Choose the school's Library subject in Library Settings - its timetable periods become the sessions here.
+        <template v-if="overview && !overview.libraryPeriods">
+          There are no Library periods on the timetable yet. Once the school adds them to a class's periods, each
+          one shows up here every week.
         </template>
         <template v-else>
-          Sessions come from the timetable's Library periods. Holidays and days outside a term have none.
+          Sessions come from the Library periods on the timetable. Holidays and days outside a term have none.
         </template>
       </p>
     </div>

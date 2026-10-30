@@ -106,8 +106,8 @@ export type LibrarySessionDetail = {
 }
 
 export type LibraryAttendanceOverview = {
-    librarySubjectId: string | null
-    librarySubjectName: string | null
+    // Library periods on this year's timetable. 0 = none set up yet, so no class sessions.
+    libraryPeriods: number
     openVisits: number
     unresolvedVisits: number
     visitsToday: number

@@ -378,7 +378,8 @@ onMounted(load)
           <p>{{ counts.PRESENT }} present, {{ counts.ABSENT }} absent, {{ counts.EXCUSED }} excused.</p>
           <p class="text-muted">
             After finalizing, the register is locked. Only a principal can correct it, and every correction is
-            recorded.
+            recorded. Any student on this roster who is still checked in to the library today will be checked
+            out.
           </p>
         </div>
 

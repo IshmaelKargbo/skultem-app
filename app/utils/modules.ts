@@ -99,6 +99,7 @@ const ROUTE_PATTERNS: [RegExp, string][] = [
     [/^\/students\/[^/]+\/performance$/, ModuleKey.GRADING],
     [/^\/students\/[^/]+\/report-card$/, ModuleKey.REPORT_CARDS],
     [/^\/students\/[^/]+\/behaviours$/, ModuleKey.BEHAVIOUR],
+    [/^\/students\/[^/]+\/library$/, ModuleKey.LIBRARY],
     [/^\/teachers\/[^/]+\/attendance$/, ModuleKey.STAFF_HR],
 ]
 

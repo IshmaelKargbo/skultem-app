@@ -418,7 +418,11 @@ export function useMenu() {
         { label: 'Dashboard', to: '/library', icon: LIBRARY_ICON, exact: true },
         { label: 'Books', to: '/library/books', icon: BOOK_ICON },
         { label: 'Issue / Return', to: '/library/issue', icon: ISSUE_BOOK_ICON },
-        { label: 'Categories', to: '/library/categories', icon: MAIN_CATEGORY_ICON },
+        // Attendance: same roles as useLibraryAccess().canViewAttendance - teachers don't see it.
+        { label: 'Library Visits', to: '/library/attendance', icon: CHECK_IN_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN] },
+        { label: 'Class Sessions', to: '/library/attendance/sessions', icon: LIBRARY_SESSION_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN] },
+        { label: 'Attendance Reports', to: '/library/attendance/reports', icon: LIBRARY_REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN] },
+        { label: 'Categories', to: '/library/categories', icon: BOOK_CATEGORY_ICON },
         { label: 'Settings', to: '/library/settings', icon: TIMETABLE_SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN] },
       ]
     },

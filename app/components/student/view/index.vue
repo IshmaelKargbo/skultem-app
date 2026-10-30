@@ -150,6 +150,8 @@ const { can } = useAuth()
 // profile but not their report cards, so the tab only shows for roles that can actually open it.
 const { isPathAvailable } = useModules()
 const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
+// Library history: only the roles the backend lets see library attendance (teachers and accountants can't).
+const { canViewAttendance: canViewLibrary } = useLibraryAccess()
 // Matches PATCH /enrollment/{id}/class, which only ADMIN/OWNER/PROPRIETOR may call.
 const canChangeClass = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
 
@@ -295,6 +297,7 @@ const feeStructureInfo = `/students/${route.params.id}/fee-structure${backQuery}
 const performanceInfo = `/students/${route.params.id}/performance${backQuery}`
 const academicInfo = `/students/${route.params.id}/academic-information${backQuery}`
 const behavioursInfo = `/students/${route.params.id}/behaviours${backQuery}`
+const libraryInfo = `/students/${route.params.id}/library${backQuery}`
 const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
 // Ordered by importance: who they are, their academic placement, how they're performing
@@ -307,7 +310,8 @@ const mobileTabs = computed(() => [
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }
+    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
+    ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : [])
     // Tabs for a module this school hasn't installed (Grading, Report Cards, Behaviour) drop out.
 ].filter((tab) => isPathAvailable(tab.to)))
 
@@ -318,7 +322,8 @@ const desktopTabs = computed(() => [
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }
+    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
+    ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : [])
 ].filter((tab) => isPathAvailable(tab.to)))
 
 async function fetchStudent() {

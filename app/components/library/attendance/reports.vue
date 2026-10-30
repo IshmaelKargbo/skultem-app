@@ -34,21 +34,6 @@ async function loadTotals() {
 // Student history
 const studentId = ref(String(route.query.student || ''))
 const { searchTerm, students, loading: studentsLoading } = useStudentSearch(25, () => [studentId.value])
-const history = ref<StudentLibraryHistory | null>(null)
-const historyLoading = ref(false)
-
-async function loadHistory() {
-  history.value = null
-  if (!studentId.value) return
-  historyLoading.value = true
-  try {
-    history.value = await LibraryAttendanceApi().studentHistory(studentId.value)
-  } catch (err: any) {
-    toastError(err?.message || 'Failed to load the student\'s library record')
-  } finally {
-    historyLoading.value = false
-  }
-}
 
 const exporting = ref('')
 async function run(key: string, action: () => Promise<void>) {
@@ -78,11 +63,19 @@ function exportItems(kind: 'visits' | 'sessions' | 'totals' | 'student') {
   ]
 }
 
+// One Export menu for the date range, grouped by report.
+const rangeExportItems = computed(() => ([
+  ['totals', 'Totals'],
+  ['sessions', 'Sessions'],
+  ['visits', 'Visits']
+] as const).map(([kind, label]) => [
+  { type: 'label' as const, label },
+  ...exportItems(kind)
+]))
+
 watch([from, to], loadTotals)
-watch(studentId, loadHistory)
 onMounted(() => {
   loadTotals()
-  loadHistory()
 })
 </script>
 
@@ -90,35 +83,23 @@ onMounted(() => {
   <div class="space-y-3">
     <UCard>
       <template #header>
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-3">
           <div>
             <h3 class="font-semibold">Class Library Attendance</h3>
             <p class="text-xs text-muted">Present, absent and excused from finalized registers only.</p>
           </div>
-          <div class="flex flex-wrap items-end gap-2">
-            <UFormField label="From">
-              <UInput v-model="from" type="date" :max="to" />
-            </UFormField>
-            <UFormField label="To">
-              <UInput v-model="to" type="date" :min="from" />
-            </UFormField>
-            <template v-if="canSuperviseAttendance">
-              <UDropdownMenu :items="exportItems('totals')">
-                <UButton icon="i-lucide-download" variant="outline" label="Totals"
-                  :loading="exporting === 'totals'" :disabled="!!rangeError" />
-              </UDropdownMenu>
-              <UDropdownMenu :items="exportItems('sessions')">
-                <UButton icon="i-lucide-download" variant="outline" label="Sessions"
-                  :loading="exporting === 'sessions'" :disabled="!!rangeError" />
-              </UDropdownMenu>
-              <UDropdownMenu :items="exportItems('visits')">
-                <UButton icon="i-lucide-download" variant="outline" label="Visits"
-                  :loading="exporting === 'visits'" :disabled="!!rangeError" />
-              </UDropdownMenu>
-            </template>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <UInput v-model="from" type="date" :max="to" aria-label="From" class="w-full sm:w-44" />
+            <span class="hidden text-sm text-muted sm:inline">to</span>
+            <UInput v-model="to" type="date" :min="from" aria-label="To" class="w-full sm:w-44" />
+            <UDropdownMenu v-if="canSuperviseAttendance" :items="rangeExportItems" :disabled="!!rangeError">
+              <UButton :icon="DOWNLOAD_ICON" variant="outline" color="neutral" label="Export"
+                trailing-icon="i-lucide-chevron-down" :loading="['totals', 'sessions', 'visits'].includes(exporting)"
+                :disabled="!!rangeError" class="w-full justify-center sm:ml-auto sm:w-auto" />
+            </UDropdownMenu>
           </div>
+          <p v-if="rangeError" class="text-sm text-error">{{ rangeError }}</p>
         </div>
-        <p v-if="rangeError" class="mt-2 text-sm text-error">{{ rangeError }}</p>
       </template>
 
       <div v-if="totalsLoading && !totals" class="space-y-2">
@@ -169,68 +150,25 @@ onMounted(() => {
 
     <UCard>
       <template #header>
-        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div class="space-y-3">
           <div>
             <h3 class="font-semibold">Student Library Record</h3>
             <p class="text-xs text-muted">A student's own visits and their class library sessions, kept apart.</p>
           </div>
-          <div class="flex flex-wrap items-end gap-2">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <USelectMenu v-model="studentId" v-model:search-term="searchTerm" value-key="value" :items="students"
-              :loading="studentsLoading" ignore-filter placeholder="Search for a student" class="w-full sm:w-72" />
+              :loading="studentsLoading" ignore-filter :icon="SEARCH_ICON" placeholder="Search for a student"
+              class="w-full sm:w-72" />
             <UDropdownMenu v-if="canSuperviseAttendance && studentId" :items="exportItems('student')">
-              <UButton icon="i-lucide-download" variant="outline" label="Export" :loading="exporting === 'student'" />
+              <UButton :icon="DOWNLOAD_ICON" variant="outline" color="neutral" label="Export"
+                trailing-icon="i-lucide-chevron-down" :loading="exporting === 'student'"
+                class="w-full justify-center sm:ml-auto sm:w-auto" />
             </UDropdownMenu>
           </div>
         </div>
       </template>
 
-      <div v-if="historyLoading" class="space-y-2">
-        <USkeleton v-for="i in 3" :key="i" class="h-10 w-full" />
-      </div>
-      <p v-else-if="!history" class="py-8 text-center text-sm text-muted">Choose a student to see their library record.</p>
-      <div v-else class="grid gap-6 lg:grid-cols-2">
-        <div class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-wide text-muted">
-            Independent visits ({{ history.visits.length }})
-          </p>
-          <p v-if="!history.visits.length" class="text-sm text-muted">No visits.</p>
-          <ul v-else class="divide-y divide-default rounded-xl border border-default">
-            <li v-for="v in history.visits" :key="v.id" class="flex items-center justify-between gap-3 px-3 py-2">
-              <div>
-                <p class="text-sm">{{ formatDateTime(v.checkedInAt) }}</p>
-                <p class="text-xs text-muted">
-                  <template v-if="v.durationMinutes !== null">{{ formatMinutes(v.durationMinutes) }}</template>
-                  <template v-else-if="v.status === 'RESOLVED'">Check-out not recorded</template>
-                </p>
-              </div>
-              <UBadge size="sm" variant="soft" :color="visitState(v).color" :label="visitState(v).label" />
-            </li>
-          </ul>
-        </div>
-        <div class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-wide text-muted">
-            Class library sessions ({{ history.sessions.length }})
-          </p>
-          <p v-if="!history.sessions.length" class="text-sm text-muted">No class library sessions.</p>
-          <ul v-else class="divide-y divide-default rounded-xl border border-default">
-            <li v-for="s in history.sessions" :key="s.sessionId" class="flex items-center justify-between gap-3 px-3 py-2">
-              <div>
-                <ULink :to="`/library/attendance/sessions/${s.sessionId}`" class="text-sm hover:text-primary">
-                  {{ formatDayLabel(s.date) }} · {{ s.className }}
-                </ULink>
-                <p class="text-xs text-muted">
-                  {{ s.periodName }}
-                  <template v-if="s.sessionStatus === 'CANCELLED'"> · session cancelled, not counted</template>
-                  <template v-else-if="s.sessionStatus === 'IN_PROGRESS'"> · not finalized yet</template>
-                  <template v-if="s.corrected"> · corrected</template>
-                </p>
-              </div>
-              <UBadge size="sm" variant="soft" :color="registerStatusStyle[s.status].color"
-                :label="registerStatusStyle[s.status].label" />
-            </li>
-          </ul>
-        </div>
-      </div>
+      <LibraryAttendanceStudentHistory :student-id="studentId" />
     </UCard>
   </div>
 </template>

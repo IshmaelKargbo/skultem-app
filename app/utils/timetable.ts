@@ -80,9 +80,17 @@ export type SetWorkingDTO = {
     }[]
 }
 
+// SUBJECT: a lesson taught by the subject's teacher. LIBRARY: a Library period - the librarian runs it, so it has
+// no subject or teacher, and it takes the whole period for the class. Library Attendance's class sessions are
+// the timetable's Library periods.
+export type TimetableKind = 'SUBJECT' | 'LIBRARY'
+
 export type Timetable = {
     id: string
+    kind?: TimetableKind
+    // "Library" for a Library period
     subject: string
+    // null for a Library period
     subjectId: string
     room: string
     roomId: string
@@ -132,7 +140,9 @@ export type UpdatePeriodDTO = {
 }
 
 export type CreateTimetableDTO = {
+    // Left empty for a Library period.
     subject: string
+    kind?: TimetableKind
     period: string
     room: string
     day: string

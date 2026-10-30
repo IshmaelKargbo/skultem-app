@@ -3,6 +3,7 @@ const route = useRoute()
 
 onMounted(() => {
     useAppStore().setTitle('Library Register')
+    useAppStore().setBack('/library/attendance/sessions')
     document.title = 'Register | Library | Skultem'
 })
 
@@ -13,9 +14,6 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <LibrarySectionNav />
-        <UButton to="/library/attendance/sessions" icon="i-lucide-arrow-left" variant="ghost" color="neutral"
-            label="Class Sessions" class="px-0" />
         <LibraryAttendanceRegister :session-id="String(route.params.id)" />
     </div>
 </template>

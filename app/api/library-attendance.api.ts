@@ -53,8 +53,6 @@ export const LibraryAttendanceApi = () => {
 
   return {
     overview: () => get<LibraryAttendanceOverview>('/overview'),
-    subjects: () => get<{ id: string, name: string, code: string | null }[]>('/subjects'),
-    setLibrarySubject: (subjectId: string | null) => send<LibrarySettings>('/subject', 'PUT', { subjectId }),
 
     listVisits: async (page: number, size: number, filters: { from?: string, to?: string, studentId?: string, search?: string, status?: VisitFilter } = {}) => {
       try {

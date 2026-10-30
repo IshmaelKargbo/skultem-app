@@ -73,25 +73,26 @@ const route = useRoute()
 const router = useRouter()
 const open = ref(false)
 
-// Parent active: active if parent link or any subNav matches
-const isActive = computed(() => {
-  if (props.subNavs && props.subNavs.length) {
-    return props.subNavs.some(nav =>
-      nav.exact
-        ? route.path === nav.to
-        : route.path.startsWith(nav.to)
-    )
-  }
+// A link matches its own page, and its child pages unless it's exact.
+// "/library/attendance" (exact) is not active on "/library/attendance/sessions".
+const matches = (to: string, exact?: boolean) => {
+  const path = route.path.length > 1 ? route.path.replace(/\/+$/, '') : route.path
+  return path === to || (!exact && to !== '/' && path.startsWith(`${to}/`))
+}
 
-  if (!props.to) return false
-
-  // Parent navigation should include child routes
-  return route.path === props.to || route.path.startsWith(`${props.to}/`)
+// The most specific matching sub-page wins, so a parent path doesn't light up alongside its child.
+const activeSubTo = computed(() => {
+  const candidates = (props.subNavs ?? []).filter(nav => matches(nav.to, nav.exact))
+  if (!candidates.length) return undefined
+  return candidates.reduce((a, b) => (b.to.length > a.to.length ? b : a)).to
 })
 
-// Subnav active check: uses nav.exact if provided
-const isActiveSub = (nav: SubNav) =>
-  nav.exact ? route.path === nav.to : route.path.startsWith(nav.to)
+const isActive = computed(() => {
+  if (props.subNavs && props.subNavs.length) return !!activeSubTo.value
+  return !!props.to && matches(props.to, props.exact)
+})
+
+const isActiveSub = (nav: SubNav) => nav.to === activeSubTo.value
 
 const handleClick = () => {
   if (props.subNavs && props.subNavs.length) {

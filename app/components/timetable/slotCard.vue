@@ -15,6 +15,8 @@ const emit = defineEmits<{
 }>()
 
 const isSplit = computed(() => slot.length > 1)
+// A Library period takes the whole period for the class, so it never gets options beside it.
+const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY')
 </script>
 
 <template>
@@ -24,7 +26,7 @@ const isSplit = computed(() => slot.length > 1)
     @click="emit('add')">
     <span class="flex flex-col items-center gap-1.5">
       <UIcon name="i-lucide-plus" class="size-5" />
-      <span class="text-xs font-medium">Add Subject</span>
+      <span class="text-xs font-medium">Add Lesson</span>
     </span>
   </button>
 
@@ -41,14 +43,17 @@ const isSplit = computed(() => slot.length > 1)
     <component :is="isAdmin ? 'button' : 'div'" :type="isAdmin ? 'button' : undefined"
       class="block min-h-28 w-full rounded-2xl border p-4 text-left shadow-sm transition-all duration-200"
       :class="[slot[0]!.color, isAdmin && 'hover:-translate-y-0.5 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary']"
-      :title="`${slot[0]!.subject} · ${slot[0]!.teacher || 'No teacher'} · ${slot[0]!.room || 'No room'}`"
+      :title="`${slot[0]!.subject} · ${isLibrary ? 'Librarian' : slot[0]!.teacher || 'No teacher'} · ${slot[0]!.room || 'No room'}`"
       @click="isAdmin && emit('edit', slot[0]!)">
       <p v-if="label" class="text-[11px] font-medium uppercase tracking-wide text-muted">{{ label }}</p>
-      <h4 class="truncate pr-5 font-semibold leading-tight">{{ slot[0]!.subject }}</h4>
+      <h4 class="flex items-center gap-1.5 truncate pr-5 font-semibold leading-tight">
+        <UIcon v-if="isLibrary" :name="LIBRARY_ICON" class="size-4 shrink-0 text-primary" />
+        {{ slot[0]!.subject }}
+      </h4>
       <div class="mt-3 space-y-1.5 text-xs text-muted">
         <p class="flex min-w-0 items-center gap-1.5">
           <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
-          <span class="truncate">{{ slot[0]!.teacher || '—' }}</span>
+          <span class="truncate">{{ isLibrary ? 'Librarian' : slot[0]!.teacher || '—' }}</span>
         </p>
         <p class="flex min-w-0 items-center gap-1.5">
           <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
@@ -60,7 +65,7 @@ const isSplit = computed(() => slot.length > 1)
     </component>
 
     <!-- Split this period into options, e.g. add RME beside PHE -->
-    <UButton v-if="isAdmin" size="xs" color="neutral" variant="solid" icon="i-lucide-split"
+    <UButton v-if="isAdmin && !isLibrary" size="xs" color="neutral" variant="solid" icon="i-lucide-split"
       class="absolute -bottom-2 right-3 rounded-full opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100"
       label="Add option" @click="emit('add')" />
   </div>
