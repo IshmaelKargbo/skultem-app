@@ -13,5 +13,6 @@ definePageMeta({
     <div class="px-4 md:px-6 space-y-3">
         <LibrarySectionNav />
         <LibrarySettings />
+        <LibraryAttendanceSubjectSetting />
     </div>
 </template>
