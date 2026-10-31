@@ -30,6 +30,7 @@ export const ModuleKey = {
     ATHLETIC_HOUSES: 'athletic-houses',
     MATERIALS_AND_SUPPLIES: 'materials-and-supplies',
     LIBRARY: 'library',
+    HEALTH_CARE: 'health-care',
     ANALYTICS: 'analytics',
 } as const
 
@@ -47,6 +48,7 @@ export const MODULE_ICON: StringMap = {
     [ModuleKey.ATHLETIC_HOUSES]: 'i-lucide-trophy',
     [ModuleKey.MATERIALS_AND_SUPPLIES]: 'i-lucide-package',
     [ModuleKey.LIBRARY]: 'i-lucide-library',
+    [ModuleKey.HEALTH_CARE]: 'i-lucide-heart-pulse',
     [ModuleKey.ANALYTICS]: 'i-lucide-bar-chart-3',
 }
 
@@ -89,6 +91,7 @@ const ROUTE_MODULES: [string, string | null][] = [
     ['/athletic-house', ModuleKey.ATHLETIC_HOUSES],
     ['/material', ModuleKey.MATERIALS_AND_SUPPLIES],
     ['/library', ModuleKey.LIBRARY],
+    ['/health-care', ModuleKey.HEALTH_CARE],
     ['/analytics', ModuleKey.ANALYTICS],
     ['/analytics/financial-reports', null],
 ]
@@ -100,6 +103,7 @@ const ROUTE_PATTERNS: [RegExp, string][] = [
     [/^\/students\/[^/]+\/report-card$/, ModuleKey.REPORT_CARDS],
     [/^\/students\/[^/]+\/behaviours$/, ModuleKey.BEHAVIOUR],
     [/^\/students\/[^/]+\/library$/, ModuleKey.LIBRARY],
+    [/^\/students\/[^/]+\/health-care$/, ModuleKey.HEALTH_CARE],
     [/^\/teachers\/[^/]+\/attendance$/, ModuleKey.STAFF_HR],
 ]
 

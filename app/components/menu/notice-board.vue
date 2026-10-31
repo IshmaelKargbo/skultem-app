@@ -4,7 +4,7 @@ const { isInstalled } = useModules()
 // The school's notices are part of the Communication module - without it the notice API is switched off.
 const showNotices = computed(() =>
   isInstalled(ModuleKey.COMMUNICATION)
-  && can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN]))
+  && can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE]))
 
 // Messages from the system admin go to everyone who is signed in, in every school.
 type Item = {

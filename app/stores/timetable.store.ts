@@ -182,7 +182,8 @@ export const useTimetableStore = defineStore('timetable', {
     },
     async deletePeriod(id: string) {
       await TimetableApi().deletePeriod(id)
-      this.periods.pop()
+      // The period that was deleted - not simply the last one in the list.
+      this.periods = this.periods.filter(p => p.id !== id)
     },
     // Only the edited period's own row changes - it belongs to a single class session, so this
     // can never leak into another class's timetable.

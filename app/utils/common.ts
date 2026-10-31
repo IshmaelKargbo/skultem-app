@@ -331,7 +331,8 @@ export enum Role {
     TEACHER = 'TEACHER',
     PARENT = 'PARENT',
     ACCOUNTANT = 'ACCOUNTANT',
-    LIBRARIAN = 'LIBRARIAN'
+    LIBRARIAN = 'LIBRARIAN',
+    NURSE = 'NURSE'
 }
 
 const SUPER_ADMIN_COVERS: string[] = [Role.OWNER, Role.PROPRIETOR]
@@ -366,6 +367,10 @@ export const roles = [
     {
         label: 'Librarian',
         value: Role.LIBRARIAN.toString()
+    },
+    {
+        label: 'School Nurse',
+        value: Role.NURSE.toString()
     }
 ]
 
@@ -504,7 +509,8 @@ export const parseRole: StringMap = {
     TEACHER: 'Teacher',
     PARENT: 'Parent',
     ACCOUNTANT: 'Accountant',
-    LIBRARIAN: 'Librarian'
+    LIBRARIAN: 'Librarian',
+    NURSE: 'School Nurse'
 }
 
 export const parseRoleColor: StringMap = {
@@ -515,7 +521,8 @@ export const parseRoleColor: StringMap = {
     TEACHER: 'neutral',
     PARENT: 'primary',
     ACCOUNTANT: 'error',
-    LIBRARIAN: 'info'
+    LIBRARIAN: 'info',
+    NURSE: 'error'
 }
 
 export const parseRoleIcon: StringMap = {
@@ -527,7 +534,8 @@ export const parseRoleIcon: StringMap = {
     TEACHER: 'fluent:hat-graduation-24-regular',
     PARENT: 'fluent:people-24-regular',
     ACCOUNTANT: 'fluent:calculator-24-regular',
-    LIBRARIAN: 'lucide:library'
+    LIBRARIAN: 'lucide:library',
+    NURSE: 'lucide:heart-pulse'
 }
 
 export function clean(str: string) {

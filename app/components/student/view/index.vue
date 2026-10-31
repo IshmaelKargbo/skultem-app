@@ -152,6 +152,9 @@ const { isPathAvailable } = useModules()
 const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
 // Library history: only the roles the backend lets see library attendance (teachers and accountants can't).
 const { canViewAttendance: canViewLibrary } = useLibraryAccess()
+// Health care records: the nurse and principal-level only. A nurse sees nothing else of the profile, so their only tab.
+const { canView: canViewHealthCare } = useHealthCareAccess()
+const nurseOnly = computed(() => can(Role.NURSE))
 // Matches PATCH /enrollment/{id}/class, which only ADMIN/OWNER/PROPRIETOR may call.
 const canChangeClass = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
 
@@ -201,6 +204,8 @@ const editGuardianOpen = ref(false)
 
 // Everything you can do to this student, in one menu: change it, move it, then the serious ones.
 const actionItems = computed(() => {
+    // The nurse only looks at the Health Care tab; none of these actions are theirs.
+    if (nurseOnly.value) return []
     const first: any[] = [{
         label: 'Edit student', icon: EDIT_ICON, onSelect: () => navigateTo(`/students/${record.value?.id}/edit`)
     }]
@@ -298,6 +303,7 @@ const performanceInfo = `/students/${route.params.id}/performance${backQuery}`
 const academicInfo = `/students/${route.params.id}/academic-information${backQuery}`
 const behavioursInfo = `/students/${route.params.id}/behaviours${backQuery}`
 const libraryInfo = `/students/${route.params.id}/library${backQuery}`
+const healthCareInfo = `/students/${route.params.id}/health-care${backQuery}`
 const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 
 // Ordered by importance: who they are, their academic placement, how they're performing
@@ -311,9 +317,10 @@ const mobileTabs = computed(() => [
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
     { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
-    ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : [])
+    ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : []),
+    ...(canViewHealthCare.value ? [{ label: 'Health Care', to: healthCareInfo, icon: HEALTH_CARE_ICON, exact: true }] : [])
     // Tabs for a module this school hasn't installed (Grading, Report Cards, Behaviour) drop out.
-].filter((tab) => isPathAvailable(tab.to)))
+].filter((tab) => isPathAvailable(tab.to) && (!nurseOnly.value || tab.to === healthCareInfo)))
 
 const desktopTabs = computed(() => [
     { label: 'Personal Information', to: personalInfo, icon: USER_ICON, exact: true },
@@ -323,8 +330,9 @@ const desktopTabs = computed(() => [
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
     { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
-    ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : [])
-].filter((tab) => isPathAvailable(tab.to)))
+    ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : []),
+    ...(canViewHealthCare.value ? [{ label: 'Health Care', to: healthCareInfo, icon: HEALTH_CARE_ICON, exact: true }] : [])
+].filter((tab) => isPathAvailable(tab.to) && (!nurseOnly.value || tab.to === healthCareInfo)))
 
 async function fetchStudent() {
     await store.viewStudent(route.params.id as string)

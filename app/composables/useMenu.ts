@@ -2,6 +2,8 @@
 // how it's grouped. Shared by the desktop sidebar (menu/index.vue) and the mobile drawer
 // (menu/drawer.vue) so the two can't drift apart. Call it from a component's setup.
 
+import { HEALTH_CARE_ICON, HEALTH_CARE_VISITS_ICON, HEALTH_CARE_REPORT_ICON, HEALTH_CARE_SETTINGS_ICON } from '~/utils/icons'
+
 export interface SubNavItem {
   label: string
   to: string
@@ -174,7 +176,7 @@ export function useMenu() {
 
     {
       label: 'Communicate', icon: COMMUNICATE_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true },
         { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON },
@@ -426,6 +428,24 @@ export function useMenu() {
         { label: 'Settings', to: '/library/settings', icon: TIMETABLE_SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN] },
       ]
     },
+    {
+      // Medical details: the nurse and principal-level only - not a plain admin or teachers (docs/HEALTH_CARE.md §4).
+      label: 'Health Care', icon: HEALTH_CARE_ICON,
+      roles: [Role.NURSE, Role.PRINCIPAL, Role.OWNER, Role.PROPRIETOR, Role.SUPER_ADMIN],
+      subNavs: [
+        { label: 'Dashboard', to: '/health-care', icon: HEALTH_CARE_ICON, exact: true },
+        // Recording is the nurse's (SUPER_ADMIN passes the backend gate too) - not principal-level.
+        { label: 'Start Visit', to: '/health-care/start-visit', icon: 'i-lucide-plus', roles: [Role.NURSE, Role.SUPER_ADMIN] },
+        { label: 'Visits', to: '/health-care/visits', icon: HEALTH_CARE_VISITS_ICON },
+        // Each report on its own, as attendance lists its reports.
+        { label: 'Visits Summary', to: '/health-care/reports/summary', icon: HEALTH_CARE_REPORT_ICON },
+        { label: 'Health Trends', to: '/health-care/reports/trends', icon: 'i-lucide-trending-up' },
+        { label: 'Daily Log', to: '/health-care/reports/daily', icon: 'i-lucide-calendar-days' },
+        { label: 'Frequent Visitors', to: '/health-care/reports/frequent', icon: 'i-lucide-repeat' },
+        { label: 'Limits & Turned Away', to: '/health-care/reports/limits', icon: 'i-lucide-gauge' },
+        { label: 'Settings', to: '/health-care/settings', icon: HEALTH_CARE_SETTINGS_ICON },
+      ]
+    },
 
     {
       label: 'Academics', icon: ACADEMIC_ICON,
@@ -577,17 +597,17 @@ export function useMenu() {
       ].filter((section) => section.items.length)
     }
 
-    // The librarian's portal has only a few pages, so every group is laid out flat: its pages are
-    // listed directly under a section heading instead of behind a dropdown. Home already shows the
-    // library dashboard, so the library's own Dashboard link would only repeat it.
-    const rank = (id: string) => id === 'Dashboard' ? 0 : id === 'Library' ? 1 : 2
-    if (can(Role.LIBRARIAN)) {
+    // The librarian's and the nurse's portals have only a few pages, so every group is laid out flat: its
+    // pages are listed directly under a section heading instead of behind a dropdown. Home already shows the
+    // library / health care dashboard, so the section's own Dashboard link would only repeat it.
+    const rank = (id: string) => id === 'Dashboard' ? 0 : id === 'Library' || id === 'Health Care' ? 1 : 2
+    if (can(Role.LIBRARIAN) || can(Role.NURSE)) {
       return items
         .map((item): MenuSection => {
           if (!item.subNavs) return { id: item.label, tier: '', label: '', items: [item] }
 
           const pages = item.subNavs
-            .filter((nav) => (!nav.roles || can(nav.roles)) && nav.to !== '/library')
+            .filter((nav) => (!nav.roles || can(nav.roles)) && nav.to !== '/library' && nav.to !== '/health-care')
             .map((nav): NavItem => ({ label: nav.label, to: nav.to, icon: nav.icon, exact: nav.exact }))
           return { id: item.label, tier: '', label: item.label, items: pages }
         })

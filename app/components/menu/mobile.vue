@@ -47,6 +47,8 @@
 </template>
 
 <script setup lang="ts">
+import { HEALTH_CARE_VISITS_ICON, HEALTH_CARE_REPORT_ICON } from '~/utils/icons'
+
 interface NavItem {
   label: string
   to: string
@@ -108,6 +110,16 @@ const navItems: NavItem[] = [
   {
     label: 'Loans', to: '/library/issue', icon: ISSUE_BOOK_ICON,
     roles: [Role.LIBRARIAN]
+  },
+
+  {
+    label: 'Visits', to: '/health-care/visits', icon: HEALTH_CARE_VISITS_ICON,
+    roles: [Role.NURSE]
+  },
+
+  {
+    label: 'Reports', to: '/health-care/reports', icon: HEALTH_CARE_REPORT_ICON,
+    roles: [Role.NURSE]
   },
 
   {

@@ -17,9 +17,9 @@ interface NavItem {
 }
 
 const allItems: NavItem[] = [
-  { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN] },
-  { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN] },
-  { label: 'Notifications', to: '/communicate/notifications', icon: BELL_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN] },
+  { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE] },
+  { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE] },
+  { label: 'Notifications', to: '/communicate/notifications', icon: BELL_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE] },
   { label: 'Compose Broadcast', to: '/communicate/broadcast', icon: BROADCAST_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
   { label: 'Broadcast History', to: '/communicate/broadcast/history', icon: BROADCAST_HISTORY_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] }
 ]

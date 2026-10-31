@@ -14,6 +14,10 @@ const open = computed({
 
 const loading = ref(false)
 const confirmation = ref('')
+const { success: toastSuccess, error: toastError } = useNotify()
+
+// A fresh confirmation each time the dialog opens, whichever way it was closed last time.
+watch(() => props.open, (isOpen) => { if (isOpen) confirmation.value = '' })
 
 const isValid = computed(() =>
     confirmation.value.trim() === props.periodName
@@ -30,9 +34,10 @@ async function deletePeriod() {
     try {
         loading.value = true
         await useTimetableStore().deletePeriod(props.periodId)
+        toastSuccess(`${props.periodName} deleted`)
         close()
     } catch (error: any) {
-        useNotify().error(error)
+        toastError(error?.message || 'Failed to delete the period')
     } finally {
         loading.value = false
     }
@@ -64,10 +69,10 @@ async function deletePeriod() {
                 </div>
                 <template #footer>
                     <div class="flex justify-end gap-2">
-                        <UButton label="Cancel" variant="soft" @click="close" />
+                        <UButton label="Cancel" variant="soft" :disabled="loading" @click="close" />
 
                         <UButton label="Delete Period" color="error" class="disabled:bg-error-200" :disabled="!isValid"
-                            @click="deletePeriod" />
+                            :loading="loading" @click="deletePeriod" />
                     </div>
                 </template>
             </UCard>
