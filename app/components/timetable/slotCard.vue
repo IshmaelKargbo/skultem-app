@@ -2,12 +2,17 @@
 // One period on one day. A single subject shows as one card. Several subjects mean the class splits
 // between options at the same time (e.g. PHE or RME): each student goes to the one they take, so each
 // option is shown with its own teacher and room.
-const { slot, isAdmin = false, label } = defineProps<{
+const { slot, isAdmin = false, label, when } = defineProps<{
   slot: Timetable[]
   isAdmin?: boolean
   // e.g. "Monday · Period 3", shown on the phone layout
   label?: string
+  // e.g. "Monday · Period 3 · 08:00 - 08:40", shown in the details popover
+  when?: string
 }>()
+
+// Hovering a lesson shows its full details: the card cuts long names off so the grid fits without scrolling.
+const popover = { side: 'top' as const, sideOffset: 6, collisionPadding: 12 }
 
 const emit = defineEmits<{
   edit: [entry: Timetable]
@@ -40,15 +45,15 @@ const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY
 
   <!-- One subject -->
   <div v-else-if="!isSplit" class="group relative">
+    <UPopover mode="hover" :open-delay="250" :close-delay="100" :content="popover">
     <component :is="isAdmin ? 'button' : 'div'" :type="isAdmin ? 'button' : undefined"
-      class="block min-h-28 w-full rounded-2xl border p-4 text-left shadow-sm transition-all duration-200"
+      class="block min-h-28 w-full min-w-0 rounded-2xl border p-3 text-left shadow-sm transition-all duration-200"
       :class="[slot[0]!.color, isAdmin && 'hover:-translate-y-0.5 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary']"
-      :title="`${slot[0]!.subject} · ${isLibrary ? 'Librarian' : slot[0]!.teacher || 'No teacher'} · ${slot[0]!.room || 'No room'}`"
       @click="isAdmin && emit('edit', slot[0]!)">
-      <p v-if="label" class="text-[11px] font-medium uppercase tracking-wide text-muted">{{ label }}</p>
-      <h4 class="flex items-center gap-1.5 truncate pr-5 font-semibold leading-tight">
+      <p v-if="label" class="truncate text-[11px] font-medium uppercase tracking-wide text-muted">{{ label }}</p>
+      <h4 class="flex min-w-0 items-center gap-1.5 pr-5 font-semibold leading-tight">
         <UIcon v-if="isLibrary" :name="LIBRARY_ICON" class="size-4 shrink-0 text-primary" />
-        {{ slot[0]!.subject }}
+        <span class="truncate">{{ slot[0]!.subject }}</span>
       </h4>
       <div class="mt-3 space-y-1.5 text-xs text-muted">
         <p class="flex min-w-0 items-center gap-1.5">
@@ -63,6 +68,10 @@ const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY
       <UIcon v-if="isAdmin" name="i-lucide-pencil"
         class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
     </component>
+      <template #content>
+        <TimetableSlotDetails :entry="slot[0]!" :when="when" />
+      </template>
+    </UPopover>
 
     <!-- Split this period into options, e.g. add RME beside PHE -->
     <UButton v-if="isAdmin && !isLibrary" size="xs" color="neutral" variant="solid" icon="i-lucide-split"
@@ -90,10 +99,10 @@ const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY
         <span class="h-px flex-1 bg-accented" />
       </div>
 
+      <UPopover mode="hover" :open-delay="250" :close-delay="100" :content="popover">
       <component :is="isAdmin ? 'button' : 'div'" :type="isAdmin ? 'button' : undefined"
-        class="group/opt relative block w-full rounded-2xl border p-3 text-left shadow-sm transition-all duration-200"
+        class="group/opt relative block w-full min-w-0 rounded-2xl border p-3 text-left shadow-sm transition-all duration-200"
         :class="[entry.color, isAdmin && 'hover:-translate-y-0.5 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary']"
-        :title="`${entry.subject} · ${entry.teacher || 'No teacher'} · ${entry.room || 'No room'}`"
         @click="isAdmin && emit('edit', entry)">
         <h4 class="truncate pr-5 font-semibold leading-tight">{{ entry.subject }}</h4>
         <div class="mt-2 space-y-1 text-xs text-muted">
@@ -109,6 +118,10 @@ const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY
         <UIcon v-if="isAdmin" name="i-lucide-pencil"
           class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover/opt:opacity-100" />
       </component>
+        <template #content>
+          <TimetableSlotDetails :entry="entry" :when="when" :option="`Option ${i + 1} of ${slot.length}`" />
+        </template>
+      </UPopover>
     </template>
 
     <button v-if="isAdmin" type="button"

@@ -221,24 +221,28 @@ function editPeriodRecord(periodItem: Period) {
           :slot="slot"
           :is-admin="isAdmin"
           :label="selectedDayName"
+          :when="`${selectedDayName} · ${periodItem.name} · ${periodItem.startTime} - ${periodItem.endTime}`"
           @edit="(entry) => openSubject(periodItem, selectedDayIndex, entry)"
           @add="addSubject(periodItem, selectedDayIndex)"
         />
       </article>
     </div>
 
-    <div class="hidden overflow-x-auto md:block">
-      <table class="min-w-full border-collapse text-sm">
+    <!-- Fixed layout: the days share the width equally and long names are cut off on the cards (full details
+         on hover), so the grid fits without scrolling sideways. -->
+    <div class="hidden md:block">
+      <table class="w-full table-fixed border-collapse text-sm">
         <thead>
           <tr class="border-b border-default bg-muted/30">
-            <th class="w-40 p-4 text-left font-medium text-muted">
+            <th class="w-32 p-3 text-left font-medium text-muted lg:w-36">
               Period
             </th>
 
             <th
               v-for="dayName in days"
               :key="dayName"
-              class="min-w-45 p-4 text-left font-medium text-muted"
+              class="truncate p-3 text-left font-medium text-muted"
+              :title="dayName"
             >
               {{ dayName }}
             </th>
@@ -251,17 +255,17 @@ function editPeriodRecord(periodItem: Period) {
             :key="periodItem.id"
             class="border-b border-default last:border-b-0"
           >
-            <td class="p-3 align-top">
+            <td class="p-1.5 align-top lg:p-2">
               <div
-                class="flex h-full flex-col justify-center rounded-xl p-4"
+                class="flex h-full flex-col justify-center rounded-xl p-3"
                 :class="(periodItem.isBreak || periodItem.isLunch) ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-muted/30'"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <h4 class="font-semibold">
+                  <h4 class="min-w-0 truncate font-semibold" :title="periodItem.name">
                     {{ periodItem.name }}
                   </h4>
 
-                  <div v-if="isAdmin" class="flex items-center gap-1">
+                  <div v-if="isAdmin" class="flex shrink-0 items-center">
                     <UButton
                       icon="i-lucide-pencil"
                       variant="ghost"
@@ -290,7 +294,7 @@ function editPeriodRecord(periodItem: Period) {
             </td>
 
             <template v-if="periodItem.isBreak">
-              <td :colspan="days.length" class="p-3">
+              <td :colspan="days.length" class="p-1.5 lg:p-2">
                 <div class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/60 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400">
                   <UIcon name="i-lucide-coffee" class="size-4" />
                   <span class="text-sm font-medium">Break - no classes scheduled</span>
@@ -299,7 +303,7 @@ function editPeriodRecord(periodItem: Period) {
             </template>
 
             <template v-else-if="periodItem.isLunch">
-              <td :colspan="days.length" class="p-3">
+              <td :colspan="days.length" class="p-1.5 lg:p-2">
                 <div class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/60 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400">
                   <UIcon name="i-lucide-coffee" class="size-4" />
                   <span class="text-sm font-medium">Lunch - no classes scheduled</span>
@@ -311,10 +315,11 @@ function editPeriodRecord(periodItem: Period) {
               <td
                 v-for="(dayName, dayIndex) in days"
                 :key="dayName"
-                class="p-3 align-top"
+                class="p-1.5 align-top lg:p-2"
               >
                 <TimetableSlotCard
                   :slot="periodSlot(periodItem, dayIndex)"
+                  :when="`${dayName} · ${periodItem.name} · ${periodItem.startTime} - ${periodItem.endTime}`"
                   :is-admin="isAdmin"
                   @edit="(entry) => openSubject(periodItem, dayIndex, entry)"
                   @add="addSubject(periodItem, dayIndex)"
