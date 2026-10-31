@@ -11,15 +11,43 @@ const clazzStore = useClassStore();
 const { records: data, meta, loading } = storeToRefs(store);
 const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
 
+const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
+const { success, error: toastError } = useNotify();
+
+// Same roles the backend allows to edit/delete a subject group.
+const canManage = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]));
+
+const editRecord = ref<SubjectGroup | null>(null);
+const editOpen = ref(false);
+const deleteTarget = ref<SubjectGroup | null>(null);
+const deleteOpen = ref(false);
+
+function rowActions(group: SubjectGroup) {
+    return [
+        [{ label: "Edit", icon: EDIT_ICON, onSelect: () => { editRecord.value = group; editOpen.value = true; } }],
+        [{ label: "Delete", icon: "i-lucide-trash-2", color: "error" as const, onSelect: () => { deleteTarget.value = group; deleteOpen.value = true; } }],
+    ];
+}
+
+async function confirmDelete() {
+    if (!deleteTarget.value) return;
+    try {
+        await store.remove(deleteTarget.value.id);
+        success(`${deleteTarget.value.name} deleted`);
+        // Deleting the last group on a page leaves it empty, so step back a page.
+        if (data.value.length === 1 && page.value > 1) page.value = page.value - 1;
+        else await fetchRecord();
+    } catch (err: any) {
+        toastError(err?.message || "Subject group could not be deleted");
+        throw err;
+    }
+}
+
 const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
 );
 
-const editRcord = ref<SubjectGroup | null>(null);
-const editState = ref(false);
-
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 const columns = [
     {
         accessorKey: "name",
@@ -39,51 +67,21 @@ const columns = [
     },
     {
         id: "actions",
-        meta: {
-            class: {
-                td: "text-right",
-            },
-        },
-        cell: ({ row }) => {
-            return h(
-                UDropdownMenu,
-                {
-                    content: {
-                        align: "end",
-                    },
+        meta: { class: { td: "text-right" } },
+        cell: ({ row }: { row: Row<SubjectGroup> }) => {
+            if (!canManage.value) return null;
+            return h(UDropdownMenu, { items: rowActions(row.original), content: { align: "end" } }, {
+                default: () => h(UButton, {
+                    icon: "i-lucide-ellipsis-vertical",
+                    color: "neutral",
                     size: "sm",
-                    items: getRowItems(row),
-                    "aria-label": "Actions dropdown",
-                },
-                () =>
-                    h(UButton, {
-                        icon: "i-lucide-ellipsis-vertical",
-                        color: "neutral",
-                        size: "sm",
-                        variant: "ghost",
-                        "aria-label": "Actions dropdown",
-                    })
-            );
+                    variant: "ghost",
+                    "aria-label": "Subject group actions",
+                }),
+            });
         },
     },
 ];
-
-function getRowItems(row: Row<SubjectGroup>) {
-    return [
-        {
-            label: "Edit Record",
-            icon: "i-lucide-edit",
-            onClick: () => {
-                editState.value = true;
-                editRcord.value = row.original;
-            },
-        },
-        {
-            label: "Delete Record",
-            icon: "i-lucide-trash",
-        },
-    ];
-}
 
 const page = computed<number>({
     get: () => Number(route.query.page ?? 1),
@@ -164,10 +162,8 @@ function updateQuery(newQuery: Record<string, any>) {
 }
 
 async function fetchRecord() {
-    loading.value = true;
     await store.fetchAll(page.value, size.value, classId.value || undefined, search.value || undefined,
         sortBy.value, sortDirection.value);
-    loading.value = false;
 }
 
 onMounted(async () => {
@@ -192,7 +188,7 @@ definePageMeta({
             <template #header>
                 <div class="flex px-4 py-3 items-center justify-between gap-2">
                     <div class="flex flex-1 items-center gap-2">
-                        <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
+                        <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" @saved="fetchRecord" />
                         <div class="flex flex-1 items-center gap-2">
                             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..." class="flex-1" />
                             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter subject groups" description="Narrow the list by class or change the sort" />
@@ -205,7 +201,7 @@ definePageMeta({
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-                        <p class="text-gray-500">No sections found.</p>
+                        <p class="text-gray-500">No subject groups found.</p>
                     </div>
                 </template>
                 <template #loading>
@@ -260,9 +256,10 @@ definePageMeta({
                             <div class="flex shrink-0 items-center gap-2 self-center">
                                 <UBadge variant="outline" icon="mdi:select-multiple" color="neutral"
                                     :label="`${item.totalSelection || 0}`" />
-                                <UButton v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER])" :icon="EDIT_ICON"
-                                    color="warning" variant="ghost" size="sm" aria-label="Edit subject group"
-                                    @click="editState = true; editRcord = item" />
+                                <UDropdownMenu v-if="canManage" :items="rowActions(item)" :content="{ align: 'end' }">
+                                    <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm"
+                                        aria-label="Subject group actions" />
+                                </UDropdownMenu>
                             </div>
                         </div>
                     </div>
@@ -289,5 +286,11 @@ definePageMeta({
                 </div>
             </template>
         </UCard>
+
+        <SubjectGroupEdit v-model:open="editOpen" :record="editRecord" @saved="fetchRecord" />
+
+        <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete Subject Group"
+            :item-name="deleteTarget.name" :on-confirm="confirmDelete"
+            description="This removes the subject group. A group that still has class or stream subjects in it can't be deleted - move those subjects out of the group first." />
     </div>
 </template>

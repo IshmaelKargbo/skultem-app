@@ -128,6 +128,7 @@ import { reactive, ref, onMounted } from "vue";
 import type { FormSubmitEvent } from "#ui/types";
 
 const store = useSubjectGroupStore();
+const emit = defineEmits<{ saved: [] }>();
 const classStore = useClassStore();
 const streamStore = useStreamStore();
 const toast = useToast();
@@ -209,10 +210,18 @@ const close = () => {
   Object.assign(state, {
     name: "",
     level: "",
+    classId: "",
     streamId: "",
     totalSelection: null,
   });
 };
+
+// A group belongs to either a class or a stream - drop the other pick when the level changes so a
+// stale class/stream from an earlier choice isn't sent along.
+watch(() => state.level, () => {
+  state.classId = "";
+  state.streamId = "";
+});
 
 const onSubmit = async (event: FormSubmitEvent<SubjectGroupForm>) => {
   isLoading.value = true;
@@ -222,8 +231,8 @@ const onSubmit = async (event: FormSubmitEvent<SubjectGroupForm>) => {
     await store.create({
       totalSelection: state.totalSelection || 1,
       name: state.name,
-      classId: state.classId,
-      streamId: state.streamId,
+      classId: isStreamed.value ? "" : state.classId,
+      streamId: isStreamed.value ? state.streamId : "",
     });
 
     toast.add({
@@ -231,7 +240,7 @@ const onSubmit = async (event: FormSubmitEvent<SubjectGroupForm>) => {
       color: "success",
     });
 
-    store.fetchAll(1, runtimeConf().limit);
+    emit("saved");
     close();
   } catch (err: any) {
     toast.add({

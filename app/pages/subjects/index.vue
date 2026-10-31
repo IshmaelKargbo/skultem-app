@@ -5,7 +5,7 @@
             <template #header>
                 <div class="flex px-4 py-3 items-center justify-between gap-2">
                     <div class="flex flex-1 items-center gap-2">
-                        <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
+                        <SubjectAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" @saved="fetchRecords" />
                         <div class="flex flex-1 items-center gap-2">
                             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name or code" class="flex-1" />
                             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter subjects" description="Change how subjects are sorted" />
@@ -18,7 +18,7 @@
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
-                        <p class="text-gray-500">No stream subject found.</p>
+                        <p class="text-gray-500">No subjects found.</p>
                     </div>
                 </template>
                 <template #loading>
@@ -91,7 +91,7 @@
             </template>
         </UCard>
 
-        <SubjectEdit v-model:open="editState" :record="editRcord" />
+        <SubjectEdit v-model:open="editState" :record="editRcord" @saved="fetchRecords" />
 
         <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete Subject"
             :item-name="deleteTarget.name" :on-confirm="confirmDelete"
@@ -255,13 +255,7 @@ function updateQuery(query: Record<string, any>) {
 }
 
 async function fetchRecords() {
-    try {
-        loading.value = true;
-
-        await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value);
-    } finally {
-        loading.value = false;
-    }
+    await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value);
 }
 
 watch(

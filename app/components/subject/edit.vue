@@ -91,6 +91,7 @@ const { open, record } = defineProps<{
 
 const emit = defineEmits<{
   "update:open": [boolean]
+  saved: []
 }>()
 
 const store = useSubjectStore();
@@ -134,7 +135,7 @@ const onSubmit = async (event: FormSubmitEvent<SubjectForm>) => {
       description: state.description,
     });
 
-    await store.fetchAll();
+    emit("saved");
     toastSuccess("Subject edited successfully");
     close();
   } catch (err: any) {
@@ -144,8 +145,10 @@ const onSubmit = async (event: FormSubmitEvent<SubjectForm>) => {
   }
 };
 
-watch(() => record, (value) => {
-  if (!value) return
+// Reload on every open, not just when the record changes - otherwise cancelling an edit and
+// reopening the same subject shows the abandoned changes.
+watch(() => [record, open] as const, ([value, isOpen]) => {
+  if (!value || !isOpen) return
   state.name = value.name
   state.code = value.code
   state.description = value.description

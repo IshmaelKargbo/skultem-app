@@ -4,7 +4,7 @@
         <Heading title="Assign Subjects to Class" subtitle="Define the curriculum structure for this class.">
             <UFormField class="w-full md:w-auto md:min-w-sm" name="classId">
                 <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
-                    @change="fetchRecord" :items="classes" placeholder="Choose a class" class="w-full" />
+                    :items="classes" placeholder="Choose a class" class="w-full" />
             </UFormField>
         </Heading>
 
@@ -38,7 +38,7 @@
 
             <!-- Desktop / tablet: table -->
             <div class="hidden md:block">
-                <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
+                <UTable :columns="columns" :loading="loadingAssignments" :data="loadingAssignments ? [] : state.assignments">
                     <!-- # column -->
                     <template #index-cell="{ row }">
                         <span class="text-sm text-gray-400 tabular-nums">{{ row.index + 1 }}</span>
@@ -80,6 +80,10 @@
                         </div>
                     </template>
 
+                    <template #loading>
+                        <TableLoading :size="columns.length" />
+                    </template>
+
                     <!-- Empty state -->
                     <template #empty>
                         <div class="border border-dashed border-gray-300 rounded-lg p-10 text-center">
@@ -93,7 +97,14 @@
 
             <!-- Mobile: stacked cards, one per assignment -->
             <div class="md:hidden">
-                <div v-if="!state.assignments.length"
+                <div v-if="loadingAssignments" class="divide-y divide-gray-200 dark:divide-gray-800">
+                    <div v-for="i in 3" :key="i" class="py-4 space-y-3">
+                        <USkeleton class="h-3 w-20 rounded-md" />
+                        <USkeleton class="h-8 w-full rounded-md" />
+                        <USkeleton class="h-8 w-full rounded-md" />
+                    </div>
+                </div>
+                <div v-else-if="!state.assignments.length"
                     class="border border-dashed border-gray-300 rounded-lg m-4 p-10 text-center">
                     <UIcon name="lucide:book-open" class="mx-auto mb-3 size-8 text-gray-300" />
                     <p class="text-sm text-gray-500 mb-4">No subjects assigned yet.</p>
@@ -147,7 +158,7 @@
             <template #footer>
                 <div class="flex flex-col gap-3 sm:flex-row">
                     <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
-                        class="w-full justify-center sm:w-auto" />
+                        :disabled="loadingAssignments" class="w-full justify-center sm:w-auto" />
                     <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm"
                         class="w-full justify-center sm:w-auto" />
                 </div>
@@ -174,7 +185,7 @@
             <UButton color="neutral" variant="outline" label="Cancel" class="flex-1 justify-center"
                 @click="resetForm" />
             <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
-                class="flex-1 justify-center" @click="onSubmit" />
+                :disabled="loadingAssignments" class="flex-1 justify-center" />
         </div>
     </UForm>
 </template>
@@ -204,6 +215,8 @@ type ClassSubjectForm = {
 }
 
 const saving = ref(false)
+const loadingAssignments = ref(false)
+let latestClassRequest = 0
 const groups = ref<{ label: string; value: string }[]>([])
 
 const state = reactive<ClassSubjectForm>({
@@ -296,15 +309,37 @@ function resetForm() {
 }
 
 async function fetchRecord() {
+    state.assignments = []
+    groups.value = []
     if (!state.classId) return
     const clazzId = selectedClass.value?.clazzId
     const streamId = selectedClass.value?.streamId
 
     if (!clazzId) return
 
-    const list = streamId
-        ? await store.fetchAllByClassAndStream(clazzId, streamId, 0, 0, selectedClass.value?.sectionId)
-        : await store.fetchAllByClass(clazzId, 0, 0)
+    // Switching class quickly must not let an older class's response land on the newer one.
+    const request = ++latestClassRequest
+    loadingAssignments.value = true
+
+    // Streamed classes (SSS) keep their subject groups on the stream, not the class - loading by
+    // class alone left the Group dropdown empty for them. Size 0 = all groups, not just page 1.
+    const [list, groupRes] = await Promise.all([
+        streamId
+            ? store.fetchAllByClassAndStream(clazzId, streamId, 0, 0, selectedClass.value?.sectionId)
+            : store.fetchAllByClass(clazzId, 0, 0),
+        streamId
+            ? subjectGroupStore.fetchAllByStream(streamId, 0, 0)
+            : subjectGroupStore.fetchAllByClass(clazzId, 0, 0),
+    ]).finally(() => {
+        if (request === latestClassRequest) loadingAssignments.value = false
+    })
+
+    if (request !== latestClassRequest) return
+
+    groups.value = (groupRes || []).map((e: SubjectGroup) => ({
+        label: `${e.name} (${e.totalSelection})`,
+        value: e.id
+    }))
 
     if (list?.length) {
         state.assignments = list.map((e: ClassSubject) => ({
@@ -317,16 +352,9 @@ async function fetchRecord() {
         state.assignments = []
         add()
     }
-
-    const groupRes = await subjectGroupStore.fetchAllByClass(clazzId)
-
-    if (groupRes) {
-        groups.value = groupRes.map((e: SubjectGroup) => ({
-            label: `${e.name} (${e.totalSelection})`,
-            value: e.id
-        }))
-    }
 }
+
+watch(() => state.classId, fetchRecord)
 
 async function onSubmit() {
     try {

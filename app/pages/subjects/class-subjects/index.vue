@@ -5,6 +5,9 @@ const showDuplicate = ref(false);
 const route = useRoute();
 const router = useRouter();
 const store = useClassSubjectStore();
+const { can } = useAuth();
+// Teachers can view class subjects but the backend only lets admins/leadership change them.
+const canManage = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]));
 const clazzStore = useClassStore();
 const streamStore = useStreamStore();
 const sectionStore = useSectionStore();
@@ -109,7 +112,6 @@ watch(searchInput, (val) => {
 });
 
 async function fetchRecord() {
-  loading.value = true;
   await store.fetchAll(
     page.value,
     size.value,
@@ -121,7 +123,6 @@ async function fetchRecord() {
     streamId.value || undefined,
     sectionId.value || undefined
   );
-  loading.value = false;
 }
 
 watch(
@@ -169,10 +170,12 @@ definePageMeta({
       <template #header>
           <div class="flex px-4 py-3 items-center justify-between gap-2">
               <div class="flex flex-1 items-center gap-2">
-                  <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject" :icon="ASSIGN_ICON" />
-                  <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
-                  <UButton color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..." icon="lucide:copy" @click="showDuplicate = true" />
-                  <UButton color="neutral" variant="outline" class="md:hidden" icon="lucide:copy" @click="showDuplicate = true" />
+                  <template v-if="canManage">
+                    <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject" :icon="ASSIGN_ICON" />
+                    <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
+                    <UButton color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..." icon="lucide:copy" @click="showDuplicate = true" />
+                    <UButton color="neutral" variant="outline" class="md:hidden" icon="lucide:copy" @click="showDuplicate = true" />
+                  </template>
                   <div class="flex flex-1 items-center gap-2">
                       <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by class, subject, or stream..." class="flex-1" />
                       <FilterDrawer v-model="filters" :fields="filterFields" title="Filter class subjects" description="Narrow the list by class or type, or change the sort" />

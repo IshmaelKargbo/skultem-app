@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 
+let latestListRequest = 0
+
 export const useClassSubjectStore = defineStore('classSubject', {
   state: () => ({
     records: [] as ClassSubject[],
@@ -10,16 +12,21 @@ export const useClassSubjectStore = defineStore('classSubject', {
 
   actions: {
     async fetchAll(page: number = 1, size: number = runtimeConf().limit, classId?: string, mandatory?: boolean, query?: string, sortBy?: string, direction?: string, streamId?: string, sectionId?: string) {
+      // Only the latest request may update the list, so a slow older response can't overwrite
+      // newer results or clear the loading state early.
+      const request = ++latestListRequest
       this.loading = true
       this.error = null
       try {
         const response = await ClassSubjectApi().getAll(page, size, classId, mandatory, query, sortBy, direction, streamId, sectionId) as any
+        if (request !== latestListRequest) return
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {
+        if (request !== latestListRequest) return
         this.error = err.data?.message || 'Failed to fetch class subjects'
       } finally {
-        this.loading = false
+        if (request === latestListRequest) this.loading = false
       }
     },
     async fetchAllByClass(id: string, page: number = 1, size: number = runtimeConf().limit) {

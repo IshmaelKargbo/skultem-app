@@ -108,10 +108,8 @@ watch(searchInput, (val) => {
 });
 
 async function fetchRecord() {
-  loading.value = true;
   await store.fetchAll(page.value, size.value, classId.value || undefined, streamId.value || undefined,
     search.value || undefined, sortBy.value, sortDirection.value);
-  loading.value = false;
 }
 
 watch(
@@ -148,7 +146,6 @@ onMounted(async () => {
 
   clazzStore.fetchAll(0, 0);
   streamStore.fetchAll(0, 0);
-  fetchRecord();
   useAppStore().setTitle('Teacher Assignment')
   document.title = 'Teacher Assignment | Subjects | Skultem'
 })

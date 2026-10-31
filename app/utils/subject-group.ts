@@ -2,8 +2,15 @@ export type SubjectGroup = {
     id: string
     name: string
     className: string
+    classId: string
     streamName: string
-    totalSelection: string
+    streamId: string
+    totalSelection: number
+}
+
+export type EditSubjectGroupDto = {
+    name: string
+    totalSelection: number
 }
 
 export type CreateSubjectGroupDto = {

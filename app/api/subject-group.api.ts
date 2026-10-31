@@ -65,6 +65,23 @@ export const SubjectGroupApi = () => {
       } catch (err: any) {
         useHandleError(err)
       }
+    },
+    edit: async (id: string, payload: EditSubjectGroupDto) => {
+      try {
+        return await $api(`/subject-group/${id}`, {
+          method: 'PATCH',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    remove: async (id: string) => {
+      try {
+        return await $api(`/subject-group/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
     }
   }
 }

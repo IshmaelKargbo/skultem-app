@@ -118,6 +118,7 @@ import { reactive, ref } from "vue";
 import type { FormSubmitEvent } from "#ui/types";
 
 const store = useSubjectStore();
+const emit = defineEmits<{ saved: [] }>();
 const { error: toastError, success: toastSuccess } = useNotify();
 const isLoading = ref(false);
 
@@ -162,7 +163,7 @@ const onSubmit = async (event: FormSubmitEvent<SubjectForm>) => {
       description: state.description,
     });
 
-    await store.fetchAll();
+    emit("saved");
     toastSuccess("Subject created successfully");
     close();
   } catch (err: any) {
@@ -172,7 +173,4 @@ const onSubmit = async (event: FormSubmitEvent<SubjectForm>) => {
   }
 };
 
-onMounted(() => {
-  store.fetchAll();
-});
 </script>

@@ -1,7 +1,7 @@
 <template>
   <UForm class="px-4 md:px-6 space-y-3" :state="state" :schema="schema" @submit="onSubmit">
     <Heading title="Assign Class Subjects to Teacher" subtitle="Define the curriculum structure for this class.">
-      <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId" @change="fetchRecord"
+      <USelectMenu value-key="value" :loading="classStore.loading" v-model="state.classId"
         :items="classes" placeholder="Choose a class" class="w-56" />
     </Heading>
     <UCard v-if="state.classId" :ui="{
@@ -47,7 +47,10 @@
 
       <!-- Desktop / tablet: table -->
       <div class="hidden md:block">
-        <UTable :columns="columns" :loading="store.loading" :data="state.assignments">
+        <UTable :columns="columns" :loading="loading" :data="loading ? [] : state.assignments">
+          <template #loading>
+            <TableLoading :size="columns.length" />
+          </template>
           <!-- Subject -->
           <template #subjectId-cell="{ row }">
             <UFormField :name="`assignments.${row.index}.subjectId`">
@@ -66,7 +69,14 @@
       </div>
 
       <!-- Mobile: stacked cards, one per assignment -->
-      <div v-if="state.assignments.length" class="divide-y md:hidden divide-gray-200 dark:divide-gray-800">
+      <div v-if="loading" class="divide-y md:hidden divide-gray-200 dark:divide-gray-800">
+        <div v-for="i in 3" :key="i" class="p-4 space-y-3">
+          <USkeleton class="h-3 w-20 rounded-md" />
+          <USkeleton class="h-8 w-full rounded-md" />
+          <USkeleton class="h-8 w-full rounded-md" />
+        </div>
+      </div>
+      <div v-else-if="state.assignments.length" class="divide-y md:hidden divide-gray-200 dark:divide-gray-800">
         <div v-for="(assignment, index) in state.assignments" :key="assignment.subjectId" class="p-4 space-y-3">
           <div>
             <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -91,7 +101,7 @@
       <template #footer>
         <div class="flex flex-col gap-3 sm:flex-row">
           <UButton type="submit" color="primary" icon="lucide:save" label="Save Changes" :loading="saving"
-            class="w-full justify-center sm:w-auto" />
+            :disabled="loading" class="w-full justify-center sm:w-auto" />
           <UButton color="neutral" variant="outline" label="Cancel" @click="resetForm"
             class="w-full justify-center sm:w-auto" />
         </div>
@@ -124,7 +134,8 @@ const subjectStore = useSubjectStore();
 const classStore = useClassSessionStore();
 const classMasterStore = useClassStore();
 const teacherStore = useTeacherStore();
-const loading = ref(true);
+const loading = ref(false);
+let latestClassRequest = 0;
 const toast = useToast();
 
 const saving = ref(false);
@@ -226,17 +237,24 @@ function resetForm() {
 }
 
 async function fetchRecord() {
-  loading.value = true
-  if (!state.classId) return;
   state.assignments = [];
   classMasters.value = [];
   selectedMasterIds.value = [];
   existingAssignmentIds.value = {};
+  if (!state.classId) return;
+
+  // Switching class quickly must not let an older class's response land on the newer one.
+  const request = ++latestClassRequest;
+  loading.value = true;
 
   const [list, masters] = await Promise.all([
     store.fetchAllByClass(state.classId, 0, 0),
     classMasterStore.findClassMastersBySession(state.classId),
-  ]);
+  ]).finally(() => {
+    if (request === latestClassRequest) loading.value = false;
+  });
+
+  if (request !== latestClassRequest) return;
 
   if (list && list.length) {
     const bySubject = new Map<string, AssignmentRow>();
@@ -259,9 +277,9 @@ async function fetchRecord() {
     classMasters.value = masters;
     selectedMasterIds.value = masters.map((m: ClassMasterInfo) => m.teacher.id);
   }
-
-  loading.value = false
 }
+
+watch(() => state.classId, fetchRecord);
 
 async function onSubmit() {
   try {
