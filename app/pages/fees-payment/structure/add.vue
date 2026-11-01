@@ -8,6 +8,7 @@ const materialStore = useMaterialStore();
 const { isInstalled } = useModules();
 const suppliesAvailable = computed(() => isInstalled(ModuleKey.MATERIALS_AND_SUPPLIES));
 const clazzStore = useClassStore();
+const streamStore = useStreamStore();
 
 const { error: toastError, success: toastSuccess } = useNotify();
 
@@ -49,6 +50,17 @@ const classes = computed(() =>
   }))
 );
 
+const streams = computed(() =>
+  streamStore.records.map((e) => ({ label: e.name, value: e.id }))
+);
+
+// A stream only means something for streamed classes (SSS) - offer it when every picked class is one.
+const canPickStream = computed(() =>
+  state.assignMode === "CLASS" &&
+  state.classIds.length > 0 &&
+  state.classIds.every((id) => !!levelInfo(clazzStore.records.find((c) => c.id === id)?.level)?.streamed)
+);
+
 const genderOptions = [
   { label: "Boys Only", value: "MALE" },
   { label: "Girls Only", value: "FEMALE" },
@@ -71,6 +83,7 @@ type FeeStructureForm = {
   newStudentsOnly: boolean;
   oldStudentsOnly: boolean;
   gender: "" | "MALE" | "FEMALE";
+  streamId: string;
 };
 
 const state = reactive<FeeStructureForm>({
@@ -88,6 +101,12 @@ const state = reactive<FeeStructureForm>({
   newStudentsOnly: false,
   oldStudentsOnly: false,
   gender: "",
+  streamId: "",
+});
+
+// Drop a picked stream once it no longer applies (mode changed, or a non-streamed class added).
+watch(canPickStream, (ok) => {
+  if (!ok) state.streamId = "";
 });
 
 // Mutually exclusive - a fee can only target one side of the new/old student split.
@@ -180,6 +199,7 @@ async function onSubmit() {
       newStudentsOnly: !isSelection && state.newStudentsOnly,
       oldStudentsOnly: !isSelection && state.oldStudentsOnly,
       gender: !isSelection && state.gender ? state.gender : null,
+      streamId: canPickStream.value && state.streamId ? state.streamId : null,
     });
 
     await feeStructureStore.fetchAll();
@@ -205,6 +225,7 @@ onMounted(() => {
   feeCategoryStore.fetchAll(0, 0);
   termStore.fetchAll(0, 0);
   clazzStore.fetchAll(0, 0);
+  streamStore.fetchAll(0, 0);
   if (suppliesAvailable.value) materialStore.fetchAll(0, 0);
 });
 
@@ -341,6 +362,19 @@ definePageMeta({
                   <p class="text-xs text-muted">
                     Picking more than one class (e.g. Class 1 and Class 2) creates the same fee
                     independently for each - editing or deleting one later never touches the others.
+                  </p>
+                </template>
+              </UFormField>
+
+              <!-- Stream (streamed classes only) -->
+              <UFormField v-if="canPickStream" label="Stream" name="streamId">
+                <USelectMenu v-model="state.streamId" value-key="value" :items="streams" placeholder="All Streams"
+                  clear :disabled="isLoading" />
+
+                <template #help>
+                  <p class="text-xs text-muted">
+                    Charge only one stream - e.g. SSS 1 Science priced differently from SSS 1 Art.
+                    Create one fee per stream; leave empty to charge every stream the same.
                   </p>
                 </template>
               </UFormField>

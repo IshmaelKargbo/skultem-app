@@ -11,6 +11,9 @@ const DEFAULT_SETTINGS: PayslipSetting = {
 export const usePayslipSettingStore = defineStore('payslipSetting', {
     state: () => ({
         settings: { ...DEFAULT_SETTINGS },
+        // Last saved copy - the design page edits `settings` live, so leaving it without saving
+        // restores this; otherwise payslips (and their PDFs) would show the unsaved design.
+        savedSettings: { ...DEFAULT_SETTINGS },
         loaded: false,
         loading: false
     }),
@@ -30,6 +33,7 @@ export const usePayslipSettingStore = defineStore('payslipSetting', {
                     showAmountInWords: res.showAmountInWords
                 })
 
+                this.savedSettings = { ...this.settings }
                 this.loaded = true
             } finally {
                 this.loading = false
@@ -37,7 +41,13 @@ export const usePayslipSettingStore = defineStore('payslipSetting', {
         },
 
         async save() {
-            return await PayslipSettingApi().save(this.settings)
+            const res = await PayslipSettingApi().save(this.settings)
+            this.savedSettings = { ...this.settings }
+            return res
+        },
+
+        discardChanges() {
+            Object.assign(this.settings, this.savedSettings)
         }
     }
 })

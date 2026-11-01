@@ -64,7 +64,8 @@
 const { isInstalled } = useModules()
 const { can } = useAuth()
 // Owner, proprietor and principal share this dashboard but don't clock in; admin does.
-const canClockIn = computed(() => can(Role.ADMIN))
+// Everyone on this dashboard except the owner (see CLOCK_IN_ROLES).
+const canClockIn = computed(() => can(CLOCK_IN_ROLES))
 
 onMounted(() => {
     useAppStore().setTitle('Dashboard')

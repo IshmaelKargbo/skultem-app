@@ -180,6 +180,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.ACCOUNTANT, Role.TEACHER, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE]
 })
 </script>

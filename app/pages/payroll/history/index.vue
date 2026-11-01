@@ -57,6 +57,17 @@
       </UCard>
     </template>
 
+    <!-- Couldn't load (e.g. not on staff/payroll records yet) - not the same as "no payslips". -->
+    <UCard v-else-if="error">
+      <div class="flex flex-col items-center gap-2 py-16 text-center">
+        <UIcon name="i-lucide-circle-alert" class="text-3xl text-error" />
+        <p class="text-sm font-semibold text-highlighted">Couldn't load your payslips</p>
+        <p class="max-w-xs text-xs text-muted">{{ error }}</p>
+        <UButton label="Try again" :icon="REFRESH_ICON" color="primary" variant="soft" size="sm"
+          @click="store.fetchMySalaryHistory()" />
+      </div>
+    </UCard>
+
     <UCard v-else>
       <div class="flex flex-col items-center gap-2 py-16 text-center">
         <UIcon name="i-lucide-receipt" class="text-3xl text-muted" />
@@ -69,7 +80,7 @@
 
 <script setup lang="ts">
 const store = usePayrollStore()
-const { salaryHistory: history, loadingSalary: loading } = storeToRefs(store)
+const { salaryHistory: history, loadingSalary: loading, error } = storeToRefs(store)
 
 const latest = computed(() => history.value[0])
 
@@ -81,13 +92,12 @@ function formatCurrency(value?: number | null) {
 
 onMounted(async () => {
   useAppStore().setTitle('My Payslips')
-  useAppStore().setBack('/')
   document.title = 'My Payslips | Skultem'
 
   await store.fetchMySalaryHistory()
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.NURSE]
 })
 </script>

@@ -11,7 +11,10 @@ const classSessionStore = useClassSessionStore()
 const { records: teacherRecords } = storeToRefs(sessionStore)
 const { requests, meta } = storeToRefs(store)
 
-const isLoading = ref(false)
+// Starts true so the list shows skeletons, not "no requests", before the first load lands.
+const isLoading = ref(true)
+const loadError = ref<string | null>(null)
+const loadingSummary = ref(true)
 const loadingSession = ref(true)
 const loadingClasses = ref(true)
 const summary = ref<AssessmentApprovalSummary | null>(null)
@@ -45,6 +48,19 @@ const page = computed<number>({
 
 const size = ref(10)
 
+const skeletonRows = computed(() => Math.min(size.value, 6))
+
+// Any search or filter on - an empty list then means "nothing matches", not "nothing submitted".
+const isFiltered = computed(() => !!(teacherId.value || classId.value || status.value || search.value))
+
+function clearFilters() {
+  searchInput.value = ''
+  search.value = ''
+  teacherId.value = ''
+  classId.value = ''
+  status.value = ''
+}
+
 // What the filter drawer holds (search sits outside it).
 const activeFilterCount = computed(() => [teacherId.value, classId.value, status.value].filter(Boolean).length)
 
@@ -62,14 +78,24 @@ watch(searchInput, (val) => {
 })
 
 // "" (All Teachers, the default) means school-wide - see the teachers computed above.
+let latestSummary = 0
 async function fetchSummary() {
-  summary.value = teacherId.value
+  const request = ++latestSummary
+  loadingSummary.value = true
+  const res = teacherId.value
     ? await store.fetchAssessmentApprovalSummary(teacherId.value)
     : await store.fetchSchoolAssessmentApprovalSummary()
+  if (request !== latestSummary) return
+  summary.value = res
+  loadingSummary.value = false
 }
 
+// Only the newest request may update the list, so a slow older one can't overwrite it.
+let latestRecords = 0
 async function fetchRecords() {
+  const request = ++latestRecords
   isLoading.value = true
+  loadError.value = null
 
   try {
     if (teacherId.value) {
@@ -82,8 +108,10 @@ async function fetchRecords() {
         page.value, size.value, status.value || undefined, search.value || undefined, classId.value || undefined
       )
     }
+    if (request !== latestRecords) return
+    loadError.value = store.error
   } finally {
-    isLoading.value = false
+    if (request === latestRecords) isLoading.value = false
   }
 }
 
@@ -108,14 +136,15 @@ onMounted(async () => {
   useAppStore().setTitle('Grade Approval Requests')
   document.title = 'Grade Approval Requests | Grades | Skultem'
 
+  // The list doesn't need the filter dropdowns - load it right away instead of after them.
+  fetchRecords()
+
   loadingSession.value = true
   loadingClasses.value = true
   await Promise.all([
     sessionStore.fetchAll(0, 0).finally(() => { loadingSession.value = false }),
     classSessionStore.fetchAll(0, 0).finally(() => { loadingClasses.value = false }),
   ])
-
-  await fetchRecords()
 })
 
 definePageMeta({
@@ -132,7 +161,11 @@ definePageMeta({
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
             <h2 class="text-sm font-semibold text-highlighted">Grade Approval</h2>
 
-            <div class="flex items-center gap-2">
+            <!-- Skeletons until the counts arrive, so they never flash "0". -->
+            <div v-if="loadingSummary && !summary" class="flex items-center gap-2">
+              <USkeleton v-for="i in 3" :key="i" class="h-5 w-20 rounded-md" />
+            </div>
+            <div v-else class="flex items-center gap-2">
               <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
               <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
               <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>
@@ -150,21 +183,17 @@ definePageMeta({
         </div>
       </template>
 
-      <div class="space-y-4">
+      <div>
         <!-- LOADING -->
-        <div v-if="isLoading" class="space-y-3">
-          <GradesRecordLoading v-for="(_, index) in 6" :key="index" />
+        <div v-if="isLoading" class="divide-y divide-default">
+          <GradesRecordLoading v-for="i in skeletonRows" :key="i" />
         </div>
 
-        <!-- EMPTY -->
-        <div v-else-if="!requests.length"
-          class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-16 text-center">
-          <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-elevated">
-            <UIcon name="lucide:inbox" class="text-3xl text-muted" />
-          </div>
-          <h3 class="font-semibold text-highlighted">No requests found</h3>
-          <p class="text-sm text-muted">No approval requests match this filter.</p>
-        </div>
+        <!-- ERROR / EMPTY -->
+        <GradesApprovalListState v-else-if="loadError || !requests.length" :error="loadError"
+          :filtered="isFiltered" empty-title="No grades waiting for approval"
+          empty-description="When teachers submit grades for review, they'll show up here."
+          @retry="fetchRecords" @clear="clearFilters" />
 
         <!-- LIST -->
         <div v-else>
@@ -173,7 +202,7 @@ definePageMeta({
         </div>
       </div>
 
-      <template v-if="meta.total" #footer>
+      <template v-if="!isLoading && !loadError && meta.total" #footer>
         <div class="flex items-center justify-between">
           <Showing :meta="meta" />
           <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"

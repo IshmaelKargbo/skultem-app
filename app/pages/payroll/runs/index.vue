@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-
     <Heading title="Payroll Runs" subtitle="Every payroll cycle, past and present.">
       <UButton icon="i-lucide-play" to="/payroll/runs/new" label="Start Payroll Run" />
     </Heading>
@@ -151,7 +150,6 @@ watch(() => [route.query.page, route.query.search, route.query.status, route.que
 
 onMounted(() => {
   useAppStore().setTitle('Payroll Runs')
-  useAppStore().setBack('/payroll')
   document.title = 'Payroll Runs | Payroll | Skultem'
 
   load()

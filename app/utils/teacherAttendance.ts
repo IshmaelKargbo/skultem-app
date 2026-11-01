@@ -137,3 +137,10 @@ export function teacherAttendanceStatusColor(status?: TeacherAttendanceStatus | 
             return 'neutral'
     }
 }
+
+// Roles that clock themselves in/out - every staff role except the owner (and parents, who
+// aren't staff). Mirrors TeacherAttendanceController's self-service endpoints.
+export const CLOCK_IN_ROLES = [
+    Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR,
+    Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE,
+]

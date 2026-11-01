@@ -93,6 +93,7 @@ export type Payslip = {
     schoolId: string
     payrollRunId: string
     payrollRunPeriod: string | null
+    payDate?: string | null
     teacher: Teacher
     basicSalary: number
     allowances: number
@@ -100,9 +101,15 @@ export type Payslip = {
     grossSalary: number
     netSalary: number
     included: boolean
+    // Each allowance/deduction as it was when the run was created. Empty on older payslips -
+    // those only have the totals above.
+    allowanceLines?: PayslipLine[]
+    deductionLines?: PayslipLine[]
     createdAt: string
     updatedAt: string
 }
+
+export type PayslipLine = { name: string, amount: number }
 
 export type PayrollRunDetail = {
     run: PayrollRun
@@ -112,6 +119,10 @@ export type PayrollRunDetail = {
     netTotal: number
     includedCount: number
     totalCount: number
+    // What the run put through the school's transactions (its expense minus corrections) - null
+    // while a draft, since nothing is recorded until it's generated.
+    transactionsAmount?: number | null
+    transactionCorrections?: number
 }
 
 export type PayrollSummary = {

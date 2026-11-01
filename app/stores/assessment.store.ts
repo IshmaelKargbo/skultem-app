@@ -90,7 +90,7 @@ export const useAssessmentStore = defineStore('assessment', {
         this.meta = meta
         this.requests = data
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval requests'
+        this.error = err?.message || err.data?.message || 'Failed to fetch approval requests'
       } finally {
         this.loading = false
       }
@@ -99,7 +99,7 @@ export const useAssessmentStore = defineStore('assessment', {
       try {
         return await AssessmentApi().getSchoolAssessmentApprovalSummary() || null
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval summary'
+        this.error = err?.message || err.data?.message || 'Failed to fetch approval summary'
         return null
       }
     },
@@ -114,7 +114,7 @@ export const useAssessmentStore = defineStore('assessment', {
         this.meta = meta
         this.requests = data
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval requests'
+        this.error = err?.message || err.data?.message || 'Failed to fetch approval requests'
       } finally {
         this.loading = false
       }
@@ -126,7 +126,7 @@ export const useAssessmentStore = defineStore('assessment', {
       try {
         return await AssessmentApi().getAssessmentApprovalSummary(teacherId) || null
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval summary'
+        this.error = err?.message || err.data?.message || 'Failed to fetch approval summary'
         return null
       }
     },
@@ -137,7 +137,7 @@ export const useAssessmentStore = defineStore('assessment', {
         const response = await AssessmentApi().getAllMeAssessmentApprovalRequest(page, size, status, search, classId) as any
         return response || []
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval requests'
+        this.error = err?.message || err.data?.message || 'Failed to fetch approval requests'
       } finally {
         this.loading = false
       }
@@ -146,7 +146,7 @@ export const useAssessmentStore = defineStore('assessment', {
       try {
         return await AssessmentApi().getMeAssessmentApprovalSummary() || null
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch approval summary'
+        this.error = err?.message || err.data?.message || 'Failed to fetch approval summary'
         return null
       }
     },

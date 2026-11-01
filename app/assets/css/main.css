@@ -30,6 +30,25 @@
   --app-border: #1f2937;
 }
 
+/* Tells the browser which theme is showing, so built-in controls match it. Without this, a date
+   field's calendar icon (and its popup) stays dark-on-dark in dark mode - easy to miss, and the
+   icon is the only part Chrome opens the calendar from. */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* The whole date/time field is clickable (see plugins/date-input-picker.client.ts). */
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"] {
+  cursor: pointer;
+}
+
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--color-primary-500) #fdfbfb;

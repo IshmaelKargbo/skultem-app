@@ -64,6 +64,9 @@ export type FeeStructure = {
     newStudentsOnly: boolean
     oldStudentsOnly: boolean
     gender?: 'MALE' | 'FEMALE' | null
+    // Set when a class fee only applies to one stream (e.g. SSS 1 Science vs SSS 1 Art).
+    streamId?: string | null
+    streamName?: string | null
     createdAt: string
     updatedAt: string
 }
@@ -193,6 +196,9 @@ export type CreateFeeStructureDto = {
     // Null/undefined reaches every gender - most useful for a supply fee (hasSupply) priced
     // differently for boys vs girls (two fees, same category/term/class, one MALE and one FEMALE).
     gender?: 'MALE' | 'FEMALE' | null
+    // CLASS only, and only for streamed classes (SSS): charge just this stream - e.g. SSS 1
+    // Science priced differently from SSS 1 Art. Null/undefined charges every stream.
+    streamId?: string | null
 }
 
 // What a fee structure applies to (academic year, class, type) can't be changed after

@@ -1,11 +1,19 @@
 <template>
-  <div class="mx-auto max-w-2xl space-y-3 px-4 md:px-6">
-
+  <div class="space-y-3 px-4 md:px-6">
     <Heading title="Start Payroll Run"
       subtitle="Every teacher with a salary structure set up will be included automatically — you can exclude anyone before generating." />
 
     <UForm ref="formRef" :state="state" :schema="schema" class="space-y-4" @submit="onSubmit">
       <UCard>
+        <template #header>
+          <UAlert v-if="summary && summary.teacherCount === 0" color="warning" variant="soft"
+            icon="i-lucide-triangle-alert" title="No active staff with a salary yet"
+            description="Add a salary for at least one active staff member before starting a payroll run." />
+
+          <UAlert v-else-if="summary" color="neutral" variant="soft" icon="i-lucide-info"
+            :title="`${summary.teacherCount} employee${summary.teacherCount === 1 ? '' : 's'} will be included`"
+            description="You can exclude specific employees from the run detail page before generating." />
+        </template>
         <div class="grid gap-5 md:grid-cols-2">
           <UFormField label="Period" name="period" required hint="e.g. June 2026">
             <UInput v-model="state.period" placeholder="June 2026" class="w-full" />
@@ -15,22 +23,15 @@
             <UInput v-model="state.payDate" type="date" class="w-full" />
           </UFormField>
         </div>
+        <template #footer>
+          <div class="flex gap-3">
+            <UButton variant="outline" color="neutral" to="/payroll/runs" label="Cancel" />
+            <UButton type="submit" icon="i-lucide-play" :loading="saving" :disabled="!summary?.teacherCount"
+              label="Create Run" />
+          </div>
+        </template>
       </UCard>
-
-      <UAlert v-if="summary && summary.teacherCount === 0" color="warning" variant="soft"
-        icon="i-lucide-triangle-alert" title="No salary structures yet"
-        description="Add at least one teacher's salary before starting a payroll run." />
-
-      <UAlert v-else-if="summary" color="neutral" variant="soft" icon="i-lucide-info"
-        :title="`${summary.teacherCount} employee${summary.teacherCount === 1 ? '' : 's'} will be included`"
-        description="You can exclude specific employees from the run detail page before generating." />
-
-      <div class="flex gap-3">
-        <UButton variant="outline" color="neutral" to="/payroll/runs" label="Cancel" />
-        <UButton type="submit" icon="i-lucide-play" :loading="saving" :disabled="!summary?.teacherCount" label="Create Run" />
-      </div>
     </UForm>
-
   </div>
 </template>
 
@@ -74,7 +75,8 @@ onMounted(() => {
   useAppStore().setBack('/payroll/runs')
   document.title = 'Start Payroll Run | Payroll | Skultem'
 
-  if (!summary.value) store.fetchSummary()
+  // Always refresh - a cached count could be out of date after salaries changed.
+  store.fetchSummary()
 })
 
 definePageMeta({

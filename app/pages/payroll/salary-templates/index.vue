@@ -252,7 +252,6 @@ async function confirmDelete() {
 
 onMounted(() => {
   useAppStore().setTitle('Salary Templates')
-  useAppStore().setBack('/payroll/salaries')
   document.title = 'Salary Templates | Payroll | Skultem'
 
   load()

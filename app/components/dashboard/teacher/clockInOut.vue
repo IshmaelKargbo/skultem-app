@@ -73,6 +73,8 @@
                 :square="!dayComplete" />
         </div>
 
+        <UAlert v-if="!lastError && loadError" color="warning" variant="soft" icon="i-lucide-info"
+            title="Clock in isn't set up for you" :description="loadError" />
         <UAlert v-if="lastError" color="error" variant="soft" icon="i-lucide-alert-circle" :title="lastErrorTitle"
             :description="lastError" />
         </template>
@@ -81,7 +83,9 @@
 
 <script setup lang="ts">
 const store = useTeacherAttendanceStore()
-const { myToday, loadingMyToday, clockingIn, clockingOut } = storeToRefs(store)
+const { myToday, loadingMyToday, clockingIn, clockingOut, error: storeError } = storeToRefs(store)
+// Today's status couldn't load - usually no staff/payroll record yet (the message says so).
+const loadError = computed(() => !myToday.value && !loadingMyToday.value ? storeError.value : null)
 const notify = useNotify()
 
 const lastError = ref('')

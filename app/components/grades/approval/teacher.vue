@@ -16,6 +16,8 @@ const classOptions = computed(() => {
 })
 
 const isLoading = ref(true)
+const loadError = ref<string | null>(null)
+const loadingSummary = ref(true)
 const requests = ref<AssessmentApprovalRequest[]>([])
 const meta = ref<Meta>()
 const summary = ref<AssessmentApprovalSummary | null>(null)
@@ -31,6 +33,18 @@ const searchInput = ref(String(route.query.search ?? ''))
 const search = ref(searchInput.value)
 
 const size = ref(5)
+
+const skeletonRows = computed(() => Math.min(size.value, 6))
+
+// Any search or filter on - an empty list then means "nothing matches", not "nothing submitted".
+const isFiltered = computed(() => !!(classId.value || status.value || search.value))
+
+function clearFilters() {
+  searchInput.value = ''
+  search.value = ''
+  classId.value = ''
+  status.value = ''
+}
 
 // What the filter drawer holds (search sits outside it).
 const activeFilterCount = computed(() => [classId.value, status.value].filter(Boolean).length)
@@ -48,23 +62,36 @@ watch(searchInput, (val) => {
   }, 350)
 })
 
+// Only the newest request may update the list, so a slow older one can't overwrite it.
+let latestRecords = 0
 async function fetchRecords() {
+  const request = ++latestRecords
   isLoading.value = true
+  loadError.value = null
 
   try {
     const res = await store.fetchAllMeAssessmentApprovalRequest(
       page.value, size.value, status.value || undefined, search.value || undefined, classId.value || undefined
     )
+    if (request !== latestRecords) return
 
+    // The store returns nothing when the request failed - show that instead of a stale list.
+    if (!res) {
+      requests.value = []
+      loadError.value = store.error || 'Failed to fetch approval requests'
+      return
+    }
     requests.value = res.data || []
     meta.value = res.meta
   } finally {
-    isLoading.value = false
+    if (request === latestRecords) isLoading.value = false
   }
 }
 
 async function fetchSummary() {
+  loadingSummary.value = true
   summary.value = await store.fetchMeAssessmentApprovalSummary()
+  loadingSummary.value = false
 }
 
 watch(() => page.value, () => fetchRecords())
@@ -100,7 +127,11 @@ definePageMeta({
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
             <h2 class="text-sm font-semibold text-highlighted">My Approval Queue</h2>
 
-            <div class="flex items-center gap-2">
+            <!-- Skeletons until the counts arrive, so they never flash "0". -->
+            <div v-if="loadingSummary && !summary" class="flex items-center gap-2">
+              <USkeleton v-for="i in 3" :key="i" class="h-5 w-20 rounded-md" />
+            </div>
+            <div v-else class="flex items-center gap-2">
               <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
               <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
               <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>
@@ -117,21 +148,17 @@ definePageMeta({
         </div>
       </template>
 
-      <div class="space-y-4">
+      <div>
         <!-- LOADING -->
-        <div v-if="isLoading" class="space-y-3">
-          <GradesRecordLoading v-for="(_, index) in 6" :key="index" />
+        <div v-if="isLoading" class="divide-y divide-default">
+          <GradesRecordLoading v-for="i in skeletonRows" :key="i" />
         </div>
 
-        <!-- EMPTY -->
-        <div v-else-if="!requests.length"
-          class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-default py-16 text-center">
-          <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-elevated">
-            <UIcon name="lucide:inbox" class="text-3xl text-muted" />
-          </div>
-          <h3 class="font-semibold text-highlighted">No requests found</h3>
-          <p class="text-sm text-muted">No approval requests match this filter.</p>
-        </div>
+        <!-- ERROR / EMPTY -->
+        <GradesApprovalListState v-else-if="loadError || !requests.length" :error="loadError"
+          :filtered="isFiltered" empty-title="Your approval queue is empty"
+          empty-description="When subject teachers in your class submit grades for review, they'll show up here."
+          @retry="fetchRecords" @clear="clearFilters" />
 
         <!-- LIST -->
         <div v-else>
@@ -140,7 +167,7 @@ definePageMeta({
         </div>
       </div>
 
-      <template v-if="meta?.total" #footer>
+      <template v-if="!isLoading && !loadError && meta?.total" #footer>
         <div class="flex items-center justify-between gap-3">
           <Showing :meta="meta" />
           <UPagination v-model:page="page" size="sm" :page-size="meta?.size" :items-per-page="meta?.size"

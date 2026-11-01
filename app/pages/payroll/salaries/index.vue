@@ -255,7 +255,6 @@ watch(() => [route.query.page, route.query.search, route.query.sort], load)
 
 onMounted(() => {
   useAppStore().setTitle('Salary Structures')
-  useAppStore().setBack('/payroll')
   document.title = 'Salary Structures | Payroll | Skultem'
 
   load()

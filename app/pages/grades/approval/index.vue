@@ -2,8 +2,25 @@
   <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
 
   <template v-else-if="can(Role.TEACHER)">
-    <div v-if="loading || (!checked && !error)" class="px-4 md:px-6">
-      <USkeleton class="h-40 w-full rounded-2xl" />
+    <!-- Same shape as the approval list, so the page doesn't jump when it loads. -->
+    <div v-if="loading || (!checked && !error)" class="px-4 md:px-6 space-y-3">
+      <GradesSectionNav />
+      <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <template #header>
+          <div class="flex items-center justify-between gap-3 px-4 py-3">
+            <USkeleton class="h-4 w-36" />
+            <div class="flex gap-2">
+              <USkeleton v-for="i in 3" :key="i" class="h-5 w-20 rounded-md" />
+            </div>
+          </div>
+          <div class="border-t border-default px-4 py-3">
+            <USkeleton class="h-8 w-full rounded-md" />
+          </div>
+        </template>
+        <div class="divide-y divide-default">
+          <GradesRecordLoading v-for="i in 4" :key="i" />
+        </div>
+      </UCard>
     </div>
 
     <div v-else-if="error" class="px-4 md:px-6">

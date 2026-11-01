@@ -3,7 +3,9 @@
 
     <!-- Header -->
     <Heading title="Payslip Design" subtitle="Configure the payslip used across your school.">
-      <UButton icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
+      <!-- Disabled until the real settings load - saving the defaults would overwrite them. -->
+      <UButton icon="i-lucide-save" color="primary" :loading="saving" :disabled="fetching || !!loadError"
+        class="justify-center" @click="save">
         Save Settings
       </UButton>
     </Heading>
@@ -11,7 +13,15 @@
     <PayrollSectionNav />
 
     <DesignSkeleton v-if="fetching" />
-    <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
+    <UCard v-else-if="loadError">
+      <div class="flex flex-col items-center gap-3 py-12 text-center">
+        <UIcon name="i-lucide-circle-alert" class="size-8 text-error" />
+        <p class="font-semibold text-highlighted">Couldn't load payslip settings</p>
+        <p class="max-w-sm text-sm text-muted">{{ loadError }}</p>
+        <UButton label="Try again" :icon="REFRESH_ICON" color="primary" variant="soft" @click="load" />
+      </div>
+    </UCard>
+    <div v-show="!fetching && !loadError" class="grid gap-6 lg:grid-cols-3">
 
       <!-- Left -->
       <div class="lg:col-span-2 space-y-6">
@@ -127,6 +137,21 @@ const { settings } = storeToRefs(store)
 
 const saving = ref(false)
 const fetching = ref(true)
+const loadError = ref<string | null>(null)
+
+async function load() {
+  fetching.value = true
+  loadError.value = null
+  try {
+    await store.fetch()
+  } catch (err: any) {
+    loadError.value = err?.message || 'Something went wrong. Please try again.'
+  } finally {
+    fetching.value = false
+  }
+  await nextTick()
+  schedulePreviewMeasure()
+}
 
 const MAX_PREVIEW_SCALE = 0.4
 const DOC_WIDTH = 794
@@ -155,6 +180,8 @@ function schedulePreviewMeasure() {
 }
 
 onBeforeUnmount(() => {
+  // Leaving without saving drops the edits, so payslips keep showing the saved design.
+  store.discardChanges()
   previewResizeObserver?.disconnect()
   cancelAnimationFrame(previewMeasureRaf)
 })
@@ -188,6 +215,7 @@ const mockPayslip: Payslip = {
   schoolId: 'preview',
   payrollRunId: 'preview',
   payrollRunPeriod: 'June 2026',
+  payDate: '2026-06-28',
   teacher: {
     id: 'preview',
     title: 'MR',
@@ -210,6 +238,8 @@ const mockPayslip: Payslip = {
   grossSalary: 3500000,
   netSalary: 3250000,
   included: true,
+  allowanceLines: [{ name: 'Housing Allowance', amount: 300000 }, { name: 'Transport Allowance', amount: 200000 }],
+  deductionLines: [{ name: 'Income Tax (PAYE)', amount: 150000 }, { name: 'NASSIT', amount: 100000 }],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
 }
@@ -228,15 +258,12 @@ async function save() {
 
 onMounted(async () => {
   useAppStore().setTitle('Payslip Design')
-  useAppStore().setBack('/payroll')
 
   previewResizeObserver = new ResizeObserver(schedulePreviewMeasure)
   if (previewViewportRef.value) previewResizeObserver.observe(previewViewportRef.value)
   measurePreview()
 
-  await store.fetch().finally(() => { fetching.value = false })
-  await nextTick()
-  schedulePreviewMeasure()
+  await load()
 })
 
 definePageMeta({

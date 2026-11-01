@@ -54,6 +54,7 @@ const columns = [
     accessorKey: "type",
     header: "Type",
   },
+
   {
     accessorKey: "category",
     header: "Category",
@@ -237,9 +238,12 @@ definePageMeta({
           <div class="space-y-1">
             <p>{{ clean(row.original.type) }}</p>
 
-            <p class="text-xs text-muted">
-              {{ row.original.clazz?.name || "-" }}
-            </p>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <p class="text-xs text-muted">{{ row.original.clazz?.name || "-" }}</p>
+              <!-- Only stream-specific fees (e.g. SSS 1 Science) carry one. -->
+              <UBadge v-if="row.original.streamName" size="xs" variant="subtle" color="info"
+                icon="i-lucide-git-branch" :label="row.original.streamName" />
+            </div>
           </div>
         </template>
 
@@ -377,7 +381,7 @@ definePageMeta({
                     </h3>
 
                     <p class="truncate text-xs-base text-muted">
-                      {{ clean(item.type) }} · {{ item.clazz?.name || 'All Classes' }}
+                      {{ clean(item.type) }} · {{ item.clazz?.name || 'All Classes' }}{{ item.streamName ? ` · ${item.streamName}` : '' }}
                     </p>
 
                     <UBadge v-if="item.newStudentsOnly" size="xs" variant="subtle" color="info"

@@ -4,10 +4,12 @@
         <DashboardAdmin v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL])" />
         <DashboardAccountant v-if="can(Role.ACCOUNTANT)" />
         <div v-if="can(Role.LIBRARIAN)" class="px-4 md:px-6 space-y-3">
+            <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
             <LibrarySectionNav />
             <LibraryDashboard />
         </div>
         <div v-if="can(Role.NURSE)" class="px-4 md:px-6 space-y-3">
+            <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
             <HealthCareSectionNav />
             <HealthCareDashboard />
         </div>
@@ -17,6 +19,7 @@
 </template>
 <script setup lang="ts">
 const { can } = useAuth()
+const { isInstalled } = useModules()
 const onAdminPortal = isAdminPortalHost(useRequestURL().hostname)
 
 if (!onAdminPortal && can(Role.SYSTEM_ADMIN)) {

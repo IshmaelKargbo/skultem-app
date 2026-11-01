@@ -140,10 +140,13 @@ export const usePayrollStore = defineStore('payroll', {
     async fetchRun(runId: string) {
       this.loadingRun = true
       this.error = null
+      // Cleared first: if this load fails, the page shows "not found" rather than the last run's figures.
+      if (this.currentRun?.run.id !== runId) this.currentRun = null
       try {
         this.currentRun = await PayrollApi().getRun(runId)
       } catch (err: any) {
         this.error = err?.message || 'Failed to fetch payroll run'
+        this.currentRun = null
       } finally {
         this.loadingRun = false
       }
@@ -170,6 +173,12 @@ export const usePayrollStore = defineStore('payroll', {
       const updated = await PayrollApi().publishRun(runId)
       if (updated && this.currentRun) this.currentRun.run = updated
       return updated
+    },
+
+    async deleteRun(runId: string) {
+      await PayrollApi().deleteRun(runId)
+      this.runs = this.runs.filter(r => r.id !== runId)
+      if (this.currentRun?.run.id === runId) this.currentRun = null
     },
 
     async fetchPayslip(runId: string, teacherId: string) {

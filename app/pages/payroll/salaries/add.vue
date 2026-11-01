@@ -26,6 +26,10 @@
                 placeholder="Search staff…" class="w-full" :disabled="isEdit" />
             </UFormField>
 
+            <UAlert v-if="replacesExisting" color="warning" variant="soft" icon="i-lucide-triangle-alert"
+              title="This person already has a salary"
+              description="Saving will replace their current salary. Use Edit Salary on their page to change it instead." />
+
             <div v-if="selectedTeacher" class="flex items-center gap-3 rounded-xl bg-elevated/50 p-3">
               <UAvatar size="md" :src="selectedTeacher.photo || undefined" :alt="selectedTeacher.label" />
               <div class="min-w-0">
@@ -66,6 +70,8 @@
 
       <!-- Right -->
       <div class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <UAlert v-if="netIsNegative" color="error" variant="soft" icon="i-lucide-circle-alert"
+          title="Net pay is negative" description="Deductions are more than gross pay. Lower a deduction or raise the pay." />
         <PayrollNetPreview :basic="state.basicSalary" :allowances="totalAllowances" :deductions="totalDeductions"
           :allowance-count="state.allowances.length" :deduction-count="state.deductions.length" />
       </div>
@@ -115,12 +121,22 @@ const schema = yup.object({
   basicSalary: yup.number().min(0, 'Basic salary cannot be negative').required('Basic salary is required')
 })
 
-const teacherOptions = computed(() => teachers.value.map(t => ({
+// Active staff only (an inactive/removed teacher can't go on a payroll run). When editing, the
+// person being edited is always kept so the picker still shows them.
+const teacherOptions = computed(() => teachers.value
+  .filter(t => !t.status || t.status === 'ACTIVE' || t.id === state.teacherId)
+  .map(t => ({
   label: teacherLabel(t),
   value: t.id,
   staffId: t.staffId,
   photo: t.user?.photo
 })))
+
+// Adding a salary for someone who already has one replaces it - say so before they save.
+const existingSalaryIds = ref(new Set<string>())
+const replacesExisting = computed(() => !isEdit.value && existingSalaryIds.value.has(state.teacherId))
+const netIsNegative = computed(() =>
+  (state.basicSalary || 0) + totalAllowances.value - totalDeductions.value < 0)
 
 const templateOptions = computed(() => templates.value.map(t => ({ label: t.name, value: t.id })))
 
@@ -150,6 +166,10 @@ function stripRow(row: PayComponentRow): PayComponent {
 }
 
 async function onSubmit() {
+  if (netIsNegative.value) {
+    notify.error("Deductions are more than gross pay - net pay can't be negative.")
+    return
+  }
   saving.value = true
   try {
     await payrollStore.setSalary({
@@ -178,7 +198,10 @@ onMounted(async () => {
   try {
     await Promise.all([
       teacherStore.fetchAll(1, 0),
-      payrollStore.fetchSalaryTemplates(1, 0)
+      payrollStore.fetchSalaryTemplates(1, 0),
+      isEdit.value ? Promise.resolve() : PayrollApi().listSalaries(1, 0, '', '', '').then((res: any) => {
+        existingSalaryIds.value = new Set((res?.data || []).map((s: SalaryStructure) => s.teacher?.id).filter(Boolean))
+      }).catch(() => {})
     ])
   } finally {
     loadingTeachers.value = false

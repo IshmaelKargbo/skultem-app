@@ -29,7 +29,7 @@
                         {{ payslip?.included ? 'Included' : 'Excluded' }}
                     </span>
                     <div class="meta-line"><span>Period</span><strong>{{ payslip?.payrollRunPeriod || '—' }}</strong></div>
-                    <div class="meta-line"><span>Generated</span><strong>{{ formatDate(payslip?.createdAt) }}</strong></div>
+                    <div v-if="payslip?.payDate" class="meta-line"><span>Pay Date</span><strong>{{ formatDate(payslip.payDate) }}</strong></div>
                 </div>
             </div>
 
@@ -47,6 +47,11 @@
                         <span>Staff ID</span>
                         <strong>{{ payslip?.teacher?.staffId || '—' }}</strong>
                     </div>
+
+                    <div v-if="payslip?.teacher?.designation" class="info-field">
+                        <span>Designation</span>
+                        <strong>{{ payslip.teacher.designation }}</strong>
+                    </div>
                 </div>
             </div>
 
@@ -61,7 +66,13 @@
                             <span>Basic Salary</span>
                             <strong>{{ format(payslip?.basicSalary) }}</strong>
                         </div>
-                        <div class="breakdown-row">
+                        <template v-if="allowanceLines.length">
+                            <div v-for="(line, i) in allowanceLines" :key="`a${i}`" class="breakdown-row">
+                                <span>{{ line.name }}</span>
+                                <strong class="text-positive">+ {{ format(line.amount) }}</strong>
+                            </div>
+                        </template>
+                        <div v-else class="breakdown-row">
                             <span>Allowances</span>
                             <strong class="text-positive">+ {{ format(payslip?.allowances) }}</strong>
                         </div>
@@ -73,7 +84,15 @@
 
                     <div class="breakdown-card">
                         <div class="breakdown-card-title">Deductions</div>
-                        <div class="breakdown-row">
+                        <div v-for="(line, i) in deductionLines" :key="`d${i}`" class="breakdown-row">
+                            <span>{{ line.name }}</span>
+                            <strong class="text-negative">- {{ format(line.amount) }}</strong>
+                        </div>
+                        <div v-if="!deductionLines.length && !payslip?.deductions" class="breakdown-row">
+                            <span>No deductions</span>
+                            <strong>{{ format(0) }}</strong>
+                        </div>
+                        <div :class="deductionLines.length ? 'breakdown-total' : 'breakdown-row'">
                             <span>Total Deductions</span>
                             <strong class="text-negative">- {{ format(payslip?.deductions) }}</strong>
                         </div>
@@ -128,14 +147,18 @@ const initials = computed(() => {
         .join('') || 'S'
 })
 
+// Only lines with an amount - a 0% / 0 line adds nothing but noise to a printed slip.
+const allowanceLines = computed(() => (props.payslip?.allowanceLines ?? []).filter(l => Number(l.amount) !== 0))
+const deductionLines = computed(() => (props.payslip?.deductionLines ?? []).filter(l => Number(l.amount) !== 0))
+
 const employeeName = computed(() => {
     const t = props.payslip?.teacher
     if (!t) return '—'
     return `${t.user?.givenNames || ''} ${t.user?.familyName || ''}`.trim() || '—'
 })
 
-function formatDate(value?: string) {
-    if (!value) return new Date().toLocaleDateString()
+function formatDate(value?: string | null) {
+    if (!value) return '—'
 
     return new Date(value).toLocaleDateString("en-GB", {
         year: "numeric",
@@ -160,11 +183,13 @@ function chunkToWords(n: number): string {
 function numberToWords(n: number): string {
     if (n === 0) return "Zero"
 
-    const million = Math.floor(n / 1000000)
+    const billion = Math.floor(n / 1000000000)
+    const million = Math.floor((n % 1000000000) / 1000000)
     const thousand = Math.floor((n % 1000000) / 1000)
     const rest = n % 1000
 
     let words = ""
+    if (billion) words += `${numberToWords(billion)} Billion `
     if (million) words += `${chunkToWords(million)} Million `
     if (thousand) words += `${chunkToWords(thousand)} Thousand `
     if (rest) words += chunkToWords(rest)
@@ -173,8 +198,10 @@ function numberToWords(n: number): string {
 }
 
 const amountInWords = computed(() => {
-    const total = Number(props.payslip?.netSalary || 0)
-    return `${numberToWords(Math.floor(total))} Leones only`
+    const total = Math.max(0, Number(props.payslip?.netSalary || 0))
+    const leones = Math.floor(total)
+    const cents = Math.round((total - leones) * 100)
+    return `${numberToWords(leones)} Leones${cents ? ` and ${numberToWords(cents)} Cents` : ''} only`
 })
 </script>
 

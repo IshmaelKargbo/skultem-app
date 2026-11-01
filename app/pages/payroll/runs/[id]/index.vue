@@ -18,6 +18,9 @@
           {{ clean(detail.run.status) }}
         </UBadge>
 
+        <UButton v-if="isDraft" icon="i-lucide-trash-2" color="error" variant="soft" label="Delete Draft"
+          @click="() => { deleteOpen = true }" />
+
         <UButton v-if="isDraft" icon="i-lucide-lock" :disabled="totals.count === 0" label="Generate Payroll"
           @click="askConfirm('generate')" />
 
@@ -41,6 +44,12 @@
         <Metric :record="{ icon: 'i-lucide-circle-minus', label: 'Deductions', value: formatCurrency(totals.deductions), isReady: true, color: 'error' }" />
         <Metric :record="{ icon: 'i-lucide-banknote', label: 'Net Payroll', value: formatCurrency(totals.net), isReady: true, color: 'success' }" />
       </div>
+
+      <!-- What this run put through the school's transactions (from generate onwards) -->
+      <UAlert v-if="detail.transactionsAmount != null"
+        :color="transactionsMismatch ? 'warning' : 'neutral'" variant="soft" icon="i-lucide-arrow-left-right"
+        :title="`Recorded in transactions: ${formatCurrency(detail.transactionsAmount)}`"
+        :description="transactionsNote" />
 
       <!-- Employees -->
       <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-4 sm:px-4' }">
@@ -152,6 +161,10 @@
       </div>
     </UCard>
 
+    <ConfirmDeleteModal v-if="detail && isDraft" v-model:open="deleteOpen" title="Delete Draft Payroll Run"
+      :item-name="detail.run.period" :on-confirm="deleteRun"
+      description="This removes the draft and its payslips. Nothing has been paid or recorded yet, so you can start a new run for this period afterwards." />
+
     <!-- Confirm generate / publish -->
     <UModal v-model:open="confirmOpen">
       <template #content>
@@ -224,11 +237,42 @@ function askConfirm(action: 'generate' | 'publish' | null) {
 
 const isDraft = computed(() => detail.value?.run.status === 'DRAFT')
 
+const deleteOpen = ref(false)
+async function deleteRun() {
+  const period = detail.value!.run.period
+  try {
+    await store.deleteRun(detail.value!.run.id)
+    notify.success(`${period} draft deleted.`)
+    await navigateTo('/payroll/runs')
+  } catch (err: any) {
+    notify.error(err?.message || 'Unable to delete payroll run.')
+    throw err
+  }
+}
+
 // Worked out from the payslips so the numbers move as soon as someone is switched in or out.
 const totals = computed(() => {
   const included = (detail.value?.payslips ?? []).filter(p => p.included)
   const sum = (key: 'grossSalary' | 'deductions' | 'netSalary') => included.reduce((t, p) => t + (p[key] || 0), 0)
   return { count: included.length, gross: sum('grossSalary'), deductions: sum('deductions'), net: sum('netSalary') }
+})
+
+// Generated runs: the expense written to the transactions, after any corrections, against the
+// run's own net total - they should match.
+const transactionsMismatch = computed(() =>
+  detail.value?.transactionsAmount != null
+  && Math.abs((detail.value.transactionsAmount || 0) - (detail.value.netTotal || 0)) >= 0.01)
+
+const transactionsNote = computed(() => {
+  const d = detail.value
+  if (!d || d.transactionsAmount == null) return ''
+  const corrections = d.transactionCorrections || 0
+  const corrected = corrections
+    ? ` This includes ${corrections} correction${corrections === 1 ? '' : 's'} (adjustment credits) made after it was generated.`
+    : ''
+  return transactionsMismatch.value
+    ? `This doesn't match the run's net total of ${formatCurrency(d.netTotal)}.${corrected}`
+    : `Matches the run's net total - this is the payroll expense in the school's transactions.${corrected}`
 })
 
 const search = ref('')

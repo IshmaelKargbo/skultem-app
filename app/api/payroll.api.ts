@@ -149,6 +149,15 @@ export const PayrollApi = () => {
       }
     },
 
+    // Drafts only - the backend refuses a generated/published run.
+    deleteRun: async (runId: string) => {
+      try {
+        return await $api(`/payroll/run/${runId}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     getPayslip: async (runId: string, teacherId: string) => {
       try {
         const res = await $api(`/payroll/run/${runId}/payslip/${teacherId}`) as any

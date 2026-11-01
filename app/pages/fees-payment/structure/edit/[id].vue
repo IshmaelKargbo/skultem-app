@@ -14,6 +14,8 @@ const { error: toastError, success: toastSuccess } = useNotify();
 const isLoading = ref(false);
 const isFetching = ref(true);
 const isSelectionType = ref(false);
+// Class (and stream) this fee charges - shown read-only, since targeting isn't editable.
+const appliesTo = ref("");
 
 const categories = computed(() =>
   feeCategoryStore.records
@@ -189,6 +191,9 @@ onMounted(async () => {
     state.oldStudentsOnly = fee.oldStudentsOnly;
     state.gender = fee.gender || "";
     isSelectionType.value = fee.type === "SELECTION";
+    appliesTo.value = fee.type === "SELECTION"
+      ? "Selected students"
+      : [fee.clazz?.name || "All classes", fee.streamName].filter(Boolean).join(" · ");
   } catch (err: any) {
     toastError(err?.message || "Failed to load fee structure");
     navigateTo("/fees-payment/structure");
@@ -341,6 +346,11 @@ definePageMeta({
 
                     <USwitch v-model="state.oldStudentsOnly" :disabled="isLoading" />
                   </div>
+                </UFormField>
+
+                <UFormField v-if="appliesTo" label="Applies to"
+                  help="Who a fee charges can't be changed - delete it and create a new one instead.">
+                  <UInput :model-value="appliesTo" disabled class="w-full" />
                 </UFormField>
 
                 <UFormField label="Gender" name="gender">
