@@ -161,7 +161,7 @@ onMounted(async () => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>
 
@@ -194,7 +194,7 @@ definePageMeta({
                     <div class="flex gap-2 px-4 py-3 overflow-x-auto">
                         <UButton v-for="tab in statusTabs" :key="tab.value" size="xs"
                             :variant="status === tab.value ? 'solid' : 'soft'"
-                            :color="status === tab.value ? 'primary' : 'neutral'" @click="status = tab.value">
+                            :color="status === tab.value ? 'primary' : 'neutral'" @click="() => { status = tab.value }">
                             {{ tab.label }}
                         </UButton>
                     </div>
@@ -344,11 +344,11 @@ definePageMeta({
 
                             <div class="flex items-center gap-1">
                                 <UButton v-if="item.balance > 0" size="xs" variant="ghost" icon="i-lucide-hand-coins"
-                                    @click="openPayment(item)" />
+                                    aria-label="Record payment" @click="openPayment(item)" />
                                 <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="success"
-                                    variant="ghost" :icon="FULFILL_ICON" @click="openFulfill(item)" />
+                                    variant="ghost" :icon="FULFILL_ICON" aria-label="Fulfill" @click="openFulfill(item)" />
                                 <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="error" variant="ghost"
-                                    :icon="CANCEL_ICON" @click="openCancel(item)" />
+                                    :icon="CANCEL_ICON" aria-label="Cancel sale" @click="openCancel(item)" />
                             </div>
                         </div>
                     </div>
@@ -468,11 +468,11 @@ definePageMeta({
 
                                 <div class="flex gap-1">
                                     <UButton v-if="item.status !== 'CANCELLED' && item.balance > 0" size="xs"
-                                        variant="ghost" icon="i-lucide-hand-coins" @click="openPayment(item)" />
+                                        variant="ghost" icon="i-lucide-hand-coins" aria-label="Record payment" @click="openPayment(item)" />
                                     <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="success"
-                                        variant="ghost" :icon="FULFILL_ICON" @click="openFulfill(item)" />
+                                        variant="ghost" :icon="FULFILL_ICON" aria-label="Fulfill" @click="openFulfill(item)" />
                                     <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="error"
-                                        variant="ghost" :icon="CANCEL_ICON" @click="openCancel(item)" />
+                                        variant="ghost" :icon="CANCEL_ICON" aria-label="Cancel sale" @click="openCancel(item)" />
                                 </div>
                             </div>
                         </div>

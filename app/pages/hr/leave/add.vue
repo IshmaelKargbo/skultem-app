@@ -84,7 +84,7 @@ import * as yup from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
 
 const { can } = useAuth()
-const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL]))
 
 const router = useRouter()
 const notify = useNotify()
@@ -164,6 +164,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

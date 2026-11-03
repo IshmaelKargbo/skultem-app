@@ -160,7 +160,7 @@ export const useStudentStore = defineStore('student', {
         const response = await StudentApi().getAllStudentOutstandingFeesById(id) as any
         return response.data;
       } catch (err: any) {
-        this.error = err.data?.message || 'Failed to fetch student fees'
+        this.error = err?.message || err.data?.message || 'Failed to fetch student fees'
       } finally {
         this.loading = false
       }

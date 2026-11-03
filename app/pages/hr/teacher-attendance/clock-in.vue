@@ -13,6 +13,18 @@
       </div>
     </UCard>
 
+    <!-- No staff/payroll record here: nothing to clock in to - say why instead of offering the buttons. -->
+    <UCard v-else-if="myToday?.onPayroll === false">
+      <div class="flex flex-col items-center gap-3 py-10 text-center">
+        <div class="flex size-14 items-center justify-center rounded-2xl bg-elevated">
+          <UIcon name="i-lucide-user-x" class="size-7 text-muted" />
+        </div>
+        <p class="font-semibold text-highlighted">You're not on this school's payroll</p>
+        <p class="max-w-sm text-sm text-muted">Clock in and out is for staff on the payroll. Ask an admin to add you
+          under Users &gt; your account &gt; Payroll.</p>
+      </div>
+    </UCard>
+
     <template v-else>
       <UCard :ui="{ body: 'space-y-5' }">
         <div class="flex items-center gap-3">
@@ -180,6 +192,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE]
+  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER]
 })
 </script>

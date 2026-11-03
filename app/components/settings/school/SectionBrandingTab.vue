@@ -118,7 +118,7 @@
           </button>
           <div v-show="isOpen(`${section.id}:grades`)" class="pb-4">
             <UFormField label="Who approves grades in this section?"
-              :help="`After a subject teacher submits grades. 'Same as the school' uses the school's choice (${schoolDefaults?.gradeApprover === 'ADMIN' ? 'an admin' : 'the class master'}).`">
+              :help="`After a subject teacher submits grades. 'Same as the school' uses the school's choice (${approverName(schoolDefaults?.gradeApprover)}).`">
               <USelectMenu v-model="forms[section.id]!.gradeApprover" :items="gradeApproverOptions" value-key="value"
                 label-key="label" class="w-full" />
             </UFormField>
@@ -199,8 +199,14 @@ const props = defineProps<{
 const gradeApproverOptions = [
   { label: 'Same as the school', value: 'INHERIT' },
   { label: 'The class master', value: 'CLASS_MASTER' },
-  { label: 'An admin', value: 'ADMIN' }
+  { label: 'An admin', value: 'ADMIN' },
+  { label: 'The exam officer', value: 'EXAM_OFFICER' }
 ]
+
+// "an admin" / "the class master" / "the exam officer" - for the summaries and hints below.
+function approverName(value?: string | null) {
+  return value === 'ADMIN' ? 'an admin' : value === 'EXAM_OFFICER' ? 'the exam officer' : 'the class master'
+}
 
 // Which groups are folded open. Keys are `${sectionId}` (the whole card) or `${sectionId}:group`. A key that
 // was never toggled uses its default: a card is open when it's the only/first one, identity opens with it,
@@ -224,7 +230,7 @@ type Form = {
   principalName: string
   phone: string
   // 'INHERIT' = use the school's choice
-  gradeApprover: 'INHERIT' | 'CLASS_MASTER' | 'ADMIN'
+  gradeApprover: 'INHERIT' | 'CLASS_MASTER' | 'ADMIN' | 'EXAM_OFFICER'
   // '' = not set, use the school's
   attendanceThreshold: number | ''
   attendanceWindowDays: number | ''
@@ -286,9 +292,10 @@ function gradeSummary(id: string) {
   const f = forms[id]
   if (!f) return ''
   if (f.gradeApprover === 'INHERIT') {
-    return `Same as the school (${props.schoolDefaults?.gradeApprover === 'ADMIN' ? 'an admin' : 'the class master'})`
+    return `Same as the school (${approverName(props.schoolDefaults?.gradeApprover)})`
   }
-  return f.gradeApprover === 'ADMIN' ? 'An admin approves' : 'The class master approves'
+  const name = approverName(f.gradeApprover)
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)} approves`
 }
 
 function attendanceSummary(id: string) {

@@ -185,7 +185,7 @@
 
 <script setup lang="ts">
 const { can } = useAuth()
-const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL]))
 
 const route = useRoute()
 const notify = useNotify()
@@ -311,6 +311,6 @@ watch(
 )
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

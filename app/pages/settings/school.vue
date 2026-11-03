@@ -220,6 +220,7 @@ const isPlayground = ref(false)
 // details - every other tab saves school-wide settings the backend would refuse - so that's all
 // they're shown.
 const { isSectionBased, load: loadStructure } = useSchoolStructure()
+const { load: reloadApprovalRouting } = useGradeApproval()
 const { scope, load: loadScope } = useMyScope()
 const isScoped = computed(() => !!scope.value && !scope.value.wholeSchool)
 
@@ -416,6 +417,8 @@ async function save() {
         })
 
         if (!updated) return
+        // The grades screens read who approves grades - refresh it so a changed choice shows at once.
+        reloadApprovalRouting(true)
 
         const formData = new FormData()
         formData.append('motto', state.motto || '')

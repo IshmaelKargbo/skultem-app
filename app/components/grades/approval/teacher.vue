@@ -1,4 +1,9 @@
 <script setup lang="ts">
+const { routing, load: loadRouting, routesTo, approversInUse } = useGradeApproval()
+const otherApprovers = computed(() => approversInUse.value.filter(a => a !== 'CLASS_MASTER')
+  .map(a => GRADE_APPROVER_LABEL[a].toLowerCase()).join(' or '))
+onMounted(() => { loadRouting() })
+
 type ApprovalRequestStatusFilter = '' | 'PENDING_REVIEW' | 'APPROVED' | 'RETURNED'
 
 const route = useRoute()
@@ -121,6 +126,13 @@ definePageMeta({
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <GradesSectionNav />
+    <!-- Where the school sends grades to someone else, the class master follows them here but doesn't sign off. -->
+    <UAlert v-if="routing && approversInUse.some(a => a !== 'CLASS_MASTER')" color="neutral" variant="soft"
+      icon="i-lucide-info"
+      :title="routesTo('CLASS_MASTER') ? 'Some classes are approved by someone else' : `Grades are approved by the ${otherApprovers}`"
+      :description="routesTo('CLASS_MASTER')
+        ? `In parts of the school, the ${otherApprovers} approves grades instead of the class master. Those requests show who they're with - you can follow them, but not approve them.`
+        : 'You can follow your class\'s grades here, but approving them is not the class master\'s job in this school.'" />
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>

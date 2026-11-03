@@ -2,9 +2,17 @@ export const UserApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAll: async (page: number, size: number) => {
+    getAll: async (page: number, size: number, filters: UserListFilters = {}) => {
       try {
-        const res = await $api(`/user?page=${page}&size=${size}`) as any
+        const res = await $api('/user', {
+          query: {
+            page,
+            size,
+            query: filters.query?.trim() || undefined,
+            role: filters.role || undefined,
+            status: filters.status || undefined,
+          }
+        }) as any
 
         if (!res)
           throw new Error('Failed to fetch users')
@@ -243,4 +251,11 @@ export const UserApi = () => {
       }
     }
   }
+}
+
+// Search and filters for the users list - applied by the server across every page.
+export interface UserListFilters {
+  query?: string
+  role?: string
+  status?: string
 }

@@ -43,7 +43,7 @@
             :disabled="isLoading" placeholder="Select management section(s)" class="w-full" />
         </UFormField>
 
-        <UDivider />
+        <USeparator />
 
         <!-- Payroll toggle -->
         <UFormField name="includeInPayroll">

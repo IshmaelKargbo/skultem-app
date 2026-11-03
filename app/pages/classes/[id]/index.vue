@@ -44,7 +44,7 @@
                 <ClassEdit v-if="canManagePromotion" ref="classEditRef" :class-id="classId" hide-trigger @updated="fetchClass" />
                 <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
                     :content="{ align: 'end' }">
-                    <UButton variant="soft" size="sm" color="neutral" label="Actions" trailing-icon="i-lucide-ellipsis" />
+                    <UButton variant="ghost" size="sm" color="neutral" label="Actions" trailing-icon="i-lucide-chevron-down" />
                 </UDropdownMenu>
                 <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''" hide-trigger />
             </div>
@@ -657,16 +657,7 @@ async function syncAssessments() {
     const res = await classStore.syncAssessments(session.value.clazzId)
     if (!res) return
 
-    const missing = res.subjectsWithoutTeacher?.length
-        ? ` No teacher is assigned yet for: ${res.subjectsWithoutTeacher.join(', ')}.`
-        : ''
-    const failed = res.failed ? ` ${res.failed} student(s) failed: ${res.firstError}.` : ''
-
-    if (res.assessmentsCreated > 0) {
-        success(`Created assessments for ${res.studentsUpdated} of ${res.students} student(s).${missing}${failed}`)
-    } else {
-        success(`Nothing new to create for ${res.students} student(s).${missing}${failed}`)
-    }
+    success(assessmentSyncMessage(res))
     await fetchClass()
 }
 

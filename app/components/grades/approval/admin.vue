@@ -35,6 +35,25 @@ const classOptions = computed(() =>
   }))
 )
 
+// Whose queue: the exam officer starts on what's routed to them; management sees everything and can narrow to one
+// approver (class master / admin / exam officer) - see useGradeApproval.
+const { load: loadRouting, myApprover, approversInUse, isExamOfficer } = useGradeApproval()
+const approver = ref<GradeApprover | ''>((route.query.approver as GradeApprover | undefined) ?? myApprover.value ?? '')
+
+const approverTabs = computed(() => {
+  if (isExamOfficer.value) {
+    return [
+      { label: 'Mine to approve', value: 'EXAM_OFFICER' as const },
+      { label: 'Whole school', value: '' as const },
+    ]
+  }
+  if (approversInUse.value.length < 2) return []
+  return [
+    { label: 'All', value: '' as const },
+    ...approversInUse.value.map(a => ({ label: `${GRADE_APPROVER_LABEL[a]}`, value: a })),
+  ]
+})
+
 const teacherId = ref(String(route.query.teacherId ?? ''))
 const classId = ref(String(route.query.classId ?? ''))
 const status = ref<ApprovalRequestStatusFilter>((route.query.status as ApprovalRequestStatusFilter) ?? '')
@@ -84,7 +103,7 @@ async function fetchSummary() {
   loadingSummary.value = true
   const res = teacherId.value
     ? await store.fetchAssessmentApprovalSummary(teacherId.value)
-    : await store.fetchSchoolAssessmentApprovalSummary()
+    : await store.fetchSchoolAssessmentApprovalSummary(approver.value || undefined)
   if (request !== latestSummary) return
   summary.value = res
   loadingSummary.value = false
@@ -105,7 +124,8 @@ async function fetchRecords() {
       )
     } else {
       await store.fetchAllSchoolAssessmentApprovalRequest(
-        page.value, size.value, status.value || undefined, search.value || undefined, classId.value || undefined
+        page.value, size.value, status.value || undefined, search.value || undefined, classId.value || undefined,
+        approver.value || undefined
       )
     }
     if (request !== latestRecords) return
@@ -116,12 +136,13 @@ async function fetchRecords() {
 }
 
 watch(() => page.value, () => fetchRecords())
-watch(teacherId, fetchSummary, { immediate: true })
+watch([teacherId, approver], fetchSummary, { immediate: true })
 
 // Setting a filter also resets the page to 1 and mirrors the current filters into the URL (for a
 // shareable link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
-watch([teacherId, classId, status, search], () => {
+watch([teacherId, classId, status, search, approver], () => {
   updateQuery({
+    approver: approver.value || undefined,
     teacherId: teacherId.value || undefined,
     classId: classId.value || undefined,
     status: status.value || undefined,
@@ -138,6 +159,7 @@ onMounted(async () => {
 
   // The list doesn't need the filter dropdowns - load it right away instead of after them.
   fetchRecords()
+  loadRouting()
 
   loadingSession.value = true
   loadingClasses.value = true
@@ -155,11 +177,20 @@ definePageMeta({
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <GradesSectionNav />
+    <GradesApprovalRouting />
     <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
-            <h2 class="text-sm font-semibold text-highlighted">Grade Approval</h2>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-sm font-semibold text-highlighted">Grade Approval</h2>
+              <div v-if="approverTabs.length" class="flex flex-wrap gap-1">
+                <UButton v-for="tab in approverTabs" :key="tab.value" size="xs"
+                  :variant="approver === tab.value ? 'soft' : 'ghost'"
+                  :color="approver === tab.value ? 'primary' : 'neutral'" :label="tab.label"
+                  @click="() => { approver = tab.value }" />
+              </div>
+            </div>
 
             <!-- Skeletons until the counts arrive, so they never flash "0". -->
             <div v-if="loadingSummary && !summary" class="flex items-center gap-2">
@@ -191,8 +222,8 @@ definePageMeta({
 
         <!-- ERROR / EMPTY -->
         <GradesApprovalListState v-else-if="loadError || !requests.length" :error="loadError"
-          :filtered="isFiltered" empty-title="No grades waiting for approval"
-          empty-description="When teachers submit grades for review, they'll show up here."
+          :filtered="isFiltered" :empty-title="approver === 'EXAM_OFFICER' ? 'Nothing waiting for the exam officer' : 'No grades waiting for approval'"
+          :empty-description="approver ? `Only classes whose grades go to the ${GRADE_APPROVER_LABEL[approver].toLowerCase()} are shown. Switch tabs to see the rest.` : 'When teachers submit grades for review, they\'ll show up here.'"
           @retry="fetchRecords" @clear="clearFilters" />
 
         <!-- LIST -->

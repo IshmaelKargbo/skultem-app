@@ -32,7 +32,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 
 const summary = computed(() => ({

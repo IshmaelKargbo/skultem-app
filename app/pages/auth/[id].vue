@@ -61,10 +61,8 @@
                     </div>
 
                     <div class="flex shrink-0 items-center gap-2">
-                        <UButton to="/auth" variant="ghost" size="sm" color="neutral" icon="i-lucide-arrow-left"
-                            label="Users" />
                         <UDropdownMenu v-if="record && actionItems.length" :items="actionItems" :content="{ align: 'end' }">
-                            <UButton size="sm" color="neutral" variant="outline" label="Actions"
+                            <UButton size="sm" color="neutral" variant="ghost" label="Actions"
                                 trailing-icon="i-lucide-chevron-down" />
                         </UDropdownMenu>
                     </div>
@@ -197,6 +195,14 @@
         </UCard>
         </div>
 
+        <AuthUsersAssign v-if="record" v-model="showAssign" :user-id="record.id" @success="fetchUser" />
+
+        <AuthUsersManageSections v-if="record && showManageSections" v-model="showManageSections"
+            :user-id="record.id" :user-name="name" :roles="scopableRoles" @success="fetchUser" />
+
+        <AuthUsersResetPasswordPrompt v-if="record" v-model:open="showResetPassword" :user-id="record.id"
+            :user-name="name" @changed="record = $event" />
+
         <AuthUsersStatusPrompt v-if="record" v-model:open="showStatusPrompt" :user-id="record.id"
             :user-name="name" :active="record.schoolStatus === 'ACTIVE'" @changed="record = $event" />
 
@@ -218,7 +224,13 @@ const store = useUserStore()
 const { user: me } = storeToRefs(store)
 const notify = useNotify()
 
+const { can } = useAuth()
+const { isSectionBased, load: loadStructure } = useSchoolStructure()
+
 const showStatusPrompt = ref(false)
+const showAssign = ref(false)
+const showManageSections = ref(false)
+const showResetPassword = ref(false)
 const removeRoleTarget = ref<string | null>(null)
 const showRemoveRole = computed<boolean>({
     get: () => removeRoleTarget.value !== null,
@@ -240,12 +252,29 @@ const photoOpen = ref(false)
 
 const isActive = computed(() => record.value?.schoolStatus === 'ACTIVE')
 
-// Account actions in one menu; you can't deactivate yourself.
+const scopableRoles = computed(() => (record.value?.roles ?? []).filter(r => isScopableRole(r)))
+const canManageSections = computed(() =>
+    can([Role.OWNER, Role.PROPRIETOR]) && isSectionBased.value && !!scopableRoles.value.length)
+
+// Every account action lives in this one menu, so the users list stays uncluttered.
+// You can't reset your own password or deactivate yourself from here.
 const actionItems = computed(() => {
-    if (!record.value || me.value?.id === record.value.id) return []
-    return [[isActive.value
-        ? { label: 'Deactivate account', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }
-        : { label: 'Reactivate account', icon: 'lucide:user-check', onSelect: () => { showStatusPrompt.value = true } }]]
+    if (!record.value) return []
+    const own = me.value?.id === record.value.id
+    return [
+        [
+            { label: 'Assign role', icon: 'eos-icons:cluster-role-binding', onSelect: () => { showAssign.value = true } },
+            ...(canManageSections.value
+                ? [{ label: 'Manage sections', icon: 'lucide:layers', onSelect: () => { showManageSections.value = true } }]
+                : []),
+        ],
+        ...(own ? [] : [[
+            { label: 'Reset password', icon: 'lucide:key-round', onSelect: () => { showResetPassword.value = true } },
+            isActive.value
+                ? { label: 'Deactivate account', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }
+                : { label: 'Reactivate account', icon: 'lucide:user-check', color: 'success' as const, onSelect: () => { showStatusPrompt.value = true } },
+        ]]),
+    ]
 })
 
 const name = computed(() => {
@@ -343,9 +372,11 @@ async function onPhotoChange(event: Event) {
 
 onMounted(() => {
     useAppStore().setTitle('User Profile')
+    useAppStore().setBack('/auth')
     document.title = 'User Profile | Auth | Skultem'
 
     fetchUser()
     fetchPayrollStatus()
+    loadStructure()
 })
 </script>

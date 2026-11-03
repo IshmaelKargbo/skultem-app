@@ -10,11 +10,11 @@ export const useUserStore = defineStore('user', {
     error: null as string | null
   }),
   actions: {
-    async fetchAll(page: number = 1, size: number = runtimeConf().limit) {
+    async fetchAll(page: number = 1, size: number = runtimeConf().limit, filters: UserListFilters = {}) {
       this.loading = true
       this.error = null
       try {
-        const response = await UserApi().getAll(page, size) as any
+        const response = await UserApi().getAll(page, size, filters) as any
         this.records = response.data || []
         this.meta = response.meta || {} as Meta
       } catch (err: any) {

@@ -123,6 +123,16 @@ const navItems: NavItem[] = [
   },
 
   {
+    label: 'Submissions', to: '/exam-office/submissions', icon: 'i-lucide-list-checks',
+    roles: [Role.EXAM_OFFICER]
+  },
+
+  {
+    label: 'Approvals', to: '/grades/approval', icon: GRADES_APPROVAL_ICON,
+    roles: [Role.EXAM_OFFICER]
+  },
+
+  {
     label: 'Transactions', to: '/transactions', icon: 'i-lucide-book-open',
     roles: [Role.ACCOUNTANT]
   },

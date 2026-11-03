@@ -9,6 +9,11 @@
 </template>
 
 <script setup lang="ts">
+// A preview of the receipt layout with sample data - finance staff only.
+definePageMeta({
+  role: [Role.ACCOUNTANT, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+})
+
 // MOCK DATA
 const receipt = {
   name: 'King\'s Way International School',

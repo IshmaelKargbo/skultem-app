@@ -77,7 +77,7 @@
 
           <template #help>
             <p class="text-xs text-muted">
-              Used when creating assessments for this class.
+              Saving creates every student's assessments from it. Changing it replaces this year's tests - only possible before grading starts.
             </p>
           </template>
         </UFormField>
@@ -195,8 +195,14 @@ const onSubmit = async (event: FormSubmitEvent<ClassEditForm>) => {
       name: state.name,
     });
 
+    // The students' assessments follow the template straight away - say what happened, including any
+    // subject that still has no teacher (its assessments wait for one).
+    let templateNote = "";
     if (state.assessmentTemplateId && state.assessmentTemplateId !== originalTemplateId.value) {
-      await store.updateTemplate(props.classId, state.assessmentTemplateId);
+      const res = await store.updateTemplate(props.classId, state.assessmentTemplateId);
+      if (res?.sync) {
+        templateNote = (res.replaced ? "The old template's tests were replaced. " : "") + assessmentSyncMessage(res.sync);
+      }
     }
 
     if (state.position !== originalPosition.value) {
@@ -205,7 +211,7 @@ const onSubmit = async (event: FormSubmitEvent<ClassEditForm>) => {
       await store.reorder(ids);
     }
 
-    toastSuccess("Class updated successfully");
+    toastSuccess(templateNote ? `Class updated. ${templateNote}` : "Class updated successfully");
     emit("updated");
     close();
   } catch (err: any) {

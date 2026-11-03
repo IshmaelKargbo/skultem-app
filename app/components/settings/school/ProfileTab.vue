@@ -35,14 +35,15 @@
       <p>Grades &amp; Scores</p>
     </template>
     <UFormField label="Who approves grades?"
-      help="After a subject teacher submits grades, who signs them off before parents can see them. If your school has sections (for example primary and secondary), each section can choose differently under Section Branding.">
+      help="After a subject teacher submits grades, who signs them off before parents can see them. This is the school's choice; sections below can choose their own.">
       <USelectMenu v-model="state.gradeApprover" :items="gradeApproverOptions" value-key="value" label-key="label"
         class="w-full" />
     </UFormField>
+    <SettingsSchoolSectionApprovers :school-approver="state.gradeApprover" />
     <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
       <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
       An admin, proprietor or owner can always approve grades. A class master who also taught the subject can't approve
-      their own, so those go to an admin as well.
+      their own, so those go to an admin as well. With the exam officer, give someone the Exam Officer role under Users.
     </p>
 
     <div class="mt-5 flex items-start justify-between gap-4 border-t border-default pt-5">
@@ -112,7 +113,8 @@
 <script setup lang="ts">
 const gradeApproverOptions = [
   { label: 'The class master', value: 'CLASS_MASTER' },
-  { label: 'An admin', value: 'ADMIN' }
+  { label: 'An admin', value: 'ADMIN' },
+  { label: 'The exam officer', value: 'EXAM_OFFICER' }
 ]
 
 import ColorPicker from '~/components/id-cards/ColorPicker.vue'

@@ -1,5 +1,5 @@
 <template>
-  <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" />
+  <GradesApprovalAdmin v-if="can([Role.PROPRIETOR, Role.ADMIN, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.EXAM_OFFICER])" />
 
   <template v-else-if="can(Role.TEACHER)">
     <!-- Same shape as the approval list, so the page doesn't jump when it loads. -->
@@ -61,6 +61,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.TEACHER, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
 })
 </script>

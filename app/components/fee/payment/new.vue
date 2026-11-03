@@ -5,22 +5,26 @@
 
                 <!-- LEFT: Payment Details -->
                 <div>
-                    <UCard class="sticky top-0">
+                    <!-- Stays in view beside the fees on wide screens; on a phone the two just stack. -->
+                    <UCard class="md:sticky md:top-4">
                         <div class="space-y-3">
                             <!-- STUDENT -->
                             <UFormField required label="Student" name="studentId">
                                 <USelectMenu value-key="value" :items="studentOptions" v-model="state.studentId"
                                     v-model:search-term="studentSearchTerm" :loading="studentsLoading" ignore-filter
-                                    @change="onStudentSelect" placeholder="Select student" />
+                                    @change="onStudentSelect" placeholder="Search by name or admission number"
+                                    class="w-full" />
                                 <template #help>
-                                    Select the student you are recording this payment for.
+                                    <span v-if="selectedAdmissionNumber">Admission no. <span
+                                            class="font-medium text-highlighted">{{ selectedAdmissionNumber }}</span></span>
+                                    <span v-else>Select the student you are recording this payment for.</span>
                                 </template>
                             </UFormField>
 
                             <!-- METHOD -->
                             <UFormField required label="Payment Method" name="method">
                                 <USelectMenu value-key="value" v-model="state.method" :items="methodOptions"
-                                    placeholder="Select payment method" />
+                                    placeholder="Select payment method" class="w-full" />
                                 <template #help>
                                     Select how the payment was made — cash, bank transfer, or mobile money.
                                 </template>
@@ -28,7 +32,7 @@
 
                             <!-- REFERENCE -->
                             <UFormField label="Reference ID" name="reference">
-                                <UInput v-model="state.reference" placeholder="e.g. TXN-00123" />
+                                <UInput v-model="state.reference" placeholder="e.g. TXN-00123" class="w-full" />
                                 <template #help>
                                     Optional. Enter a transaction or receipt number for tracking purposes.
                                 </template>
@@ -36,7 +40,7 @@
 
                             <!-- NOTE -->
                             <UFormField label="Note" name="note">
-                                <UTextarea v-model="state.note" placeholder="Any additional payment notes…" />
+                                <UTextarea v-model="state.note" placeholder="Any additional payment notes…" class="w-full" />
                                 <template #help>
                                     Optional. Add any remarks about this payment.
                                 </template>
@@ -81,6 +85,14 @@
                             </div>
                         </div>
 
+                        <!-- COULDN'T LOAD: say so, instead of looking like "nothing owed" -->
+                        <div v-else-if="feesError"
+                            class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-10 text-center text-sm text-muted">
+                            <UIcon name="i-lucide-alert-triangle" class="h-10 w-10 text-error" />
+                            <p class="max-w-xs">{{ feesError }}</p>
+                            <UButton size="sm" variant="soft" :icon="REFRESH_ICON" label="Try again" @click="onStudentSelect" />
+                        </div>
+
                         <!-- NO FEES -->
                         <div v-else-if="!fees.length"
                             class="items-center space-y-3 justify-center py-10 rounded-xl border-dashed flex flex-col text-sm text-muted h-56 border-2">
@@ -97,9 +109,9 @@
                             </p>
 
                             <div v-for="fee in fees" :key="fee.feeId"
-                                class="border-2 border-gray-200 rounded-xl p-3 flex justify-between items-center">
-                                <div>
-                                    <div class="flex items-center gap-2">
+                                class="flex items-center justify-between gap-3 rounded-xl border-2 border-gray-200 p-3 dark:border-gray-800">
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                         <p class="font-medium">{{ fee.feeName }} <span> - {{ fee.term }}</span></p>
                                         <UBadge v-if="fee.allowInstallment === false" size="xs" color="warning"
                                             variant="subtle">
@@ -119,7 +131,7 @@
                                 </UButton>
                             </div>
 
-                            <UDivider />
+                            <USeparator />
 
                             <!-- ALLOCATIONS -->
                             <template v-if="allocations.length">
@@ -128,13 +140,13 @@
                                 </p>
 
                                 <div v-for="a in allocations" :key="a.feeId"
-                                    class="border-2 border-gray-200 rounded-xl p-3 space-y-2">
-                                    <div class="flex justify-between text-sm">
-                                        <p class="font-medium">{{ a.feeName }}</p>
-                                        <p class="text-muted">Max {{ format(a.outstanding) }}</p>
+                                    class="space-y-2 rounded-xl border-2 border-gray-200 p-3 dark:border-gray-800">
+                                    <div class="flex flex-wrap justify-between gap-x-3 text-sm">
+                                        <p class="min-w-0 font-medium">{{ a.feeName }}</p>
+                                        <p class="shrink-0 text-muted">Max {{ format(a.outstanding) }}</p>
                                     </div>
 
-                                    <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding"
+                                    <UInput type="number" v-model.number="a.amount" min="0" :max="a.outstanding" class="w-full"
                                         :disabled="a.allowInstallment === false"
                                         :placeholder="`0 – ${format(a.outstanding)}`" @update:modelValue="val => {
                                             a.amount = Number(val)
@@ -151,7 +163,7 @@
                                     </p>
                                 </div>
 
-                                <UDivider />
+                                <USeparator />
 
                                 <!-- TOTALS -->
                                 <div class="text-sm space-y-1.5 rounded-xl bg-gray-50 dark:bg-gray-900 p-3">
@@ -167,7 +179,7 @@
                                         <span :class="[totalOutstanding > 0 ? 'text-error' : '']">{{ format(totalOutstanding) }}</span>
                                     </div>
 
-                                    <UDivider />
+                                    <USeparator />
 
                                     <div class="flex justify-between font-semibold">
                                         <span>Remaining Balance</span>
@@ -194,11 +206,12 @@
 
                         </div>
                         <template #footer>
-                            <div class="flex space-x-3 items-center">
-                                <UButton variant="outline" color="neutral" to="/fees-payment/pay">
+                            <div class="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+                                <UButton variant="outline" color="neutral" to="/fees-payment/pay" class="justify-center">
                                     Cancel
                                 </UButton>
-                                <UButton :trailing-icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading">
+                                <UButton :trailing-icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading"
+                                    class="justify-center">
                                     Record Payment
                                 </UButton>
                             </div>
@@ -211,7 +224,7 @@
 
     <UModal v-model:open="receiptModalOpen" :dismissible="false">
         <template #content>
-            <div class="p-6 space-y-5">
+            <div class="space-y-5 p-5 sm:p-6">
                 <div class="flex items-start gap-3">
                     <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-100">
                         <UIcon name="i-lucide-check" class="text-xl text-green-600" />
@@ -224,12 +237,13 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3">
-                    <UButton color="neutral" variant="subtle" :disabled="isDownloadingReceipt" @click="skipReceipt">
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                    <UButton color="neutral" variant="subtle" :disabled="isDownloadingReceipt" class="justify-center"
+                        @click="skipReceipt">
                         No, thanks
                     </UButton>
                     <UButton icon="i-lucide-download" :loading="isDownloadingReceipt" :disabled="!lastPayments.length"
-                        @click="downloadReceipt">
+                        class="justify-center" @click="downloadReceipt">
                         Download Receipt
                     </UButton>
                 </div>
@@ -269,6 +283,7 @@ const state = reactive({
 const fees = ref<any[]>([])
 const allocations = ref<any[]>([])
 const loadingFees = ref(false)
+const feesError = ref<string | null>(null)
 const isLoading = ref(false)
 const receipt = ref<any | null>(null)
 const receiptModalOpen = ref(false)
@@ -278,12 +293,17 @@ const pdfLogo = ref<string | null>(null)
 async function onStudentSelect() {
     allocations.value = []
     fees.value = []
+    feesError.value = null
+    if (!state.studentId) return
     loadingFees.value = true
 
     try {
-        const result = await useStudentStore()
-            .getAllStudentOutstandingFeesById(state.studentId)
-
+        const studentStore = useStudentStore()
+        const result = await studentStore.getAllStudentOutstandingFeesById(state.studentId)
+        // The store swallows the error - surface it, or a refused request looks like "nothing owed".
+        if (result === undefined && studentStore.error) {
+            feesError.value = studentStore.error
+        }
         fees.value = result || []
     } finally {
         loadingFees.value = false
@@ -478,7 +498,7 @@ const methodOptions = [
 
 const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch(25, () => [state.studentId])
 
-const pinnedStudent = ref<{ label: string, value: string } | null>(null)
+const pinnedStudent = ref<{ label: string, value: string, description?: string } | null>(null)
 
 const studentOptions = computed(() => {
     if (pinnedStudent.value && !students.value.some(s => s.value === pinnedStudent.value!.value)) {
@@ -486,6 +506,10 @@ const studentOptions = computed(() => {
     }
     return students.value
 })
+
+const selectedAdmissionNumber = computed(() =>
+    studentOptions.value.find(s => s.value === state.studentId)?.description
+)
 
 const selectedStudentName = computed(() =>
     studentOptions.value.find(s => s.value === state.studentId)?.label
@@ -496,7 +520,7 @@ onMounted(async () => {
 
     try {
         const s = await useStudentStore().fetchStudent(props.initialStudentId)
-        if (s) pinnedStudent.value = { label: `${s.givenNames} ${s.familyName}`, value: s.id }
+        if (s) pinnedStudent.value = { label: `${s.givenNames} ${s.familyName}`, value: s.id, description: s.admissionNumber || undefined }
     } catch {
         // Non-fatal - the payment form still works with just the id, just without a friendly label.
     }

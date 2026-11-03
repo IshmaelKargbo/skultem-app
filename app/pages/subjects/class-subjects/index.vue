@@ -203,7 +203,7 @@ definePageMeta({
         </template>
 
         <template #streamName-cell="{ row }">
-          <p>{{ row.original.streamName || '' }}</p>
+          <p>{{ row.original.streamName && row.original.streamName !== 'N/A' ? row.original.streamName : '' }}</p>
         </template>
 
         <template #loading>
@@ -243,7 +243,7 @@ definePageMeta({
                   <div class="flex min-w-0 items-center gap-1 text-xs-base text-muted">
                     <span class="shrink-0">{{ item.className }}</span>
 
-                    <template v-if="item.streamName">
+                    <template v-if="item.streamName && item.streamName !== 'N/A'">
                       <span class="shrink-0">•</span>
                       <span class="shrink-0">{{ item.streamName }}</span>
                     </template>

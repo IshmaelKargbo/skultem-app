@@ -223,3 +223,10 @@ export function formatTeacherNames(teacherName?: string | null): string {
 
     return `${names[0]}(+${names.length - 1})`
 }
+
+// "JSS 1 · A · Science": the class, its section and (when it has one) its stream - how a class session is named in
+// pickers, so two sections or streams of the same class can be told apart. The backend sends "N/A" for no stream.
+export function classSessionLabel(session: { clazz?: string | null, sectionName?: string | null, streamName?: string | null }) {
+  const stream = session.streamName && session.streamName !== 'N/A' ? session.streamName : ''
+  return [session.clazz, session.sectionName, stream].filter(Boolean).join(' · ')
+}

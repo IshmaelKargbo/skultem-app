@@ -31,12 +31,14 @@ export const AssessmentApi = () => {
     },
     // School-wide - unlike getAllAssessmentApprovalRequest below (scoped to one teacher's class),
     // this is the admin approval view's default list.
-    getAllSchoolAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string, classId?: string) => {
+    // approver: only classes whose grades go to that approver (e.g. the exam officer's own queue).
+    getAllSchoolAssessmentApprovalRequest: async (page: number, size: number, status?: string, search?: string, classId?: string, approver?: GradeApprover) => {
       try {
         const query = new URLSearchParams({ page: String(page), size: String(size) })
         if (status) query.set('status', status)
         if (search) query.set('query', search)
         if (classId) query.set('classId', classId)
+        if (approver) query.set('approver', approver)
 
         const res = await $api(`/assessment/approval?${query.toString()}`) as any
 
@@ -51,9 +53,18 @@ export const AssessmentApi = () => {
         useHandleError(err)
       }
     },
-    getSchoolAssessmentApprovalSummary: async () => {
+    // Who approves grades in each part of the school (see useGradeApproval).
+    getApprovalRouting: async () => {
       try {
-        const res = await $api('/assessment/approval/summary') as any
+        const res = await $api('/assessment/approval/routing') as any
+        return res?.data as GradeApprovalRouting | undefined
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    getSchoolAssessmentApprovalSummary: async (approver?: GradeApprover) => {
+      try {
+        const res = await $api('/assessment/approval/summary', { query: { approver: approver || undefined } }) as any
 
         if (!res)
           throw new Error('Failed to fetch assessment approval summary')

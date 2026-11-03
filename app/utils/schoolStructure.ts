@@ -80,7 +80,7 @@ export type ManagementSectionView = {
     attendanceMinDays?: number | null
     attendanceStreakDays?: number | null
     // Who approves grades in this section; null = the school's choice.
-    gradeApprover?: 'CLASS_MASTER' | 'ADMIN' | null
+    gradeApprover?: 'CLASS_MASTER' | 'ADMIN' | 'EXAM_OFFICER' | null
     address?: SectionAddress | null
 }
 
@@ -141,7 +141,7 @@ export function draftToPayload(draft: SchoolStructureDraft): SchoolStructurePayl
     }
 }
 
-export const SCOPABLE_ROLES: string[] = ['ADMIN', 'ACCOUNTANT', 'TEACHER', 'PRINCIPAL']
+export const SCOPABLE_ROLES: string[] = ['ADMIN', 'ACCOUNTANT', 'TEACHER', 'PRINCIPAL', 'EXAM_OFFICER']
 
 export function isScopableRole(role?: string | null): boolean {
     return !!role && SCOPABLE_ROLES.includes(role)

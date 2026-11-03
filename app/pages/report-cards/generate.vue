@@ -90,9 +90,7 @@
                 </div>
 
                 <div class="mt-6 flex flex-col gap-3 border-t border-default pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-sm text-muted">{{ generateHint }}</p>
-
-                    <UButton icon="i-lucide-file-text" color="primary" class="justify-center" :loading="generating"
+                    <UButton icon="i-lucide-file-text" color="primary" class="justify-center w-full" :loading="generating"
                         :disabled="!canGenerate" @click="generateReportCards">
                         Generate Report Cards
                     </UButton>
@@ -432,6 +430,6 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
 })
 </script>

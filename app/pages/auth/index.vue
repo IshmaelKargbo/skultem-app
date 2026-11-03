@@ -8,52 +8,6 @@ const appStore = useAppStore()
 
 const { records: data, meta, loading } = storeToRefs(store)
 
-const { user: me } = storeToRefs(store)
-
-const showAssign = ref(false)
-const selectedUserId = ref('')
-
-const { can } = useAuth()
-const { isSectionBased, load: loadStructure } = useSchoolStructure()
-
-function scopableRoles(user: User) {
-  return user.roles.filter(r => isScopableRole(r))
-}
-
-function canManageSections(user: User) {
-  return can([Role.OWNER, Role.PROPRIETOR]) && isSectionBased.value && !!scopableRoles(user).length
-}
-
-const sectionsTarget = ref<User | null>(null)
-const showManageSections = computed<boolean>({
-  get: () => sectionsTarget.value !== null,
-  set: (v) => { if (!v) sectionsTarget.value = null }
-})
-
-function openManageSections(user: User) {
-  sectionsTarget.value = user
-}
-
-const statusTarget = ref<User | null>(null)
-const showStatus = computed<boolean>({
-  get: () => statusTarget.value !== null,
-  set: (v) => { if (!v) statusTarget.value = null }
-})
-
-function openStatusPrompt(user: User) {
-  statusTarget.value = user
-}
-
-const resetPasswordTarget = ref<User | null>(null)
-const showResetPassword = computed<boolean>({
-  get: () => resetPasswordTarget.value !== null,
-  set: (v) => { if (!v) resetPasswordTarget.value = null }
-})
-
-function openResetPasswordPrompt(user: User) {
-  resetPasswordTarget.value = user
-}
-
 const parseStatus: Record<string, string> = {
   ACTIVE: 'Active',
   INACTIVE: 'Inactive',
@@ -122,18 +76,8 @@ function statusOf(user: User) {
   return user.schoolStatus ?? user.status
 }
 
-const filtered = computed(() => {
-  const text = search.value.trim().toLowerCase()
-
-  return (data.value ?? []).filter((user) => {
-    if (role.value && !user.roles.includes(role.value as any)) return false
-    if (status.value && statusOf(user) !== status.value) return false
-    if (!text) return true
-
-    return `${user.givenNames} ${user.familyName}`.toLowerCase().includes(text)
-      || user.email?.toLowerCase().includes(text)
-  })
-})
+// The server does the searching and filtering across every page, so the list shows as loaded.
+const filtered = computed(() => data.value ?? [])
 
 // The most a row/card shows before collapsing the rest into "+n" - keeps a many-role user to one line.
 const MAX_ROLES_SHOWN = 2
@@ -150,33 +94,6 @@ function fullName(user: User) {
   return `${user.givenNames} ${user.familyName}`
 }
 
-// The actions menu used by the mobile rows and the cards - the table keeps its own icon buttons.
-function userActions(user: User) {
-  const own = me.value?.id === user.id
-  const active = user.schoolStatus === 'ACTIVE'
-
-  return [
-    [
-      { label: 'View profile', icon: 'i-lucide-eye', to: `/auth/${user.id}` },
-      { label: 'Assign role', icon: 'eos-icons:cluster-role-binding', onClick: () => openAssignRole(user.id) },
-      ...(canManageSections(user)
-        ? [{ label: 'Manage sections', icon: 'lucide:layers', onClick: () => openManageSections(user) }]
-        : []),
-    ],
-    ...(own
-      ? []
-      : [[
-        { label: 'Reset password', icon: 'lucide:key-round', onClick: () => openResetPasswordPrompt(user) },
-        {
-          label: active ? 'Deactivate' : 'Reactivate',
-          icon: active ? 'lucide:user-x' : 'lucide:user-check',
-          color: active ? 'error' as const : 'success' as const,
-          onClick: () => openStatusPrompt(user)
-        },
-      ]]),
-  ]
-}
-
 const page = computed<number>({
   get: () => Number(route.query.page ?? 1),
   set: (val) => updateQuery({ page: val })
@@ -184,45 +101,39 @@ const page = computed<number>({
 
 const size = ref(runtimeConf().limit)
 
-function openAssignRole(userId: string) {
-  selectedUserId.value = userId
-  showAssign.value = true
-}
-
 async function fetchRecord() {
-  loading.value = true
-
-  await store.fetchAll(page.value, size.value)
-
-  loading.value = false
+  await store.fetchAll(page.value, size.value, {
+    query: search.value,
+    role: role.value,
+    status: status.value,
+  })
 }
 
-watch(
-  () => page.value,
-  () => {
-    router.replace({
-      query: {
-        page: page.value
-      }
-    })
+watch(page, () => {
+  router.replace({ query: { ...route.query, page: page.value } })
+  fetchRecord()
+})
 
-    fetchRecord()
-  },
-  { immediate: true }
-)
+// A new search or filter starts again from page 1 - otherwise page 3 of a two-page result is empty.
+function applyFilters() {
+  if (page.value !== 1) page.value = 1 // the page watcher fetches
+  else fetchRecord()
+}
+
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(search, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(applyFilters, 350)
+})
+watch([role, status], applyFilters)
+onBeforeUnmount(() => clearTimeout(searchTimer))
 
 onMounted(async () => {
-  if (!route.query.page || !route.query.size) {
-    router.replace({
-      query: {
-        page: page.value,
-        size: size.value
-      }
-    })
+  if (!route.query.page) {
+    router.replace({ query: { ...route.query, page: page.value } })
   }
 
   fetchRecord()
-  loadStructure()
   appStore.setTitle('Auth Management')
   document.title = 'Users | Auth | Skultem'
 })
@@ -240,7 +151,7 @@ definePageMeta({
         <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div class="flex min-w-0 flex-1 items-center gap-2">
             <AuthUsersAdd />
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search this page by name or email"
+            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or email"
               class="min-w-0 flex-1" />
             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter users"
               description="Narrow the list by role or status" />
@@ -268,7 +179,7 @@ definePageMeta({
               </p>
 
               <p class="text-sm text-gray-500">
-                {{ hasActiveFilters ? 'No user on this page matches your filters.' : 'Users will appear here once created.' }}
+                {{ hasActiveFilters ? 'No user matches your search or filters.' : 'Users will appear here once created.' }}
               </p>
             </div>
           </div>
@@ -309,33 +220,9 @@ definePageMeta({
         </template>
 
         <template #actions-cell="{ row }">
-          <div class="flex justify-end gap-1.5">
-            <UTooltip :delay-duration="0" arrow text="View Profile">
-              <UButton size="sm" variant="soft" color="neutral" icon="i-lucide-eye" class="rounded-xl"
-                :to="`/auth/${row.original.id}`" />
-            </UTooltip>
-
-            <UTooltip :delay-duration="0" arrow text="Assign Role">
-              <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding" class="rounded-xl"
-                @click="openAssignRole(row.original.id)" />
-            </UTooltip>
-
-            <UTooltip v-if="canManageSections(row.original)" :delay-duration="0" arrow text="Manage Sections">
-              <UButton size="sm" variant="soft" color="info" icon="lucide:layers" class="rounded-xl"
-                @click="openManageSections(row.original)" />
-            </UTooltip>
-
-            <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow text="Reset Password">
-              <UButton size="sm" variant="soft" color="warning" icon="lucide:key-round" class="rounded-xl"
-                @click="openResetPasswordPrompt(row.original)" />
-            </UTooltip>
-
-            <UTooltip v-if="me?.id !== row.original.id" :delay-duration="0" arrow
-              :text="row.original.schoolStatus === 'ACTIVE' ? 'Deactivate' : 'Reactivate'">
-              <UButton size="sm" variant="soft" :color="row.original.schoolStatus === 'ACTIVE' ? 'error' : 'success'"
-                :icon="row.original.schoolStatus === 'ACTIVE' ? 'lucide:user-x' : 'lucide:user-check'"
-                class="rounded-xl" @click="openStatusPrompt(row.original)" />
-            </UTooltip>
+          <div class="flex justify-end">
+            <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-chevron-right"
+              :to="`/auth/${row.original.id}`" />
           </div>
         </template>
       </UTable>
@@ -374,10 +261,8 @@ definePageMeta({
             <div class="flex shrink-0 flex-col items-end gap-1.5">
               <UBadge size="sm" variant="soft" :label="parseStatus[statusOf(item)]"
                 :color="parseStatusColor[statusOf(item)]" />
-              <UDropdownMenu :items="userActions(item)" :content="{ align: 'end' }">
-                <UButton icon="lucide:ellipsis-vertical" color="neutral" variant="ghost" size="sm"
-                  aria-label="User actions" />
-              </UDropdownMenu>
+              <UButton :to="`/auth/${item.id}`" icon="i-lucide-chevron-right" color="neutral" variant="ghost"
+                size="sm" aria-label="View user" />
             </div>
           </div>
         </template>
@@ -385,7 +270,7 @@ definePageMeta({
         <div v-else class="flex flex-col items-center gap-2 py-12">
           <UIcon name="i-lucide-users" class="text-4xl text-gray-400" />
           <p class="text-sm text-gray-500">
-            {{ hasActiveFilters ? 'No user on this page matches your filters.' : 'No users found.' }}
+            {{ hasActiveFilters ? 'No user matches your search or filters.' : 'No users found.' }}
           </p>
         </div>
       </div>
@@ -437,21 +322,6 @@ definePageMeta({
               <UButton :to="`/auth/${item.id}`" label="View profile" variant="ghost" color="neutral" size="sm"
                 trailing-icon="i-lucide-arrow-right" />
 
-              <div class="flex items-center gap-1.5">
-                <UTooltip :delay-duration="0" arrow text="Assign Role">
-                  <UButton size="sm" variant="soft" color="primary" icon="eos-icons:cluster-role-binding"
-                    class="rounded-xl" @click="openAssignRole(item.id)" />
-                </UTooltip>
-                <UTooltip v-if="canManageSections(item)" :delay-duration="0" arrow text="Manage Sections">
-                  <UButton size="sm" variant="soft" color="info" icon="lucide:layers" class="rounded-xl"
-                    @click="openManageSections(item)" />
-                </UTooltip>
-                <UDropdownMenu v-if="me?.id !== item.id" :items="userActions(item).slice(1)"
-                  :content="{ align: 'end' }">
-                  <UButton icon="lucide:ellipsis-vertical" color="neutral" variant="ghost" size="sm"
-                    aria-label="More actions" />
-                </UDropdownMenu>
-              </div>
             </div>
           </div>
         </div>
@@ -459,7 +329,7 @@ definePageMeta({
         <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
           <UIcon name="i-lucide-users" class="text-4xl text-gray-400" />
           <p class="text-sm text-gray-500">
-            {{ hasActiveFilters ? 'No user on this page matches your filters.' : 'No users found.' }}
+            {{ hasActiveFilters ? 'No user matches your search or filters.' : 'No users found.' }}
           </p>
         </div>
       </div>
@@ -474,23 +344,5 @@ definePageMeta({
       </template>
     </UCard>
 
-    <AuthUsersAssign v-model="showAssign" :user-id="selectedUserId" @success="fetchRecord" />
-
-    <AuthUsersManageSections
-      v-if="sectionsTarget"
-      v-model="showManageSections"
-      :user-id="sectionsTarget.id"
-      :user-name="`${sectionsTarget.givenNames} ${sectionsTarget.familyName}`"
-      :roles="scopableRoles(sectionsTarget)"
-      @success="fetchRecord"
-    />
-
-    <AuthUsersStatusPrompt v-if="statusTarget" v-model:open="showStatus" :user-id="statusTarget.id"
-      :user-name="`${statusTarget.givenNames} ${statusTarget.familyName}`"
-      :active="statusTarget.schoolStatus === 'ACTIVE'" />
-
-    <AuthUsersResetPasswordPrompt v-if="resetPasswordTarget" v-model:open="showResetPassword"
-      :user-id="resetPasswordTarget.id"
-      :user-name="`${resetPasswordTarget.givenNames} ${resetPasswordTarget.familyName}`" />
   </div>
 </template>

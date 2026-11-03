@@ -70,6 +70,14 @@
 
     <GradesReturnedNotice :assessments="assessments" />
 
+    <!-- Submitted grades wait for whoever the school has approving them for this class. -->
+    <UAlert v-if="hasPendingApproval && selectedApprover" color="info" variant="soft"
+      :icon="GRADE_APPROVER_ICON[selectedApprover]"
+      :title="`Waiting for the ${GRADE_APPROVER_LABEL[selectedApprover].toLowerCase()} to approve`"
+      :description="selectedApprover === 'CLASS_MASTER'
+        ? 'This class\'s grades are approved by its class master (an admin, if you are the class master). Submitted grades stay locked until they\'re approved or sent back; parents see them once approved.'
+        : `This class's grades are approved by the ${GRADE_APPROVER_LABEL[selectedApprover].toLowerCase()}. Submitted grades stay locked until they're approved or sent back; parents see them once approved.`" />
+
     <!-- A class that has no assessments in this term: say why instead of showing an empty table. -->
     <UAlert
       v-if="!loading && state.teacherSubjectId && state.termId && !assessments.length"
@@ -194,6 +202,8 @@ const rows = ref<StudentAssessment[]>([])
 const assessments = ref<Assessment[]>([])
 
 const teacherStore = useTeacherSubjectStore()
+const classStore = useClassStore()
+const { load: loadRouting, approverFor } = useGradeApproval()
 const classSessionStore = useClassSessionStore()
 const termStore = useTermStore()
 const store = useAssessmentStore()
@@ -220,6 +230,14 @@ const subjects = computed(() =>
 )
 
 const term = computed(() => termStore.records.find(e => e.status == 'ACTIVE'))
+
+// Who approves the chosen class's grades (the school decides: class master, admin or exam officer).
+const selectedApprover = computed<GradeApprover | null>(() => {
+  const ts = records.value.find(r => r.id === state.teacherSubjectId)
+  const level = ts ? classStore.records.find(c => c.id === ts.classId)?.level : undefined
+  return level ? approverFor(level) : null
+})
+const hasPendingApproval = computed(() => assessments.value.some(a => a.status === 'SUBMITTED'))
 
 // When the term changes, re-list the subjects graded in it and keep the selection on one of them.
 watch(() => state.termId, async () => {
@@ -697,6 +715,8 @@ async function completeAssessment() {
 onMounted(async () => {
   useAppStore().setTitle('Grade Assignment')
   document.title = 'Grade Assignment | Grades | Skultem'
+  loadRouting()
+  classStore.fetchAll(1, 200)
 
   await Promise.all([
     teacherStore.fetchAllByTeacher(0, 0),

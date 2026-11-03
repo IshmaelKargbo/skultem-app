@@ -56,6 +56,8 @@
         </div>
 
         <!-- CA + FORMAL TEST INSIGHT: only for a section using continuous assessment -->
+        <!-- Prompts for the approver: CA patterns worth a second look before signing off. -->
+        <GradesCaReviewFlags v-if="isContinuous" :scores="selected.studentScores ?? []" />
         <GradesTeacherCaInsight v-if="isContinuous" :assessment="insightAssessment" :rows="insightRows" />
 
         <!-- STUDENT SCORES -->
@@ -165,13 +167,19 @@
           <UAlert v-if="needsOtherReviewer && selected.approver === 'ADMIN'" class="mt-3" color="info" variant="subtle"
             icon="lucide:shield-check" title="An admin approves grades for this class"
             description="Your school has an admin approve grades for this class, so this is waiting for an admin, proprietor or owner. You'll see it here once it's approved or returned." />
+          <UAlert v-else-if="needsOtherReviewer && selected.approver === 'EXAM_OFFICER'" class="mt-3" color="info"
+            variant="subtle" icon="lucide:shield-check" title="The exam officer approves grades for this class"
+            description="Your school sends grades for this class to the exam office, so this is waiting for the exam officer (an admin, proprietor or owner can also step in)." />
+          <UAlert v-else-if="needsOtherReviewer && isExamOfficer" class="mt-3" color="info" variant="subtle"
+            icon="lucide:shield-check" title="The class master approves grades for this class"
+            description="Your school has the class master approve grades here, so the exam office only follows it. To have them come to you, set 'Who approves grades?' to the exam officer in School Settings." />
           <UAlert v-else-if="needsOtherReviewer" class="mt-3" color="info" variant="subtle" icon="lucide:shield-check"
             title="An admin or proprietor approves this one"
             description="You teach this subject as well as being the class master, so you can't approve your own grades. It is waiting for an admin, proprietor or owner." />
-          <UAlert v-else-if="selected.requiresAdminReview && selected.status === 'Pending Review'" class="mt-3"
+          <UAlert v-else-if="selected.requiresAdminReview && selected.status === 'Pending Review' && !isExamOfficer" class="mt-3"
             color="info" variant="subtle" icon="lucide:shield-check"
-            :title="selected.approver === 'ADMIN' ? 'Grades are approved by an admin' : 'Class master taught this subject'"
-            :description="selected.approver === 'ADMIN' ? 'In this class the admin approves grades rather than the class master.' : 'The class master is also the subject teacher here, so it comes to you for approval.'" />
+            :title="approverTitle"
+            :description="approverDescription" />
 
           <div v-if="showAction" class="mt-3 flex gap-3 border-t border-default pt-3">
             <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
@@ -221,18 +229,30 @@ const state = reactive({
 
 const returnForm = ref(false)
 const reopenForm = ref(false)
-// A class master who taught the subject can't approve their own grades - that goes to an admin/proprietor/owner.
-const needsOtherReviewer = computed(() =>
-  !!selected.value?.requiresAdminReview
-  && selected.value?.status === 'Pending Review'
-  && !can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])
-)
+const isManagement = computed(() => can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR]))
+const isExamOfficer = computed(() => can(Role.EXAM_OFFICER))
+// Who may act depends on the school's (or section's) grade approver: the class master, an admin or the exam
+// officer. Admins, proprietors and owners can always step in. A class master who taught the subject can't approve
+// their own grades - those go to an admin/proprietor/owner.
+const needsOtherReviewer = computed(() => {
+  if (selected.value?.status !== 'Pending Review' || isManagement.value) return false
+  if (isExamOfficer.value) return selected.value?.approver !== 'EXAM_OFFICER'
+  return !!selected.value?.requiresAdminReview
+})
 const showAction = computed(() =>
   selected.value?.status === 'Pending Review' && !returnForm.value && !needsOtherReviewer.value)
 const canReopen = computed(() =>
   selected.value?.status === 'Approved'
-  && can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR])
+  && can([Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.EXAM_OFFICER])
 )
+const approverTitle = computed(() => selected.value?.approver === 'ADMIN' ? 'Grades are approved by an admin'
+  : selected.value?.approver === 'EXAM_OFFICER' ? 'Grades are approved by the exam officer'
+    : 'Class master taught this subject')
+const approverDescription = computed(() => selected.value?.approver === 'ADMIN'
+  ? 'In this class the admin approves grades rather than the class master.'
+  : selected.value?.approver === 'EXAM_OFFICER'
+    ? 'In this class the exam office approves grades. You can still step in and approve or return it.'
+    : 'The class master is also the subject teacher here, so it comes to you for approval.')
 const sortedStudentScores = computed(() => {
   if (!selected.value?.studentScores) return []
 

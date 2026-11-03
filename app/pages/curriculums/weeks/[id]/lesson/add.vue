@@ -368,7 +368,7 @@ definePageMeta({
     Role.ADMIN,
     Role.PROPRIETOR,
     Role.OWNER,
-    Role.TEACHER
+    Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN
   ]
 })
 </script>

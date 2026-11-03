@@ -11,6 +11,9 @@
                     </span>
                     <UBadge size="sm" variant="subtle" :color="statusColor(record.status)"
                         :label="statusLabel(record.status)" class="shrink-0" />
+                    <!-- Who it's waiting on - the school decides (class master, admin or exam officer). -->
+                    <UBadge v-if="record.status === 'Pending Review' && waitingOn" size="sm" variant="outline"
+                        color="neutral" :icon="waitingOn.icon" :label="waitingOn.label" class="shrink-0" />
                 </div>
 
                 <p class="mt-0.5 truncate text-xs text-muted">
@@ -41,6 +44,15 @@ const { record } = defineProps<{
     record: AssessmentApprovalRequest | null
     selected?: AssessmentApprovalRequest | null
 }>()
+
+// A class master's own subject goes to an admin even where class masters approve.
+const waitingOn = computed(() => {
+    if (!record?.approver) return null
+    if (record.approver === 'CLASS_MASTER' && record.requiresAdminReview) {
+        return { label: 'With an admin (class master\'s own subject)', icon: GRADE_APPROVER_ICON.ADMIN }
+    }
+    return { label: `With the ${GRADE_APPROVER_LABEL[record.approver].toLowerCase()}`, icon: GRADE_APPROVER_ICON[record.approver] }
+})
 
 function statusLabel(status: ApprovalRequestStatus) {
     if (status === "Pending Review") return "Pending Approval"

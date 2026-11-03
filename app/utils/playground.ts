@@ -8,6 +8,8 @@ export type PlaygroundCategoryKey =
     | 'ASSESSMENTS'
     | 'ATTENDANCE'
     | 'BEHAVIOUR'
+    | 'LIBRARY'
+    | 'HEALTH_CARE'
     | 'MATERIALS'
     | 'EXPENSES'
     | 'PAYROLL'
@@ -55,7 +57,7 @@ export type PlaygroundCategoryMeta = {
 export const PLAYGROUND_CATEGORY_META: Record<PlaygroundCategoryKey, PlaygroundCategoryMeta> = {
     STUDENTS: {
         label: 'Students & guardians',
-        description: 'Every student, guardian, enrollment and promotion request. Guardians lose access to this school.',
+        description: 'Every student, guardian, enrollment and promotion request - with their fees, marks, attendance, behaviour, library and sick bay records. Guardians lose access to this school.',
         icon: 'i-lucide-graduation-cap'
     },
     FEES: {
@@ -77,6 +79,16 @@ export const PLAYGROUND_CATEGORY_META: Record<PlaygroundCategoryKey, PlaygroundC
         label: 'Behaviour records',
         description: 'Merits, demerits and incident notes.',
         icon: 'i-lucide-shield-alert'
+    },
+    LIBRARY: {
+        label: 'Library loans & visits',
+        description: 'Book loans, library visits and class library sessions. Every book goes back on the shelf; the catalogue and settings stay.',
+        icon: 'i-lucide-library'
+    },
+    HEALTH_CARE: {
+        label: 'Sick bay visits',
+        description: 'Sick bay visits, treatments given and students turned away. The sick bay settings stay.',
+        icon: 'i-lucide-heart-pulse'
     },
     MATERIALS: {
         label: 'Material sales & issues',

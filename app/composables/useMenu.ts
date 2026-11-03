@@ -10,6 +10,8 @@ export interface SubNavItem {
   icon: string
   exact?: boolean
   roles?: Role[]
+  // Shown to a teacher only while they're a class master of some class.
+  classMasterOnly?: boolean
 }
 
 export interface NavItem {
@@ -42,6 +44,9 @@ export function useMenu() {
   if (onAdminPortal) {
     onMounted(() => { platform.load() })
   }
+
+  // Who runs the materials store; an accountant only handles its sales and pickups.
+  const MATERIAL_MANAGERS = [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 
   const navItems: NavItem[] = [
     { label: 'Dashboard', to: '/', exact: true, icon: DASHBOARD_ICON },
@@ -80,7 +85,16 @@ export function useMenu() {
     },
     { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON, roles: [Role.PARENT] },
 
-    { label: 'Grade', to: '/grades', icon: GRADES_ICON, roles: [Role.TEACHER] },
+    // A teacher's side of Grades & Exams: their grade entry, approval while they're a class master, and the
+    // exam timetable (they invigilate and their classes sit the papers).
+    {
+      label: 'Grades & Exams', icon: GRADES_ICON, roles: [Role.TEACHER],
+      subNavs: [
+        { label: 'Grade Entry', to: '/grades', icon: GRADES_ICON, exact: true },
+        { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, classMasterOnly: true },
+        { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock' },
+      ]
+    },
 
     {
       label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON,
@@ -139,10 +153,21 @@ export function useMenu() {
       ]
     },
     {
-      label: 'Grades', icon: GRADES_ASSIGN_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      // Grades & Exams: entering grades, tracking submissions, approval (by the class master, an admin or the exam
+      // officer, as the school chooses), the exam timetable and results - one place, one set of tabs.
+      label: 'Grades & Exams', icon: GRADES_ASSIGN_ICON,
+      roles: [Role.EXAM_OFFICER, Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
-        { label: 'Grades', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true },
+        { label: 'Overview', to: '/exam-office', icon: 'i-lucide-layout-dashboard', exact: true },
+        { label: 'Grade Entry', to: '/grades', icon: GRADES_ASSIGN_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Submissions', to: '/exam-office/submissions', icon: 'i-lucide-list-checks' },
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
+        { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock' },
+        { label: 'Broadsheet', to: '/exam-office/broadsheet', icon: 'i-lucide-sheet' },
+        { label: 'Assessment Cycle', to: '/academics/assessment-cycle', icon: 'i-lucide-refresh-cw', roles: [Role.EXAM_OFFICER] },
+        { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, roles: [Role.EXAM_OFFICER] },
+        { label: 'Generate Report Cards', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.EXAM_OFFICER] },
+        { label: 'Completion Report', to: '/analytics/academic-reports/completion', icon: 'i-lucide-bar-chart-3', roles: [Role.EXAM_OFFICER] },
       ]
     },
 
@@ -176,7 +201,7 @@ export function useMenu() {
 
     {
       label: 'Communicate', icon: COMMUNICATE_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Notice Board', to: '/communicate', icon: NOTICE_ICON, exact: true },
         { label: 'Events & Holidays', to: '/communicate/events', icon: EVENT_ICON },
@@ -253,7 +278,7 @@ export function useMenu() {
 
     {
       label: 'Expenses', icon: EXPENSES_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      roles: [Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Expenses', to: '/expenses', icon: EXPENSES_ICON, exact: true },
         { label: 'Category', to: '/expenses/category', icon: MAIN_CATEGORY_ICON },
@@ -292,7 +317,6 @@ export function useMenu() {
     {
       label: 'Analytics', icon: SCHEME_ICON, roles: [Role.ADMIN],
       subNavs: [
-        { label: 'Reports', to: '/analytics/', icon: REPORT_ICON },
         { label: 'Academic Reports', to: '/analytics/academic-reports', icon: 'i-lucide-bar-chart-3' },
         { label: 'Demographics', to: '/analytics/demographics', icon: 'i-lucide-users-round' },
       ]
@@ -371,18 +395,18 @@ export function useMenu() {
       roles: [Role.SYSTEM_ADMIN], adminPortalOnly: true, permission: 'ADMINS'
     },
     {
-      label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.NURSE],
+      label: 'Payroll', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER],
       subNavs: [
         { label: 'Overview', to: '/payroll', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Salary Structure', to: '/payroll/salaries', icon: 'i-lucide-banknote', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Salary Templates', to: '/payroll/salary-templates', icon: 'i-lucide-layout-template', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Payroll Runs', to: '/payroll/runs', icon: 'i-lucide-history', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Payslip Design', to: '/payroll/payslip-design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
-        { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.NURSE] },
+        { label: 'Payslips', to: '/payroll/history', icon: 'i-lucide-receipt', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER] },
       ]
     },
       {
-      label: 'Human Resource', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      label: 'Human Resource', icon: 'i-lucide-wallet', roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.ACCOUNTANT, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER],
       subNavs: [
         { label: 'Overview', to: '/hr', icon: 'i-lucide-layout-dashboard', exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Mark Attendance', to: '/hr/teacher-attendance', icon: ATTENDANCE_ICON, exact: true, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
@@ -390,8 +414,8 @@ export function useMenu() {
         { label: 'Monthly Summary', to: '/hr/teacher-attendance/monthly-summary', icon: MONTHLY_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Term Summary', to: '/hr/teacher-attendance/term-summary', icon: TERM_SUMMARY_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
         { label: 'Management Reports', to: '/hr/teacher-attendance/management-reports', icon: INSPECTION_REPORT_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN] },
-        { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.ACCOUNTANT, Role.TEACHER, Role.SUPER_ADMIN] },
-        { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
+        { label: 'Clock In / Out', to: '/hr/teacher-attendance/clock-in', icon: 'i-lucide-log-in', roles: [Role.ADMIN, Role.PRINCIPAL, Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.SUPER_ADMIN] },
+        { label: 'Leave', to: '/hr/leave', icon: LAYERS_ICON, roles: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.TEACHER, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.PRINCIPAL, Role.SUPER_ADMIN] },
       ]
     },
     {
@@ -404,13 +428,13 @@ export function useMenu() {
     },
     {
       label: 'Materials & Supplies', icon: MATERIAL_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.ACCOUNTANT],
       subNavs: [
-        { label: 'Materials', to: '/material', icon: MATERIAL_ICON, exact: true },
+        { label: 'Materials', to: '/material', icon: MATERIAL_ICON, exact: true, roles: MATERIAL_MANAGERS },
         { label: 'Sales', to: '/material/sales', icon: SALE_ICON },
-        { label: 'Supplies', to: '/material/supply', icon: CURRICULUM_GROUP_ICON },
+        { label: 'Supplies', to: '/material/supply', icon: CURRICULUM_GROUP_ICON, roles: MATERIAL_MANAGERS },
         { label: 'Pending Pickups', to: '/material/pending-pickups', icon: PENDING_PICKUP_ICON },
-        { label: 'Category', to: '/material/category', icon: MAIN_CATEGORY_ICON },
+        { label: 'Category', to: '/material/category', icon: MAIN_CATEGORY_ICON, roles: MATERIAL_MANAGERS },
       ]
     },
     {
@@ -455,6 +479,7 @@ export function useMenu() {
         { label: 'Terms', to: '/academics/terms', icon: TERM_ICON },
         { label: 'Template', to: '/academics/assessment-templates', icon: TEMPLATE_ICON },
         { label: 'Academic Cycle', to: '/academics/assessment-cycle', icon: CYCLE_ICON },
+        { label: 'Assessment Check', to: '/academics/assessment-check', icon: 'i-lucide-clipboard-check' },
         { label: 'Grade Scale', to: '/academics/grade-scale', icon: GRADE_ICON },
         { label: 'Promotions', to: '/academics/promotions', icon: PROMOTE_STUDENTS_ICON },
       ]
@@ -479,20 +504,10 @@ export function useMenu() {
         ? (item.adminPortalOnly || !item.roles) && (!item.permission || platformCan(item.permission))
         : (!item.roles || can(item.roles)) && !item.adminPortalOnly
           && (!item.classMasterOnly || isClassMaster.value))
-      .map((item) => {
-        if (item.label === 'Grade' && item.to === '/grades' && can(Role.TEACHER) && isClassMaster.value) {
-          return {
-            label: 'Grade',
-            icon: item.icon,
-            roles: item.roles,
-            subNavs: [
-              { label: 'Grade Assignment', to: '/grades', icon: GRADES_ICON, exact: true },
-              { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
-            ]
-          }
-        }
-        return item
-      })
+      // Class-master-only links (a teacher's Grade Approval) appear only for class masters.
+      .map((item) => item.subNavs
+        ? { ...item, subNavs: item.subNavs.filter((nav) => !nav.classMasterOnly || isClassMaster.value) }
+        : item)
       // Hide whatever belongs to a module this school hasn't installed (see utils/modules.ts) - a
       // link for its own page, or just the sub-links of a group; a group left empty disappears.
       .map((item) => {
@@ -600,14 +615,14 @@ export function useMenu() {
     // The librarian's and the nurse's portals have only a few pages, so every group is laid out flat: its
     // pages are listed directly under a section heading instead of behind a dropdown. Home already shows the
     // library / health care dashboard, so the section's own Dashboard link would only repeat it.
-    const rank = (id: string) => id === 'Dashboard' ? 0 : id === 'Library' || id === 'Health Care' ? 1 : 2
-    if (can(Role.LIBRARIAN) || can(Role.NURSE)) {
+    const rank = (id: string) => id === 'Dashboard' ? 0 : id === 'Library' || id === 'Health Care' || id === 'Grades & Exams' ? 1 : 2
+    if (can([Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER])) {
       return items
         .map((item): MenuSection => {
           if (!item.subNavs) return { id: item.label, tier: '', label: '', items: [item] }
 
           const pages = item.subNavs
-            .filter((nav) => (!nav.roles || can(nav.roles)) && nav.to !== '/library' && nav.to !== '/health-care')
+            .filter((nav) => (!nav.roles || can(nav.roles)) && nav.to !== '/library' && nav.to !== '/health-care' && nav.to !== '/exam-office')
             .map((nav): NavItem => ({ label: nav.label, to: nav.to, icon: nav.icon, exact: nav.exact }))
           return { id: item.label, tier: '', label: item.label, items: pages }
         })

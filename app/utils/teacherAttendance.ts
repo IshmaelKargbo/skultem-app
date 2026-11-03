@@ -20,6 +20,8 @@ export type MyAttendanceToday = {
     status: TeacherAttendanceStatus | null
     clockedInAt: string | null
     clockedOutAt: string | null
+    // false when the person has no active staff/payroll record here - there's nothing to clock in to.
+    onPayroll?: boolean
 }
 
 export type ClockInResult = {
@@ -142,5 +144,5 @@ export function teacherAttendanceStatusColor(status?: TeacherAttendanceStatus | 
 // aren't staff). Mirrors TeacherAttendanceController's self-service endpoints.
 export const CLOCK_IN_ROLES = [
     Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR,
-    Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE,
+    Role.ACCOUNTANT, Role.TEACHER, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER,
 ]

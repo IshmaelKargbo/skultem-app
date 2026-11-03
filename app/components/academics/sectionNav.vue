@@ -16,6 +16,7 @@ const items: NavItem[] = [
   { label: 'Terms', to: '/academics/terms', icon: TERM_ICON },
   { label: 'Template', to: '/academics/assessment-templates', icon: TEMPLATE_ICON },
   { label: 'Academic Cycle', to: '/academics/assessment-cycle', icon: CYCLE_ICON },
+  { label: 'Assessment Check', to: '/academics/assessment-check', icon: 'i-lucide-clipboard-check' },
   { label: 'Grade Scale', to: '/academics/grade-scale', icon: GRADE_ICON },
   { label: 'Promotions', to: '/academics/promotions', icon: PROMOTE_STUDENTS_ICON }
 ]

@@ -149,8 +149,7 @@
           </div>
 
           <template v-if="!isLoadingOverview && filteredClasses.length" #footer>
-            <div class="flex items-center justify-between gap-3">
-              <Showing :meta="classesMeta" />
+            <div class="flex items-center justify-center gap-3">
               <UPagination v-model:page="classesPage" size="sm" :page-size="CLASSES_PAGE_SIZE"
                 :items-per-page="CLASSES_PAGE_SIZE" :total="filteredClasses.length" show-edges />
             </div>
@@ -512,6 +511,6 @@ watch(() => selectedClassId.value, async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.EXAM_OFFICER]
 })
 </script>

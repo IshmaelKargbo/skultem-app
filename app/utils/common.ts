@@ -332,8 +332,12 @@ export enum Role {
     PARENT = 'PARENT',
     ACCOUNTANT = 'ACCOUNTANT',
     LIBRARIAN = 'LIBRARIAN',
-    NURSE = 'NURSE'
+    NURSE = 'NURSE',
+    EXAM_OFFICER = 'EXAM_OFFICER'
 }
+
+// Who runs the Exam Office pages (see pages/exam-office).
+export const EXAM_OFFICE_ROLES = [Role.EXAM_OFFICER, Role.ADMIN, Role.PRINCIPAL, Role.OWNER, Role.PROPRIETOR, Role.SUPER_ADMIN]
 
 const SUPER_ADMIN_COVERS: string[] = [Role.OWNER, Role.PROPRIETOR]
 
@@ -371,6 +375,10 @@ export const roles = [
     {
         label: 'School Nurse',
         value: Role.NURSE.toString()
+    },
+    {
+        label: 'Exam Officer',
+        value: Role.EXAM_OFFICER.toString()
     }
 ]
 
@@ -510,7 +518,8 @@ export const parseRole: StringMap = {
     PARENT: 'Parent',
     ACCOUNTANT: 'Accountant',
     LIBRARIAN: 'Librarian',
-    NURSE: 'School Nurse'
+    NURSE: 'School Nurse',
+    EXAM_OFFICER: 'Exam Officer'
 }
 
 export const parseRoleColor: StringMap = {
@@ -522,7 +531,8 @@ export const parseRoleColor: StringMap = {
     PARENT: 'primary',
     ACCOUNTANT: 'error',
     LIBRARIAN: 'info',
-    NURSE: 'error'
+    NURSE: 'error',
+    EXAM_OFFICER: 'warning'
 }
 
 export const parseRoleIcon: StringMap = {
@@ -535,7 +545,8 @@ export const parseRoleIcon: StringMap = {
     PARENT: 'fluent:people-24-regular',
     ACCOUNTANT: 'fluent:calculator-24-regular',
     LIBRARIAN: 'lucide:library',
-    NURSE: 'lucide:heart-pulse'
+    NURSE: 'lucide:heart-pulse',
+    EXAM_OFFICER: 'lucide:clipboard-check'
 }
 
 export function clean(str: string) {

@@ -142,7 +142,7 @@ export const SchoolApi = () => {
       }
     },
     // Who approves grades in one section ('CLASS_MASTER' | 'ADMIN'); null = use the school's choice.
-    updateSectionGradeApprover: async (sectionId: string, gradeApprover: 'CLASS_MASTER' | 'ADMIN' | null) => {
+    updateSectionGradeApprover: async (sectionId: string, gradeApprover: 'CLASS_MASTER' | 'ADMIN' | 'EXAM_OFFICER' | null) => {
       try {
         const res = await $api(`/school/structure/sections/${sectionId}/grade-approver`, {
           method: 'PUT',

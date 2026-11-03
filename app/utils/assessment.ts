@@ -71,7 +71,7 @@ export type AssessmentApprovalRequest = {
     // The class master taught this subject themselves, so an admin/proprietor/owner reviews it instead.
     requiresAdminReview?: boolean
     // Who approves grades for this class: its section's choice, else the school's.
-    approver?: 'CLASS_MASTER' | 'ADMIN'
+    approver?: GradeApprover
 }
 
 export type AssessmentApprovalSummary = {
@@ -166,6 +166,8 @@ export type ContinuousBreakdown = {
     // Named, weighted CA parts (empty when the CA is plain equal recordings) and the formal part's own name.
     caComponents?: CaComponent[]
     formalLabel?: string | null
+    // Recordings an administrator unlocked after they were locked - they may have been changed after closing.
+    unlockedWeeks?: number[]
 }
 
 export type AssessmentConfiguration = {
@@ -615,4 +617,216 @@ export function partsProblem(parts: CaComponent[]): string {
     }
     if (total > 99) return `The parts total ${total}% - that leaves nothing for the final part. Keep them under 100%.`
     return ''
+}
+
+// What creating a class's assessments did (POST /class/{id}/assessments/sync, and a template change).
+export interface ClassAssessmentSync {
+  students: number
+  studentsUpdated: number
+  assessmentsCreated: number
+  subjectsWithoutTeacher: string[]
+  failed: number
+  firstError: string | null
+  // Students with no subjects to assess - the class has no subjects assigned.
+  studentsWithoutSubjects?: number
+  // The template's first graded term; before it, students have no assessments on purpose.
+  startsInTerm?: number
+}
+
+// One sentence for a toast: what was created, and what still blocks the rest (a subject with no teacher
+// gets its assessments as soon as a teacher is assigned to it).
+export function assessmentSyncMessage(res: ClassAssessmentSync): string {
+  const missing = res.subjectsWithoutTeacher?.length
+    ? ` No teacher is assigned yet for: ${res.subjectsWithoutTeacher.join(', ')} - those subjects get their assessments once a teacher is assigned.`
+    : ''
+  const failed = res.failed ? ` ${res.failed} student(s) failed: ${res.firstError}.` : ''
+  const later = (res.startsInTerm ?? 1) > 1
+    ? ` The template starts grading in term ${res.startsInTerm}, so there are no assessments for earlier terms.`
+    : ''
+  if (!res.students) return `The class has no students enrolled yet - their assessments are created when they join.${missing}`
+  if (res.studentsWithoutSubjects && res.studentsWithoutSubjects === res.students) {
+    return 'Nothing could be created: the class has no subjects assigned. Add its subjects under Subjects > Class Subjects, then run this again.'
+  }
+  const noSubjects = res.studentsWithoutSubjects
+    ? ` ${res.studentsWithoutSubjects} student(s) have no subjects to assess.`
+    : ''
+  return res.assessmentsCreated > 0
+    ? `Created assessments for ${res.studentsUpdated} of ${res.students} student(s).${missing}${noSubjects}${failed}${later}`
+    : `Nothing new to create.${missing}${noSubjects}${failed}${later}`
+}
+
+// Who signs off grades. Set for the school and, in a school with sections, per section (School Settings).
+export type GradeApprover = 'CLASS_MASTER' | 'ADMIN' | 'EXAM_OFFICER'
+
+export const GRADE_APPROVER_LABEL: Record<GradeApprover, string> = {
+  CLASS_MASTER: 'Class master',
+  ADMIN: 'Admin',
+  EXAM_OFFICER: 'Exam officer',
+}
+
+export const GRADE_APPROVER_ICON: Record<GradeApprover, string> = {
+  CLASS_MASTER: 'i-lucide-user-round-check',
+  ADMIN: 'i-lucide-shield-check',
+  EXAM_OFFICER: 'i-lucide-clipboard-check',
+}
+
+// GET /assessment/approval/routing - one route for the whole school, or one per management section.
+export interface GradeApprovalRoute {
+  sectionId: string | null
+  name: string
+  levels: string[]
+  approver: GradeApprover
+  ownChoice: boolean
+}
+
+export interface GradeApprovalRouting {
+  schoolApprover: GradeApprover
+  sectionBased: boolean
+  routes: GradeApprovalRoute[]
+}
+
+// GET /class/assessment-coverage - one row per class, this academic year.
+export type AssessmentCoverageStatus = 'OK' | 'NO_STUDENTS' | 'NO_TEMPLATE' | 'EMPTY_TEMPLATE' | 'NO_SUBJECTS' | 'LATER_START' | 'MISSING' | 'INCOMPLETE'
+
+export interface AssessmentCoverageRow {
+  classId: string
+  className: string
+  level: string
+  templateId: string | null
+  templateName: string | null
+  templateTests: number
+  startsInTerm: number
+  subjects: number
+  students: number
+  withoutAssessments: number
+  incomplete: number
+  subjectsWithoutTeacher: string[]
+  status: AssessmentCoverageStatus
+}
+
+export interface AssessmentCoverage {
+  academicYearName: string
+  activeTermNumber: number | null
+  rows: AssessmentCoverageRow[]
+}
+
+export const COVERAGE_STATUS: Record<AssessmentCoverageStatus, { label: string, color: 'success' | 'neutral' | 'warning' | 'error' | 'info' }> = {
+  OK: { label: 'All set', color: 'success' },
+  NO_STUDENTS: { label: 'No students', color: 'neutral' },
+  NO_TEMPLATE: { label: 'No template', color: 'warning' },
+  EMPTY_TEMPLATE: { label: 'Template has no tests', color: 'warning' },
+  NO_SUBJECTS: { label: 'No subjects', color: 'error' },
+  LATER_START: { label: 'Grading starts later', color: 'info' },
+  MISSING: { label: 'Missing assessments', color: 'error' },
+  INCOMPLETE: { label: 'Some gaps', color: 'warning' },
+}
+
+// Things in a class's continuous assessment worth a second look before the grades are approved. They are prompts
+// for the approver, not errors - there can be good reasons for each.
+export interface CaReviewFlag {
+  key: string
+  tone: 'warning' | 'info'
+  title: string
+  detail: string
+  students?: string[]
+}
+
+// A gap of this many points (out of 100) between a student's CA and their formal test is called out.
+const CA_GAP = 40
+
+export function caReviewFlags(scores: { student: string, continuous?: ContinuousBreakdown | null }[]): CaReviewFlag[] {
+  const rows = scores.filter(s => s.continuous) as { student: string, continuous: ContinuousBreakdown }[]
+  if (!rows.length) return []
+  const first = rows[0]!.continuous
+  const flags: CaReviewFlag[] = []
+  const counted = first.caPercentage > 0
+  const unit = first.caUnit ? first.caUnit.charAt(0).toUpperCase() + first.caUnit.slice(1) : 'Recording'
+  const slotName = (i: number) => first.caComponents?.[i]?.name || `${unit} ${i + 1}`
+  const has = (v: number | null | undefined): v is number => v !== null && v !== undefined
+
+  const withCa = rows.filter(r => has(r.continuous.caScore))
+
+  // Everyone on the same CA mark.
+  if (withCa.length >= 3 && new Set(withCa.map(r => r.continuous.caScore)).size === 1) {
+    flags.push({
+      key: 'same-ca', tone: 'warning',
+      title: `Every student has the same CA mark (${withCa[0]!.continuous.caScore})`,
+      detail: 'CA usually varies from student to student. Check it was recorded per student and not filled in for the whole class.',
+    })
+  } else {
+    // Everyone on the same mark in one recording (attendance-based parts are skipped - those are worked out).
+    const same: string[] = []
+    for (let i = 0; i < first.caEntryScores.length; i++) {
+      if (first.caComponents?.[i]?.source === 'ATTENDANCE') continue
+      const values = rows.map(r => r.continuous.caEntryScores[i]).filter(has)
+      if (values.length >= 3 && new Set(values).size === 1) same.push(`${slotName(i)} (${values[0]})`)
+    }
+    if (same.length) {
+      flags.push({
+        key: 'same-recording', tone: 'warning',
+        title: `Same mark for every student in ${same.length === 1 ? 'one recording' : `${same.length} recordings`}`,
+        detail: `${same.join(', ')}. Check these were marked per student.`,
+      })
+    }
+  }
+
+  // Nearly everyone on full CA marks.
+  if (counted && withCa.length >= 3) {
+    const full = withCa.filter(r => (r.continuous.caScore ?? 0) >= 100)
+    if (full.length / withCa.length >= 0.8) {
+      flags.push({
+        key: 'full-ca', tone: 'warning',
+        title: `${full.length} of ${withCa.length} students have full CA marks`,
+        detail: 'Almost the whole class scored 100 on CA. Check the CA reflects real work and not attendance alone or a default.',
+      })
+    }
+  }
+
+  // CA far from the formal test.
+  if (counted) {
+    const tested = withCa.filter(r => has(r.continuous.formalScore))
+    const describe = (r: { student: string, continuous: ContinuousBreakdown }) =>
+      `${r.student} (CA ${r.continuous.caScore}, test ${r.continuous.formalScore})`
+    const higher = tested.filter(r => (r.continuous.caScore ?? 0) - (r.continuous.formalScore ?? 0) >= CA_GAP)
+    const lower = tested.filter(r => (r.continuous.formalScore ?? 0) - (r.continuous.caScore ?? 0) >= CA_GAP)
+    if (higher.length) {
+      flags.push({
+        key: 'ca-higher', tone: 'warning',
+        title: `${higher.length} ${higher.length === 1 ? 'student has' : 'students have'} a CA far above their test`,
+        detail: `${CA_GAP} or more points higher than the formal test - a generous CA can lift a weak test result.`,
+        students: higher.map(describe),
+      })
+    }
+    if (lower.length) {
+      flags.push({
+        key: 'ca-lower', tone: 'info',
+        title: `${lower.length} ${lower.length === 1 ? 'student has' : 'students have'} a CA far below their test`,
+        detail: `${CA_GAP} or more points lower than the formal test - possibly missed CA work, or marks not recorded.`,
+        students: lower.map(describe),
+      })
+    }
+  }
+
+  // Recordings left empty.
+  const gaps = rows.filter(r => r.continuous.caEntryScores.some(v => !has(v)))
+  if (gaps.length) {
+    flags.push({
+      key: 'missing', tone: 'warning',
+      title: `${gaps.length} ${gaps.length === 1 ? 'student has' : 'students have'} CA recordings missing`,
+      detail: 'A missing recording counts as nothing towards their CA.',
+      students: gaps.map(r => r.student),
+    })
+  }
+
+  // Recordings re-opened after they were locked.
+  const unlocked = [...new Set(rows.flatMap(r => r.continuous.unlockedWeeks ?? []))].sort((a, b) => a - b)
+  if (unlocked.length) {
+    flags.push({
+      key: 'unlocked', tone: 'info',
+      title: `${unlocked.map(w => slotName(w - 1)).join(', ')} ${unlocked.length === 1 ? 'was' : 'were'} unlocked after being locked`,
+      detail: 'An administrator re-opened it to correct marks, so it may have changed after it was closed. The reason is on the audit trail.',
+    })
+  }
+
+  return flags
 }

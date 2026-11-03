@@ -1,5 +1,6 @@
 <template>
-    <UCard :ui="{ body: 'space-y-4' }">
+    <!-- Only for staff on payroll: someone without a staff record has nothing to clock in to. -->
+    <UCard v-if="myToday?.onPayroll !== false" :ui="{ body: 'space-y-4' }">
         <!-- Until today's record arrives the card can't know whether to offer Clock In or Clock Out -->
         <template v-if="loadingMyToday && !myToday">
             <div class="flex items-center gap-3">

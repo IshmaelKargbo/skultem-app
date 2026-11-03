@@ -13,6 +13,11 @@
             <HealthCareSectionNav />
             <HealthCareDashboard />
         </div>
+        <div v-if="can(Role.EXAM_OFFICER)" class="px-4 md:px-6 space-y-3">
+            <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
+            <GradesSectionNav />
+            <ExamOfficeDashboard />
+        </div>
         <DashboardTeacher v-if="can(Role.TEACHER)" />
         <DashboardParent v-if="can(Role.PARENT)" />
     </template>
@@ -27,6 +32,6 @@ if (!onAdminPortal && can(Role.SYSTEM_ADMIN)) {
 }
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.TEACHER, Role.SYSTEM_ADMIN]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.PARENT, Role.ACCOUNTANT, Role.LIBRARIAN, Role.NURSE, Role.EXAM_OFFICER, Role.TEACHER, Role.SYSTEM_ADMIN]
 })
 </script>

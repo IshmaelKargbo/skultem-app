@@ -239,19 +239,9 @@ const lockedCount = computed(() =>
     state.assignments.filter(item => item.locked).length
 )
 
+// Class, section and stream - each section/stream of a class keeps its own subjects.
 const classes = computed(() =>
-    classStore.records.map(e => {
-        let section = e.sectionName
-
-        if (e.streamName) {
-            section = section ? `${section} - ${e.streamName}` : e.streamName
-        }
-        
-        return {
-            label: `${e.clazz} ${section ? `(${section})` : ''}`,
-            value: e.id
-        }
-    })
+    classStore.records.map(e => ({ label: classSessionLabel(e), value: e.id }))
 )
 
 const schema = yup.object({
@@ -388,7 +378,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.TEACHER]
+    role: [Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.SUPER_ADMIN]
 })
 </script>
 

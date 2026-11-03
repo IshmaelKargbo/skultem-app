@@ -12,16 +12,24 @@ export function useStudentSearch(pageSize = 25, selected?: () => (string | null 
     const searchTerm = ref('')
     const searching = ref(false)
 
+    // The admission number goes under each name (description), so two students with the same name can be told
+    // apart - the search matches it too.
     const names = reactive<Record<string, string>>({})
+    const admissionNumbers = reactive<Record<string, string>>({})
     watch(() => store.records, (records) => {
-        for (const s of records ?? []) names[s.id] = `${s.givenNames} ${s.familyName}`
+        for (const s of records ?? []) {
+            names[s.id] = `${s.givenNames} ${s.familyName}`
+            if (s.admissionNumber) admissionNumbers[s.id] = s.admissionNumber
+        }
     }, { immediate: true })
 
+    const option = (id: string, label: string) => ({ label, value: id, description: admissionNumbers[id] || undefined })
+
     const students = computed(() => {
-        const found = (store.records ?? []).map(s => ({ label: `${s.givenNames} ${s.familyName}`, value: s.id }))
+        const found = (store.records ?? []).map(s => option(s.id, `${s.givenNames} ${s.familyName}`))
         const missing = (selected?.() ?? [])
             .filter((id): id is string => !!id && !found.some(s => s.value === id) && !!names[id])
-            .map(id => ({ label: names[id]!, value: id }))
+            .map(id => option(id, names[id]!))
         return [...missing, ...found]
     })
 

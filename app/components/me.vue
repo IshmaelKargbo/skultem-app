@@ -316,6 +316,7 @@ const roleDesc: Record<string, string> = {
   ACCOUNTANT: "Finance & fees",
   LIBRARIAN: "Books & loans",
   NURSE: "Sick bay & health care",
+  EXAM_OFFICER: "Grade approval, results & exams",
   SYSTEM_ADMIN: "Platform-wide control",
 };
 
@@ -328,6 +329,7 @@ const roleIcons: Record<string, string> = {
   ACCOUNTANT: "lucide:calculator",
   LIBRARIAN: "lucide:library",
   NURSE: "lucide:heart-pulse",
+  EXAM_OFFICER: "lucide:clipboard-check",
   SYSTEM_ADMIN: "lucide:shield-check",
 };
 // const colorMode = useColorMode(); // theme toggle disabled — see commented "Appearance" block above

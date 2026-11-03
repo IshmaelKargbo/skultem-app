@@ -366,10 +366,21 @@ export const ClassApi = () => {
     },
     updateTemplate: async (classId: string, templateId: string) => {
       try {
-        return await $api(`/class/${classId}/template`, {
+        const res = await $api(`/class/${classId}/template`, {
           method: 'PUT',
           body: { templateId }
-        })
+        }) as any
+        // replaced: the class had a different template, whose (untouched) tests were swapped for this one's.
+        return res?.data as { replaced: boolean, sync: ClassAssessmentSync } | undefined
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Academics > Assessment Check: which classes' students are missing assessments, and why.
+    assessmentCoverage: async () => {
+      try {
+        const res = await $api('/class/assessment-coverage') as any
+        return res?.data as AssessmentCoverage | undefined
       } catch (err: any) {
         useHandleError(err)
       }
@@ -377,14 +388,7 @@ export const ClassApi = () => {
     syncAssessments: async (classId: string) => {
       try {
         const res = await $api(`/class/${classId}/assessments/sync`, { method: 'POST' }) as any
-        return res.data as {
-          students: number
-          studentsUpdated: number
-          assessmentsCreated: number
-          subjectsWithoutTeacher: string[]
-          failed: number
-          firstError: string | null
-        }
+        return res.data as ClassAssessmentSync
       } catch (err: any) {
         useHandleError(err)
       }

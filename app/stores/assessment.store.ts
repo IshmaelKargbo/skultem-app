@@ -82,11 +82,11 @@ export const useAssessmentStore = defineStore('assessment', {
     },
     // School-wide - unlike fetchAllAssessmentApprovalRequest below (scoped to one teacher's
     // class), this is the admin approval view's default list.
-    async fetchAllSchoolAssessmentApprovalRequest(page: number, size: number, status?: string, search?: string, classId?: string) {
+    async fetchAllSchoolAssessmentApprovalRequest(page: number, size: number, status?: string, search?: string, classId?: string, approver?: GradeApprover) {
       this.loading = true
       this.error = null
       try {
-        const { data, meta } = await AssessmentApi().getAllSchoolAssessmentApprovalRequest(page, size, status, search, classId) as any
+        const { data, meta } = await AssessmentApi().getAllSchoolAssessmentApprovalRequest(page, size, status, search, classId, approver) as any
         this.meta = meta
         this.requests = data
       } catch (err: any) {
@@ -95,9 +95,9 @@ export const useAssessmentStore = defineStore('assessment', {
         this.loading = false
       }
     },
-    async fetchSchoolAssessmentApprovalSummary() {
+    async fetchSchoolAssessmentApprovalSummary(approver?: GradeApprover) {
       try {
-        return await AssessmentApi().getSchoolAssessmentApprovalSummary() || null
+        return await AssessmentApi().getSchoolAssessmentApprovalSummary(approver) || null
       } catch (err: any) {
         this.error = err?.message || err.data?.message || 'Failed to fetch approval summary'
         return null
