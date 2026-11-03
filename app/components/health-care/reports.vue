@@ -50,11 +50,14 @@ const summary = ref<HealthCareSummary | null>(null)
 const daily = ref<HealthCareVisit[]>([])
 const frequent = ref<HealthCareFrequentVisitor[]>([])
 const limits = ref<HealthCareLimitsReport | null>(null)
-const loading = ref(false)
+const loading = ref(true) // until the first load lands - no "nothing here" flash
 
 let request = 0
 async function load() {
-  if (rangeError.value) return
+  if (rangeError.value) {
+    loading.value = false
+    return
+  }
   const mine = ++request
   loading.value = true
   try {

@@ -61,7 +61,7 @@ onMounted(() => {
     </template>
 
     <!-- Desktop table -->
-    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+    <UTable :ui="{ loading: 'py-0' }" v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #title-cell="{ row }">
         <div class="min-w-0">
           <div>

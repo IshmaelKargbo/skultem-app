@@ -66,3 +66,11 @@ export const RELATIONSHIPS = [
     { label: 'Grandparent', value: 'GRANDPARENT' },
     { label: 'Other', value: 'OTHER' }
 ]
+
+// "Mohamed Ibrahim Kamara" -> given names "Mohamed Ibrahim", family name "Kamara" - for filling a guardian's name from
+// the father's or mother's full name. A single word is all given names.
+export function splitFullName(full?: string | null): { givenNames: string, familyName: string } {
+    const parts = (full || '').trim().split(/\s+/).filter(Boolean)
+    if (parts.length < 2) return { givenNames: parts[0] ?? '', familyName: '' }
+    return { givenNames: parts.slice(0, -1).join(' '), familyName: parts[parts.length - 1]! }
+}

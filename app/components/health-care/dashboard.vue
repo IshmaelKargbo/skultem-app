@@ -7,13 +7,26 @@ const { error: toastError } = useNotify()
 
 const overview = ref<HealthCareOverview | null>(null)
 const ready = computed(() => !!overview.value)
+// The first load failing replaces the skeletons with an error; a failed minute-by-minute refresh keeps what's shown.
+const loadError = ref<string | null>(null)
+const retrying = ref(false)
 
 async function load() {
   try {
-    overview.value = await HealthCareApi().overview()
+    const res = await HealthCareApi().overview()
+    if (!res) throw new Error('Failed to load health care')
+    overview.value = res
+    loadError.value = null
   } catch (err: any) {
-    toastError(err?.message || 'Failed to load health care')
+    if (overview.value) toastError(err?.message || 'Failed to refresh health care')
+    else loadError.value = err?.message || 'Failed to load health care'
   }
+}
+
+async function retry() {
+  retrying.value = true
+  await load()
+  retrying.value = false
 }
 
 // Minutes in the sick bay tick on while the page is open.
@@ -27,7 +40,11 @@ watch(changeVersion, load)
 </script>
 
 <template>
-  <div class="space-y-3">
+  <UCard v-if="loadError && !overview">
+    <StateLoadError title="Couldn't load the sick bay" :message="loadError" :retrying="retrying" @retry="retry" />
+  </UCard>
+
+  <div v-else class="space-y-3">
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{
         color: 'info',
@@ -76,8 +93,19 @@ watch(changeVersion, load)
         </div>
       </template>
 
+      <!-- Shaped like the visit cards below: name, class, complaint, time in. -->
       <div v-if="!ready" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <USkeleton v-for="i in 3" :key="i" class="h-24 w-full rounded-xl" />
+        <div v-for="i in 3" :key="i" class="space-y-2 rounded-xl border-2 border-default p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="space-y-1.5">
+              <USkeleton class="h-4 w-32" />
+              <USkeleton class="h-3 w-20" />
+            </div>
+            <USkeleton class="h-5 w-14 rounded-full" />
+          </div>
+          <USkeleton class="h-3 w-full" />
+          <USkeleton class="h-3 w-28" />
+        </div>
       </div>
       <div v-else-if="!overview?.inSickBay.length" class="flex flex-col items-center gap-3 py-12 text-center">
         <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary-50 dark:bg-primary-500/10">

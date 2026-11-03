@@ -17,7 +17,7 @@ const rangeError = computed(() => {
 })
 
 const totals = ref<LibraryAttendanceTotals | null>(null)
-const totalsLoading = ref(false)
+const totalsLoading = ref(true) // until the first load lands
 
 async function loadTotals() {
   if (rangeError.value) return

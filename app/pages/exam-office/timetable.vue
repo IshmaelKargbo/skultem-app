@@ -29,10 +29,22 @@
     </div>
 
     <div v-if="loading" class="space-y-3">
-      <UCard v-for="i in 2" :key="i">
-        <USkeleton class="mb-3 h-5 w-40" />
-        <div class="space-y-3">
-          <USkeleton v-for="j in 3" :key="j" class="h-12 w-full" />
+      <!-- Shaped like a day's card: date header, then papers (time | subject + class line). -->
+      <UCard v-for="i in 2" :key="i" :ui="{ body: 'p-0 sm:p-0' }">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <USkeleton class="h-5 w-48" />
+            <USkeleton class="h-5 w-16 rounded-full" />
+          </div>
+        </template>
+        <div class="divide-y divide-default">
+          <div v-for="j in 3" :key="j" class="flex items-start gap-3 px-4 py-3">
+            <USkeleton class="h-4 w-24 shrink-0" />
+            <div class="min-w-0 flex-1 space-y-1.5">
+              <USkeleton class="h-4 w-44" />
+              <USkeleton class="h-3 w-64 max-w-full" />
+            </div>
+          </div>
         </div>
       </UCard>
     </div>

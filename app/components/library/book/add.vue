@@ -76,9 +76,9 @@ async function onSubmit() {
         size="xs"
         color="neutral"
         variant="ghost"
-        @click="open = true"
+        @click="() => { open = true }"
       />
-      <UButton v-else color="primary" label="Add Book" :icon="ADD_ICON" @click="open = true" />
+      <UButton v-else color="primary" label="Add Book" :icon="ADD_ICON" @click="() => { open = true }" />
     </slot>
 
     <template #header>

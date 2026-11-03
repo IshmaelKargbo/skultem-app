@@ -6,8 +6,11 @@ const ready = computed(() => !!overview.value)
 const { can } = useAuth()
 const canEditTimetable = computed(() => can([Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.OWNER, Role.PROPRIETOR]))
 
+const loadError = ref<string | null>(null)
 function load() {
-  store.fetchOverview().catch(() => { })
+  store.fetchOverview()
+    .then(() => { loadError.value = overview.value ? null : 'Failed to load library attendance' })
+    .catch((err: any) => { if (!overview.value) loadError.value = err?.message || 'Failed to load library attendance' })
 }
 
 watch(() => store.changeVersion, load)
@@ -16,7 +19,9 @@ onMounted(load)
 
 <template>
   <div class="space-y-3">
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <StateLoadError v-if="loadError && !overview" bordered title="Couldn't load library attendance" :message="loadError"
+      @retry="load" />
+    <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{
         color: 'success',
         label: 'In the Library Now',

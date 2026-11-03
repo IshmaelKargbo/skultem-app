@@ -35,13 +35,17 @@ function fromSettings(s: HealthCareSettings): Draft {
   }))
 }
 
+const loadError = ref<string | null>(null)
+
 async function load() {
   loading.value = true
+  loadError.value = null
   try {
     const s = await loadSettings(true)
-    if (s) draft.value = fromSettings(s)
+    if (!s) throw new Error('Failed to load the health care settings')
+    draft.value = fromSettings(s)
   } catch (err: any) {
-    toastError(err?.message || 'Failed to load the health care settings')
+    loadError.value = err?.message || 'Failed to load the health care settings'
   } finally {
     loading.value = false
   }
@@ -128,9 +132,22 @@ onMounted(load)
 </script>
 
 <template>
-  <div v-if="loading || !draft" class="space-y-3">
-    <USkeleton v-for="i in 3" :key="i" class="h-40 w-full rounded-xl" />
+  <div v-if="loading && !draft" class="space-y-3">
+    <UCard v-for="i in 3" :key="i">
+      <div class="space-y-3">
+        <USkeleton class="h-4 w-40" />
+        <USkeleton class="h-3 w-72 max-w-full" />
+        <div class="grid gap-3 md:grid-cols-2">
+          <USkeleton class="h-9 w-full" />
+          <USkeleton class="h-9 w-full" />
+        </div>
+      </div>
+    </UCard>
   </div>
+
+  <UCard v-else-if="!draft">
+    <StateLoadError title="Couldn't load the sick bay settings" :message="loadError" @retry="load" />
+  </UCard>
 
   <div v-else class="space-y-3">
     <UAlert v-if="readonly" color="info" variant="soft" icon="i-lucide-lock"

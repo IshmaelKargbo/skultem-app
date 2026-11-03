@@ -22,7 +22,7 @@ const size = runtimeConf().limit
 
 const data = ref<HealthCareVisit[]>([])
 const meta = ref<any>({})
-const loading = ref(false)
+const loading = ref(true) // until the first load lands - no "nothing here" flash
 
 const complaintOptions = computed(() => (settings.value?.complaintList ?? []).map(c => ({ label: c.label, value: c.code })))
 
@@ -101,7 +101,7 @@ onMounted(() => {
       </div>
     </template>
 
-    <UTable :columns="columns" :data="data" :loading="loading">
+    <UTable :ui="{ loading: 'py-0' }" :columns="columns" :data="data" :loading="loading">
       <template #student-cell="{ row }">
         <div :class="row.original.status === 'VOIDED' ? 'line-through opacity-60' : ''">
           <ULink :to="`/health-care/visits/${row.original.id}`" class="font-medium text-gray-900 hover:text-primary dark:text-white">

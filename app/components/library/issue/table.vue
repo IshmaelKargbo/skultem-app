@@ -70,7 +70,7 @@ onMounted(load)
     </template>
 
     <!-- Desktop table -->
-    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+    <UTable :ui="{ loading: 'py-0' }" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #book-cell="{ row }">
         <div class="flex items-center gap-3">
           <div class="min-w-0">

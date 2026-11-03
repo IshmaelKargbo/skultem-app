@@ -10,14 +10,18 @@ const { success: toastSuccess, error: toastError, warning: toastWarning } = useN
 
 const visit = ref<HealthCareVisit | null>(null)
 const loading = ref(true)
+const loadError = ref<string | null>(null)
 
 async function load() {
   loading.value = true
+  loadError.value = null
   try {
     visit.value = await HealthCareApi().visit(props.id)
+    if (!visit.value) throw new Error('Failed to load the visit')
     sync()
   } catch (err: any) {
-    toastError(err?.message || 'Failed to load the visit')
+    if (visit.value) toastError(err?.message || 'Failed to load the visit')
+    else loadError.value = err?.message || 'Failed to load the visit'
   } finally {
     loading.value = false
   }
@@ -170,9 +174,27 @@ onMounted(() => {
 
 <template>
   <div v-if="loading && !visit" class="space-y-3">
-    <USkeleton class="h-28 w-full rounded-xl" />
-    <USkeleton class="h-64 w-full rounded-xl" />
+    <UCard>
+      <div class="flex items-start justify-between gap-3">
+        <div class="space-y-2">
+          <USkeleton class="h-5 w-48" />
+          <USkeleton class="h-3 w-32" />
+          <USkeleton class="h-3 w-56" />
+        </div>
+        <USkeleton class="h-6 w-20 rounded-full" />
+      </div>
+    </UCard>
+    <UCard>
+      <div class="space-y-3">
+        <USkeleton class="h-4 w-36" />
+        <USkeleton v-for="i in 4" :key="i" class="h-10 w-full" />
+      </div>
+    </UCard>
   </div>
+
+  <UCard v-else-if="!visit">
+    <StateLoadError title="Couldn't load this visit" :message="loadError" @retry="load" />
+  </UCard>
 
   <div v-else-if="visit" class="space-y-3">
     <!-- Who and when -->

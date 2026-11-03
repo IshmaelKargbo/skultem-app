@@ -52,7 +52,7 @@ onMounted(load)
     </template>
 
     <!-- Desktop table -->
-    <UTable class="hidden md:block" :columns="columns" :data="categories" :loading="loading">
+    <UTable :ui="{ loading: 'py-0' }" class="hidden md:block" :columns="columns" :data="categories" :loading="loading">
       <template #name-cell="{ row }">
         <div>
           <div>

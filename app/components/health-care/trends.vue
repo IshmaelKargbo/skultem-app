@@ -31,7 +31,7 @@ const missing = computed(() => {
 })
 
 const trends = ref<HealthCareTrends | null>(null)
-const loading = ref(false)
+const loading = ref(true) // until the first load lands - no "nothing here" flash
 
 function params() {
   if (scope.value === 'MONTH') return { month: month.value }
@@ -43,6 +43,7 @@ let request = 0
 async function load() {
   if (missing.value) {
     trends.value = null
+    loading.value = false
     return
   }
   const mine = ++request
@@ -133,6 +134,7 @@ onMounted(async () => {
     await nextTick()
     termId.value = periods.value.activeTermId ?? termOptions.value[0]?.value ?? ''
   } catch (err: any) {
+    loading.value = false
     toastError(err?.message || 'Failed to load the academic years')
   }
   load()

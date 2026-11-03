@@ -10,14 +10,23 @@ const listsLoading = ref(true)
 // Only the first load shows skeletons; a refresh after an action keeps the current values on
 // screen until the new ones arrive.
 const ready = computed(() => !!summary.value)
+// A card whose first load failed shows an error (with Try again) instead of a skeleton that never ends, or an empty
+// list that looks like "nothing here".
+const summaryError = ref<string | null>(null)
+const loansError = ref<string | null>(null)
+const stockError = ref<string | null>(null)
 
 // Each card loads on its own, so one failing request doesn't blank the whole dashboard.
 async function load() {
-  store.fetchSummary().catch(() => {})
-  await Promise.allSettled([
-    LibraryApi().listLoans(1, 6).then(res => { recentLoans.value = res?.data || [] }),
-    LibraryApi().listBooks(1, 5, { outOfStock: true }).then(res => { outOfStock.value = res?.data || [] })
+  store.fetchSummary()
+    .then(() => { summaryError.value = summary.value ? null : 'Failed to load the library summary' })
+    .catch((err: any) => { if (!summary.value) summaryError.value = err?.message || 'Failed to load the library summary' })
+  const [loans, stock] = await Promise.allSettled([
+    LibraryApi().listLoans(1, 6).then(res => { if (!res) throw new Error('Failed to load loans'); recentLoans.value = res.data || [] }),
+    LibraryApi().listBooks(1, 5, { outOfStock: true }).then(res => { if (!res) throw new Error('Failed to load books'); outOfStock.value = res.data || [] })
   ])
+  loansError.value = loans.status === 'rejected' ? (loans.reason?.message || 'Failed to load loans') : null
+  stockError.value = stock.status === 'rejected' ? (stock.reason?.message || 'Failed to load books') : null
   listsLoading.value = false
 }
 
@@ -45,7 +54,9 @@ onMounted(load)
 
 <template>
   <div class="space-y-3">
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <StateLoadError v-if="summaryError && !summary" bordered title="Couldn't load the library summary"
+      :message="summaryError" @retry="load" />
+    <div v-else class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{
         color: 'primary',
         label: 'Total Titles',
@@ -117,6 +128,7 @@ onMounted(load)
           </div>
         </div>
 
+        <StateLoadError v-else-if="loansError" title="Couldn't load recent loans" :message="loansError" @retry="load" />
         <div v-else-if="!recentLoans.length" class="flex flex-col items-center gap-3 py-16">
           <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
             <UIcon :name="ISSUE_BOOK_ICON" class="text-4xl text-primary-500" />
@@ -173,6 +185,7 @@ onMounted(load)
           </div>
         </div>
 
+        <StateLoadError v-else-if="stockError" title="Couldn't load out-of-stock books" :message="stockError" @retry="load" />
         <div v-else-if="!outOfStock.length" class="flex flex-col items-center gap-3 py-16">
           <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-success-50 dark:bg-success-500/10">
             <UIcon name="i-lucide-check-circle" class="text-4xl text-success-500" />

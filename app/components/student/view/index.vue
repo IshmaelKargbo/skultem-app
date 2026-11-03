@@ -101,7 +101,9 @@
                             :current="record.enrollmentType" />
                         <StudentChangeGuardian v-if="record && !loading && canManageGuardian" ref="changeGuardianRef"
                             :student-id="record.id" :student-name="name" :current-guardian-id="record.guardian?.id"
-                            :current-relationship="record.relationship" />
+                            :current-relationship="record.relationship"
+                            :father="{ name: record.family?.fatherName, phone: record.family?.fatherContact }"
+                            :mother="{ name: record.family?.motherName, phone: record.family?.motherContact }" />
                         <!-- Edits the guardian themselves (name, phone, address) - shared with every child they have -->
                         <ParentEdit v-if="record?.guardian && editGuardianOpen" v-model:open="editGuardianOpen"
                             :parent="record.guardian" @saved="fetchStudent" />

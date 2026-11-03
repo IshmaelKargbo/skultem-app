@@ -190,7 +190,7 @@ async function onSubmit() {
 
 <template>
   <USlideover :dismissible="false" v-model:open="open">
-    <UButton color="primary" label="Issue Book" :icon="ISSUE_BOOK_ICON" @click="open = true" />
+    <UButton color="primary" label="Issue Book" :icon="ISSUE_BOOK_ICON" @click="() => { open = true }" />
 
     <template #header>
       <div class="flex w-full items-center justify-between">

@@ -9,6 +9,10 @@ const props = defineProps<{
   studentName: string
   currentGuardianId?: string
   currentRelationship?: string
+  // The student's father and mother as recorded on their profile - a new guardian who is one of them is filled in
+  // from these.
+  father?: { name?: string | null, phone?: string | null }
+  mother?: { name?: string | null, phone?: string | null }
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
@@ -93,6 +97,32 @@ async function loadUsers() {
 const contact = reactive({ phone: '', street: '', city: '' })
 const person = reactive({ givenNames: '', familyName: '', email: '' })
 
+// New guardian who is the father or mother: copy their name and phone from the profile. Only empty fields, or ones
+// still holding the last copy, change - anything typed is kept; another relationship takes the copy back.
+let copied: { givenNames: string, familyName: string, phone: string } | null = null
+const copiedFrom = ref<'father' | 'mother' | null>(null)
+watch([relationship, mode], () => {
+  if (mode.value !== 'new') return
+  const parent = relationship.value === 'FATHER' ? props.father : relationship.value === 'MOTHER' ? props.mother : null
+  const untouched = (current: string, previous?: string) => !current || (previous !== undefined && current === previous)
+  if (!parent?.name && !parent?.phone) {
+    if (copied) {
+      if (person.givenNames === copied.givenNames) person.givenNames = ''
+      if (person.familyName === copied.familyName) person.familyName = ''
+      if (contact.phone === copied.phone) contact.phone = ''
+    }
+    copied = null
+    copiedFrom.value = null
+    return
+  }
+  const next = { ...splitFullName(parent.name), phone: (parent.phone || '').trim() }
+  if (untouched(person.givenNames, copied?.givenNames)) person.givenNames = next.givenNames
+  if (untouched(person.familyName, copied?.familyName)) person.familyName = next.familyName
+  if (untouched(contact.phone, copied?.phone)) contact.phone = next.phone
+  copied = next
+  copiedFrom.value = relationship.value === 'FATHER' ? 'father' : 'mother'
+})
+
 watch(mode, (m) => { problem.value = ''; if (m === 'user') loadUsers() })
 
 const canSave = computed(() => {
@@ -110,6 +140,8 @@ defineExpose({
     relationship.value = props.currentRelationship ?? ''
     Object.assign(contact, { phone: '', street: '', city: '' })
     Object.assign(person, { givenNames: '', familyName: '', email: '' })
+    copied = null
+    copiedFrom.value = null
     problem.value = ''
     open.value = true
     loadParents()
@@ -239,7 +271,9 @@ async function save() {
         </div>
 
         <UFormField label="Relationship to the student"
-          :help="currentRelationship ? 'Kept as it is unless you pick another' : undefined">
+          :help="copiedFrom ? `Filled in from the ${copiedFrom}'s details on the profile - change anything that's different.`
+            : mode === 'new' ? 'Pick Father or Mother to copy their details from the profile.'
+            : currentRelationship ? 'Kept as it is unless you pick another' : undefined">
           <USelectMenu v-model="relationship" :items="relationshipOptions" value-key="value" label-key="label"
             placeholder="Select relationship" :search-input="false" class="w-full" />
         </UFormField>

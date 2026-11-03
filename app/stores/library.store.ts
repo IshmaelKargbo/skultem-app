@@ -11,17 +11,17 @@ export const useLibraryStore = defineStore('library', {
 
         categories: [] as BookCategory[],
         categoriesMeta: {} as Meta,
-        categoriesLoading: false,
+        categoriesLoading: true, // until the first load - the table shows skeletons, not "nothing here"
         categoriesQuery: { page: 1, size: 10, search: '' },
 
         books: [] as Book[],
         booksMeta: {} as Meta,
-        booksLoading: false,
+        booksLoading: true, // until the first load - the table shows skeletons, not "nothing here"
         booksQuery: { page: 1, size: 10, filters: {} as BookFilters },
 
         loans: [] as BookLoan[],
         loansMeta: {} as Meta,
-        loansLoading: false,
+        loansLoading: true, // until the first load - the table shows skeletons, not "nothing here"
         loansQuery: { page: 1, size: 10, filters: {} as LoanFilters },
 
         overdueLoans: [] as BookLoan[],

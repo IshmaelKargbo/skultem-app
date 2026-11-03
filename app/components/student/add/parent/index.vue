@@ -84,10 +84,10 @@
 
                     <!-- Actions -->
                     <div class="grid grid-cols-2 gap-1 rounded-xl bg-elevated p-1">
-                        <UButton @click="action = 0" :variant="action === 0 ? 'solid' : 'ghost'"
+                        <UButton @click="() => { action = 0 }" :variant="action === 0 ? 'solid' : 'ghost'"
                             :color="action === 0 ? 'primary' : 'neutral'" icon="i-lucide-search"
                             label="Existing guardian" class="justify-center" size="lg" />
-                        <UButton @click="action = 1" :variant="action === 1 ? 'solid' : 'ghost'"
+                        <UButton @click="() => { action = 1 }" :variant="action === 1 ? 'solid' : 'ghost'"
                             :color="action === 1 ? 'primary' : 'neutral'" icon="i-lucide-user-plus"
                             label="New guardian" class="justify-center" size="lg" />
                     </div>
@@ -113,7 +113,11 @@
                             <USelectMenu v-model="form.relationship" :items="relationships" value-key="value"
                                 placeholder="Select relationship" :leading-icon="RELATIONSHIP_ICON" />
                             <template #help>
-                                Select how this guardian is related to the student.
+                                <span v-if="parentFor(form.relationship)?.phone && !form.existingGuardianId">
+                                    Searching for the {{ form.relationship === 'FATHER' ? 'father' : 'mother' }}'s phone number
+                                    above.
+                                </span>
+                                <span v-else>Select how this guardian is related to the student.</span>
                             </template>
                         </UFormField>
 
@@ -121,6 +125,17 @@
 
                     <!-- New Guardian -->
                     <div v-if="action === 1" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+
+                        <UFormField name="relationship" label="Relationship" required class="md:col-span-2">
+                            <USelectMenu v-model="form.relationship" :items="relationships" value-key="value"
+                                placeholder="Select relationship" :leading-icon="RELATIONSHIP_ICON" class="w-full md:w-1/2" />
+                            <template #help>
+                                <span v-if="autofilledFrom" class="text-primary">
+                                    Filled in from the {{ autofilledFrom }}'s details above - change anything that's different.
+                                </span>
+                                <span v-else>Pick Father or Mother to copy their details from above.</span>
+                            </template>
+                        </UFormField>
 
                         <UFormField name="guardianGivenNames" label="Guardian Given Names" required>
                             <UInput v-model="form.guardianGivenNames" placeholder="Enter given names"
@@ -135,14 +150,6 @@
                                 :leading-icon="USER_ICON" />
                             <template #help>
                                 Enter the guardian's surname or last name.
-                            </template>
-                        </UFormField>
-
-                        <UFormField name="relationship" label="Relationship" required>
-                            <USelectMenu v-model="form.relationship" :items="relationships" value-key="value"
-                                placeholder="Select relationship" :leading-icon="RELATIONSHIP_ICON" />
-                            <template #help>
-                                Select how this guardian is related to the student.
                             </template>
                         </UFormField>
 
@@ -325,6 +332,50 @@ watch(guardianSearch, (term) => {
     guardianTimer = setTimeout(() => store.fetchAll(1, 25, term?.trim() || undefined), 300)
 })
 onBeforeUnmount(() => clearTimeout(guardianTimer))
+
+// Father or mother as guardian: their details are already entered above, so copy them into the new-guardian fields
+// (name split into given names + family name, and their phone). Only fields left empty - or still holding what was
+// copied last time - are touched, so anything typed by hand is kept. Switching to another relationship clears what
+// was copied.
+type Copied = { givenNames: string, familyName: string, phone: string }
+let copied: Copied | null = null
+
+function parentFor(relationship: string) {
+    if (relationship === 'FATHER') return { name: form.fatherName, phone: form.fatherContact }
+    if (relationship === 'MOTHER') return { name: form.motherName, phone: form.motherContact }
+    return null
+}
+
+const autofilledFrom = ref<'father' | 'mother' | null>(null)
+
+function syncFromParent() {
+    const parent = parentFor(form.relationship)
+    const untouched = (current: string, previous?: string) => !current || (previous !== undefined && current === previous)
+
+    if (!parent) {
+        // No longer father/mother: take back what was copied, leave anything edited.
+        if (copied) {
+            if (form.guardianGivenNames === copied.givenNames) form.guardianGivenNames = ''
+            if (form.guardianFamilyName === copied.familyName) form.guardianFamilyName = ''
+            if (form.guardianPhone === copied.phone) form.guardianPhone = ''
+        }
+        copied = null
+        autofilledFrom.value = null
+        return
+    }
+
+    const next: Copied = { ...splitFullName(parent.name), phone: (parent.phone || '').trim() }
+    if (untouched(form.guardianGivenNames, copied?.givenNames)) form.guardianGivenNames = next.givenNames
+    if (untouched(form.guardianFamilyName, copied?.familyName)) form.guardianFamilyName = next.familyName
+    if (untouched(form.guardianPhone, copied?.phone)) form.guardianPhone = next.phone
+    copied = next
+    autofilledFrom.value = form.relationship === 'FATHER' ? 'father' : 'mother'
+
+    // Choosing an existing guardian: look them up by that parent's phone, so they're the first match.
+    if (action.value === 0 && !form.existingGuardianId && next.phone) guardianSearch.value = next.phone
+}
+
+watch(() => [form.relationship, form.fatherName, form.motherName, form.fatherContact, form.motherContact], syncFromParent)
 
 function next() {
     emit('next', { ...form })

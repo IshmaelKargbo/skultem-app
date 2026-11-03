@@ -12,7 +12,9 @@
               :variant="filters.status === tab.value ? 'soft' : 'ghost'"
               :color="filters.status === tab.value ? 'primary' : 'neutral'" @click="() => { filters.status = tab.value }">
               {{ tab.label }}
-              <UBadge :label="String(tab.count)" size="sm" variant="subtle"
+              <!-- No counts until the list has loaded - a "0" would look like a real number. -->
+              <USkeleton v-if="loading && !data" class="h-4 w-5 rounded-md" />
+              <UBadge v-else :label="String(tab.count)" size="sm" variant="subtle"
                 :color="filters.status === tab.value ? 'primary' : 'neutral'" />
             </UButton>
           </div>

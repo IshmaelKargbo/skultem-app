@@ -200,7 +200,7 @@ definePageMeta({
           </div>
         </template>
 
-        <UTable class="hidden md:block" :columns="visibleColumns" :data="history" :loading="bookLoansLoading">
+        <UTable :ui="{ loading: 'py-0' }" class="hidden md:block" :columns="visibleColumns" :data="history" :loading="bookLoansLoading">
           <template #member-cell="{ row }">
             <p class="font-medium text-gray-900 dark:text-white">{{ row.original.borrowerName }}</p>
             <p class="text-xs text-gray-500">{{ borrowerLabel(row.original) }}</p>

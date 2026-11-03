@@ -38,9 +38,15 @@
           </template>
 
           <div v-if="loading" class="divide-y divide-default">
-            <div v-for="i in 4" :key="i" class="flex items-center justify-between px-4 py-3">
-              <USkeleton class="h-4 w-40" />
-              <USkeleton class="h-5 w-16 rounded-full" />
+            <div v-for="i in 4" :key="i" class="flex items-center justify-between gap-3 px-4 py-3">
+              <div class="min-w-0 space-y-1.5">
+                <USkeleton class="h-4 w-40" />
+                <USkeleton class="h-3 w-56 max-w-full" />
+              </div>
+              <div class="flex shrink-0 gap-1.5">
+                <USkeleton class="h-5 w-24 rounded-full" />
+                <USkeleton class="h-5 w-20 rounded-full" />
+              </div>
             </div>
           </div>
 

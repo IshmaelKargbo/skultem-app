@@ -19,7 +19,7 @@ const size = runtimeConf().limit
 
 const data = ref<LibraryVisit[]>([])
 const meta = ref<any>({})
-const loading = ref(false)
+const loading = ref(true) // until the first load lands - no "nothing here" flash
 const busyId = ref('')
 
 const tabs = computed(() => [
@@ -136,7 +136,7 @@ onMounted(load)
       </div>
     </template>
 
-    <UTable :columns="columns" :data="data" :loading="loading">
+    <UTable :ui="{ loading: 'py-0' }" :columns="columns" :data="data" :loading="loading">
       <template #student-cell="{ row }">
         <ULink :to="`/library/attendance/reports?student=${row.original.studentId}`"
           class="font-medium text-gray-900 hover:text-primary dark:text-white">

@@ -39,12 +39,16 @@ function apply(d: LibrarySessionDetail) {
   for (const r of d.records) marks[r.id] = { status: r.status, excuseReason: r.excuseReason || '' }
 }
 
+const loadError = ref<string | null>(null)
+
 async function load() {
   loading.value = true
+  loadError.value = null
   try {
     apply(await LibraryAttendanceApi().session(props.sessionId))
   } catch (err: any) {
-    toastError(err?.message || 'Failed to load the register')
+    if (detail.value) toastError(err?.message || 'Failed to load the register')
+    else loadError.value = err?.message || 'Failed to load the register'
   } finally {
     loading.value = false
   }
@@ -205,12 +209,34 @@ onMounted(load)
 </script>
 
 <template>
-  <div v-if="loading" class="space-y-3">
-    <USkeleton class="h-28 w-full rounded-2xl" />
-    <USkeleton class="h-96 w-full rounded-2xl" />
+  <div v-if="loading && !detail" class="space-y-3">
+    <UCard>
+      <div class="flex items-start justify-between gap-3">
+        <div class="space-y-2">
+          <USkeleton class="h-5 w-48" />
+          <USkeleton class="h-3 w-36" />
+        </div>
+        <USkeleton class="h-6 w-24 rounded-full" />
+      </div>
+    </UCard>
+    <UCard>
+      <div class="divide-y divide-default">
+        <div v-for="i in 6" :key="i" class="flex items-center justify-between gap-3 py-3">
+          <div class="flex items-center gap-3">
+            <USkeleton class="size-8 rounded-full" />
+            <USkeleton class="h-4 w-36" />
+          </div>
+          <USkeleton class="h-8 w-40" />
+        </div>
+      </div>
+    </UCard>
   </div>
 
-  <div v-else-if="detail && session" class="space-y-3">
+  <UCard v-else-if="!(detail && session)">
+    <StateLoadError title="Couldn't load the register" :message="loadError" @retry="load" />
+  </UCard>
+
+  <div v-else class="space-y-3">
     <!-- Session -->
     <UCard>
       <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

@@ -37,15 +37,22 @@ async function onSubmit() {
   }
 }
 
-onMounted(async () => {
+// A failed load shows an error, never the form - saving defaults over the school's real settings would be worse.
+const loadError = ref<string | null>(null)
+async function loadSettings() {
+  loading.value = true
+  loadError.value = null
   try {
-    Object.assign(state, await store.fetchSettings())
+    const res = await store.fetchSettings()
+    if (!res) throw new Error('Failed to load settings')
+    Object.assign(state, res)
   } catch (err: any) {
-    toastError(err?.message || 'Failed to load settings')
+    loadError.value = err?.message || 'Failed to load settings'
   } finally {
     loading.value = false
   }
-})
+}
+onMounted(loadSettings)
 </script>
 
 <template>
@@ -65,8 +72,15 @@ onMounted(async () => {
     </template>
 
     <div v-if="loading" class="grid gap-4 md:grid-cols-2">
-      <USkeleton v-for="i in 4" :key="i" class="h-28 rounded-2xl" />
+      <div v-for="i in 4" :key="i" class="space-y-3 rounded-2xl border border-default p-4">
+        <USkeleton class="h-4 w-36" />
+        <USkeleton class="h-3 w-56 max-w-full" />
+        <USkeleton class="h-9 w-full" />
+      </div>
     </div>
+
+    <StateLoadError v-else-if="loadError" bordered title="Couldn't load the library settings" :message="loadError"
+      @retry="loadSettings" />
 
     <UForm v-else ref="formRef" :schema="schema" :state="state" class="grid gap-4 md:grid-cols-2" @submit="onSubmit">
       <div class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800">

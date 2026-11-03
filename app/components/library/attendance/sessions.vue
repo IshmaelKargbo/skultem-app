@@ -17,7 +17,7 @@ const range = computed(() => filter.value === 'INCOMPLETE'
   : { from: week.value, to: addDays(week.value, 6) })
 
 const sessions = ref<LibrarySession[]>([])
-const loading = ref(false)
+const loading = ref(true) // until the first load lands - no "nothing here" flash
 const openingKey = ref('')
 
 // Latest day first; within a day, periods stay in the order the server gives them (by period time).

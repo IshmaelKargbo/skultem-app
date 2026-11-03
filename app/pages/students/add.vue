@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
         <!-- Stepper -->
-        <nav ref="stepperEl" aria-label="Enrollment progress" class="scroll-mt-4 rounded-2xl border border-default bg-default p-3 sm:p-4 md:py-6">
+        <UCard ref="stepperEl" aria-label="Enrollment progress" class="scroll-mt-4">
             <ol class="flex items-start">
                 <li v-for="(value, i) in step" :key="value.title" class="relative flex flex-1 flex-col items-center">
                     <!-- connector to the next step -->
@@ -41,16 +41,17 @@
                 <UBadge variant="subtle" color="primary" size="sm" class="shrink-0"
                     :label="`${state + 1} / ${step.length}`" />
             </div>
-        </nav>
-
-        <div v-if="lastSavedAt" class="flex items-center justify-between gap-2 px-1 text-xs text-muted">
-            <span class="flex min-w-0 items-center gap-1.5">
-                <UIcon name="i-lucide-cloud-check" class="size-4 shrink-0 text-success" />
-                <span class="truncate">Progress saved on this device</span>
-            </span>
-            <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-rotate-ccw" label="Start over"
-                @click="startOverOpen = true" />
-        </div>
+            <template #footer v-if="lastSavedAt">
+                <div class="flex items-center justify-between gap-2 text-xs text-muted">
+                    <span class="flex min-w-0 items-center gap-1.5">
+                        <UIcon name="i-lucide-cloud-check" class="size-4 shrink-0 text-success" />
+                        <span class="truncate">Progress saved on this device</span>
+                    </span>
+                    <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-rotate-ccw" label="Start over"
+                        @click="startOverOpen = true" />
+                </div>
+            </template>
+        </UCard>
 
         <div v-if="draftReady" :key="formKey" class="min-w-0">
             <StudentAddPersonal :state="personal" @next="moveToParent" @change="live.personal = $event"
@@ -59,8 +60,7 @@
                 v-if="state === 1" />
             <StudentAddAcademic :state="academic" @back="back" @next="moveToProfile" @change="live.academic = $event"
                 v-if="state === 2" />
-            <StudentAddProfile :loading="loading" :state="profile" @back="back" @submit="submit"
-                v-if="state === 3" />
+            <StudentAddProfile :loading="loading" :state="profile" @back="back" @submit="submit" v-if="state === 3" />
         </div>
     </div>
 
@@ -103,8 +103,8 @@
                 <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                     <UButton class="w-full justify-center sm:w-auto" color="neutral" variant="subtle"
                         icon="i-lucide-file-plus" label="Start new" @click="startNew" />
-                    <UButton class="w-full justify-center sm:w-auto" color="primary" icon="i-lucide-play"
-                        label="Resume" @click="resumeDraft" />
+                    <UButton class="w-full justify-center sm:w-auto" color="primary" icon="i-lucide-play" label="Resume"
+                        @click="resumeDraft" />
                 </div>
             </div>
         </template>
@@ -153,10 +153,11 @@
                         View Profile
                     </UButton>
 
-                    <UButton class="w-full justify-center sm:w-auto" color="neutral" variant="subtle" :trailing-icon="ADD_ICON" @click="() => {
-                        successModal = false
-                        resetForm()
-                    }">
+                    <UButton class="w-full justify-center sm:w-auto" color="neutral" variant="subtle"
+                        :trailing-icon="ADD_ICON" @click="() => {
+                            successModal = false
+                            resetForm()
+                        }">
                         Add New Student
                     </UButton>
 
