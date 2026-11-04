@@ -95,7 +95,7 @@ async function onSubmit() {
 
         <UFormField v-if="hasEmail" label="Email" name="email"
           help="This is their login - changing it changes how they sign in.">
-          <UInput v-model="state.email" type="email" class="w-full" :disabled="loading" />
+          <EmailInput v-model="state.email" type="email" class="w-full" :disabled="loading" />
         </UFormField>
         <UAlert v-else color="warning" variant="soft" icon="lucide:mail"
           description="No email on file. Use Add Email on the parents list to give them portal access." />

@@ -22,6 +22,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ACCOUNTANT, Role.OWNER]
+    // Only the accountant records fee payments - not the owner or super admin.
+    role: Role.ACCOUNTANT
 })
 </script>

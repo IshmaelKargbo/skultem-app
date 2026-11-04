@@ -83,7 +83,7 @@
           <UFormField name="email" label="Email Address" :ui="{
             label: 'text-[10px] font-bold tracking-[0.12em] uppercase text-gray-400 dark:text-white/30 mb-1.5'
           }">
-            <UInput v-model="state.email" type="email" size="lg" placeholder="you@skultem.com" icon="lucide:mail"
+            <EmailInput hint="" v-model="state.email" type="email" size="lg" placeholder="you@skultem.com" icon="lucide:mail"
               class="w-full" :ui="{ base: 'w-full rounded-xl' }" />
           </UFormField>
 

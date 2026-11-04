@@ -260,7 +260,7 @@ async function save() {
             <UInput v-model="contact.phone" placeholder="e.g. +232 76 000000" class="w-full" />
           </UFormField>
           <UFormField label="Email" help="Optional - gives them portal access by email">
-            <UInput v-model="person.email" type="email" class="w-full" />
+            <EmailInput v-model="person.email" type="email" class="w-full" />
           </UFormField>
           <UFormField label="City" required>
             <UInput v-model="contact.city" class="w-full" />

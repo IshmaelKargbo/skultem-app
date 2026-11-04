@@ -18,9 +18,7 @@ export function useNotifications() {
   function connect() {
     if (client?.active) return
 
-    const config = useRuntimeConfig()
-    const configuredBase = (config.public.apiBase || window.location.origin).replace(/\/+$/, '')
-    const socketBase = configuredBase.replace(/\/api\/v\d+$/, '')
+    const socketBase = apiServerBase()
 
     client = new Client({
       webSocketFactory: () => new SockJS(`${socketBase}/ws`),

@@ -83,7 +83,7 @@
           <template v-else-if="step === 1">
             <UFormField label="Email address" name="email" required hint="Used for login"
               help="Login details are sent here, so it must be an address they can open.">
-              <UInput v-model="state.email" type="email" placeholder="teacher@example.com"
+              <EmailInput v-model="state.email" type="email" placeholder="teacher@example.com"
                 leading-icon="i-lucide-mail" class="w-full" />
             </UFormField>
 

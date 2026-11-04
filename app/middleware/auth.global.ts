@@ -1,6 +1,9 @@
 // Public marketing/lead pages that must work without a resolved school tenant or a logged-in
 // session - e.g. linked directly from the corporate site.
-const PUBLIC_PATHS = ['/request-demo']
+// /verify-email: opened from a link in an email - the person may not be signed in, on a school or the admin portal.
+const PUBLIC_PATHS = ['/request-demo', '/verify-email']
+// A school's own pages that need its tenant but no session: asking for a reset link, and setting a new password from it.
+const SIGNED_OUT_PATHS = ['/login', '/setup', '/forgot-password', '/set-password']
 
 // Every route that exists on the admin subdomain - see isAdminPortalHost(). No "/system-admin"
 // prefix: since the subdomain itself already says this is the admin portal, its own dashboard,
@@ -71,7 +74,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return navigateTo("/")
     }
 
-    if (!token.value && to.path !== "/login" && to.path !== "/setup") {
+    if (!token.value && !SIGNED_OUT_PATHS.includes(to.path)) {
         if (import.meta.client) {
             const { show } = useGlobalLoader()
             show({ title: 'Redirecting...' })

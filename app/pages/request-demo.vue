@@ -63,7 +63,7 @@
                 </UFormField>
 
                 <UFormField name="email" label="Email address" :ui="fieldUi">
-                  <UInput v-model="state.email" type="email" size="lg" placeholder="you@school.edu" icon="lucide:mail" class="w-full" :ui="{ base: 'w-full rounded-xl' }" />
+                  <EmailInput hint="" v-model="state.email" type="email" size="lg" placeholder="you@school.edu" icon="lucide:mail" class="w-full" :ui="{ base: 'w-full rounded-xl' }" />
                 </UFormField>
 
                 <UFormField name="phone" label="Phone number" :ui="fieldUi">

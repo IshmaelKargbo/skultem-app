@@ -1,7 +1,5 @@
 export default defineNuxtPlugin(() => {
-  const config = useRuntimeConfig()
-  const configuredBase = (config.public.apiBase || "http://localhost:8080").replace(/\/+$/, "")
-  const baseURL = /\/api\/v\d+$/.test(configuredBase) ? configuredBase : `${configuredBase}/api/v1`
+  const baseURL = apiBaseUrl()
 
   let refreshPromise: Promise<string | null> | null = null
 

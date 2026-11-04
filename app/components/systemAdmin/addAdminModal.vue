@@ -85,7 +85,7 @@ async function submit() {
             </UFormField>
           </div>
           <UFormField name="email" label="Email">
-            <UInput v-model="state.email" size="lg" type="email" icon="i-lucide-mail" placeholder="name@example.com" class="w-full" />
+            <EmailInput v-model="state.email" size="lg" type="email" icon="i-lucide-mail" placeholder="name@example.com" class="w-full" />
           </UFormField>
 
           <!-- Role -->

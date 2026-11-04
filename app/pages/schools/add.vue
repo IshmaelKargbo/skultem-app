@@ -100,7 +100,7 @@
             </UFormField>
 
             <UFormField label="Email" name="email" required>
-              <UInput v-model="state.email" type="email" icon="i-lucide-mail" placeholder="owner@example.com"
+              <EmailInput v-model="state.email" type="email" icon="i-lucide-mail" placeholder="owner@example.com"
                 class="w-full" :disabled="loading" />
             </UFormField>
 

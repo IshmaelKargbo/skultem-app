@@ -34,9 +34,7 @@ export const HealthCareApi = () => {
 
   // Same approach as LibraryAttendanceApi.download: a plain fetch with the access token, saved under the server's name.
   async function download(path: string, params: Record<string, string | undefined>) {
-    const config = useRuntimeConfig()
-    const configured = (config.public.apiBase || 'http://localhost:8080').replace(/\/+$/, '')
-    const apiBase = /\/api\/v\d+$/.test(configured) ? configured : `${configured}/api/v1`
+    const apiBase = apiBaseUrl()
     const { accessToken } = useAuthCookies()
 
     const res = await fetchOrExplain(`${apiBase}${base}${path}?${query(params)}`, {

@@ -99,7 +99,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
               <UInput v-model="form.name" size="lg" class="w-full" icon="i-lucide-user" placeholder="Jane Doe" />
             </UFormField>
             <UFormField label="Email" :error="shown('email') || shown('contact')">
-              <UInput v-model="form.email" size="lg" type="email" class="w-full" icon="i-lucide-mail" placeholder="jane@school.edu" />
+              <EmailInput hint="" v-model="form.email" size="lg" type="email" class="w-full" icon="i-lucide-mail" placeholder="jane@school.edu" />
             </UFormField>
             <UFormField label="Phone" :error="shown('phone')">
               <UInput v-model="form.phone" size="lg" class="w-full" icon="i-lucide-phone" placeholder="+23276000000" />

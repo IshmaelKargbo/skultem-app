@@ -82,7 +82,10 @@
                 </div>
 
                 <div class="rounded-xl border border-default bg-elevated/40 p-3">
-                    <p class="text-xs text-muted">Email</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-xs text-muted">Email</p>
+                        <EmailVerificationBadge v-if="user?.email" :verified="!!user?.emailVerified" />
+                    </div>
                     <p class="mt-1 truncate text-sm font-semibold text-highlighted">{{ user?.email || '—' }}</p>
                 </div>
 
@@ -91,6 +94,9 @@
                     <p class="mt-1 text-sm font-semibold text-highlighted">{{ clean(user?.status || '') || '—' }}</p>
                 </div>
             </div>
+
+            <!-- Confirm the email is theirs: where it stands, and sending (or re-sending) the link. -->
+            <EmailVerificationStatus v-if="user?.email" class="mt-3" />
         </UCard>
     </div>
 </template>

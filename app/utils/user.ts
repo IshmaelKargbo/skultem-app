@@ -9,6 +9,9 @@ export type User = {
     schoolStatus: string | null
     createdAt: string
     updatedAt: string
+    // The person proved they own `email` by opening a verification link sent to it (see utils/emailVerification.ts).
+    emailVerified?: boolean
+    emailVerifiedAt?: string | null
 }
 
 export type UserPayrollStatus = {

@@ -152,7 +152,7 @@
               <UCheckbox v-model="state.rememberMe" label="Remember me" :ui="{
                 label: 'text-sm text-gray-600 dark:text-white/50 cursor-pointer'
               }" />
-              <UButton v-if="!isAdminPortal" variant="link" to="#" class="p-0 text-sm font-semibold">
+              <UButton v-if="!isAdminPortal" variant="link" to="/forgot-password" class="p-0 text-sm font-semibold">
                 Forgot password?
               </UButton>
             </div>

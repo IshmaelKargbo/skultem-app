@@ -86,7 +86,7 @@
           <template v-else-if="step === 1">
             <UFormField label="Email address" name="email" required hint="Record only"
               help="Still required to create their record, even though it won't be used for login.">
-              <UInput v-model="state.email" type="email" placeholder="staff@example.com"
+              <EmailInput v-model="state.email" type="email" placeholder="staff@example.com"
                 leading-icon="i-lucide-mail" class="w-full" />
             </UFormField>
 

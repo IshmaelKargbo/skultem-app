@@ -81,7 +81,10 @@
                     <div class="flex items-center gap-3 px-5 py-3">
                         <UIcon name="i-lucide-mail" class="size-4 shrink-0 text-muted" />
                         <div class="min-w-0">
-                            <dt class="text-xs text-muted">Email</dt>
+                            <dt class="flex items-center gap-2 text-xs text-muted">
+                                Email
+                                <EmailVerificationBadge v-if="record?.email" :verified="!!record?.emailVerified" />
+                            </dt>
                             <dd class="truncate font-medium text-highlighted">{{ record?.email || 'No email' }}</dd>
                         </div>
                     </div>
@@ -200,9 +203,6 @@
         <AuthUsersManageSections v-if="record && showManageSections" v-model="showManageSections"
             :user-id="record.id" :user-name="name" :roles="scopableRoles" @success="fetchUser" />
 
-        <AuthUsersResetPasswordPrompt v-if="record" v-model:open="showResetPassword" :user-id="record.id"
-            :user-name="name" @changed="record = $event" />
-
         <AuthUsersStatusPrompt v-if="record" v-model:open="showStatusPrompt" :user-id="record.id"
             :user-name="name" :active="record.schoolStatus === 'ACTIVE'" @changed="record = $event" />
 
@@ -230,7 +230,6 @@ const { isSectionBased, load: loadStructure } = useSchoolStructure()
 const showStatusPrompt = ref(false)
 const showAssign = ref(false)
 const showManageSections = ref(false)
-const showResetPassword = ref(false)
 const removeRoleTarget = ref<string | null>(null)
 const showRemoveRole = computed<boolean>({
     get: () => removeRoleTarget.value !== null,
@@ -264,18 +263,31 @@ const actionItems = computed(() => {
     return [
         [
             { label: 'Assign role', icon: 'eos-icons:cluster-role-binding', onSelect: () => { showAssign.value = true } },
+            // Their own email, never another address - and only while it isn't verified yet.
+            ...(record.value.email && !record.value.emailVerified
+                ? [{ label: 'Send verification email', icon: 'i-lucide-mail-check', onSelect: sendVerification }]
+                : []),
             ...(canManageSections.value
                 ? [{ label: 'Manage sections', icon: 'lucide:layers', onSelect: () => { showManageSections.value = true } }]
                 : []),
         ],
         ...(own ? [] : [[
-            { label: 'Reset password', icon: 'lucide:key-round', onSelect: () => { showResetPassword.value = true } },
             isActive.value
                 ? { label: 'Deactivate account', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }
                 : { label: 'Reactivate account', icon: 'lucide:user-check', color: 'success' as const, onSelect: () => { showStatusPrompt.value = true } },
         ]]),
     ]
 })
+
+async function sendVerification() {
+    if (!record.value) return
+    try {
+        const res = await EmailVerificationApi().sendForUser(record.value.id)
+        if (res) notify.success(`Verification link sent to ${res.email}`)
+    } catch (err: any) {
+        notify.error(err?.message || "Couldn't send the verification email")
+    }
+}
 
 const name = computed(() => {
     if (!record.value) return ''

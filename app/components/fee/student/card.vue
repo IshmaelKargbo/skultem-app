@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <UButton v-if="can([Role.ACCOUNTANT, Role.OWNER]) && student.feeDetail.balance > 0" block size="xs"
+        <UButton v-if="can(Role.ACCOUNTANT) && student.feeDetail.balance > 0" block size="xs"
             color="primary" variant="soft" icon="streamline-ultimate:cash-payment-bills" class="mt-3 justify-center"
             :to="`/fees-payment/pay?studentId=${student.id}`" @click.stop>
             Pay Fees

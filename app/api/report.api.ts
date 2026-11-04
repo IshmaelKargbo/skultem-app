@@ -1,8 +1,6 @@
 export const ReportApi = () => {
   const { $api } = useNuxtApp()
-  const config = useRuntimeConfig()
-  const configuredBase = (config.public.apiBase || "http://localhost:8080").replace(/\/+$/, "")
-  const baseURL = /\/api\/v\d+$/.test(configuredBase) ? configuredBase : `${configuredBase}/api/v1`
+  const baseURL = apiBaseUrl()
 
   const buildUrl = (path: string, params: Record<string, string | undefined>) => {
     const query = new URLSearchParams()

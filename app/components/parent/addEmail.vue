@@ -67,7 +67,7 @@ async function submit() {
           </p>
 
           <UFormField required label="Email" name="email">
-            <UInput v-model="email" type="email" placeholder="e.g. parent@example.com" class="w-full"
+            <EmailInput v-model="email" type="email" placeholder="e.g. parent@example.com" class="w-full"
               :disabled="loading" />
           </UFormField>
         </div>

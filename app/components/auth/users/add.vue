@@ -28,7 +28,7 @@
 
         <!-- Email -->
         <UFormField required label="Email" name="email" help="Enter the user's email address.">
-          <UInput type="email" v-model="state.email" :disabled="isLoading" placeholder="example@email.com"
+          <EmailInput type="email" v-model="state.email" :disabled="isLoading" placeholder="example@email.com"
             class="w-full" />
         </UFormField>
 

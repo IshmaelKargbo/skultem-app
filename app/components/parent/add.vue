@@ -44,7 +44,7 @@
         </UFormField>
 
         <UFormField required label="Email" name="email">
-          <UInput v-model="state.email" placeholder="e.g. ishmael.kargbo@example.com" :disabled="isLoading" />
+          <EmailInput v-model="state.email" placeholder="e.g. ishmael.kargbo@example.com" :disabled="isLoading" />
           <template #help>
             <p class="text-xs text-muted">Enter a valid email address (optional).</p>
           </template>

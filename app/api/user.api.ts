@@ -151,6 +151,22 @@ export const UserApi = () => {
         useHandleError(err)
       }
     },
+    // "Forgot password": the server answers the same whether or not the email has an account at this school.
+    requestPasswordReset: async (domain: string, email: string) => {
+      try {
+        await $api('/auth/password-reset/request', { method: 'POST', body: { domain, email } })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    // Sets a new password from the emailed link - the token in it is the proof.
+    confirmPasswordReset: async (token: string, password: string) => {
+      try {
+        await $api('/auth/password-reset/confirm', { method: 'POST', body: { token, password } })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     systemAdminLogin: async (payload: SystemAdminLoginDto) => {
       try {
         const res = await $api('/auth/system-admin-login', {

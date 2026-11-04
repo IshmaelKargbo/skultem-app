@@ -162,7 +162,7 @@
                         </UFormField>
 
                         <UFormField name="guardianEmail" label="Email Address">
-                            <UInput v-model="form.guardianEmail" placeholder="Enter email address"
+                            <EmailInput v-model="form.guardianEmail" placeholder="Enter email address"
                                 :leading-icon="EMAIL_ICON" />
                             <template #help>
                                 Optional. Used for school communications and portal access.
