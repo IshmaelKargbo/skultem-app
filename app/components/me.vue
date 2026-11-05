@@ -7,7 +7,7 @@
       }">
         <!-- Compact trigger: avatar only, for use in the header -->
 
-        <div class="flex group cursor-pointer space-x-3" v-if="compact && user && user.email && !loading">
+        <div class="flex group cursor-pointer space-x-3" v-if="compact && user && user.id && !loading">
           <div class="relative" :aria-label="`Account menu for ${name}`">
             <UAvatar :src="user?.photo || undefined" :alt="name" size="md" class="ring-2 ring-default transition group-hover:ring-primary-300" />
 
@@ -21,7 +21,7 @@
         </div>
 
         <!-- Full trigger: avatar + name/role, for use in the sidebar footer -->
-        <div v-else-if="user && user.email && !loading" color="neutral"
+        <div v-else-if="user && user.id && !loading" color="neutral"
           class="group w-full rounded-xl border border-default px-4 py-2 hover:border-primary-300 cursor-pointer transition-all duration-300">
           <div class="flex items-center gap-3 w-full">
             <div class="relative">

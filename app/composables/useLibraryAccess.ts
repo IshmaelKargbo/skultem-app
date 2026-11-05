@@ -1,5 +1,6 @@
-// Who runs the library: they add books, issue and return, and change settings. Teachers can open
-// the library to look things up but don't see those actions (the backend enforces the same split).
+// Who runs the library: they add books, issue and return, and change settings. Teachers don't use the
+// library screens at all (the backend refuses them too) - the librarian issues their books. Staff limited to
+// management sections only see their sections' books (see useLibrarySections).
 //
 // Library Attendance has its own split (backend: LibraryAttendanceController, docs/LIBRARY_ATTENDANCE.md §4):
 // the librarian records; principal-level roles follow up visits, cancel sessions, export and are the only ones

@@ -233,14 +233,18 @@ export type RecordContinuousDto = {
     }[]
 }
 
-export const CA_FREQUENCY_OPTIONS: { label: string, value: CaFrequency, hint: string }[] = [
+type CaFrequencyOption = { label: string, value: CaFrequency, hint: string }
+export const CA_FREQUENCY_OPTIONS: CaFrequencyOption[] = [
     { label: 'Daily', value: 'DAILY', hint: 'A CA mark every school day' },
     { label: 'Weekly', value: 'WEEKLY', hint: 'A CA mark each week' },
     { label: 'Mid-week', value: 'MID_WEEK', hint: 'A CA mark in the middle of each week' },
     { label: 'Custom', value: 'CUSTOM', hint: 'Teachers record activities as they happen' }
 ]
 
-export const CA_UNITS: Record<CaFrequency, { singular: string, plural: string }> = {
+// Named types, not inline `{ ... }` in the export line: Nuxt's auto-import scanner misreads an inline object type
+// there as exported names (it registered `string` and `color`), which breaks any page using a variable by that name.
+type CaUnit = { singular: string, plural: string }
+export const CA_UNITS: Record<CaFrequency, CaUnit> = {
     DAILY: { singular: 'Day', plural: 'days' },
     WEEKLY: { singular: 'Week', plural: 'weeks' },
     MID_WEEK: { singular: 'Mid-week', plural: 'mid-weeks' },
@@ -316,7 +320,8 @@ export function continuousOf(rows: StudentAssessment[], assessmentId: string): C
 
 export type CaTrend = 'improving' | 'declining' | 'steady' | 'not-enough-data'
 
-export const CA_TREND_LABEL: Record<CaTrend, string> = {
+type CaTrendLabels = Record<CaTrend, string>
+export const CA_TREND_LABEL: CaTrendLabels = {
     improving: 'Improving',
     declining: 'Declining',
     steady: 'Steady',
@@ -658,13 +663,14 @@ export function assessmentSyncMessage(res: ClassAssessmentSync): string {
 // Who signs off grades. Set for the school and, in a school with sections, per section (School Settings).
 export type GradeApprover = 'CLASS_MASTER' | 'ADMIN' | 'EXAM_OFFICER'
 
-export const GRADE_APPROVER_LABEL: Record<GradeApprover, string> = {
+type GradeApproverText = Record<GradeApprover, string>
+export const GRADE_APPROVER_LABEL: GradeApproverText = {
   CLASS_MASTER: 'Class master',
   ADMIN: 'Admin',
   EXAM_OFFICER: 'Exam officer',
 }
 
-export const GRADE_APPROVER_ICON: Record<GradeApprover, string> = {
+export const GRADE_APPROVER_ICON: GradeApproverText = {
   CLASS_MASTER: 'i-lucide-user-round-check',
   ADMIN: 'i-lucide-shield-check',
   EXAM_OFFICER: 'i-lucide-clipboard-check',
@@ -710,7 +716,8 @@ export interface AssessmentCoverage {
   rows: AssessmentCoverageRow[]
 }
 
-export const COVERAGE_STATUS: Record<AssessmentCoverageStatus, { label: string, color: 'success' | 'neutral' | 'warning' | 'error' | 'info' }> = {
+type CoverageStatusStyle = { label: string, color: 'success' | 'neutral' | 'warning' | 'error' | 'info' }
+export const COVERAGE_STATUS: Record<AssessmentCoverageStatus, CoverageStatusStyle> = {
   OK: { label: 'All set', color: 'success' },
   NO_STUDENTS: { label: 'No students', color: 'neutral' },
   NO_TEMPLATE: { label: 'No template', color: 'warning' },

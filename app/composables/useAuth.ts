@@ -43,7 +43,7 @@ export function useAuth() {
 
     function initializeActiveRole() {
         const user = userStore.user
-        if (!user?.email) return
+        if (!user?.id) return
 
         const resolved = resolveRole(user)
 
@@ -59,7 +59,7 @@ export function useAuth() {
     watch(
         () => userStore.user,
         (user) => {
-            if (!user?.email) {
+            if (!user?.id) {
                 clearRole()
                 return
             }

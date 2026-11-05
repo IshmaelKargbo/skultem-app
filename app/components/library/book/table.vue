@@ -11,6 +11,10 @@ const search = ref('')
 // list renders, breaking every item in it). The placeholder covers "nothing selected", and the
 // select's own :clear button gets back to it.
 const categoryFilter = ref<string | undefined>()
+// Same rule for the section filter. Only shown when the viewer has more than one section to choose from.
+const sectionFilter = ref<string | undefined>()
+const librarySections = useLibrarySections()
+const { options: sectionOptions, showSections, nameOf: sectionName } = librarySections
 const page = ref(1)
 const size = runtimeConf().limit
 
@@ -24,7 +28,11 @@ const columns = [
 
 
 function load() {
-  return store.fetchBooks(page.value, size, { search: search.value, categoryId: categoryFilter.value || undefined })
+  return store.fetchBooks(page.value, size, {
+    search: search.value,
+    categoryId: categoryFilter.value || undefined,
+    sectionId: sectionFilter.value || undefined
+  })
 }
 
 let timeout: ReturnType<typeof setTimeout>
@@ -33,7 +41,7 @@ watch(value, (val) => {
   timeout = setTimeout(() => { search.value = val.trim() }, 400)
 })
 
-watch([search, categoryFilter], () => {
+watch([search, categoryFilter, sectionFilter], () => {
   if (page.value === 1) load()
   else page.value = 1
 })
@@ -43,6 +51,7 @@ watch(page, load)
 onMounted(() => {
   load()
   store.fetchCategoryOptions()
+  librarySections.load()
 })
 </script>
 
@@ -54,6 +63,8 @@ onMounted(() => {
           <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by title, author or ISBN" class="w-full sm:w-72" />
           <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions" placeholder="All categories"
             clear class="w-full sm:w-52" />
+          <USelectMenu v-if="showSections" v-model="sectionFilter" value-key="value" :items="sectionOptions"
+            placeholder="All sections" clear class="w-full sm:w-44" />
           <LibraryBookAdd v-if="canManage" />
         </div>
         <TableViewToggle v-model="view" />
@@ -76,7 +87,12 @@ onMounted(() => {
       </template>
 
       <template #category-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">{{ row.original.category.name }}</UBadge>
+        <div class="flex flex-wrap items-center gap-1">
+          <UBadge color="neutral" variant="subtle">{{ row.original.category.name }}</UBadge>
+          <UBadge v-if="showSections" :color="row.original.sectionId ? 'primary' : 'warning'" variant="subtle">
+            {{ sectionName(row.original.sectionId) || 'No section' }}
+          </UBadge>
+        </div>
       </template>
 
       <template #copies-cell="{ row }">

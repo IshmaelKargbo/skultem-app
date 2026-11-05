@@ -6,6 +6,8 @@ const { book } = defineProps<{ book?: Book }>()
 const store = useLibraryStore()
 const { categoryOptions } = storeToRefs(store)
 const { success: toastSuccess, error: toastError } = useNotify()
+const librarySections = useLibrarySections()
+const { options: sectionOptions, showSections, required: sectionRequired } = librarySections
 
 const isEdit = computed(() => !!book)
 const open = ref(false)
@@ -20,6 +22,8 @@ function defaultState() {
     isbn: book?.isbn ?? '',
     publisher: book?.publisher ?? '',
     categoryId: book?.category.id || '',
+    // Staff with a single section get it picked for them.
+    sectionId: book?.sectionId || (sectionOptions.value.length === 1 ? sectionOptions.value[0]!.value : ''),
     totalCopies: book?.totalCopies ?? 1,
     shelf: book?.shelf ?? ''
   }
@@ -32,6 +36,9 @@ watch(open, (isOpen) => {
   if (!isOpen) return
   Object.assign(state, defaultState())
   if (!categoryOptions.value.length) store.fetchCategoryOptions()
+  librarySections.load().then(() => {
+    if (!state.sectionId && sectionOptions.value.length === 1) state.sectionId = sectionOptions.value[0]!.value
+  })
 })
 
 const schema = yup.object({
@@ -40,6 +47,7 @@ const schema = yup.object({
   isbn: yup.string().max(32, 'ISBN must not exceed 32 characters'),
   publisher: yup.string(),
   categoryId: yup.string().required('Category is required'),
+  sectionId: yup.string().test('section', 'Section is required', v => !sectionRequired.value || !!v),
   totalCopies: yup.number().typeError('Enter a number').integer('Enter a whole number').min(1, 'At least 1 copy is required').required(),
   shelf: yup.string().max(50, 'Shelf must not exceed 50 characters')
 })
@@ -56,7 +64,7 @@ async function onSubmit() {
   isLoading.value = true
 
   try {
-    await store.saveBook({ ...state }, book?.id)
+    await store.saveBook({ ...state, sectionId: state.sectionId || undefined }, book?.id)
     toastSuccess(isEdit.value ? 'Book updated successfully' : 'Book added successfully')
     close()
   } catch (err: any) {
@@ -104,6 +112,12 @@ async function onSubmit() {
 
         <UFormField label="Publisher" name="publisher">
           <UInput v-model="state.publisher" placeholder="e.g. Heinemann" :disabled="isLoading" class="w-full" />
+        </UFormField>
+
+        <UFormField v-if="showSections" label="Section" name="sectionId" required
+          help="Only staff in this section (and whole-school staff) will see this book.">
+          <USelectMenu v-model="state.sectionId" value-key="value" :items="sectionOptions" placeholder="Select section"
+            :disabled="isLoading" class="w-full" />
         </UFormField>
 
         <UFormField label="Category" name="categoryId" required>

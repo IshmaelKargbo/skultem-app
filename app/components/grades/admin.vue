@@ -134,6 +134,16 @@
 
     <GradesReturnedNotice :assessments="assessments" />
 
+    <!-- No class in the caller's section(s) has assessments this term: say why the class list is empty. -->
+    <UAlert
+      v-if="!loadingClass && state.termId && gradedSessionIds && !classes.length"
+      color="warning"
+      variant="soft"
+      icon="lucide:school"
+      title="No classes to grade in this term"
+      description="Only classes with assessments in the chosen term are listed. A class gets them once it has an assessment template and its subjects have teachers assigned. Check the classes in your section(s), or pick another term."
+    />
+
     <!-- A class that has no assessments in this term: say why instead of showing an empty table. -->
     <UAlert
       v-if="!loading && state.teacherSubjectId && state.termId && !assessments.length"

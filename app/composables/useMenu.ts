@@ -439,7 +439,7 @@ export function useMenu() {
     },
     {
       label: 'Library', icon: LIBRARY_ICON,
-      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.TEACHER],
+      roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN],
       subNavs: [
         { label: 'Dashboard', to: '/library', icon: LIBRARY_ICON, exact: true },
         { label: 'Books', to: '/library/books', icon: BOOK_ICON },

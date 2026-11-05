@@ -11,6 +11,8 @@ export type BookCategory = {
 
 export type Book = {
     id: string
+    // The management section it belongs to (null = not assigned yet).
+    sectionId: string | null
     title: string
     author: string
     isbn: string | null
@@ -80,6 +82,8 @@ export type SaveBookDto = {
     isbn: string
     publisher: string
     categoryId: string
+    // Required in a school run by sections; staff with one section can leave it empty.
+    sectionId?: string
     totalCopies: number
     shelf: string
 }
@@ -96,6 +100,7 @@ export type BookFilters = {
     search?: string
     categoryId?: string
     outOfStock?: boolean
+    sectionId?: string
 }
 
 export type LoanFilters = {

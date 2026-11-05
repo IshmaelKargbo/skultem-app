@@ -73,7 +73,7 @@ onMounted(async () => {
 
 definePageMeta({
   // Teachers can look things up; the manage actions are hidden for them (useLibraryAccess).
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN, Role.TEACHER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.LIBRARIAN]
 })
 </script>
 
