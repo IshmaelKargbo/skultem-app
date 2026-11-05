@@ -21,41 +21,28 @@
         label: 'Class Rank', color: 'primary', value: rank, isReady: rankReady, icon: LEADER_ICON,
         subtle: selected ? `Out of ${selected.classSize} in ${selected.className}` : undefined
       }" />
-      <DashboardParentAttendance :id="state.student" :term="state.term" />
-      <Metric :record="{
+      <DashboardParentAttendance class="md:col-span-1 col-span-2" :id="state.student" :term="state.term" />
+      <Metric class="md:col-span-1 col-span-2" :record="{
         label: 'Best Subject', color: 'success', value: topSubject?.name || 'N/A', isReady: !assessmentLoading,
         icon: TARGET_ICON, subtle: topSubject ? `${topSubject.score}% this term` : 'No approved assessments yet'
       }" />
     </div>
 
-    <!-- Plain-language summary of the two stats above that actually matter to a parent -
-         which subject to praise, which one needs a bit of help at home. -->
-    <UCard v-if="!assessmentLoading && (topSubject || bottomSubject)">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div v-if="topSubject" class="flex items-start gap-3 rounded-xl bg-success-50 p-4 dark:bg-success-500/10">
-          <UIcon name="lucide:trophy" class="mt-0.5 size-5 shrink-0 text-success" />
-          <div class="space-y-0.5">
-            <p class="text-sm font-semibold text-success">Doing great in {{ topSubject.name }}</p>
-            <p class="text-xs text-muted">
-              {{ studentFirstName }} is scoring {{ topSubject.score }}% ({{ topSubject.grade || '—' }})
-              - the strongest subject this term.
-            </p>
-          </div>
-        </div>
-
-        <div v-if="bottomSubject" class="flex items-start gap-3 rounded-xl bg-warning-50 p-4 dark:bg-warning-500/10">
-          <UIcon name="lucide:life-buoy" class="mt-0.5 size-5 shrink-0 text-warning" />
-          <div class="space-y-0.5">
-            <p class="text-sm font-semibold text-warning">Could use some support in {{ bottomSubject.name }}</p>
-            <p class="text-xs text-muted">
-              Currently at {{ bottomSubject.score }}% ({{ bottomSubject.grade || '—' }}), below the
-              {{ bottomSubject.passMark }}% pass mark{{ bottomSubject.trend === 'DROPPED' ? ' and dropped on the latest test' : '' }}
-              - worth checking in on together.
-            </p>
-          </div>
-        </div>
+    <!-- The one thing worth acting on -->
+    <div v-if="!assessmentLoading && bottomSubject"
+      class="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-4">
+      <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+        <UIcon name="lucide:life-buoy" class="size-5" />
+      </span>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold text-highlighted">Needs support in {{ bottomSubject.name }}</p>
+        <p class="text-xs text-muted">
+          {{ studentFirstName || 'The student' }} is at {{ bottomSubject.score }}%
+          ({{ bottomSubject.grade || 'no grade' }}), below the {{ bottomSubject.passMark }}% pass mark{{
+            bottomSubject.trend === 'DROPPED' ? ' and dropped on the latest test' : '' }}.
+        </p>
       </div>
-    </UCard>
+    </div>
 
     <!-- Trends -->
     <div class="grid gap-4 md:grid-cols-2 md:gap-5">
@@ -65,64 +52,87 @@
     </div>
 
     <!-- Subject breakdown -->
-    <div v-if="breakdown.length" class="space-y-3">
-      <h3 class="px-1 text-sm font-semibold text-highlighted">Subject Breakdown</h3>
+    <UCard v-if="sortedBreakdown.length" :ui="{ header: 'px-4 py-3', body: 'p-0 sm:p-0' }">
+      <template #header>
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="font-semibold text-highlighted">Subject breakdown</h3>
+          <p class="text-xs text-muted">Highest first · tap a subject for its assessments</p>
+        </div>
+      </template>
 
-      <UCard :ui="{ body: 'p-0 sm:p-0' }" v-for="row in breakdown" :key="row.id" class="cursor-pointer"
-        @click="toggle(row.id)">
-        <div class="flex items-center justify-between p-3">
-          <div class="flex min-w-0 space-x-3 items-center">
-            <UAvatar size="lg" :alt="row.name" />
+      <ul class="divide-y divide-default">
+        <li v-for="row in sortedBreakdown" :key="row.id">
+          <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+            :aria-expanded="!!expanded[row.id]" @click="toggle(row.id)">
+            <UIcon :name="expanded[row.id] ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+              class="size-4 shrink-0 text-muted" />
 
-            <div class="min-w-0">
-              <p class="truncate text-sm font-medium">{{ row.name }}</p>
-              <div class="flex items-center gap-1.5 text-[11px] text-muted">
-                <span>{{ row.assessed }} of {{ row.total }} graded</span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium text-highlighted">{{ row.name }}</p>
+              <p class="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
+                <span>{{ row.assessed }} of {{ row.total }} assessment{{ row.total === 1 ? '' : 's' }} graded</span>
                 <template v-if="row.trend && parseTrend[row.trend]">
                   <span>&middot;</span>
-                  <UIcon :name="parseTrend[row.trend].icon" :class="`size-3.5 text-${parseTrend[row.trend].color}`" />
-                  <span :class="`text-${parseTrend[row.trend].color}`">{{ parseTrend[row.trend].label }}</span>
+                  <span class="flex items-center gap-1" :class="parseTrend[row.trend].text">
+                    <UIcon :name="parseTrend[row.trend].icon" class="size-3.5" />
+                    {{ parseTrend[row.trend].label }}
+                  </span>
                 </template>
+              </p>
+            </div>
+
+            <div class="hidden w-40 sm:block">
+              <div v-if="row.score != null" class="h-1.5 overflow-hidden rounded-full bg-elevated">
+                <div class="h-full rounded-full" :class="barOf(row.score, row.passMark)"
+                  :style="{ width: `${Math.min(100, row.score)}%` }" />
               </div>
             </div>
-          </div>
+            <p class="w-12 shrink-0 text-right text-sm font-semibold tabular-nums"
+              :class="row.score == null ? 'text-muted' : 'text-highlighted'">
+              {{ row.score == null ? '-' : `${row.score}%` }}</p>
+            <UBadge class="w-9 shrink-0 justify-center" variant="subtle" size="md"
+              :color="row.grade ? gradeColor(row.grade) : 'neutral'" :label="row.grade || '-'" />
+          </button>
 
-          <div class="flex items-end space-x-3">
-            <div class="flex items-center">
-              <UBadge v-if="row.grade" :label="row.grade" :color="gradeColor(row.grade ?? undefined)" variant="subtle" />
-            </div>
-            <div class="flex space-x-2 items-center">
-              <div class="hidden w-28 flex-col items-end gap-1 sm:flex">
-                <p class="text-sm font-semibold">{{ row.score == null ? '-' : `${row.score}%` }}</p>
-                <UProgress v-if="row.score != null" :model-value="row.score" :color="gradeColor(row.grade ?? undefined)" size="sm" />
+          <div v-if="expanded[row.id]" class="border-l-2 border-t border-l-primary/40 border-t-default bg-neutral-100 px-4 py-3 shadow-inner dark:bg-neutral-800/60 sm:pl-11">
+            <template v-if="row.scores.length">
+              <div class="grid grid-cols-[1fr_auto_auto] gap-x-4 pb-1 text-[11px] uppercase tracking-wide text-muted">
+                <span>Assessment</span><span class="text-right">Score</span>
+                <span class="w-16 text-right">Change</span>
               </div>
-
-              <UIcon :name="expanded[row.id] ? 'iconoir:nav-arrow-down' : 'weui:arrow-outlined'"
-                class="text-lg text-mute" variant="link" />
-            </div>
-          </div>
-        </div>
-
-        <template v-if="expanded[row.id]" #footer>
-          <div v-if="row.scores.length" class="space-y-1.5 p-3">
-            <div v-for="(score, i) in row.scores" :key="i" class="flex items-center justify-between py-1.5" :class="{
-              'border-b border-gray-100 dark:border-gray-800': i + 1 < row.scores.length
-            }">
-              <p class="text-sm">{{ score.name }}</p>
-              <div class="flex items-center gap-2">
-                <p class="text-sm font-medium">
-                  <span>{{ score.score ?? '-' }}%</span>
-                  <span v-if="score.weight" class="text-xs text-muted"> {{ score.weightScore }} of {{ score.weight }} pts</span>
-                </p>
-                <UIcon v-if="score.trend" :name="parseTrend[score.trend]?.icon"
-                  :class="`size-3.5 text-${parseTrend[score.trend]?.color}`" />
+              <div v-for="(score, i) in row.scores" :key="i"
+                class="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 border-t border-default/60 py-1.5 text-sm first:border-0">
+                <div class="min-w-0">
+                  <p class="truncate">{{ score.name }}</p>
+                  <div v-if="score.score != null" class="mt-1 h-1 w-full max-w-48 overflow-hidden rounded-full bg-elevated">
+                    <div class="h-full rounded-full" :class="barOf(Number(score.score), row.passMark)"
+                      :style="{ width: `${Math.min(100, Number(score.score))}%` }" />
+                  </div>
+                </div>
+                <span class="text-right tabular-nums">
+                  <span class="font-medium text-highlighted">{{ score.score ?? '-' }}%</span>
+                  <span v-if="score.weight" class="block text-[11px] text-muted">
+                    {{ score.weightScore }} of {{ score.weight }} pts</span>
+                </span>
+                <span class="w-16 text-right text-xs font-medium tabular-nums"
+                  :class="changeAt(row.scores, i) === null ? 'text-muted' : changeAt(row.scores, i)! > 0 ? 'text-success' : changeAt(row.scores, i)! < 0 ? 'text-error' : 'text-muted'">
+                  <template v-if="changeAt(row.scores, i) === null">-</template>
+                  <template v-else>{{ changeAt(row.scores, i)! > 0 ? '+' : '' }}{{ changeAt(row.scores, i) }} pts</template>
+                </span>
               </div>
-            </div>
+              <p v-if="spanOf(row.scores) !== null" class="border-t border-default/60 pt-2 text-xs text-muted">
+                First to latest:
+                <span class="font-semibold"
+                  :class="spanOf(row.scores)! > 0 ? 'text-success' : spanOf(row.scores)! < 0 ? 'text-error' : 'text-highlighted'">
+                  {{ spanOf(row.scores)! > 0 ? '+' : '' }}{{ spanOf(row.scores) }} pts</span>
+              </p>
+            </template>
+            <p v-else class="py-2 text-xs text-muted">
+              No approved assessments yet - {{ row.total }} still being marked or awaiting approval.</p>
           </div>
-          <p v-else class="py-2 text-center text-xs text-muted">No assessments yet for this subject.</p>
-        </template>
-      </UCard>
-    </div>
+        </li>
+      </ul>
+    </UCard>
 
     <div v-else-if="assessmentLoading" class="space-y-3">
       <USkeleton class="mx-1 h-4 w-32" />
@@ -319,22 +329,29 @@ onMounted(async () => {
 })
 
 const parseTrend: Record<string, any> = {
-  IMPROVED: {
-    icon: IMPROVED_ICON,
-    color: 'success',
-    label: 'Improved'
-  },
-  STABLE: {
-    icon: STABLE_ICON,
-    color: 'neutral',
-    label: 'Stable'
-  },
-  DROPPED: {
-    icon: DROPPED_ICON,
-    color: 'error',
-    label: 'Dropped'
-  }
+  IMPROVED: { icon: IMPROVED_ICON, text: 'text-success', label: 'Improved' },
+  STABLE: { icon: STABLE_ICON, text: 'text-muted', label: 'Steady' },
+  DROPPED: { icon: DROPPED_ICON, text: 'text-error', label: 'Dropped' }
 }
+
+// Highest first; subjects with nothing approved yet last.
+const sortedBreakdown = computed(() => [...breakdown.value].sort((a, b) => (b.score ?? -1) - (a.score ?? -1)))
+// Points gained or lost against the assessment before it; null for the first one or when a mark is missing.
+function changeAt(scores: any[], i: number): number | null {
+  const cur = scores[i]?.score
+  const prev = scores[i - 1]?.score
+  if (i === 0 || cur == null || prev == null) return null
+  return Math.round((Number(cur) - Number(prev)) * 10) / 10
+}
+
+// Overall movement from the first marked assessment to the latest one.
+function spanOf(scores: any[]): number | null {
+  const marked = scores.filter(x => x.score != null)
+  if (marked.length < 2) return null
+  return Math.round((Number(marked[marked.length - 1].score) - Number(marked[0].score)) * 10) / 10
+}
+
+const barOf = (score: number, passMark = 50) => score < passMark ? 'bg-error' : score < 70 ? 'bg-warning' : 'bg-success'
 
 // A local ready-flag, not studentStore.loading - that flag is shared with the term selector's
 // own "cycleLoading" state, and fetchRank() flips it too, so reusing it here would make the

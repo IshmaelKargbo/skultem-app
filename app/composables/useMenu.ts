@@ -84,6 +84,7 @@ export function useMenu() {
       ]
     },
     { label: 'Attendance', to: '/attendance', icon: ATTENDANCE_ICON, roles: [Role.PARENT] },
+    { label: 'Grades', to: '/grades', icon: GRADES_ICON, exact: true, roles: [Role.PARENT] },
 
     // A teacher's side of Grades & Exams: their grade entry, approval while they're a class master, and the
     // exam timetable (they invigilate and their classes sit the papers).
