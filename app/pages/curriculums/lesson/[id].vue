@@ -268,8 +268,9 @@ watch(
     if (!lessonId) return
 
     loading.value = true
+    let result: Awaited<ReturnType<typeof lessonStore.getLesson>> | undefined
     try {
-      const result = await lessonStore.getLesson(lessonId as string)
+      result = await lessonStore.getLesson(lessonId as string)
 
       if (result?.weekId)
         await weekStore.getWeek(result.weekId)

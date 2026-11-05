@@ -40,6 +40,7 @@ const { meta, records, loading: isLoading } = storeToRefs(store)
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const search = ref('')
+const receiptViewer = ref()
 
 const columns = [
     {
