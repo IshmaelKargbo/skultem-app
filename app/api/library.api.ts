@@ -37,9 +37,10 @@ export const LibraryApi = () => {
       }
     },
 
-    getSettings: async (): Promise<LibrarySettings> => {
+    // sectionId: one section's library (empty = the school's, or your own section if you only have one).
+    getSettings: async (sectionId?: string | null): Promise<LibrarySettings> => {
       try {
-        const res = await $api('/library/settings') as any
+        const res = await $api(`/library/settings?${query({ sectionId: sectionId || undefined })}`) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)
@@ -47,9 +48,13 @@ export const LibraryApi = () => {
       }
     },
     updateSettings: (payload: LibrarySettings) => send('/library/settings', 'PUT', payload),
-    borrowerStatus: async (type: BorrowerType, id: string): Promise<BorrowerStatus> => {
+    // The section goes back to the school's rules.
+    resetSettings: (sectionId: string) =>
+      send(`/library/settings?${query({ sectionId })}`, 'DELETE') as Promise<LibrarySettings | undefined>,
+    // With a book, that book's section library applies (its rules, its borrowers, its loan counts).
+    borrowerStatus: async (type: BorrowerType, id: string, bookId?: string): Promise<BorrowerStatus> => {
       try {
-        const res = await $api(`/library/borrowers/${type}/${id}/status`) as any
+        const res = await $api(`/library/borrowers/${type}/${id}/status?${query({ bookId })}`) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)

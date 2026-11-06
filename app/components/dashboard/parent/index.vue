@@ -42,7 +42,8 @@
                 <template #header>
                     <div class="flex items-center justify-between">
                         <p>Student Information</p>
-                        <UButton v-if="selected?.classId" :to="`/classes/${selected.classId}`" size="sm"
+                        <UButton v-if="selected?.classId"
+                            :to="`/classes/${selected.classId}${selected.sessionId ? `?session=${selected.sessionId}` : ''}`" size="sm"
                             variant="soft" color="neutral" label="View Class" :icon="CLASS_ICON" />
                     </div>
                 </template>
@@ -58,6 +59,12 @@
                     <div class="justify-between flex py-3.5">
                         <p class="text-muted">Total Students:</p>
                         <p>{{ selected.classSize }}</p>
+                    </div>
+                </div>
+                <div v-else class="divide-y divide-default">
+                    <div v-for="i in 3" :key="i" class="flex justify-between py-3.5">
+                        <USkeleton class="h-4 w-24" />
+                        <USkeleton class="h-4 w-32" />
                     </div>
                 </div>
             </UCard>

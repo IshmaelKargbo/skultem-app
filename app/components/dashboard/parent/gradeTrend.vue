@@ -1,10 +1,16 @@
 <template>
   <UCard>
     <div>
-      <div v-if="!isReady" class="skeleton-loader">
-        Loading Class Performance...
+      <ChartSkeleton v-if="!isReady" />
+      <div v-else-if="!chartSeries.length" class="flex h-[350px] flex-col items-center justify-center gap-2 text-center">
+        <UIcon name="lucide:bar-chart-3" class="size-8 text-muted" />
+        <p class="text-sm font-semibold text-highlighted">Grade Trend</p>
+        <p class="text-xs text-muted">No approved assessments yet.</p>
       </div>
       <client-only v-else>
+        <template #fallback>
+          <ChartSkeleton />
+        </template>
         <ChartScroll>
           <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
         </ChartScroll>
@@ -89,6 +95,7 @@ const chartOptions = computed(() => ({
 }))
 
 async function loadData() {
+  if (!id) return
   try {
     const payload = {
       entity: "assessments",
@@ -122,19 +129,21 @@ async function loadData() {
     const res = await store.runAnalytic(payload)
     const widget = res?.data ?? res
 
-    if (!widget?.labels || !widget?.datasets) return
-
-    labels.value = widget.labels
+    labels.value = widget?.labels ?? []
     colors.value = generateColors(labels.value.length)
 
-    chartSeries.value = widget.datasets.map((d: any) => ({
-      name: d.label,
-      data: d.data.map((v: number) => Math.round(v))
-    }))
-
-    isReady.value = true
+    chartSeries.value = labels.value.length
+      ? (widget?.datasets ?? []).map((d: any) => ({
+        name: d.label,
+        data: d.data.map((v: number) => Math.round(v))
+      }))
+      : []
   } catch (err) {
     console.error("Failed to load class performance", err)
+    chartSeries.value = []
+  } finally {
+    // Always leave the loading state, otherwise an empty or failed response spins forever.
+    isReady.value = true
   }
 }
 
@@ -147,29 +156,3 @@ watch(
   { immediate: true }
 )
 </script>
-
-<style scoped>
-.skeleton-loader {
-  height: 350px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6366f1;
-  font-weight: 500;
-  background: #f3f4f6;
-  border-radius: 0.5rem;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1
-  }
-
-  50% {
-    opacity: 0.4
-  }
-}
-</style>

@@ -7,22 +7,38 @@
           <p class="text-lg font-normal hidden md:block flex-1">
             Mark Attendance
             <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
+            <span v-if="twoRollCalls" class="text-muted"> · {{ rollName(state.roll) }} roll call</span>
           </p>
 
           <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
             <UFormField name="classId" class="w-full">
               <USelect v-model="state.classId" :items="classes" placeholder="Select class" class="w-full"
-                @change="fetchRecords" />
+                @change="onClassOrDateChange" />
             </UFormField>
 
             <UFormField name="date" class="w-full">
-              <UInput :max="today" v-model="state.date" type="date" class="w-full" @change="fetchRecords" />
+              <UInput :max="today" v-model="state.date" type="date" class="w-full" @change="onClassOrDateChange" />
             </UFormField>
           </div>
         </div>
       </template>
 
       <div>
+        <!-- Two roll calls a day: pick which one is being taken. -->
+        <div v-if="state.classId && twoRollCalls"
+          class="flex flex-col gap-2 border-b border-default px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="grid grid-cols-2 gap-1 rounded-lg bg-elevated p-1 sm:w-80">
+            <UButton v-for="n in [1, 2]" :key="n" size="sm" block :disabled="isLoading"
+              :color="state.roll === n ? 'primary' : 'neutral'" :variant="state.roll === n ? 'solid' : 'ghost'"
+              :icon="rollDone(n) ? 'lucide:check-circle' : undefined" :label="`${rollName(n)} roll call`"
+              @click="pickRoll(n)" />
+          </div>
+          <p class="flex items-start gap-1.5 text-xs text-muted">
+            <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
+            A student counts as present for the day only when present at both roll calls.
+          </p>
+        </div>
+
         <!-- Actions -->
         <div v-if="state.classId"
           class="flex space-x-3 border-b border-gray-200 py-4 dark:bg-gray-950 dark:border-gray-800 bg-gray-50/40 px-3">
@@ -46,6 +62,10 @@
               <div class="min-w-0">
                 <p class="text-sm font-medium truncate">{{ row.original.studentName }}</p>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ row.original.admissionNumber }}</p>
+                <UBadge v-if="twoRollCalls" size="sm" variant="soft" class="mt-0.5"
+                  :color="rollMarkColor(otherRollMark(row.original))">
+                  {{ rollName(otherRoll) }}: {{ rollMarkLabel(otherRollMark(row.original)) }}
+                </UBadge>
               </div>
             </div>
           </template>
@@ -108,10 +128,14 @@
             <div class="flex items-center space-x-2">
               <UAvatar :src="row.photo || '/avatar-placeholder.svg'" :alt="row.studentName" size="xl" loading="lazy"
                 class="ring-1 ring-gray-200 dark:ring-gray-700" />
-              <div>
+              <div class="min-w-0 flex-1">
                 <p class="text-sm font-medium">{{ row.studentName }}</p>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ row.admissionNumber }}</p>
               </div>
+              <UBadge v-if="twoRollCalls" size="sm" variant="soft" class="shrink-0"
+                :color="rollMarkColor(otherRollMark(row))">
+                {{ rollName(otherRoll) }}: {{ rollMarkLabel(otherRollMark(row)) }}
+              </UBadge>
             </div>
 
             <div class="flex space-x-2 mt-3">
@@ -155,7 +179,8 @@ const route = useRoute()
 const { error, success } = useNotify()
 const today = todayISO()
 
-const { report } = storeToRefs(store)
+const { report, rollCalls } = storeToRefs(store)
+const twoRollCalls = computed(() => rollCalls.value === 2)
 
 const isLoading = ref(true)
 const selectedClass = ref<ClassSession>()
@@ -170,6 +195,9 @@ type AttendanceRowRecord = {
   late: boolean
   excused: boolean
   reason: string
+  marked?: boolean
+  firstRoll?: RollMark | null
+  secondRoll?: RollMark | null
 }
 
 type AttendanceForm = {
@@ -177,14 +205,54 @@ type AttendanceForm = {
   records: AttendanceRowRecord[]
   date: string
   holiday: boolean
+  // Which roll call is being taken - only used when the class takes two a day.
+  roll: number
 }
 
 const state = reactive<AttendanceForm>({
   classId: '',
   date: todayISO(),
   records: [],
-  holiday: false
+  holiday: false,
+  roll: 1
 })
+
+// Set once the user (or the link) has chosen a roll call, so we stop picking one for them.
+const rollChosen = ref(false)
+
+const rollName = (n: number) => (n === 1 ? '1st' : '2nd')
+const otherRoll = computed(() => (state.roll === 1 ? 2 : 1))
+const otherRollMark = (r: AttendanceRowRecord) => (otherRoll.value === 1 ? r.firstRoll : r.secondRoll) ?? null
+
+function rollMarkLabel(m: RollMark | null) {
+  if (!m) return 'Not taken'
+  return { PRESENT: 'Present', LATE: 'Late', EXCUSED: 'Excused', ABSENT: 'Absent' }[m]
+}
+
+function rollMarkColor(m: RollMark | null) {
+  if (!m) return 'neutral' as const
+  return ({ PRESENT: 'success', LATE: 'warning', EXCUSED: 'secondary', ABSENT: 'error' } as const)[m]
+}
+
+// A roll call is done when every student has a mark for it.
+function rollDone(n: number) {
+  return state.records.length > 0
+    && state.records.every(r => (n === 1 ? r.firstRoll : r.secondRoll) != null)
+}
+
+async function pickRoll(n: number) {
+  if (state.roll === n) return
+  rollChosen.value = true
+  state.roll = n
+  await fetchRecords()
+}
+
+// A new class or day starts on the 1st roll call (or the 2nd, if the 1st is already done).
+function onClassOrDateChange() {
+  rollChosen.value = false
+  state.roll = 1
+  fetchRecords()
+}
 
 const classes = computed(() =>
   classStore.records.map((e: ClassSession) => {
@@ -205,7 +273,8 @@ function updateQuery() {
   router.replace({
     query: {
       class: state.classId,
-      date: state.date
+      date: state.date,
+      ...(twoRollCalls.value ? { roll: String(state.roll) } : {})
     }
   })
 }
@@ -304,8 +373,18 @@ async function fetchRecords() {
 
     state.records = await store.getSession(
       selectedClass.value.id,
-      state.date
+      state.date,
+      state.roll
     )
+
+    // Opening a day where the 1st roll call is finished and the 2nd isn't: go straight to the 2nd.
+    if (twoRollCalls.value && !rollChosen.value && state.roll === 1 && rollDone(1) && !rollDone(2)) {
+      rollChosen.value = true
+      state.roll = 2
+      updateQuery()
+      state.records = await store.getSession(selectedClass.value.id, state.date, state.roll)
+    }
+
     state.holiday = report.value.holiday
 
     await store.fetchAll(selectedClass.value.id)
@@ -355,10 +434,13 @@ async function onSubmit(event: FormSubmitEvent<AttendanceForm>) {
     await store.create(selectedClass.value.id, {
       date: state.date,
       records,
-      holiday: state.holiday
+      holiday: state.holiday,
+      ...(twoRollCalls.value ? { roll: state.roll } : {})
     })
 
-    success('Attendance saved successfully')
+    success(twoRollCalls.value
+      ? `${rollName(state.roll)} roll call saved`
+      : 'Attendance saved successfully')
 
     calculateReport(true)
     fetchRecords()
@@ -380,6 +462,12 @@ onMounted(async () => {
 
   state.date = (route.query.date as string) ||
     todayISO()
+
+  const queryRoll = Number(route.query.roll)
+  if (queryRoll === 1 || queryRoll === 2) {
+    state.roll = queryRoll
+    rollChosen.value = true
+  }
 
   if (state.classId) {
     await fetchRecords()

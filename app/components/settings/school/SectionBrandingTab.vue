@@ -162,6 +162,10 @@
                 <UInput v-model.number="forms[section.id]!.attendanceStreakDays" type="number" min="2" max="10"
                   :placeholder="String(schoolDefaults?.attendanceStreakDays ?? 3)" class="w-full" />
               </UFormField>
+              <UFormField label="Roll calls a day"
+                help="Two roll calls: a student counts as present only when present at both.">
+                <USelect v-model="forms[section.id]!.attendanceRollCalls" :items="rollCallItems" class="w-full" />
+              </UFormField>
             </div>
           </div>
         </div>
@@ -193,8 +197,14 @@
 // see and edit every section; a section-limited Admin sees only their own section(s) - the backend
 // (PUT /school/structure/sections/{id}/branding) enforces the same.
 const props = defineProps<{
-  schoolDefaults?: { logo?: string, principalName?: string, principalSignature?: string, phone?: string, gradeApprover?: string, attendanceThreshold?: number, attendanceWindowDays?: number, attendanceMinDays?: number, attendanceStreakDays?: number, address?: SectionAddress | null } | null
+  schoolDefaults?: { logo?: string, principalName?: string, principalSignature?: string, phone?: string, gradeApprover?: string, attendanceThreshold?: number, attendanceWindowDays?: number, attendanceMinDays?: number, attendanceStreakDays?: number, attendanceRollCalls?: number, address?: SectionAddress | null } | null
 }>()
+
+const rollCallItems = computed(() => [
+  { label: `Same as the school (${props.schoolDefaults?.attendanceRollCalls === 2 ? 'two' : 'one'})`, value: 'INHERIT' },
+  { label: 'One roll call', value: 1 },
+  { label: 'Two roll calls', value: 2 }
+])
 
 const gradeApproverOptions = [
   { label: 'Same as the school', value: 'INHERIT' },
@@ -236,6 +246,8 @@ type Form = {
   attendanceWindowDays: number | ''
   attendanceMinDays: number | ''
   attendanceStreakDays: number | ''
+  // 'INHERIT' = use the school's
+  attendanceRollCalls: 'INHERIT' | 1 | 2
   street: string
   city: string
   region: string
@@ -302,8 +314,8 @@ function attendanceSummary(id: string) {
   const f = forms[id]
   if (!f) return ''
   const set = [f.attendanceThreshold, f.attendanceWindowDays, f.attendanceMinDays, f.attendanceStreakDays]
-    .filter(v => v !== '' && v != null).length
-  return set ? `${set} of 4 set for this section` : 'Same as the school'
+    .filter(v => v !== '' && v != null).length + (f.attendanceRollCalls === 'INHERIT' ? 0 : 1)
+  return set ? `${set} of 5 set for this section` : 'Same as the school'
 }
 
 function isInherited(id: string, key: 'logo' | 'signature') {
@@ -323,6 +335,7 @@ function toForm(s: ManagementSectionView): Form {
     attendanceWindowDays: s.attendanceWindowDays ?? '',
     attendanceMinDays: s.attendanceMinDays ?? '',
     attendanceStreakDays: s.attendanceStreakDays ?? '',
+    attendanceRollCalls: s.attendanceRollCalls === 1 || s.attendanceRollCalls === 2 ? s.attendanceRollCalls : 'INHERIT',
     street: s.address?.street ?? '',
     city: s.address?.city ?? '',
     region: s.address?.region ?? '',
@@ -399,7 +412,8 @@ async function save(section: ManagementSectionView) {
       attendanceThreshold: orNull(form.attendanceThreshold),
       attendanceWindowDays: orNull(form.attendanceWindowDays),
       attendanceMinDays: orNull(form.attendanceMinDays),
-      attendanceStreakDays: orNull(form.attendanceStreakDays)
+      attendanceStreakDays: orNull(form.attendanceStreakDays),
+      attendanceRollCalls: form.attendanceRollCalls === 'INHERIT' ? null : form.attendanceRollCalls
     })
     if (!res) return
 

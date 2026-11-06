@@ -2,7 +2,6 @@
 import type { FilterField } from '~/components/filter/Drawer.vue'
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
-const router = useRouter()
 const store = useUserStore()
 const appStore = useAppStore()
 
@@ -110,7 +109,7 @@ async function fetchRecord() {
 }
 
 watch(page, () => {
-  router.replace({ query: { ...route.query, page: page.value } })
+  updateQuery({ page: page.value })
   fetchRecord()
 })
 
@@ -130,7 +129,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 
 onMounted(async () => {
   if (!route.query.page) {
-    router.replace({ query: { ...route.query, page: page.value } })
+    updateQuery({ page: page.value })
   }
 
   fetchRecord()
@@ -151,8 +150,7 @@ definePageMeta({
         <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div class="flex min-w-0 flex-1 items-center gap-2">
             <AuthUsersAdd />
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or email"
-              class="min-w-0 flex-1" />
+            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or email" class="min-w-0 flex-1" />
             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter users"
               description="Narrow the list by role or status" />
           </div>
@@ -179,7 +177,8 @@ definePageMeta({
               </p>
 
               <p class="text-sm text-gray-500">
-                {{ hasActiveFilters ? 'No user matches your search or filters.' : 'Users will appear here once created.' }}
+                {{ hasActiveFilters ? 'No user matches your search or filters.' : 'Users will appear here once created.'
+                }}
               </p>
             </div>
           </div>
@@ -261,8 +260,8 @@ definePageMeta({
             <div class="flex shrink-0 flex-col items-end gap-1.5">
               <UBadge size="sm" variant="soft" :label="parseStatus[statusOf(item)]"
                 :color="parseStatusColor[statusOf(item)]" />
-              <UButton :to="`/auth/${item.id}`" icon="i-lucide-chevron-right" color="neutral" variant="ghost"
-                size="sm" aria-label="View user" />
+              <UButton :to="`/auth/${item.id}`" icon="i-lucide-chevron-right" color="neutral" variant="ghost" size="sm"
+                aria-label="View user" />
             </div>
           </div>
         </template>
@@ -293,8 +292,8 @@ definePageMeta({
         </template>
 
         <div class="hidden md:block" v-else-if="filtered.length">
-          <div v-for="item in filtered" :key="item.id"
-            class="overflow-hidden rounded-2xl border border-default" :ui="{ body: 'p-0 sm:p-0' }">
+          <div v-for="item in filtered" :key="item.id" class="overflow-hidden rounded-2xl border border-default"
+            :ui="{ body: 'p-0 sm:p-0' }">
             <div class="space-y-4 p-5">
               <div class="flex items-start gap-3">
                 <UAvatar :alt="fullName(item)" size="xl" class="shrink-0" />

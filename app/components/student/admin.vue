@@ -68,10 +68,24 @@ const attendanceRowOf = (s: Student) => attendanceById.value.get(s.id)
 const attendanceOf = (s: Student) => attendanceRowOf(s)?.percentage ?? undefined
 const performanceOf = (s: Student) => performanceByName.value[fullName(s)]
 
+const feeDiscountOf = (s: Student) => Number(s.feeDetail?.discount || 0)
+
+// Progress against what the student actually owes (total minus any discount), so a 100% discount
+// shows a full bar, same as the fee card.
 function feePaidPercent(s: Student) {
   const f = s.feeDetail
   if (!f || !Number(f.total)) return 0
-  return Math.min(100, Math.round((Number(f.paid) / Number(f.total)) * 100))
+  const payable = Number(f.total) - feeDiscountOf(s)
+  if (payable <= 0) return 100
+  return Math.min(100, Math.round((Number(f.paid) / payable) * 100))
+}
+
+function feeDiscountLabel(s: Student) {
+  const total = Number(s.feeDetail?.total || 0)
+  const discount = feeDiscountOf(s)
+  if (discount <= 0) return ''
+  if (total > 0 && discount >= total) return '100% discount'
+  return `${format(discount)} discount`
 }
 
 // School-wide figures, the same way the class page works them out (matched on student name).
@@ -302,6 +316,10 @@ onMounted(async () => {
                 <div class="h-full rounded-full" :class="row.original.feeDetail.status === 'Overdue' ? 'bg-error' : 'bg-success'"
                   :style="{ width: `${feePaidPercent(row.original)}%` }" />
               </div>
+              <p v-if="feeDiscountLabel(row.original)" class="mt-0.5 flex items-center gap-1 truncate text-[11px] text-muted">
+                <UIcon name="lucide:tag" class="size-3 shrink-0 text-info" />
+                {{ feeDiscountLabel(row.original) }}
+              </p>
             </div>
             <UBadge v-else size="sm" variant="subtle" :label="row.original.feeDetail.status"
               :color="parseFeeStatusColor[row.original.feeDetail.status] || 'neutral'" />

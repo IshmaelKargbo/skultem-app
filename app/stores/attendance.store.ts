@@ -6,6 +6,8 @@ export const useAttendanceStore = defineStore('attendance', {
     meta: {} as Meta,
     loading: false,
     report: {} as AttendanceReport,
+    // Roll calls a day for the class last loaded with getSession (1, or 2 for morning + afternoon).
+    rollCalls: 1,
     error: null as string | null,
 
     dailyRegister: null as DailyAttendanceRegister | null,
@@ -66,8 +68,9 @@ export const useAttendanceStore = defineStore('attendance', {
         totalPages: 0
       };
     },
-    async getSession(id: string, date: string) {
-      const { data } = await AttendanceApi().getSession(id, date) as any
+    async getSession(id: string, date: string, roll?: number) {
+      const { data } = await AttendanceApi().getSession(id, date, roll) as any
+      this.rollCalls = data.rollCalls === 2 ? 2 : 1
       const rate = (data.presentCount + data.lateCount) / data.markedCount * 100
 
       this.report = {

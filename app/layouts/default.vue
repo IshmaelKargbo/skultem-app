@@ -47,7 +47,7 @@ watch(
         ref="scrollContainer"
         class="min-h-0 flex-1 md:mt-1 overflow-y-auto overflow-x-hidden print:mt-0 print:overflow-visible"
       >
-        <div class="pb-28 pt-22 md:pt-24 xl:pb-10 print:p-0">
+        <div class="pb-22 pt-22 md:pt-24 xl:pb-10 print:p-0">
           <!-- In the flow, so it sits above the page and moves it down instead of covering it -->
           <PlaygroundBanner class="print:hidden" />
           <slot />

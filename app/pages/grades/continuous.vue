@@ -1,19 +1,5 @@
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <Heading :title="assessment ? `${assessment.name} - Continuous Assessment` : 'Continuous Assessment'"
-      :subtitle="subtitle">
-      <div v-if="structure" class="flex flex-wrap items-center gap-2">
-        <UButton icon="lucide:circle-help" label="How it works" color="neutral" variant="ghost" @click="helpOpen = true" />
-        <UButton icon="lucide:chart-no-axes-combined" label="Class insight" color="neutral" variant="subtle"
-          @click="insightOpen = true" />
-        <UButton icon="lucide:calendar-check" color="neutral" variant="subtle"
-          :label="`${caPartsNoun(structure).plural} (${lockedCount}/${structure.caEntries} locked)`"
-          @click="weeksOpen = true" />
-        <UButton to="/grades" icon="lucide:arrow-left" label="Back" color="neutral" variant="subtle" />
-      </div>
-      <UButton v-else to="/grades" icon="lucide:arrow-left" label="Back to grades" color="neutral" variant="subtle" />
-    </Heading>
-
     <UCard v-if="loading">
       <USkeleton class="h-40 w-full" />
     </UCard>
@@ -46,55 +32,92 @@
       </UCard>
 
       <!-- Phone: one card per student. -->
-      <div class="space-y-3 md:hidden">
-        <div v-for="row in rows" :key="row.id" class="rounded-xl border border-default p-3">
-          <div class="mb-3 flex items-center justify-between gap-2">
-            <button type="button" class="flex min-w-0 items-center gap-2.5 text-left" @click="detailId = row.id">
-              <UAvatar :src="row.photo" :alt="row.name" size="lg" class="shrink-0 bg-white ring-1 ring-default" />
-              <span class="min-w-0">
+      <div class="space-y-2 md:hidden">
+        <div class="flex items-center justify-between px-1">
+          <p class="text-xs text-muted">{{ rows.length }} students · tap a name to enter marks</p>
+          <UButton size="xs" color="neutral" variant="ghost"
+            :icon="allRowsOpen ? 'lucide:chevrons-down-up' : 'lucide:chevrons-up-down'"
+            :label="allRowsOpen ? 'Collapse all' : 'Expand all'" @click="toggleAllRows" />
+        </div>
+
+        <div v-for="row in rows" :key="row.id" class="overflow-hidden rounded-xl border bg-white transition-colors"
+          :class="isRowOpen(row.id) ? 'border-primary/40 shadow-sm' : 'border-default'">
+          <!-- Header: always visible, tap to open/close. -->
+          <button type="button" class="flex w-full items-center gap-2.5 p-3 text-left" :aria-expanded="isRowOpen(row.id)"
+            @click="toggleRow(row.id)">
+            <UAvatar :src="row.photo" :alt="row.name" size="md" class="shrink-0 bg-white ring-1 ring-default" />
+            <span class="min-w-0 flex-1">
               <p class="truncate text-sm font-semibold text-highlighted">{{ row.name }}</p>
-              <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
-                CA {{ preview(row).ca ?? '-' }}<span v-if="preview(row).ca !== null">%</span>
+              <p class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                <span>CA {{ preview(row).ca ?? '-' }}<span v-if="preview(row).ca !== null">%</span></span>
                 <UBadge v-if="strengthOf(preview(row).ca)" :color="strengthOf(preview(row).ca)!.color" variant="soft"
                   size="sm">{{ strengthOf(preview(row).ca)!.label }}</UBadge>
+                <span v-if="filledCount(row.id) < structure.caEntries" class="text-warning">
+                  {{ filledCount(row.id) }}/{{ structure.caEntries }} entered
+                </span>
               </p>
-              </span>
-            </button>
-            <div class="shrink-0 rounded-xl border border-default bg-elevated/40 px-3 py-1 text-center">
+            </span>
+            <span class="shrink-0 text-right">
               <p class="text-[10px] uppercase tracking-wide text-muted">Score</p>
-              <p class="text-lg font-bold text-primary">{{ preview(row).total }}</p>
-            </div>
-          </div>
+              <p class="text-base font-bold leading-tight text-primary">{{ preview(row).total }}</p>
+            </span>
+            <UIcon name="lucide:chevron-down" class="size-4 shrink-0 text-muted transition-transform duration-200"
+              :class="{ 'rotate-180': isRowOpen(row.id) }" />
+          </button>
 
-          <div class="grid grid-cols-3 gap-2">
-            <div v-for="n in structure.caEntries" :key="n">
-              <p class="mb-1 flex items-center gap-1 text-[11px] text-muted">
-                <UIcon v-if="isLocked(n)" name="lucide:lock" class="size-3 text-success" />
-                {{ caPartLabel(structure, n) }}
-                <span v-if="structure.caComponents?.length">({{ structure.caComponents[n - 1]?.weight }}%)</span>
-                <UBadge v-if="caPartIsAuto(structure, n)" size="sm" variant="subtle" color="info">from register</UBadge>
-              </p>
-              <UInput v-if="caEditable && !isLocked(n) && !caPartIsAuto(structure, n)"
-                v-model.number="form[row.id]!.entries[n - 1]" type="number"
-                min="0" max="100" :ui="{ base: 'text-base' }" @update:model-value="clamp(row.id, n - 1)" />
-              <p v-else class="rounded-lg bg-elevated/40 px-3 py-2 text-base">{{ form[row.id]?.entries[n - 1] ?? '-' }}</p>
-              <p v-if="structure.caComponents?.length" class="mt-0.5 text-[11px] text-muted">
-                ({{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }})
-              </p>
-            </div>
-          </div>
+          <!-- Body: one row per mark, label on the left and the input on the right. -->
+          <div v-if="isRowOpen(row.id)" class="border-t border-default bg-elevated/20 px-3 pb-3">
+            <div class="divide-y divide-default">
+              <div v-for="n in structure.caEntries" :key="n" class="flex items-center justify-between gap-3 py-2">
+                <div class="min-w-0">
+                  <p class="flex items-center gap-1 text-sm text-highlighted">
+                    <UIcon v-if="isLocked(n)" name="lucide:lock" class="size-3 shrink-0 text-success" />
+                    <span class="truncate">{{ caPartLabel(structure, n) }}</span>
+                  </p>
+                  <p class="flex flex-wrap items-center gap-1 text-[11px] text-muted">
+                    <span v-if="byWeight">out of {{ fmt(outOf(n)) }}</span>
+                    <span v-else-if="structure.caComponents?.length">
+                      {{ structure.caComponents[n - 1]?.weight }}% ·
+                      {{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }}
+                    </span>
+                    <span v-else>out of 100</span>
+                    <UBadge v-if="caPartIsAuto(structure, n)" size="sm" variant="subtle" color="info">register</UBadge>
+                  </p>
+                </div>
+                <UInput v-if="caEditable && !isLocked(n) && !caPartIsAuto(structure, n)"
+                  v-model.number="typed[row.id]![n - 1]" type="number" inputmode="decimal" min="0" :max="outOf(n)"
+                  :step="byWeight ? 'any' : 1" class="w-24 shrink-0" :ui="{ base: 'text-base text-right' }"
+                  @update:model-value="setEntry(row.id, n)" />
+                <span v-else class="w-24 shrink-0 rounded-lg bg-elevated/60 px-3 py-1.5 text-right text-base">
+                  {{ shownEntry(row.id, n) }}
+                </span>
+              </div>
 
-          <div class="mt-3 border-t border-dashed border-default pt-3">
-            <p class="mb-1 text-[11px] text-muted">{{ caFormalName(structure) }} (0-100)</p>
-            <UInput v-if="formalEditable" v-model.number="form[row.id]!.formal" type="number" min="0" max="100"
-              :ui="{ base: 'text-base' }" @update:model-value="clampFormal(row.id)" />
-            <p v-else-if="!caSubmitted && !monitorOnly" class="inline-flex items-center gap-1 text-xs text-muted">
-              <UIcon name="lucide:lock" /> Opens after the CA is submitted
-            </p>
-            <p v-else class="rounded-lg bg-elevated/40 px-3 py-2 text-base">{{ form[row.id]?.formal ?? '-' }}</p>
-            <p v-if="!monitorOnly && (caSubmitted || formalEditable)" class="mt-0.5 text-[11px] text-muted">
-              ({{ fmt(preview(row).formalPts) }}/{{ structure.formalPercentage }})
-            </p>
+              <div class="flex items-center justify-between gap-3 pt-3">
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-highlighted">{{ caFormalName(structure) }}</p>
+                  <p class="text-[11px] text-muted">
+                    out of 100
+                    <span v-if="!monitorOnly && (caSubmitted || formalEditable)">
+                      · {{ fmt(preview(row).formalPts) }}/{{ structure.formalPercentage }}
+                    </span>
+                  </p>
+                </div>
+                <UInput v-if="formalEditable" v-model.number="form[row.id]!.formal" type="number" inputmode="decimal"
+                  min="0" max="100" class="w-24 shrink-0" :ui="{ base: 'text-base text-right' }"
+                  @update:model-value="clampFormal(row.id)" />
+                <span v-else-if="!caSubmitted && !monitorOnly"
+                  class="inline-flex shrink-0 items-center gap-1 text-xs text-muted">
+                  <UIcon name="lucide:lock" /> After CA
+                </span>
+                <span v-else class="w-24 shrink-0 rounded-lg bg-elevated/60 px-3 py-1.5 text-right text-base">
+                  {{ form[row.id]?.formal ?? '-' }}
+                </span>
+              </div>
+            </div>
+
+            <UButton class="mt-3" block size="sm" color="neutral" variant="subtle" icon="lucide:chart-line"
+              label="View breakdown" @click="detailId = row.id" />
           </div>
         </div>
       </div>
@@ -110,7 +133,8 @@
                   <span class="flex items-center gap-1 whitespace-nowrap">
                     <UIcon v-if="isLocked(n)" name="lucide:lock" class="text-success" />
                     {{ caPartLabel(structure, n) }}
-                    <span v-if="structure.caComponents?.length" class="text-[10px] normal-case text-muted">{{ structure.caComponents[n - 1]?.weight }}%</span>
+                    <span v-if="byWeight" class="text-[10px] normal-case text-muted">/{{ fmt(outOf(n)) }}</span>
+                    <span v-else-if="structure.caComponents?.length" class="text-[10px] normal-case text-muted">{{ structure.caComponents[n - 1]?.weight }}%</span>
                     <UBadge v-if="caPartIsAuto(structure, n)" size="sm" variant="subtle" color="info">register</UBadge>
                   </span>
                 </th>
@@ -131,11 +155,12 @@
                 </td>
                 <td v-for="n in structure.caEntries" :key="n" class="px-1 py-2 whitespace-nowrap">
                   <UInput v-if="caEditable && !isLocked(n) && !caPartIsAuto(structure, n)"
-                    v-model.number="form[row.id]!.entries[n - 1]" type="number"
-                    min="0" max="100" class="w-20 align-middle" :ui="{ base: 'text-base' }" @update:model-value="clamp(row.id, n - 1)" />
-                  <span v-else class="px-2">{{ form[row.id]?.entries[n - 1] ?? '-' }}</span>
-                  <!-- The mark out of 100, then what it is worth: 100 on a 10% part = 100 (10/10) -->
-                  <span v-if="structure.caComponents?.length" class="text-xs text-muted">({{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }})</span>
+                    v-model.number="typed[row.id]![n - 1]" type="number" min="0" :max="outOf(n)" :step="byWeight ? 'any' : 1"
+                    class="w-20 align-middle" :ui="{ base: 'text-base' }" @update:model-value="setEntry(row.id, n)" />
+                  <span v-else class="px-2">{{ shownEntry(row.id, n) }}</span>
+                  <!-- The mark out of 100, then what it is worth: 100 on a 10% part = 100 (10/10). When marks are
+                       already typed out of the part's weight, the mark is the points, so this is left out. -->
+                  <span v-if="structure.caComponents?.length && !byWeight" class="text-xs text-muted">({{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }})</span>
                 </td>
                 <td class="px-3 py-2">
                   <span class="font-medium">{{ preview(row).ca ?? '-' }}</span>
@@ -166,11 +191,11 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-xs text-muted">{{ hint }}</p>
           <div class="grid grid-cols-2 gap-2 sm:flex">
-            <UButton icon="lucide:save" label="Save" color="neutral" variant="subtle" :loading="saving"
+            <UButton class="flex justify-center" icon="lucide:save" label="Save" color="neutral" variant="subtle" :loading="saving"
               :disabled="busy" @click="save(true)" />
-            <UButton v-if="!caSubmitted && !monitorOnly" icon="lucide:send" label="Submit CA" :loading="submittingCa"
+            <UButton class="flex justify-center" v-if="!caSubmitted && !monitorOnly" icon="lucide:send" label="Submit CA" :loading="submittingCa"
               :disabled="busy || missingCa > 0" @click="submitCa" />
-            <UButton v-else icon="lucide:check-circle" label="Submit for approval" color="success"
+            <UButton class="flex justify-center" v-else icon="lucide:check-circle" label="Submit for approval" color="success"
               :loading="submitting" :disabled="busy || !allFormalIn" @click="submitForApproval" />
           </div>
         </div>
@@ -199,7 +224,9 @@
             <div>
               <p class="font-medium text-highlighted">Step 1 · CA recordings ({{ structure.caPercentage }}%)</p>
               <p class="mt-0.5 text-muted">
-                Record {{ structure.caEntries }} {{ caPartsNoun(structure).plural.toLowerCase() }} for every student.
+                Record {{ structure.caEntries }} {{ caPartsNoun(structure).plural.toLowerCase() }} for every student,
+                <template v-if="byWeight">each marked out of what it is worth (on a {{ fmt(outOf(1)) }}% {{ caPartsNoun(structure).singular.toLowerCase() }}, enter 0 to {{ fmt(outOf(1)) }})</template>
+                <template v-else>each marked out of 100</template>.
                 Lock each one once everyone has a mark, then submit the CA - that closes the rest.
               </p>
             </div>
@@ -279,7 +306,8 @@
             <div class="flex flex-wrap gap-2">
               <span v-for="n in structure.caEntries" :key="n" class="rounded-lg border border-default px-2.5 py-1 text-xs">
                 <span class="text-muted">{{ caPartLabel(structure, n) }}:</span>
-                <span class="ml-1 font-medium text-highlighted">{{ form[detailRow.id]?.entries[n - 1] ?? '-' }}</span>
+                <span class="ml-1 font-medium text-highlighted">{{ shownEntry(detailRow.id, n) }}</span>
+                <span v-if="byWeight" class="text-muted">/{{ fmt(outOf(n)) }}</span>
               </span>
             </div>
           </div>
@@ -352,6 +380,25 @@ const helpOpen = ref(false)
 const weeksOpen = ref(false)
 const insightOpen = ref(false)
 const detailId = ref('')
+
+// Phone view: each student card starts closed; the teacher opens one to enter marks.
+const openRows = ref<Set<string>>(new Set())
+const isRowOpen = (id: string) => openRows.value.has(id)
+function toggleRow(id: string) {
+  const next = new Set(openRows.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  openRows.value = next
+}
+const allRowsOpen = computed(() => rows.value.length > 0 && rows.value.every(r => openRows.value.has(r.id)))
+function toggleAllRows() {
+  openRows.value = allRowsOpen.value ? new Set() : new Set(rows.value.map(r => r.id))
+}
+// How many CA parts this student has a mark for, shown on the closed card.
+function filledCount(rowId: string) {
+  return form[rowId]?.entries.filter(e => e != null).length ?? 0
+}
+
 const detailOpen = computed({
   get: () => !!detailId.value,
   set: (v: boolean) => { if (!v) detailId.value = '' }
@@ -362,6 +409,9 @@ const assessment = ref<Assessment | null>(null)
 
 type RowForm = { entries: (number | null)[], formal: number | null }
 const form = reactive<Record<string, RowForm>>({})
+// What the teacher has typed in each CA box, in their school's scale (out of 100, or out of the recording's weight).
+// form keeps the 0-100 mark the server stores; this only exists so "1.5" out of 3 isn't rewritten mid-typing.
+const typed = reactive<Record<string, (number | undefined)[]>>({})
 
 const structure = computed(() => continuousOf(rows.value, assessmentId.value))
 const caSubmitted = computed(() => !!structure.value?.caSubmitted)
@@ -399,6 +449,7 @@ function scoreOf(row: StudentAssessment) {
 
 function resetForm() {
   for (const k of Object.keys(form)) delete form[k]
+  for (const k of Object.keys(typed)) delete typed[k]
   const s = structure.value
   if (!s) return
   for (const row of rows.value) {
@@ -407,6 +458,7 @@ function resetForm() {
       entries: Array.from({ length: s.caEntries }, (_, i) => c?.caEntryScores?.[i] ?? null),
       formal: c?.formalScore ?? null
     }
+    typed[row.id] = form[row.id]!.entries.map((v, i) => caEntryFromStored(v, outOf(i + 1)) ?? undefined)
   }
 }
 
@@ -438,14 +490,32 @@ async function load(sync = true) {
   }
 }
 
+// The school marks CA out of each recording's weight (2 on a 3% week) instead of out of 100.
+const byWeight = computed(() => structure.value?.caScoreScale === 'WEIGHT')
+function outOf(n: number) {
+  return caEntryOutOf(structure.value, n)
+}
+// A recorded mark as the teacher reads it: 67 -> "2" on a 3% week when marking by weight.
+function shownEntry(rowId: string, n: number) {
+  return fmt(caEntryFromStored(form[rowId]?.entries[n - 1], outOf(n)))
+}
+// Stores what was typed as a 0-100 mark. Out of range is pulled back to the limit; out of 100 it is also rounded,
+// as before.
+function setEntry(rowId: string, n: number) {
+  const f = form[rowId], t = typed[rowId]
+  if (!f || !t) return
+  const max = outOf(n), v = t[n - 1]
+  f.entries[n - 1] = caEntryToStored(v, max)
+  if (v === null || v === undefined || (v as unknown) === '') t[n - 1] = undefined
+  else if (max === 100) t[n - 1] = f.entries[n - 1] ?? undefined
+  else if (Number(v) > max) t[n - 1] = max
+  else if (Number(v) < 0) t[n - 1] = 0
+}
+
 function clampTo(v: unknown): number | null {
   if (v === '' || v === null || v === undefined) return null
   const n = Number(v)
   return Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n))) : null
-}
-function clamp(rowId: string, i: number) {
-  const f = form[rowId]
-  if (f) f.entries[i] = clampTo(f.entries[i])
 }
 function clampFormal(rowId: string) {
   const f = form[rowId]
@@ -622,6 +692,7 @@ async function submitForApproval() {
 
 onMounted(() => {
   useAppStore().setTitle('Continuous Assessment')
+  useAppStore().setBack('/grades')
   document.title = 'Continuous Assessment | Grades | Skultem'
   load()
 })

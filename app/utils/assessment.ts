@@ -143,6 +143,9 @@ export type AssessmentStructure = "SIMPLE" | "CA_AND_TEST"
 // late over the term's school days) and read-only.
 export type CaComponent = { name: string, weight: number, source?: 'MANUAL' | 'ATTENDANCE' }
 export type CaFrequency = "DAILY" | "WEEKLY" | "MID_WEEK" | "CUSTOM"
+// What a teacher types a CA recording out of: 100 (default), or the recording's own weight (2 on a 3% week).
+// The stored mark is always 0-100 either way.
+export type CaScoreScale = "PERCENT" | "WEIGHT"
 
 // What one student's CA assessment was opened with (frozen - later configuration changes don't touch it)
 // and what has been recorded so far.
@@ -168,6 +171,7 @@ export type ContinuousBreakdown = {
     formalLabel?: string | null
     // Recordings an administrator unlocked after they were locked - they may have been changed after closing.
     unlockedWeeks?: number[]
+    caScoreScale?: CaScoreScale
 }
 
 export type AssessmentConfiguration = {
@@ -192,6 +196,7 @@ export type AssessmentConfiguration = {
     formalLabel: string | null
     // Set when this is an assessment template's own configuration.
     assessmentTemplateId?: string | null
+    caScoreScale?: CaScoreScale
 }
 
 export type AssessmentPlanItem = {
@@ -215,6 +220,8 @@ export type SaveAssessmentConfigurationDto = {
     formalLabel?: string | null
     // Also move assessments nobody has graded yet onto the new setup (default true).
     applyToUnstarted?: boolean
+    // Omitted = keep the current setting.
+    caScoreScale?: CaScoreScale
 }
 
 export type SaveAssessmentConfigurationResponse = {
@@ -292,6 +299,39 @@ export function caPartIsAuto(c: { caComponents?: CaComponent[] } | null | undefi
 
 export function caFormalName(c?: { formalLabel?: string | null } | null) {
     return c?.formalLabel || 'Formal test'
+}
+
+type CaScaled = { caPercentage: number, caEntries: number, caComponents?: CaComponent[], caScoreScale?: CaScoreScale }
+
+// What recording n is worth, as a share of the whole assessment: its part's weight, else the CA split evenly
+// (30% over 10 weeks = 3% a week).
+export function caRecordingWeight(c: CaScaled, n: number) {
+    const part = c.caComponents?.[n - 1]
+    if (part) return part.weight
+    return c.caEntries ? c.caPercentage / c.caEntries : 0
+}
+
+// What the teacher types recording n out of: 100, or its weight when the school marks CA that way. A recording
+// worth nothing (CA only monitored) stays out of 100.
+export function caEntryOutOf(c: CaScaled | null | undefined, n: number) {
+    if (!c || c.caScoreScale !== 'WEIGHT') return 100
+    const w = caRecordingWeight(c, n)
+    return w > 0 ? w : 100
+}
+
+// 2 out of 3 -> 67 (stored). Out of range is clamped; empty stays empty.
+export function caEntryToStored(typed: unknown, outOf: number): number | null {
+    if (typed === '' || typed === null || typed === undefined) return null
+    const n = Number(typed)
+    if (!Number.isFinite(n)) return null
+    const clamped = Math.min(outOf, Math.max(0, n))
+    return Math.round(clamped / outOf * 100)
+}
+
+// 67 (stored) -> 2 out of 3. One decimal at most, so a typed 2 comes back as 2.
+export function caEntryFromStored(stored: number | null | undefined, outOf: number): number | null {
+    if (stored === null || stored === undefined || Number.isNaN(stored)) return null
+    return outOf === 100 ? stored : Math.round(stored * outOf / 100 * 10) / 10
 }
 
 export function caWeights(c?: { caComponents?: CaComponent[] } | null) {

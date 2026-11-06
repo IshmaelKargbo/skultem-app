@@ -38,7 +38,7 @@ export const SchoolApi = () => {
         useHandleError(err)
       }
     },
-    update: async (payload: { name: string, domain: string, region: string, district: string, chiefdom: string, city: string, street: string, attendanceThreshold?: number, attendanceWindowDays?: number, attendanceMinDays?: number, attendanceStreakDays?: number, gradeApprover?: string, genderComposition?: string, roundAssessmentScores?: boolean }) => {
+    update: async (payload: { name: string, domain: string, region: string, district: string, chiefdom: string, city: string, street: string, attendanceThreshold?: number, attendanceWindowDays?: number, attendanceMinDays?: number, attendanceStreakDays?: number, attendanceRollCalls?: number, gradeApprover?: string, genderComposition?: string, roundAssessmentScores?: boolean }) => {
       try {
         const res = await $api('/school', {
           method: 'PUT',
@@ -126,6 +126,7 @@ export const SchoolApi = () => {
       attendanceWindowDays: number | null
       attendanceMinDays: number | null
       attendanceStreakDays: number | null
+      attendanceRollCalls: number | null
     }) => {
       try {
         const res = await $api(`/school/structure/sections/${sectionId}/attendance-rules`, {

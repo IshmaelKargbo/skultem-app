@@ -58,6 +58,19 @@
       </div>
     </div>
 
+    <!-- How teachers type each CA mark. Only changes data entry: every mark is still kept out of 100. -->
+    <div v-if="rows.some(r => r.usesCa)" class="space-y-2 rounded-2xl border border-default p-3 sm:p-4">
+      <div>
+        <p class="font-medium text-highlighted">How do teachers enter CA marks?</p>
+        <p class="mt-0.5 text-xs text-muted">
+          This only changes what teachers type. Scores, averages and report cards come out the same either way, and it
+          applies straight away, including to tests already being marked.
+        </p>
+      </div>
+      <URadioGroup v-model="scoreScale" :items="scaleOptions" variant="card" orientation="horizontal"
+        :disabled="disabled" :ui="{ fieldset: 'grid gap-2 sm:grid-cols-2', item: 'w-full' }" />
+    </div>
+
     <UAlert v-if="problem" color="warning" variant="subtle" icon="lucide:alert-triangle" :description="problem" />
   </div>
 </template>
@@ -111,11 +124,30 @@ function syncRows() {
 syncRows()
 watch(tests, syncRows)
 
+// Out of 100 unless the school says otherwise.
+const scoreScale = ref<CaScoreScale>(props.config.caScoreScale ?? 'PERCENT')
+
+// A real part from this template makes the choice concrete: "Assignment is 20% - a teacher enters 15 out of 20".
+const examplePart = computed(() => rows.find(r => r.usesCa)?.parts.find(p => p.source !== 'ATTENDANCE' && Number(p.weight) > 0))
+const scaleOptions = computed(() => {
+  const part = examplePart.value
+  const w = part ? Number(part.weight) : 20
+  const name = part?.name?.trim() || 'Assignment'
+  return [
+    { value: 'PERCENT', label: 'Out of 100', description: `Every mark is out of 100, whatever the part is worth. ${name} (${w}%): a teacher enters 75.` },
+    { value: 'WEIGHT', label: "Out of each part's weight", description: `Each mark is out of what the part is worth. ${name} (${w}%): a teacher enters ${Math.round(w * 0.75 * 10) / 10} out of ${w}.` }
+  ]
+})
+
 const initialKey = ref('')
-const snapshot = () => JSON.stringify(rows.filter(r => r.usesCa).map(r => [r.name.toLowerCase(), cleanParts(r.parts), r.formalLabel.trim()]))
+const snapshot = () => JSON.stringify([scoreScale.value, rows.filter(r => r.usesCa).map(r => [r.name.toLowerCase(), cleanParts(r.parts), r.formalLabel.trim()])])
 initialKey.value = snapshot()
 // Re-read when a different saved setup is handed in (after a save).
-watch(() => props.config, () => { rows.splice(0, rows.length); syncRows(); initialKey.value = snapshot() })
+watch(() => props.config, () => {
+  rows.splice(0, rows.length); syncRows()
+  scoreScale.value = props.config.caScoreScale ?? 'PERCENT'
+  initialKey.value = snapshot()
+})
 
 // The earlier setup: CA on every test with equal recordings - it has no per-test parts.
 const legacy = computed(() => props.config.structure === 'CA_AND_TEST' && !rows.some(r => r.usesCa)
@@ -149,7 +181,7 @@ const dirty = computed(() => snapshot() !== initialKey.value)
 // every test it doesn't list stays a single score.
 const payload = computed<SaveAssessmentConfigurationDto>(() => {
   const ca = rows.filter(r => r.usesCa)
-  if (!ca.length) return { structure: 'SIMPLE', applyToUnstarted: true }
+  if (!ca.length) return { structure: 'SIMPLE', applyToUnstarted: true, caScoreScale: scoreScale.value }
   return {
     structure: 'CA_AND_TEST',
     caPercentage: 30,
@@ -166,7 +198,8 @@ const payload = computed<SaveAssessmentConfigurationDto>(() => {
       caComponents: cleanParts(r.parts),
       formalLabel: r.formalLabel.trim() || null
     })),
-    applyToUnstarted: true
+    applyToUnstarted: true,
+    caScoreScale: scoreScale.value
   }
 })
 
@@ -176,7 +209,7 @@ const chips = computed(() => {
     style: ca.length ? 'Continuous assessment' : 'Simple assessment',
     counts: ca.length ? `CA on ${ca.map(r => r.name).join(', ')}` : '',
     recordings: ca.length ? `${rows.length - ca.length} single-score test${rows.length - ca.length === 1 ? '' : 's'}` : '',
-    custom: ''
+    custom: ca.length && scoreScale.value === 'WEIGHT' ? "Marks out of each part's weight" : ''
   }
 })
 

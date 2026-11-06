@@ -60,6 +60,10 @@ export type LibrarySettings = {
     maxTeacherLoans: number
     blockWhenOverdue: boolean
     defaultLoanDays: number
+    // Whose rules these are: null = the school's, otherwise one section's library.
+    sectionId?: string | null
+    // False when the section has no rules of its own yet and uses the school's.
+    ownRules?: boolean
 }
 
 // Where a borrower stands before a new loan; reason is set when canBorrow is false.

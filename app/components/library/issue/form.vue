@@ -16,10 +16,12 @@ function tomorrow() {
   return date.toISOString().slice(0, 10)
 }
 
-// Starts from the school's loan period (Library Settings), 14 days until that has loaded.
+// The loan period of the picked book's library (its section's rules, or the school's), 14 days until loaded.
+const loanDays = ref<number | null>(null)
+
 function defaultDueDate() {
   const date = new Date()
-  date.setDate(date.getDate() + (store.settings?.defaultLoanDays ?? 14))
+  date.setDate(date.getDate() + (loanDays.value ?? 14))
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
   return date.toISOString().slice(0, 10)
 }
@@ -129,14 +131,14 @@ const borrowerStatus = ref<BorrowerStatus | null>(null)
 const statusLoading = ref(false)
 let statusRequest = 0
 
-watch(() => [state.borrowerType, state.borrowerId] as const, async ([type, id]) => {
+watch(() => [state.borrowerType, state.borrowerId, state.bookId] as const, async ([type, id, bookId]) => {
   borrowerStatus.value = null
   if (!id) return
 
   const request = ++statusRequest
   statusLoading.value = true
   try {
-    const status = await LibraryApi().borrowerStatus(type, id)
+    const status = await LibraryApi().borrowerStatus(type, id, bookId || undefined)
     if (request === statusRequest) borrowerStatus.value = status
   } catch {
     // Not fatal - the backend still enforces the rules when the book is issued.
@@ -147,22 +149,41 @@ watch(() => [state.borrowerType, state.borrowerId] as const, async ([type, id]) 
 
 const blocked = computed(() => borrowerStatus.value?.canBorrow === false)
 
+// The section library the picked book belongs to - its rules and limits are the ones shown.
+const librarySections = useLibrarySections()
+const pickedLibrary = computed(() => {
+  if (!librarySections.required.value) return null
+  const book = bookResults.value.find(b => b.id === state.bookId)
+  return librarySections.nameOf(book?.sectionId)
+})
+
 watch(() => state.borrowerType, (type) => {
   state.borrowerId = ''
   if (type === 'TEACHER' && !teacherResults.value.length) searchTeachers('')
 })
 
+// Each section's library can have its own loan period, so the due date follows the picked book.
+async function loadLoanDays(sectionId?: string | null) {
+  try {
+    const rules = await LibraryApi().getSettings(sectionId)
+    loanDays.value = rules?.defaultLoanDays ?? null
+    state.dueDate = defaultDueDate()
+  } catch {
+    // Keep the current due date.
+  }
+}
+
+watch(() => state.bookId, (bookId) => {
+  if (!bookId) return
+  const book = bookResults.value.find(b => b.id === bookId)
+  if (book?.sectionId) loadLoanDays(book.sectionId)
+})
+
 watch(open, async (isOpen) => {
   if (!isOpen) return
   if (!bookResults.value.length) searchBooks('')
-  if (!store.settings) {
-    try {
-      await store.fetchSettings()
-      state.dueDate = defaultDueDate()
-    } catch {
-      // Keep the 14-day default.
-    }
-  }
+  if (loanDays.value == null) loadLoanDays()
+  librarySections.load()
 })
 
 function close() {
@@ -232,7 +253,7 @@ async function onSubmit() {
             title="Can't borrow right now" :description="borrowerStatus.reason ?? undefined" />
 
           <UAlert v-else-if="borrowerStatus" color="neutral" variant="soft" icon="i-lucide-book-check"
-            :title="`Holding ${borrowerStatus.activeLoans} of ${borrowerStatus.maxLoans} books allowed`"
+            :title="`Holding ${borrowerStatus.activeLoans} of ${borrowerStatus.maxLoans} books allowed${pickedLibrary ? ` from the ${pickedLibrary} library` : ''}`"
             :description="borrowerStatus.overdueLoans
               ? `${borrowerStatus.overdueLoans} overdue - borrowing isn't blocked for overdue books at this school.`
               : undefined" />

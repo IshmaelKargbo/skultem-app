@@ -1,16 +1,17 @@
 <template>
   <UCard>
-    <div v-if="!isReady || loading" class="skeleton-loader">
-      Loading Subject Performance...
-    </div>
+    <ChartSkeleton v-if="!isReady || loading" />
 
-    <div v-else-if="rows && !rows.length" class="flex h-[350px] flex-col items-center justify-center gap-2 text-center">
+    <div v-else-if="!chartSeries.length || (rows && !rows.length)" class="flex h-[350px] flex-col items-center justify-center gap-2 text-center">
       <UIcon name="lucide:bar-chart-3" class="size-8 text-muted" />
       <p class="text-sm font-semibold text-highlighted">Subject Performance</p>
       <p class="text-xs text-muted">No approved assessments for this term yet.</p>
     </div>
 
     <client-only v-else>
+      <template #fallback>
+        <ChartSkeleton />
+      </template>
       <ChartScroll>
         <ApexChart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
       </ChartScroll>
@@ -119,7 +120,7 @@ async function loadData() {
     isReady.value = true
     return
   }
-  if (id == '' || term == '') return
+  if (!id || !term) return
   try {
     const payload = {
       entity: "assessments",
@@ -159,18 +160,20 @@ async function loadData() {
     const res = await store.runAnalytic(payload)
     const widget = res?.data ?? res
 
-    if (!widget?.labels || !widget?.datasets) return
-
-    labels.value = widget.labels
+    labels.value = widget?.labels ?? []
     colors.value = generateColors(labels.value.length)
-    chartSeries.value = widget.datasets.map((d: any) => ({
-      name: d.label,
-      data: d.data.map((v: number) => Number(v.toFixed(2)))
-    }))
-
-    isReady.value = true
+    chartSeries.value = labels.value.length
+      ? (widget?.datasets ?? []).map((d: any) => ({
+        name: d.label,
+        data: d.data.map((v: number) => Number(v.toFixed(2)))
+      }))
+      : []
   } catch (err) {
     console.error("Failed to load subject performance", err)
+    chartSeries.value = []
+  } finally {
+    // Always leave the loading state, otherwise an empty or failed response spins forever.
+    isReady.value = true
   }
 }
 
@@ -183,29 +186,3 @@ watch(
   { immediate: true }
 )
 </script>
-
-<style scoped>
-.skeleton-loader {
-  height: 320px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4f0a9c;
-  font-weight: 500;
-  background: #f3f4f6;
-  border-radius: 0.5rem;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1
-  }
-
-  50% {
-    opacity: 0.4
-  }
-}
-</style>

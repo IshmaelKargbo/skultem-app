@@ -95,6 +95,19 @@
 
     <UCard>
       <template #header>
+        <p>Roll Calls a Day</p>
+      </template>
+      <URadioGroup v-model="rules.attendanceRollCalls" :items="rollCallOptions" variant="card"
+        orientation="vertical" :ui="{ fieldset: 'grid grid-cols-1 gap-2 sm:grid-cols-2' }" />
+      <p class="mt-3 flex items-start gap-1.5 text-xs text-muted">
+        <UIcon name="lucide:info" class="mt-0.5 size-3.5 shrink-0" />
+        With two roll calls, teachers take a 1st and a 2nd roll call each day, and a student counts as present
+        only when present at both. Missing either one makes the day Absent. Parents are told after each roll call.
+      </p>
+    </UCard>
+
+    <UCard>
+      <template #header>
         <p>Attendance Alert Threshold</p>
       </template>
       <UFormField label="Minimum Attendance %"
@@ -145,6 +158,7 @@ const props = defineProps<{
     attendanceWindowDays: number
     attendanceMinDays: number
     attendanceStreakDays: number
+    attendanceRollCalls: number
   }
   loadingLocation: boolean
   locationConfigured: boolean
@@ -159,6 +173,11 @@ const attendanceThresholdModel = computed({
   get: () => props.attendanceThreshold,
   set: (value: number) => emit('update:attendanceThreshold', value)
 })
+
+const rollCallOptions = [
+  { label: 'One roll call', description: 'The whole day is marked once.', value: 1 },
+  { label: 'Two roll calls', description: 'e.g. morning and afternoon. Present only if at both.', value: 2 }
+]
 
 const { success, error: toastError, warning } = useNotify()
 const { isInstalled } = useModules()

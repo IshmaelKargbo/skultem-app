@@ -173,6 +173,7 @@ type SchoolProfile = {
     attendanceWindowDays: number
     attendanceMinDays: number
     attendanceStreakDays: number
+    attendanceRollCalls: number
     gradeApprover: string
     roundAssessmentScores: boolean
     genderComposition: string
@@ -195,6 +196,7 @@ const state = reactive<SchoolProfile>({
     attendanceWindowDays: 20,
     attendanceMinDays: 5,
     attendanceStreakDays: 3,
+    attendanceRollCalls: 1,
     gradeApprover: 'CLASS_MASTER',
     roundAssessmentScores: true,
     genderComposition: 'MIXED'
@@ -245,6 +247,7 @@ const schoolDefaults = computed(() => ({
     attendanceWindowDays: state.attendanceWindowDays,
     attendanceMinDays: state.attendanceMinDays,
     attendanceStreakDays: state.attendanceStreakDays,
+    attendanceRollCalls: state.attendanceRollCalls,
     principalSignature: signatureUrl.value,
     address: { street: state.street, city: state.city, chiefdom: state.chiefdom, district: state.district, region: state.region }
 }))
@@ -316,6 +319,7 @@ async function saveAttendanceLocation() {
             attendanceWindowDays: state.attendanceWindowDays,
             attendanceMinDays: state.attendanceMinDays,
             attendanceStreakDays: state.attendanceStreakDays,
+            attendanceRollCalls: state.attendanceRollCalls,
             gradeApprover: state.gradeApprover,
             roundAssessmentScores: state.roundAssessmentScores,
             genderComposition: state.genderComposition
@@ -326,6 +330,7 @@ async function saveAttendanceLocation() {
             state.attendanceWindowDays = updated.attendanceWindowDays ?? state.attendanceWindowDays
             state.attendanceMinDays = updated.attendanceMinDays ?? state.attendanceMinDays
             state.attendanceStreakDays = updated.attendanceStreakDays ?? state.attendanceStreakDays
+            state.attendanceRollCalls = updated.attendanceRollCalls ?? state.attendanceRollCalls
             const domain = resolveTenantSlug(window.location.hostname)
             if (domain) refreshSchoolInfo(setCachedSchool(domain, updated))
         }
@@ -380,6 +385,7 @@ function applySchool(school: any) {
     state.attendanceWindowDays = school.attendanceWindowDays ?? 20
     state.attendanceMinDays = school.attendanceMinDays ?? 5
     state.attendanceStreakDays = school.attendanceStreakDays ?? 3
+    state.attendanceRollCalls = school.attendanceRollCalls ?? 1
     state.gradeApprover = school.gradeApprover ?? 'CLASS_MASTER'
     state.roundAssessmentScores = school.roundAssessmentScores ?? true
     state.genderComposition = school.genderComposition ?? 'MIXED'
@@ -411,6 +417,7 @@ async function save() {
             attendanceWindowDays: state.attendanceWindowDays,
             attendanceMinDays: state.attendanceMinDays,
             attendanceStreakDays: state.attendanceStreakDays,
+            attendanceRollCalls: state.attendanceRollCalls,
             gradeApprover: state.gradeApprover,
             roundAssessmentScores: state.roundAssessmentScores,
             genderComposition: state.genderComposition

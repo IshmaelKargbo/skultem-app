@@ -53,8 +53,13 @@ export const useLibraryStore = defineStore('library', {
             }
         },
 
-        async fetchSettings() {
-            this.settings = await LibraryApi().getSettings()
+        async fetchSettings(sectionId?: string | null) {
+            this.settings = await LibraryApi().getSettings(sectionId)
+            return this.settings
+        },
+
+        async resetSettings(sectionId: string) {
+            this.settings = await LibraryApi().resetSettings(sectionId) ?? null
             return this.settings
         },
 

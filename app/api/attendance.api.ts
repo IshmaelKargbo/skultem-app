@@ -2,9 +2,10 @@ export const AttendanceApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getSession: async (id: string, date: string) => {
+    getSession: async (id: string, date: string, roll?: number) => {
       try {
-        const res = await $api(`/attendance/session/${id}?date=${date}`) as any
+        const rollQuery = roll ? `&roll=${roll}` : ''
+        const res = await $api(`/attendance/session/${id}?date=${date}${rollQuery}`) as any
 
         if (!res)
           throw new Error('Failed to fetch attendance session')

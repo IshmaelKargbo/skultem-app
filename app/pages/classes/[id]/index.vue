@@ -35,16 +35,14 @@
             </div>
 
             <div class="flex shrink-0 flex-wrap items-center gap-2">
-                <template v-if="isTeacherViewer && (isMasterOfThisClass || isSubjectTeacherOfThisClass)">
-                    <UButton :to="`/curriculums?sessionId=${session?.id}`" variant="soft" size="sm" color="neutral"
-                        label="Curriculum" icon="i-lucide-book-open" />
-                    <UButton :to="`/timetable?session=${session?.id}`" variant="soft" size="sm" color="neutral"
-                        label="Timetable" icon="i-lucide-calendar-days" />
-                </template>
+                <UDropdownMenu v-if="isTeacherViewer && !loading && (isMasterOfThisClass || isSubjectTeacherOfThisClass)"
+                    :items="teacherActionItems" :content="{ align: 'end' }">
+                    <UButton variant="soft" size="sm" color="neutral" label="Actions" trailing-icon="i-lucide-chevron-down" />
+                </UDropdownMenu>
                 <ClassEdit v-if="canManagePromotion" ref="classEditRef" :class-id="classId" hide-trigger @updated="fetchClass" />
                 <UDropdownMenu v-if="canManagePromotion && !loading && className" :items="actionItems"
                     :content="{ align: 'end' }">
-                    <UButton variant="ghost" size="sm" color="neutral" label="Actions" trailing-icon="i-lucide-chevron-down" />
+                    <UButton variant="soft" size="sm" color="neutral" label="Actions" trailing-icon="i-lucide-chevron-down" />
                 </UDropdownMenu>
                 <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''" hide-trigger />
             </div>
@@ -594,7 +592,8 @@ const masterNames = computed(() => {
     return (session.value?.teacherName || '').split(',').map(n => n.trim()).filter(n => n && n !== 'N/A')
 })
 
-const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]))
+// Same roles the backend lets edit a class, assign masters and manage promotions.
+const canManagePromotion = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]))
 
 const deleteOpen = ref(false)
 const deleteSessionOpen = ref(false)
@@ -764,6 +763,28 @@ watch([classId, canViewRoster], ([, val]) => { if (val) { fetchRosterInsights();
 const promotionRequests = ref<Record<string, PromotionRequest | null>>({})
 const promotionStatusLoading = ref(false)
 
+// What a teacher can do from their own class: plan and schedule for everyone who teaches here,
+// plus grade approval and promotion for the class master.
+const myMasterSessionId = computed(() => classTeachers.value.find(t => t.isMe)?.sessionId)
+const teacherActionItems = computed(() => {
+    const items: { label: string, icon: string, to: string, color?: 'error' }[] = [
+        { label: 'Curriculum', icon: 'i-lucide-book-open', to: `/curriculums?sessionId=${session.value?.id}` },
+        { label: 'Timetable', icon: 'i-lucide-calendar-days', to: `/timetable?session=${session.value?.id}` }
+    ]
+    const masterSession = myMasterSessionId.value
+    if (isMasterOfThisClass.value && masterSession) {
+        items.push({ label: 'Grade Approval', icon: GRADES_APPROVAL_ICON, to: '/grades/approval' })
+        const returned = promotionRequests.value[masterSession]?.status === 'RETURNED'
+        items.push({
+            label: returned ? 'Review & resubmit promotion' : 'Promote class',
+            icon: PROMOTE_STUDENTS_ICON,
+            to: `/promotion/${masterSession}`,
+            ...(returned ? { color: 'error' as const } : {})
+        })
+    }
+    return [items]
+})
+
 function promote() {
     if (classTeachers.value.length == 0) return
     var session = classTeachers.value[0]
@@ -796,9 +817,11 @@ watch(promotionSessionIds, (sessionIds) => {
 
 
 async function fetchClass() {
-    if (!viewingYear.value) return
+    // An exact section (?session=) loads without the year. Parents need this: they can't fetch
+    // the academic year list, so viewingYear is never set for them.
+    if (!viewingYear.value && !sessionId.value) return
     const tasks = [classStore.viewClassByClassAndStream(classId.value, stream.value, viewingYear.value?.id || '', sessionId.value)]
-    if (!isParentViewer.value) tasks.push(classStore.fetchOverview(classId.value, viewingYear.value.id || '', stream.value, sessionId.value))
+    if (!isParentViewer.value && viewingYear.value) tasks.push(classStore.fetchOverview(classId.value, viewingYear.value.id || '', stream.value, sessionId.value))
     await Promise.all(tasks)
 }
 

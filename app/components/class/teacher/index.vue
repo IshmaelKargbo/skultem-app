@@ -17,90 +17,133 @@
             }" />
         </div>
 
-        <!-- Loading -->
-        <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <UCard v-for="i in 3" :key="i" :ui="{ body: 'p-0 sm:p-0' }">
-                <div class="space-y-3 p-4">
-                    <USkeleton class="h-5 w-2/3" />
-                    <USkeleton class="h-3 w-1/2" />
-                    <USkeleton class="h-16 w-full rounded-xl" />
+        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
+            <template #header>
+                <div class="flex items-center gap-2 px-4 py-3">
+                    <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by class or subject" class="flex-1" />
+                    <TableViewToggle v-model="view" />
                 </div>
-            </UCard>
-        </div>
+            </template>
 
-        <!-- Classes -->
-        <div v-else-if="classes.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <UCard v-for="c in classes" :key="c.sessionId" :ui="{
-                root: c.attentionCount > 0 ? 'ring-1 ring-warning/40' : '',
-                body: 'p-0 sm:p-0'
-            }">
-                <div class="space-y-3 p-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex min-w-0 items-center gap-3">
-                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                <UIcon name="i-lucide-users-round" class="size-5" />
-                            </div>
+            <!-- Desktop table -->
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filteredClasses"
+                :loading="loading" :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5', tr: 'cursor-pointer' }"
+                @select="(_e: Event, row: any) => openClass(row.original)">
+                <template #loading>
+                    <TableLoading :size="columns.length" />
+                </template>
+                <template #empty>
+                    <div class="flex flex-col items-center gap-2 py-10">
+                        <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
+                        <p class="text-gray-500 dark:text-gray-400">{{ emptyText }}</p>
+                    </div>
+                </template>
+                <template #className-cell="{ row }">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="text-[15px] font-semibold tracking-tight text-highlighted">{{ row.original.className }}</p>
+                            <UTooltip v-if="row.original.attentionCount > 0" :delay-duration="0" arrow
+                                :text="`${row.original.attentionCount} student${row.original.attentionCount === 1 ? ' has' : 's have'} low attendance or ${row.original.attentionCount === 1 ? 'is' : 'are'} below the pass mark`">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">
+                                    <span class="size-1.5 rounded-full bg-warning" />Needs attention
+                                </span>
+                            </UTooltip>
+                            <span v-if="promotionPill(row.original)"
+                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                                :class="promotionPill(row.original)!.class">
+                                <span class="size-1.5 rounded-full bg-current" />{{ promotionPill(row.original)!.label }}
+                            </span>
+                        </div>
+                        <p v-if="row.original.subjects.length" class="mt-0.5 max-w-sm truncate text-xs text-muted"
+                            :title="row.original.subjects.join(', ')">
+                            {{ subjectSummary(row.original.subjects) }}
+                        </p>
+                    </div>
+                </template>
+                <template #sectionName-cell="{ row }">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span v-if="row.original.sectionName"
+                            class="rounded-md bg-elevated px-2 py-0.5 text-xs font-medium text-highlighted ring-1 ring-default">
+                            {{ row.original.sectionName }}</span>
+                        <span v-if="row.original.streamName"
+                            class="rounded-md bg-info/10 px-2 py-0.5 text-xs font-medium text-info">{{ row.original.streamName }}</span>
+                        <span v-if="!row.original.sectionName && !row.original.streamName" class="text-muted">-</span>
+                    </div>
+                </template>
+                <template #role-cell="{ row }">
+                    <span v-if="row.original.isClassMaster"
+                        class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                        <UIcon name="i-lucide-graduation-cap" class="size-3.5" />Class master
+                    </span>
+                    <span v-else
+                        class="inline-flex items-center gap-1.5 rounded-full bg-elevated px-2.5 py-1 text-xs font-medium text-toned ring-1 ring-default">
+                        <UIcon name="i-lucide-book-open" class="size-3.5" />Subject teacher
+                    </span>
+                </template>
+                <template #studentCount-cell="{ row }">
+                    <span v-if="row.original.studentCount"
+                        class="inline-flex min-w-9 items-center justify-center rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold tabular-nums text-primary">
+                        {{ row.original.studentCount }}</span>
+                    <span v-else class="text-muted">-</span>
+                </template>
+                <template #actions-cell>
+                    <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-chevron-right" aria-label="Open class" />
+                </template>
+            </UTable>
+
+            <!-- Mobile / card view -->
+            <div class="md:p-4 md:space-y-4"
+                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+                <!-- Loading -->
+                <template v-if="loading">
+                    <div v-for="i in 4" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <USkeleton class="h-4 w-36 rounded-md" />
+                            <USkeleton class="h-3 w-28 rounded-md" />
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Data -->
+                <template v-else-if="filteredClasses.length">
+                    <NuxtLink v-for="c in filteredClasses" :key="c.sessionId" :to="classUrl(c)"
+                        class="block border-b md:border md:rounded-2xl last:border-0 border-default p-3">
+                        <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0">
-                                <p class="truncate font-semibold text-highlighted">
-                                    {{ c.className }}{{ c.sectionName ? ` (${c.sectionName})` : '' }}
-                                </p>
-                                <p v-if="c.studentCount != null" class="flex items-center gap-1 text-xs text-muted">
-                                    <UIcon name="i-lucide-users" class="size-3.5" />
-                                    {{ c.studentCount }} student{{ c.studentCount === 1 ? '' : 's' }}
+                                <div class="flex items-center gap-1.5">
+                                    <h3 class="truncate font-bold text-highlighted">{{ c.className }}</h3>
+                                    <p v-if="c.sectionName" class="shrink-0 text-muted">- {{ c.sectionName }}</p>
+                                    <UIcon v-if="c.attentionCount > 0" name="i-lucide-alert-triangle"
+                                        class="size-4 shrink-0 text-warning" />
+                                </div>
+                                <p class="truncate text-xs text-muted">
+                                    {{ c.isClassMaster ? 'Class master' : 'Subject teacher' }}<template
+                                        v-if="c.subjects.length"> · {{ subjectSummary(c.subjects, false) }}</template>
                                 </p>
                             </div>
+
+                            <div class="flex shrink-0 items-center gap-2">
+                                <span v-if="promotionPill(c)"
+                                    class="rounded-full px-2 py-0.5 text-[11px] font-medium" :class="promotionPill(c)!.class">
+                                    {{ promotionPill(c)!.label }}</span>
+                                <UBadge v-if="c.studentCount" variant="subtle" color="secondary" size="sm"
+                                    :trailing-icon="STUDENT_ICON" :label="`${c.studentCount}`" />
+                                <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
+                            </div>
                         </div>
+                    </NuxtLink>
+                </template>
 
-                        <div class="flex shrink-0 flex-col items-end gap-1">
-                            <UBadge v-if="c.isClassMaster" color="primary" variant="subtle" size="sm">Class Master</UBadge>
-                            <UBadge v-if="c.isSubjectTeacher" color="neutral" variant="subtle" size="sm">Subject Teacher</UBadge>
-                        </div>
+                <!-- Empty -->
+                <template v-else>
+                    <div class="col-span-full flex flex-col items-center gap-2 py-14 text-center">
+                        <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
+                        <p class="text-sm text-gray-500">{{ emptyText }}</p>
+                        <p v-if="!search" class="max-w-xs text-xs text-muted">
+                            Once your school makes you a class master or assigns you a subject, it'll show up here.
+                        </p>
                     </div>
-
-                    <p v-if="c.attentionCount > 0" class="flex items-center gap-1.5 text-xs font-medium text-warning">
-                        <UIcon name="i-lucide-alert-triangle" class="size-3.5" />
-                        {{ c.attentionCount }} student{{ c.attentionCount === 1 ? '' : 's' }} need{{ c.attentionCount === 1 ? 's' : '' }} attention
-                    </p>
-
-                    <div v-if="c.subjects.length" class="flex flex-wrap gap-1.5">
-                        <UBadge v-for="s in c.subjects" :key="s" variant="subtle" color="neutral" size="sm">{{ s }}</UBadge>
-                    </div>
-                </div>
-
-                <USeparator />
-
-                <div class="flex flex-wrap items-center gap-2 p-3">
-                    <UButton :to="classRosterUrl(c.classId, c.streamId, c.sessionId)" size="sm" variant="soft" color="neutral"
-                        label="View Class" :icon="CLASS_ICON" />
-
-                    <UButton :to="`/curriculums?sessionId=${c.sessionId}`" size="sm" variant="soft" color="neutral"
-                        label="Curriculum" icon="i-lucide-book-open" />
-
-                    <UButton :to="`/timetable?session=${c.sessionId}`" size="sm" variant="soft" color="neutral"
-                        label="Timetable" icon="i-lucide-calendar-days" />
-
-                    <UButton v-if="c.isClassMaster" to="/grades/approval" size="sm" variant="soft" color="neutral"
-                        label="Grade Approval" :icon="GRADES_APPROVAL_ICON" />
-
-                    <UButton v-if="c.promotionStatus === 'READY' || c.promotionStatus === 'RETURNED'"
-                        :to="`/promotion/${c.sessionId}`" size="sm" variant="solid"
-                        :color="c.promotionStatus === 'RETURNED' ? 'error' : 'primary'" :icon="PROMOTE_STUDENTS_ICON"
-                        :label="c.promotionStatus === 'RETURNED' ? 'Review & Resubmit' : 'Promote Class'" class="ml-auto" />
-                </div>
-            </UCard>
-        </div>
-
-        <!-- Empty -->
-        <UCard v-else>
-            <div class="flex flex-col items-center gap-3 py-14 text-center">
-                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary/10">
-                    <UIcon name="i-lucide-inbox" class="text-3xl text-primary-500" />
-                </div>
-                <p class="text-sm font-semibold text-highlighted">Nothing assigned yet</p>
-                <p class="max-w-xs text-xs text-muted">
-                    You're not currently a class master or teaching any subject. Once your school assigns you one,
-                    it'll show up here.
-                </p>
+                </template>
             </div>
         </UCard>
     </div>
@@ -115,6 +158,7 @@ type UnifiedClass = {
     streamId: string | null
     className: string
     sectionName: string
+    streamName: string
     isClassMaster: boolean
     isSubjectTeacher: boolean
     studentCount?: number
@@ -138,8 +182,9 @@ const classes = computed<UnifiedClass[]>(() => {
             sessionId: a.sessionId,
             classId: a.classId,
             streamId: a.streamId,
-            className: a.sessionName,
+            className: a.className || a.sessionName,
             sectionName: '',
+            streamName: '',
             isClassMaster: true,
             isSubjectTeacher: false,
             studentCount: a.studentCount,
@@ -153,6 +198,8 @@ const classes = computed<UnifiedClass[]>(() => {
         const existing = map.get(r.sessionId)
         if (existing) {
             existing.isSubjectTeacher = true
+            existing.sectionName ||= r.sectionName
+            existing.streamName ||= cleanStream(r.streamName)
             if (!existing.subjects.includes(r.subjectName)) existing.subjects.push(r.subjectName)
             continue
         }
@@ -163,6 +210,7 @@ const classes = computed<UnifiedClass[]>(() => {
             streamId: r.streamId,
             className: r.className,
             sectionName: r.sectionName,
+            streamName: cleanStream(r.streamName),
             isClassMaster: false,
             isSubjectTeacher: true,
             subjects: [r.subjectName],
@@ -170,8 +218,62 @@ const classes = computed<UnifiedClass[]>(() => {
         })
     }
 
+    // Class-master rows only learn the section from a subject record; without one, the
+    // session name (which includes the section) is the most complete label we have.
+    for (const a of classMasterAssignments.value) {
+        const c = map.get(a.sessionId)
+        if (c && !c.sectionName && a.sessionName) c.className = a.sessionName
+    }
+
     return Array.from(map.values())
 })
+
+const view = ref<'table' | 'card'>('table')
+const search = ref('')
+
+const filteredClasses = computed(() => {
+    const q = search.value.trim().toLowerCase()
+    if (!q) return classes.value
+    return classes.value.filter(c =>
+        [c.className, c.sectionName, ...c.subjects].some(v => v?.toLowerCase().includes(q))
+    )
+})
+
+const columns = [
+    { accessorKey: 'className', header: 'Class' },
+    { accessorKey: 'sectionName', header: 'Section' },
+    { id: 'role', header: 'My role' },
+    { accessorKey: 'studentCount', header: 'Students' },
+    { id: 'actions', header: '', meta: { class: { td: 'text-right' } } }
+]
+
+const emptyText = computed(() => search.value ? 'No classes match your search.' : 'Nothing assigned yet.')
+
+function cleanStream(name?: string | null) {
+    return name && name !== 'N/A' ? name : ''
+}
+
+function classUrl(c: UnifiedClass) {
+    return classRosterUrl(c.classId, c.streamId, c.sessionId)
+}
+
+function openClass(c: UnifiedClass) {
+    navigateTo(classUrl(c))
+}
+
+// "Teaches Maths, English +2" - keeps the row short; the full list is on the class page.
+function subjectSummary(subjects: string[], prefix = true) {
+    const shown = subjects.slice(0, 2).join(', ')
+    const more = subjects.length > 2 ? ` +${subjects.length - 2}` : ''
+    return `${prefix ? 'Teaches ' : ''}${shown}${more}`
+}
+
+// Only flag promotion when the class master has something to do.
+function promotionPill(c: UnifiedClass) {
+    if (c.promotionStatus === 'READY') return { label: 'Ready to promote', class: 'bg-primary/10 text-primary' }
+    if (c.promotionStatus === 'RETURNED') return { label: 'Promotion returned', class: 'bg-error/10 text-error' }
+    return null
+}
 
 const classMasterCount = computed(() => classMasterAssignments.value.length)
 

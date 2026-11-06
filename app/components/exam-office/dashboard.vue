@@ -100,7 +100,7 @@
                 {{ p.subjectName }}<span v-if="p.paper" class="text-muted"> · {{ p.paper }}</span>
               </p>
               <p class="truncate text-xs text-muted">
-                {{ p.className }} · {{ formatDate(p.examDate) }} · {{ examTime(p.startTime) }}–{{ examTime(p.endTime) }}
+                {{ p.classes.map(c => c.name).join(', ') }} · {{ formatDate(p.examDate) }} · {{ examTime(p.startTime) }}–{{ examTime(p.endTime) }}
               </p>
             </div>
           </div>
@@ -147,7 +147,7 @@ const api = ExamOfficeApi()
 const { load: loadRouting, approverFor, isExamOfficer } = useGradeApproval()
 
 const data = ref<ExamSubmissions | null>(null)
-const schedule = ref<ExamSchedule[]>([])
+const schedule = ref<ExamPaper[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -200,7 +200,16 @@ const upcoming = computed(() => {
   const from = today.toISOString().slice(0, 10)
   const to = new Date(today.getTime() + 7 * 86400000).toISOString().slice(0, 10)
   return schedule.value.filter(p => p.examDate >= from && p.examDate <= to)
+    .sort((a, b) => a.examDate.localeCompare(b.examDate) || a.startTime.localeCompare(b.startTime))
 })
+
+// Every paper on the term's timetables (one per assessment) - for the next-7-days list.
+async function upcomingPapers(termId: string) {
+  const summaries = (await api.timetables(termId)) ?? []
+  const timetables = await Promise.all(summaries.filter(s => s.timetableId)
+    .map(s => api.timetable(s.timetableId!).catch(() => undefined)))
+  return timetables.flatMap(t => t?.papers ?? [])
+}
 
 async function load() {
   loading.value = true
@@ -209,7 +218,7 @@ async function load() {
     data.value = (await api.submissions()) ?? null
     if (data.value?.termId) {
       // The timetable is a nice-to-have here - the rest of the dashboard still shows if it fails.
-      schedule.value = (await api.schedule({ termId: data.value.termId }).catch(() => [])) ?? []
+      schedule.value = await upcomingPapers(data.value.termId).catch(() => [])
     }
   } catch (err: any) {
     error.value = err?.message || 'Something went wrong. Please try again later.'

@@ -15,6 +15,23 @@ const state = reactive<LibrarySettings>({
   defaultLoanDays: 14
 })
 
+// Each section (e.g. Primary, Secondary) can run its own library with its own rules. '' = the school's rules,
+// which every section without rules of its own uses. Staff limited to sections only get their own.
+const librarySections = useLibrarySections()
+const { scope, load: loadScope } = useMyScope()
+const wholeSchool = computed(() => !scope.value || scope.value.wholeSchool)
+const selectedSection = ref('')
+const ownRules = ref(true)
+
+const sectionItems = computed(() => [
+  ...(wholeSchool.value ? [{ label: 'Whole school (default rules)', value: '' }] : []),
+  ...librarySections.options.value.map(o => ({ label: `${o.label} library`, value: o.value }))
+])
+// Worth a picker only when there's more than one library to choose from.
+const showPicker = computed(() => librarySections.required.value && sectionItems.value.length > 1)
+const sectionName = computed(() => librarySections.nameOf(selectedSection.value))
+const resetting = ref(false)
+
 const limit = (who: string) => yup.number().typeError('Enter a number').integer('Enter a whole number')
   .min(1, `${who} must be allowed at least 1 book`).max(50, 'No more than 50 books').required()
 
@@ -28,8 +45,11 @@ const schema = yup.object({
 async function onSubmit() {
   saving.value = true
   try {
-    Object.assign(state, await store.saveSettings({ ...state }))
-    toastSuccess('Library settings saved')
+    const saved = await store.saveSettings({ ...state, sectionId: selectedSection.value || null })
+    if (!saved) return
+    Object.assign(state, saved)
+    ownRules.value = true
+    toastSuccess(sectionName.value ? `${sectionName.value} library rules saved` : 'Library settings saved')
   } catch (err: any) {
     toastError(err?.message || 'Failed to save settings')
   } finally {
@@ -43,16 +63,46 @@ async function loadSettings() {
   loading.value = true
   loadError.value = null
   try {
-    const res = await store.fetchSettings()
+    const res = await store.fetchSettings(selectedSection.value || null)
     if (!res) throw new Error('Failed to load settings')
     Object.assign(state, res)
+    ownRules.value = res.ownRules !== false
+    // Section-limited staff get their own section back when they didn't pick one.
+    if (!selectedSection.value && res.sectionId) selectedSection.value = res.sectionId
   } catch (err: any) {
     loadError.value = err?.message || 'Failed to load settings'
   } finally {
     loading.value = false
   }
 }
-onMounted(loadSettings)
+async function useSchoolRules() {
+  if (!selectedSection.value) return
+  resetting.value = true
+  try {
+    const res = await store.resetSettings(selectedSection.value)
+    if (!res) return
+    Object.assign(state, res)
+    ownRules.value = false
+    toastSuccess(`${sectionName.value ?? 'This section'} now uses the school's rules`)
+  } catch (err: any) {
+    toastError(err?.message || 'Failed to reset the rules')
+  } finally {
+    resetting.value = false
+  }
+}
+
+watch(selectedSection, (next, prev) => {
+  if (next !== prev && !loading.value) loadSettings()
+})
+
+onMounted(async () => {
+  await Promise.all([librarySections.load(), loadScope()])
+  // Staff limited to sections start on their first section; whole-school staff on the school's rules.
+  if (!wholeSchool.value && librarySections.options.value.length) {
+    selectedSection.value = librarySections.options.value[0]!.value
+  }
+  await loadSettings()
+})
 </script>
 
 <template>
@@ -67,8 +117,25 @@ onMounted(loadSettings)
           <p class="text-xs-base text-muted">How many books people can hold, and what happens when a book is overdue.</p>
         </div>
 
-        <UButton :icon="SAVE_ICON" label="Save Changes" :loading="saving" :disabled="loading" @click="formRef?.submit()" />
+        <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <USelectMenu v-if="showPicker" v-model="selectedSection" value-key="value" :items="sectionItems"
+            :search-input="false" :disabled="loading || saving" class="w-full sm:w-60" />
+          <UButton :icon="SAVE_ICON" label="Save Changes" :loading="saving" :disabled="loading" @click="formRef?.submit()" />
+        </div>
       </div>
+    </template>
+
+    <template v-if="!loading && !loadError && librarySections.required.value">
+      <UAlert v-if="selectedSection && !ownRules" class="mb-4" color="info" variant="subtle" icon="i-lucide-info"
+        :title="`${sectionName ?? 'This section'} uses the school's rules`"
+        :description="`Change anything below and save to give the ${sectionName ?? 'section'} library its own rules.`" />
+      <UAlert v-else-if="selectedSection" class="mb-4" color="neutral" variant="subtle" icon="i-lucide-library"
+        :title="`${sectionName ?? 'This section'} library has its own rules`"
+        description="Only books from this section's library follow these rules. Limits count only its books."
+        :actions="[{ label: 'Use the school\'s rules', color: 'neutral', variant: 'outline', loading: resetting, onClick: useSchoolRules }]" />
+      <UAlert v-else class="mb-4" color="neutral" variant="subtle" icon="i-lucide-school"
+        title="The school's rules"
+        description="Every section library without rules of its own follows these. Pick a section above to give it its own." />
     </template>
 
     <div v-if="loading" class="grid gap-4 md:grid-cols-2">

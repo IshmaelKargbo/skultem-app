@@ -43,8 +43,13 @@ export type AttendanceHistory = {
 export type CreateAttendanceDto = {
     date: string
     holiday: boolean
+    // Which roll call (1 or 2) - only sent when the class takes two roll calls a day.
+    roll?: number
     records: AttendanceRecord[]
 }
+
+// One roll call's mark on a two-roll-call day; null = not taken yet.
+export type RollMark = 'PRESENT' | 'LATE' | 'EXCUSED' | 'ABSENT'
 
 // Mirrors ClassSessionAttendanceRecordDTO - recordedBy/recordedAt are null for a record marked
 // before that field existed, or for a not-yet-marked student placeholder.

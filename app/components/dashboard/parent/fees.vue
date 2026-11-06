@@ -22,58 +22,64 @@ const isReady = ref(false)
 const balance = ref("0.0")
 
 async function fetchRecord() {
-    if (id == "" || id == null) return
+    if (!id) return
 
-    const [payments] = await Promise.all([
-        store.runAnalytic({
-            entity: "fees",
-            title: "Fee Paid",
-            filters: [
-                {
-                    field: "student.id",
-                    value: id,
-                    operator: "EQUALS",
-                    type: "select"
-                }
-            ],
-            metrics: [
-                {
-                    name: "Paid",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Paid" }
-                },
-                {
-                    name: "Partial",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Partial" }
-                },
-                {
-                    name: "Total",
-                    aggregation: "sum",
-                    field: "amount",
-                }
-            ],
-            chartType: "bar"
-        }, 1, 10),
-    ])
+    isReady.value = false
+    let outstanding = 0
+    try {
+        const [payments] = await Promise.all([
+            store.runAnalytic({
+                entity: "fees",
+                title: "Fee Paid",
+                filters: [
+                    {
+                        field: "student.id",
+                        value: id,
+                        operator: "EQUALS",
+                        type: "select"
+                    }
+                ],
+                metrics: [
+                    {
+                        name: "Paid",
+                        aggregation: "sum",
+                        field: "amountPaid",
+                        tags: { field: "status", value: "Paid" }
+                    },
+                    {
+                        name: "Partial",
+                        aggregation: "sum",
+                        field: "amountPaid",
+                        tags: { field: "status", value: "Partial" }
+                    },
+                    {
+                        name: "Total",
+                        aggregation: "sum",
+                        field: "amount",
+                    }
+                ],
+                chartType: "bar"
+            }, 1, 10),
+        ])
 
-    const datasets = payments?.data?.datasets ?? []
+        const datasets = payments?.data?.datasets ?? []
 
-    const paid = datasets.find((e: any) => e.label === "Paid")
-    const partial = datasets.find((e: any) => e.label === "Partial")
-    const total = datasets.find((e: any) => e.label === "Total")
+        const paid = datasets.find((e: any) => e.label === "Paid")
+        const partial = datasets.find((e: any) => e.label === "Partial")
+        const total = datasets.find((e: any) => e.label === "Total")
 
-    const totalPaid =
-        Number(paid?.data?.[0] ?? 0) +
-        Number(partial?.data?.[0] ?? 0)
+        const totalPaid =
+            Number(paid?.data?.[0] ?? 0) +
+            Number(partial?.data?.[0] ?? 0)
 
-    const outstanding = Number(total?.data?.[0] ?? 0) - totalPaid
-    balance.value = format(outstanding)
-
-    isReady.value = true
-    emit('ready', outstanding)
+        outstanding = Number(total?.data?.[0] ?? 0) - totalPaid
+    } catch (err) {
+        console.error("Failed to load fee balance", err)
+    } finally {
+        balance.value = format(outstanding)
+        isReady.value = true
+        emit('ready', outstanding)
+    }
 }
 
 watch(() => id, async () => {

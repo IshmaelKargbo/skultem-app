@@ -79,6 +79,8 @@ export type ManagementSectionView = {
     attendanceWindowDays?: number | null
     attendanceMinDays?: number | null
     attendanceStreakDays?: number | null
+    // 1 or 2 roll calls a day; null = the school's.
+    attendanceRollCalls?: number | null
     // Who approves grades in this section; null = the school's choice.
     gradeApprover?: 'CLASS_MASTER' | 'ADMIN' | 'EXAM_OFFICER' | null
     address?: SectionAddress | null
