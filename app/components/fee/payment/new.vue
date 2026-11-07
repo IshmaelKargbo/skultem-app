@@ -121,6 +121,17 @@
                                     <p class="text-xs text-muted">
                                         Outstanding: <span :class="[fee.outstanding > 0 ? 'text-error' : '']">{{ format(fee.outstanding) }}</span>
                                     </p>
+                                    <!-- Installment plan: where the student stands on it. -->
+                                    <p v-if="nextInstallment(fee.installments)" class="text-xs text-muted">
+                                        <template v-if="fee.installments.some((p: InstallmentStatus) => p.state === 'OVERDUE')">
+                                            <span class="text-error">
+                                                {{ fee.installments.filter((p: InstallmentStatus) => p.state === 'OVERDUE').length }} overdue
+                                            </span> ·
+                                        </template>
+                                        Next: {{ nextInstallment(fee.installments)!.label }}
+                                        {{ format(Number(nextInstallment(fee.installments)!.amount) - Number(nextInstallment(fee.installments)!.paid)) }}
+                                        due {{ formatDate(nextInstallment(fee.installments)!.dueDate) }}
+                                    </p>
                                 </div>
 
                                 <UButton size="xs" v-if="!isSelected(fee.feeId)" @click="addFee(fee)">
@@ -152,6 +163,13 @@
                                             a.amount = Number(val)
                                             clampAmount(a)
                                         }" />
+
+                                    <div v-if="a.dueNow && a.dueNow < a.outstanding" class="flex flex-wrap gap-1.5">
+                                        <UButton size="xs" variant="soft" :label="`Due now ${format(a.dueNow)}`"
+                                            @click="() => { a.amount = a.dueNow }" />
+                                        <UButton size="xs" variant="soft" color="neutral" :label="`Full balance ${format(a.outstanding)}`"
+                                            @click="() => { a.amount = a.outstanding }" />
+                                    </div>
 
                                     <p v-if="a.allowInstallment === false" class="text-xs text-warning">
                                         This fee doesn't allow installments - the full outstanding balance is paid at
@@ -318,9 +336,11 @@ function addFee(fee: any) {
         feeName: fee.feeName,
         outstanding: Number(fee.outstanding),
         allowInstallment: fee.allowInstallment !== false,
+        // With an installment plan: overdue parts plus the next one - offered as a one-tap amount.
+        dueNow: installmentDueNow(fee.installments),
         // No installments allowed - there's only one valid amount, so fill it in and lock the field
         // rather than let the accountant type a partial figure that the backend will just reject.
-        amount: fee.allowInstallment === false ? Number(fee.outstanding) : 0,
+        amount: fee.allowInstallment === false ? Number(fee.outstanding) : installmentDueNow(fee.installments),
     })
 }
 

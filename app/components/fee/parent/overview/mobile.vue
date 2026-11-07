@@ -60,6 +60,8 @@
                             </div>
                         </div>
                     </div>
+                    <FeeInstallmentSchedule v-if="value.installments?.length" class="mt-3 rounded-lg bg-elevated/40 p-2.5"
+                        :parts="value.installments" />
                 </div>
             </template>
 

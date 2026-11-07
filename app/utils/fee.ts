@@ -69,6 +69,47 @@ export type FeeStructure = {
     streamName?: string | null
     createdAt: string
     updatedAt: string
+    // The installment plan, in order (empty = none).
+    installments?: FeeInstallment[]
+}
+
+// One part of a fee's installment plan.
+export type FeeInstallment = { label: string, amount: number, dueDate: string }
+
+// A part being edited in the plan editor (amount empty until typed).
+export type InstallmentRow = { label: string, amount: number | null, dueDate: string }
+
+// Where a student stands on one part of a plan: their share after discounts and what their payments cover so far.
+export type InstallmentStatus = {
+    label: string
+    amount: number
+    paid: number
+    dueDate: string
+    state: 'PAID' | 'PARTIAL' | 'DUE' | 'OVERDUE'
+}
+
+export const INSTALLMENT_STATE: Record<InstallmentStatus['state'], { label: string, color: 'success' | 'info' | 'neutral' | 'error' }> = {
+    PAID: { label: 'Paid', color: 'success' },
+    PARTIAL: { label: 'Part paid', color: 'info' },
+    DUE: { label: 'Due', color: 'neutral' },
+    OVERDUE: { label: 'Overdue', color: 'error' },
+}
+
+// The plan as the API takes it: rows with an amount, nameless ones left for the server to name.
+export function toInstallmentPayload(rows: InstallmentRow[]) {
+    return rows.map(r => ({ label: r.label?.trim() || undefined, amount: Number(r.amount) || 0, dueDate: r.dueDate }))
+}
+
+// The plan must add up to the fee - checked before saving so the form can say so.
+export function installmentPlanProblem(rows: InstallmentRow[], amount: number | null) {
+    if (!rows.length) return null
+    if (rows.length < 2) return 'An installment plan needs at least two parts.'
+    if (rows.some(r => !r.amount || r.amount <= 0)) return 'Give every installment an amount.'
+    if (rows.some(r => !r.dueDate)) return 'Give every installment a due date.'
+    if (rows.some((r, i) => i > 0 && r.dueDate < rows[i - 1]!.dueDate)) return 'Put the installments in due-date order.'
+    const total = Math.round(rows.reduce((n, r) => n + Number(r.amount || 0), 0) * 100)
+    if (total !== Math.round((amount || 0) * 100)) return 'The installments have to add up to the fee amount.'
+    return null
 }
 
 export type FeeDiscount = {
@@ -183,6 +224,8 @@ export type CreateFeeStructureDto = {
     hasSupply: boolean
     supplyItems: FeeStructureSupplyItemInput[]
     allowInstallment: boolean,
+    // The installment plan (empty = none).
+    installments?: { label?: string, amount: number, dueDate: string }[]
     description?: string
     dueDate: string
     // Only ever charged the first time a student enrolls (e.g. Uniform Fee) - never to a student
@@ -209,6 +252,8 @@ export type UpdateFeeStructureDto = {
     amount: number
     dueDate: string
     allowInstallment: boolean
+    // The installment plan (empty = none).
+    installments?: { label?: string, amount: number, dueDate: string }[]
     hasSupply: boolean
     supplyItems: FeeStructureSupplyItemInput[]
     description?: string
@@ -229,4 +274,19 @@ export type CreateFeeDiscountDto = {
 export type AssignFeeToStudentDto = {
     studentId: string
     feeId: string
+}
+
+// The first part not yet fully paid, if any.
+export function nextInstallment(parts?: InstallmentStatus[] | null) {
+    return (parts ?? []).find(p => p.state !== 'PAID') ?? null
+}
+
+// What clears every overdue part plus the next one: a sensible amount to take today.
+export function installmentDueNow(parts?: InstallmentStatus[] | null) {
+    const list = parts ?? []
+    const overdue = list.filter(p => p.state === 'OVERDUE')
+    const upcoming = list.find(p => p.state === 'DUE' || p.state === 'PARTIAL')
+    const total = [...overdue, ...(upcoming ? [upcoming] : [])]
+        .reduce((n, p) => n + Math.max(0, Number(p.amount) - Number(p.paid)), 0)
+    return Math.round(total * 100) / 100
 }

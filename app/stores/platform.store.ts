@@ -11,7 +11,8 @@ export const usePlatformStore = defineStore('platform', {
 
   getters: {
     feeSettingFor: (state) => (schoolId: string): PlatformFeeSetting =>
-      state.feeSettings.find(s => s.schoolId === schoolId) || { schoolId, amount: null, updatedAt: null }
+      state.feeSettings.find(s => s.schoolId === schoolId)
+      || { schoolId, amount: null, updatedAt: null, installmentMode: 'BY_TERM', termShares: [] }
   },
 
   actions: {
@@ -37,8 +38,8 @@ export const usePlatformStore = defineStore('platform', {
         this.loading = false
       }
     },
-    async updateFeeSetting(schoolId: string, amount: number) {
-      const response = await PlatformApi().updateFeeSetting(schoolId, amount) as any
+    async updateFeeSetting(schoolId: string, amount: number, plan?: PlatformFeePlan) {
+      const response = await PlatformApi().updateFeeSetting(schoolId, amount, plan) as any
 
       const index = this.feeSettings.findIndex(s => s.schoolId === schoolId)
       if (index !== -1) {

@@ -230,7 +230,8 @@ definePageMeta({
         </template>
 
         <template #allowInstallment-cell="{ row }">
-          <UBadge variant="outline" :label="row.original.allowInstallment ? 'Yes' : 'No'"
+          <UBadge variant="outline"
+            :label="row.original.installments?.length ? `${row.original.installments.length} parts` : row.original.allowInstallment ? 'Yes' : 'No'"
             :color="row.original.allowInstallment ? 'success' : 'neutral'" />
         </template>
 
@@ -397,7 +398,7 @@ definePageMeta({
                 </div>
 
                 <UBadge size="lg" :color="item.allowInstallment ? 'success' : 'neutral'" variant="soft">
-                  {{ item.allowInstallment ? 'Installment' : 'Full Payment' }}
+                  {{ item.installments?.length ? `${item.installments.length} installments` : item.allowInstallment ? 'Installment' : 'Full Payment' }}
                 </UBadge>
               </div>
             </div>

@@ -33,7 +33,13 @@ export type PlatformFeeSetting = {
     schoolId: string
     amount: number | null
     updatedAt: string | null
+    // BY_TERM (the default): one part per term of the year, each due at that term's end. FULL: all at once.
+    installmentMode?: 'BY_TERM' | 'FULL'
+    // Percent per term ([50, 30, 20]); empty = equal parts.
+    termShares?: number[]
 }
+
+export type PlatformFeePlan = { installmentMode: 'BY_TERM' | 'FULL', termShares: number[] }
 
 // The platform fee every student is charged: a flat amount per term, the same for every school.
 export type PlatformFeeOverview = {

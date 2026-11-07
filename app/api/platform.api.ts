@@ -35,7 +35,8 @@ export const PlatformApi = () => {
     getCalendar: async () => (await get<NationalCalendar>('/platform/calendar'))?.data,
     saveCalendar: (payload: SaveNationalCalendarPayload) => put<NationalCalendar>('/platform/calendar', payload),
     listFeeSettings: async () => (await get<PlatformFeeSetting[]>('/platform/fee-setting'))?.data,
-    updateFeeSetting: (schoolId: string, amount: number) => put<PlatformFeeSetting>(`/platform/${schoolId}/fee-setting`, { amount }),
+    updateFeeSetting: (schoolId: string, amount: number, plan?: PlatformFeePlan) =>
+      put<PlatformFeeSetting>(`/platform/${schoolId}/fee-setting`, { amount, ...(plan ?? {}) }),
     me: async () => (await get<PlatformAccess>('/system/me/access'))?.data,
     createRole: async (body: { label: string, description: string, permissions: string[] }) => (await post<PlatformRoleInfo>('/system/roles', body))?.data,
     roles: async () => (await get<{ roles: PlatformRoleInfo[], staff: PlatformStaff[] }>('/system/roles'))?.data,

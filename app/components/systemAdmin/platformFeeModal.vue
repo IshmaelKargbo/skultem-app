@@ -21,7 +21,29 @@ const open = computed({
 })
 
 const loading = ref(false)
-const state = reactive({ amount: null as number | null })
+const state = reactive({
+  amount: null as number | null,
+  installmentMode: 'BY_TERM' as 'BY_TERM' | 'FULL',
+  // Off = equal parts; on = the percent for each term below.
+  customSplit: false,
+  shares: [34, 33, 33] as number[],
+})
+
+const sharesTotal = computed(() => state.shares.reduce((n, v) => n + (Number(v) || 0), 0))
+
+// What each part comes to for the amount typed, as a preview.
+const preview = computed(() => {
+  const amount = Number(state.amount) || 0
+  if (state.installmentMode === 'FULL' || !amount) return []
+  // Always three parts; equal thirds unless split by hand.
+  const shares = state.customSplit ? state.shares : [100 / 3, 100 / 3, 100 / 3]
+  let allocated = 0
+  return shares.map((share, i) => {
+    const part = i === shares.length - 1 ? amount - allocated : Math.floor((amount * share) / 100 * 100) / 100
+    allocated += part
+    return { label: `Part ${i + 1}`, amount: Math.round(part * 100) / 100 }
+  })
+})
 
 const schema = yup.object({
   amount: yup
@@ -38,6 +60,9 @@ const current = computed(() => store.feeSettingFor(props.schoolId))
 watch(() => props.open, (value) => {
   if (value) {
     state.amount = current.value.amount
+    state.installmentMode = current.value.installmentMode ?? 'BY_TERM'
+    state.customSplit = (current.value.termShares?.length ?? 0) > 0
+    state.shares = current.value.termShares?.length ? [...current.value.termShares] : [34, 33, 33]
   }
 })
 
@@ -51,7 +76,15 @@ async function onSubmit() {
 
     await schema.validate(state, { abortEarly: false })
 
-    await store.updateFeeSetting(props.schoolId, state.amount || 0)
+    if (state.installmentMode === 'BY_TERM' && state.customSplit) {
+      if (state.shares.some(v => !v || v < 1)) throw new Error('Give every term a share of at least 1%')
+      if (sharesTotal.value !== 100) throw new Error(`The term shares add up to ${sharesTotal.value}% - they need to make 100%`)
+    }
+
+    await store.updateFeeSetting(props.schoolId, state.amount || 0, {
+      installmentMode: state.installmentMode,
+      termShares: state.installmentMode === 'BY_TERM' && state.customSplit ? state.shares.map(Number) : [],
+    })
 
     toastSuccess(`Platform fee updated for ${clean(props.schoolName)}`)
     close()
@@ -83,10 +116,43 @@ async function onSubmit() {
 
             <template #help>
               <p class="text-xs text-muted">
-                Charged once per student per academic year, for this school only.
+                Charged per student per academic year, for this school only.
               </p>
             </template>
           </UFormField>
+
+          <UFormField label="How students pay it" name="installmentMode">
+            <URadioGroup v-model="state.installmentMode" variant="card" :disabled="loading" :items="[
+              { label: '3 installments', description: 'The total split into 3 parts - one per term, due at the end of each term.', value: 'BY_TERM' },
+              { label: 'Full payment', description: 'All of it at once, due at the end of the first term.', value: 'FULL' },
+            ]" />
+          </UFormField>
+
+          <div v-if="state.installmentMode === 'BY_TERM'" class="space-y-2 rounded-lg border border-default p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-medium">Split the 3 parts unevenly</p>
+                <p class="text-xs text-muted">Off: equal thirds. On: set each part's share (they must add up to 100%).</p>
+              </div>
+              <USwitch v-model="state.customSplit" :disabled="loading" />
+            </div>
+            <div v-if="state.customSplit" class="grid grid-cols-3 gap-2">
+              <UFormField v-for="(_, i) in state.shares" :key="i" :label="`Part ${i + 1}`">
+                <UInput v-model.number="state.shares[i]" type="number" min="1" max="100" :disabled="loading">
+                  <template #trailing><span class="text-xs text-muted">%</span></template>
+                </UInput>
+              </UFormField>
+            </div>
+            <p v-if="state.customSplit" class="text-xs" :class="sharesTotal === 100 ? 'text-success' : 'text-warning'">
+              Total {{ sharesTotal }}%
+            </p>
+            <p v-if="preview.length" class="text-xs text-muted">
+              Per student: {{ preview.map(p => `${p.label} ${format(p.amount)}`).join(' · ') }}
+            </p>
+            <p class="text-xs text-muted">
+              Applied to this year's platform fee straight away - only when each part is due changes, not what students owe.
+            </p>
+          </div>
 
           <p v-if="current.updatedAt" class="text-xs text-muted">
             Current amount: {{ current.amount != null ? format(current.amount) : "Not set" }}

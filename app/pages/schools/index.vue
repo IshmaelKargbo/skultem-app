@@ -197,6 +197,9 @@ definePageMeta({
                 : "Not set"
             }}
           </p>
+          <p v-if="platformStore.feeSettingFor(row.original.id).amount != null" class="text-xs text-muted">
+            {{ platformStore.feeSettingFor(row.original.id).installmentMode === 'FULL' ? 'Full payment' : '3 installments' }}
+          </p>
         </template>
 
         <template #createdAt-cell="{ row }">

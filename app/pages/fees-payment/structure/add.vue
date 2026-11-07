@@ -37,6 +37,12 @@ const terms = computed(() =>
   }))
 );
 
+// The fee's term, and the other terms of its year - for the installment plan's quick starts.
+const selectedTerm = computed(() => termStore.records.find((t) => t.id === state.termId) ?? null);
+const yearTerms = computed(() => termStore.records
+  .filter((t) => !selectedTerm.value || t.academicYear?.id === selectedTerm.value.academicYear?.id)
+  .map((t) => ({ name: t.name, endDate: t.endDate, termNumber: t.termNumber })));
+
 const assignModes = [
   { label: "All Students", value: "ALL" },
   { label: "Specific Classes", value: "CLASS" },
@@ -77,6 +83,7 @@ type FeeStructureForm = {
   dueDate: string;
   studentIds: string[];
   allowInstallment: boolean;
+  installments: InstallmentRow[];
   hasSupply: boolean;
   supplyItems: SupplyItemRow[];
   description?: string;
@@ -95,6 +102,7 @@ const state = reactive<FeeStructureForm>({
   dueDate: "",
   studentIds: [],
   allowInstallment: false,
+  installments: [],
   hasSupply: false,
   supplyItems: [],
   description: "",
@@ -184,6 +192,13 @@ async function onSubmit() {
       return;
     }
 
+    const planProblem = state.allowInstallment ? installmentPlanProblem(state.installments, state.amount) : null;
+    if (planProblem) {
+      toastError(planProblem);
+      isLoading.value = false;
+      return;
+    }
+
     const res: any = await feeStructureStore.create({
       classIds: state.assignMode === "CLASS" ? state.classIds : null,
       studentIds: isSelection ? state.studentIds : [],
@@ -193,6 +208,11 @@ async function onSubmit() {
       amount: state.amount || 0,
       dueDate: state.dueDate,
       allowInstallment: state.allowInstallment,
+      installments: state.allowInstallment ? toInstallmentPayload(state.installments) : [],
+      // With a plan, the fee is due when its last part is.
+      ...(state.allowInstallment && state.installments.length
+        ? { dueDate: state.installments[state.installments.length - 1]!.dueDate }
+        : {}),
       hasSupply: state.hasSupply,
       supplyItems: state.hasSupply ? supplyItems : [],
       description: state.description,
@@ -228,6 +248,13 @@ onMounted(() => {
   streamStore.fetchAll(0, 0);
   if (suppliesAvailable.value) materialStore.fetchAll(0, 0);
 });
+
+watch(
+  () => state.allowInstallment,
+  (value) => {
+    if (!value) state.installments = [];
+  }
+);
 
 watch(
   () => state.hasSupply,
@@ -288,10 +315,15 @@ definePageMeta({
 
               <!-- Due Date -->
               <UFormField label="Due Date" name="dueDate" required>
-                <UInput v-model="state.dueDate" type="date" :disabled="isLoading" />
+                <UInput v-model="state.dueDate" type="date"
+                  :disabled="isLoading || (state.allowInstallment && state.installments.length > 0)" />
 
                 <template #help>
-                  <p class="text-xs text-muted">Deadline for completing payment.</p>
+                  <p class="text-xs text-muted">
+                    {{ state.allowInstallment && state.installments.length
+                      ? 'Set by the installment plan - the last part is due on this date.'
+                      : 'Deadline for completing payment.' }}
+                  </p>
                 </template>
               </UFormField>
 
@@ -321,12 +353,16 @@ definePageMeta({
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Allow Installment</p>
-                    <p class="text-xs text-muted">Students can pay in multiple parts.</p>
+                    <p class="text-xs text-muted">Students can pay in parts, optionally on a set plan.</p>
                   </div>
 
                   <USwitch v-model="state.allowInstallment" :disabled="isLoading" />
                 </div>
               </UFormField>
+
+              <FeeStructureInstallmentPlan v-if="state.allowInstallment" v-model="state.installments"
+                :amount="state.amount" :term-start="selectedTerm?.startDate" :term-end="selectedTerm?.endDate"
+                :year-terms="yearTerms" :disabled="isLoading" />
 
               <!-- Has Supply -->
               <UFormField v-if="suppliesAvailable" name="hasSupply">

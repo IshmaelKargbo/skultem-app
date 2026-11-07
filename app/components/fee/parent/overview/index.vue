@@ -32,6 +32,17 @@
                     :icon="parseFeeStatusIcon[row.original.status]" />
             </template>
         </UTable>
+
+        <!-- Fees paid on an installment plan: each part and where the child stands on it. -->
+        <div v-if="withPlans.length" class="space-y-4 border-t border-default p-4">
+            <p class="text-sm font-medium">Payment plans</p>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div v-for="(fee, i) in withPlans" :key="fee.fee + i" class="rounded-xl border border-default p-3">
+                    <p class="mb-2 text-sm font-semibold">{{ fee.fee }} <span class="font-normal text-muted">· {{ fee.term }}</span></p>
+                    <FeeInstallmentSchedule :parts="fee.installments" />
+                </div>
+            </div>
+        </div>
     </UCard>
 </template>
 
@@ -46,6 +57,7 @@ const store = useStudentStore()
 const loading = ref(true)
 
 const data = ref<any>([])
+const withPlans = computed(() => (data.value as any[]).filter(f => f.installments?.length))
 
 const columns: TableColumn<any> = [
     {

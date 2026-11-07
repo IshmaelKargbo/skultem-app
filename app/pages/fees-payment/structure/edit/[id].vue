@@ -40,6 +40,12 @@ const terms = computed(() =>
   }))
 );
 
+// The fee's term, and the other terms of its year - for the installment plan's quick starts.
+const selectedTerm = computed(() => termStore.records.find((t) => t.id === state.termId) ?? null);
+const yearTerms = computed(() => termStore.records
+  .filter((t) => !selectedTerm.value || t.academicYear?.id === selectedTerm.value.academicYear?.id)
+  .map((t) => ({ name: t.name, endDate: t.endDate, termNumber: t.termNumber })));
+
 type SupplyItemRow = { key: string, materialId: string, quantity: number };
 
 type FeeStructureForm = {
@@ -48,6 +54,7 @@ type FeeStructureForm = {
   amount: number | null;
   dueDate: string;
   allowInstallment: boolean;
+  installments: InstallmentRow[];
   hasSupply: boolean;
   supplyItems: SupplyItemRow[];
   description?: string;
@@ -62,6 +69,7 @@ const state = reactive<FeeStructureForm>({
   amount: null,
   dueDate: "",
   allowInstallment: false,
+  installments: [],
   hasSupply: false,
   supplyItems: [],
   description: "",
@@ -131,12 +139,24 @@ async function onSubmit() {
       return;
     }
 
+    const planProblem = state.allowInstallment ? installmentPlanProblem(state.installments, state.amount) : null;
+    if (planProblem) {
+      toastError(planProblem);
+      isLoading.value = false;
+      return;
+    }
+
     await feeStructureStore.update(route.params.id as string, {
       feeCategory: state.feeCategory,
       termId: state.termId,
       amount: state.amount || 0,
       dueDate: state.dueDate,
       allowInstallment: state.allowInstallment,
+      installments: state.allowInstallment ? toInstallmentPayload(state.installments) : [],
+      // With a plan, the fee is due when its last part is.
+      ...(state.allowInstallment && state.installments.length
+        ? { dueDate: state.installments[state.installments.length - 1]!.dueDate }
+        : {}),
       hasSupply: state.hasSupply,
       supplyItems: state.hasSupply ? supplyItems : [],
       description: state.description,
@@ -180,6 +200,11 @@ onMounted(async () => {
     state.amount = fee.amount;
     state.dueDate = fee.dueDate;
     state.allowInstallment = fee.allowInstallment;
+    state.installments = (fee.installments || []).map((i: FeeInstallment) => ({
+      label: i.label,
+      amount: Number(i.amount),
+      dueDate: i.dueDate,
+    }));
     state.hasSupply = fee.hasSupply;
     state.supplyItems = (fee.supplyItems || []).map((item: FeeStructureSupplyItem) => ({
       key: crypto.randomUUID(),
@@ -201,6 +226,13 @@ onMounted(async () => {
     isFetching.value = false;
   }
 });
+
+watch(
+  () => state.allowInstallment,
+  (value) => {
+    if (!value) state.installments = [];
+  }
+);
 
 watch(
   () => state.hasSupply,
@@ -260,10 +292,15 @@ definePageMeta({
 
               <!-- Due Date -->
               <UFormField label="Due Date" name="dueDate" required>
-                <UInput v-model="state.dueDate" type="date" :disabled="isLoading" />
+                <UInput v-model="state.dueDate" type="date"
+                  :disabled="isLoading || (state.allowInstallment && state.installments.length > 0)" />
 
                 <template #help>
-                  <p class="text-xs text-muted">Deadline for completing payment.</p>
+                  <p class="text-xs text-muted">
+                    {{ state.allowInstallment && state.installments.length
+                      ? 'Set by the installment plan - the last part is due on this date.'
+                      : 'Deadline for completing payment.' }}
+                  </p>
                 </template>
               </UFormField>
 
@@ -293,12 +330,16 @@ definePageMeta({
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Allow Installment</p>
-                    <p class="text-xs text-muted">Students can pay in multiple parts.</p>
+                    <p class="text-xs text-muted">Students can pay in parts, optionally on a set plan.</p>
                   </div>
 
                   <USwitch v-model="state.allowInstallment" :disabled="isLoading" />
                 </div>
               </UFormField>
+
+              <FeeStructureInstallmentPlan v-if="state.allowInstallment" v-model="state.installments"
+                :amount="state.amount" :term-start="selectedTerm?.startDate" :term-end="selectedTerm?.endDate"
+                :year-terms="yearTerms" :disabled="isLoading" />
 
               <!-- Has Supply -->
               <UFormField v-if="suppliesAvailable" name="hasSupply">
@@ -313,15 +354,6 @@ definePageMeta({
                   <USwitch v-model="state.hasSupply" :disabled="isLoading" />
                 </div>
               </UFormField>
-
-              <!-- Info -->
-              <UAlert
-                color="neutral"
-                variant="soft"
-                icon="i-lucide-lock"
-                title="Who this applies to can't be changed"
-                description="Whether this fee targets a class, a hand-picked selection of students, or everyone was set when it was created and can't be edited - delete and recreate it instead if that needs to change. New/Old Students Only and Gender below can still be adjusted, but only affect enrollments from this point on - it won't add or remove the fee for students already enrolled."
-              />
 
               <!-- New/Old Students Only - not available for a hand-picked selection of students,
                    same rule the backend enforces (see FeeStructure#update). -->
