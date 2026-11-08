@@ -3,9 +3,9 @@
     <!-- Section nav and the Student/Staff toggle share a row on desktop (nav left, toggle right); on a
          phone they stack, with the toggle spanning the full width. -->
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <IdCardsSectionNav />
+      <div data-guide="idc-tabs"><IdCardsSectionNav /></div>
       <!-- Same pill-tab look as the app's Tab component (that one is link-based, this switches a local value). -->
-      <div class="flex w-full gap-1 rounded-3xl md:inline-flex md:w-auto border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
+      <div data-guide="idc-type" class="flex w-full gap-1 rounded-3xl md:inline-flex md:w-auto border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
         <button v-for="tab in cardTypeTabs" :key="tab.value" type="button"
           class="flex flex-1 items-center justify-center gap-1.5 rounded-3xl px-4 py-2 md:flex-none text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
           :class="cardType === tab.value
@@ -18,10 +18,11 @@
       </div>
     </div>
 
+    <GuideBar topic="admin-id-card-design" />
     <DesignSkeleton v-if="fetching" preview-wide />
     <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
       <!-- Left: the settings form -->
-      <div>
+      <div data-guide="idc-settings">
         <IdCardsIDCardSettings
           v-model="open"
           :settings="uiSettings"
@@ -39,7 +40,7 @@
            a real render of the card component itself (not a second, lower-fidelity
            mockup of the design), fed with sample data so it updates as settings change.
            Given the extra column, the card renders large enough to actually check. -->
-      <div class="lg:col-span-2 lg:sticky lg:top-6 lg:self-start space-y-2">
+      <div data-guide="idc-preview" class="lg:col-span-2 lg:sticky lg:top-6 lg:self-start space-y-2">
         <div class="flex items-center gap-2 px-1">
           <UIcon name="i-lucide-eye" class="size-5 text-primary" />
           <h3 class="font-semibold">Live Preview</h3>

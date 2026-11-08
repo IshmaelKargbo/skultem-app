@@ -1,7 +1,8 @@
 <template>
   <div class="p-4 sm:p-6 lg:p-7 h-full space-y-4 sm:space-y-5 overflow-y-auto">
+    <GuideBar topic="fin-report-profit-loss" />
     <ReportHeader :show-filter="false" />
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div data-guide="fr-pl-totals" class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <Metric :record="{
         icon: TOTAL_REVENUE,
         color: 'success',
@@ -24,7 +25,7 @@
         isReady
       }" />
     </div>
-    <UCard>
+    <UCard data-guide="fr-pl-chart">
       <WidgetProfitLossSummary @totals="onTotals" />
     </UCard>
   </div>

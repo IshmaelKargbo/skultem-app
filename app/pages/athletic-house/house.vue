@@ -107,13 +107,14 @@ const columns = [
 
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <AthleticSectionNav />
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <div data-guide="ath-tabs"><AthleticSectionNav /></div>
+    <GuideBar topic="admin-houses" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-between space-x-3">
           <div class="flex space-x-3 flex-1">
             <UInput placeholder="Search by name . . ." />
-            <AthleticCategoryAdd />
+            <div data-guide="ath-house-add"><AthleticCategoryAdd /></div>
           </div>
           <TableViewToggle v-model="view" />
         </div>

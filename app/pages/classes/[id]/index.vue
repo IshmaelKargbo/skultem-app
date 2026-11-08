@@ -1,7 +1,8 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
+        <GuideBar :key="guideTopic" :topic="guideTopic" />
         <!-- Header: who this class is, and what you can do with it -->
-        <UCard>
+        <UCard data-guide="cls-header">
             <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex min-w-0 items-center gap-3">
                 <span class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -82,7 +83,7 @@
             :on-confirm="confirmDeleteClass" />
 
         <!-- At a glance -->
-        <div v-if="canViewRoster" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div data-guide="cls-stats" v-if="canViewRoster" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Metric :record="{
                 label: 'Students', value: students.length, subtle: genderSummary,
                 icon: 'i-lucide-users', color: 'primary', isReady: !studentsLoading
@@ -108,13 +109,13 @@
         </div>
 
         <!-- What to look at first -->
-        <ClassInsights v-if="canViewRoster && !studentsLoading" :students="students" :attention="attentionByStudentId"
+        <ClassInsights data-guide="cls-insights" v-if="canViewRoster && !studentsLoading" :students="students" :attention="attentionByStudentId"
             :attendance-by-id="attendanceById" :performance-by-id="performanceById"
             :subject-scores="subjectScores" :class-id="classId"
             :threshold="attentionThresholds?.attendance" :pass-mark="attentionThresholds?.passMark" />
 
         <!-- Students -->
-        <UCard v-if="loading || canViewRoster" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <UCard data-guide="cls-students" v-if="loading || canViewRoster" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-wrap items-center gap-2 px-4 py-3">
                     <div class="flex items-center gap-2">
@@ -126,9 +127,9 @@
                         {{ attentionRule }}
                     </p>
                     <div class="ml-auto flex w-full items-center gap-2 sm:w-auto">
-                        <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search students" class="flex-1 sm:w-64" />
+                        <UInput data-guide="adm-search" v-model="search" :icon="SEARCH_ICON" placeholder="Search students" class="flex-1 sm:w-64" />
                         <UTooltip v-if="attentionCount" :text="`Show only students who need attention${attentionRule ? ` - ${attentionRule.toLowerCase()}` : ''}`">
-                            <UButton icon="i-lucide-alert-triangle" size="md" :color="onlyAttention ? 'warning' : 'neutral'"
+                            <UButton data-guide="cls-attention" icon="i-lucide-alert-triangle" size="md" :color="onlyAttention ? 'warning' : 'neutral'"
                                 :variant="onlyAttention ? 'solid' : 'outline'" :label="String(attentionCount)"
                                 @click="onlyAttention = !onlyAttention" />
                         </UTooltip>
@@ -270,7 +271,7 @@
             </div>
         </UCard>
 
-        <UCard v-else-if="isParentViewer">
+        <UCard data-guide="cls-locked" v-else-if="isParentViewer">
             <div class="flex flex-col items-center gap-3 py-10 text-center">
                 <span class="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
                     <UIcon name="i-lucide-lock" class="text-2xl text-primary" />
@@ -739,6 +740,7 @@ async function onRemoveClassMaster(id: string) {
 
 const isTeacherViewer = computed(() => can(Role.TEACHER))
 const isParentViewer = computed(() => can(Role.PARENT))
+const guideTopic = computed(() => (isParentViewer.value ? 'parent-class' : 'class-detail'))
 const isMasterOfThisClass = computed(() => classTeachers.value.some(t => t.isMe))
 
 const teacherSubjectStore = useTeacherSubjectStore()

@@ -1,7 +1,8 @@
 <template>
   <div class="px-4 md:px-6 space-y-3">
+    <GuideBar topic="fin-report-history" />
     <ReportHeader :selected="selected" :emit-only="false" />
-    <ReportPaymentHistory />
+    <div data-guide="fr-history-list"><ReportPaymentHistory /></div>
   </div>
 </template>
 

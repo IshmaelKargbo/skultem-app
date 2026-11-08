@@ -13,11 +13,12 @@
       </div>
 
       <div v-if="payslip" class="flex flex-wrap gap-2">
-        <UButton icon="i-lucide-printer" variant="soft" @click="printPage">
+        <GuideButton guide="payroll-payslip" /><HelpButton topic="payroll-payslip" />
+        <UButton data-guide="pay-slip-print" icon="i-lucide-printer" variant="soft" @click="printPage">
           Print
         </UButton>
 
-        <UButton icon="i-lucide-download" :loading="downloading" @click="downloadPdf">
+        <UButton data-guide="pay-slip-download" icon="i-lucide-download" :loading="downloading" @click="downloadPdf">
           Download PDF
         </UButton>
       </div>
@@ -34,7 +35,7 @@
     </UCard>
 
     <!-- The document itself -->
-    <div v-else class="mx-auto w-fit overflow-hidden rounded-2xl shadow-sm print:overflow-visible print:rounded-none print:shadow-none">
+    <div v-else data-guide="pay-slip-document" class="mx-auto w-fit overflow-hidden rounded-2xl shadow-sm print:overflow-visible print:rounded-none print:shadow-none">
       <PayrollPayslipDocument id="payslip-document" :payslip="payslip" :logo="pdfLogo || settings.logoUrl"
         :accent-color="settings.accentColor" :footer-note="settings.footerNote"
         :show-watermark="settings.showWatermark" :show-amount-in-words="settings.showAmountInWords" />

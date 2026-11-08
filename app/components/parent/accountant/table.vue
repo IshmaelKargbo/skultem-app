@@ -97,16 +97,16 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="acc-parent-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex px-4 py-3 gap-2 items-center">
-          <div class="flex-1 border-default flex items-center gap-2">
+          <div data-guide="acc-parent-search" class="flex-1 border-default flex items-center gap-2">
             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, email or phone"
               class="flex-1" />
             <ParentFilterDrawer v-model:sort="sort" :sort-options="sortOptions" :active-count="activeFilterCount"
               :default-sort="DEFAULT_SORT" />
           </div>
-          <TableViewToggle v-model="view" />
+          <div data-guide="acc-view"><TableViewToggle v-model="view" /></div>
         </div>
       </template>
 

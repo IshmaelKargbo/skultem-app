@@ -6,17 +6,20 @@
           <p class="text-lg font-semibold">{{ record ? 'Timetable details' : 'Set up timetable' }}</p>
           <p class="truncate text-xs text-muted">{{ assessmentName }} · {{ term?.name }}</p>
         </div>
-        <UButton :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
+        <div class="flex items-center gap-1">
+          <GuideButton v-if="open" guide="exam-timetable-form" />
+          <UButton :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
+        </div>
       </div>
     </template>
 
     <template #body>
       <UForm ref="formRef" :schema="schema" :state="state" class="w-full space-y-4" @submit="onSubmit">
-        <UFormField required label="Title" name="title" help="Printed at the top of the timetable.">
+        <UFormField data-guide="tt-form-title" required label="Title" name="title" help="Printed at the top of the timetable.">
           <UInput v-model="state.title" placeholder="e.g. First Term Examination" class="w-full" :disabled="saving" />
         </UFormField>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div data-guide="tt-form-period" class="grid grid-cols-2 gap-3">
           <UFormField label="First day" name="startDate">
             <UInput v-model="state.startDate" type="date" :min="term?.startDate" :max="term?.endDate" class="w-full"
               :disabled="saving" />
@@ -28,7 +31,7 @@
         </div>
         <p class="-mt-2 text-xs text-muted">Papers can only be set on days inside this period.</p>
 
-        <UFormField label="Instructions to candidates" name="instructions"
+        <UFormField data-guide="tt-form-instructions" label="Instructions to candidates" name="instructions"
           help="Shown on the timetable and on every class printout.">
           <UTextarea v-model="state.instructions" :rows="6" autoresize class="w-full" :disabled="saving" />
         </UFormField>

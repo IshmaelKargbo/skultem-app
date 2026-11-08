@@ -65,6 +65,21 @@
           :title="`${roomClash.room} is also used by ${roomClash.subject} in this period`"
           description="Both groups will be in the same room at the same time. Pick another room if they shouldn't share." />
 
+        <!-- A double period: the same lesson runs on into the next period (e.g. a practical) - when adding a lesson,
+             or to extend one already here. -->
+        <div v-if="!isOption" class="flex items-start justify-between gap-3 rounded-xl border border-default p-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium">{{ isEdit ? 'Extend into the next period' : 'Double period' }}</p>
+            <p class="text-xs text-muted">
+              <template v-if="alreadyDouble">Already a double period - it also runs in {{ nextPeriod!.name }}. Remove it there to make it single again.</template>
+              <template v-else-if="nextPeriod && nextSlot.length">{{ nextPeriod.name }} already has {{ nextSlot.map(t => t.subject).join(', ') }} on this day - remove it there first.</template>
+              <template v-else-if="nextPeriod">Also put it in {{ nextPeriod.name }} ({{ nextPeriod.startTime }} - {{ nextPeriod.endTime }}).</template>
+              <template v-else>Not possible here - no lesson period comes straight after this one.</template>
+            </p>
+          </div>
+          <USwitch v-model="state.doublePeriod" :disabled="!canExtend" />
+        </div>
+
         <UFormField label="Color">
           <div class="flex flex-wrap gap-2">
             <button v-for="color in colorOptions" :key="color.value" type="button"
@@ -187,12 +202,32 @@ const colorOptions = [
 
 const defaultColor = colorOptions[colorOptions.length - 1]!.value
 
-const state = reactive<TimetableForm>({
+const state = reactive<TimetableForm & { doublePeriod: boolean }>({
   kind: 'SUBJECT',
   subject: '',
   room: '',
   color: defaultColor,
+  doublePeriod: false,
 })
+
+// The lesson period straight after this one, if there is one (a break, lunch or assembly can't take a lesson).
+const nextPeriod = computed(() => {
+  const ordered = [...store.periods].sort((a, b) => a.startTime.localeCompare(b.startTime))
+  const at = ordered.findIndex(p => p.id === props.period)
+  const next = at >= 0 ? ordered[at + 1] : undefined
+  return next && !next.isBreak && !next.isLunch && !next.isAssembly ? next : null
+})
+
+// What the next period already holds on this day.
+const nextSlot = computed(() => nextPeriod.value && props.index !== undefined
+  ? periodSlot(nextPeriod.value, Number(props.index))
+  : [])
+// This lesson already continues into the next period.
+const alreadyDouble = computed(() => isEdit.value && nextSlot.value.length === 1
+  && (props.state?.kind === 'LIBRARY'
+    ? nextSlot.value[0]!.kind === 'LIBRARY'
+    : !!props.state?.subjectId && nextSlot.value[0]!.subjectId === props.state.subjectId))
+const canExtend = computed(() => !!nextPeriod.value && !nextSlot.value.length)
 
 async function save() {
   if (!props.index) return
@@ -205,8 +240,11 @@ async function save() {
       day: props.day || '',
       room: state.room,
       color: state.color,
-      entry: props.state?.id || undefined
+      entry: props.state?.id || undefined,
+      doublePeriod: state.doublePeriod && canExtend.value
     }, props.index)
+    // A double period filled two slots - reload so the second one shows too.
+    if (saved && state.doublePeriod && store.sessionId) await store.getTimetable(store.sessionId)
     if (saved) close()
   } catch (error: any) {
     useNotify().error(error)
@@ -220,6 +258,7 @@ function syncState(value?: { kind?: TimetableKind; roomId: string; subjectId: st
   state.subject = value?.subjectId || ''
   state.room = value?.roomId || ''
   state.color = value?.color || defaultColor
+  state.doublePeriod = false
 }
 
 watch(

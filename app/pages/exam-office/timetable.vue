@@ -5,14 +5,17 @@
     <div class="space-y-3 print:hidden">
       <Heading title="Exam Timetables" :subtitle="canManage
         ? 'One timetable for each assessment in the term: its papers, venues and invigilators.'
-        : 'When and where each class sits its papers.'" />
-      <GradesSectionNav />
+        : 'When and where each class sits its papers.'">
+        <!-- The exam office plans the timetable; teachers only read published ones - each gets its own guide and help. -->
+        <GuideButton :key="guideTopic" :guide="guideTopic" /><HelpButton :topic="guideTopic" />
+      </Heading>
+      <div data-guide="grades-tabs"><GradesSectionNav /></div>
 
       <!-- Term, then the term's assessments: each has its own timetable. -->
       <div class="flex flex-col gap-2 md:flex-row md:items-center">
-        <USelectMenu v-model="termId" :items="termOptions" value-key="value" label-key="label"
+        <USelectMenu v-model="termId" data-guide="exam-term" :items="termOptions" value-key="value" label-key="label"
           placeholder="Choose a term" class="w-full md:w-48" :loading="termStore.loading" />
-        <div v-if="summaries.length" class="flex gap-1.5 overflow-x-auto pb-1 md:pb-0">
+        <div v-if="summaries.length" data-guide="exam-assessments" class="flex gap-1.5 overflow-x-auto pb-1 md:pb-0">
           <UButton v-for="s in summaries" :key="s.assessmentId" size="sm" class="shrink-0"
             :color="s.assessmentId === assessmentId ? 'primary' : 'neutral'"
             :variant="s.assessmentId === assessmentId ? 'solid' : 'soft'" @click="() => { assessmentId = s.assessmentId }">
@@ -84,13 +87,13 @@
         <p class="max-w-sm text-sm text-muted">
           Set the exam period and instructions, then add each paper. Teachers and parents only see it once you publish.
         </p>
-        <UButton :icon="ADD_ICON" :label="`Set up ${selected.assessmentName} timetable`" @click="openDetails(true)" />
+        <UButton data-guide="exam-setup" :icon="ADD_ICON" :label="`Set up ${selected.assessmentName} timetable`" @click="openDetails(true)" />
       </div>
     </UCard>
 
     <template v-else-if="timetable">
       <!-- Timetable header -->
-      <UCard class="print:hidden">
+      <UCard data-guide="exam-timetable-header" class="print:hidden">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div class="min-w-0 space-y-1">
             <div class="flex flex-wrap items-center gap-2">
@@ -113,12 +116,12 @@
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <UDropdownMenu v-if="timetable.papers.length" :items="printItems">
-              <UButton icon="i-lucide-printer" variant="soft" color="neutral" label="Print" trailing-icon="i-lucide-chevron-down" />
-            </UDropdownMenu>
+            <ExamOfficeTimetableDownload v-if="timetable.papers.length" data-guide="exam-download" :timetable="timetable"
+              :class-ids="classId ? [classId] : []" />
             <template v-if="canManage">
               <UButton :icon="SCHEME_EDIT_ICON" variant="soft" color="neutral" label="Details" @click="openDetails(false)" />
-              <UButton v-if="timetable.status === 'DRAFT'" icon="i-lucide-send" label="Publish"
+              <UButton data-guide="exam-pdf-design" icon="i-lucide-palette" variant="soft" color="neutral" label="PDF Design" to="/exam-office/timetable-design" />
+              <UButton v-if="timetable.status === 'DRAFT'" data-guide="exam-publish" icon="i-lucide-send" label="Publish"
                 :disabled="!timetable.papers.length" @click="() => { confirmPublish = true }" />
               <UButton v-else icon="i-lucide-undo-2" variant="soft" color="warning" label="Unpublish"
                 :loading="publishing" @click="setPublished(false)" />
@@ -137,7 +140,7 @@
       </UCard>
 
       <!-- Missing papers: each class's subjects with no paper yet -->
-      <UCard v-if="canManage && missingCount" class="print:hidden" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard v-if="canManage && missingCount" data-guide="exam-missing" class="print:hidden" :ui="{ body: 'p-0 sm:p-0' }">
         <button type="button" class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
           :aria-expanded="missingOpen" @click="() => { missingOpen = !missingOpen }">
           <span class="flex items-center gap-2.5">
@@ -173,19 +176,12 @@
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
           <USelectMenu v-model="classId" :items="classFilterOptions" value-key="value" label-key="label"
             placeholder="All classes" class="w-full sm:w-48" />
-          <USwitch v-if="isTeacher" v-model="mine" label="Only my invigilation" />
+          <USwitch v-if="isTeacher" v-model="mine" data-guide="exam-mine" label="Only my invigilation" />
         </div>
-        <UButton v-if="canManage" :icon="ADD_ICON" label="Add Paper" @click="openPaper(null)" />
+        <UButton v-if="canManage" data-guide="exam-add-paper" :icon="ADD_ICON" label="Add Paper" @click="openPaper(null)" />
       </div>
 
-      <!-- Printed heading for the full timetable -->
-      <div v-if="printMode === 'full'" class="hidden print:block">
-        <h1 class="text-xl font-bold">{{ school?.name }}</h1>
-        <p class="text-base font-semibold">{{ timetable.title }} · {{ timetable.termName }}</p>
-        <p v-if="period" class="text-sm">{{ period }}</p>
-      </div>
-
-      <ExamOfficePapersByDay v-if="shownPapers.length" :class="printMode === 'classes' ? 'print:hidden' : ''"
+      <ExamOfficePapersByDay v-if="shownPapers.length" data-guide="exam-papers"
         :papers="shownPapers" :can-manage="canManage" @edit="(p) => openPaper(p)" @remove="(p) => { deleting = p }" />
 
       <UCard v-else class="print:hidden">
@@ -201,7 +197,6 @@
         </div>
       </UCard>
 
-      <ExamOfficeClassSheets v-if="printMode === 'classes'" :timetable="timetable" :class-ids="classId ? [classId] : []" />
     </template>
 
     <ExamOfficeTimetableForm v-model:open="detailsOpen" :record="creating ? null : timetable" :term="currentTerm"
@@ -271,6 +266,7 @@ hydrateFromCache()
 
 const isParent = computed(() => can(Role.PARENT))
 const canManage = computed(() => can(EXAM_OFFICE_ROLES))
+const guideTopic = computed(() => (canManage.value ? 'exam-office-timetable' : isParent.value ? 'parent-exam-timetable' : 'teacher-exam-timetable'))
 const isTeacher = computed(() => can(Role.TEACHER))
 
 const termId = ref<string | undefined>()
@@ -296,7 +292,6 @@ const publishing = ref(false)
 const confirmDelete = ref(false)
 const deletingTimetable = ref(false)
 const missingOpen = ref(false)
-const printMode = ref<'full' | 'classes'>('full')
 
 const currentTerm = computed(() => termStore.records.find(t => t.id === termId.value) ?? null)
 const termOptions = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
@@ -318,11 +313,6 @@ const period = computed(() => timetable.value?.startDate && timetable.value?.end
   ? `${formatDate(timetable.value.startDate)} – ${formatDate(timetable.value.endDate)}`
   : '')
 
-const printItems = computed(() => [[
-  { label: classId.value ? 'Class timetable (this class)' : 'Class timetables (a page per class)', icon: 'i-lucide-file-stack', onSelect: () => print('classes') },
-  { label: 'Full timetable', icon: 'i-lucide-file-text', onSelect: () => print('full') },
-]])
-
 function statusLabel(status: ExamTimetableStatus | null) {
   return status === 'PUBLISHED' ? 'Published' : status === 'DRAFT' ? 'Draft' : 'Not set up'
 }
@@ -334,12 +324,6 @@ function statusColor(status: ExamTimetableStatus | null) {
 // Every class still missing this subject - one paper usually covers them all.
 function classesMissing(subjectId: string) {
   return (timetable.value?.missing ?? []).filter(m => m.subjects.some(s => s.id === subjectId)).map(m => m.classId)
-}
-
-async function print(mode: 'full' | 'classes') {
-  printMode.value = mode
-  await nextTick()
-  window.print()
 }
 
 function openDetails(isNew: boolean) {

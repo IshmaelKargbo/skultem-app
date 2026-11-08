@@ -151,11 +151,12 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Leads & Follow-ups" subtitle="Every enquiry from the marketing site, worked until it becomes a school.">
-      <UButton icon="i-lucide-user-plus" label="Add Lead" to="/leads/add" />
+      <UButton data-guide="sa-action" icon="i-lucide-user-plus" label="Add Lead" to="/leads/add" />
     </Heading>
+    <GuideBar topic="sys-leads" />
 
     <!-- Metrics -->
-    <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div data-guide="sa-stats" class="grid grid-cols-2 gap-3 xl:grid-cols-4">
       <button v-for="m in metrics" :key="m.key" type="button" class="rounded-2xl text-left transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-primary"
         :class="view === m.view && m.key !== 'converted' ? 'ring-2 ring-primary' : ''" @click="view = m.view as any">
         <Metric :record="{ label: m.label, value: m.value ?? 0, subtle: m.hint, subtileColor: m.hintWarn ? 'error' : undefined, icon: m.icon, color: m.color, isReady: m.value !== undefined }" />
@@ -182,13 +183,13 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
     </div>
 
     <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-default p-2 shadow-sm ring-1 ring-default">
-      <UInput v-model="search" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search name, school, email or phone" class="min-w-0 flex-1 sm:min-w-72" />
+      <UInput data-guide="adm-search" v-model="search" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search name, school, email or phone" class="min-w-0 flex-1 sm:min-w-72" />
       <USelect v-model="status" :items="statusItems" value-key="value" variant="soft" size="lg" class="w-full sm:w-48" icon="i-lucide-list-filter" />
       <USelect v-model="assignee" :items="staffItems" value-key="value" variant="soft" size="lg" class="w-full sm:w-48" icon="i-lucide-user" />
       <UButton v-if="filtersActive" variant="ghost" color="neutral" icon="i-lucide-x" label="Clear" @click="clearFilters" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="Leads could not be loaded" class="m-4">
         <template #actions>
           <UButton size="xs" color="error" variant="outline" label="Try again" @click="load" />

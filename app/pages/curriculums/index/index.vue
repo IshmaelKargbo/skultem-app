@@ -1,15 +1,16 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <CurriculumSectionNav />
+    <div data-guide="cur-tabs"><CurriculumSectionNav /></div>
     <CurriculumParentView v-if="can(Role.PARENT)" />
 
+    <GuideBar v-if="!can(Role.PARENT)" topic="curriculum-schemes" />
     <!-- Main Grid -->
     <div v-else class="grid gap-4 xl:grid-cols-3">
       <!-- Left column -->
       <div class="space-y-4 xl:sticky xl:top-6 self-start">
 
         <!-- Quick Actions -->
-        <UCard :ui="{ body: 'space-y-2' }">
+        <UCard data-guide="cur-actions" :ui="{ body: 'space-y-2' }">
           <template #header>
             <div>
               <h3 class="font-semibold">
@@ -25,7 +26,7 @@
           <UButton v-for="action in quickActions" :key="action.label" block variant="soft" :color="action.color"
             :icon="action.icon" :label="action.label" :to="action.to" @click="action.onClick?.()" />
         </UCard>
-        <UCard v-if="can(Role.TEACHER)" class="overflow-hidden">
+        <UCard data-guide="cur-mine" v-if="can(Role.TEACHER)" class="overflow-hidden">
           <template #header>
             <div class="flex items-center gap-2">
               <div class="flex items-center rounded-xl bg-primary/10 p-2.5">
@@ -82,7 +83,7 @@
         </UCard>
 
         <!-- Coverage Overview - admin/owner only: getTeacherProgress() is restricted server-side -->
-        <UCard v-if="isAdmin" class="overflow-hidden">
+        <UCard data-guide="cur-coverage" v-if="isAdmin" class="overflow-hidden">
           <template #header>
             <div class="flex items-center gap-2">
               <div class="flex items-center rounded-xl bg-primary/10 p-2.5">
@@ -146,7 +147,7 @@
         </UCard>
       </div>
 
-      <CurriculumSchemeOfWorkSchemes :key="schemesKey" :mine="!isAdmin" />
+      <div data-guide="cur-schemes"><CurriculumSchemeOfWorkSchemes :key="schemesKey" :mine="!isAdmin" /></div>
     </div>
 
     <CurriculumBulkUploadModal v-model:open="showBulkUpload" @uploaded="onBulkUploaded" />

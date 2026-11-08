@@ -45,7 +45,7 @@ watch(changeVersion, load)
   </UCard>
 
   <div v-else class="space-y-3">
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <div data-guide="hc-stats" class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{
         color: 'info',
         label: 'In the Sick Bay Now',
@@ -80,7 +80,7 @@ watch(changeVersion, load)
       }" />
     </div>
 
-    <UCard>
+    <UCard data-guide="hc-in-bay">
       <template #header>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -89,7 +89,7 @@ watch(changeVersion, load)
               Open visits.<template v-if="overview?.longStayMinutes"> Amber after {{ formatMinutes(overview.longStayMinutes) }}.</template>
             </p>
           </div>
-          <HealthCareStartVisit v-if="canRecord" />
+          <div data-guide="hc-start"><HealthCareStartVisit v-if="canRecord" /></div>
         </div>
       </template>
 
@@ -134,7 +134,7 @@ watch(changeVersion, load)
       </div>
     </UCard>
 
-    <UCard v-if="overview?.followUp.length">
+    <UCard data-guide="hc-followup" v-if="overview?.followUp.length">
       <template #header>
         <h3 class="font-semibold">Needs Follow-up</h3>
         <p class="text-xs text-muted">

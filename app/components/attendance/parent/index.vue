@@ -2,7 +2,7 @@
     <div class="space-y-3 px-4 md:px-6">
         <Heading title="Attendance" subtitle="Track class attendance and export reports">
             <div class="grid w-full gap-3 sm:grid-cols-2 md:w-auto md:min-w-105">
-                <USelectMenu
+                <USelectMenu data-guide="par-child"
                     v-model="state.student"
                     :loading="loading"
                     :items="children"
@@ -10,7 +10,7 @@
                     placeholder="Select Student"
                     @change="change"
                 />
-                <USelectMenu
+                <USelectMenu data-guide="par-term"
                     v-model="state.term"
                     :loading="cycleLoading"
                     value-key="value"
@@ -20,7 +20,8 @@
             </div>
         </Heading>
 
-        <UCard>
+        <GuideBar topic="parent-attendance" />
+        <UCard data-guide="par-calendar">
             <template #header>
                 <div class="flex items-center justify-between">
                     <div>
@@ -100,7 +101,7 @@ function change() {
 }
 
 async function fetchAttendance() {
-    if (term.value == null) return
+    if (term.value == null || !state.student) return
     reportStore.runReport({
         entity: 'attendances',
         filters: [

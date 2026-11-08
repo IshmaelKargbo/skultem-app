@@ -60,12 +60,12 @@ onMounted(() => {
     <template #header>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-          <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by title, author or ISBN" class="w-full sm:w-72" />
+          <UInput data-guide="adm-search" v-model="value" :icon="SEARCH_ICON" placeholder="Search by title, author or ISBN" class="w-full sm:w-72" />
           <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions" placeholder="All categories"
             clear class="w-full sm:w-52" />
           <USelectMenu v-if="showSections" v-model="sectionFilter" value-key="value" :items="sectionOptions"
             placeholder="All sections" clear class="w-full sm:w-44" />
-          <LibraryBookAdd v-if="canManage" />
+          <div data-guide="lib-book-add"><LibraryBookAdd v-if="canManage" /></div>
         </div>
         <TableViewToggle v-model="view" />
       </div>

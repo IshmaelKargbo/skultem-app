@@ -1,10 +1,11 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <AnalyticsAcademicFilterBar :filters="filters" :terms="terms" :class-options="classOptions"
+    <AnalyticsAcademicFilterBar data-guide="ar-filters" :filters="filters" :terms="terms" :class-options="classOptions"
       :subject-options="subjectOptions" :level-options="levelOptions" :class-loading="classStore.loading"
       :subject-loading="subjectStore.loading" />
 
-    <AnalyticsAcademicTabNav :query="queryString" />
+    <GuideBar topic="admin-academic-classes" />
+    <div data-guide="ar-tabs"><AnalyticsAcademicTabNav :query="queryString" /></div>
 
     <UCard v-if="!filters.termId">
       <div class="flex flex-col items-center justify-center py-14 text-center">
@@ -135,6 +136,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

@@ -88,7 +88,11 @@ export type InstallmentStatus = {
     state: 'PAID' | 'PARTIAL' | 'DUE' | 'OVERDUE'
 }
 
-export const INSTALLMENT_STATE: Record<InstallmentStatus['state'], { label: string, color: 'success' | 'info' | 'neutral' | 'error' }> = {
+// A named type, not an inline one: Nuxt's auto-import scanner misreads "export const X: Record<..., { a, b }>" as
+// exports named a and b, which breaks every page.
+type InstallmentStateStyle = { label: string, color: 'success' | 'info' | 'neutral' | 'error' }
+
+export const INSTALLMENT_STATE: Record<InstallmentStatus['state'], InstallmentStateStyle> = {
     PAID: { label: 'Paid', color: 'success' },
     PARTIAL: { label: 'Part paid', color: 'info' },
     DUE: { label: 'Due', color: 'neutral' },

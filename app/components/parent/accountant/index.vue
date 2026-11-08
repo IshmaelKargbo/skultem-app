@@ -1,6 +1,7 @@
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <ParentAccountantReport />
+        <GuideBar topic="accountant-parents" />
+        <div data-guide="acc-parent-stats"><ParentAccountantReport /></div>
         <ParentAccountantTable />
     </div>
 </template>

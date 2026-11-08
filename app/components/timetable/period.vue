@@ -6,6 +6,24 @@ const { isAdmin = false } = defineProps<{
 const store = useTimetableStore()
 const { periods, periodLoading: loading, days } = storeToRefs(store)
 
+// A double period: the same single lesson in two lesson periods back to back on a day. 'first' / 'second' marks
+// which half this slot is.
+function sameLesson(a: Timetable[], b: Timetable[]) {
+  if (a.length !== 1 || b.length !== 1) return false
+  const [x, y] = [a[0]!, b[0]!]
+  return x.kind === 'LIBRARY' ? y.kind === 'LIBRARY' : !!x.subjectId && x.subjectId === y.subjectId
+}
+
+function doubleOf(periodItem: Period, dayIndex: number): 'first' | 'second' | null {
+  const at = periods.value.findIndex(p => p.id === periodItem.id)
+  const slot = periodSlot(periodItem, dayIndex)
+  const prev = periods.value[at - 1]
+  const next = periods.value[at + 1]
+  if (prev && !prev.isBreak && !prev.isLunch && !prev.isAssembly && sameLesson(periodSlot(prev, dayIndex), slot)) return 'second'
+  if (next && !next.isBreak && !next.isLunch && !next.isAssembly && sameLesson(slot, periodSlot(next, dayIndex))) return 'first'
+  return null
+}
+
 const selectedDayIndex = ref(0)
 const day = ref<string | undefined>()
 const period = ref<string | undefined>()
@@ -193,7 +211,6 @@ function editPeriodRecord(periodItem: Period) {
             />
 
             <UButton
-              v-if="periodItem.id === periods[periods.length - 1]?.id"
               :icon="DELETE_ICON"
               size="xs"
               color="error"
@@ -204,13 +221,13 @@ function editPeriodRecord(periodItem: Period) {
         </div>
 
         <div
-          v-if="periodItem.isBreak || periodItem.isLunch"
+          v-if="periodItem.isBreak || periodItem.isLunch || periodItem.isAssembly"
           class="mt-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/70 p-4 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
         >
           <div class="flex items-center justify-center gap-2">
             <UIcon name="i-lucide-coffee" class="size-4" />
             <span class="text-sm font-medium">
-              {{ periodItem.isBreak ? 'Break' : 'Lunch' }} - no classes scheduled
+              {{ periodItem.isAssembly ? 'Assembly' : periodItem.isBreak ? 'Break' : 'Lunch' }} - no classes scheduled
             </span>
           </div>
         </div>
@@ -221,6 +238,7 @@ function editPeriodRecord(periodItem: Period) {
           :slot="slot"
           :is-admin="isAdmin"
           :label="selectedDayName"
+          :double="doubleOf(periodItem, selectedDayIndex)"
           :when="`${selectedDayName} · ${periodItem.name} · ${periodItem.startTime} - ${periodItem.endTime}`"
           @edit="(entry) => openSubject(periodItem, selectedDayIndex, entry)"
           @add="addSubject(periodItem, selectedDayIndex)"
@@ -251,14 +269,14 @@ function editPeriodRecord(periodItem: Period) {
 
         <tbody>
           <tr
-            v-for="(periodItem, pIndex) in periods"
+            v-for="periodItem in periods"
             :key="periodItem.id"
             class="border-b border-default last:border-b-0"
           >
             <td class="p-1.5 align-top lg:p-2">
               <div
                 class="flex h-full flex-col justify-center rounded-xl p-3"
-                :class="(periodItem.isBreak || periodItem.isLunch) ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-muted/30'"
+                :class="(periodItem.isBreak || periodItem.isLunch || periodItem.isAssembly) ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-muted/30'"
               >
                 <div class="flex items-center justify-between gap-2">
                   <h4 class="min-w-0 truncate font-semibold" :title="periodItem.name">
@@ -275,7 +293,6 @@ function editPeriodRecord(periodItem: Period) {
                     />
 
                     <UButton
-                      v-if="pIndex === periods.length - 1"
                       :icon="DELETE_ICON"
                       variant="ghost"
                       color="error"
@@ -293,7 +310,16 @@ function editPeriodRecord(periodItem: Period) {
               </div>
             </td>
 
-            <template v-if="periodItem.isBreak">
+            <template v-if="periodItem.isAssembly">
+              <td :colspan="days.length" class="p-1.5 lg:p-2">
+                <div class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-sky-300 bg-sky-50/60 text-sky-700 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-400">
+                  <UIcon name="i-lucide-users" class="size-4" />
+                  <span class="text-sm font-medium">Assembly - no classes scheduled</span>
+                </div>
+              </td>
+            </template>
+
+            <template v-else-if="periodItem.isBreak">
               <td :colspan="days.length" class="p-1.5 lg:p-2">
                 <div class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/60 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400">
                   <UIcon name="i-lucide-coffee" class="size-4" />
@@ -319,6 +345,7 @@ function editPeriodRecord(periodItem: Period) {
               >
                 <TimetableSlotCard
                   :slot="periodSlot(periodItem, dayIndex)"
+                  :double="doubleOf(periodItem, dayIndex)"
                   :when="`${dayName} · ${periodItem.name} · ${periodItem.startTime} - ${periodItem.endTime}`"
                   :is-admin="isAdmin"
                   @edit="(entry) => openSubject(periodItem, dayIndex, entry)"

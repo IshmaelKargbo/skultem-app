@@ -3,8 +3,10 @@
 
     <Heading :title="isEdit ? 'Edit Salary' : 'Add Salary'" subtitle="Set up a compensation package for a teacher.">
       <UButton variant="soft" color="neutral" to="/payroll/salaries" label="Cancel" />
-      <UButton icon="i-lucide-check" :loading="saving" label="Save Salary" @click="formRef?.submit()" />
+      <UButton data-guide="pay-save" icon="i-lucide-check" :loading="saving" label="Save Salary" @click="formRef?.submit()" />
     </Heading>
+
+    <GuideBar topic="payroll-salary-form" />
 
     <UForm ref="formRef" :state="state" :schema="schema" class="grid gap-4 lg:grid-cols-3" @submit="onSubmit">
 
@@ -20,7 +22,7 @@
           </template>
 
           <div class="space-y-5">
-            <UFormField label="Employee" name="teacherId" required>
+            <UFormField data-guide="pay-salary-employee" label="Employee" name="teacherId" required>
               <USelectMenu v-model="state.teacherId" :items="teacherOptions" :loading="loadingTeachers"
                 value-key="value" label-key="label" icon="i-lucide-search"
                 placeholder="Search staff…" class="w-full" :disabled="isEdit" />
@@ -39,14 +41,14 @@
             </div>
 
             <div class="grid gap-5 md:grid-cols-2">
-              <UFormField label="Template" name="templateId" hint="Optional"
+              <UFormField data-guide="pay-salary-template" label="Template" name="templateId" hint="Optional"
                 help="Fills in the basic salary and every line below. You can still change them.">
                 <USelectMenu v-model="state.templateId" :items="templateOptions" :loading="loadingTemplates"
                   value-key="value" label-key="label" icon="i-lucide-layout-template"
                   placeholder="Build from scratch" class="w-full" clear @update:model-value="onPickTemplate" />
               </UFormField>
 
-              <UFormField label="Basic Salary" name="basicSalary" required
+              <UFormField data-guide="pay-salary-basic" label="Basic Salary" name="basicSalary" required
                 help="Percentage lines are worked out from this.">
                 <UInput v-model.number="state.basicSalary" type="number" min="0" placeholder="0" class="w-full">
                   <template #leading><span class="text-sm text-muted">Le</span></template>
@@ -56,12 +58,12 @@
           </div>
         </UCard>
 
-        <UCard>
+        <UCard data-guide="pay-allowances">
           <PayrollPayComponentEditor v-model="state.allowances" label="Allowances" color="success"
             :basic-salary="state.basicSalary || 0" />
         </UCard>
 
-        <UCard>
+        <UCard data-guide="pay-deductions">
           <PayrollPayComponentEditor v-model="state.deductions" label="Deductions" color="error"
             :basic-salary="state.basicSalary || 0" />
         </UCard>
@@ -72,7 +74,7 @@
       <div class="space-y-4 lg:sticky lg:top-6 lg:self-start">
         <UAlert v-if="netIsNegative" color="error" variant="soft" icon="i-lucide-circle-alert"
           title="Net pay is negative" description="Deductions are more than gross pay. Lower a deduction or raise the pay." />
-        <PayrollNetPreview :basic="state.basicSalary" :allowances="totalAllowances" :deductions="totalDeductions"
+        <PayrollNetPreview data-guide="pay-net-preview" :basic="state.basicSalary" :allowances="totalAllowances" :deductions="totalDeductions"
           :allowance-count="state.allowances.length" :deduction-count="state.deductions.length" />
       </div>
 

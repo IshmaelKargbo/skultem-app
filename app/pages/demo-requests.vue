@@ -37,8 +37,9 @@ definePageMeta({
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <Heading title="Demo Requests" subtitle="Schools that asked for a walkthrough from the market page." />
+    <GuideBar topic="sys-demo-requests" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-sm font-semibold text-highlighted">Requests</h2>

@@ -2,22 +2,23 @@
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Salary Structures" subtitle="Manage teacher compensation packages.">
       <UButton variant="soft" color="neutral" icon="i-lucide-layout-template" to="/payroll/salary-templates"
-        label="Salary Templates" />
-      <UButton icon="i-lucide-plus" to="/payroll/salaries/add" label="Add Salary" />
+        label="Salary Templates" data-guide="pay-templates-link" />
+      <UButton data-guide="pay-add-salary" icon="i-lucide-plus" to="/payroll/salaries/add" label="Add Salary" />
     </Heading>
 
     <PayrollSectionNav />
+    <GuideBar topic="payroll-salaries" />
 
     <!-- Stats -->
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div data-guide="pay-salary-stats" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{ icon: 'i-lucide-users', label: 'Employees', value: summary?.teacherCount ?? 0, isReady: !!summary, color: 'primary' }" />
       <Metric :record="{ icon: 'i-lucide-bar-chart-3', label: 'Average Salary', value: formatCurrency(summary?.averageSalary), isReady: !!summary, color: 'info' }" />
       <Metric :record="{ icon: 'i-lucide-trending-up', label: 'Highest Salary', value: formatCurrency(summary?.highestSalary), isReady: !!summary, color: 'success' }" />
       <Metric :record="{ icon: 'i-lucide-trending-down', label: 'Lowest Salary', value: formatCurrency(summary?.lowestSalary), isReady: !!summary, color: 'warning' }" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
-      <div class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
+    <UCard data-guide="pay-salary-list" :ui="{ body: 'p-0 sm:p-0' }">
+      <div data-guide="pay-salary-filters" class="border-t p-4 border-default flex flex-wrap items-center justify-between gap-3">
         <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <UInput v-model="search" icon="i-lucide-search" placeholder="Search by name or staff ID..." />
           <USelectMenu v-model="sort" value-key="value" label-key="label" :items="sortOptions" placeholder="Sort by" />

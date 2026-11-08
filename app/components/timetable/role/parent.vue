@@ -1,15 +1,16 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <Heading title="Class Timetables" subtitle="Manage weekly timetables for classes and sections">
+        <Heading title="Timetable" subtitle="Your child's weekly lessons.">
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-                <USelectMenu placeholder="Select Student" v-model="grade" value-key="value" :items="list"
+                <USelectMenu data-guide="par-child" placeholder="Select Student" v-model="grade" value-key="value" :items="list"
                     :loading="classLoading" class="w-full md:w-72" />
-                <TimetableDownload v-if="session" :title="session.className" />
+                <div data-guide="par-download"><TimetableDownload v-if="session" :title="session.className" /></div>
             </div>
         </Heading>
 
+        <GuideBar topic="parent-timetable" />
         <!-- Timetable -->
-        <UCard v-if="session" :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard data-guide="par-timetable" v-if="session" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex items-center gap-3">
                     <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -35,11 +36,11 @@
                 <UIcon name="i-lucide-school" class="size-12 text-muted mb-3" />
 
                 <h3 class="text-base font-semibold">
-                    Select a class to continue
+                    Choose your child
                 </h3>
 
                 <p class="text-sm text-muted mt-1">
-                    Choose a class from the dropdown to view or create its timetable.
+                    Pick your child above to see their class timetable.
                 </p>
             </div>
         </UCard>
@@ -50,13 +51,16 @@
 const store = useTimetableStore()
 
 const parentStore = useParentStore()
-const teacherStore = useTeacherSubjectStore()
 const { periods } = storeToRefs(store)
 
 const { list, loading: classLoading } = storeToRefs(parentStore)
 const grade = ref('')
 
-const session = computed(() => teacherStore.getClass(grade.value))
+// The chosen child's class (the picker's value is their class session).
+const session = computed(() => {
+    const child = parentStore.students.find(s => s.sessionId === grade.value)
+    return child ? { className: child.className } : undefined
+})
 
 function syncGrade(items: { value: string }[]) {
     if (!items.length) return
@@ -87,7 +91,6 @@ onMounted(async () => {
     document.title = 'Timetable | Skultem'
     try {
         await Promise.all([
-            teacherStore.allByTeacher(),
             parentStore.fetchAllStudents(0, 0),
             store.searchRoom(0, 0)
         ])

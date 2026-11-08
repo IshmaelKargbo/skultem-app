@@ -12,7 +12,8 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <LibrarySectionNav />
-        <LibraryBookTable />
+        <div data-guide="lib-tabs"><LibrarySectionNav /></div>
+        <GuideBar topic="lib-books" />
+        <div data-guide="adm-list"><LibraryBookTable /></div>
     </div>
 </template>

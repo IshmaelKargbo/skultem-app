@@ -1,8 +1,9 @@
 <template>
     <div class="px-4 md:px-6 space-y-3">
         <FeeSectionNav />
-        <FeeDiscountReport ref="reportRef" />
-        <FeeDiscountTable @refresh="refreshReport" />
+        <GuideBar topic="finance-discounts" />
+        <div data-guide="fin-discount-summary"><FeeDiscountReport ref="reportRef" /></div>
+        <div data-guide="fin-discount-list"><FeeDiscountTable @refresh="refreshReport" /></div>
     </div>
 </template>
 

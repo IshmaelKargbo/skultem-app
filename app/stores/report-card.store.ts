@@ -64,9 +64,31 @@ export interface ReportCardSummary {
     generatedAt: string
     // Which slice the card covers: "First Test + Second Test", "All terms", or null for the whole term.
     scopeLabel: string | null
+    // The review step: the admin generates (PENDING_REVIEW), the class teacher approves (APPROVED - then parents
+    // see it) or sends it back with a note (RETURNED).
+    reviewStatus: ReportCardReviewStatus
+    reviewNote: string | null
+    reviewedByName: string | null
+    classId: string
+    termId: string
+}
+
+export type ReportCardReviewStatus = 'PENDING_REVIEW' | 'RETURNED' | 'APPROVED'
+
+// A named type (not inline) - see the note on INSTALLMENT_STATE in utils/fee.ts.
+type ReviewStatusStyle = { label: string, color: 'warning' | 'error' | 'success', icon: string }
+
+export const REPORT_CARD_REVIEW: Record<ReportCardReviewStatus, ReviewStatusStyle> = {
+    PENDING_REVIEW: { label: 'Awaiting class teacher', color: 'warning', icon: 'i-lucide-hourglass' },
+    RETURNED: { label: 'Sent back to admin', color: 'error', icon: 'i-lucide-corner-up-left' },
+    APPROVED: { label: 'Approved', color: 'success', icon: 'i-lucide-circle-check' },
 }
 
 export interface ReportCardDetail extends ReportCardSummary {
+    reviewedAt: string | null
+    // The class teacher who signed it when approving, and their signature image (null = blank line).
+    classTeacherName: string | null
+    classTeacherSignature: string | null
     classId: string
     // Level of the card's class - picks which management section's logo/principal the card prints.
     level: string | null

@@ -1,7 +1,8 @@
 <template>
     <div class="px-4 sm:px-6  space-y-4">
         <DashboardWelcome />
-        <section class="rounded-2xl bg-white/80 p-4 shadow ring-2 ring-gray-100 dark:bg-gray-900 dark:ring-gray-800 sm:p-5 lg:p-6">
+        <GuideBar topic="accountant-dashboard" />
+        <section data-guide="fin-quick" class="rounded-2xl bg-white/80 p-4 shadow ring-2 ring-gray-100 dark:bg-gray-900 dark:ring-gray-800 sm:p-5 lg:p-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="space-y-1.5">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">
@@ -23,12 +24,12 @@
             </div>
         </section>
         <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
-        <DashboardAccountantReport />
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+        <div data-guide="fin-summary"><DashboardAccountantReport /></div>
+        <div data-guide="fin-charts" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
             <DashboardAccountantRevenue />
             <DashboardAccountantOutstanding />
         </div>
-        <DashboardAccountantTable />
+        <div data-guide="fin-recent"><DashboardAccountantTable /></div>
     </div>
 </template>
 

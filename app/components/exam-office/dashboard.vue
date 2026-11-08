@@ -17,15 +17,15 @@
       </p>
       <USkeleton v-else class="h-5 w-40" />
 
-      <GradesApprovalRouting />
+      <div data-guide="approval-routing"><GradesApprovalRouting /></div>
 
-      <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div data-guide="exam-metrics" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric v-for="m in metrics" :key="m.label" :record="m" />
       </div>
 
       <div class="grid gap-3 lg:grid-cols-3">
         <!-- Who still owes grades -->
-        <UCard class="lg:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard data-guide="exam-outstanding" class="lg:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
             <div class="flex items-center justify-between gap-3">
               <div>
@@ -75,7 +75,7 @@
         </UCard>
 
         <!-- Upcoming papers -->
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard data-guide="exam-upcoming" :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
             <div class="flex items-center justify-between gap-3">
               <div>
@@ -113,7 +113,7 @@
       </div>
 
       <!-- Progress by class -->
-      <UCard>
+      <UCard data-guide="exam-progress">
         <template #header>
           <p class="font-semibold">Progress by class</p>
           <p class="text-xs text-muted">Approved out of every open assessment</p>

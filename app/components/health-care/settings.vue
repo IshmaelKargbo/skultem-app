@@ -155,7 +155,7 @@ onMounted(load)
       description="These are the rules your school uses for the sick bay. A principal or the school owner can change them." />
 
     <!-- Visit limits -->
-    <UCard>
+    <UCard data-guide="hcs-limits">
       <template #header>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -209,7 +209,7 @@ onMounted(load)
 
     <div class="grid gap-3 lg:grid-cols-2">
       <!-- Medication -->
-      <UCard>
+      <UCard data-guide="hcs-meds">
         <template #header>
           <h3 class="font-semibold">Medication</h3>
           <p class="text-xs text-muted">Whether medicine is given in the sick bay, and checks on repeat doses.</p>
@@ -240,7 +240,7 @@ onMounted(load)
       </UCard>
 
       <!-- Required fields -->
-      <UCard>
+      <UCard data-guide="hcs-required">
         <template #header>
           <h3 class="font-semibold">What Must Be Recorded</h3>
           <p class="text-xs text-muted">Student, arrival time, complaint and outcome are always required.</p>
@@ -255,7 +255,7 @@ onMounted(load)
     </div>
 
     <!-- Notifications -->
-    <UCard>
+    <UCard data-guide="hcs-notify">
       <template #header>
         <h3 class="font-semibold">Who Is Told</h3>
         <p class="text-xs text-muted">In-app notifications. Parents need an account to be notified.</p>
@@ -293,7 +293,7 @@ onMounted(load)
     </UCard>
 
     <!-- Complaint list -->
-    <UCard>
+    <UCard data-guide="hcs-complaints">
       <template #header>
         <h3 class="font-semibold">Complaint List</h3>
         <p class="text-xs text-muted">

@@ -2,17 +2,18 @@
     <div class="md:px-6 p-4 overflow-y-auto h-full md:space-y-5 space-y-3">
         <Heading title="Athletic House Management" subtitle="Assign students to houses — arrange automatically or by hand">
             <div class="w-56">
-                <USelectMenu :items="classes" value-key="value" v-model="selectedClass" placeholder="Select Class"
+                <USelectMenu data-guide="ath-class" :items="classes" value-key="value" v-model="selectedClass" placeholder="Select Class"
                     :loading="classStore.loading" class="w-full" />
             </div>
         </Heading>
 
-        <AthleticSectionNav />
+        <div data-guide="ath-tabs"><AthleticSectionNav /></div>
 
         <div class="flex flex-col md:flex-row gap-4">
             <div class="w-full md:w-1/3 space-y-4">
+                <GuideBar topic="admin-athletic" />
                 <!-- House Placement -->
-                <UCard>
+                <UCard data-guide="ath-summary">
                     <template #header>
                         <div class="flex items-center gap-3">
                             <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -59,7 +60,7 @@
             </div>
 
             <div class="w-full md:w-2/3">
-                <UCard :ui="{ body: 'sm:p-0' }">
+                <UCard data-guide="ath-students" :ui="{ body: 'sm:p-0' }">
                     <template #header>
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
@@ -74,7 +75,7 @@
                                     {{ dirtyCount }} unsaved
                                 </UBadge>
 
-                                <UButton
+                                <UButton data-guide="ath-random"
                                     label="Randomly Arrange"
                                     icon="i-lucide-shuffle"
                                     color="neutral"
@@ -92,7 +93,7 @@
                                     @click="resetAssignments"
                                 />
 
-                                <UButton
+                                <UButton data-guide="ath-save"
                                     label="Save Changes"
                                     icon="i-lucide-save"
                                     :loading="saving"

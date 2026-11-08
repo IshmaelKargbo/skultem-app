@@ -77,16 +77,17 @@ function remove(entry: CalendarEntry) {
 
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <CommunicateSectionNav />
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <div data-guide="comm-tabs"><CommunicateSectionNav /></div>
+    <GuideBar topic="comm-events" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search events & holidays..."
+            <UInput data-guide="adm-search" v-model="search" :icon="SEARCH_ICON" placeholder="Search events & holidays..."
               class="w-full sm:w-72" />
-            <USelectMenu v-model="typeFilter" value-key="value" :items="typeOptions" class="w-full sm:w-48" />
+            <USelectMenu data-guide="comm-filter" v-model="typeFilter" value-key="value" :items="typeOptions" class="w-full sm:w-48" />
           </div>
-          <CommunicateEventAdd v-if="canManage" />
+          <div data-guide="comm-add"><CommunicateEventAdd v-if="canManage" /></div>
         </div>
       </template>
       <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">

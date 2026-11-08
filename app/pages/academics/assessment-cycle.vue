@@ -7,12 +7,12 @@
       </UBadge>
       <div v-else class="grid w-full gap-2 md:flex md:w-auto md:items-center">
         <!-- Sections run their assessments separately, so a section moves on its own. -->
-        <USelectMenu v-if="isSectionBased" v-model="advanceSectionId" value-key="value" :items="advanceSections"
+        <USelectMenu data-guide="cycle-section" v-if="isSectionBased" v-model="advanceSectionId" value-key="value" :items="advanceSections"
           placeholder="Choose section" class="w-full md:w-44" />
         <UTooltip :text="isSectionBased
           ? 'Moves only the chosen section to its next assessment - the other sections stay where they are.'
           : 'Advances every class on the selected term at once - not just the class you\'re viewing.'">
-          <UButton class="w-full justify-center md:w-auto" icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
+          <UButton data-guide="cycle-advance" class="w-full justify-center md:w-auto" icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
             :disabled="!selectedTermId || isRefreshing || (isSectionBased && !advanceSectionId)"
             @click="advanceAssessmentStage">
             {{ isSectionBased && advanceSectionName ? `Move ${advanceSectionName} To Next Assessment` : 'Move To Next Assessment' }}
@@ -21,12 +21,13 @@
       </div>
     </Heading>
 
-    <AcademicsSectionNav />
+    <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
 
+    <GuideBar topic="admin-assessment-cycle" />
     <UAlert v-if="loadError" color="error" variant="soft" icon="i-lucide-alert-circle" :description="loadError" />
 
     <!-- Stats -->
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div data-guide="cycle-stats" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
       <Metric :record="{
         color: 'info',
         icon: CALANDA_ICON,
@@ -55,7 +56,7 @@
     <div class="grid gap-5 lg:grid-cols-3">
 
       <div>
-        <UCard class="lg:col-span-1 h-fit sticky top-1">
+        <UCard data-guide="cycle-classes" class="lg:col-span-1 h-fit sticky top-1">
 
           <template #header>
             <div class="space-y-4">
@@ -160,7 +161,7 @@
       </div>
 
 
-      <UCard class="hidden lg:col-span-2 lg:block">
+      <UCard data-guide="cycle-detail" class="hidden lg:col-span-2 lg:block">
         <template #header>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -511,6 +512,6 @@ watch(() => selectedClassId.value, async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.EXAM_OFFICER]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

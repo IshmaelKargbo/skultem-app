@@ -9,7 +9,7 @@
                     <UCard class="md:sticky md:top-4">
                         <div class="space-y-3">
                             <!-- STUDENT -->
-                            <UFormField required label="Student" name="studentId">
+                            <UFormField data-guide="pay-student" required label="Student" name="studentId">
                                 <USelectMenu value-key="value" :items="studentOptions" v-model="state.studentId"
                                     v-model:search-term="studentSearchTerm" :loading="studentsLoading" ignore-filter
                                     @change="onStudentSelect" placeholder="Search by name or admission number"
@@ -22,7 +22,7 @@
                             </UFormField>
 
                             <!-- METHOD -->
-                            <UFormField required label="Payment Method" name="method">
+                            <UFormField data-guide="pay-method" required label="Payment Method" name="method">
                                 <USelectMenu value-key="value" v-model="state.method" :items="methodOptions"
                                     placeholder="Select payment method" class="w-full" />
                                 <template #help>
@@ -50,9 +50,9 @@
                     </UCard>
                 </div>
 
-                <!-- RIGHT: Fee Allocation -->
+                <!-- RIGHT: Fee Allocation (the guide points here even before a student is picked) -->
                 <div>
-                    <UCard>
+                    <UCard data-guide="pay-fees">
                         <template #header>
                             <div class="flex justify-between items-center">
                                 <div>
@@ -184,7 +184,7 @@
                                 <USeparator />
 
                                 <!-- TOTALS -->
-                                <div class="text-sm space-y-1.5 rounded-xl bg-gray-50 dark:bg-gray-900 p-3">
+                                <div data-guide="pay-totals" class="text-sm space-y-1.5 rounded-xl bg-gray-50 dark:bg-gray-900 p-3">
                                     <div class="flex justify-between">
                                         <span class="text-muted">Total Allocated</span>
                                         <span :class="{ 'text-red-500 font-medium': isOverAllocated }">
@@ -228,7 +228,7 @@
                                 <UButton variant="outline" color="neutral" to="/fees-payment/pay" class="justify-center">
                                     Cancel
                                 </UButton>
-                                <UButton :trailing-icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading"
+                                <UButton data-guide="pay-submit" :trailing-icon="SAVE_ICON" type="submit" :disabled="!canSubmit" :loading="isLoading"
                                     class="justify-center">
                                     Record Payment
                                 </UButton>

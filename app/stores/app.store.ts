@@ -39,7 +39,7 @@ export const useAppStore = defineStore('app', {
         const response = await UserApi().openNotifications() as any
         this.notifications = response
       } catch (err: any) {
-        throw err.data?.message || 'Failed to fetch tenant'
+        throw err.data?.message || 'Failed to load notifications'
       }
     },
     async markAsRead(id: string) {

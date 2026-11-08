@@ -65,13 +65,14 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
 <template>
   <div class="space-y-3 px-4 md:px-6">
+    <GuideBar topic="sys-fee-collection" />
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="Platform fees could not be loaded">
       <template #actions>
         <UButton size="xs" color="error" variant="outline" label="Try again" @click="load" />
       </template>
     </UAlert>
 
-    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+    <div data-guide="sa-stats" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       <Metric :record="{
         color: 'primary', icon: 'i-lucide-receipt', label: 'Billed to students',
         value: format(data?.billed ?? 0),
@@ -92,12 +93,12 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       }" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-sm font-semibold text-highlighted">By school</h2>
           <div class="flex flex-wrap gap-2">
-            <UInput v-model="search" icon="i-lucide-search" placeholder="Search schools" class="w-56" />
+            <UInput data-guide="adm-search" v-model="search" icon="i-lucide-search" placeholder="Search schools" class="w-56" />
             <USelect v-model="show" :items="filters" value-key="value" class="w-40" />
           </div>
         </div>

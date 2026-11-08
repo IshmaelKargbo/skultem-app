@@ -3,13 +3,14 @@
     <Heading title="Student Demographics" subtitle="Gender and religion breakdown for management reporting.">
       <div class="flex flex-wrap gap-2">
         <UButton icon="i-lucide-printer" variant="soft" @click="printPage">Print</UButton>
-        <UButton icon="i-lucide-download" color="primary" :loading="downloading" @click="downloadPdf">
+        <UButton data-guide="rep-download" icon="i-lucide-download" color="primary" :loading="downloading" @click="downloadPdf">
           Export PDF
         </UButton>
       </div>
     </Heading>
 
-    <UCard>
+    <GuideBar topic="admin-demographics" />
+    <UCard data-guide="dem-filters">
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Class">
           <USelectMenu v-model="filters.classId" :items="classes" :loading="classStore.loading" value-key="value"
@@ -30,7 +31,7 @@
       </div>
     </UCard>
 
-    <div v-else-if="demographics" id="demographics-preview" class="space-y-4 rounded-lg bg-white p-2 text-gray-900">
+    <div data-guide="rep-preview" v-else-if="demographics" id="demographics-preview" class="space-y-4 rounded-lg bg-white p-2 text-gray-900">
       <div class="mb-4 border-b-4 border-primary-500 px-6 pb-5 pt-6 text-center sm:px-8 sm:pt-8">
         <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
         <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>

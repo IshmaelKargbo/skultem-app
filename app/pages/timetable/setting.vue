@@ -1,15 +1,16 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading class="hidden md:block" title="Timetable Setting" subtitle="Manage timetable settings for grades and sections" />
-    <TimetableSectionNav />
+    <div data-guide="tt-tabs"><TimetableSectionNav /></div>
+    <GuideBar topic="admin-timetable-settings" />
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <TimetableTiming />
+      <div data-guide="tts-timing"><TimetableTiming /></div>
       <div>
-        <TimetableWorkingDay />
+        <div data-guide="tts-days"><TimetableWorkingDay /></div>
       </div>
     </div>
 
-    <TimetableRoom />
+    <div data-guide="tts-rooms"><TimetableRoom /></div>
   </div>
 </template>
 

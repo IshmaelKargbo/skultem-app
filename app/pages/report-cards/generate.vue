@@ -1,21 +1,22 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <ReportCardSectionNav />
+        <div data-guide="rc-tabs"><ReportCardSectionNav /></div>
 
         <ReportCardClassMasterOnly>
 
         <!-- Header -->
         <Heading title="Generate Report Cards" subtitle="Generate report cards for every student in a class and term.">
-            <UButton icon="i-lucide-file-text" color="primary" class="justify-center" :loading="generating"
+            <UButton data-guide="rcg-generate" icon="i-lucide-file-text" color="primary" class="justify-center" :loading="generating"
                 :disabled="!canGenerate" @click="generateReportCards">
                 Generate Report Cards
             </UButton>
         </Heading>
 
+        <GuideBar class="my-3" topic="admin-report-generate" />
         <div class="grid gap-6 xl:grid-cols-3">
 
             <!-- Form -->
-            <UCard class="xl:col-span-2">
+            <UCard data-guide="rcg-form" class="xl:col-span-2">
 
                 <template #header>
                     <div>
@@ -58,7 +59,7 @@
                 <div class="mt-6 space-y-3">
                     <p class="text-sm font-medium">What should the report cover?</p>
 
-                    <URadioGroup v-model="form.scope" :items="scopes" />
+                    <URadioGroup data-guide="rcg-scope" v-model="form.scope" :items="scopes" />
 
                     <div v-if="form.scope === 'ASSESSMENTS'" class="rounded-xl border border-default p-4">
                         <p v-if="!form.classId" class="text-sm text-muted">Select a class to choose its assessments.</p>
@@ -101,7 +102,7 @@
             <div class="space-y-6">
 
                 <!-- Options -->
-                <UCard>
+                <UCard data-guide="rcg-options">
 
                     <template #header>
                         <h2 class="font-semibold">
@@ -122,7 +123,7 @@
                 </UCard>
 
                 <!-- Recap of what will be generated -->
-                <UCard>
+                <UCard data-guide="rcg-recap">
 
                     <template #header>
                         <h2 class="font-semibold">
@@ -430,6 +431,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-    role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
+    // Only admins generate results; the class teacher then reviews and approves them on Report Cards.
+    role: [Role.ADMIN, Role.SUPER_ADMIN]
 })
 </script>

@@ -11,7 +11,7 @@
             <div>
 
                 <!-- Parent Information -->
-                <div
+                <div data-guide="enrol-parents"
                     class="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 dark:border-gray-800 md:grid-cols-2 md:gap-5 md:p-5">
 
                     <UFormField name="fatherName" label="Father's Name" required>
@@ -83,7 +83,7 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="grid grid-cols-2 gap-1 rounded-xl bg-elevated p-1">
+                    <div data-guide="enrol-guardian-mode" class="grid grid-cols-2 gap-1 rounded-xl bg-elevated p-1">
                         <UButton @click="() => { action = 0 }" :variant="action === 0 ? 'solid' : 'ghost'"
                             :color="action === 0 ? 'primary' : 'neutral'" icon="i-lucide-search"
                             label="Existing guardian" class="justify-center" size="lg" />
@@ -93,7 +93,7 @@
                     </div>
 
                     <!-- Existing Guardian -->
-                    <div v-if="action === 0" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+                    <div data-guide="enrol-guardian" v-if="action === 0" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
 
                         <UFormField name="existingGuardianId" label="Select Guardian" required>
                             <USelectMenu :loading="loading" v-model="form.existingGuardianId" :items="existingGuardians"
@@ -124,7 +124,7 @@
                     </div>
 
                     <!-- New Guardian -->
-                    <div v-if="action === 1" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+                    <div data-guide="enrol-guardian" v-if="action === 1" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
 
                         <UFormField name="relationship" label="Relationship" required class="md:col-span-2">
                             <USelectMenu v-model="form.relationship" :items="relationships" value-key="value"
@@ -161,7 +161,7 @@
                             </template>
                         </UFormField>
 
-                        <UFormField name="guardianEmail" label="Email Address">
+                        <UFormField data-guide="enrol-guardian-email" name="guardianEmail" label="Email Address">
                             <EmailInput v-model="form.guardianEmail" placeholder="Enter email address"
                                 :leading-icon="EMAIL_ICON" />
                             <template #help>

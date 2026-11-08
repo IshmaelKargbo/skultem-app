@@ -5,19 +5,20 @@
         <UButton icon="i-lucide-rotate-ccw" color="neutral" variant="outline" class="justify-center" @click="reset">
           Reset
         </UButton>
-        <UButton icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
+        <UButton data-guide="ttd-save" icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
           Save Settings
         </UButton>
       </div>
     </Heading>
 
-    <TimetableSectionNav />
+    <div data-guide="tt-tabs"><TimetableSectionNav /></div>
 
+    <GuideBar topic="admin-timetable-design" />
     <DesignSkeleton v-if="fetching" preview-wide />
     <div v-show="!fetching" class="grid gap-6 lg:grid-cols-5">
       <!-- Controls -->
       <div class="space-y-6 lg:col-span-2">
-        <UCard>
+        <UCard data-guide="ttd-style">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-palette" class="size-5 text-primary" />
@@ -62,7 +63,7 @@
           </div>
         </UCard>
 
-        <UCard>
+        <UCard data-guide="ttd-show">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-layout-list" class="size-5 text-primary" />
@@ -89,12 +90,17 @@
 
       <!-- Preview -->
       <div class="lg:sticky lg:top-6 lg:col-span-3 lg:self-start">
-        <UCard :ui="{ body: 'p-0' }">
+        <UCard data-guide="ttd-preview" :ui="{ body: 'p-0' }">
           <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-eye" class="size-5 text-primary" />
-              <h3 class="font-semibold">Live Preview</h3>
-              <span class="text-xs text-muted">(sample data)</span>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-eye" class="size-5 text-primary" />
+                <h3 class="font-semibold">Live Preview</h3>
+                <span v-if="usingSample" class="text-xs text-muted">(sample - this class has no periods yet)</span>
+              </div>
+              <!-- Preview a real class's timetable, exactly as it will download. -->
+              <USelectMenu v-model="sessionId" :items="classStore.list" value-key="value" placeholder="Choose a class"
+                :loading="classStore.loading || previewLoading" class="w-full sm:w-56" />
             </div>
           </template>
 
@@ -102,8 +108,8 @@
             <div class="preview-frame"
               :style="{ width: `${frameWidth}px`, height: `${frameHeight}px`, margin: '0 auto' }">
               <div class="preview-scale" :style="{ width: `${docWidth}px`, transform: `scale(${scale})` }">
-                <TimetableDocument id="timetable-design-preview" :settings="settings" :periods="mockPeriods"
-                  :days="mockDays" :school-name="school?.name || 'Your School'" subtitle="SSS 1 (A)"
+                <TimetableDocument id="timetable-design-preview" :settings="settings" :periods="previewPeriods"
+                  :days="previewDays" :school-name="school?.name || 'Your School'" :subtitle="previewSubtitle"
                   :logo="school?.logo || ''" :brand-color="school?.primaryColor" />
               </div>
             </div>
@@ -155,6 +161,40 @@ const mockPeriods = [
     subjects: [subject('Biology', 'Ms Turay', 'Lab'), subject('Geography', 'Mr Jalloh', 'Room 1'), subject('English', 'Mrs Sesay', 'Room 1'), subject('Physics', 'Mr Bangura', 'Lab'), subject('Geography', 'Mr Jalloh', 'Room 1')] }
 ] as unknown as Period[]
 
+// --- the preview: a real class's timetable, the sample only while that class has no periods ---
+const classStore = useClassSessionStore()
+const sessionId = ref('')
+const realPeriods = ref<Period[]>([])
+const realDays = ref<string[]>([])
+const previewLoading = ref(false)
+
+const usingSample = computed(() => !realPeriods.value.length)
+const previewPeriods = computed(() => (usingSample.value ? mockPeriods : realPeriods.value))
+const previewDays = computed(() => (usingSample.value || !realDays.value.length ? mockDays : realDays.value))
+const previewSubtitle = computed(() =>
+  classStore.list.find((c: { value: string, label: string }) => c.value === sessionId.value)?.label || 'SSS 1 (A)')
+
+async function loadPreview(id: string) {
+  if (!id) return
+  previewLoading.value = true
+  try {
+    const [periods, workingDays] = await Promise.all([
+      TimetableApi().getTimetable(id),
+      TimetableApi().listWorkingDays({ session: id }),
+    ])
+    realPeriods.value = periods || []
+    realDays.value = ((workingDays || []) as WorkingDay[]).filter(d => d.state).map(d => d.day)
+  } catch {
+    realPeriods.value = []
+  } finally {
+    previewLoading.value = false
+    await nextTick()
+    scheduleMeasure()
+  }
+}
+
+watch(sessionId, loadPreview)
+
 // --- scaled preview ---
 const viewportRef = ref<HTMLElement | null>(null)
 const available = ref(600)
@@ -205,7 +245,10 @@ onMounted(async () => {
   if (viewportRef.value) observer.observe(viewportRef.value)
   measure()
 
-  await store.fetch(true).finally(() => { fetching.value = false })
+  await Promise.all([
+    store.fetch(true).finally(() => { fetching.value = false }),
+    classStore.fetchAll(0, 0).then(() => { sessionId.value = classStore.list[0]?.value ?? '' }),
+  ])
   await nextTick()
   scheduleMeasure()
 })

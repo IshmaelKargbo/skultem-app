@@ -132,6 +132,16 @@ export const TimetableApi = () => {
         useHandleError(err)
       }
     },
+    createAssembly: async (payload: CreatePeriodDTO) => {
+      try {
+        return await $api('/timetable/assembly', {
+          method: 'POST',
+          body: payload
+        })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     createLunch: async (payload: CreatePeriodDTO) => {
       try {
         return await $api('/timetable/lunch', {

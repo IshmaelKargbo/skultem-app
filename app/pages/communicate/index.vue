@@ -84,18 +84,19 @@ async function togglePin(notice: Notice) {
 
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <CommunicateSectionNav />
-    <UCard :ui="{
+    <div data-guide="comm-tabs"><CommunicateSectionNav /></div>
+    <GuideBar topic="comm-notices" />
+    <UCard data-guide="adm-list" :ui="{
       body: 'p-0 sm:p-0'
     }">
       <template #header>
         <div class="flex justify-between flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search notices..." class="w-full sm:w-72" />
+            <UInput data-guide="adm-search" v-model="search" :icon="SEARCH_ICON" placeholder="Search notices..." class="w-full sm:w-72" />
             <USelectMenu v-model="categoryFilter" value-key="value" :items="categoryOptions"
               placeholder="All categories" clear class="w-full sm:w-52" />
           </div>
-          <CommunicateNoticeAdd v-if="canManage" />
+          <div data-guide="comm-add"><CommunicateNoticeAdd v-if="canManage" /></div>
         </div>
       </template>
       <div class="space-y-4">

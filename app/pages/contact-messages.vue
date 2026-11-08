@@ -113,8 +113,9 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
     <Heading title="Contact Messages" subtitle="Messages sent from the marketing site's contact form.">
       <UBadge v-if="store.unread" color="primary" variant="subtle" size="lg">{{ store.unread }} new</UBadge>
     </Heading>
+    <GuideBar topic="sys-contact-messages" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <USelect v-model="status" :items="statusFilters" class="w-44" />
       </template>

@@ -34,7 +34,7 @@ const isReady = ref(false)
 const source = ref<any[]>([])
 
 async function fetchAssessments() {
-  if (!term) return
+  if (!term || !id) return
 
   const res = await store.runAnalytic({
     entity: "assessments",

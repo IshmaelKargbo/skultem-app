@@ -1,12 +1,13 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Payroll Runs" subtitle="Every payroll cycle, past and present.">
-      <UButton icon="i-lucide-play" to="/payroll/runs/new" label="Start Payroll Run" />
+      <UButton data-guide="pay-start-run" icon="i-lucide-play" to="/payroll/runs/new" label="Start Payroll Run" />
     </Heading>
 
     <PayrollSectionNav />
+    <GuideBar topic="payroll-runs" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="pay-run-list" :ui="{ body: 'p-0 sm:p-0' }">
       <div class="p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
           <UInput v-model="search" icon="i-lucide-search" placeholder="Search by period..." />

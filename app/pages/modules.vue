@@ -9,8 +9,9 @@
           :title="`${requestedModule.label} isn't installed yet`"
           :description="`Install it below to use ${requestedModule.label}.`" />
 
+        <GuideBar topic="admin-modules" />
         <!-- Search + filter -->
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div data-guide="mod-filters" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <UInput v-model="search" icon="i-lucide-search" placeholder="Search modules..." class="w-full sm:max-w-sm" />
 
           <div class="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -55,7 +56,7 @@
         </UCard>
 
         <!-- Modules, by category -->
-        <section v-for="group in groups" :key="group.category" class="space-y-3">
+        <section data-guide="mod-list" v-for="group in groups" :key="group.category" class="space-y-3">
           <SectionHeader :icon="CATEGORY_ICON[group.category] ?? 'i-lucide-blocks'" :label="group.label" />
 
           <div class="grid gap-4 md:grid-cols-2">

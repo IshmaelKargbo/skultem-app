@@ -1,8 +1,9 @@
 <template>
     <div id="attendance-scroll" class="px-4 md:px-6 space-y-3">
-        <AttendanceReport />
+        <GuideBar topic="admin-attendance" />
+        <div data-guide="att-summary"><AttendanceReport /></div>
         <AttendanceAdminMark />
-        <AttendanceHistory />
+        <div data-guide="att-history"><AttendanceHistory /></div>
     </div>
 </template>
 

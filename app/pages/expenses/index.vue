@@ -1,9 +1,10 @@
 <template>
     <div class="px-4 md:px-6 space-y-3">
         <ExpensesSectionNav />
-        <ExpensesReport ref="reportRef" />
-        <ExpensesTable @refresh="refreshReport" />
-        <UCard>
+        <GuideBar topic="finance-expenses" />
+        <div data-guide="fin-expense-summary"><ExpensesReport ref="reportRef" /></div>
+        <div data-guide="fin-expense-list"><ExpensesTable @refresh="refreshReport" /></div>
+        <UCard data-guide="fin-expense-category">
             <WidgetExpenseCategory ref="categoryRef" />
         </UCard>
     </div>

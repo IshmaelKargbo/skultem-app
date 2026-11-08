@@ -195,20 +195,21 @@ definePageMeta({
 
 <template>
   <div class="px-4 sm:px-6">
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <GuideBar class="mb-3" topic="admin-teachers" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex px-4 py-3 gap-2 justify-between items-center">
           <div class="flex space-x-2 flex-1 items-center">
-            <UButton to="/teachers/add" label="Add Teacher" class="hidden md:flex" color="primary" :icon="ADD_ICON" />
+            <UButton data-guide="adm-tch-add" to="/teachers/add" label="Add Teacher" class="hidden md:flex" color="primary" :icon="ADD_ICON" />
 
-            <UButton to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral" class="hidden md:flex"
+            <UButton data-guide="adm-tch-staff" to="/teachers/add-staff" label="Add Staff" variant="outline" color="neutral" class="hidden md:flex"
               icon="i-lucide-briefcase" />
 
-            <UDropdownMenu :items="addItems" arrow :content="{ align: 'end' }" class="md:hidden">
+            <UDropdownMenu data-guide="adm-tch-add" :items="addItems" arrow :content="{ align: 'end' }" class="md:hidden">
               <UButton color="primary" :icon="ADD_ICON" />
             </UDropdownMenu>
 
-            <div class="flex-1 border-default flex items-center gap-2">
+            <div data-guide="adm-search" class="flex-1 border-default flex items-center gap-2">
               <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, staff ID, email or phone"
                 class="flex-1" />
               <TeacherFilterDrawer v-model:gender="gender" v-model:sort="sort" :sort-options="sortOptions"
@@ -216,7 +217,7 @@ definePageMeta({
             </div>
           </div>
 
-          <TableViewToggle v-model="view" />
+          <div data-guide="list-view"><TableViewToggle v-model="view" /></div>
         </div>
       </template>
 

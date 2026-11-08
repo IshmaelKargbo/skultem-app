@@ -5,14 +5,18 @@
 
     <ReportCardClassMasterOnly v-else>
     <!-- Header -->
-    <Heading title="Report Cards" subtitle="Generate, preview and export student report cards.">
-      <UButton icon="i-lucide-plus" label="Generate Report Cards" class="justify-center" to="/report-cards/generate" />
-      <UButton v-if="!isTeacherOnly" icon="i-lucide-settings-2" variant="outline" label="Design" class="justify-center"
+    <Heading title="Report Cards" :subtitle="isTeacherOnly
+      ? 'Check your class\'s report cards, add your comments and approve them.'
+      : 'Generate report cards; each class teacher checks and approves them before parents see them.'">
+      <div class="flex justify-end"><GuideButton :key="guideTopic" :guide="guideTopic" /><HelpButton :topic="guideTopic" /></div>
+      <UButton data-guide="rc-generate" v-if="canGenerate" icon="i-lucide-plus" label="Generate Report Cards" class="justify-center"
+        to="/report-cards/generate" />
+      <UButton data-guide="rc-design" v-if="!isTeacherOnly" icon="i-lucide-settings-2" variant="outline" label="Design" class="justify-center"
         to="/report-cards/templates" />
     </Heading>
 
     <!-- Stats -->
-    <div v-if="!isTeacherOnly" class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+    <div data-guide="rc-stats" v-if="!isTeacherOnly" class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
       <Metric :record="{
         color: 'info',
         icon: 'i-lucide-file-text',
@@ -44,10 +48,14 @@
       }" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <!-- The review step for the chosen class and term -->
+    <ReportCardReviewBar ref="reviewBar" data-guide="report-review" :class-id="selectedClass || undefined" :term-id="reviewTermId"
+      :can-review="canReviewClass" @changed="fetchRecords" />
+
+    <UCard data-guide="report-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex items-center justify-between gap-2 px-4 py-3">
-          <div class="flex flex-1 items-center gap-2">
+          <div data-guide="rc-filters" class="flex flex-1 items-center gap-2">
             <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search student..." class="flex-1" />
             <ReportCardFilterDrawer v-model:term-id="selectedTerm" v-model:class-id="selectedClass"
               v-model:level="level" v-model:section-id="sectionId" v-model:stream-id="streamId"
@@ -109,6 +117,12 @@
             :color="row.original.passed ? 'success' : 'warning'" variant="subtle" />
         </template>
 
+        <template #reviewStatus-cell="{ row }">
+          <UBadge :label="REPORT_CARD_REVIEW[row.original.reviewStatus ?? 'APPROVED'].label"
+            :color="REPORT_CARD_REVIEW[row.original.reviewStatus ?? 'APPROVED'].color"
+            :icon="REPORT_CARD_REVIEW[row.original.reviewStatus ?? 'APPROVED'].icon" variant="subtle" />
+        </template>
+
         <template #actions-cell="{ row }">
           <UButton :to="`/report-cards/${row.original.id}`" size="sm" variant="ghost" color="success"
             :icon="VIEW_ICON" aria-label="Preview report card" />
@@ -155,6 +169,8 @@
               <div class="flex flex-wrap items-center justify-between gap-2 border-t border-default p-3 text-xs text-muted">
                 <UBadge :label="item.passed ? 'Passed' : 'Attention'" :color="item.passed ? 'success' : 'warning'"
                   variant="subtle" />
+                <UBadge :label="REPORT_CARD_REVIEW[item.reviewStatus ?? 'APPROVED'].label"
+                  :color="REPORT_CARD_REVIEW[item.reviewStatus ?? 'APPROVED'].color" variant="subtle" />
                 <span>Position: {{ item.position ? ordinal(item.position) : 'N/A' }}</span>
                 <span v-if="item.downloadCount">
                   {{ item.downloadCount }} download{{ item.downloadCount === 1 ? '' : 's' }}
@@ -200,7 +216,8 @@ const columns = [
   { accessorKey: 'average', header: 'Average' },
   { accessorKey: 'overallGrade', header: 'Grade' },
   { accessorKey: 'position', header: 'Position' },
-  { accessorKey: 'passed', header: 'Status' },
+  { accessorKey: 'passed', header: 'Result' },
+  { accessorKey: 'reviewStatus', header: 'Review' },
   { id: 'actions', meta: { class: { td: 'text-right' } } }
 ]
 
@@ -230,6 +247,25 @@ watch(searchInput, (val) => {
 // Management is everyone who isn't just a teacher; a teacher sees only the classes they're class master of.
 const isTeacherOnly = computed(() =>
   can(Role.TEACHER) && !can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]))
+// The class teacher's guide is about reviewing; everyone else's is about generating and managing.
+const guideTopic = computed(() => (isTeacherOnly.value ? 'teacher-report-cards' : 'admin-report-cards'))
+
+// Only admins generate; the class teacher reviews.
+const canGenerate = computed(() => can([Role.ADMIN, Role.SUPER_ADMIN]))
+
+// The review bar works on one term - the chosen one, else the term running now.
+const reviewTermId = computed(() => selectedTerm.value
+  || termStore.records.find(t => t.status === 'ACTIVE')?.id || undefined)
+
+// Who can approve the chosen class: its class teacher, or an admin when the class has no class teacher.
+const classSessionStore = useClassSessionStore()
+const classHasTeacher = computed(() => classSessionStore.records
+  .some((s: any) => s.clazzId === selectedClass.value && !!s.teacherId))
+const canReviewClass = computed(() => {
+  if (!selectedClass.value) return false
+  if (masterClasses.value.some(c => c.value === selectedClass.value)) return true
+  return canGenerate.value && !classHasTeacher.value
+})
 
 const classes = computed(() => isTeacherOnly.value
   ? masterClasses.value
@@ -300,13 +336,16 @@ onMounted(() => {
   sectionStore.fetchAll(0, 0)
   streamStore.fetchAll(0, 0)
 
+  if (can(Role.TEACHER)) ensureClassMasterLoaded()
+
   if (!isTeacherOnly.value) {
     classStore.fetchAll(1, 100)
     reportCardStore.fetchStats()
+    if (canGenerate.value) classSessionStore.fetchAll(0, 0)
   }
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

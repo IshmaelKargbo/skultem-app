@@ -4,6 +4,8 @@ export const useTimetableStore = defineStore('timetable', {
   state: () => ({
     rooms: [] as Room[],
     periods: [] as Period[],
+    // The class session whose timetable is loaded - lets a double period reload both of its slots.
+    sessionId: '' as string,
     roomMeta: null as Meta | null,
     periodLoading: true,
     timings: [] as Timing[],
@@ -47,6 +49,7 @@ export const useTimetableStore = defineStore('timetable', {
       try {
         const response = await TimetableApi().getTimetable(id)
         this.periods = response
+        this.sessionId = id
       } catch (err: any) {
         throw err.data?.message || 'Failed to fetch timetable'
       } finally {
@@ -99,6 +102,11 @@ export const useTimetableStore = defineStore('timetable', {
     },
     async createBreak(payload: CreatePeriodDTO) {
       const res = await TimetableApi().createBreak(payload)
+      const data = (res as any).data
+      if (data) this.periods.push(data)
+    },
+    async createAssembly(payload: CreatePeriodDTO) {
+      const res = await TimetableApi().createAssembly(payload)
       const data = (res as any).data
       if (data) this.periods.push(data)
     },

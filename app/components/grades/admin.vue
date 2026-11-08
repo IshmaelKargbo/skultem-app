@@ -4,7 +4,7 @@
       title="Grade Entry"
       subtitle="Enter scores for the active test. Locked assessments are read-only"
     >
-      <div v-if="hasDraftAssessments" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
+      <div data-guide="grades-actions" v-if="hasDraftAssessments" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
         <UButton
           class="flex justify-center"
           icon="lucide:save"
@@ -27,9 +27,10 @@
  
     </Heading>
 
-    <GradesSectionNav />
+    <div data-guide="grades-tabs"><GradesSectionNav /></div>
 
-    <UCard class="hidden md:block">
+    <GuideBar topic="admin-grade-entry" />
+    <UCard data-guide="grades-pick" class="hidden md:block">
       <div class="flex space-x-3">
         <USelectMenu
           value-key="value"
@@ -80,7 +81,7 @@
       </template>
     </UCard>
 
-    <UCard class="md:hidden">
+    <UCard data-guide="grades-pick" class="md:hidden">
       <template #header>
         <div class="grid gap-3 grid-cols-2">
           <USelectMenu
@@ -132,7 +133,7 @@
       </template>
     </UCard>
 
-    <GradesReturnedNotice :assessments="assessments" />
+    <div data-guide="grades-returned"><GradesReturnedNotice :assessments="assessments" /></div>
 
     <!-- No class in the caller's section(s) has assessments this term: say why the class list is empty. -->
     <UAlert
@@ -155,7 +156,7 @@
     />
 
     <!-- Assessments opened as Continuous Assessment are recorded here rather than typed into the grid. -->
-    <UCard v-if="continuousAssessments.length">
+    <UCard data-guide="grades-continuous" v-if="continuousAssessments.length">
       <div class="space-y-4">
         <div v-for="item in continuousAssessments" :key="item.assessment.id" class="space-y-3">
           <div class="flex items-center justify-between gap-3">
@@ -178,7 +179,7 @@
       </div>
     </UCard>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="grades-table" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-end">
           <TableViewToggle v-model="view" />

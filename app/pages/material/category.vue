@@ -88,13 +88,14 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <MaterialSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <div data-guide="mat-tabs"><MaterialSectionNav /></div>
+        <GuideBar topic="admin-material-categories" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex flex-1 space-x-3 items-center">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" />
-                        <MaterialCategoryAdd />
+                        <div data-guide="mat-cat-add"><MaterialCategoryAdd /></div>
                     </div>
                     <TableViewToggle v-model="view" />
                 </div>

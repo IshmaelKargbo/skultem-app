@@ -258,7 +258,7 @@ onMounted(() => {
             <!-- FORM FIELDS -->
             <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-5 md:p-5">
 
-                <UFormField name="enrollmentType" label="Enrollment Type" required>
+                <UFormField data-guide="enrol-type" name="enrollmentType" label="Enrollment Type" required>
                     <USelectMenu v-model="form.enrollmentType" value-key="value" :items="enrollmentTypes"
                         placeholder="Select enrollment type" :leading-icon="ENROLLMENT_ICON" class="w-full" />
                     <template #help>
@@ -269,7 +269,7 @@ onMounted(() => {
                     </template>
                 </UFormField>
 
-                <UFormField name="admissionDate" label="Admission Date" required>
+                <UFormField data-guide="enrol-date" name="admissionDate" label="Admission Date" required>
                     <UInput type="date" v-model="form.admissionDate" placeholder="Select admission date"
                         :leading-icon="CALENDAR_ICON" />
                     <template #help>
@@ -277,7 +277,7 @@ onMounted(() => {
                     </template>
                 </UFormField>
 
-                <UFormField name="classId" label="Grade / Class" required>
+                <UFormField data-guide="enrol-class" name="classId" label="Grade / Class" required>
                     <USelectMenu v-model="form.classId" value-key="value" :items="classes" placeholder="Select grade / class"
                         :leading-icon="CLASS_ICON" class="w-full" />
                     <template #help>
@@ -288,7 +288,7 @@ onMounted(() => {
                     </template>
                 </UFormField>
 
-                <UFormField name="admissionNumber" label="Student ID" required>
+                <UFormField data-guide="enrol-id" name="admissionNumber" label="Student ID" required>
                     <UInput v-model="form.admissionNumber" placeholder="e.g. STU-2025-0042" :leading-icon="ID_ICON" />
                     <template #help>
                         <p class="text-sm text-muted">
@@ -298,7 +298,7 @@ onMounted(() => {
                     </template>
                 </UFormField>
 
-                <UFormField name="previousSchool" label="Previous School" :required="isTransfer">
+                <UFormField data-guide="enrol-transfer" name="previousSchool" label="Previous School" :required="isTransfer">
                     <UInput v-model="form.previousSchool" placeholder="Enter name of previous school"
                         :leading-icon="SCHOOL_ICON" />
                     <template #help>
@@ -319,7 +319,7 @@ onMounted(() => {
             </div>
 
             <!-- SUBJECTS -->
-            <div v-if="form.classId" class="space-y-6 pb-6">
+            <div data-guide="enrol-subjects" v-if="form.classId" class="space-y-6 pb-6">
 
                 <!-- CORE SUBJECTS -->
                 <div class="space-y-3 px-4 md:px-5">

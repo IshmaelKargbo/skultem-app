@@ -168,10 +168,11 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Announcements" subtitle="Messages every user, in every school, sees on their notice board.">
-      <UButton icon="i-lucide-megaphone" label="New Announcement" @click="startCreate" />
+      <UButton data-guide="sa-action" icon="i-lucide-megaphone" label="New Announcement" @click="startCreate" />
     </Heading>
+    <GuideBar topic="sys-announcements" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="items" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">

@@ -130,13 +130,13 @@ onMounted(async () => {
       </template>
 
       <div class="space-y-5">
-        <UFormField label="Student" required>
+        <UFormField data-guide="hcv-student" label="Student" required>
           <USelectMenu v-model="studentId" v-model:search-term="searchTerm" value-key="value" :items="students"
             :loading="studentsLoading" ignore-filter :icon="SEARCH_ICON" placeholder="Search for a student"
             :disabled="saving" class="w-full" />
         </UFormField>
 
-        <UFormField label="Complaint" required help="Urgent complaints are never turned away by a limit.">
+        <UFormField data-guide="hcv-complaint" label="Complaint" required help="Urgent complaints are never turned away by a limit.">
           <USelectMenu v-model="complaints" multiple value-key="value" :items="complaintOptions"
             placeholder="What's wrong?" :disabled="saving" class="w-full">
             <template #item-trailing="{ item }">
@@ -166,13 +166,13 @@ onMounted(async () => {
           <UFormField label="Arrived at" help="Leave empty for now. Today only.">
             <UInput v-model="arrivedAt" type="datetime-local" :max="toLocalInput(new Date().toISOString())" class="w-full" />
           </UFormField>
-          <UFormField label="Temperature (°C)" :required="settings?.requireTemperature">
+          <UFormField data-guide="hcv-temp" label="Temperature (°C)" :required="settings?.requireTemperature">
             <UInputNumber v-model="temperature" :min="30" :max="45" :step="0.1" :format-options="{ minimumFractionDigits: 1 }"
               placeholder="e.g. 37.2" class="w-full" />
           </UFormField>
         </div>
 
-        <UFormField label="Brought by" :required="settings?.requireBroughtBy">
+        <UFormField data-guide="hcv-brought" label="Brought by" :required="settings?.requireBroughtBy">
           <UInput v-model="broughtBy" :maxlength="255" placeholder="e.g. Class teacher, Mr Kamara" class="w-full" />
         </UFormField>
 
@@ -185,7 +185,7 @@ onMounted(async () => {
         <div class="flex flex-wrap items-center gap-3">
           <UButton v-if="refused" color="error" icon="i-lucide-ban" label="Record as Turned Away" :loading="saving"
             :disabled="!studentId || !complaints.length" @click="start" />
-          <UButton v-else icon="i-lucide-plus" label="Start Visit" :loading="saving" :disabled="!!missing || checking"
+          <UButton data-guide="hcv-save" v-else icon="i-lucide-plus" label="Start Visit" :loading="saving" :disabled="!!missing || checking"
             @click="start" />
           <UButton label="Cancel" variant="outline" color="neutral" :disabled="saving" @click="leave" />
           <span v-if="missing && !refused && !saving" class="text-xs text-muted">{{ missing }}</span>
@@ -195,7 +195,7 @@ onMounted(async () => {
 
     <!-- What the system knows about this student's visits, and the school's limits -->
     <div class="space-y-3">
-      <UCard>
+      <UCard data-guide="hcv-history">
         <template #header>
           <h3 class="font-semibold">Recent Visits</h3>
         </template>

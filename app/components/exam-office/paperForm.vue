@@ -3,13 +3,16 @@
     <template #header>
       <div class="flex w-full items-center justify-between">
         <p class="text-lg font-semibold">{{ record ? 'Edit Paper' : 'Add Paper' }}</p>
-        <UButton :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
+        <div class="flex items-center gap-1">
+          <GuideButton v-if="open" guide="exam-paper-form" />
+          <UButton :icon="CLOSE_ICON" variant="ghost" color="neutral" @click="close" />
+        </div>
       </div>
     </template>
 
     <template #body>
       <UForm ref="formRef" :schema="schema" :state="state" class="w-full space-y-4" @submit="onSubmit">
-        <div class="grid grid-cols-3 gap-3">
+        <div data-guide="paper-subject" class="grid grid-cols-3 gap-3">
           <UFormField required label="Subject" name="subjectId" class="col-span-2">
             <USelectMenu v-model="state.subjectId" :items="subjectOptions" value-key="value" label-key="label"
               placeholder="Choose a subject" class="w-full" :disabled="saving" />
@@ -20,7 +23,7 @@
           </UFormField>
         </div>
 
-        <UFormField required label="Classes sitting this paper" name="classIds"
+        <UFormField data-guide="paper-classes" required label="Classes sitting this paper" name="classIds"
           help="Pick every class that sits it together, e.g. all of JSS 1 in the hall.">
           <USelectMenu v-model="state.classIds" multiple :items="classOptions" value-key="value" label-key="label"
             placeholder="Choose classes" class="w-full" :disabled="saving" />
@@ -32,6 +35,7 @@
           </div>
         </UFormField>
 
+        <div data-guide="paper-time" class="space-y-4">
         <UFormField required label="Date" name="examDate" :help="periodHint">
           <UInput v-model="state.examDate" type="date" :min="minDate" :max="maxDate" class="w-full"
             :disabled="saving" />
@@ -53,7 +57,9 @@
             <span v-if="duration" class="self-center text-xs text-muted">{{ duration }}</span>
           </div>
         </div>
+        </div>
 
+        <div data-guide="paper-invigilators" class="space-y-4">
         <UFormField label="Venue" name="venue">
           <UInput v-model="state.venue" placeholder="e.g. Main Hall" class="w-full" :disabled="saving" />
         </UFormField>
@@ -63,6 +69,7 @@
           <USelectMenu v-model="state.invigilatorIds" multiple :items="teacherOptions" value-key="value"
             label-key="label" placeholder="No invigilator yet" class="w-full" :disabled="saving" />
         </UFormField>
+        </div>
 
         <UFormField label="Notes" name="notes">
           <UTextarea v-model="state.notes" placeholder="e.g. Bring a calculator" :rows="2" autoresize class="w-full"
@@ -72,7 +79,7 @@
     </template>
 
     <template #footer>
-      <div class="flex flex-wrap gap-3">
+      <div data-guide="paper-save" class="flex flex-wrap gap-3">
         <UButton :icon="SAVE_ICON" :loading="saving" label="Save" @click="submit(false)" />
         <UButton v-if="!record" variant="soft" :disabled="saving" label="Save and add another"
           @click="submit(true)" />

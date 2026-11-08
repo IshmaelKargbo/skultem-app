@@ -1,7 +1,8 @@
 <template>
   <div class="md:px-6 px-4 space-y-3">
+    <GuideBar topic="parent-grades" />
     <!-- Top Card -->
-    <UCard class="hidden md:block">
+    <UCard data-guide="par-pick" class="hidden md:block">
       <div class="flex flex-col md:flex-row items-center justify-between space-y-5 md:space-y-0">
         <div class="space-y-2 flex flex-col items-center md:items-baseline">
           <p class="text-xs text-mute">Overall Performance</p>
@@ -30,7 +31,7 @@
       </div>
     </UCard>
     <!-- Mobile Selects -->
-    <div class="grid grid-cols-2 md:hidden gap-3">
+    <div data-guide="par-pick" class="grid grid-cols-2 md:hidden gap-3">
       <USelectMenu
         :items="children"
         v-model="state.student"
@@ -49,7 +50,7 @@
     </div>
 
     <!-- Grades Grid -->
-    <div class="grid md:hidden md:grid-cols-4 grid-cols-2 md:gap-5 gap-3">
+    <div data-guide="par-stats" class="grid md:hidden md:grid-cols-4 grid-cols-2 md:gap-5 gap-3">
       <GradesParentGrade color="success" :id="state.student" :term="state.term" grade="A" />
       <GradesParentGrade color="info" :id="state.student" :term="state.term" grade="B" />
       <UCard>

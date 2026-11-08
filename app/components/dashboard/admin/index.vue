@@ -2,8 +2,9 @@
     <div class="px-4 md:px-6 space-y-3">
         <DashboardWelcome />
         <DashboardTeacherClockInOut v-if="canClockIn && isInstalled(ModuleKey.STAFF_HR)" />
-        <DashboardAdminReport />
-        <UCard>
+        <GuideBar topic="admin-dashboard" />
+        <div data-guide="adm-dash-stats"><DashboardAdminReport /></div>
+        <UCard data-guide="adm-dash-quick">
             <div class="grid gap-3 md:grid-cols-4 grid-cols-2">
                 <UButton to="/students" color="info" class="w-full flex justify-center py-4 rounded-xl"
                     variant="subtle">
@@ -35,7 +36,7 @@
                 </UButton>
             </div>
         </UCard>
-        <div class="grid gap-3 md:grid-cols-2">
+        <div data-guide="adm-dash-charts" class="grid gap-3 md:grid-cols-2">
             <UCard>
                 <DashboardAdminRevenue />
             </UCard>
@@ -43,18 +44,18 @@
                 <DashboardAdminWeeklyAttendance />
             </UCard>
         </div>
-        <UCard>
+        <UCard data-guide="adm-dash-attention">
             <DashboardAdminAttention />
         </UCard>
-        <UCard v-if="isInstalled(ModuleKey.STAFF_HR)">
+        <UCard data-guide="adm-dash-staff" v-if="isInstalled(ModuleKey.STAFF_HR)">
             <DashboardAdminStaffAttendance />
         </UCard>
         <!-- The school calendar sits beside recent activity; the class average runs full width along the bottom. -->
-        <div class="grid md:grid-cols-2 gap-3">
+        <div data-guide="adm-dash-calendar" class="grid md:grid-cols-2 gap-3">
             <DashboardAdminEventCalendar />
             <DashboardAdminActivity />
         </div>
-        <UCard>
+        <UCard data-guide="adm-dash-class">
             <WidgetClassPerformance />
         </UCard>
     </div>

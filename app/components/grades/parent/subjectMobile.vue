@@ -57,7 +57,7 @@ function toggle(key: string) {
 }
 
 async function runReport() {
-    if (!term) return
+    if (!term || !student) return
 
     await store.runReport(
         {

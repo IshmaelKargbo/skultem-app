@@ -1,15 +1,16 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Daily Register" subtitle="View, print or export the staff attendance register for a specific date.">
-      <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
+      <UButton data-guide="rep-download" icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         :disabled="!roster" @click="downloadPdf">
         Export PDF
       </UButton>
     </Heading>
 
-    <HrSectionNav />
+    <div data-guide="hr-tabs"><HrSectionNav /></div>
 
-    <UCard>
+    <GuideBar topic="admin-staff-daily-register" />
+    <UCard data-guide="rep-filters">
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Date">
           <UInput v-model="filters.date" type="date" class="w-full" />
@@ -36,7 +37,7 @@
     </UCard>
 
     <template v-else>
-      <div id="teacher-daily-register-preview" class="rounded-lg bg-white text-gray-900 px-2"
+      <div data-guide="rep-preview" id="teacher-daily-register-preview" class="rounded-lg bg-white text-gray-900 px-2"
         style="background-color: #ffffff; color: #111827;">
         <div class="mb-4 border-b-4 border-primary-500 px-2 pb-5 pt-6 text-center sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">

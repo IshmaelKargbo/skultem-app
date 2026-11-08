@@ -1,7 +1,8 @@
 <template>
   <div class="px-4 md:px-6 space-y-3">
+    <GuideBar topic="fin-report-expense" />
     <ReportHeader :show-filter="false" />
-    <UCard>
+    <UCard data-guide="fr-expense-chart">
       <WidgetExpenseCategory />
     </UCard>
   </div>

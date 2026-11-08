@@ -46,8 +46,8 @@ onMounted(load)
   <UCard :ui="{ body: 'p-0 sm:p-0' }">
     <template #header>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" class="w-full sm:w-72" />
-        <LibraryCategoryAdd v-if="canManage" />
+        <UInput data-guide="adm-search" v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" class="w-full sm:w-72" />
+        <div data-guide="lib-cat-add"><LibraryCategoryAdd v-if="canManage" /></div>
       </div>
     </template>
 

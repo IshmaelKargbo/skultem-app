@@ -107,6 +107,8 @@ export type Period = {
     name: string
     isBreak: boolean
     isLunch: boolean
+    // Morning assembly or devotion - no lessons, like a break.
+    isAssembly?: boolean
     subjects: Timetable[]
     // One list per working day with every subject in that slot. More than one means students split
     // between options at the same time (e.g. PHE or RME), each going to the one they take.
@@ -149,6 +151,8 @@ export type CreateTimetableDTO = {
     color: string
     // Set to edit that entry; leave out to add a subject (or another option) to the slot.
     entry?: string
+    // New entries only: also put it in the period straight after (a double period).
+    doublePeriod?: boolean
 }
 // Design of the downloadable timetable PDF (Timetable > Design). accentColor null/'' = the school's
 // brand colour. Mirrors the backend's TimetableSettingDTO.

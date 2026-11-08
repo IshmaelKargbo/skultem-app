@@ -12,7 +12,7 @@
         <UForm :state="form" :schema="schema" @submit="next">
             <div
                 class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-5 md:p-5">
-                <UFormField name="givenNames" label="Given Names" required>
+                <UFormField data-guide="enrol-name" name="givenNames" label="Given Names" required>
                     <UInput v-model="form.givenNames" placeholder="Enter given names" :leading-icon="USER_ICON" />
                     <template #help>
                         <p class="text-sm text-muted">
@@ -30,7 +30,7 @@
                     </template>
                 </UFormField>
 
-                <UFormField name="dob" label="Date of Birth" required>
+                <UFormField data-guide="enrol-dob" name="dob" label="Date of Birth" required>
                     <UInput v-model="form.dob" type="date" :max="latestDob" :leading-icon="CALENDAR_ICON" />
                     <template #help>
                         <p class="text-sm text-muted">
@@ -39,7 +39,7 @@
                     </template>
                 </UFormField>
 
-                <UFormField name="gender" label="Gender" required>
+                <UFormField data-guide="enrol-gender" name="gender" label="Gender" required>
                     <USelectMenu v-model="form.gender" :items="genders" value-key="value" placeholder="Select gender"
                         :leading-icon="GENDER_ICON" />
                     <template #help>
@@ -69,7 +69,7 @@
                     </template>
                 </UFormField>
 
-                <UFormField name="city" label="City" required>
+                <UFormField data-guide="enrol-address" name="city" label="City" required>
                     <UInput v-model="form.city" placeholder="Enter city" :leading-icon="CITY_ICON" />
                     <template #help>
                         <p class="text-sm text-muted">

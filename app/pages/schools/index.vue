@@ -140,13 +140,14 @@ definePageMeta({
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <Heading title="Schools" subtitle="Onboard, edit and manage every school on the platform.">
-      <UButton label="Onboard School" icon="i-lucide-plus" to="/schools/add" />
+      <UButton data-guide="sa-action" label="Onboard School" icon="i-lucide-plus" to="/schools/add" />
     </Heading>
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <GuideBar topic="sys-schools" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex gap-3 items-center">
           <div class="flex items-center gap-2 flex-1">
-            <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search by name or domain..."
+            <UInput data-guide="adm-search" v-model="searchInput" icon="i-lucide-search" placeholder="Search by name or domain..."
               class="flex-1" />
             <SystemAdminSchoolFilterDrawer v-model:status="statusFilter" v-model:type="typeFilter"
               :active-count="activeFilterCount" />

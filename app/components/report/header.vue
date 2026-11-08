@@ -1,9 +1,9 @@
 <template>
     <div class="space-y-4">
-        <TransactionFilters v-if="showFilter" :selected="selected ?? defaultSelected" :emit-only="emitOnly"
+        <TransactionFilters v-if="showFilter" data-guide="fr-filters" :selected="selected ?? defaultSelected" :emit-only="emitOnly"
             @apply="onApply" />
 
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div data-guide="fr-downloads" class="grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <UCard class="cursor-pointer transition-colors hover:bg-muted/40" :ui="{ body: 'p-4 sm:p-5' }"
                 @click="download('class')">
                 <div class="flex items-start gap-3">
@@ -49,7 +49,7 @@
                 </div>
             </UCard>
         </div>
-        <div>
+        <div data-guide="fr-tabs">
             <TabMobile class="md:hidden" :tabs="[
                   { label: 'Revenue Analysis', to: '/analytics/financial-reports', exact: true },
                 { label: 'Outstanding Fees', to: '/analytics/financial-reports/outstanding' },

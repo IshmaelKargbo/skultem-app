@@ -1,7 +1,8 @@
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
-      <div v-if="hasDraftAssessments" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
+      <div class="flex justify-end"><GuideButton guide="teacher-grade-entry" /><HelpButton topic="teacher-grade-entry" /></div>
+      <div v-if="hasDraftAssessments" data-guide="grades-actions" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
         <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"
           :disabled="disableActions" @click="saveGrades" />
         <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
@@ -17,7 +18,7 @@
 
     <GradesSectionNav />
 
-    <UCard class="hidden md:block">
+    <UCard data-guide="grades-pick" class="hidden md:block">
       <div class="flex space-x-3">
         <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject"
           v-model="state.teacherSubjectId" @change="fetchStudents" />
@@ -41,7 +42,7 @@
       </template>
     </UCard>
 
-    <UCard class="md:hidden">
+    <UCard data-guide="grades-pick" class="md:hidden">
       <template #header>
         <div class="grid gap-3 md:grid-cols-2">
           <USelectMenu value-key="value" :items="subjects" placeholder="Select Subject" v-model="state.teacherSubjectId"
@@ -68,7 +69,7 @@
       </template>
     </UCard>
 
-    <GradesReturnedNotice :assessments="assessments" />
+    <div data-guide="grades-returned"><GradesReturnedNotice :assessments="assessments" /></div>
 
     <!-- Submitted grades wait for whoever the school has approving them for this class. -->
     <UAlert v-if="hasPendingApproval && selectedApprover" color="info" variant="soft"
@@ -89,7 +90,7 @@
     />
 
     <!-- Assessments opened as Continuous Assessment are recorded here rather than typed into the grid. -->
-    <UCard v-if="continuousAssessments.length">
+    <UCard v-if="continuousAssessments.length" data-guide="grades-continuous">
       <div class="space-y-4">
         <div v-for="item in continuousAssessments" :key="item.assessment.id" class="space-y-3">
           <div class="flex items-center justify-between gap-3">
@@ -112,7 +113,7 @@
       </div>
     </UCard>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="grades-table" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="hidden md:flex justify-between items-center">
           <p>Students: <span class="font-semibold">{{ rows.length }}</span></p>

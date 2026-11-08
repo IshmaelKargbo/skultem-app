@@ -2,13 +2,15 @@
 // One period on one day. A single subject shows as one card. Several subjects mean the class splits
 // between options at the same time (e.g. PHE or RME): each student goes to the one they take, so each
 // option is shown with its own teacher and room.
-const { slot, isAdmin = false, label, when } = defineProps<{
+const { slot, isAdmin = false, label, when, double = null } = defineProps<{
   slot: Timetable[]
   isAdmin?: boolean
   // e.g. "Monday · Period 3", shown on the phone layout
   label?: string
   // e.g. "Monday · Period 3 · 08:00 - 08:40", shown in the details popover
   when?: string
+  // Half of a double period (the same lesson in the period before or after).
+  double?: 'first' | 'second' | null
 }>()
 
 // Hovering a lesson shows its full details: the card cuts long names off so the grid fits without scrolling.
@@ -51,6 +53,10 @@ const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY
       :class="[slot[0]!.color, isAdmin && 'hover:-translate-y-0.5 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary']"
       @click="isAdmin && emit('edit', slot[0]!)">
       <p v-if="label" class="truncate text-[11px] font-medium uppercase tracking-wide text-muted">{{ label }}</p>
+      <p v-if="double" class="mb-1 inline-flex items-center gap-1 rounded-full bg-default/70 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+        <UIcon name="i-lucide-link-2" class="size-3" />
+        Double · {{ double === 'first' ? '1 of 2' : '2 of 2' }}
+      </p>
       <h4 class="flex min-w-0 items-center gap-1.5 pr-5 font-semibold leading-tight">
         <UIcon v-if="isLibrary" :name="LIBRARY_ICON" class="size-4 shrink-0 text-primary" />
         <span class="truncate">{{ slot[0]!.subject }}</span>

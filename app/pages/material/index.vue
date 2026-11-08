@@ -102,16 +102,17 @@ definePageMeta({
 </script>
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <MaterialSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <div data-guide="mat-tabs"><MaterialSectionNav /></div>
+        <GuideBar topic="admin-materials" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex-1 flex items-center space-x-3">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or category"
                             class="w-full" />
                         <div class="flex space-x-2">
-                            <MaterialAdd />
-                            <MaterialRestock />
+                            <div data-guide="mat-add"><MaterialAdd /></div>
+                            <div data-guide="mat-restock"><MaterialRestock /></div>
                         </div>
                     </div>
                     <TableViewToggle v-model="view" />

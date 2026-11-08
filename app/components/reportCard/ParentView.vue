@@ -1,9 +1,10 @@
 <template>
   <div class="space-y-4">
     <Heading title="Report Cards" :subtitle="subtitle">
-      <USelectMenu @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
+      <USelectMenu data-guide="par-child" @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
         placeholder="Select Student" />
     </Heading>
+<GuideBar topic="parent-report-cards" />
 
     <div v-if="cardsLoading" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       <UCard v-for="i in 3" :key="i" variant="outline">
@@ -13,7 +14,7 @@
     </div>
 
     <div v-else-if="records.length" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      <UCard v-for="item in records" :key="item.id" variant="outline"
+      <UCard data-guide="par-cards" v-for="item in records" :key="item.id" variant="outline"
         class="overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
 
         <div class="flex items-start justify-between">

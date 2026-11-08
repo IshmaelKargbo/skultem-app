@@ -5,8 +5,9 @@
         class="justify-center" @click="load" />
     </Heading>
 
-    <CurriculumSectionNav />
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <div data-guide="cur-tabs"><CurriculumSectionNav /></div>
+    <GuideBar topic="admin-teacher-progress" />
+    <UCard data-guide="tp-filters" :ui="{ body: 'p-0 sm:p-0' }">
       <div class="p-4">
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." class="w-full" />
@@ -17,7 +18,7 @@
     </UCard>
 
     <!-- Statistics -->
-    <div class="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
+    <div data-guide="tp-stats" class="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
       <Metric :record="{
         color: 'neutral',
         label: 'Teachers',
@@ -53,7 +54,7 @@
     </div>
 
     <div v-else-if="filteredTeachers.length" class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <UCard v-for="teacher in filteredTeachers" :key="teacher.id" class="overflow-hidden">
+      <UCard data-guide="tp-list" v-for="teacher in filteredTeachers" :key="teacher.id" class="overflow-hidden">
         <template #header>
           <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-center gap-2">

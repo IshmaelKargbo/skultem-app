@@ -183,14 +183,15 @@ definePageMeta({
 
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <SubjectSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <div data-guide="subj-tabs"><SubjectSectionNav /></div>
+        <GuideBar topic="admin-subject-groups" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex px-4 py-3 items-center justify-between gap-2">
                     <div class="flex flex-1 items-center gap-2">
-                        <SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" @saved="fetchRecord" />
+                        <div data-guide="subj-group-add"><SubjectGroupAdd v-if="can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN])" @saved="fetchRecord" /></div>
                         <div class="flex flex-1 items-center gap-2">
-                            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..." class="flex-1" />
+                            <UInput data-guide="adm-search" v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name..." class="flex-1" />
                             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter subject groups" description="Narrow the list by class or change the sort" />
                         </div>
                     </div>

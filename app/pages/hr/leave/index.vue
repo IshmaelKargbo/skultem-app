@@ -2,13 +2,14 @@
     <div class="space-y-3 px-4 md:px-6">
         <Heading :title="isAdmin ? 'Leave Management' : 'My Leave Requests'"
             :subtitle="isAdmin ? 'Track and manage employee leave requests.' : 'Submit and track your own leave requests.'">
-            <UButton icon="i-lucide-plus" to="/hr/leave/add" label="New Request" />
+            <div class="flex justify-end"><GuideButton :key="guideTopic" :guide="guideTopic" /><HelpButton :topic="guideTopic" /></div>
+            <UButton data-guide="leave-new" icon="i-lucide-plus" to="/hr/leave/add" label="New Request" />
         </Heading>
 
         <HrSectionNav />
 
         <!-- Summary Cards - admin only -->
-        <div v-if="isAdmin" class="grid gap-4 grid-cols-2 md:grid-cols-4">
+        <div data-guide="leave-stats" v-if="isAdmin" class="grid gap-4 grid-cols-2 md:grid-cols-4">
             <Metric
                 :record="{ icon: 'i-lucide-file-text', label: 'Total Requests', value: summary?.total ?? 0, isReady: !!summary, color: 'primary' }" />
             <Metric
@@ -23,9 +24,9 @@
             title="Couldn't load leave requests" :description="error" />
 
         <!-- Filters - admin only -->
-        <UCard>
+        <UCard data-guide="leave-list">
             <template v-if="isAdmin" #header>
-                <div class="flex gap-3">
+                <div data-guide="leave-filters" class="flex gap-3">
                     <div class="flex gap-3 flex-1">
                         <UInput v-model="search" icon="i-lucide-search" placeholder="Search employee..."
                             class="md:col-span-2" />
@@ -118,6 +119,7 @@
 <script setup lang="ts">
 const { can } = useAuth()
 const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL]))
+const guideTopic = computed(() => (isAdmin.value ? 'admin-leave' : 'staff-leave'))
 
 const store = useLeaveStore()
 const { records, meta, loading, summary, error } = storeToRefs(store)

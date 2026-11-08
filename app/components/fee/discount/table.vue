@@ -151,7 +151,7 @@ onMounted(async () => {
       <div class="flex space-x-3">
         <div class="flex flex-1 space-x-3">
           <UInput placeholder="Search by name" />
-          <UButton icon="prime:plus" label="Create Discount" to="/fees-payment/discounts/add" />
+          <UButton data-guide="fin-discount-add" icon="prime:plus" label="Create Discount" to="/fees-payment/discounts/add" />
         </div>
         <TableViewToggle v-model="view" />
       </div>

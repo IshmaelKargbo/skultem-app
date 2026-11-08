@@ -4,13 +4,14 @@
     <!-- Header -->
     <Heading title="Payslip Design" subtitle="Configure the payslip used across your school.">
       <!-- Disabled until the real settings load - saving the defaults would overwrite them. -->
-      <UButton icon="i-lucide-save" color="primary" :loading="saving" :disabled="fetching || !!loadError"
+      <UButton data-guide="pay-design-save" icon="i-lucide-save" color="primary" :loading="saving" :disabled="fetching || !!loadError"
         class="justify-center" @click="save">
         Save Settings
       </UButton>
     </Heading>
 
     <PayrollSectionNav />
+    <GuideBar topic="payroll-payslip-design" />
 
     <DesignSkeleton v-if="fetching" />
     <UCard v-else-if="loadError">
@@ -26,7 +27,7 @@
       <!-- Left -->
       <div class="lg:col-span-2 space-y-6">
 
-        <UCard>
+        <UCard data-guide="pay-design-sections">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-layout-list" class="size-5 text-primary" />
@@ -57,7 +58,7 @@
           </div>
         </UCard>
 
-        <UCard>
+        <UCard data-guide="pay-design-theme">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-palette" class="size-5 text-primary" />
@@ -101,7 +102,7 @@
       <!-- Right -->
       <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
 
-        <UCard :ui="{ body: 'p-0' }">
+        <UCard data-guide="pay-design-preview" :ui="{ body: 'p-0' }">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-eye" class="size-5 text-primary" />

@@ -103,21 +103,22 @@ definePageMeta({
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <Heading title="System Admins" subtitle="People with full access across every school.">
-      <UButton label="Add Admin" icon="i-lucide-user-plus" @click="addModal = true" />
+      <UButton data-guide="sa-action" label="Add Admin" icon="i-lucide-user-plus" @click="addModal = true" />
     </Heading>
+    <GuideBar topic="sys-users" />
     <SystemAdminAddAdminModal v-model:open="addModal" @created="runSearch" />
 
-    <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div data-guide="sa-stats" class="grid grid-cols-2 gap-3 xl:grid-cols-4">
       <Metric v-for="m in metrics" :key="m.label" :record="{ label: m.label, value: m.value, subtle: m.subtle, icon: m.icon, color: m.color, isReady: m.ready }" />
     </div>
 
     <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-default p-2 shadow-sm ring-1 ring-default">
-      <UInput v-model="searchInput" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search by name or email..." class="min-w-0 flex-1" />
+      <UInput data-guide="adm-search" v-model="searchInput" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search by name or email..." class="min-w-0 flex-1" />
       <UButton v-if="query || searchInput" icon="i-lucide-x" variant="ghost" color="neutral" label="Clear" @click="() => { searchInput = ''; query = ''; }" />
       <TableViewToggle v-model="view" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="users" :loading="usersLoading"
         :ui="{ thead: 'bg-elevated/50', th: 'py-3 text-[11px] font-semibold uppercase tracking-wide text-muted', td: 'py-3.5', tr: 'hover:bg-primary/5 transition-colors' }">
         <template #empty>

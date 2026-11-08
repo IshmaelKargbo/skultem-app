@@ -98,10 +98,14 @@
             <!-- Confirm the email is theirs: where it stands, and sending (or re-sending) the link. -->
             <EmailVerificationStatus v-if="user?.email" class="mt-3" />
         </UCard>
+
+        <!-- Teachers sign the report cards they approve as class teacher. -->
+        <TeacherSignatureCard v-if="can(Role.TEACHER)" id="signature" />
     </div>
 </template>
 
 <script setup lang="ts">
+const { can } = useAuth()
 const store = useUserStore()
 const { user, meLoading: loading } = storeToRefs(store)
 

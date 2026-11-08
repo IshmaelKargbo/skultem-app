@@ -201,15 +201,16 @@ definePageMeta({
 <template>
   <div class="px-4 md:px-6 space-y-3">
     <FeeSectionNav />
+    <GuideBar topic="finance-structures" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="fin-structure-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
-            <UButton color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
+            <UButton data-guide="fin-structure-add" color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
 
             <div class="flex flex-wrap items-center gap-2">
-              <FilterDrawer :model-value="drawerModel" :fields="filterFields" title="Filter fee structures"
+              <FilterDrawer data-guide="fin-structure-filter" :model-value="drawerModel" :fields="filterFields" title="Filter fee structures"
                 description="Narrow by term, class, student type, gender or order" @update:model-value="applyDrawer" />
               <TableViewToggle v-model="view" />
             </div>

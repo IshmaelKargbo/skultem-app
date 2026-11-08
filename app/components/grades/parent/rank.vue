@@ -26,7 +26,7 @@ function ordinal(n: number) {
 }
 
 async function fetchRecord() {
-    if (term == "") return
+    if (!term || !student?.id) return
 
     const rank = await store.fetchRank(student.id, term)
 

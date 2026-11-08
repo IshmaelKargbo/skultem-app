@@ -165,7 +165,7 @@ const humanize = (action: string) => {
     <!-- Period -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-sm text-muted">Platform overview across every school on Skultem.</p>
-      <USelect v-model="days" :items="periods" value-key="value" class="md:w-64" icon="i-lucide-calendar-range" />
+      <USelect data-guide="sys-period" v-model="days" :items="periods" value-key="value" class="md:w-64" icon="i-lucide-calendar-range" />
     </div>
 
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="Some figures could not be loaded"
@@ -175,8 +175,9 @@ const humanize = (action: string) => {
       </template>
     </UAlert>
 
+    <GuideBar topic="sys-dashboard" />
     <!-- Stats -->
-    <div class="grid gap-3 grid-cols-2 xl:grid-cols-3">
+    <div data-guide="sa-stats" class="grid gap-3 grid-cols-2 xl:grid-cols-3">
       <Metric :record="{
         color: 'primary',
         icon: SCHOOL_ICON,
@@ -263,7 +264,7 @@ const humanize = (action: string) => {
     </div>
 
     <!-- Pending tasks + inbox -->
-    <div class="grid gap-4 lg:grid-cols-3">
+    <div data-guide="sys-tasks" class="grid gap-4 lg:grid-cols-3">
       <UCard class="lg:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex items-center gap-2">
@@ -310,7 +311,7 @@ const humanize = (action: string) => {
     </div>
 
     <!-- Growth -->
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div data-guide="sys-growth" class="grid gap-4 lg:grid-cols-2">
       <UCard>
         <template #header>
           <div>
@@ -333,7 +334,7 @@ const humanize = (action: string) => {
     </div>
 
     <!-- Recent registrations + platform activity -->
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div data-guide="sys-recent" class="grid gap-4 lg:grid-cols-2">
       <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex items-center justify-between gap-2">

@@ -1,7 +1,8 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <!-- Toolbar in the Classes page style: period + date stay visible, the rest is in the filter drawer -->
-    <UCard :ui="{ body: 'px-4 py-3 sm:px-4 sm:py-3' }">
+    <GuideBar topic="admin-gender-attendance" />
+    <UCard data-guide="gen-filters" :ui="{ body: 'px-4 py-3 sm:px-4 sm:py-3' }">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div class="flex flex-wrap items-center gap-2">
           <UButton v-for="p in periods" :key="p.value" :label="p.label" size="sm"
@@ -39,7 +40,7 @@
     </UCard>
 
     <template v-else>
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div data-guide="gen-stats" class="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Metric :record="{ label: 'Boys Present', value: summary.totals.boysPresent, isReady: true, icon: 'i-lucide-user', color: 'info' }" />
         <Metric :record="{ label: 'Girls Present', value: summary.totals.girlsPresent, isReady: true, icon: 'i-lucide-user', color: 'primary' }" />
         <Metric :record="{ label: 'Boys Attendance', value: `${summary.totals.boysAttendancePercentage}%`, isReady: true, icon: 'i-lucide-percent', color: 'info' }" />

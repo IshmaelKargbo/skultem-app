@@ -1,13 +1,14 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <FeeSectionNav />
+        <div data-guide="fin-fees-tabs"><FeeSectionNav /></div>
+        <GuideBar topic="finance-fees" />
 
         <div class="flex gap-4">
-            <div class="w-full md:w-96">
+            <div data-guide="fin-fees-list" class="w-full md:w-96">
                 <FeeStudentList @select="select" />
             </div>
 
-            <div class="hidden flex-1 md:block">
+            <div data-guide="fin-fees-record" class="hidden flex-1 md:block">
                 <FeeStudentRecord :student="selectedStudent" />
             </div>
         </div>

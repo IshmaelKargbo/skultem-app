@@ -2,15 +2,16 @@
   <div class="space-y-4">
     <Heading title="Curriculum" :subtitle="subtitle">
       <div class="flex md:space-x-3 space-x-2">
-        <USelectMenu @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
+        <USelectMenu data-guide="par-child" @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
           placeholder="Select Student" />
-        <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
+        <USelectMenu data-guide="par-term" :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
           placeholder="Select Term" />
       </div>
     </Heading>
 
+    <GuideBar topic="parent-curriculum" />
     <!-- At a glance -->
-    <div class="grid grid-cols-3 gap-3 md:gap-5">
+    <div data-guide="par-stats" class="grid grid-cols-3 gap-3 md:gap-5">
       <Metric :record="{
         label: 'Subjects', color: 'primary', value: schemes.length, isReady: !schemesLoading,
         icon: 'i-lucide-book-open', subtle: schemes.length ? 'This term' : undefined
@@ -29,7 +30,7 @@
     <div v-if="schemes.length" class="space-y-3">
       <h3 class="px-1 text-sm font-semibold text-highlighted">Subjects This Term</h3>
 
-      <UCard :ui="{ body: 'p-0 sm:p-0' }" v-for="item in schemes" :key="item.scheme.id" class="cursor-pointer"
+      <UCard data-guide="par-subjects" :ui="{ body: 'p-0 sm:p-0' }" v-for="item in schemes" :key="item.scheme.id" class="cursor-pointer"
         @click="toggle(item.scheme.id)">
         <div class="flex items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-3">

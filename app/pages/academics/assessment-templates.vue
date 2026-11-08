@@ -1,17 +1,18 @@
 <template>
   <div class="space-y-4 px-4 sm:px-6">
-    <AcademicsSectionNav />
+    <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <GuideBar topic="admin-assessment-templates" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <!-- Same header as Classes: add, search, filters, view -->
       <template #header>
         <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div class="flex flex-1 items-center gap-2">
-            <UButton color="primary" label="Add Template" :icon="ADD_ICON" class="hidden md:flex"
+            <UButton data-guide="acad-tpl-add" color="primary" label="Add Template" :icon="ADD_ICON" class="hidden md:flex"
               to="/academics/template-setup" />
-            <UButton color="primary" :icon="ADD_ICON" class="md:hidden" to="/academics/template-setup"
+            <UButton data-guide="acad-tpl-add" color="primary" :icon="ADD_ICON" class="md:hidden" to="/academics/template-setup"
               aria-label="Add assessment template" />
-            <div class="flex flex-1 items-center gap-2">
+            <div data-guide="adm-search" class="flex flex-1 items-center gap-2">
               <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or description"
                 class="flex-1" />
               <AcademicsAssessmentTemplateFilterDrawer v-model:status="status" v-model:scoring="scoring"

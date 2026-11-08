@@ -88,8 +88,9 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-5 px-4 md:px-6">
     <Heading title="System Health" subtitle="Monitor platform availability, dependencies and background operations.">
-      <UButton icon="i-lucide-refresh-cw" label="Check now" :loading="refreshing" @click="load(true)" />
+      <UButton data-guide="sa-action" icon="i-lucide-refresh-cw" label="Check now" :loading="refreshing" @click="load(true)" />
     </Heading>
+    <GuideBar topic="sys-system-health" />
 
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="The health check could not run"
       description="If the backend is down this page can't report on it - check the server directly.">
@@ -103,7 +104,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
     <template v-else-if="health">
       <!-- Overall: neutral card, colour only for the status itself -->
-      <section class="rounded-2xl border border-default bg-default p-5">
+      <section data-guide="sh-overall" class="rounded-2xl border border-default bg-default p-5">
         <div class="flex flex-wrap items-center justify-between gap-5">
           <div class="flex items-center gap-4">
             <div class="flex size-12 shrink-0 items-center justify-center rounded-full"
@@ -128,7 +129,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
       <div class="grid items-start gap-5 lg:grid-cols-2">
         <!-- Monitored -->
-        <div class="space-y-3">
+        <div data-guide="sh-monitored" class="space-y-3">
           <p class="px-1 text-xs font-semibold uppercase tracking-wider text-muted">Monitored</p>
           <article v-for="c in monitored" :key="c.key"
             class="rounded-2xl border bg-default p-4"

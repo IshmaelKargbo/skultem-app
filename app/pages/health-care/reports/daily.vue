@@ -11,7 +11,8 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <HealthCareSectionNav />
-        <HealthCareReports kind="DAILY" />
+        <div data-guide="hc-tabs"><HealthCareSectionNav /></div>
+        <GuideBar topic="nurse-report-daily" />
+        <div data-guide="hc-main"><HealthCareReports kind="DAILY" /></div>
     </div>
 </template>

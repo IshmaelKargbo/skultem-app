@@ -176,15 +176,16 @@ definePageMeta({
 
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <GradesSectionNav />
+    <div data-guide="grades-tabs"><GradesSectionNav /></div>
     <GradesApprovalRouting />
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="approval-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
               <h2 class="text-sm font-semibold text-highlighted">Grade Approval</h2>
-              <div v-if="approverTabs.length" class="flex flex-wrap gap-1">
+              <GuideButton guide="exam-office-approval" /><HelpButton topic="exam-office-approval" />
+              <div v-if="approverTabs.length" data-guide="approval-approver" class="flex flex-wrap gap-1">
                 <UButton v-for="tab in approverTabs" :key="tab.value" size="xs"
                   :variant="approver === tab.value ? 'soft' : 'ghost'"
                   :color="approver === tab.value ? 'primary' : 'neutral'" :label="tab.label"
@@ -196,14 +197,14 @@ definePageMeta({
             <div v-if="loadingSummary && !summary" class="flex items-center gap-2">
               <USkeleton v-for="i in 3" :key="i" class="h-5 w-20 rounded-md" />
             </div>
-            <div v-else class="flex items-center gap-2">
+            <div v-else data-guide="approval-counts" class="flex items-center gap-2">
               <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
               <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
               <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>
             </div>
           </div>
 
-          <div class="border-t px-4 py-3 border-default flex items-center gap-2">
+          <div data-guide="approval-search" class="border-t px-4 py-3 border-default flex items-center gap-2">
             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search subject or teacher..."
               class="flex-1" />
             <GradesApprovalFilterDrawer v-model:status="status" v-model:class-id="classId"

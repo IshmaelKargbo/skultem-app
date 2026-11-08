@@ -1,21 +1,22 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <AcademicsSectionNav />
+    <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
 
     <Heading title="Assessment Check"
       :subtitle="`Every student should have the assessments their class's template gives them${data ? ` - ${data.academicYearName}` : ''}. Fix any class that's missing some.`">
-      <UButton v-if="fixable.length" :icon="REFRESH_ICON" :loading="fixingAll" :disabled="!!fixing"
+      <UButton data-guide="check-fix-all" v-if="fixable.length" :icon="REFRESH_ICON" :loading="fixingAll" :disabled="!!fixing"
         :label="`Fix ${fixable.length} ${fixable.length === 1 ? 'class' : 'classes'}`" @click="fixAll" />
     </Heading>
 
-    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <GuideBar topic="admin-assessment-check" />
+    <div data-guide="check-stats" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <Metric v-for="m in metrics" :key="m.label" :record="m" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <div class="flex gap-1">
+          <div data-guide="check-tabs" class="flex gap-1">
             <UButton v-for="tab in tabs" :key="tab.value" size="sm" :label="`${tab.label} (${tab.count})`"
               :variant="view === tab.value ? 'soft' : 'ghost'" :color="view === tab.value ? 'primary' : 'neutral'"
               @click="() => { view = tab.value }" />

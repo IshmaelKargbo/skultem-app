@@ -18,7 +18,8 @@ interface NavItem {
 
 const allItems: NavItem[] = [
   { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT] },
-  { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER] },
+  // Only admins generate; class teachers review and approve on Report Cards.
+  { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.ADMIN, Role.SUPER_ADMIN] },
   { label: 'Design', to: '/report-cards/templates', icon: SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] }
 ]
 

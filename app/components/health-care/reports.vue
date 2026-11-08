@@ -169,13 +169,13 @@ onMounted(() => {
         :loading="exportingCsv" :disabled="!!rangeError || loading || isEmpty" @click="downloadCsv">
         Export CSV
       </UButton>
-      <UButton :icon="DOWNLOAD_ICON" color="primary" class="justify-center" :loading="downloading"
+      <UButton data-guide="rep-download" :icon="DOWNLOAD_ICON" color="primary" class="justify-center" :loading="downloading"
         :disabled="!!rangeError || loading || isEmpty" @click="downloadPdf">
         Export PDF
       </UButton>
     </Heading>
 
-    <UCard>
+    <UCard data-guide="hcr-filters">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <UFormField v-if="!props.kind" label="Report" :help="reportOptions.find(r => r.value === report)?.description">
           <USelectMenu v-model="report" :items="reportOptions" value-key="value" :search-input="false" class="w-full" />
@@ -218,7 +218,7 @@ onMounted(() => {
     </UCard>
 
     <!-- The document: what the PDF shows -->
-    <div v-else id="health-care-report" class="rounded-lg bg-white px-2 text-gray-900">
+    <div data-guide="rep-preview" v-else id="health-care-report" class="rounded-lg bg-white px-2 text-gray-900">
       <div class="mb-4 border-b-4 border-primary-500 pb-5 pt-6 text-center sm:pt-8">
         <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
         <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>

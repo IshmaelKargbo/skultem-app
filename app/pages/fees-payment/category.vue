@@ -85,14 +85,15 @@ definePageMeta({
 <template>
   <div class="space-y-4 px-4 sm:px-6">
     <FeeSectionNav />
+    <GuideBar topic="finance-categories" />
 
     <!-- Desktop -->
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="fin-category-list" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex justify-between space-x-3">
           <div class="space-x-3 flex flex-1">
             <UInput placeholder="Search by name . . ." />
-            <FeeCategoryAdd />
+            <div data-guide="fin-category-add"><FeeCategoryAdd /></div>
           </div>
           <TableViewToggle v-model="view" />
         </div>

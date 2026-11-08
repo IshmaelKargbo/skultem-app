@@ -19,13 +19,16 @@
             </div>
           </div>
 
-          <UBadge variant="subtle" size="lg" :color="statusColor(selected.status)" class="rounded-full">
-            {{ statusLabel(selected.status) }}
-          </UBadge>
+          <div class="flex items-center gap-2">
+            <GuideButton guide="exam-office-approval-review" /><HelpButton topic="exam-office-approval-review" />
+            <UBadge data-guide="review-status" variant="subtle" size="lg" :color="statusColor(selected.status)" class="rounded-full">
+              {{ statusLabel(selected.status) }}
+            </UBadge>
+          </div>
         </div>
 
         <!-- STATS -->
-        <div class="grid grid-cols-3 gap-3">
+        <div data-guide="review-stats" class="grid grid-cols-3 gap-3">
           <div class="rounded-2xl border border-default bg-elevated/40 p-3 text-center">
             <p class="text-lg font-bold text-highlighted">{{ selected.studentCount }}</p>
             <p class="text-xs text-muted">Students</p>
@@ -41,7 +44,7 @@
         </div>
 
         <!-- GRADE DISTRIBUTION -->
-        <div>
+        <div data-guide="review-distribution">
           <p class="mb-2 text-sm font-semibold text-highlighted">Grade Distribution</p>
           <GradeDistributionBar :average="selected.avgPercentage" :pass="selected.passPercentage"
             :fail="selected.failPercentage" />
@@ -57,11 +60,11 @@
 
         <!-- CA + FORMAL TEST INSIGHT: only for a section using continuous assessment -->
         <!-- Prompts for the approver: CA patterns worth a second look before signing off. -->
-        <GradesCaReviewFlags v-if="isContinuous" :scores="selected.studentScores ?? []" />
+        <div v-if="isContinuous" data-guide="review-flags"><GradesCaReviewFlags :scores="selected.studentScores ?? []" /></div>
         <GradesTeacherCaInsight v-if="isContinuous" :assessment="insightAssessment" :rows="insightRows" />
 
         <!-- STUDENT SCORES -->
-        <div>
+        <div data-guide="review-scores">
           <p class="mb-2 text-sm font-semibold text-highlighted">Student Scores</p>
           <!-- Phone, continuous assessment: a card per student (CA + formal test don't fit as table columns). -->
           <div v-if="isContinuous" class="space-y-2 md:hidden">
@@ -181,14 +184,14 @@
             :title="approverTitle"
             :description="approverDescription" />
 
-          <div v-if="showAction" class="mt-3 flex gap-3 border-t border-default pt-3">
+          <div v-if="showAction" data-guide="review-actions" class="mt-3 flex gap-3 border-t border-default pt-3">
             <UButton icon="lucide:corner-up-left" variant="outline" color="neutral" size="xl"
               class="flex w-full justify-center" label="Return" @click="returnForm = true" />
             <UButton :loading="isApproveLoading" icon="lucide:check-circle" color="success" size="xl"
               class="flex w-full justify-center" label="Approve" @click="approve" />
           </div>
 
-          <div v-if="canReopen && !reopenForm" class="mt-3 border-t border-default pt-3">
+          <div v-if="canReopen && !reopenForm" data-guide="review-reopen" class="mt-3 border-t border-default pt-3">
             <UButton icon="lucide:lock-open" variant="outline" color="warning" size="xl"
               class="flex w-full justify-center" label="Reopen for Editing" @click="reopenForm = true" />
             <p class="mt-2 text-center text-xs text-muted">

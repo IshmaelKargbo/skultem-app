@@ -167,6 +167,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
 <template>
   <div class="space-y-5 px-4 md:px-6">
+    <GuideBar topic="sys-roles" />
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="Roles could not be loaded">
       <template #actions><UButton size="xs" color="error" variant="outline" label="Try again" @click="load" /></template>
     </UAlert>
@@ -178,8 +179,8 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
     <template v-else-if="!failed && current">
       <div class="grid items-start gap-5 lg:grid-cols-[18rem_1fr]">
         <!-- Role list -->
-        <UCard class="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto" :ui="{ body: 'p-2 sm:p-2' }">
-          <UInput v-model="roleSearch" icon="i-lucide-search" placeholder="Search roles" class="mb-2 w-full" />
+        <UCard data-guide="role-list" class="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto" :ui="{ body: 'p-2 sm:p-2' }">
+          <UInput data-guide="adm-search" v-model="roleSearch" icon="i-lucide-search" placeholder="Search roles" class="mb-2 w-full" />
           <ul class="space-y-1">
             <li>
               <button type="button" class="flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition"
@@ -249,7 +250,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         </UCard>
 
         <!-- Role detail -->
-        <UCard v-else :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard data-guide="role-detail" v-else :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
             <div class="flex items-center gap-2">
               <h3 class="font-semibold text-highlighted">{{ current.label }}</h3>
@@ -287,7 +288,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
           </div>
 
           <!-- Members -->
-          <div v-else>
+          <div data-guide="role-members" v-else>
             <div class="flex flex-col gap-2 border-b border-default p-4 sm:flex-row">
               <UInput v-model="search" icon="i-lucide-search" placeholder="Search name or email" class="flex-1" />
             </div>

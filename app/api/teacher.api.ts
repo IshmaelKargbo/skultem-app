@@ -2,6 +2,32 @@ export const TeacherApi = () => {
   const { $api } = useNuxtApp()
 
   return {
+    // The signed-in teacher's own signature - printed on the report cards they approve as class teacher.
+    getMySignature: async () => {
+      try {
+        const res = await $api('/teacher/me/signature') as any
+        return (res?.data?.signature ?? null) as string | null
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    saveMySignature: async (image: Blob, filename = 'signature.png') => {
+      try {
+        const body = new FormData()
+        body.append('signature', image, filename)
+        const res = await $api('/teacher/me/signature', { method: 'PUT', body }) as any
+        return (res?.data?.signature ?? null) as string | null
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    removeMySignature: async () => {
+      try {
+        await $api('/teacher/me/signature', { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getMyClassMasterAssignments: async () => {
       try {
         const res = await $api('/teacher/class-master/me') as any

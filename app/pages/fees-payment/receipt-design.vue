@@ -1,22 +1,23 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
 
-    <FeeSectionNav />
+    <div data-guide="fee-tabs"><FeeSectionNav /></div>
 
     <!-- Header -->
     <Heading title="Receipt Design" subtitle="Configure the payment receipt used across your school.">
-      <UButton icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
+      <UButton data-guide="rcpt-save" icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
         Save Settings
       </UButton>
     </Heading>
 
+    <GuideBar topic="admin-receipt-design" />
     <DesignSkeleton v-if="fetching" />
     <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
 
       <!-- Left -->
       <div class="lg:col-span-2 space-y-6">
 
-        <UCard>
+        <UCard data-guide="rcpt-sections">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-layout-list" class="size-5 text-primary" />
@@ -47,7 +48,7 @@
           </div>
         </UCard>
 
-        <UCard>
+        <UCard data-guide="rcpt-style">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-palette" class="size-5 text-primary" />
@@ -91,7 +92,7 @@
       <!-- Right -->
       <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
 
-        <UCard :ui="{ body: 'p-0' }">
+        <UCard data-guide="rcpt-preview" :ui="{ body: 'p-0' }">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-eye" class="size-5 text-primary" />

@@ -56,7 +56,7 @@ onMounted(load)
   <div class="space-y-3">
     <StateLoadError v-if="summaryError && !summary" bordered title="Couldn't load the library summary"
       :message="summaryError" @retry="load" />
-    <div v-else class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <div data-guide="lib-stats" v-else class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{
         color: 'primary',
         label: 'Total Titles',
@@ -94,11 +94,11 @@ onMounted(load)
       }" />
     </div>
 
-    <LibraryOverdueAlerts />
+    <div data-guide="lib-overdue"><LibraryOverdueAlerts /></div>
 
     <div class="grid gap-3 xl:grid-cols-3">
       <!-- Recent loans -->
-      <UCard class="xl:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="lib-recent" class="xl:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="space-y-1">
@@ -110,7 +110,7 @@ onMounted(load)
             </div>
 
             <div class="flex items-center gap-2">
-              <LibraryIssueForm v-if="canManage" />
+              <div data-guide="lib-issue-btn"><LibraryIssueForm v-if="canManage" /></div>
               <UButton to="/library/issue" label="View all" color="neutral" variant="ghost" size="sm" trailing-icon="i-lucide-chevron-right" />
             </div>
           </div>
@@ -163,7 +163,7 @@ onMounted(load)
       </UCard>
 
       <!-- Out of stock -->
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="lib-stock" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex items-center justify-between gap-3">
             <div class="space-y-1">

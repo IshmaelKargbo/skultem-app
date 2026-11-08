@@ -1,8 +1,9 @@
 <template>
     <div class="px-4 md:px-6 space-y-3">
         <FeeSectionNav />
+        <GuideBar topic="finance-payment" />
         <FeePaymentNew :initial-student-id="initialStudentId" @complete="refresh" />
-        <DashboardAccountantTable ref="paymentRef" />
+        <div data-guide="pay-recent"><DashboardAccountantTable ref="paymentRef" /></div>
     </div>
 </template>
 

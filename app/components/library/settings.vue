@@ -118,9 +118,9 @@ onMounted(async () => {
         </div>
 
         <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          <USelectMenu v-if="showPicker" v-model="selectedSection" value-key="value" :items="sectionItems"
+          <USelectMenu data-guide="lib-set-section" v-if="showPicker" v-model="selectedSection" value-key="value" :items="sectionItems"
             :search-input="false" :disabled="loading || saving" class="w-full sm:w-60" />
-          <UButton :icon="SAVE_ICON" label="Save Changes" :loading="saving" :disabled="loading" @click="formRef?.submit()" />
+          <UButton data-guide="lib-set-save" :icon="SAVE_ICON" label="Save Changes" :loading="saving" :disabled="loading" @click="formRef?.submit()" />
         </div>
       </div>
     </template>
@@ -149,7 +149,7 @@ onMounted(async () => {
     <StateLoadError v-else-if="loadError" bordered title="Couldn't load the library settings" :message="loadError"
       @retry="loadSettings" />
 
-    <UForm v-else ref="formRef" :schema="schema" :state="state" class="grid gap-4 md:grid-cols-2" @submit="onSubmit">
+    <UForm data-guide="lib-set-form" v-else ref="formRef" :schema="schema" :state="state" class="grid gap-4 md:grid-cols-2" @submit="onSubmit">
       <div class="rounded-2xl border border-default bg-gray-100 p-4 dark:bg-neutral-800">
         <UFormField label="Books a student can hold" name="maxStudentLoans"
           description="A student must return one before borrowing more.">

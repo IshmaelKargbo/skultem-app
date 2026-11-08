@@ -1,6 +1,7 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <!-- What this is, in school terms -->
+    <GuideBar topic="admin-template-setup" />
     <div class="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
       <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
         <UIcon name="lucide:clipboard-list" class="size-5" />
@@ -22,7 +23,7 @@
     <div class="grid items-start gap-4" :class="step < steps.length - 1 ? 'lg:grid-cols-[minmax(0,1fr)_20rem]' : ''">
     <div class="min-w-0 space-y-4">
     <!-- Stepper -->
-    <nav ref="stepperEl" aria-label="Template progress"
+    <nav data-guide="tpl-steps" ref="stepperEl" aria-label="Template progress"
       class="scroll-mt-4 rounded-2xl border border-default bg-default p-3 sm:p-4 md:py-6">
       <ol class="flex items-start">
         <li v-for="(value, i) in steps" :key="value.title" class="relative flex flex-1 flex-col items-center">
@@ -65,7 +66,7 @@
       <USkeleton class="h-40 w-full" />
     </UCard>
 
-    <UCard v-else :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="tpl-form" v-else :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div>
           <p class="font-semibold md:text-xl">{{ steps[step]?.heading }}</p>

@@ -12,24 +12,26 @@
 
     <template v-else-if="detail">
 
+      <GuideBar topic="payroll-run" />
+
       <!-- Header -->
       <Heading :title="detail.run.period" :subtitle="`Pay date ${formatDate(detail.run.payDate)}`">
         <UBadge :color="payrollRunStatusColor(detail.run.status)" variant="soft" size="lg" class="self-start md:self-auto">
           {{ clean(detail.run.status) }}
         </UBadge>
 
-        <UButton v-if="isDraft" icon="i-lucide-trash-2" color="error" variant="soft" label="Delete Draft"
+        <UButton v-if="isDraft" data-guide="pay-run-delete" icon="i-lucide-trash-2" color="error" variant="soft" label="Delete Draft"
           @click="() => { deleteOpen = true }" />
 
-        <UButton v-if="isDraft" icon="i-lucide-lock" :disabled="totals.count === 0" label="Generate Payroll"
+        <UButton v-if="isDraft" data-guide="pay-run-generate" icon="i-lucide-lock" :disabled="totals.count === 0" label="Generate Payroll"
           @click="askConfirm('generate')" />
 
-        <UButton v-else-if="detail.run.status === 'GENERATED'" icon="i-lucide-send" label="Publish Payslips"
+        <UButton v-else-if="detail.run.status === 'GENERATED'" data-guide="pay-run-publish" icon="i-lucide-send" label="Publish Payslips"
           @click="askConfirm('publish')" />
       </Heading>
 
       <!-- Progress -->
-      <UCard :ui="{ body: 'p-4 sm:p-4' }">
+      <UCard data-guide="pay-run-progress" :ui="{ body: 'p-4 sm:p-4' }">
         <PayrollRunProgress :status="detail.run.status" />
       </UCard>
 
@@ -38,7 +40,7 @@
         description="Switch off anyone who shouldn't be paid this period. Generating locks these numbers and records the net total as an expense in the school ledger." />
 
       <!-- Summary (follows the include/exclude switches live) -->
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div data-guide="pay-run-totals" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Metric :record="{ icon: 'i-lucide-users', label: 'Included Employees', value: `${totals.count} / ${detail.payslips.length}`, isReady: true, color: 'primary' }" />
         <Metric :record="{ icon: 'i-lucide-wallet', label: 'Gross Payroll', value: formatCurrency(totals.gross), isReady: true, color: 'info' }" />
         <Metric :record="{ icon: 'i-lucide-circle-minus', label: 'Deductions', value: formatCurrency(totals.deductions), isReady: true, color: 'error' }" />
@@ -52,7 +54,7 @@
         :description="transactionsNote" />
 
       <!-- Employees -->
-      <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-4 sm:px-4' }">
+      <UCard data-guide="pay-run-employees" :ui="{ body: 'p-0 sm:p-0', header: 'p-4 sm:px-4' }">
         <template #header>
           <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>

@@ -10,7 +10,7 @@
             <span v-if="twoRollCalls" class="text-muted"> · {{ rollName(state.roll) }} roll call</span>
           </p>
 
-          <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+          <div data-guide="att-pick" class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
             <UFormField name="classId" class="w-full">
               <USelect v-model="state.classId" :items="classes" placeholder="Select class" class="w-full"
                 @change="onClassOrDateChange" />
@@ -25,7 +25,7 @@
 
       <div>
         <!-- Two roll calls a day: pick which one is being taken. -->
-        <div v-if="state.classId && twoRollCalls"
+        <div data-guide="att-roll" v-if="state.classId && twoRollCalls"
           class="flex flex-col gap-2 border-b border-default px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="grid grid-cols-2 gap-1 rounded-lg bg-elevated p-1 sm:w-80">
             <UButton v-for="n in [1, 2]" :key="n" size="sm" block :disabled="isLoading"
@@ -40,7 +40,7 @@
         </div>
 
         <!-- Actions -->
-        <div v-if="state.classId"
+        <div data-guide="att-actions" v-if="state.classId"
           class="flex space-x-3 border-b border-gray-200 py-4 dark:bg-gray-950 dark:border-gray-800 bg-gray-50/40 px-3">
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
@@ -53,7 +53,7 @@
           </div>
         </div>
 
-        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+        <UTable data-guide="att-list" class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
@@ -158,7 +158,7 @@
       <!-- Footer -->
       <template #footer>
         <div class="flex justify-end">
-          <UButton type="submit" :icon="SAVE_ICON" label="Save Attendance" :loading="isLoading" />
+          <UButton data-guide="att-save" type="submit" :icon="SAVE_ICON" label="Save Attendance" :loading="isLoading" />
         </div>
       </template>
     </UCard>

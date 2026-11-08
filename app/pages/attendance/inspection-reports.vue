@@ -1,6 +1,7 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <UCard>
+    <GuideBar topic="admin-inspection-reports" />
+    <UCard data-guide="insp-form">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
         <UFormField label="Report Type">
           <USelectMenu v-model="form.reportType" :items="reportTypes" value-key="value" label-key="label"
@@ -45,7 +46,7 @@
       </div>
 
       <div class="mt-4 flex justify-end print:hidden">
-        <UButton icon="i-lucide-file-check-2" color="primary" :loading="generating" :disabled="!canGenerate"
+        <UButton data-guide="insp-generate" icon="i-lucide-file-check-2" color="primary" :loading="generating" :disabled="!canGenerate"
           @click="generate">
           Generate Report
         </UButton>
@@ -79,7 +80,7 @@
         </UButton>
       </Heading>
 
-      <div id="inspection-report-preview" class="rounded-lg bg-white p-6 text-gray-900 sm:p-8">
+      <div data-guide="rep-preview" id="inspection-report-preview" class="rounded-lg bg-white p-6 text-gray-900 sm:p-8">
         <!-- Header -->
         <div class="-m-6 mb-6 border-b-4 border-primary-500 pb-5 pt-6 text-center sm:-m-8 sm:mb-6 sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">

@@ -110,13 +110,14 @@ definePageMeta({
 
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <BehaviourSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <div data-guide="beh-tabs"><BehaviourSectionNav /></div>
+        <GuideBar topic="admin-behaviour-categories" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex space-x-3">
                     <div class="flex space-x-3 flex-1">
                         <UInput placeholder="Search by name . . ." />
-                        <BehaviourCategoriesAdd />
+                        <div data-guide="beh-cat-add"><BehaviourCategoriesAdd /></div>
                     </div>
                     <TableViewToggle v-model="view" />
                 </div>

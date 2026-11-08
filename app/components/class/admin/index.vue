@@ -1,14 +1,15 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <ClassSectionNav />
+        <div data-guide="adm-class-tabs"><ClassSectionNav /></div>
 
-        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
+        <GuideBar topic="admin-classes" />
+        <UCard data-guide="adm-list" :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex px-4 py-3 items-center justify-between gap-2">
                     <div class="flex flex-1 items-center gap-2">
-                        <ClassAdd />
-                        <ClassAssignMaster />
-                        <div class="flex-1 border-default flex items-center gap-2">
+                        <div data-guide="adm-class-add"><ClassAdd /></div>
+                        <div data-guide="adm-class-master"><ClassAssignMaster /></div>
+                        <div data-guide="adm-search" class="flex-1 border-default flex items-center gap-2">
                             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name"
                                 class="flex-1" />
                             <ClassFilterDrawer v-model:section-id="sectionId" v-model:stream-id="streamId" v-model:level="level"
@@ -16,9 +17,9 @@
                                 :active-count="activeFilterCount" />
                         </div>
                     </div>
-                    <UButton icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
+                    <UButton data-guide="adm-class-order" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
                         :disabled="classStore.records.length < 2" @click="arrangeOpen = true" />
-                    <TableViewToggle v-model="view" />
+                    <div data-guide="list-view"><TableViewToggle v-model="view" /></div>
                 </div>
             </template>
 

@@ -96,8 +96,9 @@ definePageMeta({
 </script>
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <ClassSectionNav />
-        <UCard :ui="{
+        <div data-guide="adm-class-tabs"><ClassSectionNav /></div>
+        <GuideBar topic="admin-sections" />
+        <UCard data-guide="adm-list" :ui="{
             body: 'sm:p-0 p-0',
             header: 'p-0 sm:p-0',
         }">
@@ -105,8 +106,8 @@ definePageMeta({
                 <div>
                     <div class="flex p-4 justify-between items-center">
                         <div class="flex space-x-3 flex-1">
-                            <ClassSectionAdd />
-                            <UButton label="Arrange" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
+                            <div data-guide="sec-add"><ClassSectionAdd /></div>
+                            <UButton data-guide="sec-order" label="Arrange" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
                                 :disabled="allSections.length < 2" @click="arrangeOpen = true" />
                         </div>
 
@@ -118,14 +119,14 @@ definePageMeta({
                     </div>
 
                     <div class="border-t hidden p-4 border-default md:flex items-center justify-between gap-3">
-                        <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ."
+                        <UInput data-guide="adm-search" v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ."
                             class="w-full" />
                         <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
                             :disabled="!hasActiveFilters" @click="resetFilters" />
                     </div>
                     <div v-if="filterState"
                         class="border-t md:hidden p-4 border-default flex flex-wrap items-center justify-between gap-3">
-                        <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ."
+                        <UInput data-guide="adm-search" v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name. . ."
                             class="flex-1" />
                         <UButton class="md:hidden" :trailing-icon="DELETE_ICON" variant="ghost" color="error"
                             :disabled="!hasActiveFilters" @click="resetFilters" />

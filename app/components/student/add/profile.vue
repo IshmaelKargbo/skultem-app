@@ -16,7 +16,7 @@
                     <div class="space-y-4">
 
                         <!-- Upload trigger -->
-                        <label
+                        <label data-guide="enrol-photo"
                             class="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-5 text-center transition hover:border-primary-300 dark:border-gray-800">
                             <UIcon name="i-lucide-image-plus" class="mb-2 text-3xl text-muted" />
                             <span class="font-medium">
@@ -49,7 +49,7 @@
                     </div>
 
                     <!-- Right: Guidelines -->
-                    <div class="space-y-3 rounded-lg bg-elevated/50 p-4 md:bg-transparent md:py-5">
+                    <div data-guide="enrol-photo-tips" class="space-y-3 rounded-lg bg-elevated/50 p-4 md:bg-transparent md:py-5">
                         <p class="font-semibold md:text-xl">Photo Guidelines</p>
                         <div class="space-y-2 text-muted text-sm">
                             <p>- Clear, front-facing photo</p>

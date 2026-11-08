@@ -3,6 +3,8 @@
     <Heading title="Start Payroll Run"
       subtitle="Every teacher with a salary structure set up will be included automatically — you can exclude anyone before generating." />
 
+    <GuideBar topic="payroll-run-new" />
+
     <UForm ref="formRef" :state="state" :schema="schema" class="space-y-4" @submit="onSubmit">
       <UCard>
         <template #header>
@@ -15,18 +17,18 @@
             description="You can exclude specific employees from the run detail page before generating." />
         </template>
         <div class="grid gap-5 md:grid-cols-2">
-          <UFormField label="Period" name="period" required hint="e.g. June 2026">
+          <UFormField data-guide="pay-run-period" label="Period" name="period" required hint="e.g. June 2026">
             <UInput v-model="state.period" placeholder="June 2026" class="w-full" />
           </UFormField>
 
-          <UFormField label="Pay Date" name="payDate" required>
+          <UFormField data-guide="pay-run-paydate" label="Pay Date" name="payDate" required>
             <UInput v-model="state.payDate" type="date" class="w-full" />
           </UFormField>
         </div>
         <template #footer>
           <div class="flex gap-3">
             <UButton variant="outline" color="neutral" to="/payroll/runs" label="Cancel" />
-            <UButton type="submit" icon="i-lucide-play" :loading="saving" :disabled="!summary?.teacherCount"
+            <UButton data-guide="pay-run-create" type="submit" icon="i-lucide-play" :loading="saving" :disabled="!summary?.teacherCount"
               label="Create Run" />
           </div>
         </template>

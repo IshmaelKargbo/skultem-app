@@ -1,11 +1,13 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <div class="space-y-3 print:hidden">
-      <Heading title="Broadsheet" subtitle="Every student against every subject for a term, from the generated report cards." />
-      <GradesSectionNav />
+      <Heading title="Broadsheet" subtitle="Every student against every subject for a term, from the generated report cards.">
+        <GuideButton guide="exam-office-broadsheet" /><HelpButton topic="exam-office-broadsheet" />
+      </Heading>
+      <div data-guide="grades-tabs"><GradesSectionNav /></div>
 
       <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div class="flex flex-col gap-2 sm:flex-row">
+        <div data-guide="broadsheet-filters" class="flex flex-col gap-2 sm:flex-row">
           <USelectMenu v-model="classId" :items="classOptions" value-key="value" label-key="label"
             placeholder="Choose a class" class="w-full sm:w-44" :loading="classStore.loading" />
           <USelectMenu v-if="streamOptions.length" v-model="streamId" :items="streamOptions" value-key="value"
@@ -55,7 +57,8 @@
         <h3 class="font-semibold text-highlighted">No report cards for this class yet</h3>
         <p class="max-w-sm text-sm text-muted">The broadsheet is built from the term's full report cards. Generate them
           once the grades are approved.</p>
-        <UButton to="/report-cards/generate" label="Generate report cards" :icon="GENERATE_ICON" variant="soft" />
+        <UButton v-if="can([Role.ADMIN, Role.SUPER_ADMIN])" to="/report-cards/generate" label="Generate report cards"
+          :icon="GENERATE_ICON" variant="soft" />
       </div>
     </UCard>
 
@@ -64,14 +67,14 @@
         <h1 class="text-xl font-bold">Broadsheet · {{ sheet.className }} · {{ sheet.termName }}</h1>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 lg:grid-cols-4 print:hidden">
+      <div data-guide="broadsheet-summary" class="grid grid-cols-2 gap-3 lg:grid-cols-4 print:hidden">
         <Metric :record="{ label: 'Students', value: sheet.studentCount, icon: 'i-lucide-users', color: 'primary', isReady: true }" />
         <Metric :record="{ label: 'Passed', value: `${sheet.passed}/${sheet.studentCount}`, icon: 'i-lucide-circle-check', color: 'success', isReady: true }" />
         <Metric :record="{ label: 'Class average', value: sheet.classAverage, icon: 'i-lucide-chart-line', color: 'info', isReady: true }" />
         <Metric :record="{ label: 'Cards generated', value: sheet.lastGeneratedAt ? formatDate(sheet.lastGeneratedAt) : '—', icon: 'i-lucide-file-text', color: 'neutral', isReady: true }" />
       </div>
 
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="broadsheet-table" :ui="{ body: 'p-0 sm:p-0' }">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead class="bg-elevated/60 text-xs uppercase tracking-wide text-muted">
@@ -89,9 +92,12 @@
               <tr v-for="row in sheet.rows" :key="row.studentId" class="hover:bg-muted/30">
                 <td class="sticky left-0 bg-default px-3 py-2 font-semibold tabular-nums">{{ row.position }}</td>
                 <td class="sticky left-10 bg-default px-3 py-2">
-                  <NuxtLink :to="`/report-cards/${row.reportCardId}`" class="font-medium text-highlighted hover:underline">
+                  <!-- Report cards are the admin's and class teacher's; the exam office sees the name only. -->
+                  <NuxtLink v-if="canOpenCards" :to="`/report-cards/${row.reportCardId}`"
+                    class="font-medium text-highlighted hover:underline">
                     {{ row.studentName }}
                   </NuxtLink>
+                  <span v-else class="font-medium text-highlighted">{{ row.studentName }}</span>
                   <p class="text-[11px] text-muted">{{ row.admissionNumber }}</p>
                 </td>
                 <td v-for="s in sheet.subjects" :key="s" class="px-2 py-2 text-center tabular-nums"
@@ -138,6 +144,8 @@
 </template>
 
 <script setup lang="ts">
+const { can } = useAuth()
+const canOpenCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]))
 const api = ExamOfficeApi()
 const classStore = useClassStore()
 const termStore = useTermStore()

@@ -67,9 +67,10 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       <USelect v-model="days" value-key="value" class="w-44" icon="i-lucide-calendar-range"
         :items="[{ label: 'Last 7 days', value: 7 }, { label: 'Last 30 days', value: 30 }, { label: 'Last 90 days', value: 90 }]" />
     </Heading>
+    <GuideBar topic="sys-notifications" />
 
     <!-- Summary -->
-    <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <section data-guide="sa-stats" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div v-for="m in [
         { icon: 'i-lucide-megaphone', label: 'Broadcasts composed', value: overview?.broadcasts ?? 0, note: overview ? `${overview.scheduledBroadcasts} scheduled for later` : '' },
         { icon: 'i-lucide-bell', label: 'In-app notifications', value: overview?.inApp ?? 0, note: overview ? `${overview.inAppRead} opened` : '' },
@@ -85,14 +86,14 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
     <div class="grid items-start gap-5 xl:grid-cols-3">
       <!-- Broadcasts -->
-      <UCard class="xl:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="adm-list" class="xl:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 class="font-semibold text-highlighted">School broadcasts</h3>
               <p class="text-xs text-muted">Messages schools composed to their own people.</p>
             </div>
-            <UInput v-model="search" icon="i-lucide-search" placeholder="Search title or school" class="w-full sm:w-64" />
+            <UInput data-guide="adm-search" v-model="search" icon="i-lucide-search" placeholder="Search title or school" class="w-full sm:w-64" />
           </div>
         </template>
 
@@ -143,7 +144,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       </UCard>
 
       <!-- Side -->
-      <div class="space-y-5">
+      <div data-guide="sn-side" class="space-y-5">
         <NuxtLink to="/announcements" class="group flex items-center gap-3 rounded-2xl border border-default bg-default p-4 transition hover:border-accented">
           <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-elevated text-muted"><UIcon name="i-lucide-megaphone" class="size-5" /></div>
           <div class="min-w-0 flex-1">

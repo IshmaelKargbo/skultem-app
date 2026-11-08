@@ -2,7 +2,9 @@
     <div class="space-y-3 px-4 md:px-6">
         <Heading title="My Timetable" subtitle="View your weekly teaching schedule across your classes">
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+                <div class="flex justify-end"><GuideButton guide="teacher-timetable" /><HelpButton topic="teacher-timetable" /></div>
                 <USelectMenu
+                    data-guide="teacher-timetable-class"
                     v-model="grade"
                     placeholder="Select Class"
                     value-key="value"
@@ -10,14 +12,14 @@
                     :loading="classLoading"
                     class="w-full md:w-72"
                 />
-                <TimetableDownload v-if="session" :title="`${session.className}${session.sectionName ? ` (${session.sectionName})` : ''}`" />
+                <TimetableDownload v-if="session" data-guide="teacher-timetable-download" :title="`${session.className}${session.sectionName ? ` (${session.sectionName})` : ''}`" />
             </div>
         </Heading>
 
         <TimetableSectionNav />
 
         <!-- Timetable -->
-        <UCard v-if="session" :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard v-if="session" data-guide="teacher-timetable-grid" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex items-center gap-3">
                     <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">

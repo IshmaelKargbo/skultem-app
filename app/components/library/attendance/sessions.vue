@@ -108,7 +108,7 @@ onMounted(load)
     <template #header>
       <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div v-if="filter !== 'INCOMPLETE'" class="flex items-center gap-2">
-          <UButton icon="i-lucide-chevron-left" variant="outline" color="neutral" size="sm" aria-label="Previous week"
+          <UButton data-guide="lib-week" icon="i-lucide-chevron-left" variant="outline" color="neutral" size="sm" aria-label="Previous week"
             @click="() => { week = addDays(week, -7) }" />
           <p class="min-w-44 text-center text-sm font-medium">
             {{ formatDayLabel(range.from) }} - {{ formatDayLabel(range.to) }}

@@ -270,7 +270,8 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="px-4 md:px-6">
+  <div class="space-y-3 px-4 md:px-6">
+    <GuideBar topic="finance-structure-add" />
     <UForm ref="formRef" :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
       <div class="grid lg:grid-cols-2 gap-4">
         <!-- Fee Details -->
@@ -278,7 +279,7 @@ definePageMeta({
           <UCard  class="sticky top-2">
             <div class="space-y-2.5">
               <!-- Term -->
-              <UFormField label="Term" name="termId" required>
+              <UFormField data-guide="fee-term" label="Term" name="termId" required>
                 <USelectMenu v-model="state.termId" value-key="value" :items="terms" placeholder="Select term"
                   :disabled="isLoading" />
 
@@ -290,7 +291,7 @@ definePageMeta({
               </UFormField>
 
               <!-- Category -->
-              <UFormField label="Fee Category" name="feeCategory" required>
+              <UFormField data-guide="fee-category" label="Fee Category" name="feeCategory" required>
                 <USelectMenu v-model="state.feeCategory" value-key="value" :items="categories"
                   placeholder="Select fee category" :disabled="isLoading" />
 
@@ -302,7 +303,7 @@ definePageMeta({
               </UFormField>
 
               <!-- Amount -->
-              <UFormField label="Amount" name="amount" required>
+              <UFormField data-guide="fee-amount" label="Amount" name="amount" required>
                 <UInput v-model.number="state.amount" type="number" min="0" placeholder="Enter amount"
                   :disabled="isLoading" />
 
@@ -349,7 +350,7 @@ definePageMeta({
           <UCard class="sticky top-0">
             <div class="space-y-4">
               <!-- Installment -->
-              <UFormField name="allowInstallment">
+              <UFormField data-guide="fee-installment" name="allowInstallment">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-medium">Allow Installment</p>
@@ -378,7 +379,7 @@ definePageMeta({
                 </div>
               </UFormField>
               <!-- Assign Mode -->
-              <UFormField label="Assign To" name="assignMode" required>
+              <UFormField data-guide="fee-assign" label="Assign To" name="assignMode" required>
                 <USelectMenu v-model="state.assignMode" value-key="value" :items="assignModes"
                   placeholder="Select assignment" :disabled="isLoading" />
 
@@ -480,7 +481,7 @@ definePageMeta({
                 <UButton label="Cancel" color="neutral" variant="outline" :disabled="isLoading"
                   to="/fees-payment/structure" />
 
-                <UButton type="submit" :trailing-icon="SAVE_ICON" label="Create Fee Structure" :loading="isLoading" />
+                <UButton data-guide="fee-save" type="submit" :trailing-icon="SAVE_ICON" label="Create Fee Structure" :loading="isLoading" />
               </div>
             </template>
           </UCard>

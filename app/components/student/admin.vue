@@ -229,19 +229,20 @@ onMounted(async () => {
 
 <template>
   <div class="px-4 md:px-6">
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <GuideBar class="mb-3" topic="admin-students" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
           <div class="flex px-4 py-3 gap-2 justify-between items-center">
             <div class="flex space-x-2 flex-1 items-center">
-              <UButton to="/students/add" class="md:items-center md:flex md:justify-center hidden" color="primary"
+              <UButton data-guide="adm-stu-add" to="/students/add" class="md:items-center md:flex md:justify-center hidden" color="primary"
                 label="Enrolled Student" :icon="ADD_ICON" />
-              <UButton to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
-              <UButton class="hidden md:flex" color="neutral" variant="soft" label="Import"
+              <UButton data-guide="adm-stu-add" to="/students/add" class="md:hidden" color="primary" :icon="ADD_ICON" />
+              <UButton data-guide="adm-stu-import" class="hidden md:flex" color="neutral" variant="soft" label="Import"
                 icon="i-lucide-file-spreadsheet" to="/students/import" />
-              <UButton class="md:hidden" color="neutral" variant="soft" icon="i-lucide-file-spreadsheet"
+              <UButton data-guide="adm-stu-import" class="md:hidden" color="neutral" variant="soft" icon="i-lucide-file-spreadsheet"
                 aria-label="Import students" to="/students/import" />
-              <div class="flex-1 border-default flex items-center gap-2">
+              <div data-guide="adm-search" class="flex-1 border-default flex items-center gap-2">
                 <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or admission no"
                   class="flex-1" />
                 <StudentFilterDrawer v-model:class-id="classId" v-model:gender="gender" v-model:sort="sort"
@@ -250,7 +251,7 @@ onMounted(async () => {
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <TableViewToggle v-model="tableView" />
+              <div data-guide="list-view"><TableViewToggle v-model="tableView" /></div>
             </div>
           </div>
         </div>

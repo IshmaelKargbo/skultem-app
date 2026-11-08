@@ -1,7 +1,9 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <Heading title="Exam Office" subtitle="Grade submissions, approvals, results and the exam timetable." />
-    <GradesSectionNav />
+    <Heading title="Exam Office" subtitle="Grade submissions, approvals, results and the exam timetable.">
+      <GuideButton guide="exam-office-overview" /><HelpButton topic="exam-office-overview" />
+    </Heading>
+    <div data-guide="grades-tabs"><GradesSectionNav /></div>
     <ExamOfficeDashboard />
   </div>
 </template>

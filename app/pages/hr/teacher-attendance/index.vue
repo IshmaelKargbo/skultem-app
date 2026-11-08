@@ -2,23 +2,24 @@
   <div id="attendance-scroll" class="px-4 md:px-6 space-y-3">
     <Heading title="Mark Attendance" subtitle="Mark staff present, absent or late, or clock them in/out.">
       <div class="flex w-full items-center gap-2 md:w-auto">
-        <UInput v-model="date" type="date" :max="today" class="min-w-0 flex-1 md:w-44 md:flex-none" />
-        <UButton variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance"
+        <UInput data-guide="sa-date" v-model="date" type="date" :max="today" class="min-w-0 flex-1 md:w-44 md:flex-none" />
+        <UButton data-guide="sa-location" variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance"
           label="Location Settings" class="shrink-0" />
       </div>
-      <UButton icon="i-lucide-save" class="justify-center" :loading="saving" :disabled="!pendingChanges.length"
+      <UButton data-guide="sa-save" icon="i-lucide-save" class="justify-center" :loading="saving" :disabled="!pendingChanges.length"
         @click="saveAttendance">
         Save Attendance
       </UButton>
     </Heading>
 
-    <HrSectionNav />
+    <div data-guide="hr-tabs"><HrSectionNav /></div>
 
     <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle" title="Couldn't load attendance"
       :description="error" />
 
+    <GuideBar topic="admin-staff-attendance" />
     <!-- Summary -->
-    <div class="grid md:grid-cols-5 grid-cols-2 md:gap-5 gap-3">
+    <div data-guide="sa-stats" class="grid md:grid-cols-5 grid-cols-2 md:gap-5 gap-3">
       <Metric :record="{
         label: 'Present',
         color: 'success',
@@ -61,10 +62,10 @@
       }" />
     </div>
 
-    <AttendanceTeacherTrend ref="trendRef" />
+    <div data-guide="hr-trend"><AttendanceTeacherTrend ref="trendRef" /></div>
 
     <!-- Register -->
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="sa-register" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -166,7 +167,7 @@
     </UCard>
 
     <!-- History -->
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="sa-history" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <p class="font-semibold">History</p>
       </template>

@@ -165,19 +165,20 @@ definePageMeta({
 </script>
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <SubjectSectionNav />
-    <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
+    <div data-guide="subj-tabs"><SubjectSectionNav /></div>
+    <GuideBar topic="admin-class-subjects" />
+    <UCard data-guide="adm-list" :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
       <template #header>
           <div class="flex px-4 py-3 items-center justify-between gap-2">
               <div class="flex flex-1 items-center gap-2">
                   <template v-if="canManage">
-                    <UButton to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject" :icon="ASSIGN_ICON" />
-                    <UButton to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
-                    <UButton color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..." icon="lucide:copy" @click="showDuplicate = true" />
-                    <UButton color="neutral" variant="outline" class="md:hidden" icon="lucide:copy" @click="showDuplicate = true" />
+                    <UButton data-guide="cs-assign" to="/subjects/class-subjects/add" color="primary" class="md:flex hidden" label="Assign Subject" :icon="ASSIGN_ICON" />
+                    <UButton data-guide="cs-assign" to="/subjects/class-subjects/add" color="primary" class="md:hidden" :icon="ASSIGN_ICON" />
+                    <UButton data-guide="cs-duplicate" color="neutral" variant="outline" class="md:flex hidden" label="Duplicate to..." icon="lucide:copy" @click="showDuplicate = true" />
+                    <UButton data-guide="cs-duplicate" color="neutral" variant="outline" class="md:hidden" icon="lucide:copy" @click="showDuplicate = true" />
                   </template>
                   <div class="flex flex-1 items-center gap-2">
-                      <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by class, subject, or stream..." class="flex-1" />
+                      <UInput data-guide="adm-search" v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by class, subject, or stream..." class="flex-1" />
                       <FilterDrawer v-model="filters" :fields="filterFields" title="Filter class subjects" description="Narrow the list by class or type, or change the sort" />
                   </div>
               </div>

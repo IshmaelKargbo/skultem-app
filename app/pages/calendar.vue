@@ -1,16 +1,17 @@
 <template>
   <div class="space-y-5 px-4 md:px-6">
+    <GuideBar topic="sys-calendar" />
     <UAlert v-if="!loading && !calendar" color="warning" variant="soft" icon="i-lucide-triangle-alert"
       title="No calendar configured yet"
       description="Until you save one, new schools are created without an academic year or terms and have to set them up by hand." />
 
-    <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div data-guide="sa-stats" class="grid grid-cols-2 gap-3 xl:grid-cols-4">
       <Metric v-for="m in metrics" :key="m.label" :record="{ label: m.label, value: m.value, subtle: m.subtle, icon: m.icon, color: m.color, isReady: !loading }" />
     </div>
 
     <UForm :schema="schema" :state="state" class="grid items-start gap-5 lg:grid-cols-3" @submit="onSubmit">
       <div class="space-y-5 lg:col-span-2">
-        <UCard>
+        <UCard data-guide="cal-year">
           <template #header>
             <div class="flex items-center gap-3">
               <span class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -48,7 +49,7 @@
                   <p class="hidden text-sm text-muted md:block">In order, inside the academic year, without overlapping. Up to {{ MAX_TERMS }}.</p>
                 </div>
               </div>
-              <UButton label="Add term" icon="i-lucide-plus" size="sm" :disabled="saving || state.terms.length >= MAX_TERMS" @click="addTerm" />
+              <UButton data-guide="cal-add-term" label="Add term" icon="i-lucide-plus" size="sm" :disabled="saving || state.terms.length >= MAX_TERMS" @click="addTerm" />
             </div>
           </template>
 
@@ -90,7 +91,7 @@
       </div>
 
       <!-- Preview -->
-      <aside class="space-y-5 lg:sticky lg:top-4">
+      <aside data-guide="cal-preview" class="space-y-5 lg:sticky lg:top-4">
         <UCard>
           <template #header>
             <div class="flex items-center justify-between gap-2">
@@ -144,7 +145,7 @@
         <UCard :ui="{ body: 'p-3 md:p-3' }">
           <div class="flex justify-end gap-3">
             <UButton label="Reset" color="neutral" variant="outline" :disabled="saving" @click="fillFromCalendar" />
-            <UButton type="submit" :loading="saving" icon="i-lucide-save" label="Save calendar" />
+            <UButton data-guide="cal-save" type="submit" :loading="saving" icon="i-lucide-save" label="Save calendar" />
           </div>
         </UCard>
       </aside>

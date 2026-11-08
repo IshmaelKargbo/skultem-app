@@ -133,17 +133,20 @@ definePageMeta({
       :description="routesTo('CLASS_MASTER')
         ? `In parts of the school, the ${otherApprovers} approves grades instead of the class master. Those requests show who they're with - you can follow them, but not approve them.`
         : 'You can follow your class\'s grades here, but approving them is not the class master\'s job in this school.'" />
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="teacher-approval-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div>
           <div class="flex px-4 py-3 flex-wrap items-center justify-between gap-3">
-            <h2 class="text-sm font-semibold text-highlighted">My Approval Queue</h2>
+            <div class="flex items-center gap-1">
+              <h2 class="text-sm font-semibold text-highlighted">My Approval Queue</h2>
+              <GuideButton guide="teacher-approval" /><HelpButton topic="teacher-approval" />
+            </div>
 
             <!-- Skeletons until the counts arrive, so they never flash "0". -->
             <div v-if="loadingSummary && !summary" class="flex items-center gap-2">
               <USkeleton v-for="i in 3" :key="i" class="h-5 w-20 rounded-md" />
             </div>
-            <div v-else class="flex items-center gap-2">
+            <div v-else data-guide="teacher-approval-counts" class="flex items-center gap-2">
               <UBadge color="warning" variant="subtle" size="sm">{{ summary?.pending ?? 0 }} Pending</UBadge>
               <UBadge color="success" variant="subtle" size="sm">{{ summary?.approved ?? 0 }} Approved</UBadge>
               <UBadge color="error" variant="subtle" size="sm">{{ summary?.returned ?? 0 }} Returned</UBadge>

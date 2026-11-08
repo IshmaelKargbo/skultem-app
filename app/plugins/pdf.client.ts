@@ -278,9 +278,93 @@ function isolateClonedDocument(clonedDocument: Document, clonedElement: HTMLElem
   clonedElement.style.overflow = "hidden";
 }
 
+// Captures one element as a white A4-width canvas, the same way generatePdf does - used by generatePdfPages,
+// which needs each page captured on its own.
+async function capturePage(element: HTMLElement, landscape: boolean): Promise<HTMLCanvasElement> {
+  const { default: html2canvas } = await import("html2canvas");
+  const pagePxWidth = landscape ? 1123 : 794;
+
+  const html = document.documentElement;
+  const wasDark = html.classList.contains("dark");
+  if (wasDark) html.classList.remove("dark");
+  const originalHtmlOverflow = html.style.overflow;
+  const originalBodyOverflow = document.body.style.overflow;
+
+  const cloned = element.cloneNode(true) as HTMLElement;
+  Object.assign(cloned.style, {
+    position: "fixed", left: "0", top: "0", zIndex: "-1", opacity: "0", width: `${pagePxWidth}px`,
+    overflow: "hidden", background: "#ffffff", color: "#111827", pointerEvents: "none",
+  });
+  html.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+  document.body.appendChild(cloned);
+
+  try {
+    await waitForImages(cloned);
+    await inlineImagesAsDataUrls(cloned);
+    forceInlineStyles(cloned);
+    const height = Math.ceil(cloned.scrollHeight);
+    return await html2canvas(cloned, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      width: pagePxWidth,
+      height,
+      windowWidth: pagePxWidth,
+      windowHeight: height,
+      scrollX: 0,
+      scrollY: 0,
+      onclone: (clonedDocument, clonedElement) => isolateClonedDocument(clonedDocument, clonedElement, height, pagePxWidth),
+    });
+  } finally {
+    document.body.removeChild(cloned);
+    html.style.overflow = originalHtmlOverflow;
+    document.body.style.overflow = originalBodyOverflow;
+    if (wasDark) html.classList.add("dark");
+  }
+}
+
 export default defineNuxtPlugin(() => {
   return {
     provide: {
+      // One PDF page per `pageSelector` element inside `selector` (e.g. an exam timetable's page per class), each
+      // scaled to fit its page - unlike generatePdf, which slices one long capture wherever the page ends.
+      generatePdfPages: async (selector: string, pageSelector: string, name = "document",
+        options: { landscape?: boolean } = {}) => {
+        const landscape = !!options.landscape;
+        const root = document.querySelector(selector) as HTMLElement | null;
+        if (!root) return;
+        const pages = Array.from(root.querySelectorAll(pageSelector)) as HTMLElement[];
+        if (!pages.length) return;
+
+        const { jsPDF } = await import("jspdf");
+        await document.fonts.ready;
+
+        const pdf = new jsPDF({ orientation: landscape ? "l" : "p", unit: "mm", format: "a4" });
+        const pageWidth = landscape ? 297 : 210;
+        const pageHeight = landscape ? 210 : 297;
+        const margin = 8;
+        const usableWidth = pageWidth - margin * 2;
+        const usableHeight = pageHeight - margin * 2;
+
+        for (let i = 0; i < pages.length; i++) {
+          const canvas = await capturePage(pages[i]!, landscape);
+          let width = usableWidth;
+          let height = (canvas.height * width) / canvas.width;
+          // A long class sheet shrinks to fit one page rather than spilling onto the next.
+          if (height > usableHeight) {
+            height = usableHeight;
+            width = (canvas.width * height) / canvas.height;
+          }
+          if (i > 0) pdf.addPage();
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (pageWidth - width) / 2, margin, width, height);
+        }
+
+        pdf.save(`${name.trim() || "document"}.pdf`);
+      },
+
       generatePdf: async (selector: string, name = "receipt", options: { landscape?: boolean } = {}) => {
         // Portrait A4 is 794x1123px at 96dpi; landscape swaps them. Nothing else changes between the two.
         const landscape = !!options.landscape;

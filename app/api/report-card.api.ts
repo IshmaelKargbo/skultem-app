@@ -81,6 +81,16 @@ export const ReportCardApi = () => {
       }
     },
 
+    // The class teacher's decision on a class's cards for a term (ids = only these; empty = all of them).
+    review: async (decision: 'approve' | 'return', payload: { classId: string, termId: string, ids?: string[], note?: string }) => {
+      try {
+        const res = await $api(`/report-card/review/${decision}`, { method: 'POST', body: payload }) as any
+        return res?.data as { count: number, reviewStatus: ReportCardReviewStatus }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     trackDownload: async (id: string) => {
       try {
         await $api(`/report-card/${id}/download`, { method: 'POST' })

@@ -1,14 +1,15 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
+    <GuideBar topic="admin-daily-register" />
     <Heading title="Daily Register"
       subtitle="View, print or export the attendance register for a class on a specific date.">
-      <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
+      <UButton data-guide="rep-download" icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         :disabled="!register" @click="downloadPdf">
         Export PDF
       </UButton>
     </Heading>
 
-    <UCard>
+    <UCard data-guide="rep-filters">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <UFormField label="Term">
           <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label"
@@ -49,7 +50,7 @@
     </UCard>
 
     <template v-else>
-      <div id="daily-register-preview" class="rounded-lg bg-white text-gray-900 px-2">
+      <div data-guide="rep-preview" id="daily-register-preview" class="rounded-lg bg-white text-gray-900 px-2">
         <div class="mb-4 border-b-4 border-primary-500 pb-5 pt-6 text-center sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
           <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>

@@ -181,3 +181,44 @@ export function formatExamDay(date: string) {
 export function sittingOf(startTime: string) {
     return startTime.slice(0, 5) < '12:00' ? 'Morning' : 'Afternoon'
 }
+
+// How the school's exam timetable PDFs look (Exam Office > Timetable > Design). accentColor null = brand colour.
+export type ExamTimetableDesign = {
+    heading: string
+    accentColor: string | null
+    orientation: 'PORTRAIT' | 'LANDSCAPE'
+    showLogo: boolean
+    showVenue: boolean
+    showDuration: boolean
+    showInvigilators: boolean
+    showInstructions: boolean
+    showSignatures: boolean
+    leftSignature: string
+    rightSignature: string
+    footerNote: string | null
+}
+
+export const DEFAULT_EXAM_TIMETABLE_DESIGN: ExamTimetableDesign = {
+    heading: 'EXAMINATION TIMETABLE',
+    accentColor: null,
+    orientation: 'PORTRAIT',
+    showLogo: true,
+    showVenue: true,
+    showDuration: true,
+    showInvigilators: false,
+    showInstructions: true,
+    showSignatures: true,
+    leftSignature: 'Exam Officer',
+    rightSignature: 'Principal',
+    footerNote: null,
+}
+
+// "09:00" - "11:00" -> "2 hrs"; "09:00" - "10:30" -> "1 hr 30 min".
+export function examDuration(start: string, end: string) {
+    const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5))
+    const minutes = toMin(end) - toMin(start)
+    if (minutes <= 0) return ''
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    return [h ? `${h} hr${h > 1 ? 's' : ''}` : '', m ? `${m} min` : ''].filter(Boolean).join(' ')
+}

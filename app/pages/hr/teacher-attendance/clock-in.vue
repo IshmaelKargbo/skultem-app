@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
+    <div class="flex justify-end"><GuideButton guide="staff-clock-in" /><HelpButton topic="staff-clock-in" /></div>
     <HrSectionNav />
 
     <!-- LOADING -->
@@ -26,7 +27,7 @@
     </UCard>
 
     <template v-else>
-      <UCard :ui="{ body: 'space-y-5' }">
+      <UCard data-guide="clock-card" :ui="{ body: 'space-y-5' }">
         <div class="flex items-center gap-3">
           <div class="flex size-10 shrink-0 items-center justify-center rounded-xl" :class="stateIconBg">
             <UIcon :name="stateIcon" class="size-5" :class="stateIconColor" />

@@ -24,7 +24,8 @@ const studentStore = useStudentStore()
 const { activeCycle } = storeToRefs(studentStore)
 
 async function fetchRecord() {
-    if (activeCycle == null) return
+    // Nothing to ask for until a child and term are picked - an empty child id is refused (and logs the parent out).
+    if (activeCycle == null || !id || !term) return
     const res = await store.runAnalytic({
         entity: "assessments",
         title: "Grade Count",

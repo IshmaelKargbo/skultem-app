@@ -3,9 +3,9 @@
     <!-- Section nav and the Student/Staff toggle share a row on desktop (nav left, toggle right); on a
          phone they stack, with the toggle spanning the full width. -->
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <IdCardsSectionNav />
+      <div data-guide="idc-tabs"><IdCardsSectionNav /></div>
       <!-- Same pill-tab look as the app's Tab component (that one is link-based, this switches a local value). -->
-      <div class="flex w-full gap-1 rounded-3xl md:inline-flex md:w-auto border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
+      <div data-guide="idc-type" class="flex w-full gap-1 rounded-3xl md:inline-flex md:w-auto border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900">
         <button v-for="tab in cardTypeTabs" :key="tab.value" type="button"
           class="flex flex-1 items-center justify-center gap-1.5 rounded-3xl px-4 py-2 md:flex-none text-[12px] sm:text-sm whitespace-nowrap transition-all duration-200"
           :class="cardType === tab.value
@@ -18,11 +18,12 @@
       </div>
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <GuideBar topic="admin-id-cards" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div class="flex min-w-0 flex-1 items-center gap-2">
-            <UInput v-model="searchInput" :icon="SEARCH_ICON"
+            <UInput data-guide="adm-search" v-model="searchInput" :icon="SEARCH_ICON"
               :placeholder="cardType === 'student' ? 'Search by name or admission no' : 'Search by name or staff ID'"
               class="min-w-0 flex-1" />
             <StudentFilterDrawer v-if="cardType === 'student'" v-model:class-id="classId" v-model:gender="gender"
@@ -31,11 +32,11 @@
             <TeacherFilterDrawer v-else v-model:gender="gender" v-model:sort="sort" :sort-options="staffSortOptions"
               :active-count="activeFilterCount" :default-sort="staffDefaultSort" />
           </div>
-          <UButton icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
+          <UButton data-guide="idc-design" icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
             class="hidden md:flex">
             Card Design
           </UButton>
-          <UButton icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
+          <UButton data-guide="idc-design" icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
             aria-label="Card Design" class="md:hidden" />
           <TableViewToggle v-model="tableView" />
         </div>

@@ -2,11 +2,12 @@
     <div class="space-y-3 px-4 md:px-6">
         <Heading title="Fee History" subtitle="History of fee payments and transactions">
             <div class="md:w-72 w-full">
-                <USelectMenu v-model="state.student" value-key="value" :loading="loading" :items="children"
+                <USelectMenu data-guide="par-child" v-model="state.student" value-key="value" :loading="loading" :items="children"
                     placeholder="Select Student" />
             </div>
         </Heading>
-        <FeeParentReport :student="state.student" />
+        <GuideBar topic="parent-fees" />
+        <div data-guide="par-fee-summary"><FeeParentReport :student="state.student" /></div>
         <TabMobile class="md:hidden block" :tabs="tabs">
             <template #overview-data>
                 <FeeParentOverviewMobile :student="state.student" />
@@ -15,8 +16,8 @@
                 <FeeParentHistoryMobile :student="state.student" />
             </template>
         </TabMobile>
-        <FeeParentOverview class="hidden md:block" :student="state.student" />
-        <FeeParentHistory class="hidden md:block" :student="state.student" />
+        <div data-guide="par-fee-overview"><FeeParentOverview class="hidden md:block" :student="state.student" /></div>
+        <div data-guide="par-fee-history"><FeeParentHistory class="hidden md:block" :student="state.student" /></div>
     </div>
 </template>
 

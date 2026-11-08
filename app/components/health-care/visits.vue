@@ -85,10 +85,10 @@ onMounted(() => {
             <h3 class="font-semibold">Sick Bay Visits</h3>
             <p class="text-xs text-muted">Newest first. Open a visit to see its full record.</p>
           </div>
-          <HealthCareStartVisit v-if="canRecord" />
+          <div data-guide="hc-start"><HealthCareStartVisit v-if="canRecord" /></div>
         </div>
         <div class="flex items-center gap-2">
-          <UInput v-model="searchValue" :icon="SEARCH_ICON" placeholder="Search by student or class" class="flex-1" />
+          <UInput data-guide="adm-search" v-model="searchValue" :icon="SEARCH_ICON" placeholder="Search by student or class" class="flex-1" />
           <HealthCareFilterDrawer v-model="filters" :defaults="defaults" :complaint-options="complaintOptions" />
         </div>
         <p class="text-xs text-muted">

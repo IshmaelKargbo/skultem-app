@@ -1,19 +1,19 @@
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <UCard>
+        <UCard data-guide="an-header">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="space-y-1">
                     <p class="text-2xl font-semibold">Reports</p>
                     <p class="text-mute">Create custom reports and explore your school data</p>
                 </div>
                 <div class="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap md:gap-3">
-                    <UButton variant="outline" color="neutral" :icon="SAVED_ICON" label="Saved Reports"
+                    <UButton data-guide="an-saved" variant="outline" color="neutral" :icon="SAVED_ICON" label="Saved Reports"
                         to="/analytics/saved" />
-                    <UButton :icon="ADD_ICON" label="New Report" to="/analytics/builder" />
+                    <UButton data-guide="an-new" :icon="ADD_ICON" label="New Report" to="/analytics/builder" />
                 </div>
             </div>
         </UCard>
-        <div class="mt-5">
+        <div data-guide="an-tabs" class="mt-5">
             <TabMobile class="md:hidden" :tabs="[
                 { label: 'Reports', to: '/analytics', exact: true },
                 { label: 'Builder', to: '/analytics/builder', exact: true },
@@ -27,7 +27,8 @@
                 { label: 'Dashboard Widgets', to: '/analytics/dashboard', exact: true }
             ]" />
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <GuideBar topic="admin-analytics" />
+        <div data-guide="an-stats" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <UCard v-for="card in reportStats" :key="card.label">
                 <div class="flex items-center justify-between">
                     <div v-if="isLoadingReports" class="space-y-2">

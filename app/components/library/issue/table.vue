@@ -62,10 +62,10 @@ onMounted(load)
   <UCard :ui="{ body: 'p-0 sm:p-0' }">
     <template #header>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by book or borrower" class="w-full sm:w-72" />
+        <UInput data-guide="adm-search" v-model="value" :icon="SEARCH_ICON" placeholder="Search by book or borrower" class="w-full sm:w-72" />
         <USelectMenu v-model="statusFilter" value-key="value" :items="loanStatusOptions" :search-input="false"
           class="w-full sm:w-44" />
-        <LibraryIssueForm v-if="canManage" />
+        <div data-guide="lib-issue-btn"><LibraryIssueForm v-if="canManage" /></div>
       </div>
     </template>
 

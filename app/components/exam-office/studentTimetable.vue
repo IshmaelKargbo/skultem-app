@@ -4,12 +4,15 @@
     <div class="print:hidden">
       <Heading title="Exam Timetable" subtitle="When and where your child sits each paper.">
         <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          <USelectMenu v-model="studentId" :items="childOptions" value-key="value" label-key="label"
+          <USelectMenu data-guide="par-child" v-model="studentId" :items="childOptions" value-key="value" label-key="label"
             placeholder="Choose a child" class="w-full sm:w-72" :loading="parentStore.loading" />
-          <UButton v-if="current" icon="i-lucide-printer" variant="soft" color="neutral" label="Print" @click="print" />
+          <div data-guide="exam-download"><ExamOfficeTimetableDownload v-if="current" :timetable="current" single
+            :class-ids="current.classes.map(c => c.id)" /></div>
         </div>
       </Heading>
     </div>
+
+    <GuideBar topic="parent-exam-timetable" />
 
     <div v-if="loading" class="space-y-3">
       <UCard v-for="i in 2" :key="i" :ui="{ body: 'p-0 sm:p-0' }">
@@ -45,14 +48,14 @@
     </UCard>
 
     <template v-else>
-      <div v-if="timetables.length > 1" class="flex gap-1.5 overflow-x-auto print:hidden">
+      <div v-if="timetables.length > 1" data-guide="exam-assessments" class="flex gap-1.5 overflow-x-auto print:hidden">
         <UButton v-for="t in timetables" :key="t.id" size="sm" class="shrink-0" :label="t.title"
           :color="t.id === current?.id ? 'primary' : 'neutral'" :variant="t.id === current?.id ? 'solid' : 'soft'"
           @click="() => { currentId = t.id }" />
       </div>
 
       <template v-if="current">
-        <UCard class="print:hidden">
+        <UCard data-guide="exam-timetable-header" class="print:hidden">
           <h2 class="text-lg font-semibold text-highlighted">{{ current.title }}</h2>
           <p class="text-sm text-muted">
             {{ childName }} · {{ current.classes[0]?.name }} · {{ current.termName }}
@@ -68,9 +71,8 @@
           </div>
         </UCard>
 
-        <ExamOfficePapersByDay class="print:hidden" :papers="current.papers" :show-classes="false"
+        <ExamOfficePapersByDay data-guide="exam-papers" class="print:hidden" :papers="current.papers" :show-classes="false"
           :show-invigilators="false" />
-        <ExamOfficeClassSheets :timetable="current" />
       </template>
     </template>
   </div>
@@ -98,10 +100,6 @@ const current = computed(() => timetables.value.find(t => t.id === currentId.val
 
 function lines(text: string) {
   return text.split('\n').map(l => l.trim()).filter(Boolean)
-}
-
-function print() {
-  window.print()
 }
 
 async function load() {

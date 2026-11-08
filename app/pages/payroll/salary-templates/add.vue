@@ -2,8 +2,10 @@
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Add Salary Template" subtitle="A reusable compensation package you can apply to any teacher.">
       <UButton variant="soft" color="neutral" to="/payroll/salary-templates" label="Cancel" />
-      <UButton icon="i-lucide-check" :loading="saving" label="Save Template" @click="formRef?.submit()" />
+      <UButton icon="i-lucide-check" :loading="saving" label="Save Template" data-guide="pay-save" @click="formRef?.submit()" />
     </Heading>
+
+    <GuideBar topic="payroll-template-form" />
 
     <UForm ref="formRef" :state="state" :schema="schema" class="grid gap-4 lg:grid-cols-3" @submit="onSubmit">
 
@@ -18,11 +20,11 @@
           </template>
 
           <div class="grid gap-5 md:grid-cols-2">
-            <UFormField label="Template Name" name="name" required class="md:col-span-2">
+            <UFormField data-guide="pay-template-name" label="Template Name" name="name" required class="md:col-span-2">
               <UInput v-model="state.name" placeholder="e.g. Grade A Teacher" class="w-full" />
             </UFormField>
 
-            <UFormField label="Basic Salary" name="basicSalary" required>
+            <UFormField data-guide="pay-salary-basic" label="Basic Salary" name="basicSalary" required>
               <UInput v-model.number="state.basicSalary" type="number" min="0" placeholder="0" class="w-full">
                 <template #leading><span class="text-sm text-muted">Le</span></template>
               </UInput>
@@ -33,12 +35,12 @@
           </div>
         </UCard>
 
-        <UCard>
+        <UCard data-guide="pay-allowances">
           <PayrollPayComponentEditor v-model="state.allowances" label="Allowances" color="success"
             :basic-salary="state.basicSalary || 0" />
         </UCard>
 
-        <UCard>
+        <UCard data-guide="pay-deductions">
           <PayrollPayComponentEditor v-model="state.deductions" label="Deductions" color="error"
             :basic-salary="state.basicSalary || 0" />
         </UCard>
@@ -46,7 +48,7 @@
 
       <!-- Right -->
       <div class="space-y-4 lg:sticky lg:top-6 lg:self-start">
-        <PayrollNetPreview :basic="state.basicSalary" :allowances="totalAllowances" :deductions="totalDeductions"
+        <PayrollNetPreview data-guide="pay-net-preview" :basic="state.basicSalary" :allowances="totalAllowances" :deductions="totalDeductions"
           :allowance-count="state.allowances.length" :deduction-count="state.deductions.length" />
       </div>
 

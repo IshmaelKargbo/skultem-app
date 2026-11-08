@@ -158,8 +158,9 @@ definePageMeta({
 
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <AcademicsSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
+        <GuideBar topic="admin-academic-years" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div>
                     <div class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -169,8 +170,8 @@ definePageMeta({
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
-                            <AcademicsConfigureNext />
-                            <AcademicsAdd />
+                            <div data-guide="acad-next"><AcademicsConfigureNext /></div>
+                            <div data-guide="acad-add"><AcademicsAdd /></div>
                             <TableViewToggle v-model="view" />
                             <UButton @click="filterState = !filterState"
                                 :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
@@ -179,7 +180,7 @@ definePageMeta({
                     </div>
 
                     <!-- Always shown from md up; on mobile it opens with the filter button -->
-                    <div :class="filterState ? 'flex' : 'hidden'"
+                    <div data-guide="adm-filters" :class="filterState ? 'flex' : 'hidden'"
                         class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
                         <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
                             <USelectMenu class="w-full" v-model="status" value-key="value" label-key="label"

@@ -136,6 +136,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Audit Logs" subtitle="What happened on the platform, and who did it. Entries can't be changed or removed." />
+    <GuideBar topic="sys-audit-logs" />
 
     <div class="flex flex-wrap items-center gap-3">
       <Tab v-model="status" :tabs="statusTabs" />
@@ -147,13 +148,13 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
     </div>
 
     <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-default p-2 shadow-sm ring-1 ring-default">
-      <UInput v-model="search" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search action, person or details" class="min-w-0 flex-1 sm:min-w-72" />
+      <UInput data-guide="adm-search" v-model="search" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search action, person or details" class="min-w-0 flex-1 sm:min-w-72" />
       <UInput v-model="from" type="date" variant="soft" size="lg" class="w-full sm:w-44" aria-label="From" />
       <UInput v-model="to" type="date" variant="soft" size="lg" class="w-full sm:w-44" aria-label="To" />
       <UButton v-if="filtersActive" variant="ghost" color="neutral" icon="i-lucide-x" label="Clear" @click="clearFilters" />
     </div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="The audit log could not be loaded" class="m-4">
         <template #actions><UButton size="xs" color="error" variant="outline" label="Try again" @click="load" /></template>
       </UAlert>

@@ -126,13 +126,13 @@ async function onSubmit() {
 
           <div class="p-5 space-y-4">
             <!-- Title -->
-            <UFormField label="Title" name="title" required>
+            <UFormField data-guide="bc-title" label="Title" name="title" required>
               <UInput v-model="state.title" icon="i-lucide-heading" placeholder="e.g. Term 2 Resumption Notice"
                 :disabled="isLoading" class="w-full" size="lg" />
             </UFormField>
 
             <!-- Message -->
-            <UFormField label="Message" name="message" required>
+            <UFormField data-guide="bc-message" label="Message" name="message" required>
               <UTextarea v-model="state.message" :rows="7" placeholder="Write your broadcast message..."
                 :disabled="isLoading" class="w-full" />
 
@@ -146,16 +146,16 @@ async function onSubmit() {
             </UFormField>
 
             <!-- Who: the whole school or one management section -->
-            <CommunicateSectionPicker v-model="state.managementSectionId" :disabled="isLoading" />
+            <div data-guide="bc-section"><CommunicateSectionPicker v-model="state.managementSectionId" :disabled="isLoading" /></div>
 
             <!-- Audience -->
-            <UFormField label="Audience" name="audience" required>
+            <UFormField data-guide="bc-audience" label="Audience" name="audience" required>
               <USelectMenu v-model="state.audience" value-key="value" :items="audiences" icon="i-lucide-users"
                 :disabled="isLoading" class="w-full" size="lg" />
             </UFormField>
 
             <!-- Channels -->
-            <UFormField label="Delivery Channels" name="channels" required>
+            <UFormField data-guide="bc-channels" label="Delivery Channels" name="channels" required>
               <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <button v-for="channel in broadcastChannels" :key="channel.value" type="button" :disabled="isLoading"
                   class="group relative flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition-all duration-200"
@@ -177,7 +177,7 @@ async function onSubmit() {
             </UFormField>
 
             <!-- Delivery -->
-            <UFormField label="Delivery" name="sendOption" required>
+            <UFormField data-guide="bc-when" label="Delivery" name="sendOption" required>
               <URadioGroup v-model="state.sendOption" :items="sendOptions" variant="card" orientation="horizontal"
                 :disabled="isLoading" class="w-full" />
             </UFormField>
@@ -193,7 +193,7 @@ async function onSubmit() {
             class="flex flex-col-reverse gap-3 border-t border-default p-4 sm:flex-row sm:items-center sm:justify-between">
             <UButton label="Reset" variant="ghost" color="neutral" :disabled="isLoading" @click="reset" />
 
-            <UButton :icon="state.sendOption === 'NOW'
+            <UButton data-guide="bc-send" :icon="state.sendOption === 'NOW'
                 ? BROADCAST_ICON
                 : 'i-lucide-clock'
               " :label="state.sendOption === 'NOW'
@@ -209,7 +209,7 @@ async function onSubmit() {
     <div class="space-y-5">
 
       <!-- Reach -->
-      <UCard class="overflow-hidden border-primary/20" :ui="{ body: 'p-0' }">
+      <UCard data-guide="bc-reach" class="overflow-hidden border-primary/20" :ui="{ body: 'p-0' }">
         <div class="p-5 sm:p-6">
           <div class="flex items-start justify-between gap-4">
             <div>

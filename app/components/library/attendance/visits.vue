@@ -120,10 +120,10 @@ onMounted(load)
       <div class="space-y-3">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Tab v-model="view" :tabs="tabs" />
-          <LibraryAttendanceCheckIn v-if="canRecordAttendance" />
+          <div data-guide="lib-checkin"><LibraryAttendanceCheckIn v-if="canRecordAttendance" /></div>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <UInput v-model="searchValue" :icon="SEARCH_ICON" placeholder="Search by student or class" class="w-full sm:w-64" />
+          <UInput data-guide="adm-search" v-model="searchValue" :icon="SEARCH_ICON" placeholder="Search by student or class" class="w-full sm:w-64" />
           <template v-if="view === 'HISTORY'">
             <UInput v-model="from" type="date" :max="to" class="w-full sm:w-44" />
             <UInput v-model="to" type="date" :min="from" :max="today" class="w-full sm:w-44" />

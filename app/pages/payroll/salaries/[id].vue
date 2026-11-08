@@ -2,9 +2,11 @@
   <div class="space-y-3 px-4 md:px-6">
 
     <Heading :title="teacherName || 'Salary Details'" subtitle="Compensation package and payslip history.">
-      <UButton v-if="salary" icon="i-lucide-pencil" :to="`/payroll/salaries/add?teacherId=${salary.teacher.id}`"
+      <UButton v-if="salary" data-guide="pay-edit-salary" icon="i-lucide-pencil" :to="`/payroll/salaries/add?teacherId=${salary.teacher.id}`"
         label="Edit Salary" />
     </Heading>
+
+    <GuideBar topic="payroll-salary-detail" />
 
     <div v-if="loading" class="space-y-3">
       <USkeleton class="h-36 w-full rounded-xl" />
@@ -18,7 +20,7 @@
     <template v-else-if="salary">
 
       <!-- Profile + pay at a glance -->
-      <UCard>
+      <UCard data-guide="pay-detail-summary">
         <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-4">
             <UAvatar size="2xl" :src="salary.teacher?.user?.photo || undefined" :alt="teacherName" loading="lazy" />
@@ -49,7 +51,7 @@
       </UCard>
 
       <!-- Breakdown -->
-      <div class="grid gap-4 md:grid-cols-2">
+      <div data-guide="pay-detail-breakdown" class="grid gap-4 md:grid-cols-2">
         <UCard v-for="group in breakdown" :key="group.title">
           <template #header>
             <div class="flex items-center justify-between">
@@ -77,7 +79,7 @@
       </div>
 
       <!-- Payslip history -->
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="pay-detail-history" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div>
             <p class="font-semibold">Payslip history</p>

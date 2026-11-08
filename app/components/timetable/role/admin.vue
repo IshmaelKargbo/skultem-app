@@ -5,7 +5,7 @@
       subtitle="Configure and manage weekly timetables for classes and sections"
     >
       <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-        <USelectMenu
+        <USelectMenu data-guide="tt-class"
           v-model="grade"
           placeholder="Select Class"
           value-key="value"
@@ -13,13 +13,14 @@
           :loading="classLoading"
           class="w-full md:w-72"
         />
-        <TimetableDownload v-if="session" :title="`${session.clazz} (${session.sectionName})`" />
+        <div data-guide="tt-download"><TimetableDownload v-if="session" :title="`${session.clazz} (${session.sectionName})`" /></div>
       </div>
     </Heading>
 
-    <TimetableSectionNav />
+    <div data-guide="tt-tabs"><TimetableSectionNav /></div>
+    <GuideBar topic="admin-timetable" />
     <div v-if="session">
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="tt-grid" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex min-w-0 items-center gap-3">
@@ -41,7 +42,18 @@
             </div>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
-              <UButton
+              <UButton data-guide="tt-add-assembly"
+                :loading="assemblyLoading"
+                icon="i-lucide-users"
+                color="neutral"
+                variant="outline"
+                class="w-full justify-center sm:w-auto"
+                @click="addAssembly"
+              >
+                Add Assembly
+              </UButton>
+
+              <UButton data-guide="tt-add-break"
                 :loading="breakLoading"
                 icon="i-lucide-coffee"
                 color="neutral"
@@ -52,7 +64,7 @@
                 Add Break
               </UButton>
 
-              <UButton
+              <UButton data-guide="tt-add-lunch"
                 :loading="lunchLoading"
                 icon="i-lucide-coffee"
                 color="neutral"
@@ -63,7 +75,7 @@
                 Add Lunch
               </UButton>
 
-              <UButton
+              <UButton data-guide="tt-add-period"
                 :loading="addLoading"
                 icon="i-lucide-plus"
                 class="w-full justify-center sm:w-auto"
@@ -104,6 +116,7 @@ const grade = ref("");
 
 const addLoading = ref(false);
 const breakLoading = ref(false);
+const assemblyLoading = ref(false);
 const lunchLoading = ref(false);
 
 const session = computed(() => classStore.get(grade.value));
@@ -125,6 +138,18 @@ async function addPeriod() {
     await store.createPeriod({ session: session.value.id });
   } finally {
     addLoading.value = false;
+  }
+}
+
+// Usually the first slot of the day - add it before the periods.
+async function addAssembly() {
+  if (!session.value?.id) return;
+
+  assemblyLoading.value = true;
+  try {
+    await store.createAssembly({ session: session.value.id });
+  } finally {
+    assemblyLoading.value = false;
   }
 }
 

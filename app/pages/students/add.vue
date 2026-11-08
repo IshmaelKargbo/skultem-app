@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
         <!-- Stepper -->
-        <UCard ref="stepperEl" aria-label="Enrollment progress" class="scroll-mt-4">
+        <UCard data-guide="enrol-steps" ref="stepperEl" aria-label="Enrollment progress" class="scroll-mt-4">
             <ol class="flex items-start">
                 <li v-for="(value, i) in step" :key="value.title" class="relative flex flex-1 flex-col items-center">
                     <!-- connector to the next step -->
@@ -52,6 +52,9 @@
                 </div>
             </template>
         </UCard>
+
+        <!-- One short guide per step - each opens the first time that step is reached (not over the resume prompt). -->
+        <div v-if="draftReady" class="flex justify-end"><GuideButton :key="guideTopic" :guide="guideTopic" /><HelpButton :topic="guideTopic" /></div>
 
         <div v-if="draftReady" :key="formKey" class="min-w-0">
             <StudentAddPersonal :state="personal" @next="moveToParent" @change="live.personal = $event"
@@ -175,6 +178,8 @@ const successModal = ref(false)
 const createdStudentId = ref<string | null>(null)
 const store = useStudentStore()
 const state = ref(0)
+const ENROL_GUIDES = ['student-enrol-student', 'student-enrol-guardian', 'student-enrol-academic', 'student-enrol-photo']
+const guideTopic = computed(() => ENROL_GUIDES[state.value] ?? ENROL_GUIDES[0]!)
 
 const step = [
     {
@@ -452,8 +457,9 @@ function goTo(i: number) {
     if (i < state.value) state.value = i
 }
 
-const stepperEl = ref<HTMLElement | null>(null)
-watch(state, () => stepperEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+// A component ref (UCard) - scroll its root element.
+const stepperEl = ref<{ $el?: HTMLElement } | null>(null)
+watch(state, () => stepperEl.value?.$el?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }))
 
 async function submit(param: any) {
     Object.assign(profile, {

@@ -14,7 +14,7 @@
 
     <template v-else>
       <!-- One slim progress card instead of paragraphs of explanation (those are in "How it works"). -->
-      <UCard :ui="{ body: 'p-3 sm:p-4' }">
+      <UCard data-guide="ca-progress" :ui="{ body: 'p-3 sm:p-4' }">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-wrap items-center gap-2">
             <UBadge :color="caSubmitted ? 'success' : 'primary'" variant="subtle" size="lg"
@@ -27,12 +27,25 @@
               {{ monitorOnly ? `${caFormalName(structure)} (the score)` : `2 · ${caFormalName(structure)}` }}
             </UBadge>
           </div>
-          <p class="text-xs text-muted sm:text-right">{{ progressText }}</p>
+          <div class="flex flex-col gap-1 sm:items-end">
+            <p class="text-xs text-muted sm:text-right">{{ progressText }}</p>
+            <div class="flex items-center"><GuideButton guide="teacher-continuous" /><HelpButton topic="teacher-continuous" /></div>
+          </div>
+        </div>
+        <!-- The explanation, week locking and class insight live in modals - these open them. -->
+        <div class="mt-3 flex flex-wrap gap-2 border-t border-default pt-3">
+          <UButton size="sm" icon="lucide:circle-help" label="How it works" color="neutral" variant="ghost"
+            @click="() => { helpOpen = true }" />
+          <UButton data-guide="ca-insight" size="sm" icon="lucide:chart-no-axes-combined" label="Class insight"
+            color="neutral" variant="subtle" @click="() => { insightOpen = true }" />
+          <UButton data-guide="ca-weeks" size="sm" icon="lucide:calendar-check" color="neutral" variant="subtle"
+            :label="`${caPartsNoun(structure).plural} (${lockedCount}/${structure.caEntries} locked)`"
+            @click="() => { weeksOpen = true }" />
         </div>
       </UCard>
 
       <!-- Phone: one card per student. -->
-      <div class="space-y-2 md:hidden">
+      <div data-guide="ca-students" class="space-y-2 md:hidden">
         <div class="flex items-center justify-between px-1">
           <p class="text-xs text-muted">{{ rows.length }} students · tap a name to enter marks</p>
           <UButton size="xs" color="neutral" variant="ghost"
@@ -123,7 +136,7 @@
       </div>
 
       <!-- Desktop: one row per student. -->
-      <UCard class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="ca-students" class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
         <div class="overflow-x-auto">
           <table class="w-full min-w-max text-sm">
             <thead>
@@ -187,7 +200,7 @@
         </div>
       </UCard>
 
-      <UCard v-if="editable" class="mb-2">
+      <UCard v-if="editable" data-guide="ca-actions" class="mb-2">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-xs text-muted">{{ hint }}</p>
           <div class="grid grid-cols-2 gap-2 sm:flex">

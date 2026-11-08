@@ -104,9 +104,9 @@ const headCell = computed(() => ({
             </div>
           </td>
 
-          <td v-if="p.isBreak || p.isLunch" :colspan="days.length"
+          <td v-if="p.isBreak || p.isLunch || p.isAssembly" :colspan="days.length"
             :style="{ border: `1px solid ${line}`, textAlign: 'center', verticalAlign: 'middle', background: tint, color: accent, fontWeight: 700, letterSpacing: '4px' }">
-            {{ p.isBreak ? 'BREAK' : 'LUNCH' }}
+            {{ p.isAssembly ? 'ASSEMBLY' : p.isBreak ? 'BREAK' : 'LUNCH' }}
           </td>
           <template v-else>
             <td v-for="(_, i) in days" :key="i"

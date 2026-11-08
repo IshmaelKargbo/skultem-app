@@ -1,6 +1,7 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <UCard :ui="{ body: 'px-4 py-3 sm:px-4 sm:py-3' }">
+    <GuideBar topic="admin-marking-compliance" />
+    <UCard data-guide="mc-filters" :ui="{ body: 'px-4 py-3 sm:px-4 sm:py-3' }">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div class="flex flex-1 items-center gap-2">
           <USelectMenu v-model="filters.termId" :items="terms" value-key="value" label-key="label"
@@ -13,7 +14,7 @@
     </UCard>
 
     <template v-if="loading">
-      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div data-guide="mc-stats" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Metric v-for="i in 4" :key="i" :record="{ label: '', value: '', isReady: false, icon: '', color: 'neutral' }" />
       </div>
       <UCard :ui="{ body: 'p-0 sm:p-0' }">
@@ -49,7 +50,7 @@
         <Metric :record="{ label: 'Overall Marked', value: `${overall}%`, isReady: true, icon: 'i-lucide-percent', color: 'primary', subtle: 'Of all class register days' }" />
       </div>
 
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="mc-list" :ui="{ body: 'p-0 sm:p-0' }">
         <UTable class="hidden md:block" :columns="columns" :data="rows">
           <template #empty>
             <div class="flex flex-col items-center gap-2 py-10">

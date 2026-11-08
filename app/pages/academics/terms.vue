@@ -126,8 +126,9 @@ definePageMeta({
 
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <AcademicsSectionNav />
-        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
+        <GuideBar topic="admin-terms" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div>
                     <div class="flex items-center justify-between gap-3 px-4 py-3">
@@ -141,12 +142,12 @@ definePageMeta({
                             <UButton @click="filterState = !filterState"
                                 :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
                                 :color="!filterState ? 'info' : 'error'" class="md:hidden" />
-                            <AcademicsTermAdd />
+                            <div data-guide="acad-term-add"><AcademicsTermAdd /></div>
                         </div>
                     </div>
 
                     <!-- Always shown from md up; on mobile it opens with the filter button -->
-                    <div :class="filterState ? 'flex' : 'hidden'"
+                    <div data-guide="adm-filters" :class="filterState ? 'flex' : 'hidden'"
                         class="md:flex flex-wrap items-center justify-between gap-3 border-t border-default p-4">
                         <div class="flex-1 grid grid-cols-1 gap-2 md:grid-cols-3">
                             <USelectMenu class="w-full" v-model="status" value-key="value" label-key="label"

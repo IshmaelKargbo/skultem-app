@@ -69,13 +69,14 @@ function close() {
 
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <CommunicateSectionNav />
-    <UCard>
+    <div data-guide="comm-tabs"><CommunicateSectionNav /></div>
+    <GuideBar topic="comm-notifications" />
+    <UCard data-guide="adm-list">
       <template #header>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search notifications..." class="w-full sm:w-72" />
-            <USelectMenu v-model="filter" value-key="value" :items="filterOptions" class="w-full sm:w-40" />
+            <UInput data-guide="adm-search" v-model="search" :icon="SEARCH_ICON" placeholder="Search notifications..." class="w-full sm:w-72" />
+            <USelectMenu data-guide="comm-filter" v-model="filter" value-key="value" :items="filterOptions" class="w-full sm:w-40" />
           </div>
 
           <div class="flex items-center gap-2">

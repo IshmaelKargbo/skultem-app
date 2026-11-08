@@ -5,17 +5,20 @@
         <DashboardAccountant v-if="can(Role.ACCOUNTANT)" />
         <div v-if="can(Role.LIBRARIAN)" class="px-4 md:px-6 space-y-3">
             <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
-            <LibrarySectionNav />
+            <div data-guide="lib-tabs"><LibrarySectionNav /></div>
+            <GuideBar topic="lib-dashboard" />
             <LibraryDashboard />
         </div>
         <div v-if="can(Role.NURSE)" class="px-4 md:px-6 space-y-3">
             <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
-            <HealthCareSectionNav />
+            <div data-guide="hc-tabs"><HealthCareSectionNav /></div>
+            <GuideBar topic="nurse-dashboard" />
             <HealthCareDashboard />
         </div>
         <div v-if="can(Role.EXAM_OFFICER)" class="px-4 md:px-6 space-y-3">
             <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
-            <GradesSectionNav />
+            <div class="flex justify-end"><GuideButton guide="exam-office-overview" /><HelpButton topic="exam-office-overview" /></div>
+            <div data-guide="grades-tabs"><GradesSectionNav /></div>
             <ExamOfficeDashboard />
         </div>
         <DashboardTeacher v-if="can(Role.TEACHER)" />

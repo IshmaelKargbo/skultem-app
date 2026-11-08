@@ -1,13 +1,14 @@
 <template>
     <div class="md:px-6 px-4 space-y-3">
         <Heading title="Behaviours" subtitle="Track and record behaviour notes for your classes">
-            <USelectMenu :loading="loading" :items="classes" v-model="state.id" placeholder="Select class"
+            <div class="flex justify-end"><GuideButton guide="teacher-behaviour" /><HelpButton topic="teacher-behaviour" /></div>
+            <USelectMenu data-guide="behaviour-class" :loading="loading" :items="classes" v-model="state.id" placeholder="Select class"
                 value-key="value" class="w-full md:w-72" />
         </Heading>
 
         <BehaviourSectionNav />
         <BehaviourReport ref="reportRef" :clazz="clazzId" />
-        <BehaviourTable :state="{ classId: clazzId }" :selectable="false" />
+        <div data-guide="behaviour-list"><BehaviourTable :state="{ classId: clazzId }" :selectable="false" /></div>
     </div>
 </template>
 

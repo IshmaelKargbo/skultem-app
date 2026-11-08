@@ -13,15 +13,16 @@
       </div>
 
       <div v-if="payslip" class="flex flex-wrap gap-2">
-        <UButton icon="i-lucide-palette" variant="outline" color="neutral" to="/payroll/payslip-design">
+        <GuideButton guide="payroll-payslip" /><HelpButton topic="payroll-payslip" />
+        <UButton data-guide="pay-slip-design" icon="i-lucide-palette" variant="outline" color="neutral" to="/payroll/payslip-design">
           Design
         </UButton>
 
-        <UButton icon="i-lucide-printer" variant="soft" @click="printPage">
+        <UButton data-guide="pay-slip-print" icon="i-lucide-printer" variant="soft" @click="printPage">
           Print
         </UButton>
 
-        <UButton icon="i-lucide-download" :loading="downloading" @click="downloadPdf">
+        <UButton data-guide="pay-slip-download" icon="i-lucide-download" :loading="downloading" @click="downloadPdf">
           Download PDF
         </UButton>
       </div>
@@ -44,7 +45,7 @@
          Printing and "Download PDF" both bypass this: print gets the !important override below,
          and $generatePdf clones #payslip-document and forces its own width/transform regardless
          of what's applied here (see plugins/pdf.client.ts). -->
-    <div v-else ref="viewportRef" class="payslip-viewport">
+    <div v-else ref="viewportRef" data-guide="pay-slip-document" class="payslip-viewport">
       <div class="payslip-frame overflow-hidden rounded-2xl shadow-sm print:overflow-visible print:rounded-none print:shadow-none"
         :style="{ width: `${frameWidth}px`, height: `${frameHeight}px`, margin: '0 auto' }">
         <div class="payslip-scale" :style="{ transform: `scale(${scale})` }">

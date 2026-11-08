@@ -93,10 +93,11 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Blog" subtitle="Articles shown on the marketing site. Drafts stay hidden until published.">
-      <UButton icon="i-lucide-plus" label="New Post" to="/blog/add" />
+      <UButton data-guide="sa-action" icon="i-lucide-plus" label="New Post" to="/blog/add" />
     </Heading>
+    <GuideBar topic="sys-blog" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="posts" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">

@@ -149,13 +149,13 @@ onMounted(async () => {
         :loading="exportingCsv" :disabled="!!missing || loading || isEmpty" @click="downloadCsv">
         Export CSV
       </UButton>
-      <UButton :icon="DOWNLOAD_ICON" color="primary" class="justify-center" :loading="downloading"
+      <UButton data-guide="rep-download" :icon="DOWNLOAD_ICON" color="primary" class="justify-center" :loading="downloading"
         :disabled="!!missing || loading || isEmpty" @click="downloadPdf">
         Export PDF
       </UButton>
     </Heading>
 
-    <UCard>
+    <UCard data-guide="hcr-filters">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <UFormField label="View" :help="scopeOptions.find(s => s.value === scope)?.description">
           <USelectMenu v-model="scope" :items="scopeOptions" value-key="value" :search-input="false" class="w-full" />

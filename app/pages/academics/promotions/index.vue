@@ -156,12 +156,13 @@ async function saveConfig() {
     <div class="px-4 md:px-6 overflow-y-auto h-full space-y-3">
         <Heading title="Promotions"
             subtitle="Review class masters' promotion submissions and close out the academic year">
-            <UButton to="/classes" variant="soft" color="primary" :icon="PROMOTE_STUDENTS_ICON"
+            <UButton data-guide="promo-start" to="/classes" variant="soft" color="primary" :icon="PROMOTE_STUDENTS_ICON"
                 label="Start a Promotion" />
         </Heading>
 
-        <AcademicsSectionNav />
-        <UCard>
+        <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
+        <GuideBar topic="admin-promotions" />
+        <UCard data-guide="promo-progress">
             <div v-if="progressLoading" class="space-y-3">
                 <USkeleton class="h-5 w-48" />
                 <USkeleton class="h-2 w-full rounded-full" />
@@ -182,7 +183,7 @@ async function saveConfig() {
                             : !progress.readyToCloseYear
                                 ? `${progress.pendingSessions} class(es) still need to be promoted`
                                 : ''">
-                        <UButton icon="i-lucide-calendar-check" label="Close Year & Activate Next"
+                        <UButton data-guide="promo-close" icon="i-lucide-calendar-check" label="Close Year & Activate Next"
                             :disabled="!progress.readyToCloseYear || !progress.nextAcademicYearConfigured || hasOutstandingPlatformFee"
                             :loading="closingYear" @click="closeYear" />
                     </UTooltip>
@@ -204,7 +205,7 @@ async function saveConfig() {
         </UCard>
 
         <!-- Promotion rules, always visible -->
-        <UCard>
+        <UCard data-guide="promo-rules">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <UIcon name="i-lucide-settings-2" class="size-4 text-primary" />
@@ -240,7 +241,7 @@ async function saveConfig() {
             </div>
         </UCard>
 
-        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div>
                     <div class="flex items-center justify-between gap-3 px-4 py-3">

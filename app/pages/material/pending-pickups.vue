@@ -65,9 +65,10 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <MaterialSectionNav />
+        <div data-guide="mat-tabs"><MaterialSectionNav /></div>
 
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+        <GuideBar topic="admin-material-pickups" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>

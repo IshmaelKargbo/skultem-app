@@ -9,8 +9,9 @@
             <span v-if="state.date">for {{ formatDateString(state.date) }}</span>
             <span v-if="twoRollCalls" class="text-muted"> · {{ rollName(state.roll) }} roll call</span>
           </p>
+          <div class="flex shrink-0 items-center"><GuideButton guide="teacher-attendance" /><HelpButton topic="teacher-attendance" /></div>
 
-          <div class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+          <div data-guide="attendance-pick" class="flex-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
             <UFormField name="classId" class="w-full">
               <USelect v-model="state.classId" :items="classes" placeholder="Select class" class="w-full"
                 @change="onClassOrDateChange" />
@@ -25,7 +26,7 @@
 
       <div>
         <!-- Two roll calls a day: pick which one is being taken. -->
-        <div v-if="state.classId && twoRollCalls"
+        <div v-if="state.classId && twoRollCalls" data-guide="attendance-roll"
           class="flex flex-col gap-2 border-b border-default px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="grid grid-cols-2 gap-1 rounded-lg bg-elevated p-1 sm:w-80">
             <UButton v-for="n in [1, 2]" :key="n" size="sm" block :disabled="isLoading"
@@ -40,7 +41,7 @@
         </div>
 
         <!-- Actions -->
-        <div v-if="state.classId" class="flex space-x-3 border-b border-default py-4 bg-gray-50/40 dark:bg-gray-800 px-3">
+        <div v-if="state.classId" data-guide="attendance-actions" class="flex space-x-3 border-b border-default py-4 bg-gray-50/40 dark:bg-gray-800 px-3">
           <UCheckbox v-if="report.holiday" v-model="state.holiday" size="xs" variant="card" color="info"
             label="Mark on Holiday" />
 
@@ -53,7 +54,7 @@
         </div>
 
 
-        <UTable class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
+        <UTable data-guide="attendance-list" class="hidden md:block" :columns="columns" :data="isLoading ? skeletonRows : state.records"
           :loading="isLoading">
           <template #studentName-cell="{ row }">
             <div class="flex items-center gap-3">
@@ -105,7 +106,7 @@
         </UTable>
 
         <!-- Mobile Cards -->
-        <div class="divide-y divide-default md:hidden">
+        <div data-guide="attendance-list" class="divide-y divide-default md:hidden">
 
           <!-- Mobile Skeleton -->
           <template v-if="isLoading">
@@ -165,7 +166,7 @@
       <!-- Footer -->
       <template #footer>
         <div class="flex justify-end">
-          <UButton type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
+          <UButton data-guide="attendance-save" type="submit" icon="lucide:save" label="Save Attendance" :loading="isLoading" />
         </div>
       </template>
     </UCard>

@@ -1,10 +1,11 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <AnalyticsAcademicFilterBar :filters="filters" :terms="terms" :class-options="classOptions"
+    <AnalyticsAcademicFilterBar data-guide="ar-filters" :filters="filters" :terms="terms" :class-options="classOptions"
       :subject-options="subjectOptions" :level-options="levelOptions" :class-loading="classStore.loading"
       :subject-loading="subjectStore.loading" />
 
-    <AnalyticsAcademicTabNav :query="queryString" />
+    <GuideBar topic="admin-academic-reports" />
+    <div data-guide="ar-tabs"><AnalyticsAcademicTabNav :query="queryString" /></div>
 
     <UCard v-if="!filters.termId">
       <div class="flex flex-col items-center justify-center py-14 text-center">
@@ -15,7 +16,7 @@
 
     <div v-else class="space-y-4">
       
-      <div class="grid grid-cols-2 gap-4 px-2 sm:grid-cols-3 lg:grid-cols-4">
+      <div data-guide="ar-stats" class="grid grid-cols-2 gap-4 px-2 sm:grid-cols-3 lg:grid-cols-4">
         <Metric :record="{ label: 'Total Students', value: overview?.totalStudents ?? 0, isReady: !loadingReport, icon: 'i-lucide-users', color: 'primary' }" />
         <Metric :record="{ label: 'Students Assessed', value: overview?.studentsAssessed ?? 0, isReady: !loadingReport, icon: 'i-lucide-user-check', color: 'info' }" />
         <Metric :record="{ label: 'Assessments', value: overview?.totalAssessments ?? 0, isReady: !loadingReport, icon: 'i-lucide-clipboard-list', color: 'info' }" />
@@ -32,7 +33,7 @@
 
       <!-- Insights - the headline from each other tab, so the Overview page is a real summary, not
            just a row of numbers. Each card links straight into the tab it's pulled from. -->
-      <div v-if="overview && overview.studentsAssessed > 0" class="px-2">
+      <div data-guide="ar-insights" v-if="overview && overview.studentsAssessed > 0" class="px-2">
         <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">What needs your attention</h2>
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -190,6 +191,6 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.OWNER, Role.PROPRIETOR, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

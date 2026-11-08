@@ -3,12 +3,13 @@
 
     <Heading :title="record?.studentName || 'Report Card'"
       subtitle="Preview, print or download this student's report card.">
-      <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
+      <UButton data-guide="rc-download" icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         @click="downloadPdf">
         Download PDF
       </UButton>
     </Heading>
 
+    <GuideBar :key="guideTopic" :topic="guideTopic" />
     <div v-if="loading" class="flex justify-center py-20">
       <USkeleton class="h-150 w-full max-w-2xl rounded-2xl" />
     </div>
@@ -18,7 +19,7 @@
 
         <!-- Side info -->
         <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
-          <UCard>
+          <UCard data-guide="rc-summary">
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-info" class="size-5 text-primary" />
@@ -56,7 +57,20 @@
             </dl>
           </UCard>
 
-          <UCard v-if="record.settings.showRemarks && !can(Role.PARENT)">
+          <!-- Where this card stands in the review step (staff only - parents only ever see approved cards). -->
+          <UAlert data-guide="rc-review" v-if="!can(Role.PARENT) && record.reviewStatus && record.reviewStatus !== 'APPROVED'"
+            :color="REPORT_CARD_REVIEW[record.reviewStatus].color" variant="subtle"
+            :icon="REPORT_CARD_REVIEW[record.reviewStatus].icon" :title="REPORT_CARD_REVIEW[record.reviewStatus].label"
+            :description="record.reviewStatus === 'RETURNED'
+              ? `${record.reviewedByName || 'The class teacher'}: ${record.reviewNote || 'Sent back for changes.'}`
+              : canComment
+                ? 'Add your comment below, then approve the class\'s cards on the Report Cards page.'
+                : 'Parents will see this card once the class teacher approves it.'" />
+          <UAlert v-else-if="!can(Role.PARENT) && record.reviewStatus === 'APPROVED' && record.reviewedByName"
+            color="success" variant="subtle" icon="i-lucide-circle-check"
+            :title="`Approved by ${record.reviewedByName}`" description="Final - parents can see and download it." />
+
+          <UCard data-guide="rc-remark" v-if="record.settings.showRemarks && canComment">
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-message-square" class="size-5 text-primary" />
@@ -82,8 +96,8 @@
             </UButton>
           </UCard>
 
-          <!-- Read-only for a parent - the remark is the class teacher's, not theirs to edit. -->
-          <UCard v-else-if="record.settings.showRemarks && (record.remark || record.gradeRemark)">
+          <!-- Read-only for a parent, for other staff, and once the card is approved. -->
+          <UCard data-guide="rc-remark" v-else-if="record.settings.showRemarks && (record.remark || record.gradeRemark)">
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-message-square" class="size-5 text-primary" />
@@ -98,7 +112,7 @@
 
         <!-- Printable preview -->
         <div class="lg:col-span-2">
-          <UCard :ui="{ body: 'p-0' }" class="overflow-hidden">
+          <UCard data-guide="rc-preview" :ui="{ body: 'p-0' }" class="overflow-hidden">
             <template #header>
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-eye" class="size-5 text-primary" />
@@ -250,9 +264,12 @@
               <div v-if="showTeacherSignature || showPrincipalSignature" class="mt-12 grid gap-6 text-center"
                 :class="showTeacherSignature && showPrincipalSignature ? 'grid-cols-2' : 'grid-cols-1 max-w-xs mx-auto'">
                 <div v-if="showTeacherSignature">
-                  <div class="h-10" />
+                  <!-- Signed when the class teacher approved the card (blank until then). -->
+                  <img v-if="teacherSignatureSrc" :src="teacherSignatureSrc" class="mx-auto h-10 object-contain"
+                    alt="Class teacher's signature">
+                  <div v-else class="h-10" />
                   <div class="h-5 border-b border-gray-400" />
-                  <p class="text-xs mt-2 text-gray-500">Class Teacher</p>
+                  <p class="text-xs mt-2 text-gray-500">Class Teacher<template v-if="record.classTeacherName"> ({{ record.classTeacherName }})</template></p>
                 </div>
 
                 <div v-if="showPrincipalSignature">
@@ -289,12 +306,20 @@ const { success, error: toastError } = useNotify()
 const store = useReportCardStore()
 const { $generatePdf } = useNuxtApp()
 const { can } = useAuth()
+// Parents only ever see an approved card to read and download; staff also review and comment.
+const guideTopic = computed(() => (can(Role.PARENT) ? 'parent-report-card' : 'report-card-view'))
 
 const id = computed(() => String(route.params.id))
 const record = ref<ReportCardDetail>()
 const loading = ref(true)
 const downloading = ref(false)
 const remarkDraft = ref('')
+
+// The class teacher writes the comment, while the card is still under review. (An admin can review a class that
+// has no class teacher - the backend checks that.)
+const { classOptions: masterClasses, ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
+const canComment = computed(() => !!record.value && record.value.reviewStatus !== 'APPROVED'
+  && masterClasses.value.some(c => c.value === record.value!.classId))
 const savingRemark = ref(false)
 
 const brandingAssets = ref<{ logo: string | null, principalSignature: string | null }>()
@@ -308,6 +333,20 @@ const logoSrc = computed(() =>
 // Older saved settings only have the combined showSignatures - fall back to it for either signatory.
 const showTeacherSignature = computed(() => record.value?.settings.showTeacherSignature ?? record.value?.settings.showSignatures ?? false)
 const showPrincipalSignature = computed(() => record.value?.settings.showPrincipalSignature ?? record.value?.settings.showSignatures ?? false)
+
+// The class teacher's signature, as a data URI so the PDF capture can draw it (the storage bucket sends no CORS
+// headers). Falls back to the plain URL on screen until the conversion lands.
+const teacherSignatureData = ref<string | null>(null)
+watch(() => record.value?.classTeacherSignature, async (url) => {
+  teacherSignatureData.value = null
+  if (!url) return
+  try {
+    teacherSignatureData.value = (await SchoolApi().getAssetDataUri(url)) ?? null
+  } catch {
+    // The plain URL still shows on screen.
+  }
+}, { immediate: true })
+const teacherSignatureSrc = computed(() => teacherSignatureData.value || record.value?.classTeacherSignature || '')
 
 const signatureSrc = computed(() =>
   brandingAssets.value?.principalSignature || record.value?.school.principalSignature || '')
@@ -420,12 +459,13 @@ async function downloadPdf() {
 }
 
 onMounted(async () => {
+  if (can(Role.TEACHER)) ensureClassMasterLoaded()
   appStore.setTitle('Report Card')
   appStore.setBack('/report-cards')
   await fetchRecord()
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.PRINCIPAL, Role.EXAM_OFFICER, Role.SUPER_ADMIN]
+  role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT, Role.PRINCIPAL, Role.SUPER_ADMIN]
 })
 </script>

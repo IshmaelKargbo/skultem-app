@@ -1,13 +1,15 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <Heading title="Submissions" subtitle="Every open assessment this term, who owns it and where it stands." />
-    <GradesSectionNav />
-    <GradesApprovalRouting />
+    <Heading title="Submissions" subtitle="Every open assessment this term, who owns it and where it stands.">
+      <GuideButton guide="exam-office-submissions" /><HelpButton topic="exam-office-submissions" />
+    </Heading>
+    <div data-guide="grades-tabs"><GradesSectionNav /></div>
+    <div data-guide="approval-routing"><GradesApprovalRouting /></div>
 
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="submission-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
-          <div class="flex flex-wrap gap-2">
+          <div data-guide="submission-status" class="flex flex-wrap gap-2">
             <UButton v-for="tab in statusTabs" :key="tab.value" size="sm"
               :variant="filters.status === tab.value ? 'soft' : 'ghost'"
               :color="filters.status === tab.value ? 'primary' : 'neutral'" @click="() => { filters.status = tab.value }">
@@ -18,7 +20,7 @@
                 :color="filters.status === tab.value ? 'primary' : 'neutral'" />
             </UButton>
           </div>
-          <div class="flex flex-col gap-2 sm:flex-row">
+          <div data-guide="submission-filters" class="flex flex-col gap-2 sm:flex-row">
             <USelectMenu v-model="filters.termId" :items="termOptions" value-key="value" label-key="label"
               placeholder="Active term" class="w-full sm:w-44" :loading="termStore.loading" />
             <USelectMenu v-model="filters.className" :items="classOptions" placeholder="All classes"

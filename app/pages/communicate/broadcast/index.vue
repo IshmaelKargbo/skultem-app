@@ -12,10 +12,11 @@ definePageMeta({
 <template>
     <div class="px-4 md:px-6 space-y-3">
         <Heading title="Compose Broadcast" subtitle="Send a message to students, parents, teachers or staff">
-            <UButton to="/communicate/broadcast/history" label="Broadcast History" variant="outline" color="neutral" :icon="BROADCAST_HISTORY_ICON" />
+            <UButton data-guide="bc-history" to="/communicate/broadcast/history" label="Broadcast History" variant="outline" color="neutral" :icon="BROADCAST_HISTORY_ICON" />
         </Heading>
 
-        <CommunicateSectionNav />
+        <div data-guide="comm-tabs"><CommunicateSectionNav /></div>
+        <GuideBar topic="admin-broadcast" />
         <CommunicateBroadcastCompose />
     </div>
 </template>

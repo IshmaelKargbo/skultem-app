@@ -281,3 +281,30 @@ h6 {
 .dark .apexcharts-menu-item:hover {
   background: #1f2937 !important;
 }
+
+/* Small Android phones. Text, padding and gaps are all set in rem, so a smaller root font size on narrow screens
+   shrinks them together and keeps the layout's proportions. Stops the browser enlarging text by itself on rotate. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 400px) {
+  html {
+    font-size: 14.5px;
+  }
+
+  .text-title {
+    font-size: 1.5rem;
+  }
+
+  .text-subtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  html {
+    font-size: 13.5px;
+  }
+}

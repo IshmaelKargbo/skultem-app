@@ -2,15 +2,16 @@
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Management Reports"
       subtitle="Generate a staff attendance document for internal school management use.">
-      <UButton icon="i-lucide-file-text" color="primary" :loading="generating" :disabled="!canGenerate"
+      <UButton data-guide="insp-generate" icon="i-lucide-file-text" color="primary" :loading="generating" :disabled="!canGenerate"
         @click="generate">
         Generate Report
       </UButton>
     </Heading>
 
-    <HrSectionNav />
+    <div data-guide="hr-tabs"><HrSectionNav /></div>
 
-    <UCard>
+    <GuideBar topic="admin-staff-management-reports" />
+    <UCard data-guide="insp-form">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
         <UFormField label="Report Type">
           <USelectMenu v-model="form.reportType" :items="reportTypes" value-key="value" label-key="label"
@@ -64,7 +65,7 @@
         </UButton>
       </Heading>
 
-      <div id="teacher-management-report-preview" class="rounded-lg bg-white text-gray-900 px-2">
+      <div data-guide="rep-preview" id="teacher-management-report-preview" class="rounded-lg bg-white text-gray-900 px-2">
         <div class="mb-4 border-b-4 border-primary-500 px-6 pb-5 pt-6 text-center sm:px-8 sm:pt-8">
           <img v-if="logoSrc" :src="logoSrc" class="mx-auto size-40 object-contain" alt="School logo">
           <h2 class="text-xl font-black tracking-wide">{{ schoolName }}</h2>

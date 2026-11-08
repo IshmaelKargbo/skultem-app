@@ -166,10 +166,6 @@ export function useMenu() {
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
         { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock' },
         { label: 'Broadsheet', to: '/exam-office/broadsheet', icon: 'i-lucide-sheet' },
-        { label: 'Assessment Cycle', to: '/academics/assessment-cycle', icon: 'i-lucide-refresh-cw', roles: [Role.EXAM_OFFICER] },
-        { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, roles: [Role.EXAM_OFFICER] },
-        { label: 'Generate Report Cards', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.EXAM_OFFICER] },
-        { label: 'Completion Report', to: '/analytics/academic-reports/completion', icon: 'i-lucide-bar-chart-3', roles: [Role.EXAM_OFFICER] },
       ]
     },
 
@@ -228,18 +224,16 @@ export function useMenu() {
     },
 
     {
-      label: 'Report Cards', icon: REPORT_ICON, roles: [Role.TEACHER], classMasterOnly: true,
-      subNavs: [
-        { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
-        { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
-      ]
+      // A class teacher reviews the cards the admin generates: comments, then approves or sends back.
+      label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, roles: [Role.TEACHER], classMasterOnly: true,
     },
 
     {
       label: 'Report Cards', icon: REPORT_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
       subNavs: [
         { label: 'Report Cards', to: '/report-cards', icon: REPORT_ICON, exact: true },
-        { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON },
+        // Only admins generate results; the class teacher reviews and approves them.
+        { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.ADMIN, Role.SUPER_ADMIN] },
         { label: 'Design', to: '/report-cards/templates', icon: SETTINGS_ICON },
       ]
     },

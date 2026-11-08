@@ -2,13 +2,14 @@
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Human Resource" subtitle="Staff attendance and leave, at a glance.">
       <UButton v-if="canClockIn" icon="i-lucide-log-in" to="/hr/teacher-attendance/clock-in" label="Clock In / Out" variant="soft" />
-      <UButton icon="i-lucide-calendar-plus" to="/hr/leave/add" label="Request Leave" />
+      <UButton data-guide="hr-request" icon="i-lucide-calendar-plus" to="/hr/leave/add" label="Request Leave" />
     </Heading>
 
-    <HrSectionNav />
+    <div data-guide="hr-tabs"><HrSectionNav /></div>
 
+    <GuideBar topic="admin-hr" />
     <!-- Leave summary -->
-    <div class="grid gap-4 grid-cols-2 md:grid-cols-4">
+    <div data-guide="hr-leave-stats" class="grid gap-4 grid-cols-2 md:grid-cols-4">
       <Metric :record="{
         icon: 'i-lucide-file-text',
         label: 'Total Leave Requests',
@@ -40,7 +41,7 @@
     </div>
 
     <!-- Quick Actions -->
-    <UCard>
+    <UCard data-guide="hr-quick">
       <template #header>
         <div>
           <h3 class="font-semibold">Quick Actions</h3>
@@ -60,16 +61,16 @@
     </UCard>
 
     <!-- Staff attendance trend -->
-    <AttendanceTeacherTrend />
+    <div data-guide="hr-trend"><AttendanceTeacherTrend /></div>
     
     <!-- Today's staff attendance -->
-    <UCard>
+    <UCard data-guide="hr-today">
       <DashboardAdminStaffAttendance />
     </UCard>
 
 
     <!-- Recent leave requests -->
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="hr-recent" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="font-semibold">Recent Leave Requests</h3>

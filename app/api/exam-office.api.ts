@@ -96,6 +96,24 @@ export const ExamOfficeApi = () => {
       }
     },
 
+    timetableDesign: async () => {
+      try {
+        const res = await $api('/exam-office/timetable-design') as any
+        return res?.data as ExamTimetableDesign
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    saveTimetableDesign: async (payload: ExamTimetableDesign) => {
+      try {
+        const res = await $api('/exam-office/timetable-design', { method: 'PUT', body: payload }) as any
+        return res?.data as ExamTimetableDesign
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     submissions: async (termId?: string) => {
       try {
         const res = await $api(`/exam-office/submissions${termId ? `?termId=${termId}` : ''}`) as any

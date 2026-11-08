@@ -2,15 +2,16 @@
   <div class="px-4 sm:px-6 space-y-4">
     <Heading title="Performance Insights" :subtitle="subtitle">
       <div class="flex md:space-x-3 space-x-2">
-        <USelectMenu @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
+        <USelectMenu data-guide="par-child" @change="change" :loading="loading" :items="children" value-key="value" v-model="state.student"
           placeholder="Select Student" />
-        <USelectMenu :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
+        <USelectMenu data-guide="par-term" :loading="cycleLoading" value-key="value" v-model="state.term" :items="terms"
           placeholder="Select Term" />
       </div>
     </Heading>
 
+    <GuideBar topic="parent-performance" />
     <!-- At a glance -->
-    <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+    <div data-guide="par-stats" class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
       <Metric :record="{
         label: 'Term Average', color: 'success', value: termAverage == null ? 'N/A' : `${termAverage}%`,
         isReady: !assessmentLoading, icon: STUDENT_ICON,
@@ -29,7 +30,7 @@
     </div>
 
     <!-- The one thing worth acting on -->
-    <div v-if="!assessmentLoading && bottomSubject"
+    <div data-guide="par-insight" v-if="!assessmentLoading && bottomSubject"
       class="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-4">
       <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
         <UIcon name="lucide:life-buoy" class="size-5" />
@@ -45,7 +46,7 @@
     </div>
 
     <!-- Trends -->
-    <div class="grid gap-4 md:grid-cols-2 md:gap-5">
+    <div data-guide="par-charts" class="grid gap-4 md:grid-cols-2 md:gap-5">
       <DashboardParentGradeTrend :id="state.student" />
       <DashboardParentSubjectPerformance :term="state.term" :id="state.student" :rows="chartRows"
         :loading="assessmentLoading" />

@@ -3,6 +3,7 @@
     <Heading title="My Payslips" subtitle="Your published payslips, newest first." />
 
     <PayrollSectionNav />
+    <GuideBar topic="payroll-my-payslips" />
 
     <div v-if="loading" class="space-y-3">
       <USkeleton class="h-32 w-full rounded-xl" />
@@ -13,7 +14,7 @@
 
       <!-- Latest payslip -->
       <NuxtLink v-if="latest" :to="`/payroll/history/${latest.payrollRunId}`"
-        class="group block overflow-hidden rounded-xl bg-primary text-inverted shadow-sm">
+        data-guide="pay-my-latest" class="group block overflow-hidden rounded-xl bg-primary text-inverted shadow-sm">
         <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p class="text-xs uppercase tracking-wide opacity-80">Latest payslip · {{ latest.payrollRunPeriod || 'Payroll Run' }}</p>
@@ -30,7 +31,7 @@
       </NuxtLink>
 
       <!-- All payslips -->
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard data-guide="pay-my-list" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <p class="font-semibold">All payslips</p>
         </template>

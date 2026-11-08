@@ -1,11 +1,12 @@
 <template>
   <div class="p-4 md:px-6 overflow-y-auto h-full space-y-3">
     <Heading title="Grading scale" subtitle="Configure grade bands used for student grade and ranking calculation.">
-      <UButton label="Add Band" icon="i-lucide-plus" @click="addGradeBand" />
+      <UButton data-guide="scale-add" label="Add Band" icon="i-lucide-plus" @click="addGradeBand" />
     </Heading>
 
-    <AcademicsSectionNav />
-    <UCard>
+    <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
+    <GuideBar topic="admin-grade-scale" />
+    <UCard data-guide="scale-bands">
       <div class="space-y-2">
         <div v-if="isLoading" class="grid gap-3 grid-cols-3">
           <USkeleton class="h-10 w-full rounded-2xl" v-for="i in 15" :key="i" />
@@ -21,7 +22,7 @@
         </div>
       </div>
       <template #footer>
-        <UButton label="Save Grading Scale" icon="i-lucide-save" color="info" variant="soft"
+        <UButton data-guide="scale-save" label="Save Grading Scale" icon="i-lucide-save" color="info" variant="soft"
           :loading="isSavingGradingScale" @click="saveGradingScale" />
       </template>
     </UCard>

@@ -1,6 +1,7 @@
 <template>
     <div class="px-4 space-y-3 md:px-6">
         <DashboardWelcome />
+        <div class="flex justify-end"><GuideButton guide="teacher-dashboard" /><HelpButton topic="teacher-dashboard" /></div>
 
         <!-- LOADING -->
         <UCard v-if="initialLoading">
@@ -28,13 +29,13 @@
             <!-- LEFT: do stuff, then review how it's going -->
             <div class="space-y-4 lg:col-span-2">
                 <!-- CLOCK IN / OUT -->
-                <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
+                <div v-if="isInstalled(ModuleKey.STAFF_HR)" data-guide="teacher-clock"><DashboardTeacherClockInOut /></div>
 
                 <!-- PERFORMANCE -->
                 <template v-if="hasSubjects">
                     <SectionHeading title="Performance" subtitle="Pick a subject to see how that class is doing." accent="secondary" />
 
-                    <UCard>
+                    <UCard data-guide="teacher-performance">
                         <div class="grid gap-3 grid-cols-2 md:grid-cols-3">
                             <div class="col-span-2 md:col-span-1">
                                 <p class="mb-1 text-xs font-medium text-muted">Subject</p>

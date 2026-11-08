@@ -3,12 +3,13 @@
 
     <Heading title="Salary Templates" subtitle="Reusable compensation packages you can apply to any teacher.">
       <UButton variant="soft" color="neutral" to="/payroll/salaries" label="Back to Salaries" />
-      <UButton icon="i-lucide-plus" to="/payroll/salary-templates/add" label="Add Template" />
+      <UButton data-guide="pay-add-template" icon="i-lucide-plus" to="/payroll/salary-templates/add" label="Add Template" />
     </Heading>
 
     <PayrollSectionNav />
+    <GuideBar topic="payroll-templates" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="pay-template-list" :ui="{ body: 'p-0 sm:p-0' }">
       <div class="p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <UInput v-model="search" icon="i-lucide-search" placeholder="Search templates by name..." />

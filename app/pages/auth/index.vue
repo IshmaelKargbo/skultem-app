@@ -144,13 +144,14 @@ definePageMeta({
 
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <AuthSectionNav />
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <div data-guide="auth-tabs"><AuthSectionNav /></div>
+    <GuideBar topic="admin-users" />
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex items-center justify-between gap-2 px-4 py-3">
           <div class="flex min-w-0 flex-1 items-center gap-2">
-            <AuthUsersAdd />
-            <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or email" class="min-w-0 flex-1" />
+            <div data-guide="auth-add"><AuthUsersAdd /></div>
+            <UInput data-guide="adm-search" v-model="search" :icon="SEARCH_ICON" placeholder="Search by name or email" class="min-w-0 flex-1" />
             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter users"
               description="Narrow the list by role or status" />
           </div>

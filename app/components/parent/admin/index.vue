@@ -135,16 +135,17 @@ watch(
 </script>
 <template>
     <div class="px-4 sm:px-6">
-        <UCard :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
+        <GuideBar class="mb-3" topic="admin-parents" />
+        <UCard data-guide="adm-list" :ui="{ body: 'sm:p-0 p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex px-4 py-3 gap-2 items-center justify-between">
-                    <div class="flex-1 border-default flex items-center gap-2">
+                    <div data-guide="adm-search" class="flex-1 border-default flex items-center gap-2">
                         <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, email or phone"
                             class="flex-1" />
                         <ParentFilterDrawer v-model:sort="sort" :sort-options="sortOptions"
                             :active-count="activeFilterCount" :default-sort="DEFAULT_SORT" />
                     </div>
-                    <TableViewToggle v-model="view" />
+                    <div data-guide="list-view"><TableViewToggle v-model="view" /></div>
                 </div>
             </template>
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">

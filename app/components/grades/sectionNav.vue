@@ -33,7 +33,7 @@ const allItems: NavItem[] = [
   { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, roles: [Role.TEACHER], classMasterApprover: true },
   { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock', roles: [...EXAM_OFFICE_ROLES, Role.TEACHER] },
   { label: 'Broadsheet', to: '/exam-office/broadsheet', icon: 'i-lucide-sheet', roles: EXAM_OFFICE_ROLES },
-  { label: 'Assessment Cycle', to: '/academics/assessment-cycle', icon: 'i-lucide-refresh-cw', roles: EXAM_OFFICE_ROLES },
+  { label: 'Assessment Cycle', to: '/academics/assessment-cycle', icon: 'i-lucide-refresh-cw', roles: MANAGEMENT },
 ]
 
 const items = computed(() => {

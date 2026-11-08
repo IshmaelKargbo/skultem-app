@@ -80,6 +80,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-5 px-4 md:px-6">
     <Heading title="Platform Settings" subtitle="The platform fee every student is charged. It is the same for every school." />
+    <GuideBar topic="sys-platform-settings" />
 
     <UAlert v-if="failed" color="error" variant="soft" icon="i-lucide-circle-alert" title="The platform fee could not be loaded">
       <template #actions><UButton size="xs" color="error" variant="outline" label="Try again" @click="load" /></template>
@@ -90,7 +91,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
     <div v-else-if="fee" class="grid items-start gap-5 lg:grid-cols-3">
       <div class="space-y-5 lg:col-span-2">
         <!-- Current -->
-        <section class="rounded-2xl border border-default bg-default p-5">
+        <section data-guide="pf-current" class="rounded-2xl border border-default bg-default p-5">
           <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p class="text-xs font-medium uppercase tracking-wider text-muted">Current platform fee</p>
@@ -105,7 +106,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
         </section>
 
         <!-- Change -->
-        <UCard>
+        <UCard data-guide="pf-change">
           <template #header>
             <div>
               <h3 class="font-semibold text-highlighted">Change the fee</h3>
@@ -156,7 +157,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       </div>
 
       <!-- Side -->
-      <div class="space-y-5">
+      <div data-guide="pf-side" class="space-y-5">
         <UAlert v-if="fee.schoolsOnOtherFees" color="warning" variant="soft" icon="i-lucide-triangle-alert"
           :title="`${fee.schoolsOnOtherFees} school${fee.schoolsOnOtherFees === 1 ? ' is' : 's are'} on a different fee`"
           description="They were given their own amount from the Schools page. Saving here sets every school to the platform fee.">

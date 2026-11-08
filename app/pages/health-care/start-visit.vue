@@ -11,6 +11,7 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
+        <GuideBar topic="nurse-start-visit" />
         <HealthCareVisitForm />
     </div>
 </template>

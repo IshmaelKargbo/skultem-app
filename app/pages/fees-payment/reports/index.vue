@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3 px-4 md:px-6">
-    <FeeReportSectionNav />
+    <div data-guide="fin-report-tabs"><FeeReportSectionNav /></div>
 
     <Heading title="Fees Dashboard" subtitle="The school's current fee position for the selected academic year and term.">
       <UButton icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
@@ -9,7 +9,8 @@
       </UButton>
     </Heading>
 
-    <FilterBar :model-value="filters" :fields="filterFields" title="Filter fees dashboard"
+    <GuideBar topic="finance-fee-reports" />
+    <FilterBar data-guide="fin-report-filters" :model-value="filters" :fields="filterFields" title="Filter fees dashboard"
       description="Choose the term" @update:model-value="Object.assign(filters, $event)" />
 
     <UCard v-if="loading">
@@ -37,7 +38,7 @@
           </div>
         </div>
 
-        <FeeReportInsightSection title="Key Insights" :items="insights" />
+        <FeeReportInsightSection data-guide="fin-report-insights" title="Key Insights" :items="insights" />
 
         <h3 class="mb-2 mt-6 text-sm font-semibold text-gray-700">Fee Collection</h3>
         <div class="overflow-x-auto">

@@ -1,7 +1,8 @@
 <template>
     <div class="px-4 space-y-3 md:px-6">
         <DashboardWelcome />
-        <UCard>
+        <GuideBar topic="parent-dashboard" />
+        <UCard data-guide="par-pick">
             <div class="grid grid-cols-2 gap-2">
                 <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
                     :items="children" placeholder="Select Student" />
@@ -14,7 +15,7 @@
              numbers to work out how things stand - a fee balance always wins the slot since it's
              the one thing that's actually actionable; low attendance is the next most worth
              flagging; otherwise it's a genuine "all good" summary rather than silence. -->
-        <UCard v-if="insight">
+        <UCard data-guide="par-insight" v-if="insight">
             <div class="flex items-start gap-3 rounded-xl p-1" :class="insight.bg">
                 <UIcon :name="insight.icon" class="mt-0.5 size-5 shrink-0" :class="insight.text" />
                 <div class="space-y-0.5">
@@ -24,7 +25,7 @@
             </div>
         </UCard>
 
-        <div class="grid md:grid-cols-4 grid-cols-2 md:gap-5 gap-3">
+        <div data-guide="par-stats" class="grid md:grid-cols-4 grid-cols-2 md:gap-5 gap-3">
             <DashboardParentAvarage :term="term" :session-id="selected?.sessionId || ''" :id="state.student"
                 @ready="onAverageReady" />
             <Metric :record="{
@@ -35,10 +36,10 @@
             <DashboardParentFees :id="state.student" @ready="onFeeReady" />
         </div>
 
-        <div class="grid md:grid-cols-2 md:gap-5 gap-3">
+        <div data-guide="par-charts" class="grid md:grid-cols-2 md:gap-5 gap-3">
             <DashboardParentGradeTrend :id="state.student" />
             <DashboardParentSubjectPerformance :term="state.term" :id="state.student" />
-            <UCard>
+            <UCard data-guide="par-info">
                 <template #header>
                     <div class="flex items-center justify-between">
                         <p>Student Information</p>

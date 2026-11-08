@@ -113,15 +113,15 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+    <UCard data-guide="acc-class-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex px-4 py-3 gap-2 items-center">
-          <div class="flex-1 border-default flex items-center gap-2">
+          <div data-guide="acc-class-search" class="flex-1 border-default flex items-center gap-2">
             <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name" class="flex-1" />
             <ClassFilterDrawer v-model:section-id="sectionId" v-model:stream-id="streamId" v-model:level="level"
               :section-options="sectionOptions" :stream-options="streamOptions" :active-count="activeFilterCount" />
           </div>
-          <TableViewToggle v-model="view" />
+          <div data-guide="acc-view"><TableViewToggle v-model="view" /></div>
         </div>
       </template>
 

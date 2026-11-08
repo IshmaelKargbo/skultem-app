@@ -167,7 +167,7 @@ definePageMeta({
 
 <template>
     <div class="px-4 md:px-6 space-y-3">
-        <MaterialSectionNav />
+        <div data-guide="mat-tabs"><MaterialSectionNav /></div>
         <!-- Summary -->
         <div class="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4">
             <Metric
@@ -179,20 +179,21 @@ definePageMeta({
             />
         </div>
 
-        <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
+        <GuideBar topic="admin-material-sales" />
+        <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex flex-col gap-3 md:gap-0">
                     <div class="flex  border-b p-4 border-default flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex flex-1 space-x-3">
                             <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by buyer or material"
                                 class="w-full" />
-                            <MaterialSaleCreate @success="fetchRecord" />
+                            <div data-guide="mat-sale-add"><MaterialSaleCreate @success="fetchRecord" /></div>
                         </div>
                         <TableViewToggle v-model="view" />
                     </div>
 
                     <div class="flex gap-2 px-4 py-3 overflow-x-auto">
-                        <UButton v-for="tab in statusTabs" :key="tab.value" size="xs"
+                        <UButton data-guide="mat-sale-status" v-for="tab in statusTabs" :key="tab.value" size="xs"
                             :variant="status === tab.value ? 'solid' : 'soft'"
                             :color="status === tab.value ? 'primary' : 'neutral'" @click="() => { status = tab.value }">
                             {{ tab.label }}

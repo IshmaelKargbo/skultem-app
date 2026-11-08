@@ -132,10 +132,11 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Videos" subtitle="YouTube videos shown on the marketing site.">
-      <UButton icon="i-lucide-plus" label="Add Video" @click="startCreate" />
+      <UButton data-guide="sa-action" icon="i-lucide-plus" label="Add Video" @click="startCreate" />
     </Heading>
+    <GuideBar topic="sys-videos" />
 
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
       <UTable :columns="columns" :data="videos" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">

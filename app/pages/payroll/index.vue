@@ -2,14 +2,15 @@
   <div class="space-y-3 px-4 md:px-6">
 
     <Heading title="Payroll" subtitle="Staff compensation, payroll runs, and payslips.">
-      <UButton icon="i-lucide-play" to="/payroll/runs/new" label="Start Payroll Run" />
-      <UButton variant="soft" icon="i-lucide-user-plus" to="/payroll/salaries/add" label="Add Salary" />
+      <UButton data-guide="pay-start-run" icon="i-lucide-play" to="/payroll/runs/new" label="Start Payroll Run" />
+      <UButton data-guide="pay-add-salary" variant="soft" icon="i-lucide-user-plus" to="/payroll/salaries/add" label="Add Salary" />
     </Heading>
 
-    <PayrollSectionNav />
+    <div data-guide="pay-tabs"><PayrollSectionNav /></div>
+    <GuideBar topic="payroll-overview" />
 
     <!-- Stats -->
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div data-guide="pay-stats" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Metric :record="{
         icon: 'i-lucide-users',
         label: 'Employees on Payroll',
@@ -41,7 +42,7 @@
     </div>
 
     <!-- Payroll cycle -->
-    <UCard>
+    <UCard data-guide="pay-cycle">
       <template #header>
         <div>
           <h3 class="font-semibold">Payroll cycle</h3>
@@ -71,7 +72,7 @@
     <!-- Latest run + recent salaries -->
     <div class="grid gap-4 xl:grid-cols-3">
 
-      <UCard class="xl:col-span-2">
+      <UCard data-guide="pay-latest-run" class="xl:col-span-2">
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="font-semibold">Latest Payroll Run</h3>
