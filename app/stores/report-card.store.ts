@@ -121,6 +121,7 @@ export interface ReportCardDetail extends ReportCardSummary {
         showTeacherSignature: boolean
         showPrincipalSignature: boolean
         showGradeScale: boolean
+        showStudentPhoto?: boolean
     }
 }
 

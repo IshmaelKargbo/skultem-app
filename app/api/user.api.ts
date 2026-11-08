@@ -255,6 +255,15 @@ export const UserApi = () => {
       }
     },
     // Self-service - the signed-in user uploading their own photo, from My Profile.
+    // Change your own password - the current one is required. Every other device is signed out.
+    changeMyPassword: async (currentPassword: string, newPassword: string) => {
+      try {
+        const res = await $api('/user/me/password', { method: 'PUT', body: { currentPassword, newPassword } }) as any
+        return res.data as { otherSessionsSignedOut: number }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     updateMyPhoto: async (photo: File) => {
       try {
         const formData = new FormData()

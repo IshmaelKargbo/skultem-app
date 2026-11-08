@@ -196,13 +196,19 @@ const saving = ref(false)
 const fetching = ref(true)
 
 interface SectionConfig {
-  key: 'showAttendance' | 'showRemarks' | 'showPosition' | 'showTeacherSignature' | 'showPrincipalSignature' | 'showGradeScale'
+  key: 'showStudentPhoto' | 'showAttendance' | 'showRemarks' | 'showPosition' | 'showTeacherSignature' | 'showPrincipalSignature' | 'showGradeScale'
   label: string
   hint: string
   icon: string
 }
 
 const sections: SectionConfig[] = [
+  {
+    key: 'showStudentPhoto',
+    label: 'Student Photo',
+    hint: 'The student\'s photo beside their details',
+    icon: 'i-lucide-user-round'
+  },
   {
     key: 'showAttendance',
     label: 'Attendance',
@@ -224,7 +230,7 @@ const sections: SectionConfig[] = [
   {
     key: 'showTeacherSignature',
     label: 'Class Teacher Signature',
-    hint: 'Signature line for the class teacher',
+    hint: 'The class teacher\'s saved signature, added when they approve the card',
     icon: 'i-lucide-signature'
   },
   {

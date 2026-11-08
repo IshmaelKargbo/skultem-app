@@ -101,6 +101,9 @@
 
         <!-- Teachers sign the report cards they approve as class teacher. -->
         <TeacherSignatureCard v-if="can(Role.TEACHER)" id="signature" />
+
+        <!-- Everyone can change their own password. -->
+        <ProfileChangePassword id="password" />
     </div>
 </template>
 

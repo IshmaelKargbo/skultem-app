@@ -134,46 +134,58 @@
                   {{ record.school.name }}
                 </h2>
 
+                <!-- Each part stays on one line (no shrinking): the PDF capture measures text a little wider than the
+                     screen, which used to squeeze the address and push its last word onto a line of its own. If a
+                     long address really doesn't fit, the email/phone move down whole. -->
                 <div v-if="schoolAddressLine || record.school.owner?.email || record.school.owner?.phone"
                   class="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-gray-500">
-                  <span v-if="schoolAddressLine">{{ schoolAddressLine }}</span>
-                  <span
-                    v-if="schoolAddressLine && (record.school.owner?.email || record.school.owner?.phone)">&middot;</span>
-                  <span v-if="record.school.owner?.email">{{ record.school.owner.email }}</span>
-                  <span v-if="record.school.owner?.email && record.school.owner?.phone">&middot;</span>
-                  <span v-if="record.school.owner?.phone">{{ record.school.owner.phone }}</span>
+                  <span v-if="schoolAddressLine" class="shrink-0 whitespace-nowrap">{{ schoolAddressLine }}</span>
+                  <span v-if="schoolAddressLine && (record.school.owner?.email || record.school.owner?.phone)"
+                    class="shrink-0">&middot;</span>
+                  <span v-if="record.school.owner?.email" class="shrink-0 whitespace-nowrap">{{ record.school.owner.email }}</span>
+                  <span v-if="record.school.owner?.email && record.school.owner?.phone" class="shrink-0">&middot;</span>
+                  <span v-if="record.school.owner?.phone" class="shrink-0 whitespace-nowrap">{{ record.school.owner.phone }}</span>
                 </div>
               </div>
 
               <!-- Student -->
-              <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
-                <div class="space-y-1.5">
-                  <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
-                    <span class="text-gray-500">Name</span>
-                    <span class="font-medium">{{ record.studentName }}</span>
-                  </div>
-                  <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
-                    <span class="text-gray-500">Admission No.</span>
-                    <span class="font-medium">{{ record.admissionNumber || '—' }}</span>
-                  </div>
-                  <div class="flex justify-between gap-3">
-                    <span class="text-gray-500">Class</span>
-                    <span class="font-medium">{{ record.className }}</span>
-                  </div>
+              <div data-pdf-keep class="mt-6 flex items-start gap-4 text-sm">
+                <!-- The student's photo (Report Card Design → Student Photo). Initials when there is none. -->
+                <div v-if="showStudentPhoto" class="h-28 w-24 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <img v-if="studentPhotoSrc" :src="studentPhotoSrc" class="h-full w-full object-cover" :alt="record.studentName">
+                  <div v-else class="flex h-full w-full items-center justify-center text-2xl font-bold text-gray-400">{{ studentInitials }}</div>
                 </div>
+                <!-- Values stay on one line (the PDF capture measures text wider than the screen, which wrapped names);
+                     the name/admission/class column gets the extra room. -->
+                <div class="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                  <div class="space-y-1.5">
+                    <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
+                      <span class="shrink-0 text-gray-500">Name</span>
+                      <span class="whitespace-nowrap text-right font-medium">{{ record.studentName }}</span>
+                    </div>
+                    <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
+                      <span class="shrink-0 text-gray-500">Admission No.</span>
+                      <span class="whitespace-nowrap text-right font-medium">{{ record.admissionNumber || '—' }}</span>
+                    </div>
+                    <div class="flex justify-between gap-3">
+                      <span class="shrink-0 text-gray-500">Class</span>
+                      <span class="whitespace-nowrap text-right font-medium">{{ record.className }}</span>
+                    </div>
+                  </div>
 
-                <div class="space-y-1.5">
-                  <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
-                    <span class="text-gray-500">Term</span>
-                    <span class="font-medium">{{ record.termName }}<template v-if="record.scopeLabel"> ({{ record.scopeLabel }})</template></span>
-                  </div>
-                  <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
-                    <span class="text-gray-500">Session</span>
-                    <span class="font-medium">{{ record.academicYearName }}</span>
-                  </div>
-                  <div v-if="record.settings.showPosition" class="flex justify-between gap-3">
-                    <span class="text-gray-500">Position</span>
-                    <span class="font-medium">{{ record.position ? ordinal(record.position) : '—' }}</span>
+                  <div class="space-y-1.5">
+                    <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
+                      <span class="shrink-0 text-gray-500">Term</span>
+                      <span class="whitespace-nowrap text-right font-medium">{{ record.termName }}<template v-if="record.scopeLabel"> ({{ record.scopeLabel }})</template></span>
+                    </div>
+                    <div class="flex justify-between gap-3 border-b border-dashed border-gray-200 pb-1.5">
+                      <span class="shrink-0 text-gray-500">Session</span>
+                      <span class="whitespace-nowrap text-right font-medium">{{ record.academicYearName }}</span>
+                    </div>
+                    <div v-if="record.settings.showPosition" class="flex justify-between gap-3">
+                      <span class="shrink-0 text-gray-500">Position</span>
+                      <span class="whitespace-nowrap text-right font-medium">{{ record.position ? ordinal(record.position) : '—' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -244,7 +256,7 @@
               </div>
 
               <!-- Remarks -->
-              <div v-if="record.settings.showRemarks && (record.remark || record.gradeRemark)"
+              <div v-if="record.settings.showRemarks && (record.remark || record.gradeRemark)" data-pdf-keep
                 class="mt-7 rounded-lg bg-gray-50 p-4">
                 <h3 class="text-sm font-semibold">Class Teacher's Remark</h3>
                 <p v-if="record.gradeRemark" class="mt-1.5 text-sm text-gray-600">{{ record.gradeRemark }}</p>
@@ -261,7 +273,7 @@
               </p>
 
               <!-- Signatures -->
-              <div v-if="showTeacherSignature || showPrincipalSignature" class="mt-12 grid gap-6 text-center"
+              <div v-if="showTeacherSignature || showPrincipalSignature" data-pdf-keep class="mt-12 grid gap-6 text-center"
                 :class="showTeacherSignature && showPrincipalSignature ? 'grid-cols-2' : 'grid-cols-1 max-w-xs mx-auto'">
                 <div v-if="showTeacherSignature">
                   <!-- Signed when the class teacher approved the card (blank until then). -->
@@ -347,6 +359,22 @@ watch(() => record.value?.classTeacherSignature, async (url) => {
   }
 }, { immediate: true })
 const teacherSignatureSrc = computed(() => teacherSignatureData.value || record.value?.classTeacherSignature || '')
+
+// The student's photo - also a data URI for the PDF capture, like the signature above.
+const showStudentPhoto = computed(() => record.value?.settings.showStudentPhoto ?? true)
+const studentPhotoData = ref<string | null>(null)
+watch(() => record.value?.photo, async (url) => {
+  studentPhotoData.value = null
+  if (!url) return
+  try {
+    studentPhotoData.value = (await SchoolApi().getAssetDataUri(url)) ?? null
+  } catch {
+    // The plain URL still shows on screen.
+  }
+}, { immediate: true })
+const studentPhotoSrc = computed(() => studentPhotoData.value || record.value?.photo || '')
+const studentInitials = computed(() => (record.value?.studentName ?? '')
+  .split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join(''))
 
 const signatureSrc = computed(() =>
   brandingAssets.value?.principalSignature || record.value?.school.principalSignature || '')

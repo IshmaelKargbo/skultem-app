@@ -326,6 +326,46 @@ async function capturePage(element: HTMLElement, landscape: boolean): Promise<HT
   }
 }
 
+// A vertical span of the document, in CSS px from its top.
+type Span = { start: number, end: number }
+
+// Blocks a page break must not cut through. Generic (table rows, images, text lines) plus anything a page
+// marks with data-pdf-keep. Spans taller than a page are left out - those have to break somewhere.
+function measureKeepBlocks(root: HTMLElement): Span[] {
+  const top = root.getBoundingClientRect().top;
+  const selector = "tr, img, svg, canvas, p, h1, h2, h3, h4, h5, h6, li, dt, dd, [data-pdf-keep]";
+  const spans: Span[] = [];
+  root.querySelectorAll(selector).forEach((el) => {
+    const r = (el as HTMLElement).getBoundingClientRect();
+    if (r.height <= 0) return;
+    spans.push({ start: r.top - top, end: r.bottom - top });
+  });
+  return spans;
+}
+
+// Where each page starts and ends. A page ends at the lowest point that doesn't cut through a kept block,
+// as long as that still fills at least 60% of the page; otherwise it is cut at the page height.
+function planPageSlices(totalPx: number, firstPagePx: number, nextPagePx: number, keep: Span[]): Span[] {
+  const slices: Span[] = [];
+  let start = 0;
+  while (start < totalPx - 1) {
+    const room = slices.length === 0 ? firstPagePx : nextPagePx;
+    const limit = start + room;
+    if (limit >= totalPx) {
+      slices.push({ start, end: totalPx });
+      break;
+    }
+    const fits = (y: number) => !keep.some(b => b.start < y - 0.5 && b.end > y + 0.5 && b.end - b.start < room);
+    const candidates = keep.flatMap(b => [b.start, b.end])
+      .filter(y => y > start + room * 0.6 && y <= limit)
+      .sort((a, b) => b - a);
+    const end = candidates.find(fits) ?? limit;
+    slices.push({ start, end });
+    start = end;
+  }
+  return slices.length ? slices : [{ start: 0, end: totalPx }];
+}
+
 export default defineNuxtPlugin(() => {
   return {
     provide: {
@@ -415,6 +455,7 @@ export default defineNuxtPlugin(() => {
         document.body.appendChild(cloned);
 
         let canvas: HTMLCanvasElement;
+        let keepBlocks: Span[] = [];
         try {
           // Wait for every image to actually load before measuring/capturing -
           // otherwise logos/photos/signatures that haven't finished downloading
@@ -425,6 +466,10 @@ export default defineNuxtPlugin(() => {
 
           // Force all computed styles inline — resolves oklch before html2canvas sees it
           forceInlineStyles(cloned);
+
+          // Things a page break must not cut through (rows, images, lines of text, and any block marked
+          // data-pdf-keep, e.g. the signatures), in CSS px from the top of the document.
+          keepBlocks = measureKeepBlocks(cloned);
 
           // Real content height, not a fixed one page's worth - anything past a
           // single A4 page (1123px at 96dpi) used to be silently clipped instead
@@ -453,8 +498,6 @@ export default defineNuxtPlugin(() => {
           if (wasDark) html.classList.add("dark");
         }
 
-        const imgData = canvas.toDataURL("image/jpeg", 1);
-
         const pdf = new jsPDF({
           orientation: landscape ? "l" : "p",
           unit: "mm",
@@ -464,38 +507,46 @@ export default defineNuxtPlugin(() => {
         const pageWidth = landscape ? 297 : 210;
         const pageHeight = landscape ? 210 : 297;
         const margin = 10;
-        // A page break falls wherever the source content happens to measure exactly one page's
-        // worth of height - almost never a clean gap, usually mid-table-row. The plain `margin`
-        // reads fine at the top of page 1 (a real header/logo sits there), but on a continuation
-        // page it puts that cut-off row right against the page edge with nothing to signal "this
-        // continues from the previous page". A bigger top margin here is just breathing room, not
-        // a fix for the mid-row cut itself - genuinely avoiding a split row would mean walking the
-        // rendered DOM for row boundaries, not just slicing a flat raster image.
+        // Continuation pages start a little lower, as breathing room. Breaks themselves fall between rows and
+        // blocks (planPageSlices), not wherever a page's worth of height happens to end.
         const continuationTopMargin = 20;
         const usableWidth = pageWidth - margin * 2;
         const pageContentHeight = pageHeight - margin * 2;
         const continuationContentHeight = pageHeight - continuationTopMargin - margin;
 
-        const imgWidth = usableWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        // Each page gets its own slice of the capture - never the whole image shifted up, which drew the
+        // strip under the bottom margin on one page and again at the top of the next (duplicated rows).
+        const totalPx = canvas.height / 2; // captured at scale 2
+        const mmPerPx = usableWidth / pagePxWidth;
+        const firstPagePx = pageContentHeight / mmPerPx;
+        const nextPagePx = continuationContentHeight / mmPerPx;
 
-        let heightLeft = imgHeight;
-        let position = margin;
-
-        // First page
-        pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
-        heightLeft -= pageContentHeight;
-
-        // Subsequent pages - `consumed` is how much of the source image has already been shown
-        // across every earlier page, so the image is shifted up by exactly that much and the
-        // still-unseen remainder lands starting at continuationTopMargin on this new page.
-        while (heightLeft > 0) {
-          pdf.addPage();
-          const consumed = imgHeight - heightLeft;
-          position = continuationTopMargin - consumed;
-          pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
-          heightLeft -= continuationContentHeight;
+        // Only a little too tall for one page (e.g. a report card whose signatures spill over): shrink it a touch
+        // to fit on one page instead of leaving a near-empty second page.
+        if (totalPx > firstPagePx && totalPx <= firstPagePx * 1.2) {
+          const height = pageContentHeight;
+          const width = usableWidth * (firstPagePx / totalPx);
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (pageWidth - width) / 2, margin, width, height);
+          pdf.save(`${name.trim() || "receipt"}.pdf`);
+          return;
         }
+
+        const slices = planPageSlices(totalPx, firstPagePx, nextPagePx, keepBlocks);
+        slices.forEach((slice, index) => {
+          if (index > 0) pdf.addPage();
+          const sourceTop = Math.round(slice.start * 2);
+          const sourceHeight = Math.max(1, Math.round((slice.end - slice.start) * 2));
+          const part = document.createElement("canvas");
+          part.width = canvas.width;
+          part.height = sourceHeight;
+          const ctx = part.getContext("2d");
+          if (!ctx) return;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, part.width, part.height);
+          ctx.drawImage(canvas, 0, sourceTop, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+          const top = index === 0 ? margin : continuationTopMargin;
+          pdf.addImage(part.toDataURL("image/jpeg", 0.95), "JPEG", margin, top, usableWidth, sourceHeight / 2 * mmPerPx);
+        });
 
         const filename = name.trim() || "receipt";
         pdf.save(`${filename}.pdf`);

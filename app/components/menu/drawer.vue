@@ -274,6 +274,10 @@ onMounted(() => {
   ensureClassMasterLoaded();
 });
 
+// Switching role doesn't remount the menu - check again, so switching to Teacher shows class-master links
+// (Report Cards, Grade Approval) without a refresh.
+watch(activeRole, () => { ensureClassMasterLoaded(); });
+
 const name = computed(() =>
   user.value ? `${user.value.givenNames} ${user.value.familyName}` : ""
 );

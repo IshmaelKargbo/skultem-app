@@ -110,7 +110,7 @@ import type { MenuSection, SubNavItem } from '~/composables/useMenu'
 const { school, hydrateFromCache } = useSchoolInfo()
 hydrateFromCache()
 
-const { can } = useAuth()
+const { can, activeRole } = useAuth()
 const { ensureLoaded: ensureClassMasterLoaded } = useClassMaster()
 const { menuSections, onAdminPortal, showUpcoming, upcomingCount, collapsed, toggleSection } = useMenu()
 const route = useRoute()
@@ -123,4 +123,8 @@ const isFolded = (section: MenuSection) => !!section.collapsible && !!collapsed.
 onMounted(() => {
   ensureClassMasterLoaded()
 })
+
+// Switching role doesn't remount the menu - check again, so switching to Teacher shows class-master links
+// (Report Cards, Grade Approval) without a refresh.
+watch(activeRole, () => { ensureClassMasterLoaded() })
 </script>

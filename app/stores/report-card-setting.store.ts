@@ -10,6 +10,7 @@ export interface ReportCardSettings {
     showTeacherSignature: boolean
     showPrincipalSignature: boolean
     showGradeScale: boolean
+    showStudentPhoto: boolean
     remarkScale: RemarkBand[]
 }
 
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: ReportCardSettings = {
     showTeacherSignature: true,
     showPrincipalSignature: true,
     showGradeScale: true,
+    showStudentPhoto: true,
     remarkScale: []
 }
 
@@ -57,6 +59,7 @@ export const useReportCardSettingStore = defineStore('reportCardSetting', {
                     showTeacherSignature: res.showTeacherSignature ?? res.showSignatures,
                     showPrincipalSignature: res.showPrincipalSignature ?? res.showSignatures,
                     showGradeScale: res.showGradeScale,
+                    showStudentPhoto: res.showStudentPhoto ?? true,
                     remarkScale: res.remarkScale ?? []
                 })
 
