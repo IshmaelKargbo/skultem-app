@@ -56,6 +56,7 @@ watch(
 
       <!-- Page guides (see usePageGuide) -->
       <GuideOverlay />
+      <PushPrompt />
 
       <!-- Mobile Navigation -->
       <MenuMobile class="absolute w-full bottom-0 z-1100 pb-[max(env(safe-area-inset-bottom),0.5rem)] xl:hidden print:hidden" />

@@ -104,6 +104,9 @@
 
         <!-- Everyone can change their own password. -->
         <ProfileChangePassword id="password" />
+
+        <!-- Pop-up notifications on this device (Web Push). -->
+        <ProfileDeviceNotifications id="notifications" />
     </div>
 </template>
 

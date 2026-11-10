@@ -173,9 +173,11 @@ export default defineNuxtConfig({
       // was never cached.
       globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
 
-      globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
+      globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js', 'sw-push.js'],
 
       cleanupOutdatedCaches: true,
+      // Push messages and notification taps - see public/sw-push.js.
+      importScripts: ['/sw-push.js'],
       // No skipWaiting / clientsClaim: the waiting version only activates when pwa-refresh.client.ts asks it to.
       clientsClaim: false,
       skipWaiting: false

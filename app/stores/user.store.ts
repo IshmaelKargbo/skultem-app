@@ -94,6 +94,8 @@ export const useUserStore = defineStore('user', {
       return res
     },
     async logout() {
+      // This device stops getting this person's notifications (it may be a shared phone).
+      await usePushNotifications().forgetDevice()
       await UserApi().logout()
 
       const { accessToken, refreshToken, activeRole } = useAuthCookies()
