@@ -2,6 +2,17 @@ export const StudentApi = () => {
   const { $api } = useNuxtApp()
 
   return {
+    // Every student on file except deleted ones, from any year - light rows for pickers (e.g. taking a payment).
+    picker: async (search: string, page: number, size: number) => {
+      try {
+        const params = new URLSearchParams({ page: String(page), size: String(size) })
+        if (search) params.set('search', search)
+        const res = await $api(`/student/picker?${params}`) as any
+        return { data: (res?.data ?? []) as StudentPickerRow[], meta: res?.meta as Meta | undefined }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAll: async (search: string, page: number, size: number, classId?: string, sortBy?: string, direction?: string, gender?: string) => {
       try {
         const params = new URLSearchParams({ page: String(page), size: String(size) })

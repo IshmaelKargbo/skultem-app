@@ -13,10 +13,17 @@
                                 <USelectMenu value-key="value" :items="studentOptions" v-model="state.studentId"
                                     v-model:search-term="studentSearchTerm" :loading="studentsLoading" ignore-filter
                                     @change="onStudentSelect" placeholder="Search by name or admission number"
-                                    class="w-full" />
+                                    class="w-full">
+                                    <template #content-bottom>
+                                        <div v-if="moreStudents" class="border-t border-default p-1">
+                                            <UButton block size="sm" color="neutral" variant="ghost" :loading="studentsLoading"
+                                                :label="`Show more students (${students.length} of ${studentTotal})`"
+                                                @click.stop="loadMoreStudents()" />
+                                        </div>
+                                    </template>
+                                </USelectMenu>
                                 <template #help>
-                                    <span v-if="selectedAdmissionNumber">Admission no. <span
-                                            class="font-medium text-highlighted">{{ selectedAdmissionNumber }}</span></span>
+                                    <span v-if="selectedAdmissionNumber" class="font-medium text-highlighted">{{ selectedAdmissionNumber }}</span>
                                     <span v-else>Select the student you are recording this payment for.</span>
                                 </template>
                             </UFormField>
@@ -516,7 +523,10 @@ const methodOptions = [
     { label: 'Mobile Money', value: 'MOBILE_MONEY' }
 ]
 
-const { searchTerm: studentSearchTerm, students, loading: studentsLoading } = useStudentSearch(25, () => [state.studentId])
+// Every student on file - any year, any status except deleted - so a payment can be taken from anyone who owes,
+// including last year's students and those who have left.
+const { searchTerm: studentSearchTerm, students, loading: studentsLoading, hasMore: moreStudents, total: studentTotal, loadMore: loadMoreStudents } =
+    useStudentPicker(50, () => [state.studentId])
 
 const pinnedStudent = ref<{ label: string, value: string, description?: string } | null>(null)
 
