@@ -22,7 +22,6 @@ async function removeDiscount() {
   if (!deleteTarget.value) return
   try {
     await store.delete(deleteTarget.value.id)
-    toast.add({ description: 'Discount deleted successfully', color: 'success' })
     await store.fetchAll(page.value, size.value)
     refreshReport()
   } catch (err: any) {

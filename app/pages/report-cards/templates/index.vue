@@ -20,6 +20,21 @@
       <!-- Left -->
       <div class="lg:col-span-2 space-y-6">
 
+        <!-- The M-Compose design the PDFs are printed with (only when the server has the document service). -->
+        <UCard v-if="documentService.status.value?.enabled">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-layout-template" class="size-5 text-primary" />
+              <h3 class="font-semibold">Print design</h3>
+            </div>
+            <p class="mt-1 text-sm text-muted">
+              The layout downloaded report cards are printed in. The sections, remarks and photo settings below still
+              decide what goes on the card.
+            </p>
+          </template>
+          <DocumentDesignPicker kind="report-card" links-page="/report-cards/data-links" @saved="previewVersion++" />
+        </UCard>
+
         <UCard data-guide="rcd-sections">
           <template #header>
             <div class="flex items-center gap-2">
@@ -136,10 +151,21 @@
               <h3 class="font-semibold">
                 Live Preview
               </h3>
+              <UBadge v-if="documentService.status.value?.reportCards" size="sm" variant="subtle" color="neutral"
+                label="As it prints" />
             </div>
           </template>
 
-          <div class="p-5">
+          <!-- With the document service: the school's design, filled with its latest report card (or placeholders). -->
+          <div v-if="documentService.status.value?.reportCards" class="p-3">
+            <DocumentPdfFrame height="72vh" :reload-key="previewVersion"
+              caption="Your design, with your latest report card" :fetcher="() => ReportCardApi().designPreview()" />
+            <p class="mt-2 text-xs text-muted">
+              It updates when you save your settings or pick another design.
+            </p>
+          </div>
+
+          <div v-else class="p-5">
             <div class="overflow-hidden rounded-xl border border-default"
               :style="{ borderTopColor: settings.headerColor, borderTopWidth: '4px' }">
 
@@ -190,6 +216,10 @@
 const { success, error: notifyError } = useNotify()
 const router = useRouter()
 const store = useReportCardSettingStore()
+const documentService = useDocumentService()
+onMounted(() => documentService.ensureLoaded())
+// Bumped when the design or the settings change, so the preview is made again.
+const previewVersion = ref(0)
 const { settings } = storeToRefs(store)
 
 const saving = ref(false)
@@ -290,6 +320,7 @@ async function save() {
   try {
     await store.save()
     success('Report card settings saved')
+    previewVersion.value++
     router.push('/report-cards')
   } catch (err: any) {
     notifyError(err?.message || 'Unable to save report card settings')

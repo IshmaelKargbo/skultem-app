@@ -7,7 +7,7 @@
       <div class="absolute inset-0 bg-[#060f20]" />
 
       <!-- Ambient glows -->
-      <div class="absolute -top-20 -right-20 w-105 h-105 rounded-full bg-cyan-400/10 blur-[80px]" />
+      <div class="absolute -top-20 -right-20 w-105 h-105 rounded-full bg-secondary/15 blur-[80px]" />
       <div class="absolute -bottom-20 -left-20 w-85 h-85 rounded-full bg-primary/10 blur-[80px]" />
       <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-75 rounded-full bg-indigo-500/5 blur-[60px]" />
@@ -40,7 +40,7 @@
                   {{ item.title }}
                 </h1>
                 <span
-                  class="block text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight bg-linear-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent mt-1">
+                  class="block text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight bg-linear-to-r from-primary via-secondary-400 to-primary bg-clip-text text-transparent mt-1">
                   {{ item.highlight }}
                 </span>
               </div>

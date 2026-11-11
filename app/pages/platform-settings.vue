@@ -67,11 +67,52 @@ async function save() {
   }
 }
 
+// The document designer (M-Compose), for admins with the Settings permission; the server signs a one-time link.
+const platformAccess = usePlatformAccess()
+const canManageDocuments = ref(false)
+const check = ref<DocumentServiceCheck>()
+const checking = ref(false)
+const openingDesigner = ref(false)
+async function loadDesigner() {
+  await platformAccess.load()
+  canManageDocuments.value = platformAccess.can('SETTINGS')
+  if (canManageDocuments.value) await runCheck()
+}
+// Asks the server to call the engine: is it running, does it accept Skultem's key, which documents are on.
+async function runCheck() {
+  checking.value = true
+  try {
+    check.value = await MComposeApi().check()
+  } catch (err: any) {
+    toastError(err.message)
+  } finally {
+    checking.value = false
+  }
+}
+async function openDesigner() {
+  // Opened before the request so the browser does not block it as a pop-up; filled in once the link is signed.
+  const tab = window.open('', '_blank')
+  if (tab) tab.opener = null
+  openingDesigner.value = true
+  try {
+    const url = await MComposeApi().designerLink()
+    if (url && tab) tab.location.href = url
+    else if (url) window.location.href = url
+    else tab?.close()
+  } catch (err: any) {
+    tab?.close()
+    toastError(err.message)
+  } finally {
+    openingDesigner.value = false
+  }
+}
+
 onMounted(() => {
   useAppStore().setTitle('System Admin · Platform Settings')
   useAppStore().setBack(false)
   document.title = 'Platform Settings | System Admin | Skultem'
   load()
+  loadDesigner()
 })
 
 definePageMeta({ role: [Role.SYSTEM_ADMIN] })
@@ -182,6 +223,49 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
           </ol>
           <template #footer>
             <UButton to="/fee-collection" variant="soft" color="neutral" block icon="i-lucide-hand-coins" trailing-icon="i-lucide-arrow-right" label="See what schools collected" />
+          </template>
+        </UCard>
+
+        <!-- M-Compose: the document engine report cards and exam results are printed with. -->
+        <UCard v-if="canManageDocuments">
+          <template #header>
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="font-semibold text-highlighted">Document service</h3>
+              <UBadge v-if="check" :color="check.keyAccepted ? 'success' : check.configured ? 'error' : 'neutral'"
+                variant="soft" :label="check.keyAccepted ? 'Connected' : check.configured ? 'Not working' : 'Not set up'" />
+            </div>
+          </template>
+          <div class="space-y-3 text-sm">
+            <p class="text-muted">
+              Report cards and external exam results are printed by M-Compose from shared designs. A design change
+              applies to every school.
+            </p>
+            <template v-if="check">
+              <p :class="check.keyAccepted ? 'text-success' : 'text-error'">{{ check.message }}</p>
+              <ul class="space-y-1 text-muted">
+                <li class="flex items-center gap-2">
+                  <UIcon :name="check.reportCards ? 'i-lucide-check' : 'i-lucide-minus'" class="size-4" />
+                  Report card PDFs {{ check.reportCards ? 'on' : 'off (no design set)' }}
+                </li>
+                <li class="flex items-center gap-2">
+                  <UIcon :name="check.externalExams ? 'i-lucide-check' : 'i-lucide-minus'" class="size-4" />
+                  External exam slips and statements {{ check.externalExams ? 'on' : 'off' }}
+                </li>
+                <li class="flex items-center gap-2">
+                  <UIcon :name="check.designer ? 'i-lucide-check' : 'i-lucide-minus'" class="size-4" />
+                  Designer sign-in {{ check.designer ? 'on' : 'off (no sign-in secret)' }}
+                </li>
+              </ul>
+            </template>
+          </div>
+          <template #footer>
+            <div class="flex flex-col gap-2">
+              <UButton variant="soft" color="neutral" block icon="i-lucide-plug-zap" label="Check connection"
+                :loading="checking" @click="runCheck" />
+              <UButton v-if="check?.designer" variant="soft" color="neutral" block icon="i-lucide-pen-tool"
+                trailing-icon="i-lucide-external-link" label="Open the document designer" :loading="openingDesigner"
+                @click="openDesigner" />
+            </div>
           </template>
         </UCard>
       </div>

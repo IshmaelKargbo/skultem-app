@@ -127,11 +127,6 @@ const onSubmit = async (_event: FormSubmitEvent<AssignFeeForm>) => {
             feeId: state.feeId
         })
 
-        toast.add({
-            description: 'Fee assigned successfully',
-            color: 'success'
-        })
-
         emit('assigned')
         close()
     } catch (err: any) {

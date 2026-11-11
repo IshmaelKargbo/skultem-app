@@ -1,20 +1,23 @@
+// Pop-up messages. Only failures pop up (error): success, info and warning messages are not shown - a toast after
+// every action was too much. Callers keep calling success()/info()/warning() so they can be turned back on here in
+// one place.
 export function useNotify() {
     const toast = useToast()
 
-    function success(description?: string) {
-        toast.add({ title: TITLE, description, color: 'success', icon: 'lucide:check-circle' })
+    function success(_description?: string) {
+        // Not shown (see above).
     }
 
     function error(description?: string) {
         toast.add({ title: TITLE, description, color: 'error', icon: 'lucide:x-circle' })
     }
 
-    function info(description?: string) {
-        toast.add({ title: TITLE, description, color: 'info', icon: 'lucide:info' })
+    function info(_description?: string) {
+        // Not shown (see above).
     }
 
-    function warning(description?: string) {
-        toast.add({ title: TITLE, description, color: 'warning', icon: 'lucide:alert-triangle' })
+    function warning(_description?: string) {
+        // Not shown (see above).
     }
 
     return { success, error, info, warning }

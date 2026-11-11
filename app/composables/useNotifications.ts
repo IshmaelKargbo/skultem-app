@@ -13,7 +13,6 @@ let client: Client | null = null
 
 export function useNotifications() {
   const store = useAppStore()
-  const toast = useToast()
 
   function connect() {
     if (client?.active) return
@@ -40,14 +39,8 @@ export function useNotifications() {
           const body = JSON.parse(message.body) as NotificationSocketPayload
           store.notifications = body.count
 
-          if (isImportantNotification(body.notification)) {
-            toast.add({
-              title: body.notification.title,
-              description: body.notification.message,
-              color: body.notification.priority === 'URGENT' ? 'error' : 'warning',
-              icon: body.notification.priority === 'URGENT' ? 'lucide:circle-alert' : 'lucide:bell-ring',
-            })
-          }
+          // New notifications show on the bell (store.notifications) and as device notifications; they no longer
+          // pop up as toasts - only failures do.
         })
       },
       onDisconnect: () => {
@@ -76,6 +69,3 @@ export function useNotifications() {
   return { connect, disconnect, isConnected, error }
 }
 
-function isImportantNotification(notification?: AppNotification) {
-  return notification?.priority === 'HIGH' || notification?.priority === 'URGENT'
-}

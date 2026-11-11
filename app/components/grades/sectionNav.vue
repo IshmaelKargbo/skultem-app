@@ -12,6 +12,7 @@
 const { can } = useAuth()
 const { isClassMaster, ensureLoaded } = useClassMaster()
 const { load, routesTo, routing } = useGradeApproval()
+const { isPathAvailable } = useModules()
 
 interface NavItem {
   label: string
@@ -39,7 +40,7 @@ const allItems: NavItem[] = [
 const items = computed(() => {
   const seen = new Set<string>()
   return allItems.filter((item) => {
-    if (!can(item.roles)) return false
+    if (!can(item.roles) || !isPathAvailable(item.to)) return false
     // A teacher sees approval only as a class master, and only while class masters approve somewhere (until the
     // routing has loaded, keep it so the tabs don't jump).
     if (item.classMasterApprover && (!isClassMaster.value || (routing.value && !routesTo('CLASS_MASTER')))) return false

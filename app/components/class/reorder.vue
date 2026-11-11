@@ -39,7 +39,6 @@ const emit = defineEmits<{ saved: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 
 const classStore = useClassStore()
-const toast = useToast()
 
 const items = ref<Clazz[]>([])
 const dragIndex = ref<number | null>(null)
@@ -77,7 +76,6 @@ async function save() {
   try {
     const ok = await classStore.reorder(items.value.map(c => c.id))
     if (!ok) return
-    toast.add({ title: 'Class order saved', color: 'success' })
     emit('saved')
     open.value = false
   } finally {

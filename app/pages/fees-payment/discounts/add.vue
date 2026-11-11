@@ -425,11 +425,6 @@ const onSubmit = async (_event: FormSubmitEvent<FeeDiscountForm>) => {
     });
 
 
-    toast.add({
-      description: "Fee discount created successfully",
-      color: "success",
-    });
-
     close();
   } catch (err: any) {
     toast.add({

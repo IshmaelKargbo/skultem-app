@@ -104,7 +104,7 @@ const props = defineProps<{
   modelValue: boolean
   userId: string
   userName: string
-  // The scopable roles (Admin/Accountant/Teacher) this user currently holds - what to offer editing.
+  // The roles this user holds that can be limited to sections (Admin, Teacher, Librarian, Nurse...).
   roles: string[]
 }>()
 
@@ -178,13 +178,16 @@ async function load() {
   }
 }
 
-watch(open, (value) => { if (value) load() })
+// The page creates this panel already open (v-if), so load straight away too - otherwise the role stays empty, the
+// hidden role field fails validation, and Save does nothing.
+watch(open, (value) => { if (value) load() }, { immediate: true })
 
 function close() {
   open.value = false
 }
 
 async function onSubmit() {
+  if (!state.role) state.role = props.roles[0] ?? ''
   try {
     isLoading.value = true
 

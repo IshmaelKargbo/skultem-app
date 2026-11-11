@@ -131,7 +131,7 @@ async function decide(decision: 'approve' | 'return') {
   busy.value = true
   try {
     const res = await ReportCardApi().review(decision, { classId, termId, note: decision === 'return' ? note.value.trim() : undefined })
-    if (!res) return
+    if (!res) throw new Error(decision === 'approve' ? 'The report cards could not be approved' : 'The report cards could not be sent back')
     success(decision === 'approve'
       ? `${res.count} report ${res.count === 1 ? 'card' : 'cards'} approved - parents can now see them`
       : `${res.count} report ${res.count === 1 ? 'card' : 'cards'} sent back to the admin`)

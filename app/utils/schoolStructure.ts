@@ -143,7 +143,7 @@ export function draftToPayload(draft: SchoolStructureDraft): SchoolStructurePayl
     }
 }
 
-export const SCOPABLE_ROLES: string[] = ['ADMIN', 'ACCOUNTANT', 'TEACHER', 'PRINCIPAL', 'EXAM_OFFICER', 'LIBRARIAN']
+export const SCOPABLE_ROLES: string[] = ['ADMIN', 'ACCOUNTANT', 'TEACHER', 'PRINCIPAL', 'EXAM_OFFICER', 'LIBRARIAN', 'NURSE']
 
 export function isScopableRole(role?: string | null): boolean {
     return !!role && SCOPABLE_ROLES.includes(role)

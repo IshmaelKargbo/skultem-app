@@ -30,14 +30,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     (needRefresh) => {
       if (!needRefresh || notified) return
       notified = true
-      useToast().add({
-        title: 'A new version of Skultem is ready',
-        description: 'It will load on your next page change, or reload now.',
-        color: 'info',
-        icon: 'lucide:refresh-cw',
-        duration: 0,
-        actions: [{ label: 'Reload', color: 'primary', onClick: apply }]
-      })
+      // No pop-up (only failures pop up): the new version loads on the next page change.
     },
     { immediate: true }
   )

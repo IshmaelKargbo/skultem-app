@@ -4,6 +4,7 @@
 // so it's fetched once per session instead of once per component.
 export function useClassMaster() {
     const { can } = useAuth()
+    const userStore = useUserStore()
 
     const assignments = useState<TeacherClassMaster[] | null>('class-master-assignments', () => null)
     const loading = useState<boolean>('class-master-loading', () => false)
@@ -26,8 +27,11 @@ export function useClassMaster() {
         return [...seen.values()]
     })
 
-    async function ensureLoaded() {
-        if (!can(Role.TEACHER)) return
+    // anyRole: also when they hold the Teacher role but are using another one (a class teacher who is also an admin,
+    // on the report cards pages). Teacher-only menus and dashboards keep the default.
+    async function ensureLoaded(options: { anyRole?: boolean } = {}) {
+        const holdsTeacher = !!userStore.user?.roles?.includes(Role.TEACHER)
+        if (!can(Role.TEACHER) && !(options.anyRole && holdsTeacher)) return
         // Only a confirmed success skips a retry - unlike checking assignments.value (which the
         // old version of this did), a failed attempt must be retried on the next call rather than
         // being mistaken for "checked, and there are none".

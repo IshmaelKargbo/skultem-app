@@ -235,11 +235,6 @@ const onSubmit = async (event: FormSubmitEvent<SubjectGroupForm>) => {
       streamId: isStreamed.value ? state.streamId : "",
     });
 
-    toast.add({
-      description: "Subject Group created successfully",
-      color: "success",
-    });
-
     emit("saved");
     close();
   } catch (err: any) {

@@ -235,6 +235,19 @@ export function useMenu() {
         // Only admins generate results; the class teacher reviews and approves them.
         { label: 'Generate', to: '/report-cards/generate', icon: GENERATE_ICON, roles: [Role.ADMIN, Role.SUPER_ADMIN] },
         { label: 'Design', to: '/report-cards/templates', icon: SETTINGS_ICON },
+        { label: 'Data Links', to: '/report-cards/data-links', icon: 'i-lucide-link' },
+      ]
+    },
+
+    {
+      // NPSE, BECE, WASSCE...: its own module - exam classes and their results, the exams, and the print designs.
+      label: 'External Exams', icon: 'i-lucide-award',
+      roles: [Role.EXAM_OFFICER, Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN],
+      subNavs: [
+        { label: 'Exam Classes', to: '/external-exams', icon: 'i-lucide-award', exact: true },
+        { label: 'Exams & Grading', to: '/external-exams/exams', icon: 'i-lucide-list-checks' },
+        { label: 'Print Designs', to: '/external-exams/designs', icon: 'i-lucide-layout-template' },
+        { label: 'Data Links', to: '/external-exams/data-links', icon: 'i-lucide-link' },
       ]
     },
 

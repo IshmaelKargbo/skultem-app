@@ -3,11 +3,21 @@
 
     <Heading :title="record?.studentName || 'Report Card'"
       subtitle="Preview, print or download this student's report card.">
+      <!-- With the document service: the card as M-Compose prints it, to check and print. -->
+      <UButton v-if="documentService.reportCards.value && record" icon="i-lucide-printer" variant="outline"
+        color="neutral" class="justify-center" @click="printOpen = true">
+        Print
+      </UButton>
       <UButton data-guide="rc-download" icon="i-lucide-download" color="primary" class="justify-center" :loading="downloading"
         @click="downloadPdf">
         Download PDF
       </UButton>
     </Heading>
+
+    <DocumentPdfViewer v-if="record" v-model:open="printOpen" :title="`${record.studentName} - report card`"
+      description="Exactly as it prints, in your school's report card design."
+      :fetcher="() => ReportCardApi().pdfBlob(record!.id, sanitizeFilename(record!.studentName))"
+      @printed="countDownload" @saved="countDownload" />
 
     <GuideBar :key="guideTopic" :topic="guideTopic" />
     <div v-if="loading" class="flex justify-center py-20">
@@ -117,10 +127,22 @@
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-eye" class="size-5 text-primary" />
                 <h3 class="font-semibold">Preview</h3>
+                <UBadge v-if="documentService.reportCards.value" size="sm" variant="subtle" color="neutral"
+                  label="As it prints" />
               </div>
             </template>
 
-            <div id="report-card-preview" class="relative isolate overflow-hidden bg-white p-8 sm:p-10 text-gray-900">
+            <!-- With the document service, the preview is the PDF it makes (exactly what prints and downloads). -->
+            <DocumentPdfFrame v-if="documentService.reportCards.value" class="p-3" height="80vh"
+              caption="Your school's report card design"
+              :fetcher="() => ReportCardApi().pdfBlob(record!.id, sanitizeFilename(record!.studentName))"
+              @printed="countDownload" @saved="countDownload" />
+
+            <!-- Drawn in the browser: the preview without the document service, and what Download falls back to
+                 if the service can't be reached (kept off-screen then, so it can still be captured). -->
+            <div id="report-card-preview" class="relative isolate overflow-hidden bg-white p-8 sm:p-10 text-gray-900"
+              :class="documentService.reportCards.value ? 'pointer-events-none fixed top-0 -left-[10000px] w-[820px]' : ''"
+              :aria-hidden="documentService.reportCards.value ? 'true' : undefined">
               <!-- Watermark - centered on the full page, well behind everything -->
               <img v-if="logoSrc" :src="logoSrc" alt=""
                 class="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-112 w-md -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.07] grayscale" />
@@ -317,6 +339,15 @@ const appStore = useAppStore()
 const { success, error: toastError } = useNotify()
 const store = useReportCardStore()
 const { $generatePdf } = useNuxtApp()
+const documentService = useDocumentService()
+onMounted(() => documentService.ensureLoaded())
+const printOpen = ref(false)
+// Printing or saving from the viewer counts as a download, like the Download button.
+async function countDownload() {
+  if (!record.value) return
+  await store.trackDownload(record.value.id)
+  record.value.downloadCount++
+}
 const { can } = useAuth()
 // Parents only ever see an approved card to read and download; staff also review and comment.
 const guideTopic = computed(() => (can(Role.PARENT) ? 'parent-report-card' : 'report-card-view'))
@@ -470,6 +501,21 @@ async function downloadPdf() {
   if (!record.value) return
   downloading.value = true
   try {
+    // The server makes it with the school's document design when M-Compose is set up; otherwise the browser
+    // captures the preview below, as before.
+    // If the document service is down or refuses, the card still downloads: the browser makes it instead.
+    if ((await documentService.ensureLoaded()).reportCards) {
+      try {
+        await ReportCardApi().downloadPdf(record.value.id, sanitizeFilename(record.value.studentName))
+        await store.trackDownload(record.value.id)
+        record.value.downloadCount++
+        success('Report card downloaded')
+        return
+      } catch (err: any) {
+        console.warn('Server PDF failed, drawing it in the browser instead:', err?.message)
+      }
+    }
+
     if (!brandingAssets.value) {
       brandingAssets.value = await useBrandingAssets().get({ level: record.value.level })
       await nextTick()
@@ -487,7 +533,7 @@ async function downloadPdf() {
 }
 
 onMounted(async () => {
-  if (can(Role.TEACHER)) ensureClassMasterLoaded()
+  ensureClassMasterLoaded({ anyRole: true })
   appStore.setTitle('Report Card')
   appStore.setBack('/report-cards')
   await fetchRecord()

@@ -91,6 +91,25 @@ export const ReportCardApi = () => {
       }
     },
 
+    // PDFs made on the server by M-Compose (only when useDocumentService().reportCards is on). They throw with the
+    // server's message, so the page can show it.
+    downloadPdf: (id: string, studentName: string) =>
+      downloadApiFile(`/report-card/${encodeURIComponent(id)}/pdf`, `report-card-${studentName}.pdf`),
+
+    // The card's PDF to show in the page (Print), as M-Compose makes it.
+    pdfBlob: (id: string, studentName: string) =>
+      fetchApiFile(`/report-card/${encodeURIComponent(id)}/pdf?inline=true`, `report-card-${studentName}.pdf`),
+
+    // The school's report card design as it prints (latest card, or placeholders); template = try another design.
+    designPreview: (template?: string | null) =>
+      fetchApiFile(`/report-card/preview${template ? `?template=${encodeURIComponent(template)}` : ''}`,
+        'report-card-design-preview.pdf'),
+
+    // Every card of a class for a term, in one PDF.
+    downloadClassPdf: (classId: string, termId: string) =>
+      downloadApiFile(`/report-card/pdf?classId=${encodeURIComponent(classId)}&termId=${encodeURIComponent(termId)}`,
+        'report-cards.pdf'),
+
     trackDownload: async (id: string) => {
       try {
         await $api(`/report-card/${id}/download`, { method: 'POST' })

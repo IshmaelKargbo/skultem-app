@@ -39,7 +39,6 @@ const emit = defineEmits<{ saved: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 
 const sectionStore = useSectionStore()
-const toast = useToast()
 
 const items = ref<Section[]>([])
 const dragIndex = ref<number | null>(null)
@@ -77,7 +76,6 @@ async function save() {
   try {
     const ok = await sectionStore.reorder(items.value.map(c => c.id))
     if (!ok) return
-    toast.add({ title: 'Section order saved', color: 'success' })
     emit('saved')
     open.value = false
   } finally {

@@ -202,11 +202,6 @@ async function save() {
             }
         })
         saveLoading.value = false
-        toast.add({
-            title: TITLE,
-            color: 'success',
-            description: "Report saved successfully"
-        })
     } catch (error: any) {
         toast.add({
             title: TITLE,

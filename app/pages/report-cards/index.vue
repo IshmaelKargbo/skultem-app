@@ -13,6 +13,12 @@
         to="/report-cards/generate" />
       <UButton data-guide="rc-design" v-if="!isTeacherOnly" icon="i-lucide-settings-2" variant="outline" label="Design" class="justify-center"
         to="/report-cards/templates" />
+      <!-- The whole class's cards for the chosen term in one PDF, made on the server (M-Compose). -->
+      <UButton v-if="documentService.reportCards.value" icon="i-lucide-file-down" variant="outline"
+        label="Download class PDF" class="justify-center" :loading="downloadingClass"
+        :disabled="!selectedClass || !selectedTerm"
+        :title="selectedClass && selectedTerm ? '' : 'Choose a class and a term in the filters first'"
+        @click="downloadClassPdf" />
     </Heading>
 
     <!-- Stats -->
@@ -253,6 +259,22 @@ const guideTopic = computed(() => (isTeacherOnly.value ? 'teacher-report-cards' 
 // Only admins generate; the class teacher reviews.
 const canGenerate = computed(() => can([Role.ADMIN, Role.SUPER_ADMIN]))
 
+const documentService = useDocumentService()
+const { error: toastError, success: toastSuccess } = useNotify()
+const downloadingClass = ref(false)
+async function downloadClassPdf() {
+  if (!selectedClass.value || !selectedTerm.value) return
+  downloadingClass.value = true
+  try {
+    await ReportCardApi().downloadClassPdf(selectedClass.value, selectedTerm.value)
+    toastSuccess('Class report cards downloaded')
+  } catch (err: any) {
+    toastError(err?.message || 'Failed to download the report cards')
+  } finally {
+    downloadingClass.value = false
+  }
+}
+
 // The review bar works on one term - the chosen one, else the term running now.
 const reviewTermId = computed(() => selectedTerm.value
   || termStore.records.find(t => t.status === 'ACTIVE')?.id || undefined)
@@ -291,7 +313,7 @@ async function fetchRecords() {
   // A class master's list is always one of their own classes - the API won't list across the school
   // for them - so start on their first class; changing selectedClass then triggers the fetch.
   if (isTeacherOnly.value && !selectedClass.value) {
-    await ensureClassMasterLoaded()
+    await ensureClassMasterLoaded({ anyRole: true })
     if (!masterClasses.value.length) return
     selectedClass.value = masterClasses.value[0]!.value
     return
@@ -332,11 +354,12 @@ onMounted(() => {
 
   if (can(Role.PARENT)) return
 
+  documentService.ensureLoaded()
   termStore.fetchAll(1, 100)
   sectionStore.fetchAll(0, 0)
   streamStore.fetchAll(0, 0)
 
-  if (can(Role.TEACHER)) ensureClassMasterLoaded()
+  ensureClassMasterLoaded({ anyRole: true })
 
   if (!isTeacherOnly.value) {
     classStore.fetchAll(1, 100)

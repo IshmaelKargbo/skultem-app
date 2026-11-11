@@ -298,12 +298,6 @@ async function onSubmit() {
 
     await store.create(state.classId, { assignments });
 
-    toast.add({
-      title: "Success",
-      description: "Teacher subjects assign successfully",
-      color: "success",
-    });
-
     navigateTo("/subjects/teacher-assignment");
   } catch (err: any) {
     toast.add({
