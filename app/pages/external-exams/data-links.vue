@@ -15,7 +15,7 @@
           class="w-full sm:w-96" :loading="loadingDesigns" placeholder="Choose a design" aria-label="Design" />
       </div>
 
-      <UCard v-if="template">
+      <UCard v-if="template" :ui="{ root: 'overflow-visible' }">
         <DocumentDesignFieldLinker :kind="kind" :template="template" />
       </UCard>
       <UCard v-else-if="!loadingDesigns">

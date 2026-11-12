@@ -4,16 +4,13 @@
 
     <!-- Header -->
     <Heading title="Report Card Design" subtitle="Configure the report card layout used across your school.">
-      <UButton icon="i-lucide-arrow-left" variant="outline" color="neutral" to="/report-cards" class="justify-center">
-        Back
-      </UButton>
-
+      <GuideBar topic="admin-report-design" />
       <UButton data-guide="rcd-save" icon="i-lucide-save" color="primary" :loading="saving" class="justify-center" @click="save">
         Save Settings
       </UButton>
     </Heading>
 
-    <GuideBar topic="admin-report-design" />
+    
     <DesignSkeleton v-if="fetching" />
     <div v-show="!fetching" class="grid gap-6 lg:grid-cols-3">
 
@@ -28,42 +25,20 @@
               <h3 class="font-semibold">Print design</h3>
             </div>
             <p class="mt-1 text-sm text-muted">
-              The layout downloaded report cards are printed in. The sections, remarks and photo settings below still
-              decide what goes on the card.
+              The layout report cards are printed in. What each design shows, and its parts you can show or hide,
+              are set on Data Links.
             </p>
           </template>
-          <DocumentDesignPicker kind="report-card" links-page="/report-cards/data-links" @saved="previewVersion++" />
-        </UCard>
-
-        <UCard data-guide="rcd-sections">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-layout-list" class="size-5 text-primary" />
-              <h3 class="font-semibold">
-                Sections
-              </h3>
-            </div>
-          </template>
-
-          <p class="text-sm text-muted -mt-1 mb-4">
-            Choose which sections appear on generated report cards.
+          <!-- One design for every level, or a separate one for a level (Primary, JSS...) when the school wants it. -->
+          <UTabs v-if="levelTabs.length > 1" v-model="designTab" :items="levelTabs" :content="false" size="sm"
+            class="mb-3 w-full" />
+          <p v-if="designTab !== 'ALL'" class="mb-2 text-xs text-muted">
+            {{ levelLabel(designTab) }} report cards use this design. Choose "Use the general design" to go back to the
+            one for all levels.
           </p>
-
-          <div class="grid gap-3 sm:grid-cols-2">
-            <label v-for="section in sections" :key="section.key"
-              class="flex items-start gap-3 rounded-xl border border-default p-3.5 cursor-pointer transition-colors hover:bg-muted/40">
-              <UCheckbox :model-value="settings[section.key]" class="mt-0.5"
-                @update:model-value="(value) => (settings[section.key] = !!value)" />
-
-              <div class="flex items-start gap-2.5">
-                <UIcon :name="section.icon" class="size-4 mt-0.5 shrink-0 text-muted" />
-                <div>
-                  <p class="text-sm font-medium">{{ section.label }}</p>
-                  <p class="text-xs text-muted">{{ section.hint }}</p>
-                </div>
-              </div>
-            </label>
-          </div>
+          <DocumentDesignPicker :key="designTab" kind="report-card" links-page="/report-cards/data-links"
+            :level="designTab === 'ALL' ? null : designTab"
+            :default-label="designTab === 'ALL' ? 'the default' : 'the general design'" @saved="previewVersion++" />
         </UCard>
 
         <UCard data-guide="rcd-remarks">
@@ -142,7 +117,8 @@
       </div>
 
       <!-- Right -->
-      <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
+      <!-- The preview stays in view while the settings on the left scroll, sized to one A4 page. -->
+      <div class="space-y-6 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)]">
 
         <UCard data-guide="rcd-preview" :ui="{ body: 'p-0' }">
           <template #header>
@@ -158,50 +134,24 @@
 
           <!-- With the document service: the school's design, filled with its latest report card (or placeholders). -->
           <div v-if="documentService.status.value?.reportCards" class="p-3">
-            <DocumentPdfFrame height="72vh" :reload-key="previewVersion"
-              caption="Your design, with your latest report card" :fetcher="() => ReportCardApi().designPreview()" />
+            <DocumentPdfFrame height="a4" :reload-key="`${previewVersion}-${designTab}`"
+              :caption="designTab === 'ALL' ? 'Your design, with your latest report card' : `${levelLabel(designTab)} design`"
+              :fetcher="() => ReportCardApi().designPreview(null, designTab === 'ALL' ? null : designTab)" />
             <p class="mt-2 text-xs text-muted">
               It updates when you save your settings or pick another design.
             </p>
           </div>
 
-          <div v-else class="p-5">
-            <div class="overflow-hidden rounded-xl border border-default"
-              :style="{ borderTopColor: settings.headerColor, borderTopWidth: '4px' }">
-
-              <div class="bg-muted/40 p-6 text-center">
-                <img v-if="settings.logoUrl" :src="settings.logoUrl" class="h-14 mx-auto object-contain" alt="Logo">
-
-                <div v-else class="flex h-14 w-14 mx-auto items-center justify-center rounded-xl bg-muted">
-                  <UIcon name="i-lucide-image" class="size-6 text-muted" />
-                </div>
-
-                <h3 class="mt-3 font-bold">
-                  Report Card
-                </h3>
-
-                <p class="text-xs text-muted">
-                  Preview of the active design
-                </p>
-              </div>
-
-              <div class="space-y-2 p-4">
-                <p class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Includes
-                </p>
-
-                <div v-if="activeSections.length" class="flex flex-wrap gap-1.5">
-                  <UBadge v-for="section in activeSections" :key="section.key" color="neutral" variant="subtle"
-                    size="sm">
-                    {{ section.label }}
-                  </UBadge>
-                </div>
-
-                <p v-else class="text-xs text-muted">
-                  No sections selected yet.
-                </p>
-              </div>
-            </div>
+          <div v-else-if="documentService.status.value" class="flex flex-col items-center gap-2 px-6 py-12 text-center">
+            <UIcon name="i-lucide-printer" class="size-10 text-muted" />
+            <p class="font-semibold text-highlighted">Report card printing isn't set up yet</p>
+            <p class="text-sm text-muted">
+              Report cards are printed by the document service. Once the platform team connects it, your design
+              shows here exactly as it prints.
+            </p>
+          </div>
+          <div v-else class="p-3">
+            <USkeleton class="aspect-[210/297] max-h-[calc(100vh-11rem)] w-full rounded-lg" />
           </div>
         </UCard>
 
@@ -220,64 +170,20 @@ const documentService = useDocumentService()
 onMounted(() => documentService.ensureLoaded())
 // Bumped when the design or the settings change, so the preview is made again.
 const previewVersion = ref(0)
+// Which design is being chosen and previewed: all levels, or one level's own.
+const { levelOptions, load: loadStructure } = useSchoolStructure()
+onMounted(() => loadStructure())
+const designTab = ref<string>('ALL')
+const levelTabs = computed(() => [
+  { label: 'All levels', value: 'ALL' },
+  ...levelOptions.value.map(l => ({ label: l.label, value: l.value }))
+])
 const { settings } = storeToRefs(store)
 
 const saving = ref(false)
 const fetching = ref(true)
 
-interface SectionConfig {
-  key: 'showStudentPhoto' | 'showAttendance' | 'showRemarks' | 'showPosition' | 'showTeacherSignature' | 'showPrincipalSignature' | 'showGradeScale'
-  label: string
-  hint: string
-  icon: string
-}
 
-const sections: SectionConfig[] = [
-  {
-    key: 'showStudentPhoto',
-    label: 'Student Photo',
-    hint: 'The student\'s photo beside their details',
-    icon: 'i-lucide-user-round'
-  },
-  {
-    key: 'showAttendance',
-    label: 'Attendance',
-    hint: 'Attendance percentage for the term',
-    icon: 'i-lucide-calendar-check'
-  },
-  {
-    key: 'showRemarks',
-    label: 'Teacher Remarks',
-    hint: 'Comments from the class teacher',
-    icon: 'i-lucide-message-square'
-  },
-  {
-    key: 'showPosition',
-    label: 'Class Position',
-    hint: 'Student rank within the class',
-    icon: 'i-lucide-trophy'
-  },
-  {
-    key: 'showTeacherSignature',
-    label: 'Class Teacher Signature',
-    hint: 'The class teacher\'s saved signature, added when they approve the card',
-    icon: 'i-lucide-signature'
-  },
-  {
-    key: 'showPrincipalSignature',
-    label: 'Principal Signature',
-    hint: "Signature line for the principal, with the school's saved signature",
-    icon: 'i-lucide-pen-line'
-  },
-  {
-    key: 'showGradeScale',
-    label: 'Grade Scale',
-    hint: 'Reference table for grade meanings',
-    icon: 'i-lucide-list-ordered'
-  }
-]
-
-const activeSections = computed(() => sections.filter(section => settings.value[section.key]))
 
 function addRemarkBand() {
   const last = [...settings.value.remarkScale].sort((a, b) => b.maxScore - a.maxScore)[0]

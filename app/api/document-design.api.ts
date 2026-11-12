@@ -26,9 +26,19 @@ export type DesignPlaceholder = {
   // For a list: by each Skultem list it could take rows from, the row field that fills each column on its own.
   automaticColumns: Record<string, Record<string, string>>
 }
+// choice: true show, false hide, null automatic. follows: the report card setting it follows when automatic.
+export type DesignGroupChoice = {
+  id: string, name: string, designShows: boolean, field: string, choice: boolean | null,
+  follows: string | null, followsLabel: string | null
+}
+
 export type FieldLinkEditor = {
   kind: DocumentDesignKind, template: string, templateName: string, readyMade: boolean,
-  placeholders: DesignPlaceholder[], sources: DataSource[], saved: boolean
+  placeholders: DesignPlaceholder[], sources: DataSource[], saved: boolean,
+  // The design's groups (elements shown or hidden together) and the school's choice for each.
+  groups: DesignGroupChoice[],
+  // The level these links are for (null = all levels); inherited = the level uses the all-levels links for now.
+  level: string | null, inherited: boolean
 }
 
 // Pictures of ready-made designs, kept for the visit (they don't change between deploys of the engine).
@@ -61,6 +71,27 @@ export const DocumentDesignApi = () => {
 
     // One exam's own design (NPSE, BECE...) for its slip or statement; chosenBySchool = it has its own, and
     // serverDefault is the school's general exam design it otherwise uses. template empty = use the general one.
+    // One level's own design (a Primary report card); serverDefault is the school's general design it otherwise uses.
+    levelChoice: async (level: string, kind: DocumentDesignKind, all = false): Promise<DocumentDesignChoice> => {
+      try {
+        const res = await $api(`/document-designs/${kind}/levels/${level}?all=${all}`) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+        throw err
+      }
+    },
+
+    levelChoose: async (level: string, kind: DocumentDesignKind, template: string | null): Promise<DocumentDesignChoice> => {
+      try {
+        const res = await $api(`/document-designs/${kind}/levels/${level}`, { method: 'PUT', body: { template } }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+        throw err
+      }
+    },
+
     examChoice: async (examId: string, kind: DocumentDesignKind, all = false): Promise<DocumentDesignChoice> => {
       try {
         const res = await $api(`/external-exams/exams/${examId}/designs/${kind}?all=${all}`) as any
@@ -82,10 +113,12 @@ export const DocumentDesignApi = () => {
     },
 
     // A design's placeholders, their links and every piece of data Skultem has (template empty = the current design).
-    fields: async (kind: DocumentDesignKind, template?: string | null): Promise<FieldLinkEditor> => {
+    fields: async (kind: DocumentDesignKind, template?: string | null, level?: string | null): Promise<FieldLinkEditor> => {
       try {
-        const q = template ? `?template=${encodeURIComponent(template)}` : ''
-        const res = await $api(`/document-designs/${kind}/fields${q}`) as any
+        const q = new URLSearchParams()
+        if (template) q.set('template', template)
+        if (level) q.set('level', level)
+        const res = await $api(`/document-designs/${kind}/fields${q.toString() ? `?${q}` : ''}`) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)
@@ -93,9 +126,22 @@ export const DocumentDesignApi = () => {
       }
     },
 
-    saveFields: async (kind: DocumentDesignKind, template: string, links: Record<string, FieldLink>): Promise<FieldLinkEditor> => {
+    saveFields: async (kind: DocumentDesignKind, template: string, links: Record<string, FieldLink>,
+      groups: Record<string, boolean> = {}, level: string | null = null): Promise<FieldLinkEditor> => {
       try {
-        const res = await $api(`/document-designs/${kind}/fields`, { method: 'PUT', body: { template, links } }) as any
+        const res = await $api(`/document-designs/${kind}/fields`, { method: 'PUT', body: { template, links, groups, level } }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+        throw err
+      }
+    },
+
+    // The level goes back to the all-levels links for this design.
+    useAllLevels: async (kind: DocumentDesignKind, template: string, level: string): Promise<FieldLinkEditor> => {
+      try {
+        const res = await $api(`/document-designs/${kind}/fields?template=${encodeURIComponent(template)}&level=${level}`,
+          { method: 'DELETE' }) as any
         return res.data
       } catch (err: any) {
         useHandleError(err)

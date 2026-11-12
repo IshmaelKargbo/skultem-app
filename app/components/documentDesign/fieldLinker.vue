@@ -22,7 +22,22 @@
         </div>
       </div>
 
-      <div class="grid gap-4 lg:grid-cols-[1fr_20rem]">
+      <!-- A level's own links, or the all-levels ones it uses until it has its own -->
+      <UAlert v-if="level && editor.inherited" color="neutral" variant="subtle" icon="i-lucide-layers"
+        :title="`${levelLabel(level)} uses the all-levels links`"
+        description="Change anything below and save to give this level its own links (e.g. Head Teacher instead of Principal). Other levels are not affected." />
+      <UAlert v-else-if="level" color="primary" variant="subtle" icon="i-lucide-layers"
+        :title="`${levelLabel(level)} has its own links`"
+        description="These apply to this level's report cards only.">
+        <template #actions>
+          <UButton size="xs" variant="outline" label="Use the all-levels links" :loading="resetting"
+            @click="backToAllLevels" />
+        </template>
+      </UAlert>
+
+      <!-- Two columns: the design's placeholders on the left; on the right, kept in view while the left scrolls, the
+           design as it prints and the data Skultem has. -->
+      <div class="grid items-start gap-4 lg:grid-cols-2">
         <!-- The design's placeholders -->
         <div class="space-y-2">
           <div v-for="p in editor.placeholders" :key="p.name" class="rounded-lg border p-3"
@@ -70,12 +85,27 @@
             </div>
           </div>
           <p v-if="!editor.placeholders.length" class="text-sm text-muted">This design has no placeholders to fill.</p>
+
+          <!-- Groups: parts of the design shown or hidden together (a position box, a "promoted to" line) -->
+          <div v-if="editor.groups?.length" class="space-y-2 pt-3">
+            <p class="text-sm font-semibold text-highlighted">Show or hide parts of the design</p>
+            <p class="text-xs text-muted">Each is a part of the design shown or hidden as a whole.</p>
+            <div v-for="g in editor.groups" :key="g.id"
+              class="flex flex-col gap-2 rounded-lg border border-default p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0">
+                <p class="font-medium text-highlighted">{{ g.name || g.id }}</p>
+                <p class="text-xs text-muted">{{ groupHint(g) }}</p>
+              </div>
+              <USelect v-model="groupState[g.id]" :items="groupOptions(g)" class="w-full sm:w-64"
+                :aria-label="`Show or hide ${g.name || g.id}`" />
+            </div>
+          </div>
         </div>
 
-        <!-- Everything Skultem has -->
-        <div class="space-y-2 lg:sticky lg:top-4 lg:self-start">
+        <!-- Kept in view while the placeholders scroll: everything Skultem has -->
+        <div class="flex flex-col gap-2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
           <p class="text-sm font-semibold text-highlighted">Skultem data you can use</p>
-          <div class="max-h-[70vh] space-y-3 overflow-y-auto rounded-lg border border-default p-3">
+          <div class="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-lg border border-default p-3 lg:max-h-[calc(100vh-6rem)]">
             <div v-for="group in groups" :key="group.name">
               <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">{{ group.name }}</p>
               <ul class="space-y-1">
@@ -98,7 +128,8 @@
 
 <script setup lang="ts">
 // Links each placeholder of a design to Skultem's data, fixed text or nothing, for one kind of document.
-const props = defineProps<{ kind: DocumentDesignKind, template?: string | null }>()
+// level: one level's links (PRIMARY, JSS...); none = the links for all levels.
+const props = defineProps<{ kind: DocumentDesignKind, template?: string | null, level?: string | null }>()
 const emit = defineEmits<{ loaded: [editor: FieldLinkEditor] }>()
 const { success, error: toastError } = useNotify()
 
@@ -134,6 +165,33 @@ function setChoice(s: ColumnState, value: string) {
 }
 
 const editor = ref<FieldLinkEditor>()
+// Each group's choice: 'auto', 'show' or 'hide'.
+const groupState = reactive<Record<string, 'auto' | 'show' | 'hide'>>({})
+
+function groupOptions(g: DesignGroupChoice) {
+  const auto = g.follows ? `Automatic: follows "${g.followsLabel}"` : `Automatic: ${g.designShows ? 'shown' : 'hidden'} (design)`
+  return [
+    { label: auto, value: 'auto' },
+    { label: 'Always show', value: 'show' },
+    { label: 'Always hide', value: 'hide' }
+  ]
+}
+function groupHint(g: DesignGroupChoice) {
+  const c = groupState[g.id]
+  if (c === 'show') return 'Shown on every document.'
+  if (c === 'hide') return 'Hidden on every document.'
+  return g.follows
+    ? `Shown when "${g.followsLabel}" is on in your report card settings.`
+    : `As the design has it: ${g.designShows ? 'shown' : 'hidden'}.`
+}
+function groupChoices(): Record<string, boolean> {
+  const out: Record<string, boolean> = {}
+  for (const [id, c] of Object.entries(groupState)) {
+    if (c === 'show') out[id] = true
+    else if (c === 'hide') out[id] = false
+  }
+  return out
+}
 const loading = ref(true)
 const failure = ref<string | null>(null)
 const saving = ref(false)
@@ -237,7 +295,9 @@ function take(next: FieldLinkEditor) {
     if (s.choice !== TEXT) s.prev = s.choice
     state[p.name] = s
   }
-  savedFingerprint.value = JSON.stringify(links())
+  for (const key of Object.keys(groupState)) delete groupState[key]
+  for (const g of next.groups ?? []) groupState[g.id] = g.choice === true ? 'show' : g.choice === false ? 'hide' : 'auto'
+  savedFingerprint.value = JSON.stringify([links(), groupChoices()])
   emit('loaded', next)
 }
 
@@ -259,13 +319,13 @@ function links(): Record<string, FieldLink> {
   return out
 }
 
-const dirty = computed(() => !!editor.value && JSON.stringify(links()) !== savedFingerprint.value)
+const dirty = computed(() => !!editor.value && JSON.stringify([links(), groupChoices()]) !== savedFingerprint.value)
 
 async function load() {
   loading.value = true
   failure.value = null
   try {
-    take(await DocumentDesignApi().fields(props.kind, props.template))
+    take(await DocumentDesignApi().fields(props.kind, props.template, props.level))
   } catch (err: any) {
     failure.value = err?.message || 'The design could not be read'
   } finally {
@@ -277,7 +337,8 @@ async function save() {
   if (!editor.value) return
   saving.value = true
   try {
-    take(await DocumentDesignApi().saveFields(props.kind, editor.value.template, links()))
+    take(await DocumentDesignApi().saveFields(props.kind, editor.value.template, links(), groupChoices(),
+      props.level ?? null))
     success('Data links saved - documents print with them from now on')
   } catch (err: any) {
     toastError(err?.message || 'The links could not be saved')
@@ -287,6 +348,7 @@ async function save() {
 }
 
 function resetAll() {
+  for (const id of Object.keys(groupState)) groupState[id] = 'auto'
   for (const s of Object.values(state)) {
     s.choice = AUTO
     s.text = ''
@@ -299,7 +361,20 @@ function resetAll() {
   }
 }
 
-watch(() => [props.kind, props.template], load)
+watch(() => [props.kind, props.template, props.level], load)
+
+const resetting = ref(false)
+async function backToAllLevels() {
+  if (!editor.value || !props.level) return
+  resetting.value = true
+  try {
+    take(await DocumentDesignApi().useAllLevels(props.kind, editor.value.template, props.level))
+  } catch (err: any) {
+    toastError(err?.message || 'Could not go back to the all-levels links')
+  } finally {
+    resetting.value = false
+  }
+}
 onMounted(load)
 defineExpose({ dirty })
 </script>

@@ -101,9 +101,13 @@ export const ReportCardApi = () => {
       fetchApiFile(`/report-card/${encodeURIComponent(id)}/pdf?inline=true`, `report-card-${studentName}.pdf`),
 
     // The school's report card design as it prints (latest card, or placeholders); template = try another design.
-    designPreview: (template?: string | null) =>
-      fetchApiFile(`/report-card/preview${template ? `?template=${encodeURIComponent(template)}` : ''}`,
-        'report-card-design-preview.pdf'),
+    designPreview: (template?: string | null, level?: string | null) => {
+      const q = new URLSearchParams()
+      if (template) q.set('template', template)
+      if (level) q.set('level', level)
+      const qs = q.toString()
+      return fetchApiFile(`/report-card/preview${qs ? `?${qs}` : ''}`, 'report-card-design-preview.pdf')
+    },
 
     // Every card of a class for a term, in one PDF.
     downloadClassPdf: (classId: string, termId: string) =>

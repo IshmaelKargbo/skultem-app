@@ -11,7 +11,7 @@
           :disabled="!url" @click="save" />
       </div>
     </div>
-    <div class="relative overflow-hidden rounded-lg border border-default bg-elevated" :style="{ height }">
+    <div class="relative overflow-hidden rounded-lg border border-default bg-elevated" :style="frameStyle">
       <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-sm text-muted">
         <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />
         Making the document…
@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 // A PDF made by the document service (M-Compose), shown in the page exactly as it prints, with Refresh, Print and
-// Download. Changing reloadKey makes it fetch again (e.g. after a different design is picked).
+// Download. Changing reloadKey makes it fetch again (e.g. after a different design is picked). height may be "a4".
 const props = withDefaults(defineProps<{
   fetcher: () => Promise<{ blob: Blob, filename: string }>
   caption?: string
@@ -43,6 +43,12 @@ const props = withDefaults(defineProps<{
   reloadKey: 0
 })
 const emit = defineEmits<{ printed: [], saved: [] }>()
+
+// height "a4": exactly one A4 page at the frame's width (no grey space around the page), but never taller than
+// the screen; anything else is a CSS height.
+const frameStyle = computed(() => props.height === 'a4'
+  ? { aspectRatio: '210 / 297', maxHeight: 'calc(100vh - 11rem)', width: '100%' }
+  : { height: props.height })
 
 const url = ref<string | null>(null)
 const filename = ref('document.pdf')

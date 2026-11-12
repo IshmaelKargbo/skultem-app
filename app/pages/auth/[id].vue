@@ -200,6 +200,10 @@
 
         <AuthUsersAssign v-if="record" v-model="showAssign" :user-id="record.id" @success="fetchUser" />
 
+        <AuthUsersResetPasswordPrompt v-if="record && showResetPassword" v-model:open="showResetPassword"
+            :user-id="record.id" :user-name="`${record.givenNames} ${record.familyName}`.trim() || record.email"
+            :sign-in-with="record.email || undefined" @changed="fetchUser" />
+
         <AuthUsersManageSections v-if="record && showManageSections" v-model="showManageSections"
             :user-id="record.id" :user-name="name" :roles="scopableRoles" @success="fetchUser" />
 
@@ -230,6 +234,7 @@ const { isSectionBased, load: loadStructure } = useSchoolStructure()
 const showStatusPrompt = ref(false)
 const showAssign = ref(false)
 const showManageSections = ref(false)
+const showResetPassword = ref(false)
 const removeRoleTarget = ref<string | null>(null)
 const showRemoveRole = computed<boolean>({
     get: () => removeRoleTarget.value !== null,
@@ -271,6 +276,10 @@ const actionItems = computed(() => {
                 ? [{ label: 'Manage sections', icon: 'lucide:layers', onSelect: () => { showManageSections.value = true } }]
                 : []),
         ],
+        // A temporary password for someone who forgot theirs (never your own - change that in your profile).
+        ...(own ? [] : [[
+            { label: 'Reset password', icon: 'i-lucide-key-round', onSelect: () => { showResetPassword.value = true } },
+        ]]),
         ...(own ? [] : [[
             isActive.value
                 ? { label: 'Deactivate account', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }

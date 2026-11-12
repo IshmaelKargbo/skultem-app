@@ -11,8 +11,12 @@
       icon="i-lucide-printer" title="Printing is not set up yet"
       description="Designs come from the document service, which the platform team has not connected yet." />
 
-    <UCard v-else-if="template">
-      <DocumentDesignFieldLinker kind="report-card" :template="template" />
+    <!-- The same links for every level, or a level's own (Primary "Head Teacher", JSS "Principal"). -->
+    <UTabs v-if="template && levelTabs.length > 1" v-model="levelTab" :items="levelTabs" :content="false" size="sm"
+      class="w-full" />
+    <UCard v-if="template && documentService.status.value?.enabled !== false" :ui="{ root: 'overflow-visible' }">
+      <DocumentDesignFieldLinker kind="report-card" :template="template"
+        :level="levelTab === 'ALL' ? null : levelTab" />
     </UCard>
 
     <UCard v-else-if="!loadingDesigns">
@@ -30,6 +34,15 @@ const { error: toastError } = useNotify()
 const template = ref<string | undefined>(typeof route.query.template === 'string' ? route.query.template : undefined)
 const designOptions = ref<{ label: string, value: string }[]>([])
 const loadingDesigns = ref(true)
+const { levelOptions, load: loadStructure } = useSchoolStructure()
+const levelTab = ref<string>(typeof route.query.level === 'string' ? route.query.level : 'ALL')
+const levelTabs = computed(() => [
+  { label: 'All levels', value: 'ALL' },
+  ...levelOptions.value.map(l => ({ label: l.label, value: l.value }))
+])
+watch(levelTab, (l) => {
+  router.replace({ query: { ...route.query, level: l === 'ALL' ? undefined : l } })
+})
 
 async function loadDesigns() {
   loadingDesigns.value = true
@@ -55,6 +68,7 @@ onMounted(() => {
   useAppStore().setTitle('Report Cards · Data Links')
   document.title = 'Data Links | Report Cards | Skultem'
   documentService.ensureLoaded()
+  loadStructure()
   loadDesigns()
 })
 

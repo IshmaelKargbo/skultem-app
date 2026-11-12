@@ -73,7 +73,10 @@ const props = withDefaults(defineProps<{
   kind: DocumentDesignKind, examId?: string | null, defaultLabel?: string,
   // The page where the current design's placeholders are linked to Skultem's data (shows a "Link data" button).
   linksPage?: string | null
+  // A level's own design (PRIMARY, JSS...), whose fallback is the school's general design.
+  level?: string | null
 }>(), {
+  level: null,
   examId: null,
   defaultLabel: 'the default',
   linksPage: null
@@ -117,7 +120,9 @@ function take(next: DocumentDesignChoice) {
 
 function fetchChoice(all: boolean) {
   const api = DocumentDesignApi()
-  return props.examId ? api.examChoice(props.examId, props.kind, all) : api.choice(props.kind, all)
+  if (props.examId) return api.examChoice(props.examId, props.kind, all)
+  if (props.level) return api.levelChoice(props.level, props.kind, all)
+  return api.choice(props.kind, all)
 }
 
 async function load() {
@@ -138,7 +143,9 @@ async function save(template: string | null) {
     const api = DocumentDesignApi()
     const next = props.examId
       ? await api.examChoose(props.examId, props.kind, template)
-      : await api.choose(props.kind, template)
+      : props.level
+        ? await api.levelChoose(props.level, props.kind, template)
+        : await api.choose(props.kind, template)
     if (showAll.value) take(next)
     else take(await fetchChoice(false))
     // Downloads check whether the school has a design; ask again next time.

@@ -104,6 +104,10 @@
 
         <TeacherStatusPrompt v-if="record" v-model:open="showStatusPrompt" :teacher-id="record.id" :teacher-name="name"
             :active="record.status === 'ACTIVE'" @changed="record = $event" />
+
+        <!-- A teacher who forgot their password: a temporary one to pass on; they set their own at the next login. -->
+        <AuthUsersResetPasswordPrompt v-if="record?.user && resetOpen" v-model:open="resetOpen" :user-id="record.user.id"
+            :user-name="name" :sign-in-with="record.user.email || undefined" />
     </div>
 </template>
 
@@ -113,6 +117,7 @@ const store = useTeacherStore()
 const { record, loading } = storeToRefs(store)
 const route = useRoute()
 const showStatusPrompt = ref(false)
+const resetOpen = ref(false)
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER]
@@ -147,7 +152,11 @@ const actionItems = computed(() => {
         [
             { label: 'Edit teacher', icon: EDIT_ICON, to: `/teachers/edit/${r.id}` },
             { label: 'View photo', icon: 'i-lucide-image', disabled: !r.user?.photo, onSelect: () => { photoOpen.value = true } },
-            { label: 'Upload photo', icon: 'i-lucide-camera', disabled: uploadingPhoto.value, onSelect: () => photoInput.value?.click() }
+            { label: 'Upload photo', icon: 'i-lucide-camera', disabled: uploadingPhoto.value, onSelect: () => photoInput.value?.click() },
+            // For a teacher who forgot their password (the page is for school leadership only).
+            ...(r.user?.id && r.status === 'ACTIVE'
+                ? [{ label: 'Reset password', icon: 'i-lucide-key-round', onSelect: () => { resetOpen.value = true } }]
+                : [])
         ],
         ...(r.status !== 'DELETED' ? [[
             r.status === 'ACTIVE'
