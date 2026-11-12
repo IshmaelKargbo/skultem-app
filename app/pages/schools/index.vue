@@ -93,6 +93,28 @@ watch(searchInput, (val) => {
   }, 350);
 });
 
+// Schools with Skully (the WhatsApp assistant) - a paid feature only the Skultem team switches on.
+const skullySchools = ref(new Set<string>());
+async function loadSkully() {
+  try {
+    skullySchools.value = new Set(await SystemApi().skullySchools());
+  } catch {
+    // The list still works without the badges.
+  }
+}
+async function toggleSkully(school: SystemSchool) {
+  const on = !skullySchools.value.has(school.id);
+  try {
+    await SystemApi().setSkully(school.id, on);
+    const next = new Set(skullySchools.value);
+    if (on) next.add(school.id); else next.delete(school.id);
+    skullySchools.value = next;
+    toastSuccess(`Skully ${on ? "switched on" : "switched off"} for ${clean(school.name)}`);
+  } catch (err: any) {
+    toastError(err?.data?.message || err?.message || "Skully could not be changed");
+  }
+}
+
 async function setStatus(school: SystemSchool, status: string) {
   try {
     await store.updateSchoolStatus(school.id, status);
@@ -116,6 +138,9 @@ function rowActions(school: SystemSchool) {
     [
       { label: "Edit School", icon: "i-lucide-pencil", onClick: () => openEditModal(school) },
       { label: "Set Platform Fee", icon: "i-lucide-shield", onClick: () => openPlatformFeeModal(school) },
+      skullySchools.value.has(school.id)
+        ? { label: "Switch Skully off", icon: "i-lucide-message-circle-off", onClick: () => toggleSkully(school) }
+        : { label: "Switch Skully on", icon: "i-lucide-message-circle", onClick: () => toggleSkully(school) },
       school.testSchool
         ? { label: "Take Live…", icon: "i-lucide-rocket", onClick: () => openGoLiveModal(school) }
         : { label: "Switch to Playground", icon: "i-lucide-flask-conical", onClick: () => enablePlayground(school) },
@@ -129,7 +154,7 @@ onMounted(async () => {
   useAppStore().setBack(false);
   document.title = "Schools | System Admin | Skultem";
 
-  await Promise.all([fetchSchools(), platformStore.fetchFeeSettings()]);
+  await Promise.all([fetchSchools(), platformStore.fetchFeeSettings(), loadSkully()]);
 });
 
 definePageMeta({
@@ -185,6 +210,8 @@ definePageMeta({
         <template #status-cell="{ row }">
           <div class="flex flex-wrap gap-1">
             <UBadge variant="subtle" :color="STATUS_COLOR[row.original.status]" :label="clean(row.original.status)" />
+            <UBadge v-if="skullySchools.has(row.original.id)" variant="subtle" color="success" icon="i-lucide-message-circle"
+              label="Skully" />
             <UBadge v-if="row.original.testSchool" variant="subtle" color="warning" icon="i-lucide-flask-conical"
               label="Playground" />
           </div>
@@ -255,6 +282,8 @@ definePageMeta({
               class="flex flex-wrap items-center justify-between gap-2 border-t border-default p-3 text-xs text-muted">
               <div class="flex flex-wrap gap-1">
                 <UBadge variant="subtle" :color="STATUS_COLOR[school.status]" :label="clean(school.status)" />
+                <UBadge v-if="skullySchools.has(school.id)" variant="subtle" color="success" icon="i-lucide-message-circle"
+                  label="Skully" />
                 <UBadge v-if="school.testSchool" variant="subtle" color="warning" icon="i-lucide-flask-conical"
                   label="Playground" />
               </div>

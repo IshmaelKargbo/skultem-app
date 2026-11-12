@@ -75,6 +75,15 @@ export const SystemApi = () => {
         useHandleError(err)
       }
     },
+    // Skully (WhatsApp assistant) is a paid feature the Skultem team switches on per school.
+    skullySchools: async (): Promise<string[]> => {
+      const res = await $api('/system/skully/schools') as any
+      return res?.data ?? []
+    },
+    setSkully: async (schoolId: string, enabled: boolean) => {
+      const res = await $api(`/system/school/${schoolId}/skully?enabled=${enabled}`, { method: 'PUT' }) as any
+      return res?.data as boolean
+    },
     getPlaygroundSummary: async (schoolId: string) => {
       try {
         const res = await $api(`/system/school/${schoolId}/playground`) as any

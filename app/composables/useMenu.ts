@@ -212,6 +212,10 @@ export function useMenu() {
           label: 'Broadcast History', to: '/communicate/broadcast/history', icon: BROADCAST_HISTORY_ICON,
           roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
         },
+        {
+          label: 'Skully (WhatsApp)', to: '/communicate/skully', icon: 'i-lucide-message-circle',
+          roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
+        },
       ]
     },
 

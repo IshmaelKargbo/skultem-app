@@ -79,6 +79,8 @@
                       <p class="font-display font-semibold leading-tight">{{ module.label }}</p>
                       <UBadge v-if="module.installed" color="success" variant="subtle" size="sm" label="Installed" />
                       <UBadge v-else-if="module.starter" color="primary" variant="subtle" size="sm" label="Starter" />
+                      <UBadge v-if="module.platformManaged" color="neutral" variant="subtle" size="sm"
+                        icon="i-lucide-badge-check" label="By Skultem" />
                     </div>
                     <p class="text-xs-base text-muted">{{ module.description }}</p>
                   </div>
@@ -100,7 +102,11 @@
                   </p>
                   <span v-else />
 
-                  <UButton v-if="module.installed && canDisable" label="Disable" color="neutral" variant="outline" size="sm"
+                  <!-- Switched on by the Skultem team only (a paid feature) - nothing for the school to press. -->
+                  <p v-if="module.platformManaged" class="text-xs text-muted">
+                    {{ module.installed ? 'Switched on for your school by Skultem' : 'Contact Skultem to get this for your school' }}
+                  </p>
+                  <UButton v-else-if="module.installed && canDisable" label="Disable" color="neutral" variant="outline" size="sm"
                     :loading="busyKey === module.key" :disabled="!!busyKey || blockedBy(module).length > 0"
                     @click="askToDisable(module)" />
                   <UButton v-else label="Install" icon="i-lucide-plus" size="sm" :loading="busyKey === module.key"

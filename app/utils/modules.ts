@@ -13,6 +13,8 @@ export type SchoolModule = {
     starter: boolean
     requires: string[]
     requiredBy: string[]
+    // Only the Skultem team switches it on or off (e.g. Skully, a paid feature).
+    platformManaged?: boolean
 }
 
 // Keys as the API sends them (FeatureModule.key() on the backend).
@@ -95,6 +97,7 @@ const ROUTE_MODULES: [string, string | null][] = [
     ['/communicate', ModuleKey.COMMUNICATION],
     ['/communicate/events', null],
     ['/communicate/notifications', null],
+    ['/communicate/skully', ModuleKey.WHATSAPP_ASSISTANT],
     ['/id-cards', ModuleKey.ID_CARDS],
     ['/athletic-house', ModuleKey.ATHLETIC_HOUSES],
     ['/material', ModuleKey.MATERIALS_AND_SUPPLIES],
