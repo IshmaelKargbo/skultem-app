@@ -17,7 +17,8 @@
         </div>
         <p class="mt-1 text-xs text-muted">
           {{ userId ? 'Lets them' : 'Lets you' }} message Skully on WhatsApp about the school - only what
-          {{ userId ? 'their' : 'your' }} role can see in Skultem. Leave empty to turn it off.
+          {{ userId ? 'their' : 'your' }} role can see in Skultem. Leave empty to turn it off (a teacher is still
+          recognised by the phone on their teacher profile).
         </p>
       </div>
     </div>
