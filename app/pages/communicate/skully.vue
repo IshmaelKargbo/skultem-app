@@ -24,7 +24,7 @@
       <UCard>
         <template #header>
           <p class="font-display font-semibold">Reminders to parents</p>
-          <p class="text-xs-base text-muted">Sent on WhatsApp in the morning and early afternoon, school days and weekends alike.</p>
+          <p class="text-xs-base text-muted">Sent on WhatsApp every hour from 8am to 4pm, school days and weekends alike.</p>
         </template>
         <div class="divide-y divide-default">
           <div v-for="option in options" :key="option.key" class="flex items-start justify-between gap-4 py-3">
@@ -44,15 +44,39 @@
           </div>
         </template>
       </UCard>
+
+      <UCard v-if="welcome">
+        <template #header>
+          <p class="font-display font-semibold">Welcome messages</p>
+          <p class="text-xs-base text-muted">
+            Every parent with a phone who has never signed in gets one WhatsApp message with how to sign in.
+            {{ welcome.sent }} sent so far.
+          </p>
+        </template>
+        <p v-if="!welcome.waiting" class="text-sm text-muted">Every parent who hasn't signed in yet has had their welcome.</p>
+        <template v-else>
+          <p class="mb-2 text-sm text-highlighted">{{ welcome.waiting }} {{ welcome.waiting === 1 ? 'parent hasn\'t' : 'parents haven\'t' }} had it yet</p>
+          <div class="max-h-96 divide-y divide-default overflow-y-auto">
+            <div v-for="p in welcome.parents" :key="p.parentId" class="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-2">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-highlighted">{{ p.name }}</p>
+                <p class="text-xs text-muted">{{ p.phone }} · {{ p.children }}</p>
+              </div>
+              <p class="text-xs text-muted sm:max-w-xs sm:text-right">{{ p.reason }}</p>
+            </div>
+          </div>
+        </template>
+      </UCard>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { SkullyApi, type SkullyReminderSettings, type SkullySettingsView } from '~/api/skully.api'
+import { SkullyApi, type SkullyReminderSettings, type SkullySettingsView, type SkullyWelcomeTracking } from '~/api/skully.api'
 
 const { error: toastError } = useNotify()
 const view = ref<SkullySettingsView>()
+const welcome = ref<SkullyWelcomeTracking>()
 const loading = ref(true)
 const saving = ref(false)
 const form = reactive<SkullyReminderSettings>({ examReminders: true, eventReminders: true, feeReminders: true })
@@ -81,8 +105,9 @@ function take(next: SkullySettingsView) {
 
 async function load() {
   loading.value = true
-  const res = await SkullyApi().settings()
+  const [res, welcomeRes] = await Promise.all([SkullyApi().settings(), SkullyApi().welcome()])
   if (res) take(res)
+  welcome.value = welcomeRes
   loading.value = false
 }
 
