@@ -97,6 +97,12 @@
 
             <!-- Confirm the email is theirs: where it stands, and sending (or re-sending) the link. -->
             <EmailVerificationStatus v-if="user?.email" class="mt-3" />
+
+            <!-- Staff Skully serves can talk to it on WhatsApp once their number is saved (parents use their guardian phone). -->
+            <div v-if="can([Role.OWNER, Role.PROPRIETOR, Role.SUPER_ADMIN, Role.PRINCIPAL, Role.ADMIN, Role.EXAM_OFFICER, Role.ACCOUNTANT])"
+                class="mt-3 rounded-xl border border-default bg-elevated/40 p-3 text-sm">
+                <SkullyWhatsappNumber />
+            </div>
         </UCard>
 
         <!-- Teachers sign the report cards they approve as class teacher. -->

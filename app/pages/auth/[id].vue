@@ -88,6 +88,9 @@
                             <dd class="truncate font-medium text-highlighted">{{ record?.email || 'No email' }}</dd>
                         </div>
                     </div>
+                    <div class="px-5 py-3 text-sm">
+                        <SkullyWhatsappNumber v-if="record?.id" :user-id="record.id" />
+                    </div>
                     <div class="flex items-center gap-3 px-5 py-3">
                         <UIcon name="i-lucide-shield-check" class="size-4 shrink-0 text-muted" />
                         <div class="min-w-0">

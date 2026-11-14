@@ -21,6 +21,33 @@
         </UCard>
       </div>
 
+      <UCard v-if="insights?.enabled && insights.configured && insights.allowed">
+        <template #header>
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="font-display font-semibold">Insights for leadership</p>
+              <p class="text-xs-base text-muted">
+                Skully reads your attendance, academic and fee reports and suggests what to act on.
+                <template v-if="insights.generatedAt">
+                  Written {{ new Date(insights.generatedAt).toLocaleString() }}<template v-if="insights.generatedBy"> for {{ insights.generatedBy }}</template>.
+                </template>
+              </p>
+            </div>
+            <UButton icon="i-lucide-sparkles" :label="insights.brief ? 'Refresh' : 'Write brief'" variant="soft"
+              :loading="refreshing" @click="refreshInsights" />
+          </div>
+        </template>
+        <p v-if="!insights.brief" class="text-sm text-muted">No brief yet. It takes about half a minute to write.</p>
+        <div v-else class="space-y-1 text-sm">
+          <template v-for="(line, i) in briefLines" :key="i">
+            <p v-if="line.heading" class="pt-2 font-display font-semibold text-highlighted first:pt-0">{{ line.text }}</p>
+            <p v-else-if="line.bullet" class="flex gap-2 text-default"><span class="text-primary">•</span><span>{{ line.text }}</span></p>
+            <p v-else-if="line.text" class="text-default">{{ line.text }}</p>
+          </template>
+          <p class="pt-3 text-xs text-muted">Written by AI from your school's data. Check the reports before acting on it.</p>
+        </div>
+      </UCard>
+
       <UCard>
         <template #header>
           <p class="font-display font-semibold">Reminders to parents</p>
@@ -72,14 +99,35 @@
 </template>
 
 <script setup lang="ts">
-import { SkullyApi, type SkullyReminderSettings, type SkullySettingsView, type SkullyWelcomeTracking } from '~/api/skully.api'
+import { SkullyApi, type SkullyInsights, type SkullyReminderSettings, type SkullySettingsView, type SkullyWelcomeTracking } from '~/api/skully.api'
 
 const { error: toastError } = useNotify()
 const view = ref<SkullySettingsView>()
 const welcome = ref<SkullyWelcomeTracking>()
+const insights = ref<SkullyInsights>()
+const refreshing = ref(false)
+
+const HEADINGS = ['At a glance', 'What\'s going well', 'Needs attention', 'Suggested actions this week']
+const briefLines = computed(() => (insights.value?.brief ?? '').split('\n').map((raw) => {
+  const line = raw.trim()
+  if (HEADINGS.some(h => line.replace(/:$/, '').toLowerCase() === h.toLowerCase())) return { heading: true, bullet: false, text: line.replace(/:$/, '') }
+  if (/^[-•*]\s+/.test(line)) return { heading: false, bullet: true, text: line.replace(/^[-•*]\s+/, '') }
+  return { heading: false, bullet: false, text: line }
+}))
+
+async function refreshInsights() {
+  refreshing.value = true
+  try {
+    insights.value = await SkullyApi().refreshInsights()
+  } catch (err: any) {
+    toastError(err?.data?.message || err?.message || 'Skully could not write the brief')
+  } finally {
+    refreshing.value = false
+  }
+}
 const loading = ref(true)
 const saving = ref(false)
-const form = reactive<SkullyReminderSettings>({ examReminders: true, eventReminders: true, feeReminders: true })
+const form = reactive<SkullyReminderSettings>({ examReminders: true, eventReminders: true, feeReminders: true, weeklySummary: true })
 
 const options: { key: keyof SkullyReminderSettings, label: string, description: string, icon: string }[] = [
   {
@@ -93,6 +141,10 @@ const options: { key: keyof SkullyReminderSettings, label: string, description: 
   {
     key: 'feeReminders', label: 'Fees', icon: 'i-lucide-banknote',
     description: 'In the 3 days before a fee is due, and once in the week after if it is still unpaid. Only what is still owed is mentioned.'
+  },
+  {
+    key: 'weeklySummary', label: 'Weekly summary', icon: 'i-lucide-calendar-check',
+    description: 'On Friday afternoon, one message per child: marks approved this week (subjects, average, highest), days present and absent, and the teacher\'s remarks. Skipped when nothing was recorded.'
   }
 ]
 
@@ -105,9 +157,10 @@ function take(next: SkullySettingsView) {
 
 async function load() {
   loading.value = true
-  const [res, welcomeRes] = await Promise.all([SkullyApi().settings(), SkullyApi().welcome()])
+  const [res, welcomeRes, insightsRes] = await Promise.all([SkullyApi().settings(), SkullyApi().welcome(), SkullyApi().insights()])
   if (res) take(res)
   welcome.value = welcomeRes
+  insights.value = insightsRes
   loading.value = false
 }
 
