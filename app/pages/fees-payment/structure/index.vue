@@ -9,8 +9,6 @@ const loading = ref(true);
 const { records: data, meta } = storeToRefs(store);
 const view = ref<"table" | "card">("table");
 
-const deleteModal = ref(false);
-const selected = ref<FeeStructure>();
 
 const termOptions = computed(() =>
   termStore.records.map((e) => ({ label: e.name, value: e.id }))
@@ -42,11 +40,6 @@ const DEFAULT_SORT = "createdAt:desc";
 
 function supplyItemsLabel(fee: FeeStructure) {
   return fee.supplyItems.map((item) => `${item.material.name} (${item.quantity})`).join(', ');
-}
-
-function remove(fee: FeeStructure) {
-  selected.value = fee;
-  deleteModal.value = true;
 }
 
 const columns = [
@@ -303,11 +296,10 @@ definePageMeta({
             <UBadge color="neutral" variant="subtle" icon="i-lucide-lock" label="Platform Fee" />
           </div>
 
-          <div v-else class="flex justify-end gap-1">
-            <UButton :to="`/fees-payment/structure/edit/${row.original.id}`" :icon="EDIT_ICON" size="xs" color="neutral"
-              variant="ghost" />
-
-            <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(row.original)" />
+          <!-- One action: the view has Edit and Delete. -->
+          <div v-else class="flex justify-end">
+            <UButton :to="`/fees-payment/structure/${row.original.id}`" icon="i-lucide-chevron-right" size="xs"
+              color="neutral" variant="ghost" />
           </div>
         </template>
       </UTable>
@@ -491,19 +483,13 @@ definePageMeta({
               <UBadge color="neutral" variant="subtle" icon="i-lucide-lock" label="Platform Fee" />
             </div>
 
-            <div v-else class="flex items-center justify-end gap-1 border-t border-default p-2">
-              <UButton :to="`/fees-payment/structure/edit/${item.id}`" label="Edit" :icon="EDIT_ICON" size="xs"
+            <div v-else class="flex items-center justify-end border-t border-default p-2">
+              <UButton :to="`/fees-payment/structure/${item.id}`" label="View" icon="i-lucide-eye" size="xs"
                 color="neutral" variant="ghost" />
-
-              <UButton label="Delete" :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                @click="remove(item)" />
             </div>
           </UCard>
         </template>
       </div>
-
-      <FeeStructureDeletePrompt v-if="selected" v-model:open="deleteModal" :fee-id="selected.id"
-        :fee-name="`${clean(selected.category.name)} - ${selected.term.name}`" />
 
       <template #footer>
         <div class="flex justify-between items-center">

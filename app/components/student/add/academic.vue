@@ -270,7 +270,7 @@ onMounted(() => {
                 </UFormField>
 
                 <UFormField data-guide="enrol-date" name="admissionDate" label="Admission Date" required>
-                    <UInput type="date" v-model="form.admissionDate" placeholder="Select admission date"
+                    <DateInput v-model="form.admissionDate" placeholder="Select admission date"
                         :leading-icon="CALENDAR_ICON" />
                     <template #help>
                         The date the student is officially admitted. Cannot be a future date.

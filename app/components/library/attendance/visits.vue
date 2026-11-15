@@ -125,8 +125,8 @@ onMounted(load)
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
           <UInput data-guide="adm-search" v-model="searchValue" :icon="SEARCH_ICON" placeholder="Search by student or class" class="w-full sm:w-64" />
           <template v-if="view === 'HISTORY'">
-            <UInput v-model="from" type="date" :max="to" class="w-full sm:w-44" />
-            <UInput v-model="to" type="date" :min="from" :max="today" class="w-full sm:w-44" />
+            <DateInput v-model="from" :max="to" class="w-full sm:w-44" />
+            <DateInput v-model="to" :min="from" :max="today" class="w-full sm:w-44" />
           </template>
         </div>
         <p v-if="view === 'FOLLOW_UP'" class="text-sm text-muted">

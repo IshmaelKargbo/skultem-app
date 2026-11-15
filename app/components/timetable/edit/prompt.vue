@@ -62,10 +62,10 @@ async function save() {
 
                     <div class="grid gap-3 sm:grid-cols-2">
                         <UFormField label="Starts">
-                            <UInput v-model="startTime" type="time" class="w-full" />
+                            <TimeInput v-model="startTime" class="w-full" />
                         </UFormField>
                         <UFormField label="Ends">
-                            <UInput v-model="endTime" type="time" class="w-full" />
+                            <TimeInput v-model="endTime" class="w-full" />
                         </UFormField>
                     </div>
 

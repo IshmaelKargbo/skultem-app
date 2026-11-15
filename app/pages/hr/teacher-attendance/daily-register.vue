@@ -13,7 +13,7 @@
     <UCard data-guide="rep-filters">
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Date">
-          <UInput v-model="filters.date" type="date" class="w-full" />
+          <DateInput v-model="filters.date" class="w-full" />
         </UFormField>
 
         <UFormField label="Teacher (optional)">

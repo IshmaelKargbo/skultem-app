@@ -36,11 +36,11 @@
           </UFormField>
 
           <UFormField label="Start Date" name="startDate" required>
-            <UInput v-model="state.startDate" type="date" class="w-full" />
+            <DateInput v-model="state.startDate" class="w-full" />
           </UFormField>
 
           <UFormField label="End Date" name="endDate" required>
-            <UInput v-model="state.endDate" type="date" class="w-full" />
+            <DateInput v-model="state.endDate" class="w-full" />
           </UFormField>
 
         </div>

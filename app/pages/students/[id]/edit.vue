@@ -34,7 +34,7 @@
           </UFormField>
 
           <UFormField label="Date of Birth" name="dateOfBirth" required>
-            <UInput v-model="state.dateOfBirth" type="date" :leading-icon="CALENDAR_ICON" />
+            <DateInput v-model="state.dateOfBirth" :leading-icon="CALENDAR_ICON" />
           </UFormField>
 
           <UFormField label="Gender" name="gender" required>

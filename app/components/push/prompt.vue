@@ -1,10 +1,13 @@
 <!-- A one-time nudge to turn on device notifications - only when the device can show them and hasn't decided yet.
-     "Not now" hides it for 30 days. The setting itself lives on the profile page. -->
+     "Not now" hides it for 30 days. The setting itself lives on the profile page.
+     It sits centred on screen, above everything (the mobile menu is z-1100), so nothing can cover its buttons. -->
 <template>
-  <Transition enter-from-class="translate-y-4 opacity-0" enter-active-class="transition duration-300"
-    leave-to-class="translate-y-4 opacity-0" leave-active-class="transition duration-200">
-    <div v-if="visible" role="dialog" aria-label="Turn on notifications"
-      class="fixed inset-x-3 bottom-3 z-[90] mx-auto max-w-md rounded-2xl border border-default bg-default p-4 shadow-2xl sm:inset-x-auto sm:right-4 sm:bottom-4">
+  <Transition enter-from-class="opacity-0 [&>div]:scale-95" enter-active-class="transition duration-300 [&>div]:transition [&>div]:duration-300"
+    leave-to-class="opacity-0 [&>div]:scale-95" leave-active-class="transition duration-200 [&>div]:transition [&>div]:duration-200">
+    <div v-if="visible"
+      class="fixed inset-0 z-1200 flex items-center justify-center bg-black/40 px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] backdrop-blur-[2px]">
+      <div role="dialog" aria-modal="true" aria-label="Turn on notifications"
+        class="w-full max-w-md rounded-2xl border border-default bg-default p-5 shadow-2xl">
       <div class="flex items-start gap-3">
         <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <UIcon name="i-lucide-bell-ring" class="size-5" />
@@ -17,6 +20,7 @@
             <UButton size="sm" color="neutral" variant="ghost" label="Not now" @click="later" />
           </div>
         </div>
+      </div>
       </div>
     </div>
   </Transition>

@@ -182,17 +182,17 @@ onMounted(() => {
         </UFormField>
 
         <UFormField v-if="report === 'DAILY'" label="Day">
-          <UInput v-model="day" type="date" :max="today" class="w-full" />
+          <DateInput v-model="day" :max="today" class="w-full" />
         </UFormField>
         <template v-else>
           <UFormField label="Period">
             <USelectMenu v-model="preset" :items="presetOptions" value-key="value" :search-input="false" class="w-full" />
           </UFormField>
           <UFormField label="From">
-            <UInput v-model="from" type="date" :max="to" class="w-full" @update:model-value="() => { preset = 'CUSTOM' }" />
+            <DateInput v-model="from" :max="to" class="w-full" @update:model-value="() => { preset = 'CUSTOM' }" />
           </UFormField>
           <UFormField label="To">
-            <UInput v-model="to" type="date" :min="from" :max="today" class="w-full" @update:model-value="() => { preset = 'CUSTOM' }" />
+            <DateInput v-model="to" :min="from" :max="today" class="w-full" @update:model-value="() => { preset = 'CUSTOM' }" />
           </UFormField>
         </template>
       </div>

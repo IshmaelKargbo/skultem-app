@@ -16,7 +16,7 @@
         </UFormField>
 
         <UFormField label="Month">
-          <UInput v-model="filters.month" type="month" class="w-full" />
+          <MonthInput v-model="filters.month" class="w-full" />
         </UFormField>
 
         <UFormField label="Class">

@@ -18,6 +18,8 @@ interface NavItem {
 
 const allItems: NavItem[] = [
   { label: 'Timetable', to: '/timetable', icon: TIMETABLE_ICON, exact: true, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PARENT] },
+  // A class's month as weeks, a few subjects each school day (built for nursery classes, works for any).
+  { label: 'Weekly plan', to: '/timetable/weekly-plan', icon: 'i-lucide-calendar-range', roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.TEACHER, Role.PARENT] },
   { label: 'Settings', to: '/timetable/setting', icon: TIMETABLE_SETTINGS_ICON, roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER] },
   { label: 'Design', to: '/timetable/design', icon: 'i-lucide-palette', roles: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN] }
 ]

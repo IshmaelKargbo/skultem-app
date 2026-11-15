@@ -83,7 +83,7 @@
             </UFormField>
 
             <UFormField label="Expiry Date" name="expiryDate" required>
-              <UInput v-model="state.expiryDate" type="date" icon="i-lucide-calendar-days" class="w-full"
+              <DateInput v-model="state.expiryDate" icon="i-lucide-calendar-days" class="w-full"
                 :disabled="isLoading" />
               <template #help>
                 <p class="text-xs text-muted">After this date the discount is no longer valid.</p>

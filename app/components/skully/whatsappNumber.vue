@@ -9,7 +9,7 @@
           <UInput v-model="draft" placeholder="e.g. 076 123 456" autocomplete="tel" class="min-w-40 flex-1"
             :aria-label="'WhatsApp number'" />
           <UButton type="submit" size="sm" label="Save" :loading="saving" />
-          <UButton size="sm" variant="ghost" color="neutral" label="Cancel" @click="editing = false" />
+          <UButton size="sm" variant="ghost" color="neutral" label="Cancel" @click="() => { editing = false }" />
         </form>
         <div v-else class="mt-0.5 flex flex-wrap items-center gap-2">
           <p class="font-medium text-highlighted">{{ loading ? '…' : (phone ? `+${phone}` : 'Not set') }}</p>

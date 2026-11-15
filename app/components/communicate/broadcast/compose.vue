@@ -184,7 +184,7 @@ async function onSubmit() {
 
             <!-- Schedule -->
             <UFormField v-if="state.sendOption === 'SCHEDULE'" label="Schedule For" name="scheduledAt" required>
-              <UInput v-model="state.scheduledAt" type="datetime-local" icon="i-lucide-calendar-clock"
+              <DateTimeInput v-model="state.scheduledAt" icon="i-lucide-calendar-clock"
                 :disabled="isLoading" class="w-full" size="lg" />
             </UFormField>
           </div>

@@ -57,11 +57,11 @@
                     </UFormField>
 
                     <UFormField required label="Start Date" name="startDate" class="flex-1">
-                        <UInput v-model="state.startDate" type="date" :disabled="isLoading" />
+                        <DateInput v-model="state.startDate" :disabled="isLoading" />
                     </UFormField>
 
                     <UFormField required label="End Date" name="endDate" class="flex-1">
-                        <UInput v-model="state.endDate" type="date" :disabled="isLoading" />
+                        <DateInput v-model="state.endDate" :disabled="isLoading" />
                     </UFormField>
 
                     <div v-if="terms.length" class="rounded-xl border-2 border-primary-200 dark:border-primary-600 dark:bg-gray-950 bg-primary-50 p-3 space-y-2">

@@ -48,11 +48,11 @@
 
           <div class="grid gap-5 lg:grid-cols-2">
             <UFormField label="Start Date" name="startDate">
-              <UInput disabled v-model="state.startDate" type="date" class="w-full" />
+              <DateInput disabled v-model="state.startDate" class="w-full" />
             </UFormField>
 
             <UFormField label="End Date" name="endDate">
-              <UInput disabled v-model="state.endDate" type="date" class="w-full" />
+              <DateInput disabled v-model="state.endDate" class="w-full" />
             </UFormField>
 
           </div>

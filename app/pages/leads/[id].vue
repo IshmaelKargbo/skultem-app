@@ -294,7 +294,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
               <p v-else class="text-muted">No demo yet.</p>
 
               <template v-if="lead.demoStatus !== 'COMPLETED'">
-                <UInput v-model="demoAt" type="datetime-local" class="w-full" />
+                <DateTimeInput v-model="demoAt" class="w-full" />
                 <div class="flex flex-wrap gap-2">
                   <UButton size="sm" icon="i-lucide-calendar-plus" :label="lead.demoStatus === 'SCHEDULED' ? 'Reschedule' : 'Schedule demo'"
                     :loading="busy" @click="scheduleDemo" />
@@ -321,7 +321,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
                 <USelect v-model="form.assignedToId" class="w-full" value-key="value" placeholder="Nobody yet" icon="i-lucide-user-check"
                   :items="staff.map(s => ({ label: s.name, value: s.id }))" />
               </UFormField>
-              <UFormField v-if="!closed" label="Next follow-up"><UInput v-model="followUp" type="datetime-local" class="w-full" /></UFormField>
+              <UFormField v-if="!closed" label="Next follow-up"><DateTimeInput v-model="followUp" class="w-full" /></UFormField>
               <UFormField label="Summary"><UTextarea v-model="form.summary" :rows="3" autoresize class="w-full" /></UFormField>
               <UButton icon="i-lucide-save" label="Save changes" :loading="busy" :disabled="!dirty" block @click="saveDetails" />
             </UForm>

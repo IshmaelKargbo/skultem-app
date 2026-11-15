@@ -162,7 +162,7 @@ onMounted(async () => {
         </UFormField>
 
         <UFormField v-if="scope === 'MONTH'" label="Month">
-          <UInput v-model="month" type="month" class="w-full" />
+          <MonthInput v-model="month" class="w-full" />
         </UFormField>
         <template v-else>
           <UFormField label="Academic Year">

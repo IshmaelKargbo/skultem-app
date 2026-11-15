@@ -22,7 +22,7 @@
           </UFormField>
 
           <UFormField data-guide="pay-run-paydate" label="Pay Date" name="payDate" required>
-            <UInput v-model="state.payDate" type="date" class="w-full" />
+            <DateInput v-model="state.payDate" class="w-full" />
           </UFormField>
         </div>
         <template #footer>

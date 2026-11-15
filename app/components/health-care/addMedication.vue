@@ -83,7 +83,7 @@ async function save() {
             </UFormField>
           </div>
           <UFormField label="Given at" description="Leave empty for now.">
-            <UInput v-model="givenAt" type="datetime-local" :min="toLocalInput(props.visit.arrivedAt)"
+            <DateTimeInput v-model="givenAt" :min="toLocalInput(props.visit.arrivedAt)"
               :max="toLocalInput(new Date().toISOString())" class="w-full" />
           </UFormField>
 

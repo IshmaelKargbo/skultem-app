@@ -26,14 +26,14 @@
                 </UFormField>
 
                 <UFormField required label="Start Date" name="startDate" class="flex-1">
-                    <UInput v-model="state.startDate" type="date" :disabled="isLoading" />
+                    <DateInput v-model="state.startDate" :disabled="isLoading" />
                     <template #hint>
                         <p class="text-xs text-muted">The first day of the academic year.</p>
                     </template>
                 </UFormField>
 
                 <UFormField required label="End Date" name="endDate" class="flex-1">
-                    <UInput v-model="state.endDate" type="date" :disabled="isLoading" />
+                    <DateInput v-model="state.endDate" :disabled="isLoading" />
                     <template #hint>
                         <p class="text-xs text-muted">The last day of the academic year.</p>
                     </template>

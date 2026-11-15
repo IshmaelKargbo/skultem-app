@@ -79,10 +79,10 @@ function apply() {
         </div>
         <div class="flex flex-col gap-4 md:flex-row md:items-end">
           <UFormField label="From" class="md:flex-1">
-            <UInput v-model="draft.from" type="date" :max="draft.to || today" class="w-full" />
+            <DateInput v-model="draft.from" :max="draft.to || today" class="w-full" />
           </UFormField>
           <UFormField label="To" class="md:flex-1">
-            <UInput v-model="draft.to" type="date" :min="draft.from" :max="today" class="w-full" />
+            <DateInput v-model="draft.to" :min="draft.from" :max="today" class="w-full" />
           </UFormField>
           <div class="md:flex-1 md:pb-2">
             <USwitch v-model="draft.overLimit" label="Over a limit only" />

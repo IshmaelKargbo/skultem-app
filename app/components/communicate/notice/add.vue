@@ -204,12 +204,12 @@ async function onSubmit() {
 
     <template v-if="state.hasEvent">
       <UFormField label="Date & time" name="eventAt" required>
-        <UInput v-model="state.eventAt" type="datetime-local" icon="i-lucide-calendar-clock"
+        <DateTimeInput v-model="state.eventAt" icon="i-lucide-calendar-clock"
           :disabled="isLoading" class="w-full" />
       </UFormField>
 
       <UFormField label="Ends" name="eventEndsAt" hint="Optional">
-        <UInput v-model="state.eventEndsAt" type="datetime-local" icon="i-lucide-calendar-check"
+        <DateTimeInput v-model="state.eventEndsAt" icon="i-lucide-calendar-check"
           :min="state.eventAt || undefined" :disabled="isLoading" class="w-full" />
       </UFormField>
 
@@ -233,9 +233,9 @@ async function onSubmit() {
     name="expiresAt"
     hint="Optional"
   >
-    <UInput
+    <DateInput
       v-model="state.expiresAt"
-      type="date"
+     
       icon="i-lucide-calendar-days"
       :disabled="isLoading"
       class="w-full"

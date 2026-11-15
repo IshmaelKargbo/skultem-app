@@ -29,10 +29,10 @@
               <UInput v-model="state.name" size="lg" icon="i-lucide-tag" placeholder="e.g. 2025/2026" class="w-full" :disabled="saving" />
             </UFormField>
             <UFormField label="Start date" name="startDate" required>
-              <UInput v-model="state.startDate" size="lg" type="date" class="w-full" :disabled="saving" />
+              <DateInput v-model="state.startDate" size="lg" class="w-full" :disabled="saving" />
             </UFormField>
             <UFormField label="End date" name="endDate" required>
-              <UInput v-model="state.endDate" size="lg" type="date" class="w-full" :disabled="saving" :min="state.startDate || undefined" />
+              <DateInput v-model="state.endDate" size="lg" class="w-full" :disabled="saving" :min="state.startDate || undefined" />
             </UFormField>
           </div>
         </UCard>
@@ -70,11 +70,11 @@
                   <UInput v-model="term.name" placeholder="e.g. First Term" class="w-full" :disabled="saving" />
                 </UFormField>
                 <UFormField label="Start date" :name="`terms.${index}.startDate`" required>
-                  <UInput v-model="term.startDate" type="date" class="w-full" :disabled="saving" :min="termMin(index)"
+                  <DateInput v-model="term.startDate" class="w-full" :disabled="saving" :min="termMin(index)"
                     :max="term.endDate || state.endDate || undefined" @change="clampTerm(term)" />
                 </UFormField>
                 <UFormField label="End date" :name="`terms.${index}.endDate`" required>
-                  <UInput v-model="term.endDate" type="date" class="w-full" :disabled="saving"
+                  <DateInput v-model="term.endDate" class="w-full" :disabled="saving"
                     :min="term.startDate || termMin(index)" :max="state.endDate || undefined" @change="clampTerm(term)" />
                 </UFormField>
               </div>

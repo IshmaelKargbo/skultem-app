@@ -164,7 +164,7 @@ onMounted(async () => {
 
         <div class="grid gap-4 sm:grid-cols-2">
           <UFormField label="Arrived at" help="Leave empty for now. Today only.">
-            <UInput v-model="arrivedAt" type="datetime-local" :max="toLocalInput(new Date().toISOString())" class="w-full" />
+            <DateTimeInput v-model="arrivedAt" :max="toLocalInput(new Date().toISOString())" class="w-full" />
           </UFormField>
           <UFormField data-guide="hcv-temp" label="Temperature (°C)" :required="settings?.requireTemperature">
             <UInputNumber v-model="temperature" :min="30" :max="45" :step="0.1" :format-options="{ minimumFractionDigits: 1 }"

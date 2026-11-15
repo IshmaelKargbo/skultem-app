@@ -107,7 +107,7 @@ async function confirm() {
             </UFormField>
 
             <UFormField label="Effective date" help="The day they left. Defaults to today.">
-              <UInput v-model="state.exitDate" type="date" :max="today" class="w-full" :disabled="loading" />
+              <DateInput v-model="state.exitDate" :max="today" class="w-full" :disabled="loading" />
             </UFormField>
 
             <UFormField label="Note (optional)">

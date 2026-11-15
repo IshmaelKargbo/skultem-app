@@ -17,7 +17,7 @@
             </UFormField>
 
             <UFormField name="date" class="w-full">
-              <UInput :max="today" v-model="state.date" type="date" class="w-full" @change="onClassOrDateChange" />
+              <DateInput :max="today" v-model="state.date" class="w-full" @change="onClassOrDateChange" />
             </UFormField>
           </div>
         </div>

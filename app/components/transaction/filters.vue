@@ -56,16 +56,16 @@
                                 <!-- date -->
                                 <UFormField v-if="inputType(item.field, item.operator) === 'date'"
                                     :name="`filters.${index}.value`" label="Value" class="flex-1" required>
-                                    <UInput v-model="item.value" type="date" placeholder="Select date" />
+                                    <DateInput v-model="item.value" placeholder="Select date" />
                                 </UFormField>
 
                                 <!-- date-range -->
                                 <template v-if="inputType(item.field, item.operator) === 'date-range'">
                                     <UFormField :name="`filters.${index}.value`" label="From" class="flex-1" required>
-                                        <UInput v-model="item.value" type="date" placeholder="From date" />
+                                        <DateInput v-model="item.value" placeholder="From date" />
                                     </UFormField>
                                     <UFormField :name="`filters.${index}.valueTo`" label="To" class="flex-1" required>
-                                        <UInput v-model="item.valueTo" type="date" placeholder="To date" />
+                                        <DateInput v-model="item.valueTo" placeholder="To date" />
                                     </UFormField>
                                 </template>
 

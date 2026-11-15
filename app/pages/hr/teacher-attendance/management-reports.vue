@@ -24,10 +24,10 @@
         </UFormField>
 
         <UFormField v-if="form.reportType === 'DAILY_REGISTER'" label="Date">
-          <UInput v-model="form.date" type="date" class="w-full" />
+          <DateInput v-model="form.date" class="w-full" />
         </UFormField>
         <UFormField v-else-if="form.reportType === 'MONTHLY_SUMMARY'" label="Month">
-          <UInput v-model="form.month" type="month" class="w-full" />
+          <MonthInput v-model="form.month" class="w-full" />
         </UFormField>
         <UFormField v-else label="Period">
           <UInput :model-value="termLabel" disabled class="w-full" />

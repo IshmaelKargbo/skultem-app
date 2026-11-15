@@ -17,7 +17,7 @@
         </UFormField>
 
         <UFormField label="Date">
-          <UInput v-model="filters.date" type="date" class="w-full" />
+          <DateInput v-model="filters.date" class="w-full" />
         </UFormField>
 
         <UFormField label="Class">

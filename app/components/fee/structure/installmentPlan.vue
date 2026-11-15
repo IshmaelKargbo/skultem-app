@@ -35,7 +35,7 @@
           class="justify-self-end sm:order-last" :disabled="disabled" @click="remove(i)" />
         <UInput :model-value="row.amount ?? undefined" type="number" min="0" step="0.01" size="sm" placeholder="Amount"
           :disabled="disabled" @update:model-value="(v) => update(i, { amount: toAmount(v) })" />
-        <UInput :model-value="row.dueDate" type="date" size="sm" :disabled="disabled"
+        <DateInput :model-value="row.dueDate" size="sm" :disabled="disabled"
           @update:model-value="(v) => update(i, { dueDate: String(v) })" />
       </div>
 

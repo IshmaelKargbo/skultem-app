@@ -136,7 +136,7 @@ async function save() {
           </UFormField>
           <template v-else>
             <UFormField label="Left at" description="Leave empty for now.">
-              <UInput v-model="leftAt" type="datetime-local" :min="toLocalInput(props.visit.arrivedAt)"
+              <DateTimeInput v-model="leftAt" :min="toLocalInput(props.visit.arrivedAt)"
                 :max="toLocalInput(new Date().toISOString())" class="w-full" />
             </UFormField>
             <UFormField label="Notes" :required="outcome === 'RETURNED_TO_CLASS' && settings?.requireNotesOnReturn && !props.visit.notes">

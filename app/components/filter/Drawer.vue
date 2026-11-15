@@ -75,7 +75,7 @@ function apply() {
             value-key="value" label-key="label" :placeholder="f.placeholder ?? 'Every student'" clear class="w-full" />
           <UInput v-else-if="f.type === 'number'" v-model="draft[f.key]" type="number" :placeholder="f.placeholder"
             class="w-full" />
-          <UInput v-else v-model="draft[f.key]" type="date" class="w-full" />
+          <DateInput v-else v-model="draft[f.key]" class="w-full" />
         </UFormField>
       </div>
     </template>

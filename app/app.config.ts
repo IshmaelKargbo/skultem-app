@@ -70,6 +70,26 @@ export default defineAppConfig({
           'rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
       },
     },
+    // The shared time field (components/timeInput.vue): sized and styled like the inputs above.
+    inputTime: {
+      defaultVariants: {
+        size: 'xl',
+      },
+      slots: {
+        base:
+          'w-full rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
+      },
+    },
+    // The shared date fields (components/dateInput.vue, dateTimeInput.vue): sized and styled like the inputs above.
+    inputDate: {
+      defaultVariants: {
+        size: 'xl',
+      },
+      slots: {
+        base:
+          'w-full rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
+      },
+    },
     modal: {
       slots: {
         base: 'rounded-2xl bg-white dark:bg-gray-900',

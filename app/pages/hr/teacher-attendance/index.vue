@@ -2,7 +2,7 @@
   <div id="attendance-scroll" class="px-4 md:px-6 space-y-3">
     <Heading title="Mark Attendance" subtitle="Mark staff present, absent or late, or clock them in/out.">
       <div class="flex w-full items-center gap-2 md:w-auto">
-        <UInput data-guide="sa-date" v-model="date" type="date" :max="today" class="min-w-0 flex-1 md:w-44 md:flex-none" />
+        <DateInput data-guide="sa-date" v-model="date" :max="today" class="min-w-0 flex-1 md:w-44 md:flex-none" />
         <UButton data-guide="sa-location" variant="soft" color="neutral" icon="i-lucide-map-pin" to="/settings/school?section=attendance"
           label="Location Settings" class="shrink-0" />
       </div>

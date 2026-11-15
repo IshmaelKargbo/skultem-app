@@ -37,17 +37,17 @@
 
         <div data-guide="paper-time" class="space-y-4">
         <UFormField required label="Date" name="examDate" :help="periodHint">
-          <UInput v-model="state.examDate" type="date" :min="minDate" :max="maxDate" class="w-full"
+          <DateInput v-model="state.examDate" :min="minDate" :max="maxDate" class="w-full"
             :disabled="saving" />
         </UFormField>
 
         <div>
           <div class="grid grid-cols-2 gap-3">
             <UFormField required label="Starts" name="startTime">
-              <UInput v-model="state.startTime" type="time" class="w-full" :disabled="saving" />
+              <TimeInput v-model="state.startTime" class="w-full" :disabled="saving" />
             </UFormField>
             <UFormField required label="Ends" name="endTime">
-              <UInput v-model="state.endTime" type="time" class="w-full" :disabled="saving" />
+              <TimeInput v-model="state.endTime" class="w-full" :disabled="saving" />
             </UFormField>
           </div>
           <!-- The usual two sittings of an exam day. -->

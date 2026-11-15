@@ -251,10 +251,10 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField label="Show from" help="Blank = straight away">
-              <UInput v-model="form.startsAt" type="datetime-local" class="w-full" />
+              <DateTimeInput v-model="form.startsAt" class="w-full" />
             </UFormField>
             <UFormField label="Show until" help="Blank = until switched off" :error="shown('window')">
-              <UInput v-model="form.endsAt" type="datetime-local" class="w-full" />
+              <DateTimeInput v-model="form.endsAt" class="w-full" />
             </UFormField>
           </div>
 

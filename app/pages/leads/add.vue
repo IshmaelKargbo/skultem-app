@@ -169,7 +169,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
                   :class="followUp === inDays(p.days) ? 'border-primary bg-primary/10 text-primary' : 'border-default text-muted hover:border-primary/50'"
                   @click="followUp = inDays(p.days)">{{ p.label }}</button>
               </div>
-              <UInput v-model="followUp" type="datetime-local" size="lg" class="w-full" />
+              <DateTimeInput v-model="followUp" size="lg" class="w-full" />
             </UFormField>
           </div>
           <template #footer>

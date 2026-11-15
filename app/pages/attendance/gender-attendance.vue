@@ -10,9 +10,9 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <UInput v-if="filters.period === 'WEEK'" v-model="filters.date" type="date" aria-label="Week of"
+          <DateInput v-if="filters.period === 'WEEK'" v-model="filters.date" aria-label="Week of"
             class="flex-1 md:w-44 md:flex-none" />
-          <UInput v-else-if="filters.period === 'MONTH'" v-model="filters.month" type="month" aria-label="Month"
+          <MonthInput v-else-if="filters.period === 'MONTH'" v-model="filters.month" aria-label="Month"
             class="flex-1 md:w-44 md:flex-none" />
           <USelectMenu v-else-if="filters.period === 'TERM'" v-model="filters.termId" :items="terms" value-key="value"
             label-key="label" placeholder="Select term" class="flex-1 md:w-44 md:flex-none" />

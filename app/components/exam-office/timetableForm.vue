@@ -21,11 +21,11 @@
 
         <div data-guide="tt-form-period" class="grid grid-cols-2 gap-3">
           <UFormField label="First day" name="startDate">
-            <UInput v-model="state.startDate" type="date" :min="term?.startDate" :max="term?.endDate" class="w-full"
+            <DateInput v-model="state.startDate" :min="term?.startDate" :max="term?.endDate" class="w-full"
               :disabled="saving" />
           </UFormField>
           <UFormField label="Last day" name="endDate">
-            <UInput v-model="state.endDate" type="date" :min="state.startDate || term?.startDate" :max="term?.endDate"
+            <DateInput v-model="state.endDate" :min="state.startDate || term?.startDate" :max="term?.endDate"
               class="w-full" :disabled="saving" />
           </UFormField>
         </div>

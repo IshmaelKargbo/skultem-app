@@ -308,3 +308,16 @@ html {
     font-size: 13.5px;
   }
 }
+
+/* iPhones zoom into a field whose text is under 16px when it is tapped, and many fields here are size sm/xs
+   (14px). On touch screens every field is 16px instead, so nothing zooms; pinch-zoom still works, and desktop
+   keeps the smaller sizes. Unlayered + !important so it wins over the Tailwind utilities on the fields. The date
+   field's day/month/year segments are editable spans, so they are included. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable="false"]) {
+    font-size: 16px !important;
+  }
+}

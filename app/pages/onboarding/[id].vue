@@ -193,7 +193,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
                   <USelect :model-value="step.assignedToId ?? undefined" :items="staffItems" value-key="value" size="xs"
                     placeholder="Assign" icon="i-lucide-user" class="w-40" :disabled="busy"
                     @update:model-value="setStepAssignee(step, ($event as string) || null)" />
-                  <UInput :model-value="step.dueDate ?? ''" type="date" size="xs" class="w-40" :disabled="busy"
+                  <DateInput :model-value="step.dueDate ?? ''" size="xs" class="w-40" :disabled="busy"
                     @update:model-value="setDue(step, $event as string)" />
                 </div>
 

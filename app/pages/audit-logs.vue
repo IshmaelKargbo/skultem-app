@@ -149,8 +149,8 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
     <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-default p-2 shadow-sm ring-1 ring-default">
       <UInput data-guide="adm-search" v-model="search" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search action, person or details" class="min-w-0 flex-1 sm:min-w-72" />
-      <UInput v-model="from" type="date" variant="soft" size="lg" class="w-full sm:w-44" aria-label="From" />
-      <UInput v-model="to" type="date" variant="soft" size="lg" class="w-full sm:w-44" aria-label="To" />
+      <DateInput v-model="from" variant="soft" size="lg" class="w-full sm:w-44" aria-label="From" />
+      <DateInput v-model="to" variant="soft" size="lg" class="w-full sm:w-44" aria-label="To" />
       <UButton v-if="filtersActive" variant="ghost" color="neutral" icon="i-lucide-x" label="Clear" @click="clearFilters" />
     </div>
 

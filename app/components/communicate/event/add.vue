@@ -161,9 +161,9 @@ async function onSubmit() {
       name="startDate"
       required
     >
-      <UInput
+      <DateInput
         v-model="state.startDate"
-        type="date"
+       
         icon="i-lucide-calendar-days"
         :disabled="isLoading"
         class="w-full"
@@ -175,9 +175,9 @@ async function onSubmit() {
       name="endDate"
       required
     >
-      <UInput
+      <DateInput
         v-model="state.endDate"
-        type="date"
+       
         icon="i-lucide-calendar-days"
         :disabled="isLoading"
         class="w-full"

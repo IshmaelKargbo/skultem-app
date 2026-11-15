@@ -316,7 +316,7 @@ definePageMeta({
 
               <!-- Due Date -->
               <UFormField label="Due Date" name="dueDate" required>
-                <UInput v-model="state.dueDate" type="date"
+                <DateInput v-model="state.dueDate"
                   :disabled="isLoading || (state.allowInstallment && state.installments.length > 0)" />
 
                 <template #help>

@@ -89,9 +89,9 @@ onMounted(() => {
             <p class="text-xs text-muted">Present, absent and excused from finalized registers only.</p>
           </div>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <UInput v-model="from" type="date" :max="to" aria-label="From" class="w-full sm:w-44" />
+            <DateInput v-model="from" :max="to" aria-label="From" class="w-full sm:w-44" />
             <span class="hidden text-sm text-muted sm:inline">to</span>
-            <UInput v-model="to" type="date" :min="from" aria-label="To" class="w-full sm:w-44" />
+            <DateInput v-model="to" :min="from" aria-label="To" class="w-full sm:w-44" />
             <UDropdownMenu v-if="canSuperviseAttendance" :items="rangeExportItems" :disabled="!!rangeError">
               <UButton :icon="DOWNLOAD_ICON" variant="outline" color="neutral" label="Export"
                 trailing-icon="i-lucide-chevron-down" :loading="['totals', 'sessions', 'visits'].includes(exporting)"

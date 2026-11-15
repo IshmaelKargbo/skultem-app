@@ -23,10 +23,10 @@
       <div class="grid gap-3 sm:grid-cols-3">
         <div class="grid grid-cols-2 col-span-3 gap-3">
           <UFormField label="Starts" size="md">
-            <UInput :disabled="mode === 'created'" v-model="state.startTime" type="time" class="w-full" />
+            <TimeInput :disabled="mode === 'created'" v-model="state.startTime" class="w-full" />
           </UFormField>
           <UFormField label="Ends" size="md">
-            <UInput :disabled="mode === 'created'" v-model="state.endTime" type="time" class="w-full" />
+            <TimeInput :disabled="mode === 'created'" v-model="state.endTime" class="w-full" />
           </UFormField>
         </div>
         <UFormField label="Period (mins)">

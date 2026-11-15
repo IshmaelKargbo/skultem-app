@@ -55,7 +55,7 @@
               </UFormField>
 
               <UFormField label="Date" name="date" required>
-                <UInput v-model="state.date" type="date" icon="i-lucide-calendar" class="w-full" />
+                <DateInput v-model="state.date" icon="i-lucide-calendar" class="w-full" />
               </UFormField>
 
               <UFormField label="Duration / Period" name="duration">

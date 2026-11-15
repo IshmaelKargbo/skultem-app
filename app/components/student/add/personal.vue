@@ -31,7 +31,7 @@
                 </UFormField>
 
                 <UFormField data-guide="enrol-dob" name="dob" label="Date of Birth" required>
-                    <UInput v-model="form.dob" type="date" :max="latestDob" :leading-icon="CALENDAR_ICON" />
+                    <DateInput v-model="form.dob" :max="latestDob" :leading-icon="CALENDAR_ICON" />
                     <template #help>
                         <p class="text-sm text-muted">
                             Select the student's date of birth. Must be a past date, at least 1 year ago.

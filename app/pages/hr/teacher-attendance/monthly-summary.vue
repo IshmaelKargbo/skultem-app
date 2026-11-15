@@ -13,7 +13,7 @@
     <UCard data-guide="rep-filters">
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Month">
-          <UInput v-model="filters.month" type="month" class="w-full" />
+          <MonthInput v-model="filters.month" class="w-full" />
         </UFormField>
         <UFormField label="Teacher (optional)">
           <UInput v-model="search" icon="i-lucide-search" placeholder="Search teacher..." class="w-full" />

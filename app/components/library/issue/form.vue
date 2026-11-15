@@ -260,7 +260,7 @@ async function onSubmit() {
         </div>
 
         <UFormField label="Due Date" name="dueDate" required>
-          <UInput v-model="state.dueDate" type="date" :min="tomorrow()" :disabled="isLoading" class="w-full" />
+          <DateInput v-model="state.dueDate" :min="tomorrow()" :disabled="isLoading" class="w-full" />
         </UFormField>
       </UForm>
     </template>

@@ -39,7 +39,7 @@
 
                 <!-- Start Date -->
                 <UFormField required label="Start Date" name="startDate">
-                    <UInput v-model="state.startDate" type="date" :min="activeAcademicYear?.startDate"
+                    <DateInput v-model="state.startDate" :min="activeAcademicYear?.startDate"
                         :max="activeAcademicYear?.endDate" :disabled="isLoading || !activeAcademicYear" />
                     <template #help>
                         <p class="text-xs text-mute">
@@ -50,7 +50,7 @@
 
                 <!-- End Date -->
                 <UFormField required label="End Date" name="endDate">
-                    <UInput v-model="state.endDate" type="date" :min="activeAcademicYear?.startDate"
+                    <DateInput v-model="state.endDate" :min="activeAcademicYear?.startDate"
                         :max="activeAcademicYear?.endDate" :disabled="isLoading || !activeAcademicYear" />
                     <template #help>
                         <p class="text-xs text-mute">
