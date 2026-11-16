@@ -32,6 +32,6 @@ async function remove() {
 
 <template>
   <ConfirmDeleteModal v-model:open="open" title="Delete Fee Structure" :item-name="feeName"
-    description="Fee structures already charged to a student cannot be deleted - unassign them first."
+    description="If this fee was charged to students, it is taken off their accounts and their balances are updated. A fee that anyone has already paid towards cannot be deleted."
     :on-confirm="remove" />
 </template>

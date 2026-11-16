@@ -187,7 +187,7 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 
           <template #footer>
             <div class="flex flex-wrap items-center justify-between gap-3">
-              <p class="text-xs text-muted">Applies to the next fee that is charged. Students already charged keep what they were charged.</p>
+              <p class="text-xs text-muted">Also updates this year's platform fee for every student already charged. Refused if a student has already paid more than the new amount.</p>
               <div class="flex gap-2">
                 <UButton variant="ghost" color="neutral" label="Reset" :disabled="unchanged" @click="reset" />
                 <UButton icon="i-lucide-save" label="Save platform fee" :loading="saving" :disabled="unchanged" @click="review" />

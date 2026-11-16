@@ -461,7 +461,7 @@ export const PAGE_HELP: Record<string, PageHelp> = {
             { text: 'Classes and students are set up, so the fee reaches the right students.', who: 'An admin' },
         ],
         howTo: ['Press Add Fee Structure.', 'Fill in the term, category, amount and due date.', 'Choose who pays it, then create it.'],
-        tips: ['Edits only reach forward - students already charged keep their existing fee.', 'The platform fee is set by Skultem and can\'t be edited here.'],
+        tips: ['Saving an edit updates every student already charged - their amount, term and balance. It is refused if a student has already paid more than the new amount.', 'The platform fee is set by Skultem and can\'t be edited here.'],
         guide: 'finance-structures',
     },
     'finance-structure-add': {
