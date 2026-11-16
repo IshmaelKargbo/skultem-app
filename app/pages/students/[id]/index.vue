@@ -47,6 +47,49 @@
             <template #header>
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
+                        <UIcon name="i-lucide-graduation-cap" class="size-5 text-primary" />
+                        <h3 class="md:text-lg font-semibold">
+                            Admission Information
+                        </h3>
+                    </div>
+
+                    <p class="text-xs-base text-muted">
+                        Admission and enrollment details recorded when the student was enrolled.
+                    </p>
+                </div>
+            </template>
+
+            <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div v-for="i in 3" :key="i" class="rounded-2xl border border-default p-4 space-y-3 bg-gray-100 dark:bg-neutral-800">
+                    <USkeleton class="h-3 w-20" />
+                    <USkeleton class="h-5 w-32" />
+                </div>
+            </div>
+
+            <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div
+                    v-for="item in admissionDetails"
+                    :key="item.label"
+                    class="rounded-2xl border border-default bg-gray-100 p-4 transition hover:border-primary/40 dark:bg-neutral-800"
+                >
+                    <div class="flex items-center gap-2 text-muted">
+                        <UIcon :name="item.icon" class="size-4" />
+                        <p class="text-xs uppercase tracking-wide">
+                            {{ item.label }}
+                        </p>
+                    </div>
+
+                    <p class="mt-2 wrap-break-word font-semibold">
+                        {{ item.value || '-' }}
+                    </p>
+                </div>
+            </div>
+        </UCard>
+
+        <UCard class="overflow-hidden mt-6">
+            <template #header>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
                         <UIcon name="i-lucide-users" class="size-5 text-primary" />
                         <h3 class="md:text-lg font-semibold">
                             Parent / Guardian Information
@@ -147,9 +190,21 @@ const personalDetails = computed(() => ([
     { label: 'Date of Birth', icon: 'i-lucide-calendar-days', value: record.value?.dateOfBirth ? formatDate(record.value.dateOfBirth) : '' },
     { label: 'Religion', icon: 'i-lucide-heart', value: clean(record.value?.religion || '') },
     { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.city },
-    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street },
-    { label: 'Enrollment Type', icon: 'i-lucide-user-cog', value: ENROLLMENT_TYPES.find(t => t.value === record.value?.enrollmentType)?.label }
+    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street }
 ]))
+
+// Previous school / last grade only apply to transfers and re-enrolments (shown for others only if filled in).
+const admissionDetails = computed(() => {
+    const s = record.value
+    const transfer = s?.enrollmentType === 'TRANSFER' || s?.enrollmentType === 'RE_ENROLLMENT'
+    return [
+        { label: 'Admission Number', icon: 'i-lucide-id-card', value: s?.admissionNumber },
+        { label: 'Admission Date', icon: 'i-lucide-calendar-check', value: s?.admissionDate ? formatDate(s.admissionDate) : '' },
+        { label: 'Enrollment Type', icon: 'i-lucide-user-cog', value: ENROLLMENT_TYPES.find(t => t.value === s?.enrollmentType)?.label },
+        ...(transfer || s?.previousSchool ? [{ label: 'Previous School', icon: 'i-lucide-school', value: s?.previousSchool }] : []),
+        ...(transfer || s?.lastClass ? [{ label: 'Last Grade Completed', icon: 'i-lucide-book-open', value: s?.lastClass }] : [])
+    ]
+})
 
 const guardianContact = computed(() => ([
     { label: 'Guardian Name', icon: 'i-lucide-user-round-check', value: `${record.value?.guardian?.givenNames || ''} ${record.value?.guardian?.familyName || ''}`.trim() },

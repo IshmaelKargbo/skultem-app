@@ -4,7 +4,7 @@
      or cleared, like the native input did. -->
 <template>
   <UInputDate v-bind="$attrs" v-model="value" :min-value="toDate(min)" :max-value="toDate(max)" :disabled="disabled"
-    :size="size" :variant="variant" :icon="icon" :leading-icon="leadingIcon" :aria-label="ariaLabel" class="w-full">
+    :size="size" :variant="variant" :icon="icon" :leading-icon="leadingIcon" :aria-label="ariaLabel || placeholder" class="w-full">
     <template #trailing>
       <UPopover v-model:open="open" :content="{ align: 'end' }">
         <UButton color="neutral" variant="link" size="sm" icon="i-lucide-calendar" class="px-0"
@@ -33,6 +33,9 @@ const props = defineProps<{
   icon?: string
   leadingIcon?: string
   ariaLabel?: string
+  // Accepted but not passed on: UInputDate's placeholder is a date (it calls .compare() on it), so a text
+  // placeholder breaks the field and the form around it. The field already shows dd/mm/yyyy.
+  placeholder?: string
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string], change: [value: string] }>()
 

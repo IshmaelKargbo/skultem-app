@@ -31,6 +31,10 @@ export type Student = {
     house?: House
     status: string
     enrollmentType?: 'NEW' | 'TRANSFER' | 'RE_ENROLLMENT' | 'EXISTING'
+    // Admission details captured at enrollment.
+    admissionDate?: string | null
+    previousSchool?: string | null
+    lastClass?: string | null
     // Why/when a WITHDRAWN or EXPELLED student left - empty for everyone else.
     exitReason?: string | null
     exitDate?: string | null
