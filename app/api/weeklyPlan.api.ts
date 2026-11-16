@@ -7,7 +7,11 @@ export type WeeklyPlan = {
   id: string | null, classSessionId: string, className: string, termId: string, termName: string
   termStart: string, termEnd: string, status: 'DRAFT' | 'PUBLISHED'
   slots: WeeklyPlanSlot[], slotsSource: 'CLASS' | 'SCHOOL', subjects: { id: string, name: string }[], weeks: WeeklyPlanWeek[]
+  // A repeating plan: how many weeks repeat (0 = every week planned on its own) and that pattern by weekday.
+  cycleWeeks: number, cycle: WeeklyPlanCycleEntry[]
 }
+// weekday: 1 Monday .. 5 Friday
+export type WeeklyPlanCycleEntry = { week: number, weekday: number, slot: number, subjectId: string, subjectName: string }
 export type ClassSlots = { slots: WeeklyPlanSlot[], source: 'CLASS' | 'SCHOOL' }
 export type ChildWeeklyPlan = { className: string, slots: WeeklyPlanSlot[], weeks: WeeklyPlanWeek[] }
 
@@ -27,8 +31,11 @@ export const WeeklyPlanApi = () => {
       ((await $api(`/weekly-plans/slots/class?classSessionId=${encodeURIComponent(classSessionId)}`, { method: 'DELETE' })) as any).data,
     get: async (classSessionId: string, termId: string): Promise<WeeklyPlan> =>
       ((await $api(`/weekly-plans?${q(classSessionId, termId)}`)) as any).data,
-    autoFill: async (classSessionId: string, termId: string): Promise<WeeklyPlan> =>
-      ((await $api(`/weekly-plans/auto-fill?${q(classSessionId, termId)}`, { method: 'POST' })) as any).data,
+    autoFill: async (classSessionId: string, termId: string, cycleWeeks = 0): Promise<WeeklyPlan> =>
+      ((await $api(`/weekly-plans/auto-fill?${q(classSessionId, termId)}&cycleWeeks=${cycleWeeks}`, { method: 'POST' })) as any).data,
+    saveCycle: async (classSessionId: string, termId: string, cycleWeeks: number,
+      entries: { week: number, weekday: number, slot: number, subjectId: string }[]): Promise<WeeklyPlan> =>
+      ((await $api(`/weekly-plans/cycle?${q(classSessionId, termId)}`, { method: 'PUT', body: { cycleWeeks, entries } })) as any).data,
     save: async (classSessionId: string, termId: string, entries: { date: string, slot: number, subjectId: string }[]): Promise<WeeklyPlan> =>
       ((await $api(`/weekly-plans?${q(classSessionId, termId)}`, { method: 'PUT', body: { entries } })) as any).data,
     setStatus: async (classSessionId: string, termId: string, published: boolean): Promise<WeeklyPlan> =>

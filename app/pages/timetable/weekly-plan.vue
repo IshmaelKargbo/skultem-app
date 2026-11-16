@@ -1,6 +1,7 @@
 <!-- Weekly plan: a class's school term split into its weeks, laid out like the timetable (weekdays across,
      sessions down), a subject in each session (e.g. Morning and After break). Leadership auto-fills, edits and
-     publishes; teachers look; parents see their child's published plan for this week and next. -->
+     publishes; teachers look; parents see their child's published plan for this week and next.
+     A plan can repeat: plan e.g. 4 weeks (one month) by weekday and it is repeated over the whole term. -->
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <!-- Parents -->
@@ -66,8 +67,11 @@
                 {{ plan.termName }} · {{ formatDate(plan.termStart) }} - {{ formatDate(plan.termEnd) }} · {{ plan.weeks.length }} weeks
                 · {{ plan.slots.length }} {{ plan.slots.length === 1 ? 'subject' : 'subjects' }} a day
                 <template v-if="plan.slotsSource === 'CLASS'">(this class's own sessions)</template>
+                <template v-if="!canEdit && plan.cycleWeeks"> · repeats every {{ plan.cycleWeeks }} {{ plan.cycleWeeks === 1 ? 'week' : 'weeks' }}</template>
               </p>
             </div>
+            <USelectMenu v-if="canEdit" v-model="repeat" :items="repeatItems" value-key="value" :search-input="false"
+              icon="i-lucide-repeat" class="w-full md:w-64" />
             <div v-if="canEdit" class="flex flex-wrap gap-2">
               <UButton icon="i-lucide-clock" label="Sessions" color="neutral" variant="outline" @click="() => { sessionsOpen = true }" />
               <UButton icon="i-lucide-wand-sparkles" label="Auto-fill" color="neutral" variant="outline" :loading="busy === 'fill'"
@@ -84,11 +88,24 @@
           </p>
         </UCard>
 
+        <!-- A repeating plan: just its weeks, by weekday - saving spreads them over the term -->
+        <template v-if="canEdit && repeat">
+          <UAlert color="info" variant="subtle" icon="i-lucide-repeat"
+            :title="`Plan ${repeat} ${repeat === 1 ? 'week' : 'weeks'} - it repeats for the whole term`"
+            :description="`Week 1 is the first week of term, then week ${repeat + 1} starts again from Week 1, and so on for all ${plan.weeks.length} weeks. Holidays are skipped. Parents see the dated weeks once it is published.`" />
+          <UCard v-for="week in cycleGrid" :key="week.start" :ui="{ body: 'p-0 sm:p-0' }">
+            <template #header><p class="font-display font-semibold">{{ week.label }}</p></template>
+            <WeeklyPlanGrid :week="week" :slots="plan.slots" editable undated :picks="picks" :subjects="plan.subjects" />
+          </UCard>
+        </template>
+
         <!-- The weeks, each laid out like the timetable -->
-        <UCard v-for="week in plan.weeks" :key="week.start" :ui="{ body: 'p-0 sm:p-0' }">
-          <template #header><p class="font-display font-semibold">{{ week.label }}</p></template>
-          <WeeklyPlanGrid :week="week" :slots="plan.slots" :editable="canEdit" :picks="picks" :subjects="plan.subjects" />
-        </UCard>
+        <template v-else>
+          <UCard v-for="week in plan.weeks" :key="week.start" :ui="{ body: 'p-0 sm:p-0' }">
+            <template #header><p class="font-display font-semibold">{{ week.label }}</p></template>
+            <WeeklyPlanGrid :week="week" :slots="plan.slots" :editable="canEdit" :picks="picks" :subjects="plan.subjects" />
+          </UCard>
+        </template>
 
         <WeeklyPlanSessions v-if="canEdit" v-model:open="sessionsOpen" :class-session-id="classSessionId"
           :class-name="plan.className" @saved="load" />
@@ -125,16 +142,66 @@ const sessionsOpen = ref(false)
 const picks = reactive<Record<string, string | undefined>>({})
 const saved = ref('')
 
-const current = computed(() => JSON.stringify(Object.entries(picks).filter(([, v]) => v).sort()))
+// How the plan is made: every week on its own (0), or a few weeks repeated over the term.
+const repeat = ref(0)
+// Up to 8 weeks (the server's limit, WeeklyPlanService.MAX_CYCLE_WEEKS).
+const repeatItems = [
+  { label: 'Repeats every month (4 weeks)', value: 4 },
+  { label: 'Repeats every 5 weeks', value: 5 },
+  { label: 'Repeats every 6 weeks', value: 6 },
+  { label: 'Repeats every 7 weeks', value: 7 },
+  { label: 'Repeats every 8 weeks', value: 8 },
+  { label: 'Repeats every 3 weeks', value: 3 },
+  { label: 'Repeats every 2 weeks', value: 2 },
+  { label: 'Same every week', value: 1 },
+  { label: 'Plan every week of the term', value: 0 }
+]
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+// Pattern cells are keyed "c<week>-<weekday>|<slot>" (weekday 1-5); dated cells "<date>|<slot>".
+const cycleKey = (week: number, weekday: number) => `c${week}-${weekday}`
+const parseCycle = (key: string) => {
+  const m = /^c(\d+)-(\d)\|(\d+)$/.exec(key)
+  return m ? { week: Number(m[1]), weekday: Number(m[2]), slot: Number(m[3]) } : null
+}
+const cycleGrid = computed(() => Array.from({ length: repeat.value }, (_, i) => ({
+  label: `Week ${i + 1}`, start: `c${i + 1}`, end: `c${i + 1}`,
+  days: WEEKDAYS.map((weekday, d) => ({ date: cycleKey(i + 1, d + 1), weekday, holiday: null, entries: [] }))
+})))
+
+// What would be saved in the current mode.
+const activePicks = computed(() => Object.entries(picks).filter(([k, v]) => {
+  if (!v) return false
+  const c = parseCycle(k)
+  return repeat.value ? !!c && c.week <= repeat.value : !c
+}))
+const current = computed(() => JSON.stringify([repeat.value, [...activePicks.value].sort()]))
 const dirty = computed(() => !!plan.value && current.value !== saved.value)
-const hasEntries = computed(() => Object.values(picks).some(Boolean))
+const hasEntries = computed(() => activePicks.value.length > 0)
 
 function take(p: WeeklyPlan) {
   plan.value = p
   for (const k of Object.keys(picks)) delete picks[k]
   for (const w of p.weeks) for (const d of w.days) for (const e of d.entries) picks[`${d.date}|${e.slot}`] = e.subjectId
+  for (const e of p.cycle ?? []) picks[`${cycleKey(e.week, e.weekday)}|${e.slot}`] = e.subjectId
+  // A plan not started yet begins as a one-month cycle.
+  repeat.value = p.cycleWeeks || (p.id ? 0 : 4)
   saved.value = current.value
 }
+
+// Switching to a repeating plan with nothing in it yet starts from the term's first weeks as planned so far.
+watch(repeat, (n) => {
+  if (!n || !plan.value || activePicks.value.length) return
+  plan.value.weeks.slice(0, n).forEach((week, w) => {
+    for (const d of week.days) {
+      const weekday = WEEKDAYS.indexOf(d.weekday) + 1
+      if (!weekday) continue
+      plan.value!.slots.forEach((_, slot) => {
+        const subject = picks[`${d.date}|${slot}`]
+        if (subject) picks[`${cycleKey(w + 1, weekday)}|${slot}`] = subject
+      })
+    }
+  })
+})
 
 async function load() {
   if (!classSessionId.value || !termId.value) return
@@ -163,11 +230,17 @@ async function run(kind: 'fill' | 'save' | 'status', work: () => Promise<WeeklyP
 
 function autoFill() {
   if (hasEntries.value && !confirm('Auto-fill replaces every subject planned for this term. Continue?')) return
-  run('fill', () => WeeklyPlanApi().autoFill(classSessionId.value, termId.value), 'Term filled - check it, then save or publish')
+  run('fill', () => WeeklyPlanApi().autoFill(classSessionId.value, termId.value, repeat.value), 'Term filled - check it, then save or publish')
 }
 
 function save() {
-  const entries = Object.entries(picks).filter(([, v]) => v).map(([k, subjectId]) => {
+  if (repeat.value) {
+    const entries = activePicks.value.map(([k, subjectId]) => ({ ...parseCycle(k)!, subjectId: subjectId as string }))
+    run('save', () => WeeklyPlanApi().saveCycle(classSessionId.value, termId.value, repeat.value, entries),
+      'Weekly plan saved - repeated over the whole term')
+    return
+  }
+  const entries = activePicks.value.map(([k, subjectId]) => {
     const [date, slot] = k.split('|') as [string, string]
     return { date, slot: Number(slot), subjectId: subjectId as string }
   })

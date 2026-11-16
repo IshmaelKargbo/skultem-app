@@ -8,7 +8,7 @@
           <th class="w-36 border-b border-default p-2 text-left text-xs font-medium text-muted">Session</th>
           <th v-for="col in columns" :key="col.weekday" class="border-b border-l border-default p-2 text-left">
             <p class="font-semibold text-highlighted">{{ col.weekday }}</p>
-            <p class="text-xs font-normal text-muted">{{ col.day ? formatDate(col.day.date) : '' }}</p>
+            <p v-if="!undated" class="text-xs font-normal text-muted">{{ col.day ? formatDate(col.day.date) : '' }}</p>
           </th>
         </tr>
       </thead>
@@ -42,6 +42,8 @@ const props = defineProps<{
   // "date|slot" -> subject id (staff editing); read-only cells use the week's entries.
   picks?: Record<string, string | undefined>
   subjects?: { id: string, name: string }[]
+  // A repeating plan's pattern week: weekdays only, no dates.
+  undated?: boolean
 }>()
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
