@@ -1,29 +1,28 @@
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <Heading title="Assessment Cycle"
-      subtitle="Monitor assessment progress and control transitions between assessment stages">
-      <UBadge v-if="allTermsCompleted" variant="soft" color="success" size="lg">
-        All terms completed for this year
-      </UBadge>
-      <div v-else class="grid w-full gap-2 md:flex md:w-auto md:items-center">
-        <!-- Sections run their assessments separately, so a section moves on its own. -->
-        <USelectMenu data-guide="cycle-section" v-if="isSectionBased" v-model="advanceSectionId" value-key="value" :items="advanceSections"
-          placeholder="Choose section" class="w-full md:w-44" />
-        <UTooltip :text="isSectionBased
-          ? 'Moves only the chosen section to its next assessment - the other sections stay where they are.'
-          : 'Advances every class on the selected term at once - not just the class you\'re viewing.'">
-          <UButton data-guide="cycle-advance" class="w-full justify-center md:w-auto" icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
-            :disabled="!selectedTermId || isRefreshing || (isSectionBased && !advanceSectionId)"
-            @click="advanceAssessmentStage">
-            {{ isSectionBased && advanceSectionName ? `Move ${advanceSectionName} To Next Assessment` : 'Move To Next Assessment' }}
-          </UButton>
-        </UTooltip>
-      </div>
-    </Heading>
-
+    <UCard>
+      <div class="flex items-center justify-between gap-3">
+        <GuideBar topic="admin-assessment-cycle" />
+        <UBadge v-if="allTermsCompleted" variant="soft" color="success" size="lg">
+            All terms completed for this year
+          </UBadge>
+          <div v-else class="grid w-full gap-2 md:flex md:w-auto md:items-center">
+            <!-- Sections run their assessments separately, so a section moves on its own. -->
+            <USelectMenu data-guide="cycle-section" v-if="isSectionBased" v-model="advanceSectionId" value-key="value" :items="advanceSections"
+              placeholder="Choose section" class="w-full md:w-44" />
+            <UTooltip :text="isSectionBased
+              ? 'Moves only the chosen section to its next assessment - the other sections stay where they are.'
+              : 'Advances every class on the selected term at once - not just the class you\'re viewing.'">
+              <UButton data-guide="cycle-advance" class="w-full justify-center md:w-auto" icon="i-lucide-arrow-right-circle" color="warning" :loading="isAdvancingAssessment"
+                :disabled="!selectedTermId || isRefreshing || (isSectionBased && !advanceSectionId)"
+                @click="advanceAssessmentStage">
+                {{ isSectionBased && advanceSectionName ? `Move ${advanceSectionName} To Next Assessment` : 'Move To Next Assessment' }}
+              </UButton>
+            </UTooltip>
+          </div>
+        </div>
+    </UCard>
     <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
-
-    <GuideBar topic="admin-assessment-cycle" />
     <UAlert v-if="loadError" color="error" variant="soft" icon="i-lucide-alert-circle" :description="loadError" />
 
     <!-- Stats -->

@@ -29,11 +29,10 @@
           </div>
           <div class="flex flex-col gap-1 sm:items-end">
             <p class="text-xs text-muted sm:text-right">{{ progressText }}</p>
-            <div class="flex items-center"><GuideButton guide="teacher-continuous" /><HelpButton topic="teacher-continuous" /></div>
           </div>
         </div>
-        <!-- The explanation, week locking and class insight live in modals - these open them. -->
-        <div class="mt-3 flex flex-wrap gap-2 border-t border-default pt-3">
+        <div class="flex justify-between mt-3 flex-wrap gap-2 border-t border-default pt-3">
+          <div class="flex flex-wrap gap-2">
           <UButton size="sm" icon="lucide:circle-help" label="How it works" color="neutral" variant="ghost"
             @click="() => { helpOpen = true }" />
           <UButton data-guide="ca-insight" size="sm" icon="lucide:chart-no-axes-combined" label="Class insight"
@@ -42,101 +41,97 @@
             :label="`${caPartsNoun(structure).plural} (${lockedCount}/${structure.caEntries} locked)`"
             @click="() => { weeksOpen = true }" />
         </div>
+        <div class="flex items-center">
+          <GuideButton guide="teacher-continuous" />
+          <HelpButton topic="teacher-continuous" /></div>
+        </div>
       </UCard>
 
-      <!-- Phone: one card per student. -->
-      <div data-guide="ca-students" class="space-y-2 md:hidden">
-        <div class="flex items-center justify-between px-1">
-          <p class="text-xs text-muted">{{ rows.length }} students · tap a name to enter marks</p>
-          <UButton size="xs" color="neutral" variant="ghost"
-            :icon="allRowsOpen ? 'lucide:chevrons-down-up' : 'lucide:chevrons-up-down'"
-            :label="allRowsOpen ? 'Collapse all' : 'Expand all'" @click="toggleAllRows" />
-        </div>
-
-        <div v-for="row in rows" :key="row.id" class="overflow-hidden rounded-xl border bg-white transition-colors"
-          :class="isRowOpen(row.id) ? 'border-primary/40 shadow-sm' : 'border-default'">
-          <!-- Header: always visible, tap to open/close. -->
-          <button type="button" class="flex w-full items-center gap-2.5 p-3 text-left" :aria-expanded="isRowOpen(row.id)"
-            @click="toggleRow(row.id)">
-            <UAvatar :src="row.photo" :alt="row.name" size="md" class="shrink-0 bg-white ring-1 ring-default" />
-            <span class="min-w-0 flex-1">
-              <p class="truncate text-sm font-semibold text-highlighted">{{ row.name }}</p>
-              <p class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
-                <span>CA {{ preview(row).ca ?? '-' }}<span v-if="preview(row).ca !== null">%</span></span>
-                <UBadge v-if="strengthOf(preview(row).ca)" :color="strengthOf(preview(row).ca)!.color" variant="soft"
-                  size="sm">{{ strengthOf(preview(row).ca)!.label }}</UBadge>
-                <span v-if="filledCount(row.id) < structure.caEntries" class="text-warning">
-                  {{ filledCount(row.id) }}/{{ structure.caEntries }} entered
-                </span>
-              </p>
-            </span>
-            <span class="shrink-0 text-right">
-              <p class="text-[10px] uppercase tracking-wide text-muted">Score</p>
-              <p class="text-base font-bold leading-tight text-primary">{{ preview(row).total }}</p>
-            </span>
-            <UIcon name="lucide:chevron-down" class="size-4 shrink-0 text-muted transition-transform duration-200"
-              :class="{ 'rotate-180': isRowOpen(row.id) }" />
+      <!-- The steps, as in the mobile app: one chip per CA recording, then the formal test. It opens on what's
+           next, and the chip being worked on is kept in view. -->
+      <div data-guide="ca-students" class="flex items-center gap-2">
+        <div ref="stepperEl" class="flex min-w-0 flex-1 gap-2 overflow-x-auto py-1" role="tablist"
+          aria-label="Recordings and the formal test">
+          <button v-for="p in partOrder" :key="p" type="button" role="tab" :data-ca-step="p"
+            :aria-selected="activePart === p" :disabled="!partOpen(p)"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            :class="activePart === p
+              ? 'border-primary bg-primary text-inverted'
+              : 'border-default bg-default text-highlighted hover:bg-elevated/60'"
+            @click="pickPart(p)">
+            <UIcon v-if="p !== 0 && (isLocked(p) || caSubmitted)" name="lucide:lock" class="size-3.5" />
+            <UIcon v-else-if="p !== 0 && caPartIsAuto(structure, p)" name="lucide:calendar-check" class="size-3.5" />
+            <UIcon v-else-if="p === 0 && !partEditableFor(0)" name="lucide:lock-keyhole" class="size-3.5" />
+            <span class="whitespace-nowrap">{{ partLabel(p) }} · {{ partFilled(p) }}/{{ rows.length }}</span>
           </button>
-
-          <!-- Body: one row per mark, label on the left and the input on the right. -->
-          <div v-if="isRowOpen(row.id)" class="border-t border-default bg-elevated/20 px-3 pb-3">
-            <div class="divide-y divide-default">
-              <div v-for="n in structure.caEntries" :key="n" class="flex items-center justify-between gap-3 py-2">
-                <div class="min-w-0">
-                  <p class="flex items-center gap-1 text-sm text-highlighted">
-                    <UIcon v-if="isLocked(n)" name="lucide:lock" class="size-3 shrink-0 text-success" />
-                    <span class="truncate">{{ caPartLabel(structure, n) }}</span>
-                  </p>
-                  <p class="flex flex-wrap items-center gap-1 text-[11px] text-muted">
-                    <span v-if="byWeight">out of {{ fmt(outOf(n)) }}</span>
-                    <span v-else-if="structure.caComponents?.length">
-                      {{ structure.caComponents[n - 1]?.weight }}% ·
-                      {{ ptsOf(form[row.id]?.entries[n - 1], structure.caComponents[n - 1]?.weight) }}/{{ structure.caComponents[n - 1]?.weight }}
-                    </span>
-                    <span v-else>out of 100</span>
-                    <UBadge v-if="caPartIsAuto(structure, n)" size="sm" variant="subtle" color="info">register</UBadge>
-                  </p>
-                </div>
-                <UInput v-if="caEditable && !isLocked(n) && !caPartIsAuto(structure, n)"
-                  v-model.number="typed[row.id]![n - 1]" type="number" inputmode="decimal" min="0" :max="outOf(n)"
-                  :step="byWeight ? 'any' : 1" class="w-24 shrink-0" :ui="{ base: 'text-base text-right' }"
-                  @update:model-value="setEntry(row.id, n)" />
-                <span v-else class="w-24 shrink-0 rounded-lg bg-elevated/60 px-3 py-1.5 text-right text-base">
-                  {{ shownEntry(row.id, n) }}
-                </span>
-              </div>
-
-              <div class="flex items-center justify-between gap-3 pt-3">
-                <div class="min-w-0">
-                  <p class="text-sm font-medium text-highlighted">{{ caFormalName(structure) }}</p>
-                  <p class="text-[11px] text-muted">
-                    out of 100
-                    <span v-if="!monitorOnly && (caSubmitted || formalEditable)">
-                      · {{ fmt(preview(row).formalPts) }}/{{ structure.formalPercentage }}
-                    </span>
-                  </p>
-                </div>
-                <UInput v-if="formalEditable" v-model.number="form[row.id]!.formal" type="number" inputmode="decimal"
-                  min="0" max="100" class="w-24 shrink-0" :ui="{ base: 'text-base text-right' }"
-                  @update:model-value="clampFormal(row.id)" />
-                <span v-else-if="!caSubmitted && !monitorOnly"
-                  class="inline-flex shrink-0 items-center gap-1 text-xs text-muted">
-                  <UIcon name="lucide:lock" /> After CA
-                </span>
-                <span v-else class="w-24 shrink-0 rounded-lg bg-elevated/60 px-3 py-1.5 text-right text-base">
-                  {{ form[row.id]?.formal ?? '-' }}
-                </span>
-              </div>
-            </div>
-
-            <UButton class="mt-3" block size="sm" color="neutral" variant="subtle" icon="lucide:chart-line"
-              label="View breakdown" @click="detailId = row.id" />
-          </div>
+        </div>
+        <div class="hidden shrink-0 gap-0.5 rounded-lg bg-elevated/60 p-0.5 md:flex" role="group" aria-label="View">
+          <UButton size="xs" :variant="view === 'step' ? 'solid' : 'ghost'" color="neutral" icon="lucide:list-ordered"
+            label="Step by step" @click="() => { view = 'step' }" />
+          <UButton size="xs" :variant="view === 'all' ? 'solid' : 'ghost'" color="neutral" icon="lucide:table"
+            label="All marks" @click="() => { view = 'all' }" />
         </div>
       </div>
 
-      <!-- Desktop: one row per student. -->
-      <UCard data-guide="ca-students" class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
+      <!-- Step by step (always on a phone): notes, then one box per student for the step on screen. -->
+      <div class="space-y-3" :class="view === 'all' ? 'md:hidden' : ''">
+        <div class="space-y-2">
+          <div v-for="(n, i) in notes" :key="i" class="flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-sm"
+            :class="NOTE_STYLE[n.tone].box">
+            <UIcon :name="n.icon" class="mt-0.5 size-4 shrink-0" :class="NOTE_STYLE[n.tone].icon" />
+            <p class="text-default">{{ n.text }}</p>
+          </div>
+        </div>
+
+        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+          <div class="flex items-center justify-between gap-3 border-b border-default px-4 py-2.5">
+            <p class="text-sm font-semibold text-highlighted">{{ partLabel(activePart) }}</p>
+            <p class="text-xs text-muted">
+              {{ partFilled(activePart) }} of {{ rows.length }} have a mark<span v-if="partEditable"> · Enter goes to
+                the next student</span>
+            </p>
+          </div>
+          <div class="divide-y divide-default">
+            <div v-for="(row, i) in rows" :key="row.id" class="flex items-center gap-3 px-4 py-2.5"
+              :class="partEditable && isEmpty(row.id, activePart) ? 'bg-warning/5' : ''">
+              <UAvatar :src="row.photo" :alt="row.name" size="sm"
+                class="hidden shrink-0 bg-white ring-1 ring-default sm:inline-flex" />
+              <button type="button" class="min-w-0 flex-1 text-left" @click="() => { detailId = row.id }">
+                <p class="truncate font-semibold text-highlighted">{{ row.name }}</p>
+                <p class="truncate text-xs text-muted">{{ rowSummary(row) }}</p>
+              </button>
+              <template v-if="partEditable">
+                <UInput v-if="activePart !== 0" :data-ca-input="i" v-model.number="typed[row.id]![activePart - 1]"
+                  type="number" inputmode="decimal" min="0" :max="outOf(activePart)" :step="byWeight ? 'any' : 1"
+                  placeholder="-" class="w-28 shrink-0" :ui="{ base: 'text-base text-center pe-12' }"
+                  @update:model-value="setEntry(row.id, activePart)" @keydown.enter.prevent="nextInput(i)">
+                  <template #trailing><span class="text-xs text-muted">/{{ fmt(outOf(activePart)) }}</span></template>
+                </UInput>
+                <UInput v-else :data-ca-input="i" v-model.number="form[row.id]!.formal" type="number"
+                  inputmode="decimal" min="0" max="100" placeholder="-" class="w-28 shrink-0"
+                  :ui="{ base: 'text-base text-center pe-12' }" @update:model-value="clampFormal(row.id)"
+                  @keydown.enter.prevent="nextInput(i)">
+                  <template #trailing><span class="text-xs text-muted">/100</span></template>
+                </UInput>
+              </template>
+              <span v-else class="w-28 shrink-0 rounded-lg bg-elevated/60 px-3 py-1.5 text-center text-base">
+                {{ activePart === 0 ? (form[row.id]?.formal ?? '-') : shownEntry(row.id, activePart) }}
+              </span>
+            </div>
+          </div>
+          <div v-if="prevPart !== undefined || nextPart !== undefined"
+            class="flex items-center justify-between gap-2 border-t border-default px-2 py-1.5">
+            <UButton v-if="prevPart !== undefined" size="sm" icon="lucide:arrow-left" color="neutral" variant="ghost"
+              :label="partLabel(prevPart)" @click="pickPart(prevPart)" />
+            <span v-else />
+            <UButton v-if="nextPart !== undefined" size="sm" trailing-icon="lucide:arrow-right" color="neutral"
+              variant="ghost" :label="partLabel(nextPart)" @click="pickPart(nextPart)" />
+          </div>
+        </UCard>
+      </div>
+
+      <!-- Desktop, "All marks": every recording side by side - for looking across, or quick corrections. -->
+      <UCard v-if="view === 'all'" class="hidden md:block" :ui="{ body: 'p-0 sm:p-0' }">
         <div class="overflow-x-auto">
           <table class="w-full min-w-max text-sm">
             <thead>
@@ -159,7 +154,7 @@
             <tbody>
               <tr v-for="row in rows" :key="row.id" class="border-b border-default last:border-0">
                 <td class="sticky left-0 bg-default px-4 py-2">
-                  <button type="button" class="flex items-center gap-2.5 text-left" @click="detailId = row.id">
+                  <button type="button" class="flex items-center gap-2.5 text-left" @click="() => { detailId = row.id }">
                     <UAvatar :src="row.photo" :alt="row.name" size="md" class="shrink-0 bg-white ring-1 ring-default" />
                     <span class="font-medium text-highlighted whitespace-nowrap">{{ row.name }}</span>
                     <UIcon v-if="trendOf(row).trend === 'improving'" name="lucide:trending-up" class="size-4 text-success" />
@@ -200,17 +195,19 @@
         </div>
       </UCard>
 
-      <UCard v-if="editable" data-guide="ca-actions" class="mb-2">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-xs text-muted">{{ hint }}</p>
-          <div class="grid grid-cols-2 gap-2 sm:flex">
-            <UButton class="flex justify-center" icon="lucide:save" label="Save" color="neutral" variant="subtle" :loading="saving"
-              :disabled="busy" @click="save(true)" />
-            <UButton class="flex justify-center" v-if="!caSubmitted && !monitorOnly" icon="lucide:send" label="Submit CA" :loading="submittingCa"
-              :disabled="busy || missingCa > 0" @click="submitCa" />
-            <UButton class="flex justify-center" v-else icon="lucide:check-circle" label="Submit for approval" color="success"
-              :loading="submitting" :disabled="busy || !allFormalIn" @click="submitForApproval" />
-          </div>
+      <!-- The app's bottom bar: Save, and the one thing that comes next - inside the page, under the list. -->
+      <UCard v-if="editable" data-guide="ca-actions" class="mb-2" :ui="{ body: 'p-3 sm:p-3' }">
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <UButton class="w-full justify-center sm:flex-1" size="lg" color="neutral" variant="outline" icon="lucide:save"
+            label="Save" :loading="saving" :disabled="busy" @click="() => { save(true) }" />
+          <UButton v-if="canSubmitForApproval" class="w-full justify-center sm:flex-1" size="lg" color="success"
+            icon="lucide:check-circle" label="Submit for approval" :loading="submitting" :disabled="busy"
+            @click="submitForApproval" />
+          <UButton v-else-if="canSubmitCa" class="w-full justify-center sm:flex-1" size="lg" icon="lucide:send"
+            label="Submit CA" :loading="submittingCa" :disabled="busy" @click="submitCa" />
+          <UButton v-else-if="canLockPart" class="w-full justify-center sm:flex-1" size="lg" color="success" variant="subtle"
+            icon="lucide:lock" :label="`Lock ${partLabel(activePart)}`" :loading="lockingWeek === activePart"
+            :disabled="busy" @click="lockWeek(activePart)" />
         </div>
       </UCard>
     </template>
@@ -360,7 +357,7 @@
           <template #footer>
             <div class="flex gap-2">
               <UButton class="w-full flex items-center justify-center" label="Cancel" variant="soft"
-                :disabled="unlocking" @click="unlockOpen = false" />
+                :disabled="unlocking" @click="() => { unlockOpen = false }" />
               <UButton class="w-full flex items-center justify-center" label="Unlock" color="warning" :loading="unlocking"
                 :disabled="!unlockReason.trim()" @click="unlockWeekConfirm" />
             </div>
@@ -394,24 +391,6 @@ const weeksOpen = ref(false)
 const insightOpen = ref(false)
 const detailId = ref('')
 
-// Phone view: each student card starts closed; the teacher opens one to enter marks.
-const openRows = ref<Set<string>>(new Set())
-const isRowOpen = (id: string) => openRows.value.has(id)
-function toggleRow(id: string) {
-  const next = new Set(openRows.value)
-  if (next.has(id)) next.delete(id)
-  else next.add(id)
-  openRows.value = next
-}
-const allRowsOpen = computed(() => rows.value.length > 0 && rows.value.every(r => openRows.value.has(r.id)))
-function toggleAllRows() {
-  openRows.value = allRowsOpen.value ? new Set() : new Set(rows.value.map(r => r.id))
-}
-// How many CA parts this student has a mark for, shown on the closed card.
-function filledCount(rowId: string) {
-  return form[rowId]?.entries.filter(e => e != null).length ?? 0
-}
-
 const detailOpen = computed({
   get: () => !!detailId.value,
   set: (v: boolean) => { if (!v) detailId.value = '' }
@@ -441,6 +420,134 @@ const weekComplete = (week: number) => rows.value.length > 0
 const caEditable = computed(() => editable.value && !caSubmitted.value)
 const formalEditable = computed(() => editable.value && (caSubmitted.value || monitorOnly.value))
 const step = computed(() => caSubmitted.value ? 2 : 1)
+
+// ---- Step by step, as in the mobile app: one CA recording (or the formal test) at a time for the whole class.
+// Part 0 is the formal test; 1..caEntries are the recordings.
+const view = ref<'step' | 'all'>('step')
+const activePart = ref(1)
+// The teacher chose a step themselves - a save keeps them there. Locking a recording or submitting the CA moves on.
+const userPicked = ref(false)
+const stepperEl = ref<HTMLElement | null>(null)
+const partOrder = computed(() => structure.value
+  ? [...Array.from({ length: structure.value.caEntries }, (_, i) => i + 1), 0]
+  : [])
+const partIndex = computed(() => Math.max(0, partOrder.value.indexOf(activePart.value)))
+const formalFilled = computed(() => rows.value.filter(r => form[r.id]?.formal != null).length)
+function partLabel(p: number) {
+  return p === 0 ? caFormalName(structure.value) : caPartLabel(structure.value!, p)
+}
+function partFilled(p: number) {
+  return p === 0 ? formalFilled.value : weekFilled(p)
+}
+function isEmpty(rowId: string, p: number) {
+  return p === 0 ? form[rowId]?.formal == null : form[rowId]?.entries[p - 1] == null
+}
+// The formal test can only be opened once it's open for entry (or there's something to see).
+function partOpen(p: number) {
+  return p !== 0 || formalEditable.value || caSubmitted.value || formalFilled.value > 0
+}
+function partEditableFor(p: number) {
+  const s = structure.value
+  if (!s) return false
+  return p === 0 ? formalEditable.value : caEditable.value && !isLocked(p) && !caPartIsAuto(s, p)
+}
+const partEditable = computed(() => partEditableFor(activePart.value))
+// One line under each student, as in the app: "CA 80% · End of term test 50 · total 62".
+function rowSummary(row: StudentAssessment) {
+  const p = preview(row), s = structure.value
+  const ca = `CA ${p.ca === null ? '-' : `${p.ca}%`}`
+  if (!s || monitorOnly.value) return ca
+  const formal = form[row.id]?.formal
+  return `${ca} · ${caFormalName(s)} ${formal ?? '-'} · total ${p.total}`
+}
+const canSubmitCa = computed(() =>
+  caEditable.value && !monitorOnly.value && rows.value.length > 0 && missingCa.value === 0)
+const canSubmitForApproval = computed(() =>
+  editable.value && (caSubmitted.value || monitorOnly.value) && allFormalIn.value)
+type NoteTone = 'info' | 'primary' | 'muted' | 'warning'
+const NOTE_STYLE: Record<NoteTone, { box: string, icon: string }> = {
+  info: { box: 'bg-info/10', icon: 'text-info' },
+  primary: { box: 'bg-primary/10', icon: 'text-primary' },
+  muted: { box: 'bg-elevated/60', icon: 'text-muted' },
+  warning: { box: 'bg-warning/10', icon: 'text-warning' }
+}
+// The notes above the list, as in the app: how it's scored, what's closed, and what to do next.
+const notes = computed(() => {
+  const s = structure.value, p = activePart.value
+  if (!s) return []
+  const out: { icon: string, tone: NoteTone, text: string }[] = [{
+    icon: 'lucide:calculator',
+    tone: 'info',
+    text: monitorOnly.value
+      ? `CA is for monitoring only - the ${caFormalName(s).toLowerCase()} is the score.`
+      : `CA ${s.caPercentage}% + ${caFormalName(s)} ${s.formalPercentage}%${byWeight.value ? ' · marks are out of each part\'s weight' : ''}.`
+  }]
+  if (!editable.value) {
+    out.push({ icon: 'lucide:lock', tone: 'muted', text: 'This assessment has been submitted and can\'t be changed here.' })
+  } else if (p === 0 && !formalEditable.value) {
+    out.push({ icon: 'lucide:lock-keyhole', tone: 'muted', text: `The ${caFormalName(s).toLowerCase()} opens once the CA is submitted.` })
+  } else if (p !== 0 && caPartIsAuto(s, p)) {
+    out.push({ icon: 'lucide:calendar-check', tone: 'info', text: `${caPartLabel(s, p)} is filled in from the attendance register.` })
+  } else if (p !== 0 && (isLocked(p) || caSubmitted.value)) {
+    out.push({
+      icon: 'lucide:lock',
+      tone: 'muted',
+      text: caSubmitted.value
+        ? 'The CA has been submitted - its recordings are closed.'
+        : `${caPartLabel(s, p)} is locked. ${isAdmin.value ? 'Unlock it from the recordings list if it needs correcting.' : 'Ask an administrator if it needs correcting.'}`
+    })
+  }
+  if (editable.value) out.push({ icon: 'lucide:flag', tone: 'primary', text: hint.value })
+  return out
+})
+// Opens on what's next: the first recording still being filled in, else the formal test once it's open.
+function startPart(): number {
+  const s = structure.value
+  if (!s) return 1
+  if (caSubmitted.value) return 0
+  for (let n = 1; n <= s.caEntries; n++) {
+    if (!isLocked(n) && !caPartIsAuto(s, n) && weekFilled(n) < rows.value.length) return n
+  }
+  if (monitorOnly.value && !allFormalIn.value) return 0
+  return s.caEntries ? 1 : 0
+}
+const prevPart = computed(() => partOrder.value[partIndex.value - 1])
+const nextPart = computed(() => {
+  const p = partOrder.value[partIndex.value + 1]
+  return p === undefined || !partOpen(p) ? undefined : p
+})
+const canLockPart = computed(() => {
+  const p = activePart.value, s = structure.value
+  return !!s && p !== 0 && editable.value && !caSubmitted.value && !isLocked(p) && !caPartIsAuto(s, p) && weekComplete(p)
+})
+function focusInput(i: number) {
+  const el = document.querySelector<HTMLInputElement>(`[data-ca-input="${i}"] input, input[data-ca-input="${i}"]`)
+  el?.focus()
+  el?.select()
+}
+function nextInput(i: number) {
+  if (i + 1 < rows.value.length) focusInput(i + 1)
+}
+// Selects a step and keeps it in view in the stepper; the first box takes the cursor.
+function goPart(p: number) {
+  activePart.value = p
+  nextTick(() => {
+    stepperEl.value?.querySelector(`[data-ca-step="${p}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    if (partEditable.value) focusInput(0)
+  })
+}
+function pickPart(p: number) {
+  userPicked.value = true
+  goPart(p)
+}
+// After a load: stay on the teacher's own choice while it's still open, else go to what's next.
+function settlePart() {
+  if (!structure.value) return
+  if (!userPicked.value || !partOrder.value.includes(activePart.value) || !partOpen(activePart.value)) {
+    goPart(startPart())
+  }
+}
 
 const subtitle = computed(() => structure.value
   ? (monitorOnly.value
@@ -496,6 +603,7 @@ async function load(sync = true) {
     assessment.value = (cycles || []).find((a: Assessment) => a.id === assessmentId.value) || null
     resetForm()
     if (sync && await syncAttendance()) return load(false)
+    settlePart()
   } catch (error: any) {
     toastError(error?.data?.message || error?.message || 'Failed to load the assessment')
   } finally {
@@ -632,6 +740,8 @@ async function lockWeek(week: number) {
       assessmentId: assessmentId.value, termId: termId.value, week
     })
     success(`${structure.value ? caPartLabel(structure.value, week) : 'Recording'} locked`)
+    // Done with that one: on to what's next.
+    userPicked.value = false
     await load()
   } catch (error: any) {
     toastError(error?.data?.message || error?.message || 'Failed to lock the recording')
@@ -678,6 +788,8 @@ async function submitCa() {
       assessmentId: assessmentId.value, termId: termId.value
     })
     success('CA submitted - the formal test is now open')
+    // On to the formal test.
+    userPicked.value = false
     await load()
   } catch (error: any) {
     toastError(error?.data?.message || error?.message || 'Failed to submit the CA')

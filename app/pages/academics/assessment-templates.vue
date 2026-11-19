@@ -2,7 +2,7 @@
   <div class="space-y-4 px-4 sm:px-6">
     <div data-guide="adm-acad-tabs"><AcademicsSectionNav /></div>
 
-    <GuideBar topic="admin-assessment-templates" />
+    
     <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
       <!-- Same header as Classes: add, search, filters, view -->
       <template #header>
@@ -19,7 +19,10 @@
                 :active-count="activeFilterCount" />
             </div>
           </div>
-          <TableViewToggle v-model="view" />
+          <div class="flex items-center gap-2">
+            <TableViewToggle v-model="view" />
+            <GuideBar topic="admin-assessment-templates" />
+          </div>
         </div>
       </template>
 

@@ -1,61 +1,32 @@
 <template>
   <div class="px-4 md:px-6 space-y-3">
-    <Heading
-      title="Grade Entry"
-      subtitle="Enter scores for the active test. Locked assessments are read-only"
-    >
-      <div data-guide="grades-actions" v-if="hasDraftAssessments" class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
-        <UButton
-          class="flex justify-center"
-          icon="lucide:save"
-          label="Save Grades"
-          :loading="saving"
-          :disabled="disableActions"
-          @click="saveGrades"
-        />
-        <UButton
-          class="flex justify-center"
-          icon="lucide:check-circle"
-          label="Complete Assessment"
-          color="success"
-          :loading="completing"
-          variant="subtle"
-          :disabled="disableActions || !hasDraftAssessments"
-          @click="completeAssessment"
-        />
+    <Heading title="Grade Entry" subtitle="Enter scores for the active test. Locked assessments are read-only">
+      <div class="flex items-center justify-end gap-3">
+        <div data-guide="grades-actions" v-if="hasDraftAssessments"
+          class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
+          <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"
+            :disabled="disableActions" @click="saveGrades" />
+          <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
+            :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments"
+            @click="completeAssessment" />
+        </div>
+        <GuideBar topic="admin-grade-entry" />
       </div>
- 
+
     </Heading>
 
-    <div data-guide="grades-tabs"><GradesSectionNav /></div>
+    <div data-guide="grades-tabs">
+      <GradesSectionNav />
+    </div>
 
-    <GuideBar topic="admin-grade-entry" />
     <UCard data-guide="grades-pick" class="hidden md:block">
       <div class="flex space-x-3">
-        <USelectMenu
-          value-key="value"
-          :loading="loadingTerm"
-          :items="terms"
-          placeholder="Select Term"
-          v-model="state.termId"
-          @change="onTermChange"
-        />
-        <USelectMenu
-          value-key="value"
-          :items="classes"
-          :loading="loadingClass"
-          placeholder="Select Class"
-          v-model="state.classId"
-          @change="fetchRecord"
-        />
-        <USelectMenu
-          value-key="value"
-          :items="teachers"
-          :loading="loadingSubject"
-          placeholder="Select Subject"
-          v-model="state.teacherSubjectId"
-          @change="fetchStudents"
-        />
+        <USelectMenu value-key="value" :loading="loadingTerm" :items="terms" placeholder="Select Term"
+          v-model="state.termId" @change="onTermChange" />
+        <USelectMenu value-key="value" :items="classes" :loading="loadingClass" placeholder="Select Class"
+          v-model="state.classId" @change="fetchRecord" />
+        <USelectMenu value-key="value" :items="teachers" :loading="loadingSubject" placeholder="Select Subject"
+          v-model="state.teacherSubjectId" @change="fetchStudents" />
       </div>
       <template v-if="assessments.length && state.teacherSubjectId" #footer>
         <div class="space-y-3">
@@ -66,17 +37,10 @@
                 {{ workflowLabel }}
               </p>
             </div>
-            <UBadge
-              :label="`Progress ${workflowProgress}%`"
-              :color="workflowProgress === 100 ? 'success' : 'warning'"
-              variant="outline"
-              icon="mdi:chart-timeline-variant"
-            />
+            <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
+              variant="outline" icon="mdi:chart-timeline-variant" />
           </div>
-          <UProgress
-            :color="workflowProgress === 100 ? 'success' : 'warning'"
-            v-model="workflowProgress"
-          />
+          <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
         </div>
       </template>
     </UCard>
@@ -84,28 +48,12 @@
     <UCard data-guide="grades-pick" class="md:hidden">
       <template #header>
         <div class="grid gap-3 grid-cols-2">
-          <USelectMenu
-            value-key="value"
-            :items="terms"
-            placeholder="Select Term"
-            v-model="state.termId"
-            @change="onTermChange"
-          />
-          <USelectMenu
-            value-key="value"
-            :items="classes"
-            placeholder="Select Class"
-            v-model="state.classId"
-            @change="fetchRecord"
-          />
-          <USelectMenu
-            class="col-span-2"
-            value-key="value"
-            :items="teachers"
-            placeholder="Select Subject"
-            v-model="state.teacherSubjectId"
-            @change="fetchStudents"
-          />
+          <USelectMenu value-key="value" :items="terms" placeholder="Select Term" v-model="state.termId"
+            @change="onTermChange" />
+          <USelectMenu value-key="value" :items="classes" placeholder="Select Class" v-model="state.classId"
+            @change="fetchRecord" />
+          <USelectMenu class="col-span-2" value-key="value" :items="teachers" placeholder="Select Subject"
+            v-model="state.teacherSubjectId" @change="fetchStudents" />
         </div>
       </template>
 
@@ -118,42 +66,27 @@
                 {{ workflowLabel }}
               </p>
             </div>
-            <UBadge
-              :label="`Progress ${workflowProgress}%`"
-              :color="workflowProgress === 100 ? 'success' : 'warning'"
-              variant="outline"
-              icon="mdi:chart-timeline-variant"
-            />
+            <UBadge :label="`Progress ${workflowProgress}%`" :color="workflowProgress === 100 ? 'success' : 'warning'"
+              variant="outline" icon="mdi:chart-timeline-variant" />
           </div>
-          <UProgress
-            :color="workflowProgress === 100 ? 'success' : 'warning'"
-            v-model="workflowProgress"
-          />
+          <UProgress :color="workflowProgress === 100 ? 'success' : 'warning'" v-model="workflowProgress" />
         </div>
       </template>
     </UCard>
 
-    <div data-guide="grades-returned"><GradesReturnedNotice :assessments="assessments" /></div>
+    <div data-guide="grades-returned">
+      <GradesReturnedNotice :assessments="assessments" />
+    </div>
 
     <!-- No class in the caller's section(s) has assessments this term: say why the class list is empty. -->
-    <UAlert
-      v-if="!loadingClass && state.termId && gradedSessionIds && !classes.length"
-      color="warning"
-      variant="soft"
-      icon="lucide:school"
-      title="No classes to grade in this term"
-      description="Only classes with assessments in the chosen term are listed. A class gets them once it has an assessment template and its subjects have teachers assigned. Check the classes in your section(s), or pick another term."
-    />
+    <UAlert v-if="!loadingClass && state.termId && gradedSessionIds && !classes.length" color="warning" variant="soft"
+      icon="lucide:school" title="No classes to grade in this term"
+      description="Only classes with assessments in the chosen term are listed. A class gets them once it has an assessment template and its subjects have teachers assigned. Check the classes in your section(s), or pick another term." />
 
     <!-- A class that has no assessments in this term: say why instead of showing an empty table. -->
-    <UAlert
-      v-if="!loading && state.teacherSubjectId && state.termId && !assessments.length"
-      color="neutral"
-      variant="soft"
-      icon="lucide:calendar-range"
-      title="No assessments for this class in this term"
-      description="A class that joins part-way through the year isn't graded for the earlier terms (set on its assessment template under 'When does grading begin?'). Pick the term it starts in, or check that the class's subjects and teachers are assigned."
-    />
+    <UAlert v-if="!loading && state.teacherSubjectId && state.termId && !assessments.length" color="neutral"
+      variant="soft" icon="lucide:calendar-range" title="No assessments for this class in this term"
+      description="A class that joins part-way through the year isn't graded for the earlier terms (set on its assessment template under 'When does grading begin?'). Pick the term it starts in, or check that the class's subjects and teachers are assigned." />
 
     <!-- Assessments opened as Continuous Assessment are recorded here rather than typed into the grid. -->
     <UCard data-guide="grades-continuous" v-if="continuousAssessments.length">
@@ -163,12 +96,15 @@
             <div class="min-w-0">
               <p class="truncate text-sm font-medium text-highlighted">{{ item.assessment.name }}</p>
               <p class="text-xs text-muted">
-                <template v-if="item.structure.caPercentage === 0">CA for monitoring only (formal test is the score) ·</template>
-                <template v-else>CA {{ item.structure.caPercentage }}% + formal test {{ item.structure.formalPercentage }}% ·</template>
+                <template v-if="item.structure.caPercentage === 0">CA for monitoring only (formal test is the score)
+                  ·</template>
+                <template v-else>CA {{ item.structure.caPercentage }}% + formal test {{ item.structure.formalPercentage
+                  }}% ·</template>
                 {{ item.structure.caEntries }} {{ CA_UNITS[item.structure.caFrequency].plural }} of CA
               </p>
             </div>
-            <UButton size="sm" :icon="isEditableStatus(item.assessment.status as ScoreStatus) ? 'lucide:pencil-line' : 'lucide:eye'"
+            <UButton size="sm"
+              :icon="isEditableStatus(item.assessment.status as ScoreStatus) ? 'lucide:pencil-line' : 'lucide:eye'"
               :label="isEditableStatus(item.assessment.status as ScoreStatus) ? (item.structure.caSubmitted ? 'Enter formal test' : 'Record CA') : 'View breakdown'"
               :variant="isEditableStatus(item.assessment.status as ScoreStatus) ? 'solid' : 'subtle'"
               @click="openCa(item.assessment.id)" />
@@ -186,92 +122,50 @@
         </div>
       </template>
 
-      <UTable
-        v-if="view === 'table'"
-        class="hidden md:block"
-        :columns="columns"
-        :data="rows"
-        :loading="loading"
-        scrollable
-      >
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="rows" :loading="loading"
+        scrollable>
         <template #student-cell="{ row }">
-          <StudentIdentityCell
-            :given-names="row.original.givenNames || row.original.name"
-            :family-name="row.original.familyName || ''"
-            :photo="
-              row.original.photo ||
+          <StudentIdentityCell :given-names="row.original.givenNames || row.original.name"
+            :family-name="row.original.familyName || ''" :photo="row.original.photo ||
               row.original.studentPhoto ||
               row.original.student?.photo
-            "
-            :subtitle="
-              hasSubmittedAssessments
+              " :subtitle="hasSubmittedAssessments
                 ? `Position: ${rankingMap[row.original.id] || '-'}`
                 : 'Position: N/A'
-            "
-          />
+              " />
         </template>
         <template #loading>
           <TableLoading :size="7" />
         </template>
       </UTable>
 
-      <div
-        v-if="state.teacherSubjectId && rows.length"
-        class="grid gap-4 p-4"
-        :class="
-          view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
-        "
-      >
-        <GradesStudentCard
-          v-for="student in rows"
-          :key="student.id"
-          :record="student"
-          :assessments="assessments"
-          :total="calculateTotal(student)"
-          :position="hasSubmittedAssessments ? rankingMap[student.id] || '-' : 'N/A'"
-          @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)"
-          @open-ca="openCa"
-        />
+      <div v-if="state.teacherSubjectId && rows.length" class="grid gap-4 p-4" :class="view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+        ">
+        <GradesStudentCard v-for="student in rows" :key="student.id" :record="student" :assessments="assessments"
+          :total="calculateTotal(student)" :position="hasSubmittedAssessments ? rankingMap[student.id] || '-' : 'N/A'"
+          @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)" @open-ca="openCa" />
       </div>
     </UCard>
 
     <div class="grid gap-3 grid-cols-2 lg:grid-cols-5">
-      <Metric
-        :class="{
-          'col-span-2 md:col-span-1': i + 1 == statusSummary.length,
-        }"
-        v-for="(summary, i) in statusSummary"
-        :key="summary.status"
-        :record="{
+      <Metric :class="{
+        'col-span-2 md:col-span-1': i + 1 == statusSummary.length,
+      }" v-for="(summary, i) in statusSummary" :key="summary.status" :record="{
           color: summary.color,
           icon: summary.icon,
           label: summary.label,
           value: summary.count,
           isReady: !loading,
-        }"
-      />
+        }" />
     </div>
-    
+
     <UCard v-if="hasDraftAssessments">
       <div class="grid w-full gap-2 grid-cols-2 md:w-auto md:flex-wrap md:justify-end">
-        <UButton
-          class="flex justify-center"
-          icon="lucide:save"
-          label="Save Grades"
-          :loading="saving"
-          :disabled="disableActions"
-          @click="saveGrades"
-        />
-        <UButton
-          class="flex justify-center"
-          icon="lucide:check-circle"
-          label="Complete Assessment"
-          color="success"
-          :loading="completing"
-          variant="subtle"
-          :disabled="disableActions || !hasDraftAssessments"
-          @click="completeAssessment"
-        />
+        <UButton class="flex justify-center" icon="lucide:save" label="Save Grades" :loading="saving"
+          :disabled="disableActions" @click="saveGrades" />
+        <UButton class="flex justify-center" icon="lucide:check-circle" label="Complete Assessment" color="success"
+          :loading="completing" variant="subtle" :disabled="disableActions || !hasDraftAssessments"
+          @click="completeAssessment" />
       </div>
     </UCard>
   </div>
