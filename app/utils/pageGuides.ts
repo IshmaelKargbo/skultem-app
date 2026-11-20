@@ -17,7 +17,7 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
         title: 'Exam Office',
         steps: [
             { title: 'Welcome to the Exam Office', body: 'This is where you follow every assessment from grade entry to results. Here is a quick look around - it takes under a minute.' },
-            { target: 'grades-tabs', title: 'Everything in one place', body: 'These tabs are the steps of the job: track submissions, approve grades, keep the exam timetable and check the broadsheet.' },
+            { target: 'grades-tabs', title: 'Everything in one place', body: 'These tabs are the steps of the job: track submissions, approve grades, keep the exam timetable and see the results of every class in the grade book.' },
             { target: 'approval-routing', title: 'Who approves grades', body: 'Each part of the school sends its grades to the class master, an admin or the exam office. Exam officer means they wait on the exam office; Admin means they wait on the school admins.' },
             { target: 'exam-metrics', title: 'Where the term stands', body: 'How many assessments are approved, waiting for approval, not yet submitted, or sent back to teachers.' },
             { target: 'exam-outstanding', title: 'Who still owes grades', body: 'Teachers with assessments not submitted or returned for changes, and which subjects. Follow up with the ones at the top first.' },
@@ -591,7 +591,6 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
         title: 'Grade Entry',
         steps: [
             { title: 'Grade Entry', body: 'Enter or correct scores for any class and subject - for example when a teacher is away.' },
-            { target: 'grades-tabs', title: 'Grades & Exams', body: 'Submissions, approval, the exam timetable and the broadsheet are in these tabs.' },
             { target: 'grades-pick', title: 'Term, class and subject', body: 'Pick the term, the class and the subject (with its teacher).' },
             { target: 'grades-returned', title: 'Returned grades', body: 'Assessments sent back by an approver, with their note.' },
             { target: 'grades-continuous', title: 'Continuous assessment', body: 'Assessments run as CA + a formal test are recorded on their own page - open them from here.' },
@@ -961,6 +960,7 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
             { title: 'Timetable settings', body: 'Set these up before building timetables.' },
             { target: 'tts-timing', title: 'Timing templates', body: 'The school day\'s schedule - when it starts and how long periods are. Different sections can use different ones.' },
             { target: 'tts-days', title: 'Working days', body: 'Which days classes are held, for each timing template.' },
+            { target: 'tts-class-types', title: 'Timetable or weekly plan', body: 'Each class follows the normal timetable or a weekly plan, never both. Switch a class here - what it had before is kept, just hidden.' },
             { target: 'tts-rooms', title: 'Rooms', body: 'Classrooms and other spaces, so lessons can be given a room.' },
         ],
     },

@@ -1,13 +1,13 @@
 <template>
-  <UCard class="md:sticky md:top-3">
+  <UCard>
     <template #header>
       <div class="flex justify-between">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-calendar-days" class="size-6 text-primary" />
+          <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-calendar-days" class="size-4" /></span>
           <div>
-            <h3 class="font-semibold">Working Days</h3>
-            <p class="text-xs-base text-muted hidden md:block">
-              Choose days classes are held, per timing template
+            <h3 class="text-sm font-semibold text-highlighted">Working days</h3>
+            <p class="text-xs text-muted">
+              The days classes are held, for each timing template
             </p>
           </div>
         </div>

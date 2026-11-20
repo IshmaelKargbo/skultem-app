@@ -12,14 +12,24 @@
                     :loading="classLoading"
                     class="w-full md:w-72"
                 />
-                <TimetableDownload v-if="session" data-guide="teacher-timetable-download" :title="`${session.className}${session.sectionName ? ` (${session.sectionName})` : ''}`" />
+                <TimetableDownload v-if="session && !onWeeklyPlan" data-guide="teacher-timetable-download" :title="`${session.className}${session.sectionName ? ` (${session.sectionName})` : ''}`" />
             </div>
         </Heading>
 
         <TimetableSectionNav />
 
+        <!-- A class follows a weekly plan or the normal timetable, never both. -->
+        <UCard v-if="session && onWeeklyPlan">
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <UIcon name="i-lucide-calendar-range" class="mb-3 size-12 text-muted" />
+                <h3 class="text-base font-semibold">{{ session.className }} follows a weekly plan</h3>
+                <p class="mt-1 max-w-md text-sm text-muted">It is planned week by week, so it has no lesson-by-lesson
+                    timetable.</p>
+                <UButton class="mt-4" to="/timetable/weekly-plan" label="Open its weekly plan" icon="i-lucide-calendar-range" />
+            </div>
+        </UCard>
         <!-- Timetable -->
-        <UCard v-if="session" data-guide="teacher-timetable-grid" :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard v-else-if="session" data-guide="teacher-timetable-grid" :ui="{ body: 'p-0 sm:p-0' }">
             <template #header>
                 <div class="flex items-center gap-3">
                     <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -98,17 +108,31 @@ const list = computed(() =>
 
 const session = computed(() => sessionsById.value.get(grade.value))
 
-function syncGrade(items: { value: string }[]) {
-    if (!items.length) return
+// A class follows the normal timetable or a weekly plan, never both. The class picked is shared with the Weekly
+// plan page; a class on a weekly plan gets a card pointing to it.
+const { load: loadTypes, types, typeOfSession, selected } = useClassTimetableTypes()
+const onWeeklyPlan = computed(() => !!grade.value && !!types.value && typeOfSession(grade.value) === 'WEEKLY_PLAN')
+onMounted(() => { loadTypes(true).catch(() => null) })
 
-    const exists = items.some(item => item.value === grade.value)
-    if (!exists) {
-        grade.value = items[0].value
-    }
+// The class picked before (from a link, here or on the Weekly plan page), else the first on the normal timetable.
+function syncGrade(items: { value: string }[]) {
+    if (!items.length || !types.value) return
+    if (items.some(item => item.value === grade.value)) return
+    // Opening the page keeps the class picked before only if it's on the normal timetable (one on a weekly plan would
+  // send you straight back to its plan).
+  const kept = items.find((item) => item.value === selected.value && typeOfSession(item.value) === 'PERIODS')
+    grade.value = (kept ?? items.find(item => typeOfSession(item.value) === 'PERIODS') ?? items[0])!.value
 }
 
-watch(() => grade.value, async (value: string) => {
+watch([() => grade.value, types], async ([value]) => {
     if (!value) return
+    if (!types.value) return // decided once the types are in
+    selected.value = value
+    if (typeOfSession(value) === 'WEEKLY_PLAN') {
+      // A class on a weekly plan has no timetable: straight to its plan (the Weekly plan page opens on it).
+      await navigateTo('/timetable/weekly-plan', { replace: true })
+      return
+    }
 
     try {
         await Promise.all([
@@ -120,7 +144,7 @@ watch(() => grade.value, async (value: string) => {
     }
 }, { immediate: true })
 
-watch(list, syncGrade, { immediate: true })
+watch([list, types], () => syncGrade(list.value), { immediate: true })
 
 onMounted(async () => {
     useAppStore().setTitle('My Timetable')

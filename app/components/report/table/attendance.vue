@@ -146,7 +146,7 @@ const detailFields = computed<ReportDetailField[]>(() => {
         </template>
 
         <template v-else-if="data?.length">
-          <div v-for="item in data" :key="item.id" class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0 active:bg-muted/50"
+          <div v-for="item in data" :key="item.id" class="flex cursor-pointer items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0 hover:bg-elevated/40 active:bg-muted/50"
             @click="openDetail(item)">
             <div class="flex min-w-0 items-center gap-3">
               <UAvatar size="md" icon="i-lucide-user-round" :alt="item.student" />

@@ -16,8 +16,6 @@
       </div>
     </Heading>
 
-    <GradesSectionNav />
-
     <UCard data-guide="grades-pick" class="hidden md:block">
       <div class="flex space-x-3">
         <USelectMenu value-key="value" :loading="teacherStore.loading" :items="subjects" placeholder="Select Subject"
@@ -404,16 +402,18 @@ function calculateTotal(row: any) {
   return calculateWeightedTotal(row)
 }
 
+// The term grade, once every one of the term's assessments has been handed in (submitted, approved or completed -
+// as the backend grades a mark), so a part-term total isn't graded as if it were the whole term. The total is
+// rounded first, as on the report card, so a decimal total (69.5) doesn't fall between two bands.
 function calculateGrade(total: number, row: any) {
-  const termAssessmentIds = assessments.value.map(a => a.id)
+  const released = ['SUBMITTED', 'APPROVED', 'COMPLETED']
+  const scores = (row.original.scores as any[]) || []
+  const allIn = assessments.value.length > 0 && assessments.value.every((a) => released.includes(a.status as string))
+    && scores.length > 0 && scores.every((s: any) => released.includes(s.status))
+  if (!allIn) return '-'
 
-  const allCompleted = termAssessmentIds.every(id =>
-    (row.original.scores as any[]).every((s: any) => s.status == "COMPLETED")
-  )
-
-  if (!allCompleted) return '-'
-
-  const band = gradingBands.value.find(item => total >= item.minScore && total <= item.maxScore)
+  const rounded = Math.round(total)
+  const band = gradingBands.value.find((item) => rounded >= item.minScore && rounded <= item.maxScore)
   return band?.grade || '-'
 }
 

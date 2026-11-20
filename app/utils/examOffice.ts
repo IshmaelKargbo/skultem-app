@@ -148,7 +148,14 @@ export type Broadsheet = {
     passed: number
     classAverage: number
     lastGeneratedAt: string | null
+    // Which report cards it was read from: the full term ("ALL"), the whole year ("YEAR") or a set of assessments.
+    scopeKey?: string | null
+    scopeLabel?: string | null
+    // Every kind generated for this class and term, to choose between.
+    scopes?: BroadsheetScope[]
 }
+
+export type BroadsheetScope = { key: string, label: string, cards: number, generatedAt: string | null }
 
 // What the exam office still needs to chase, in the order it acts on them.
 export const SUBMISSION_STATUS: Record<ExamSubmissionStatus, { label: string, color: 'neutral' | 'info' | 'warning' | 'success' | 'error', hint: string }> = {

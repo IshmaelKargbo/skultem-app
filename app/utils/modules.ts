@@ -87,6 +87,8 @@ const ROUTE_MODULES: [string, string | null][] = [
     ['/report-cards', ModuleKey.REPORT_CARDS],
     ['/exam-office', ModuleKey.GRADING],
     ['/exam-office/broadsheet', ModuleKey.REPORT_CARDS],
+    // The Grade Book's live marks are grading; its "Report cards" source needs Report Cards too (checked in the page).
+    ['/gradebook', ModuleKey.GRADING],
     ['/external-exams', ModuleKey.EXTERNAL_EXAMS],
     ['/curriculums', ModuleKey.CURRICULUM],
     ['/behaviours', ModuleKey.BEHAVIOUR],

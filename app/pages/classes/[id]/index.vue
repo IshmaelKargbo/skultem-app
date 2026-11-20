@@ -48,6 +48,23 @@
                 <ClassPromotionSetting v-model:open="promotionSettingOpen" :id="session?.clazzId || ''" hide-trigger />
             </div>
         </div>
+
+        <!-- At a glance: the class's figures, inside the same card. -->
+        <div data-guide="cls-stats" v-if="canViewRoster"
+            class="mt-4 grid grid-cols-2 gap-y-4 border-t border-default pt-4 lg:grid-cols-4 lg:divide-x lg:divide-default">
+            <div v-for="stat in headerStats" :key="stat.label" class="flex items-start gap-3 lg:px-4 lg:first:pl-0">
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-xl" :class="stat.box">
+                    <UIcon :name="stat.icon" class="size-4.5" />
+                </span>
+                <div class="min-w-0">
+                    <p class="text-xs text-muted">{{ stat.label }}</p>
+                    <USkeleton v-if="!stat.ready" class="mt-1 h-6 w-16" />
+                    <p v-else class="truncate text-lg font-bold leading-tight text-highlighted">{{ stat.value }}</p>
+                    <p v-if="stat.ready && stat.note" class="truncate text-[11px]"
+                        :class="stat.warn ? 'text-warning' : 'text-muted'">{{ stat.note }}</p>
+                </div>
+            </div>
+        </div>
         </UCard>
 
         <USlideover v-model:open="assignMasterOpen" :dismissible="false" title="Assign Class Master"
@@ -82,51 +99,25 @@
             description="Removes this class with all of its sections and streams, subjects and setup. Only possible while no students have been placed in it - move them to another class first."
             :on-confirm="confirmDeleteClass" />
 
-        <!-- At a glance -->
-        <div data-guide="cls-stats" v-if="canViewRoster" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Metric :record="{
-                label: 'Students', value: students.length, subtle: genderSummary,
-                icon: 'i-lucide-users', color: 'primary', isReady: !studentsLoading
-            }" />
-            <Metric :record="{
-                label: 'Attendance', value: avgAttendance === null ? '-' : `${avgAttendance}%`,
-                subtle: avgAttendance === null ? 'No school days yet this term' : `${termAttendance?.termName ?? 'This term'}, over every school day so far`,
-                subtileColor: avgAttendance !== null && avgAttendance < 75 ? 'warning' : undefined,
-                icon: 'i-lucide-calendar-check', color: avgAttendance !== null && avgAttendance < 75 ? 'warning' : 'info', isReady: !studentsLoading
-            }" />
-            <Metric :record="{
-                label: 'Average score', value: avgScore === null ? '-' : `${avgScore}%`,
-                subtle: avgScore === null ? 'No approved tests yet this term' : `${averagesTermName || 'This term'}, approved tests`,
-                subtileColor: avgScore !== null && avgScore < passMark ? 'warning' : undefined,
-                icon: 'i-lucide-star', color: avgScore !== null && avgScore < passMark ? 'warning' : 'success', isReady: !studentsLoading
-            }" />
-            <Metric :record="{
-                label: masterNames.length > 1 ? 'Class masters' : 'Class master',
-                value: masterNames.length ? masterNames[0]! : 'Not assigned',
-                subtle: masterNames.length > 1 ? `+${masterNames.length - 1} more` : '',
-                icon: 'i-lucide-user-round-check', color: 'secondary', isReady: !loading && !overviewLoading
-            }" />
-        </div>
-
         <!-- What to look at first -->
         <ClassInsights data-guide="cls-insights" v-if="canViewRoster && !studentsLoading" :students="students" :attention="attentionByStudentId"
             :attendance-by-id="attendanceById" :performance-by-id="performanceById"
             :subject-scores="subjectScores" :class-id="classId"
-            :threshold="attentionThresholds?.attendance" :pass-mark="attentionThresholds?.passMark" />
+            :threshold="attentionThresholds?.attendance" :pass-mark="attentionThresholds?.passMark"
+            :reason-of="attentionSummary" :follow-up-of="followUpOf" :needs-follow-up="needsFollowUp"
+            @follow-up="openFollowUp" />
 
         <!-- Students -->
         <UCard data-guide="cls-students" v-if="loading || canViewRoster" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
             <template #header>
-                <div class="flex flex-wrap items-center gap-2 px-4 py-3">
-                    <div class="flex items-center gap-2">
+                <div class="space-y-2.5 px-4 py-3">
+                    <!-- Title and counts on the left, search and filters on the right. -->
+                    <div class="flex flex-wrap items-center gap-2">
                         <h3 class="font-semibold text-highlighted">Students</h3>
                         <UBadge variant="soft" color="neutral">{{ filteredStudents.length }}</UBadge>
-                    </div>
-                    <p v-if="attentionRule" class="order-last w-full text-xs text-muted sm:order-none sm:w-auto">
-                        <UIcon name="i-lucide-alert-triangle" class="mr-1 inline size-3.5 align-[-2px] text-warning" />
-                        {{ attentionRule }}
-                    </p>
-                    <div class="ml-auto flex w-full items-center gap-2 sm:w-auto">
+                        <UBadge v-if="followUpsDue" data-guide="cls-follow-ups" variant="subtle" color="error"
+                            icon="i-lucide-circle-alert">{{ followUpsDue }} to follow up</UBadge>
+                    <div class="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
                         <UInput data-guide="adm-search" v-model="search" :icon="SEARCH_ICON" placeholder="Search students" class="flex-1 sm:w-64" />
                         <UTooltip v-if="attentionCount" :text="`Show only students who need attention${attentionRule ? ` - ${attentionRule.toLowerCase()}` : ''}`">
                             <UButton data-guide="cls-attention" icon="i-lucide-alert-triangle" size="md" :color="onlyAttention ? 'warning' : 'neutral'"
@@ -139,6 +130,12 @@
                                 @click="sortByPerformance = !sortByPerformance" />
                         </UTooltip>
                     </div>
+                    </div>
+                    <!-- What "needs attention" means here, as a quiet line under the tools. -->
+                    <p v-if="attentionRule" class="flex items-start gap-1.5 rounded-lg bg-elevated/50 px-2.5 py-1.5 text-xs text-muted">
+                        <UIcon name="i-lucide-info" class="mt-px size-3.5 shrink-0" />
+                        <span>{{ attentionRule }}.</span>
+                    </p>
                 </div>
             </template>
 
@@ -154,17 +151,7 @@
                 <template #name-cell="{ row }">
                     <StudentIdentityCell :given-names="row.original.givenNames"
                         :family-name="row.original.familyName" :photo="row.original.photo"
-                        :subtitle="row.original.admissionNumber || 'No admission number'" />
-                </template>
-                <template #age-cell="{ row }">
-                    <span v-if="ageOf(row.original.dateOfBirth) !== null" class="text-sm tabular-nums">
-                        {{ ageOf(row.original.dateOfBirth) }} <span class="text-xs text-muted">yrs</span>
-                    </span>
-                    <span v-else class="text-muted">-</span>
-                </template>
-                <template #gender-cell="{ row }">
-                    <UBadge :label="parseGender[row.original.gender] || 'N/A'"
-                        :color="parseGenderColor[row.original.gender]" variant="subtle" size="sm" />
+                        :subtitle="studentSubtitle(row.original)" />
                 </template>
                 <template #attendance-cell="{ row }">
                     <div v-if="attendanceOf(row.original) !== undefined" class="w-28">
@@ -200,15 +187,26 @@
                     <span v-else class="text-muted">-</span>
                 </template>
                 <template #status-cell="{ row }">
-                    <UTooltip v-if="needsAttention(row.original)" :text="attentionReason(row.original)">
-                        <UBadge size="sm" variant="subtle"
-                            :color="attentionOf(row.original)?.severity === 'CRITICAL' ? 'error' : attentionOf(row.original)?.severity === 'WATCH' ? 'neutral' : 'warning'"
-                            :icon="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
-                            :label="attentionOf(row.original)?.severity === 'CRITICAL' ? 'Critical' : attentionOf(row.original)?.severity === 'WATCH' ? 'Watch' : 'Needs attention'" />
-                    </UTooltip>
+                    <div v-if="needsAttention(row.original)" class="space-y-1">
+                        <UTooltip :text="attentionReason(row.original)">
+                            <UBadge size="sm" variant="subtle"
+                                :color="attentionOf(row.original)?.severity === 'CRITICAL' ? 'error' : attentionOf(row.original)?.severity === 'WATCH' ? 'neutral' : 'warning'"
+                                :icon="attentionOf(row.original)?.severity === 'WATCH' ? 'i-lucide-eye' : 'i-lucide-alert-triangle'"
+                                :label="ATTENTION_LEVEL_LABEL[attentionOf(row.original)!.severity]" />
+                        </UTooltip>
+                        <p class="flex max-w-56 items-center gap-1 text-[11px] font-medium"
+                            :class="FOLLOW_UP_TEXT[followUpOf(row.original).color]">
+                            <UIcon :name="followUpOf(row.original).icon" class="size-3.5 shrink-0" />
+                            <span class="truncate">{{ followUpOf(row.original).text }}</span>
+                        </p>
+                    </div>
                     <UBadge v-else size="sm" variant="subtle" color="success" label="On track" />
                 </template>
                 <template #actions-cell="{ row }">
+                    <UButton v-if="needsAttention(row.original)" size="sm" icon="i-lucide-list-checks"
+                        :color="needsFollowUp(row.original) ? 'primary' : 'neutral'"
+                        :variant="needsFollowUp(row.original) ? 'soft' : 'ghost'" label="Follow up"
+                        @click="openFollowUp(row.original)" />
                     <UButton :to="`/students/${row.original.id}?back=/classes/${route.params.id}`" size="sm"
                         variant="ghost" color="neutral" icon="i-lucide-chevron-right" aria-label="Open student" />
                 </template>
@@ -234,24 +232,35 @@
                     </div>
                 </template>
                 <template v-else-if="filteredStudents.length">
-                    <button v-for="student in filteredStudents" :key="student.id" type="button"
-                        class="flex w-full items-center gap-3 border-b border-default p-3 text-left last:border-0"
-                        :class="attentionStyle(student) ? `border-l-2 ${attentionStyle(student)!.border}` : ''"
-                        @click="navigateTo(`/students/${student.id}?back=/classes/${route.params.id}`)">
-                        <UAvatar class="size-10" :src="student.photo" :alt="`${student.givenNames} ${student.familyName}`" />
-                        <div class="min-w-0 flex-1">
-                            <p class="truncate font-semibold text-highlighted">{{ student.givenNames }} {{ student.familyName }}</p>
-                            <p class="truncate text-xs text-muted">
-                                {{ student.admissionNumber || 'No admission number' }}
-                                <template v-if="attendanceOf(student) !== undefined"> · {{ attendanceOf(student) }}% attendance</template>
-                                <template v-if="performanceOf(student) !== undefined"> · avg {{ formatScore(performanceOf(student)) }}</template>
-                            </p>
-                            <p v-if="needsAttention(student)" class="truncate text-[11px]" :class="attentionStyle(student)?.text">
-                                {{ attentionReason(student) }}
-                            </p>
-                        </div>
-                        <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 text-muted" />
-                    </button>
+                    <div v-for="student in filteredStudents" :key="student.id"
+                        class="flex items-center gap-2 border-b border-default p-3 last:border-0"
+                        :class="attentionStyle(student) ? `border-l-2 ${attentionStyle(student)!.border}` : ''">
+                        <button type="button" class="flex min-w-0 flex-1 items-center gap-3 text-left"
+                            @click="navigateTo(`/students/${student.id}?back=/classes/${route.params.id}`)">
+                            <UAvatar class="size-10" :src="student.photo" :alt="`${student.givenNames} ${student.familyName}`" />
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-semibold text-highlighted">{{ student.givenNames }} {{ student.familyName }}</p>
+                                <p class="truncate text-xs text-muted">
+                                    {{ student.admissionNumber || 'No admission number' }}
+                                    <template v-if="attendanceOf(student) !== undefined"> · {{ attendanceOf(student) }}% attendance</template>
+                                    <template v-if="performanceOf(student) !== undefined"> · avg {{ formatScore(performanceOf(student)) }}</template>
+                                </p>
+                                <template v-if="needsAttention(student)">
+                                    <p class="truncate text-[11px]" :class="attentionStyle(student)?.text">
+                                        {{ ATTENTION_LEVEL_LABEL[attentionOf(student)!.severity] }} · {{ attentionSummary(student) }}
+                                    </p>
+                                    <p class="truncate text-[11px] font-medium"
+                                        :class="FOLLOW_UP_TEXT[followUpOf(student).color]">
+                                        {{ followUpOf(student).text }}
+                                    </p>
+                                </template>
+                            </div>
+                        </button>
+                        <UButton v-if="needsAttention(student)" size="sm" icon="i-lucide-list-checks"
+                            :color="needsFollowUp(student) ? 'primary' : 'neutral'" variant="soft"
+                            aria-label="Follow up" @click="openFollowUp(student)" />
+                        <UIcon v-else name="i-lucide-chevron-right" class="size-4 shrink-0 text-muted" />
+                    </div>
                 </template>
                 <div v-else class="flex flex-col items-center gap-2 py-10">
                     <UIcon :name="STUDENT_ICON" class="text-4xl text-gray-400" />
@@ -281,6 +290,15 @@
                 <UButton to="/" label="Back to Dashboard" icon="i-lucide-arrow-left" color="primary" variant="soft" />
             </div>
         </UCard>
+
+        <!-- One flagged student's follow-up: why, what to do, the history, and a form to record more. -->
+        <ClassFollowUpModal v-model:open="followUpOpen" :class-id="classId"
+            :student="followUpStudent ? { id: followUpStudent.id, name: studentFullName(followUpStudent), photo: followUpStudent.photo, admissionNumber: followUpStudent.admissionNumber } : null"
+            :attention="followUpStudent ? attentionOf(followUpStudent) : undefined"
+            :history="followUpStudent ? (followUpsByStudent[followUpStudent.id] ?? []) : []"
+            :guardian="followUpStudent ? guardianOf(followUpStudent) : undefined"
+            :pass-mark="attentionThresholds?.passMark" :attendance-expected="attentionThresholds?.attendance"
+            @recorded="onFollowUpRecorded" />
     </div>
 </template>
 
@@ -330,8 +348,77 @@ const passMark = computed(() => attentionThresholds.value?.passMark ?? 50)
 const attentionRule = computed(() => {
     const t = attentionThresholds.value
     if (!t) return ''
-    return `Flagged below a ${t.passMark}% term average or ${Math.round(t.attendance)}% recent attendance`
+    return `A student is flagged when their average mark this term is below ${t.passMark}% (the pass mark), or they come to school on fewer than ${Math.round(t.attendance)}% of school days`
 })
+
+// ---- Follow-ups: what's been done about each flagged student (the same log the mobile app records).
+const followUpsByStudent = ref<Record<string, FollowUp[]>>({})
+function latestFollowUp(s: Student) {
+    return followUpsByStudent.value[s.id]?.[0]
+}
+// Flagged (not just "keep an eye on") and nobody has settled it yet.
+function needsFollowUp(s: Student) {
+    const a = attentionOf(s)
+    return !!a && a.severity !== 'WATCH' && !latestFollowUp(s)?.resolved
+}
+function followUpOf(s: Student) {
+    return followUpStatus(attentionOf(s), latestFollowUp(s))
+}
+// Written out in full so Tailwind generates them.
+const FOLLOW_UP_TEXT = { error: 'text-error', info: 'text-info', success: 'text-success', neutral: 'text-muted' } as const
+const followUpsDue = computed(() => students.value.filter(needsFollowUp).length)
+// The class's figures in the header card.
+const headerStats = computed(() => [
+    {
+        label: 'Students', value: String(students.value.length), note: genderSummary.value,
+        icon: 'i-lucide-users', box: 'bg-primary/10 text-primary', ready: !studentsLoading.value, warn: false
+    },
+    {
+        label: 'Attendance', value: avgAttendance.value === null ? '-' : `${avgAttendance.value}%`,
+        note: avgAttendance.value === null ? 'No school days yet this term' : `${termAttendance.value?.termName ?? 'This term'} so far`,
+        icon: 'i-lucide-calendar-check',
+        box: avgAttendance.value !== null && avgAttendance.value < 75 ? 'bg-warning/10 text-warning' : 'bg-info/10 text-info',
+        ready: !studentsLoading.value, warn: avgAttendance.value !== null && avgAttendance.value < 75
+    },
+    {
+        label: 'Average score', value: avgScore.value === null ? '-' : `${avgScore.value}%`,
+        note: avgScore.value === null ? 'No approved tests yet' : `${averagesTermName.value || 'This term'}, approved tests`,
+        icon: 'i-lucide-star',
+        box: avgScore.value !== null && avgScore.value < passMark.value ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success',
+        ready: !studentsLoading.value, warn: avgScore.value !== null && avgScore.value < passMark.value
+    },
+    {
+        label: masterNames.value.length > 1 ? 'Class masters' : 'Class master',
+        value: masterNames.value[0] ?? 'Not assigned',
+        note: masterNames.value.length > 1 ? `+${masterNames.value.length - 1} more` : '',
+        icon: 'i-lucide-user-round-check', box: 'bg-secondary/10 text-secondary',
+        ready: !loading.value && !overviewLoading.value, warn: false
+    }
+])
+async function fetchFollowUps() {
+    if (!canViewRoster.value || !classId.value) return
+    const forClass = classId.value
+    const list = await FollowUpApi().listForClass(forClass)
+    if (classId.value !== forClass) return
+    const map: Record<string, FollowUp[]> = {}
+    for (const f of list) (map[f.studentId] ??= []).push(f)
+    followUpsByStudent.value = map
+}
+// The follow-up dialog's student.
+const followUpStudent = ref<Student | null>(null)
+const followUpOpen = computed({
+    get: () => !!followUpStudent.value,
+    set: (v: boolean) => { if (!v) followUpStudent.value = null }
+})
+function openFollowUp(s: Student) {
+    followUpStudent.value = s
+}
+function onFollowUpRecorded(f: FollowUp) {
+    followUpsByStudent.value = {
+        ...followUpsByStudent.value,
+        [f.studentId]: [f, ...(followUpsByStudent.value[f.studentId] ?? [])]
+    }
+}
 const sortByPerformance = ref(true)
 const openAttentionId = ref<string | null>(null)
 
@@ -363,29 +450,16 @@ function needsAttention(s: Student) {
     return !!attentionOf(s)
 }
 
-const TREND_LABEL = { IMPROVING: 'improving', STEADY: 'steady', DECLINING: 'declining' } as const
-
+// Why, in plain words - the same as the mobile app (see utils/attention).
 function attentionReason(s: Student) {
     const a = attentionOf(s)
     if (!a) return ''
-
-    const parts: string[] = []
-    if (a.attendanceFlag) {
-        let text = a.attendanceRate != null ? `Attendance ${a.attendanceRate}% recently` : 'Attendance'
-        if (a.termAttendanceRate != null) text += ` (${a.termAttendanceRate}% this term)`
-        if (a.attendanceTrend) text += `, ${TREND_LABEL[a.attendanceTrend]}`
-        if (a.absenceStreak >= 3) text += `, ${a.absenceStreak} absences in a row`
-        parts.push(text)
-    }
-    if (a.academicFlag) {
-        let text = `Average ${a.academicAverage}%`
-        if (a.previousTermAverage != null) text += ` (${a.previousTermAverage}% last term)`
-        if (a.academicTrend) text += `, ${TREND_LABEL[a.academicTrend]}`
-        parts.push(text)
-    }
-
-    const tail = a.severity === 'WATCH' ? 'keep an eye on' : 'needs follow-up'
-    return `${parts.join(' · ')} - ${tail}`
+    return attentionReasons(a, { attendanceExpected: attentionThresholds.value?.attendance, passMark: attentionThresholds.value?.passMark }).join(' · ')
+}
+function attentionSummary(s: Student) {
+    const a = attentionOf(s)
+    if (!a) return ''
+    return attentionReasons(a, { attendanceExpected: attentionThresholds.value?.attendance, passMark: attentionThresholds.value?.passMark })[0] ?? ''
 }
 
 async function fetchAttention() {
@@ -512,8 +586,6 @@ const parseStatusColor: Record<string, string> = {
 const columns = [
     { id: 'rank', header: '#', meta: { class: { th: 'w-10', td: 'w-10' } } },
     { id: 'name', header: 'Student' },
-    { id: 'age', header: 'Age' },
-    { id: 'gender', header: 'Gender' },
     { id: 'guardian', header: 'Guardian' },
     { id: 'attendance', header: 'Attendance' },
     { id: 'average', header: 'Average' },
@@ -522,6 +594,16 @@ const columns = [
 ]
 
 // The linked parent account first; otherwise the father/mother recorded on the student.
+// Under the name: admission number, gender and age - so the table needs no columns for them.
+function studentSubtitle(s: Student) {
+    const age = ageOf(s.dateOfBirth)
+    return [
+        s.admissionNumber || 'No admission number',
+        parseGender[s.gender],
+        age !== null ? `${age} yrs` : null
+    ].filter(Boolean).join(' · ')
+}
+
 function guardianOf(s: Student): { name: string, phone: string } {
     const g = s.guardian
     const linked = g ? (`${g.givenNames ?? ''} ${g.familyName ?? ''}`.trim() || g.name || '') : ''
@@ -632,7 +714,11 @@ const actionItems = computed(() => [[
     {
         label: 'Create missing assessments', icon: 'i-lucide-refresh-cw',
         onSelect: () => syncAssessments()
-    }
+    },
+    ...(session.value?.id ? [{
+        label: 'Grade book', icon: 'i-lucide-book-open-check',
+        onSelect: () => navigateTo(`/gradebook?session=${session.value!.id}`)
+    }] : [])
 ],
 // One entry per class master, so any of them can still be unassigned.
 ...(classTeachers.value.length ? [classTeachers.value.map(master => ({
@@ -760,7 +846,7 @@ const canViewRoster = computed(() => {
 })
 
 // Per class, not just once: switching class reloads its flags, averages and attendance.
-watch([classId, canViewRoster], ([, val]) => { if (val) { fetchRosterInsights(); fetchAttention() } }, { immediate: true })
+watch([classId, canViewRoster], ([, val]) => { if (val) { fetchRosterInsights(); fetchAttention(); fetchFollowUps() } }, { immediate: true })
 
 const promotionRequests = ref<Record<string, PromotionRequest | null>>({})
 const promotionStatusLoading = ref(false)
@@ -775,6 +861,7 @@ const teacherActionItems = computed(() => {
     ]
     const masterSession = myMasterSessionId.value
     if (isMasterOfThisClass.value && masterSession) {
+        items.push({ label: 'Grade book', icon: 'i-lucide-book-open-check', to: `/gradebook?session=${masterSession}` })
         items.push({ label: 'Grade Approval', icon: GRADES_APPROVAL_ICON, to: '/grades/approval' })
         const returned = promotionRequests.value[masterSession]?.status === 'RETURNED'
         items.push({
@@ -845,6 +932,8 @@ function resetClassView() {
     termAttendance.value = null
     subjectScores.value = []
     attentionByStudentId.value = {}
+    followUpsByStudent.value = {}
+    followUpStudent.value = null
     attentionThresholds.value = null
     search.value = ''
     onlyAttention.value = false

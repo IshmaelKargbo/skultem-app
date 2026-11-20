@@ -5,11 +5,11 @@
     <template #header>
       <div class="flex justify-between">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-door-open" class="size-5 text-primary" />
+          <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-door-open" class="size-4" /></span>
           <div>
-            <h3 class="font-semibold">Rooms</h3>
-            <p class="text-xs-base text-muted hidden md:block">
-              Manage classrooms and spaces available for scheduling
+            <h3 class="text-sm font-semibold text-highlighted">Rooms</h3>
+            <p class="text-xs text-muted">
+              Classrooms and spaces lessons can be given
             </p>
           </div>
         </div>

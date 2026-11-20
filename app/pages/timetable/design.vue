@@ -2,6 +2,7 @@
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Timetable Design" subtitle="Customise the timetable PDF that admins, teachers and parents download.">
       <div class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
+        <GuideBar topic="admin-timetable-design" />
         <UButton icon="i-lucide-rotate-ccw" color="neutral" variant="outline" class="justify-center" @click="reset">
           Reset
         </UButton>
@@ -13,7 +14,6 @@
 
     <div data-guide="tt-tabs"><TimetableSectionNav /></div>
 
-    <GuideBar topic="admin-timetable-design" />
     <DesignSkeleton v-if="fetching" preview-wide />
     <div v-show="!fetching" class="grid gap-6 lg:grid-cols-5">
       <!-- Controls -->

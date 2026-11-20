@@ -44,7 +44,7 @@
                     :class="group.fullyPaid ? 'border-l-success-500' : 'border-l-error-500'">
                     <!-- Group header -->
                     <div 
-                        class="flex w-full flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
+                        class="flex w-full cursor-pointer flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated/40"
                         @click="toggle(group.key)">
                         <div class="flex min-w-0 items-center justify-between gap-2.5">
                             <div class="flex space-x-2.5">

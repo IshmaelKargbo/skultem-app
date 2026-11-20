@@ -22,6 +22,11 @@ const emit = defineEmits<{
 }>()
 
 const isSplit = computed(() => slot.length > 1)
+// With options, the one on show (the first until someone switches); kept in range if an option is removed.
+const shown = ref(0)
+watch(() => slot.length, (n) => { if (shown.value >= n) shown.value = 0 })
+const current = computed(() => slot[Math.min(shown.value, slot.length - 1)]!)
+const next = () => { shown.value = (shown.value + 1) % slot.length }
 // A Library period takes the whole period for the class, so it never gets options beside it.
 const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY')
 </script>
@@ -85,56 +90,58 @@ const isLibrary = computed(() => slot.length === 1 && slot[0]!.kind === 'LIBRARY
       label="Add option" @click="emit('add')" />
   </div>
 
-  <!-- Options: students split between subjects -->
-  <!-- Each option is drawn like a normal period card, joined by an "or" marker -->
-  <div v-else class="min-h-28 space-y-1.5">
-    <div class="flex items-center justify-between gap-2 px-1">
-      <p class="flex min-w-0 items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted">
-        <UIcon name="i-lucide-split" class="size-3.5 shrink-0 text-primary" />
-        <span class="truncate">{{ label ? `${label} · ` : '' }}{{ slot.length }} options</span>
-      </p>
-      <UTooltip text="Students go to the subject they take">
-        <UIcon name="i-lucide-info" class="size-3.5 shrink-0 text-muted" />
+  <!-- Options: students split between subjects (e.g. PHE or RME). One is shown at a time, the size of any other
+       period, with a switch to step through the rest - so a period with options doesn't stretch the grid. -->
+  <div v-else class="group relative">
+    <UPopover mode="hover" :open-delay="250" :close-delay="100" :content="popover">
+    <component :is="isAdmin ? 'button' : 'div'" :type="isAdmin ? 'button' : undefined"
+      class="block min-h-28 w-full min-w-0 rounded-2xl border p-3 pb-8 text-left shadow-sm transition-all duration-200"
+      :class="[current.color, isAdmin && 'hover:-translate-y-0.5 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary']"
+      @click="isAdmin && emit('edit', current)">
+      <p v-if="label" class="truncate text-[11px] font-medium uppercase tracking-wide text-muted">{{ label }}</p>
+      <h4 class="truncate pr-5 font-semibold leading-tight">{{ current.subject }}</h4>
+      <div class="mt-3 space-y-1.5 text-xs text-muted">
+        <p class="flex min-w-0 items-center gap-1.5">
+          <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
+          <span class="truncate">{{ current.teacher || '—' }}</span>
+        </p>
+        <p class="flex min-w-0 items-center gap-1.5">
+          <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
+          <span class="truncate">{{ current.room || '—' }}</span>
+        </p>
+      </div>
+      <UIcon v-if="isAdmin" name="i-lucide-pencil"
+        class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+    </component>
+      <template #content>
+        <TimetableSlotDetails :entry="current" :when="when" :option="`Option ${shown + 1} of ${slot.length}`" />
+      </template>
+    </UPopover>
+
+    <!-- Which option this is, and the switch to the next. -->
+    <div class="absolute inset-x-2 bottom-1.5 flex items-center justify-between gap-1">
+      <div class="flex items-center gap-1" role="tablist" :aria-label="`${slot.length} options`">
+        <button v-for="(entry, i) in slot" :key="entry.id" type="button" role="tab" :aria-selected="i === shown"
+          :aria-label="`Show ${entry.subject}`" class="flex size-4 items-center justify-center"
+          @click.stop="() => { shown = i }">
+          <span class="block rounded-full transition-all"
+            :class="i === shown ? 'h-1.5 w-3.5 bg-primary' : 'size-1.5 bg-accented hover:bg-muted'" />
+        </button>
+      </div>
+      <UTooltip :text="`${slot.length} options - students go to the subject they take`">
+        <button type="button"
+          class="flex items-center gap-1 rounded-full border border-default bg-default/90 px-2 py-0.5 text-[10px] font-semibold text-muted shadow-sm transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          :aria-label="`Option ${shown + 1} of ${slot.length}. Show the next option`" @click.stop="next">
+          <UIcon name="i-lucide-split" class="size-3" />
+          {{ shown + 1 }}/{{ slot.length }}
+          <UIcon name="i-lucide-chevron-right" class="size-3" />
+        </button>
       </UTooltip>
     </div>
 
-    <template v-for="(entry, i) in slot" :key="entry.id">
-      <div v-if="i > 0" class="flex items-center gap-2 px-2" aria-hidden="true">
-        <span class="h-px flex-1 bg-accented" />
-        <span class="rounded-full border border-default bg-default px-2 text-[10px] font-semibold uppercase tracking-wide text-muted">or</span>
-        <span class="h-px flex-1 bg-accented" />
-      </div>
-
-      <UPopover mode="hover" :open-delay="250" :close-delay="100" :content="popover">
-      <component :is="isAdmin ? 'button' : 'div'" :type="isAdmin ? 'button' : undefined"
-        class="group/opt relative block w-full min-w-0 rounded-2xl border p-3 text-left shadow-sm transition-all duration-200"
-        :class="[entry.color, isAdmin && 'hover:-translate-y-0.5 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary']"
-        @click="isAdmin && emit('edit', entry)">
-        <h4 class="truncate pr-5 font-semibold leading-tight">{{ entry.subject }}</h4>
-        <div class="mt-2 space-y-1 text-xs text-muted">
-          <p class="flex min-w-0 items-center gap-1.5">
-            <UIcon name="i-lucide-user-round" class="size-3.5 shrink-0" />
-            <span class="truncate">{{ entry.teacher || '—' }}</span>
-          </p>
-          <p class="flex min-w-0 items-center gap-1.5">
-            <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0" />
-            <span class="truncate">{{ entry.room || '—' }}</span>
-          </p>
-        </div>
-        <UIcon v-if="isAdmin" name="i-lucide-pencil"
-          class="absolute right-3 top-3 size-3.5 text-muted opacity-0 transition-opacity group-hover/opt:opacity-100" />
-      </component>
-        <template #content>
-          <TimetableSlotDetails :entry="entry" :when="when" :option="`Option ${i + 1} of ${slot.length}`" />
-        </template>
-      </UPopover>
-    </template>
-
-    <button v-if="isAdmin" type="button"
-      class="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-default py-2 text-xs font-medium text-muted transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      @click="emit('add')">
-      <UIcon name="i-lucide-plus" class="size-3.5" />
-      Add option
-    </button>
+    <!-- Another option beside these -->
+    <UButton v-if="isAdmin" size="xs" color="neutral" variant="solid" icon="i-lucide-plus"
+      class="absolute -top-2 right-3 rounded-full opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100"
+      label="Add option" @click="emit('add')" />
   </div>
 </template>

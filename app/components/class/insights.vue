@@ -1,37 +1,43 @@
 <template>
   <!-- What a class master / admin should look at first, worked out from data already on the page. -->
   <div v-if="ready" class="grid gap-4 lg:grid-cols-2">
-    <!-- Needs attention -->
-    <section class="rounded-2xl border border-default bg-default p-5 shadow-xs">
+    <!-- To follow up: the flagged students, still-to-do first, in plain words with where each follow-up stands. -->
+    <section class="flex h-full flex-col rounded-2xl border border-default bg-default p-5 shadow-xs">
       <header class="mb-4 flex items-center gap-3">
         <span class="flex size-10 items-center justify-center rounded-xl"
-          :class="flagged.length ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'">
-          <UIcon :name="flagged.length ? 'i-lucide-alert-triangle' : 'i-lucide-circle-check'" class="size-5" />
+          :class="dueCount ? 'bg-error/10 text-error' : flagged.length ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'">
+          <UIcon :name="flagged.length ? 'i-lucide-list-checks' : 'i-lucide-circle-check'" class="size-5" />
         </span>
         <div class="min-w-0 flex-1">
-          <h3 class="font-semibold text-highlighted">Needs attention</h3>
+          <h3 class="font-semibold text-highlighted">To follow up</h3>
           <p class="text-xs text-muted">
-            {{ flagged.length ? `${flagged.length} student${flagged.length === 1 ? '' : 's'} flagged` : 'All clear' }}
+            <template v-if="!flagged.length">All clear</template>
+            <template v-else-if="dueCount">{{ dueCount }} still to follow up · {{ flagged.length }} flagged</template>
+            <template v-else>Everyone flagged has been followed up</template>
           </p>
         </div>
       </header>
-      <ul v-if="flagged.length" class="space-y-2.5">
-        <li v-for="f in flagged.slice(0, 3)" :key="f.student.id">
-          <button type="button" class="group flex w-full items-start gap-2.5 text-left" @click="open(f.student)">
+      <ul v-if="flagged.length" class="space-y-3">
+        <li v-for="f in flagged.slice(0, 4)" :key="f.student.id">
+          <button type="button" class="group flex w-full items-start gap-2.5 text-left" @click="emit('follow-up', f.student)">
             <span class="mt-1.5 size-2 shrink-0 rounded-full" :class="SEVERITY_DOT[f.severity]" />
             <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-medium text-highlighted group-hover:underline">{{ name(f.student) }}</span>
               <span class="block truncate text-xs text-muted">{{ f.reason }}</span>
+              <span v-if="f.status" class="mt-0.5 flex items-center gap-1 text-[11px] font-medium" :class="STATUS_TEXT[f.status.color]">
+                <UIcon :name="f.status.icon" class="size-3 shrink-0" />
+                <span class="truncate">{{ f.status.text }}</span>
+              </span>
             </span>
           </button>
         </li>
-        <li v-if="flagged.length > 3" class="pl-4.5 text-xs text-muted">+{{ flagged.length - 3 }} more in the list below</li>
+        <li v-if="flagged.length > 4" class="pl-4.5 text-xs text-muted">+{{ flagged.length - 4 }} more in the list below</li>
       </ul>
       <p v-else class="text-sm text-muted">Nobody is flagged right now. Attendance and marks look healthy.</p>
     </section>
 
     <!-- Attendance overview -->
-    <section class="rounded-2xl border border-default bg-default p-5 shadow-xs">
+    <section class="flex h-full flex-col rounded-2xl border border-default bg-default p-5 shadow-xs">
       <header class="mb-4 flex items-center gap-3">
         <span class="flex size-10 items-center justify-center rounded-xl bg-info/10 text-info">
           <UIcon name="i-lucide-calendar-check" class="size-5" />
@@ -80,7 +86,7 @@
     </section>
 
     <!-- Academic performance -->
-    <section class="rounded-2xl border border-default bg-default p-5 shadow-xs md:col-span-2">
+    <section class="rounded-2xl border border-default bg-default p-5 shadow-xs lg:col-span-2">
       <header class="mb-4 flex items-center gap-3">
         <span class="flex size-10 items-center justify-center rounded-xl bg-success/10 text-success">
           <UIcon name="i-lucide-trending-up" class="size-5" />
@@ -145,7 +151,14 @@ const props = defineProps<{
   // The class's pass mark - averages under it are shown as failing.
   passMark?: number
   classId: string
+  // Plain-words reason, follow-up status and "still to do", from the class page (the same as its table).
+  reasonOf?: (s: Student) => string
+  followUpOf?: (s: Student) => { text: string, color: 'error' | 'info' | 'success' | 'neutral', icon: string }
+  needsFollowUp?: (s: Student) => boolean
 }>()
+const emit = defineEmits<{ 'follow-up': [Student] }>()
+// Written out in full so Tailwind generates them.
+const STATUS_TEXT = { error: 'text-error', info: 'text-info', success: 'text-success', neutral: 'text-muted' } as const
 
 const threshold = computed(() => Math.round(props.threshold ?? 75))
 const passMark = computed(() => props.passMark ?? 50)
@@ -162,14 +175,15 @@ const ringShare = computed(() => attendanceCount.value ? Math.round((attendanceC
 const flagged = computed(() => props.students
   .map(student => ({ student, a: props.attention[student.id] }))
   .filter((x): x is { student: Student, a: StudentAttention } => !!x.a)
-  .sort((x, y) => RANK[x.a.severity] - RANK[y.a.severity])
-  .map(({ student, a }) => {
-    const parts: string[] = []
-    if (a.attendanceFlag) parts.push(a.attendanceRate != null ? `attendance ${a.attendanceRate}%` : 'attendance')
-    if (a.academicFlag) parts.push(a.academicAverage != null ? `average ${a.academicAverage}%` : 'average')
-    if (a.absenceStreak >= 3) parts.push(`${a.absenceStreak} absences in a row`)
-    return { student, severity: a.severity, reason: parts.join(' · ') || 'Worth a look' }
-  }))
+  .sort((x, y) => Number(props.needsFollowUp?.(y.student) ?? false) - Number(props.needsFollowUp?.(x.student) ?? false)
+    || RANK[x.a.severity] - RANK[y.a.severity])
+  .map(({ student, a }) => ({
+    student,
+    severity: a.severity,
+    reason: props.reasonOf?.(student) || attentionReasons(a)[0] || 'Worth a look',
+    status: props.followUpOf?.(student)
+  })))
+const dueCount = computed(() => props.needsFollowUp ? flagged.value.filter(f => props.needsFollowUp!(f.student)).length : 0)
 
 const withAttendance = computed(() => props.students
   .map(student => ({ student, rate: props.attendanceById[student.id] }))

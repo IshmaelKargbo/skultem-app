@@ -12,6 +12,14 @@
       </Heading>
       <div><TimetableSectionNav /></div>
       <div v-if="childLoading" class="space-y-3"><USkeleton v-for="i in 2" :key="i" class="h-56 w-full rounded-lg" /></div>
+      <UCard v-else-if="childOnTimetable">
+        <div class="flex flex-col items-center justify-center py-16 text-center">
+          <UIcon name="i-lucide-calendar-days" class="mb-3 size-12 text-muted" />
+          <h3 class="text-base font-semibold">This class follows the normal timetable</h3>
+          <p class="mt-1 text-sm text-muted">It has a lesson-by-lesson timetable instead of a weekly plan.</p>
+          <UButton class="mt-4" to="/timetable" label="Open the timetable" icon="i-lucide-calendar-days" />
+        </div>
+      </UCard>
       <template v-else-if="childPlan">
         <UCard v-for="week in childPlan.weeks" :key="week.start" :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
@@ -35,7 +43,7 @@
       <Heading title="Weekly plan" subtitle="The whole term, week by week, with a subject in each session of the day.">
         <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
           <USelectMenu v-model="classSessionId" placeholder="Select Class" value-key="value" :items="classStore.list"
-            :loading="classStore.loading" class="w-full md:w-64" />
+            :loading="classStore.loading || typesLoading" class="w-full md:w-64" />
           <USelectMenu v-model="termId" placeholder="Select Term" value-key="value" :items="termItems"
             :loading="termStore.loading" class="w-full md:w-48" />
         </div>
@@ -47,6 +55,22 @@
           <UIcon name="i-lucide-school" class="mb-3 size-12 text-muted" />
           <h3 class="text-base font-semibold">Choose a class</h3>
           <p class="mt-1 text-sm text-muted">Pick a class and a term to see or build its weekly plan.</p>
+        </div>
+      </UCard>
+
+      <!-- A class follows the normal timetable or a weekly plan, never both. -->
+      <UCard v-else-if="onTimetable">
+        <div class="flex flex-col items-center justify-center py-16 text-center">
+          <UIcon name="i-lucide-calendar-days" class="mb-3 size-12 text-muted" />
+          <h3 class="text-base font-semibold">{{ pickedName }} follows the normal timetable</h3>
+          <p class="mt-1 max-w-md text-sm text-muted">A class has a timetable or a weekly plan, not both.
+            <template v-if="canEdit">To plan {{ pickedName }} week by week instead (e.g. nursery), switch it - its timetable is
+              kept, just hidden, until you switch back.</template></p>
+          <div class="mt-4 flex flex-wrap justify-center gap-2">
+            <UButton to="/timetable" label="Open its timetable" icon="i-lucide-calendar-days" color="neutral" variant="soft" />
+            <UButton v-if="canEdit" label="Plan it week by week" icon="i-lucide-calendar-range" :loading="switching"
+              @click="switchToPlan" />
+          </div>
         </div>
       </UCard>
 
@@ -128,6 +152,38 @@ const canEdit = computed(() => can([Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN
 
 // ---- staff
 const classSessionId = ref('')
+// A class follows a weekly plan or the normal timetable, never both. The class picked is shared with the Timetable
+// page; picking one on the normal timetable goes straight to its timetable.
+const { types, load: loadTypes, loading: typesLoading, typeOfSession, classIdOfSession, selected, set: setType } = useClassTimetableTypes()
+// The class picked before (here or on the Timetable page) when it's on a weekly plan, else the first that is.
+watch([() => classStore.list, types], ([items]) => {
+  if (!types.value || classSessionId.value || !items.length) return
+  const kept = selected.value && typeOfSession(selected.value) === 'WEEKLY_PLAN' ? selected.value : ''
+  classSessionId.value = kept || (items.find((c: { value: string }) => typeOfSession(c.value) === 'WEEKLY_PLAN')?.value ?? '')
+}, { immediate: true })
+watch([classSessionId, types], ([id]) => {
+  if (!id) return
+  selected.value = id
+  // A class on the normal timetable has no weekly plan: straight to its timetable (the Timetable page opens on it).
+  if (types.value && typeOfSession(id) === 'PERIODS') navigateTo('/timetable', { replace: true })
+})
+// The class picked is on the normal timetable: say so (and let the school switch it) rather than load a plan.
+const onTimetable = computed(() => !!classSessionId.value && !!types.value && typeOfSession(classSessionId.value) === 'PERIODS')
+const pickedName = computed(() => classStore.list.find((c: { value: string, label: string }) => c.value === classSessionId.value)?.label ?? 'This class')
+const switching = ref(false)
+async function switchToPlan() {
+  const classId = classIdOfSession(classSessionId.value) ?? classStore.get(classSessionId.value)?.clazzId
+  if (!classId) return
+  switching.value = true
+  try {
+    await setType(classId, 'WEEKLY_PLAN')
+    await load()
+  } catch (err: any) {
+    toastError(err?.data?.message || err?.message || 'Could not switch the class')
+  } finally {
+    switching.value = false
+  }
+}
 const termId = ref('')
 const termItems = computed(() => termStore.records.map(t => ({ label: `${t.name}${t.academicYear?.name ? ` (${t.academicYear.name})` : ''}`, value: t.id })))
 // The running term to start with (else the first listed).
@@ -205,6 +261,7 @@ watch(repeat, (n) => {
 
 async function load() {
   if (!classSessionId.value || !termId.value) return
+  if (!types.value || typeOfSession(classSessionId.value) !== 'WEEKLY_PLAN') return // no plan to load (see onTimetable)
   loading.value = true
   try {
     take(await WeeklyPlanApi().get(classSessionId.value, termId.value))
@@ -252,12 +309,16 @@ function setStatus(published: boolean) {
     published ? 'Published - parents can see it now' : 'Unpublished')
 }
 
-watch([classSessionId, termId], load)
+watch([classSessionId, termId, types], load)
 
 // ---- parents
 const childId = ref('')
 const childPlan = ref<ChildWeeklyPlan | null>(null)
 const childLoading = ref(false)
+const childOnTimetable = computed(() => {
+  const child = parentStore.students.find(st => st.id === childId.value)
+  return !!child?.sessionId && !!types.value && typeOfSession(child.sessionId) === 'PERIODS'
+})
 const children = computed(() => parentStore.students.map(s => ({ label: `${s.givenNames} ${s.familyName} (${s.className})`, value: s.id })))
 const thisMonday = computed(() => {
   const d = new Date()
@@ -265,9 +326,25 @@ const thisMonday = computed(() => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 })
 
-watch(children, (items) => { if (items.length && !items.some(i => i.value === childId.value)) childId.value = items[0]!.value })
+// The child picked before (here or on the Timetable page), else the first whose class is on a weekly plan.
+watch([children, types], ([items]) => {
+  if (!items.length || !types.value || items.some(i => i.value === childId.value)) return
+  const kept = parentStore.students.find(st => st.sessionId === selected.value && typeOfSession(st.sessionId) === 'WEEKLY_PLAN')
+  const firstOnPlan = parentStore.students.find(st => typeOfSession(st.sessionId) === 'WEEKLY_PLAN')
+  childId.value = kept?.id ?? firstOnPlan?.id ?? items[0]!.value
+}, { immediate: true })
 watch(childId, async (id) => {
   if (!id) return
+  const child = parentStore.students.find(s => s.id === id)
+  if (child?.sessionId) {
+    selected.value = child.sessionId
+    if (types.value && typeOfSession(child.sessionId) === 'PERIODS') {
+      // No weekly plan: straight to the child's timetable (the Timetable page opens on them).
+      childPlan.value = null
+      navigateTo('/timetable', { replace: true })
+      return
+    }
+  }
   childLoading.value = true
   try {
     childPlan.value = await WeeklyPlanApi().child(id)
@@ -281,8 +358,8 @@ watch(childId, async (id) => {
 onMounted(() => {
   useAppStore().setTitle('Weekly Plan')
   document.title = 'Weekly Plan | Timetable | Skultem'
-  if (isParent.value) parentStore.fetchAllStudents(0, 0)
-  else Promise.all([classStore.fetchAll(0, 0), termStore.fetchAll(0, 0)])
+  if (isParent.value) Promise.all([parentStore.fetchAllStudents(0, 0), loadTypes(true)])
+  else Promise.all([classStore.fetchAll(0, 0), termStore.fetchAll(0, 0), loadTypes(true)])
 })
 
 definePageMeta({

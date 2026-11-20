@@ -6,11 +6,11 @@
       <template #header>
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-3">
-            <UIcon name="i-lucide-clock-3" class="size-6 text-primary" />
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-clock-3" class="size-4" /></span>
             <div>
-              <h3 class="font-semibold">Timing Templates</h3>
-              <p class="text-xs-base text-muted">
-                Set up school-day schedules</p>
+              <h3 class="text-sm font-semibold text-highlighted">Timing templates</h3>
+              <p class="text-xs text-muted">
+                When the day starts and ends, and how long periods, breaks and lunch are</p>
             </div>
           </div>
           <div>
@@ -29,7 +29,6 @@
       </div>
     </UCard>
 
-    <TimetableTimingLevels />
   </div>
 </template>
 

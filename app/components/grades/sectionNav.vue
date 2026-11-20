@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 // The one tab bar for Grades & Exams: entering grades, the exam office's tracking, approval, the exam timetable,
-// the broadsheet and the assessment cycle are steps of the same job, so every page in it shows the same tabs
+// the grade book and the assessment cycle are steps of the same job, so every page in it shows the same tabs
 // (each person sees the ones they can use).
 const { can } = useAuth()
 const { isClassMaster, ensureLoaded } = useClassMaster()
@@ -22,6 +22,8 @@ interface NavItem {
   roles: Role[]
   // Only for a teacher who is a class master in a part of the school where class masters approve.
   classMasterApprover?: boolean
+  // Only for a teacher who is a class master (the grade book of their own class).
+  classMaster?: boolean
 }
 
 const MANAGEMENT = [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -33,7 +35,8 @@ const allItems: NavItem[] = [
   { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, roles: EXAM_OFFICE_ROLES },
   { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, roles: [Role.TEACHER], classMasterApprover: true },
   { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock', roles: [...EXAM_OFFICE_ROLES, Role.TEACHER] },
-  { label: 'Broadsheet', to: '/exam-office/broadsheet', icon: 'i-lucide-sheet', roles: EXAM_OFFICE_ROLES },
+  { label: 'Grade Book', to: '/gradebook', icon: 'i-lucide-book-open-check', roles: EXAM_OFFICE_ROLES },
+  { label: 'Grade Book', to: '/gradebook', icon: 'i-lucide-book-open-check', roles: [Role.TEACHER], classMaster: true },
   { label: 'Assessment Cycle', to: '/academics/assessment-cycle', icon: 'i-lucide-refresh-cw', roles: MANAGEMENT },
 ]
 
@@ -44,6 +47,7 @@ const items = computed(() => {
     // A teacher sees approval only as a class master, and only while class masters approve somewhere (until the
     // routing has loaded, keep it so the tabs don't jump).
     if (item.classMasterApprover && (!isClassMaster.value || (routing.value && !routesTo('CLASS_MASTER')))) return false
+    if (item.classMaster && !isClassMaster.value) return false
     // Someone with both a management role and a teacher role gets each page once.
     if (seen.has(item.to)) return false
     seen.add(item.to)

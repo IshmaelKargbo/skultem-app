@@ -93,6 +93,7 @@ export function useMenu() {
       label: 'Grades & Exams', icon: GRADES_ICON, roles: [Role.TEACHER],
       subNavs: [
         { label: 'Grade Entry', to: '/grades', icon: GRADES_ICON, exact: true },
+        { label: 'Grade Book', to: '/gradebook', icon: 'i-lucide-book-open-check', classMasterOnly: true },
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON, classMasterOnly: true },
         { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock' },
       ]
@@ -165,7 +166,8 @@ export function useMenu() {
         { label: 'Submissions', to: '/exam-office/submissions', icon: 'i-lucide-list-checks' },
         { label: 'Grade Approval', to: '/grades/approval', icon: GRADES_APPROVAL_ICON },
         { label: 'Exam Timetable', to: '/exam-office/timetable', icon: 'i-lucide-calendar-clock' },
-        { label: 'Broadsheet', to: '/exam-office/broadsheet', icon: 'i-lucide-sheet' },
+        // One page for a class's results: live marks during the term, report-card results (what the broadsheet was) after.
+        { label: 'Grade Book', to: '/gradebook', icon: 'i-lucide-book-open-check' },
       ]
     },
 

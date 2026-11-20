@@ -4,11 +4,11 @@
   }">
     <template #header>
       <div class="flex items-center gap-3">
-        <UIcon name="i-lucide-layers" class="size-6 text-primary" />
+        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted"><UIcon name="i-lucide-layers" class="size-4" /></span>
         <div>
-          <h3 class="font-semibold">Level Assignments</h3>
-          <p class="text-xs-base text-muted hidden md:block">
-            Pick which timing template each level's classes follow
+          <h3 class="text-sm font-semibold text-highlighted">Times for each level</h3>
+          <p class="text-xs text-muted">
+            Which timing template each level's classes follow
           </p>
         </div>
       </div>
@@ -18,10 +18,10 @@
         class="flex items-center justify-between gap-3 border-b last:border-0 border-default py-3 px-5">
         <p class="font-medium">{{ level.label }}</p>
 
-        <USelectMenu :model-value="assignedId(level.value as SchoolLevel)"
+        <USelectMenu class="w-48 sm:w-56" :model-value="assignedId(level.value as SchoolLevel)"
           @update:model-value="(id: string) => assign(level.value as SchoolLevel, id)" value-key="value" size="md"
           :items="templateOptions" :loading="loading"
-          :placeholder="`Not set - uses ${defaultTiming?.name || 'Default'}`" class="w-56" />
+          :placeholder="`Not set - uses ${defaultTiming?.name || 'Default'}`" />
       </div>
   </UCard>
 </template>

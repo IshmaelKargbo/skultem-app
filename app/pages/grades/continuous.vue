@@ -409,7 +409,10 @@ const structure = computed(() => continuousOf(rows.value, assessmentId.value))
 const caSubmitted = computed(() => !!structure.value?.caSubmitted)
 // CA is only for monitoring (worth 0% of the score): it never gates the formal test or the approval.
 const monitorOnly = computed(() => !!structure.value && structure.value.caPercentage === 0)
-const editable = computed(() => !!assessment.value && isEditableStatus(assessment.value.status as ScoreStatus))
+// Owners and proprietors see the CA but don't record it (the backend refuses it too).
+const { activeRole } = useAuth()
+const readOnly = computed(() => ([Role.OWNER, Role.PROPRIETOR] as string[]).includes(activeRole.value))
+const editable = computed(() => !readOnly.value && !!assessment.value && isEditableStatus(assessment.value.status as ScoreStatus))
 const weekFilled = (week: number) => rows.value.filter(r => form[r.id]?.entries[week - 1] != null).length
 const detailRow = computed(() => rows.value.find(r => r.id === detailId.value) ?? null)
 const lockedCount = computed(() => structure.value?.lockedWeeks?.length ?? 0)

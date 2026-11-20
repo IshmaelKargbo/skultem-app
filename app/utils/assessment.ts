@@ -126,6 +126,10 @@ export type AssessmentScore = {
     student: string
     // The student's profile photo URL, null when none was uploaded.
     studentPhoto?: string | null
+    // The student's admission number - tells same-named students apart.
+    admissionNumber?: string | null
+    // Whether the score clears the pass mark (on grade approval requests).
+    passed?: boolean | null
     weight: number
     weightScore: number
     trend?: string

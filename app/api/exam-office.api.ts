@@ -123,14 +123,17 @@ export const ExamOfficeApi = () => {
       }
     },
 
-    broadsheet: async (params: { classId: string, termId: string, streamId?: string }) => {
+    // Errors go back to the page, which says what went wrong - an error must never look like "no report cards".
+    broadsheet: async (params: { classId: string, termId: string, sectionId?: string, streamId?: string, scope?: string }) => {
       try {
         const query = new URLSearchParams({ classId: params.classId, termId: params.termId })
+        if (params.sectionId) query.set('sectionId', params.sectionId)
         if (params.streamId) query.set('streamId', params.streamId)
+        if (params.scope) query.set('scope', params.scope)
         const res = await $api(`/exam-office/broadsheet?${query}`) as any
         return res?.data as Broadsheet
       } catch (err: any) {
-        useHandleError(err)
+        throw new Error(err?.data?.message || err?.message || 'Couldn\'t load the broadsheet')
       }
     },
   }

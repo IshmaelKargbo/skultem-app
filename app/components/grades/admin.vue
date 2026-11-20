@@ -15,9 +15,9 @@
 
     </Heading>
 
-    <div data-guide="grades-tabs">
-      <GradesSectionNav />
-    </div>
+    <!-- Owners and proprietors see every mark; admins, the principal and the subject teachers change them. -->
+    <UAlert v-if="readOnly" color="info" variant="soft" icon="i-lucide-eye" title="View only"
+      description="You can see every mark here. Marks are entered and changed by the subject teachers, the school admins and the principal." />
 
     <UCard data-guide="grades-pick" class="hidden md:block">
       <div class="flex space-x-3">
@@ -104,9 +104,9 @@
               </p>
             </div>
             <UButton size="sm"
-              :icon="isEditableStatus(item.assessment.status as ScoreStatus) ? 'lucide:pencil-line' : 'lucide:eye'"
-              :label="isEditableStatus(item.assessment.status as ScoreStatus) ? (item.structure.caSubmitted ? 'Enter formal test' : 'Record CA') : 'View breakdown'"
-              :variant="isEditableStatus(item.assessment.status as ScoreStatus) ? 'solid' : 'subtle'"
+              :icon="canEdit(item.assessment.status as ScoreStatus) ? 'lucide:pencil-line' : 'lucide:eye'"
+              :label="canEdit(item.assessment.status as ScoreStatus) ? (item.structure.caSubmitted ? 'Enter formal test' : 'Record CA') : 'View breakdown'"
+              :variant="canEdit(item.assessment.status as ScoreStatus) ? 'solid' : 'subtle'"
               @click="openCa(item.assessment.id)" />
           </div>
 
@@ -172,6 +172,12 @@
 </template>
 
 <script setup lang="ts">
+// Owners and proprietors read every mark but don't change them (the backend refuses it too) - checked on the role
+// they're signed in as exactly, since can() also lets a super admin count as an owner.
+const { activeRole } = useAuth()
+const readOnly = computed(() => ([Role.OWNER, Role.PROPRIETOR] as string[]).includes(activeRole.value))
+const canEdit = (status: ScoreStatus) => !readOnly.value && isEditableStatus(status)
+
 const { scoreValue } = useScoreFormat()
 type GradeAssessmentForm = {
   classId: string;
@@ -254,7 +260,7 @@ async function onTermChange() {
   columns.value = [];
 }
 const editableAssessments = computed(() =>
-  assessments.value.filter((a) => isEditableStatus(a.status as ScoreStatus))
+  assessments.value.filter((a) => canEdit(a.status as ScoreStatus))
 );
 
 // Assessments opened as Continuous Assessment (CA + formal test) - recorded in the panel, not the grid.
@@ -443,19 +449,19 @@ function calculateTotal(row: any) {
   return calculateWeightedTotal(row);
 }
 
+// The term grade, once every one of the term's assessments has been handed in (submitted, approved or completed -
+// as the backend grades a mark), so a part-term total isn't graded as if it were the whole term. The total is
+// rounded first, as on the report card, so a decimal total (69.5) doesn't fall between two bands.
 function calculateGrade(total: number, row: any) {
-  const termAssessmentIds = assessments.value.map((a) => a.id);
+  const released = ["SUBMITTED", "APPROVED", "COMPLETED"]
+  const scores = (row.original.scores as any[]) || []
+  const allIn = assessments.value.length > 0 && assessments.value.every((a) => released.includes(a.status as string))
+    && scores.length > 0 && scores.every((s: any) => released.includes(s.status))
+  if (!allIn) return "-"
 
-  const allCompleted = termAssessmentIds.every((id) =>
-    (row.original.scores as any[]).every((s: any) => s.status == "COMPLETED")
-  );
-
-  if (!allCompleted) return "-";
-
-  const band = gradingBands.value.find(
-    (item) => total >= item.minScore && total <= item.maxScore
-  );
-  return band?.grade || "-";
+  const rounded = Math.round(total)
+  const band = gradingBands.value.find((item) => rounded >= item.minScore && rounded <= item.maxScore)
+  return band?.grade || "-"
 }
 
 const rankingMap = computed(() => {
@@ -587,7 +593,7 @@ function buildColumns() {
         );
       }
 
-      if (!isEditableStatus(status))
+      if (!canEdit(status))
         return h("div", { class: "text-gray-500 font-medium" }, scoreTxt);
 
       return h(UInput, {

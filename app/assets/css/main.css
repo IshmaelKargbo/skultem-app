@@ -41,6 +41,47 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Everything you can click shows the hand pointer. Tailwind v4 resets buttons to the default arrow, so it's set here
+   once for every clickable element rather than on each one. In the base layer, so a component's own cursor class
+   (cursor-text, cursor-grab...) still wins. Disabled controls show they can't be used. */
+@layer base {
+  button,
+  a[href],
+  summary,
+  select,
+  label[for],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"],
+  input[type="color"],
+  input[type="range"],
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="combobox"],
+  [role="treeitem"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
+  }
+}
+
 /* The whole date/time field is clickable (see plugins/date-input-picker.client.ts). */
 input[type="date"],
 input[type="datetime-local"],
