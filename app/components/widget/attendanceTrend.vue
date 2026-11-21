@@ -69,13 +69,11 @@ const chartOptions = computed(() => ({
     "#EF4444"  // Absent
   ],
 
-  markers: {
-    size: 5
-  },
+  // Numbers on every point pile up on a phone; the tooltip shows them instead.
+  dataLabels: { enabled: false },
+  markers: { size: labels.value.length <= 12 ? 4 : 0, hover: { size: 6 } },
 
-  xaxis: {
-    categories: labels.value
-  },
+  xaxis: spacedXAxis(labels.value),
 
   grid: {
     borderColor: "var(--app-border)"
@@ -126,7 +124,7 @@ onMounted(async () => {
 
   if (!widget?.labels) return
 
-  labels.value = widget.labels.map((m: string) => parseMonth(m))
+  labels.value = widget.labels.map((m: string) => isoWeekLabel(parseMonth(m)))
 
   chartSeries.value = widget.datasets.map((d:any) => ({
     name: d.label,

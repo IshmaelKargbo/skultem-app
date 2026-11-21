@@ -46,9 +46,11 @@ const chartOptions = computed(() => ({
 
   colors: ["#22C55E", "#EF4444", "#F59E0B", "#3B82F6"],
 
-  xaxis: {
-    categories: labels.value
-  },
+  // Numbers on every point pile up on a phone; the tooltip shows them instead.
+  dataLabels: { enabled: false },
+  markers: { size: labels.value.length <= 12 ? 4 : 0, hover: { size: 6 } },
+
+  xaxis: spacedXAxis(labels.value),
 
   grid: {
     borderColor: "#f1f5f9"
@@ -120,7 +122,7 @@ async function fetchRecord() {
 
   const widget = res?.data ?? res
 
-  labels.value = widget?.labels ?? []
+  labels.value = (widget?.labels ?? []).map((l: string) => isoWeekLabel(l))
 
   chartSeries.value = (widget?.datasets ?? []).map((d: any) => ({
     name: d.label,

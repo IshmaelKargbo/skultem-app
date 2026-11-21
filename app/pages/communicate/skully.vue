@@ -144,7 +144,7 @@ const options: { key: keyof SkullyReminderSettings, label: string, description: 
   },
   {
     key: 'weeklySummary', label: 'Weekly summary', icon: 'i-lucide-calendar-check',
-    description: 'On Friday afternoon, one message per child: marks approved this week (subjects, average, highest), days present and absent, and the teacher\'s remarks. Skipped when nothing was recorded.'
+    description: 'On Friday afternoon, one message per parent covering all their children, written by Skully: days present and absent, marks approved this week, the teacher\'s notes and a tip for home. Children with nothing recorded are left out.'
   }
 ]
 

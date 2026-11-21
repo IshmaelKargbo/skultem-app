@@ -29,12 +29,11 @@ const chartOptions = computed(() => ({
   },
   colors: ['#10B981'],
   stroke: { curve: 'smooth', width: 4 },
-  markers: { size: 6, hover: { size: 8 } },
+  markers: { size: 5, hover: { size: 7 } },
+  // Numbers on every point pile up on a phone; the tooltip shows them instead.
+  dataLabels: { enabled: false },
   title: { text: 'Weekly Attendance Rate', align: 'left', style: { fontWeight: '600' } },
-  xaxis: {
-    categories: weeklyStats.value.map(d => d.day),
-    axisTicks: { show: false }
-  },
+  xaxis: spacedXAxis(weeklyStats.value.map(d => d.day)),
   yaxis: {
     min: 0,
     max: 100,
