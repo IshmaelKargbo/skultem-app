@@ -204,6 +204,23 @@ export const FeeApi = () => {
         useHandleError(err)
       }
     },
+    // Students charged a "new students only" fee while marked old, or the other way round.
+    wrongGroupCharges: async () => {
+      try {
+        const res = await $api('/fee/wrong-group-charges') as any
+        return res.data as WrongGroupResult
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    fixWrongGroupCharges: async () => {
+      try {
+        const res = await $api('/fee/wrong-group-charges/fix', { method: 'POST' }) as any
+        return { message: res.message as string, result: res.data as WrongGroupResult }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     deleteCategory: async (id: string) => {
       try {
         return await $api(`/fee/category/${id}`, {
@@ -315,4 +332,27 @@ export const FeeApi = () => {
       }
     }
   }
+}
+
+export interface WrongGroupCharge {
+  studentId: string
+  studentName: string
+  admissionNumber: string
+  enrollmentType: string
+  className: string
+  feeId: string
+  feeName: string
+  termName: string
+  feeFor: string
+  amount: number
+  paid: number
+  discounted: boolean
+  canRemove: boolean
+  reason: string | null
+}
+
+export interface WrongGroupResult {
+  removed: number
+  needsAttention: number
+  items: WrongGroupCharge[]
 }

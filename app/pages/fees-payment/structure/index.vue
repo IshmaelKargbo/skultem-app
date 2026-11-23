@@ -203,6 +203,7 @@ definePageMeta({
             <UButton data-guide="fin-structure-add" color="primary" label="Add Fee Structure" icon="prime:plus" to="/fees-payment/structure/add" />
 
             <div class="flex flex-wrap items-center gap-2">
+              <FeeStructureWrongGroupCheck @fixed="fetchRecord" />
               <FilterDrawer data-guide="fin-structure-filter" :model-value="drawerModel" :fields="filterFields" title="Filter fee structures"
                 description="Narrow by term, class, student type, gender or order" @update:model-value="applyDrawer" />
               <TableViewToggle v-model="view" />
