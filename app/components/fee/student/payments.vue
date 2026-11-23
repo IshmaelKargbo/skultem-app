@@ -86,12 +86,10 @@
                   {{ format(item.amount || 0) }}
                 </p>
                 <div class="flex justify-end gap-1">
-                  <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-eye"
-                    @click="receiptViewer?.view(item.referenceNo)" />
-                  <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-download"
-                    @click="receiptViewer?.download(item.referenceNo)" />
-                  <UButton v-if="canReverse" size="xs" variant="ghost" color="error" icon="i-lucide-undo-2"
-                    aria-label="Reverse payment" @click="askReverse(item)" />
+                  <UDropdownMenu :items="paymentActions(item)" :content="{ align: 'end' }">
+                    <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-ellipsis-vertical"
+                      aria-label="Payment options" />
+                  </UDropdownMenu>
                 </div>
               </div>
             </div>
@@ -139,14 +137,10 @@
             </template>
             <template #actions-cell="{ row }">
               <div class="flex justify-end gap-1">
-                <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-eye"
-                  @click="receiptViewer?.view(row.original.referenceNo)" />
-                <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-download"
-                  @click="receiptViewer?.download(row.original.referenceNo)" />
-                <UTooltip v-if="canReverse" text="Reverse payment">
-                  <UButton size="sm" variant="ghost" color="error" icon="i-lucide-undo-2"
-                    aria-label="Reverse payment" @click="askReverse(row.original)" />
-                </UTooltip>
+                <UDropdownMenu :items="paymentActions(row.original)" :content="{ align: 'end' }">
+                  <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-ellipsis-vertical"
+                    aria-label="Payment options" />
+                </UDropdownMenu>
               </div>
             </template>
             <template #loading>
@@ -249,12 +243,22 @@ const columns = [
 const emit = defineEmits<{ reversed: [] }>();
 const { can } = useAuth();
 const { error: toastError, success: toastSuccess } = useNotify();
-// Senior staff only, same as the backend.
-const canReverse = computed(() => can([Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR]));
+// Same roles as the backend.
+const canReverse = computed(() => can([Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.ACCOUNTANT]));
 const reverseOpen = ref(false);
 const reverseLoading = ref(false);
 const reversing = ref<any>(null);
 const reason = ref("");
+
+// The options for one payment: view and download its receipt, and reverse it (for the roles allowed to).
+function paymentActions(item: any) {
+  const receipt = [
+    { label: "View receipt", icon: "i-lucide-eye", onSelect: () => receiptViewer.value?.view(item.referenceNo) },
+    { label: "Download receipt", icon: "i-lucide-download", onSelect: () => receiptViewer.value?.download(item.referenceNo) },
+  ];
+  if (!canReverse.value) return [receipt];
+  return [receipt, [{ label: "Reverse payment", icon: "i-lucide-undo-2", color: "error" as const, onSelect: () => askReverse(item) }]];
+}
 
 function askReverse(item: any) {
   reversing.value = item;
