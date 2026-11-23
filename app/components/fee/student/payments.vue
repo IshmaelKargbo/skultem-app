@@ -90,6 +90,8 @@
                     @click="receiptViewer?.view(item.referenceNo)" />
                   <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-download"
                     @click="receiptViewer?.download(item.referenceNo)" />
+                  <UButton v-if="canReverse" size="xs" variant="ghost" color="error" icon="i-lucide-undo-2"
+                    aria-label="Reverse payment" @click="askReverse(item)" />
                 </div>
               </div>
             </div>
@@ -141,6 +143,10 @@
                   @click="receiptViewer?.view(row.original.referenceNo)" />
                 <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-download"
                   @click="receiptViewer?.download(row.original.referenceNo)" />
+                <UTooltip v-if="canReverse" text="Reverse payment">
+                  <UButton size="sm" variant="ghost" color="error" icon="i-lucide-undo-2"
+                    aria-label="Reverse payment" @click="askReverse(row.original)" />
+                </UTooltip>
               </div>
             </template>
             <template #loading>
@@ -152,6 +158,37 @@
     </div>
 
     <ReceiptViewer ref="receiptViewer" />
+
+    <UModal v-model:open="reverseOpen">
+      <template #content>
+        <UCard>
+          <template #header>
+            <h3 class="text-lg font-semibold">Reverse payment</h3>
+          </template>
+          <div v-if="reversing" class="space-y-4">
+            <div class="rounded-md border border-default p-3 text-sm">
+              <p class="font-semibold">{{ format(reversing.amount || 0) }} · {{ reversing.fee }} ({{ reversing.term }})</p>
+              <p class="text-muted">
+                {{ paymentMethods[reversing.paymentMethod]?.label || reversing.paymentMethod }} ·
+                receipt {{ reversing.referenceNo || '-' }} · {{ formatDateTime(reversing.paidAt) }}
+              </p>
+            </div>
+            <UAlert color="warning" variant="soft" icon="ph:warning"
+              description="Use this when the payment was recorded by mistake. The fee will be owed again, the receipt will no longer count, and the cashbook gets a matching correction. This can't be undone - if the amount was just wrong, reverse it and record the right amount." />
+            <UFormField label="Why is it being reversed?" required>
+              <UTextarea v-model="reason" class="w-full" :rows="2" placeholder="e.g. Recorded for the wrong student - they have not paid" />
+            </UFormField>
+          </div>
+          <template #footer>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <UButton label="Cancel" variant="soft" @click="reverseOpen = false" />
+              <UButton label="Reverse payment" color="error" :loading="reverseLoading"
+                :disabled="reverseLoading || reason.trim().length < 3" @click="confirmReverse" />
+            </div>
+          </template>
+        </UCard>
+      </template>
+    </UModal>
 
     <template #footer>
       <div class="flex justify-between items-center">
@@ -208,6 +245,42 @@ const columns = [
     header: "",
   },
 ];
+
+const emit = defineEmits<{ reversed: [] }>();
+const { can } = useAuth();
+const { error: toastError, success: toastSuccess } = useNotify();
+// Senior staff only, same as the backend.
+const canReverse = computed(() => can([Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR]));
+const reverseOpen = ref(false);
+const reverseLoading = ref(false);
+const reversing = ref<any>(null);
+const reason = ref("");
+
+function askReverse(item: any) {
+  reversing.value = item;
+  reason.value = "";
+  reverseOpen.value = true;
+}
+
+async function confirmReverse() {
+  if (!props.student || !reversing.value) return;
+  reverseLoading.value = true;
+  try {
+    const res = await StudentApi().reversePayment(props.student.id, reversing.value.id, reason.value.trim());
+    if (res) {
+      toastSuccess(res.hadSupplies
+        ? `${res.message}. Materials handed out for this fee were not taken back - adjust them in Supplies if needed.`
+        : res.message);
+      reverseOpen.value = false;
+      await fetchPayments();
+      emit("reversed");
+    }
+  } catch (err: any) {
+    toastError(err?.message || "Could not reverse the payment");
+  } finally {
+    reverseLoading.value = false;
+  }
+}
 
 const records = ref<FeePayment[]>([]);
 const meta = ref<Meta>();

@@ -95,7 +95,7 @@
                 </div>
             </div>
         </UCard>
-        <FeeStudentPayments :student="student" :embedded="embedded" />
+        <FeeStudentPayments :student="student" :embedded="embedded" @reversed="refreshFees" />
     </div>
 </template>
 

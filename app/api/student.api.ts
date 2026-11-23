@@ -117,6 +117,14 @@ export const StudentApi = () => {
         useHandleError(err)
       }
     },
+    reversePayment: async (studentId: string, paymentId: string, reason: string) => {
+      try {
+        const res = await $api(`/payment/${paymentId}/reverse`, { method: 'POST', body: { studentId, reason } }) as any
+        return { message: res.message as string, hadSupplies: Boolean(res.data?.hadSupplies) }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getCurrentEnrollment: async (id: string) => {
       try {
         const res = await $api(`/enrollment/student/${id}`) as any
