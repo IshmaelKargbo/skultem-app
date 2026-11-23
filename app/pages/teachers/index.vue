@@ -1,12 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
-const store = useTeacherStore()
-
-const { records: data, meta, loading } = storeToRefs(store)
-
 const view = ref<'table' | 'card'>('table')
-const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 const searchInput = ref((route.query.search as string) || '')
 let searchTimeout: ReturnType<typeof setTimeout>
@@ -52,23 +47,18 @@ const columns = [
     accessorKey: 'address',
     header: 'Address',
   },
-  {
-    accessorKey: 'action',
-    header: '',
-  },
 ]
-
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (value) => updateQuery({ page: value }),
-})
 
 const search = computed<string>({
   get: () => String(route.query.search ?? ''),
-  set: (value) => updateQuery({ search: value || undefined, page: 1 }),
+  set: (value) => updateQuery({ search: value || undefined }),
 })
 
-const size = ref(runtimeConf().limit)
+// One scrolling list: the next teachers load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<Teacher>(
+  (page, size) => TeacherApi().getAll(search.value, page, size, sortBy.value, sortDirection.value,
+    gender.value || undefined) as any
+)
 
 // What the filter drawer holds (search sits outside it).
 const activeFilterCount = computed(
@@ -100,51 +90,14 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query })
 }
 
-async function fetchRecords() {
-  loading.value = true
+watch(() => search.value, () => reload())
 
-  try {
-    await store.fetchAll(
-      page.value,
-      size.value,
-      search.value,
-      sortBy.value,
-      sortDirection.value,
-      gender.value || undefined,
-    )
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(
-  () => page.value,
-  async () => {
-    await nextTick()
-
-    scrollContainer?.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-
-    await fetchRecords()
-  },
-)
-
-watch(
-  () => search.value,
-  async () => {
-    await fetchRecords()
-  },
-)
-
-watch([sort, gender], async () => {
+watch([sort, gender], () => {
   updateQuery({
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
     gender: gender.value || undefined,
-    page: 1,
   })
-  await fetchRecords()
+  reload()
 })
 
 watch(searchInput, (value) => {
@@ -154,31 +107,19 @@ watch(searchInput, (value) => {
     if (value !== search.value) {
       updateQuery({
         search: value || undefined,
-        page: 1,
       })
     }
   }, 500)
 })
 
 onMounted(async () => {
-  const query: Record<string, any> = {
-    page: route.query.page ?? 1,
-    size: route.query.size ?? runtimeConf().limit,
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) {
+    const { page: _page, size: _size, ...rest } = route.query
+    await router.replace({ query: rest })
   }
 
-  if (route.query.search) {
-    query.search = route.query.search
-  }
-
-  const hasMissingQuery =
-    !route.query.page ||
-    !route.query.size
-
-  if (hasMissingQuery) {
-    await router.replace({ query })
-  }
-
-  await fetchRecords()
+  reload()
   useAppStore().setTitle('All Teachers')
   useAppStore().setBack(false)
   document.title = 'Teachers | Skultem'
@@ -222,7 +163,7 @@ definePageMeta({
       </template>
 
       <!-- Desktop Table -->
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading" :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openTeacher(row.original)">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -277,12 +218,6 @@ definePageMeta({
           </div>
         </template>
 
-        <template #action-cell="{ row }">
-          <div class="flex justify-end gap-1">
-            <UButton size="sm" variant="ghost" color="neutral" class="cursor-pointer" icon="i-lucide-chevron-right"
-              aria-label="Open teacher" @click="openTeacher(row.original)" />
-          </div>
-        </template>
       </UTable>
       <div class="md:p-4 md:space-y-4"
         :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
@@ -351,14 +286,10 @@ definePageMeta({
         </template>
       </div>
 
-      <template #footer>
-        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
-          <Showing :meta="meta" />
-
-          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="staff" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
   </div>
 </template>

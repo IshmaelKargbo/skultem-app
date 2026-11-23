@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [boolean]
+  done: []
 }>()
 
 const store = useMaterialSaleStore()
@@ -38,6 +39,7 @@ async function fulfill() {
     await materialStore.fetchAll()
 
     toastSuccess('Sale marked as fulfilled')
+    emit('done')
     close()
   } catch (error: any) {
     toastError(error?.message || 'Failed to fulfill sale')

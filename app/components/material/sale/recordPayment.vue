@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [boolean]
+  done: []
 }>()
 
 const { format } = useMoney()
@@ -54,6 +55,7 @@ async function submit() {
     await store.recordPayment(props.sale.id, { amount: amount.value, paymentMethod: method.value })
     await store.fetchSummary()
     toastSuccess('Payment recorded successfully')
+    emit('done')
     close()
   } catch (error: any) {
     toastError(error?.message || 'Failed to record payment')

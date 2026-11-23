@@ -81,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+const emit = defineEmits<{ saved: [] }>()
 import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
@@ -124,6 +125,7 @@ async function onSubmit(event: FormSubmitEvent<ExpenseCategoryForm>) {
 
     await store.createCreate(event.data)
     await store.fetchAllCategories(1, runtimeConf().limit)
+    emit('saved')
 
     toastSuccess('Expense category created successfully')
     close()

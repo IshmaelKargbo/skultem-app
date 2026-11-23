@@ -31,6 +31,21 @@ export const StreamApi = () => {
         useHandleError(err)
       }
     },
+    update: async (id: string, payload: CreateStreamDto) => {
+      try {
+        const res = await $api(`/stream/${id}`, { method: 'PUT', body: payload }) as any
+        return res.data as Stream
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    remove: async (id: string) => {
+      try {
+        return await $api(`/stream/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getOne: async (id: string) => {
       try {
         const res = await $api(`/stream/${id}`) as any

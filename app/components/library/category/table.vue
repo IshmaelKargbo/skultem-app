@@ -1,20 +1,16 @@
 <script setup lang="ts">
 const store = useLibraryStore()
 const { canManage } = useLibraryAccess()
-const { categories, categoriesMeta: meta, categoriesLoading: loading } = storeToRefs(store)
 
 const value = ref('')
 const search = ref('')
-const page = ref(1)
-const size = runtimeConf().limit
 const deleteModal = ref(false)
 const selected = ref<BookCategory>()
 
 const columns = computed(() => [
   { accessorKey: 'name', header: 'Category' },
   { accessorKey: 'description', header: 'Description' },
-  { id: 'books', header: 'Books' },
-  ...(canManage.value ? [{ id: 'actions', meta: { class: { td: 'text-right' } } }] : [])
+  { id: 'books', header: 'Books' }
 ])
 
 function remove(category: BookCategory) {
@@ -22,8 +18,17 @@ function remove(category: BookCategory) {
   deleteModal.value = true
 }
 
-function load() {
-  return store.fetchCategories(page.value, size, search.value)
+// One scrolling list: the next categories load as the end comes into view.
+const { items: categories, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<BookCategory>((page, size) => LibraryApi().listCategories(page, size, search.value) as any)
+
+// A row opens the category's edit form (for those who can change them); Delete is in that form.
+const editing = ref<BookCategory>()
+const editOpen = ref(false)
+function openCategory(category: BookCategory) {
+  if (!canManage.value) return
+  editing.value = category
+  editOpen.value = true
 }
 
 let timeout: ReturnType<typeof setTimeout>
@@ -32,14 +37,13 @@ watch(value, (val) => {
   timeout = setTimeout(() => { search.value = val.trim() }, 400)
 })
 
-watch(search, () => {
-  if (page.value === 1) load()
-  else page.value = 1
-})
+watch(search, () => reload())
+// A category added, edited or deleted (and book counts after books change).
+watch(() => store.changeVersion, () => reload())
 
-watch(page, load)
+onBeforeUnmount(() => clearTimeout(timeout))
 
-onMounted(load)
+onMounted(reload)
 </script>
 
 <template>
@@ -52,7 +56,9 @@ onMounted(load)
     </template>
 
     <!-- Desktop table -->
-    <UTable :ui="{ loading: 'py-0' }" class="hidden md:block" :columns="columns" :data="categories" :loading="loading">
+    <UTable class="hidden md:block" :columns="columns" :data="categories" :loading="loading"
+      :ui="{ loading: 'py-0', tr: canManage ? 'cursor-pointer' : '' }"
+      @select="(_e: Event, row: any) => openCategory(row.original)">
       <template #name-cell="{ row }">
         <div>
           <div>
@@ -74,12 +80,6 @@ onMounted(load)
         </UBadge>
       </template>
 
-      <template #actions-cell="{ row }">
-        <div class="flex justify-end gap-1">
-          <LibraryCategoryAdd :category="row.original" />
-          <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(row.original)" />
-        </div>
-      </template>
 
       <template #empty>
         <div class="flex flex-col items-center gap-3 py-16">
@@ -117,7 +117,9 @@ onMounted(load)
       </template>
 
       <template v-else-if="categories.length">
-        <div v-for="item in categories" :key="item.id" class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+        <div v-for="item in categories" :key="item.id" @click="openCategory(item)"
+          class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800"
+          :class="{ 'cursor-pointer': canManage }">
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0 space-y-1">
               <div class="flex items-center gap-2">
@@ -127,10 +129,6 @@ onMounted(load)
               <p class="truncate text-xs text-muted">{{ item.description || 'No description available.' }}</p>
             </div>
 
-            <div v-if="canManage" class="flex shrink-0 items-center gap-1">
-              <LibraryCategoryAdd :category="item" />
-              <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost" @click="remove(item)" />
-            </div>
           </div>
         </div>
       </template>
@@ -144,12 +142,14 @@ onMounted(load)
       </div>
     </div>
 
-    <template v-if="meta.total" #footer>
-      <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
-        <Showing :meta="meta" />
-        <UPagination v-model:page="page" size="sm" :items-per-page="meta.size" :total="meta.total" show-edges />
-      </div>
-    </template>
+    <div ref="sentinel">
+      <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="categories.length"
+        :total="meta?.total" noun="categories" :error="listError" @retry="loadMore" />
+    </div>
+
+    <!-- One edit form, opened by whichever row was clicked -->
+    <LibraryCategoryAdd v-if="editing" :key="editing.id" v-model:open="editOpen" :category="editing" hide-trigger
+      can-delete @delete="remove" />
 
     <LibraryCategoryDeletePrompt v-model:open="deleteModal" :category-id="selected?.id || ''"
       :category-name="selected?.name || ''" />

@@ -2,10 +2,8 @@
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
-const store = useClassSessionStore()
 const sectionStore = useSectionStore()
 const streamStore = useStreamStore()
-const { records: data, meta, loading } = storeToRefs(store)
 const { format } = useMoney()
 
 const sectionOptions = computed(() =>
@@ -49,13 +47,6 @@ const columns = [
   }
 ]
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
-
-const size = ref(runtimeConf().limit)
-
 const sectionId = ref(String(route.query.sectionId ?? ""))
 const streamId = ref(String(route.query.streamId ?? ""))
 const level = ref(String(route.query.level ?? ""))
@@ -78,37 +69,34 @@ watch(searchInput, (val) => {
   }, 350)
 })
 
-watch(() => page.value, () => {
-  fetchRecords()
-}, { immediate: true })
-
 watch([sectionId, streamId, level, search], () => {
   updateQuery({
     sectionId: sectionId.value || undefined,
     streamId: streamId.value || undefined,
     level: level.value || undefined,
-    page: 1,
   })
-
-  if (page.value === 1) fetchRecords()
+  reload()
 })
 
-async function fetchRecords() {
-  loading.value = true
-  await store.fetchAll(page.value, size.value, undefined, sectionId.value || undefined, streamId.value || undefined,
-    search.value || undefined, level.value || undefined)
-  loading.value = false
-}
+// One scrolling list: the next classes load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<ClassSession>(
+  (page, size) => ClassApi().getAllClassSessions(page, size, undefined, sectionId.value || undefined,
+    streamId.value || undefined, search.value || undefined, level.value || undefined) as any
+)
 
 onMounted(async () => {
-  updateQuery({
-    page: page.value
-  })
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) {
+    const { page: _page, size: _size, ...rest } = route.query
+    router.replace({ query: rest })
+  }
 
   sectionStore.fetchAll(0, 0)
   streamStore.fetchAll(0, 0)
-  fetchRecords()
+  reload()
 })
+
+onBeforeUnmount(() => clearTimeout(searchTimer))
 </script>
 
 <template>
@@ -358,13 +346,10 @@ onMounted(async () => {
 
       </div>
 
-      <template #footer>
-        <div v-if="!loading" class="flex justify-between items-center">
-          <Showing :meta="meta" />
-          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="classes" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
   </div>
 </template>

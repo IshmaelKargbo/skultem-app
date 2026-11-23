@@ -2,10 +2,8 @@
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
-const store = useStudentStore()
 const clazzStore = useClassStore()
 const { format } = useMoney()
-const { records: data, meta, loading } = storeToRefs(store)
 
 const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
@@ -57,13 +55,6 @@ const columnPinning = ref({
   right: ['status']
 })
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
-
-const size = ref(runtimeConf().limit)
-
 const classId = ref(String(route.query.classId ?? ''))
 const searchInput = ref('')
 const search = ref(searchInput.value)
@@ -91,38 +82,34 @@ watch(searchInput, (val) => {
   }, 350)
 })
 
-async function fetchRecord() {
-  loading.value = true
-  await store.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value, gender.value || undefined)
-  loading.value = false
-}
+// One scrolling list: the next students load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<Student>(
+  (page, size) => StudentApi().getAll(search.value, page, size, classId.value || undefined, sortBy.value,
+    sortDirection.value, gender.value || undefined) as any
+)
 
 function viewStudent(row: Student) {
   router.push(`/students/${row.id}/fee-structure`)
 }
-
-watch(() => page.value, () => {
-  fetchRecord()
-}, { immediate: true })
 
 watch([classId, gender, search, sort], () => {
   updateQuery({
     classId: classId.value || undefined,
     gender: gender.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-    page: 1,
   })
-
-  if (page.value === 1) fetchRecord()
+  reload()
 })
 
 onMounted(() => {
-  updateQuery({
-    page: page.value
-  })
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) updateQuery({ page: undefined, size: undefined })
 
   clazzStore.fetchAll(0, 0)
+  reload()
 })
+
+onBeforeUnmount(() => clearTimeout(searchTimer))
 </script>
 <template>
   <UCard :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
@@ -140,7 +127,8 @@ onMounted(() => {
     </template>
 
     <UTable v-if="view === 'table'" class="hidden md:block w-full" :column-pinning="columnPinning" :columns="columns"
-      :data="data" :loading="loading">
+      :data="data" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
+      @select="(_e: Event, row: any) => viewStudent(row.original)">
       <template #loading>
         <TableLoading :size="columns.length" />
       </template>
@@ -381,12 +369,9 @@ onMounted(() => {
 
     </div>
 
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <Showing :meta="meta" />
-        <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-          :total="meta.total" show-edges />
-      </div>
-    </template>
+    <div ref="sentinel">
+      <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+        :total="meta?.total" noun="students" :error="listError" @retry="loadMore" />
+    </div>
   </UCard>
 </template>

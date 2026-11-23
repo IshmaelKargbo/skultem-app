@@ -4,10 +4,7 @@ const route = useRoute()
 const router = useRouter()
 const { format } = useMoney()
 
-const store = useExpenseStore()
 const emit = defineEmits(['refresh'])
-
-const { records: data, meta, loading } = storeToRefs(store)
 
 const parseCategoryColor: Record<string, string> = {
   TRANSPORT: 'warning',
@@ -38,55 +35,37 @@ const columns = [
   }
 ]
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
+// One scrolling list: the next expenses load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<any>((page, size) => ExpenseApi().getAll(page, size, search.value) as any)
+
+// Search: debounced, mirrored into the URL so a refresh or a shared link keeps it, and starts the list again.
+const searchInput = ref(String(route.query.search ?? ''))
+const search = ref(searchInput.value)
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { search.value = val.trim() }, 350)
 })
-
-const size = computed<number>({
-  get: () => Number(route.query.size ?? 6),
-  set: (val) => updateQuery({ size: val })
+watch(search, () => {
+  router.replace({ query: { ...route.query, search: search.value || undefined } })
+  reload()
 })
+onBeforeUnmount(() => clearTimeout(searchTimer))
 
-function updateQuery(newQuery: Record<string, any>) {
-  const merged = { ...route.query, ...newQuery }
-
-  if (
-    merged.page === route.query.page &&
-    merged.size === route.query.size
-  ) {
-    return
-  }
-
-  router.replace({ query: merged })
-}
-
-async function fetchRecord() {
-  await store.fetchAll(page.value, size.value)
-}
-
+// A new expense: the list from the top, and the totals above it.
 function refreshReport() {
+  reload()
   emit('refresh')
 }
 
-watch(
-  () => [page.value, size.value],
-  () => {
-    fetchRecord()
+onMounted(() => {
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) {
+    const { page: _page, size: _size, ...rest } = route.query
+    router.replace({ query: rest })
   }
-)
-
-onMounted(async () => {
-  if (!route.query.page || !route.query.size) {
-    router.replace({
-      query: {
-        page: page.value,
-        size: size.value
-      }
-    })
-  }
-
-  fetchRecord()
+  reload()
 })
 </script>
 
@@ -96,7 +75,8 @@ onMounted(async () => {
       <template #header>
         <div class="flex justify-between space-x-3">
           <div class="flex flex-1 space-x-3">
-            <UInput placeholder="Search by name . . ." />
+            <UInput v-model="searchInput" :icon="SEARCH_ICON" placeholder="Search by name, note or category"
+              class="flex-1" />
             <ExpensesAdd @refresh-report="refreshReport" />
           </div>
           <TableViewToggle v-model="view" />
@@ -253,16 +233,10 @@ onMounted(async () => {
 
       </div>
 
-      <template #footer>
-        <div class="flex items-center justify-between gap-3">
-          <Showing :meta="meta" />
-
-          <div class="overflow-x-auto pb-1">
-            <UPagination v-model:page="page" size="sm" :page-size="meta?.size" :items-per-page="meta?.size"
-              :total="meta?.total" show-edges />
-          </div>
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="expenses" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
   </div>
 </template>

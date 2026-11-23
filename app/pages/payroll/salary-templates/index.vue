@@ -25,15 +25,16 @@
 
       <!-- Table view (desktop) -->
       <UTable v-if="view === 'table' && (loading || templates.length)" class="hidden border-t border-default md:block"
-        :columns="columns" :data="templates" :loading="loading">
+        :columns="columns" :data="templates" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
+        @select="(_e: Event, row: any) => openTemplate(row.original)">
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
         <template #name-cell="{ row }">
-          <NuxtLink :to="`/payroll/salary-templates/edit/${row.original.id}`" class="flex items-center gap-3">
+          <div class="flex items-center gap-3">
             <UBadge variant="soft" icon="i-lucide-layout-template" square class="shrink-0 rounded-lg" />
-            <span class="font-medium text-highlighted hover:text-primary">{{ row.original.name }}</span>
-          </NuxtLink>
+            <span class="font-medium text-highlighted">{{ row.original.name }}</span>
+          </div>
         </template>
         <template #basicSalary-cell="{ row }">{{ formatCurrency(row.original.basicSalary) }}</template>
         <template #totalAllowances-cell="{ row }">
@@ -46,14 +47,6 @@
         </template>
         <template #netSalary-cell="{ row }">
           <span class="font-semibold text-primary">{{ formatCurrency(row.original.netSalary) }}</span>
-        </template>
-        <template #actions-cell="{ row }">
-          <div class="flex justify-end gap-1">
-            <UButton size="xs" variant="ghost" color="neutral" :icon="EDIT_ICON" aria-label="Edit template"
-              :to="`/payroll/salary-templates/edit/${row.original.id}`" />
-            <UButton size="xs" variant="ghost" color="error" :icon="DELETE_ICON" aria-label="Delete template"
-              @click="remove(row.original)" />
-          </div>
         </template>
       </UTable>
 
@@ -90,7 +83,8 @@
 
       <!-- Templates -->
       <div v-else-if="view === 'card' && templates.length" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
-        <UCard v-for="t in templates" :key="t.id">
+        <UCard v-for="t in templates" :key="t.id" role="button" tabindex="0" class="cursor-pointer hover:ring-primary/40"
+          @click="openTemplate(t)" @keydown.enter="openTemplate(t)">
           <div class="space-y-4">
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-3">
@@ -120,17 +114,12 @@
               <p class="text-2xl font-bold text-primary">{{ formatCurrency(t.netSalary) }}</p>
             </div>
 
-            <div class="flex gap-2">
-              <UButton class="flex-1" variant="soft" color="neutral" :icon="EDIT_ICON" label="Edit"
-                :to="`/payroll/salary-templates/edit/${t.id}`" />
-              <UButton :icon="DELETE_ICON" color="error" variant="soft" @click="remove(t)" />
-            </div>
           </div>
         </UCard>
       </div>
 
       <!-- Empty -->
-      <UCard v-if="!loading && !templates.length" class="border-none py-16 shadow-none">
+      <UCard v-if="!loading && !templates.length && !failed" class="border-none py-16 shadow-none">
         <div class="flex flex-col items-center gap-3 text-center">
           <UIcon name="i-lucide-layout-template" class="text-4xl text-muted" />
           <h3 class="font-semibold">{{ hasActiveFilters ? 'No matches found' : 'No salary templates yet' }}</h3>
@@ -141,26 +130,17 @@
         </div>
       </UCard>
 
-      <div v-if="!loading && templates.length"
-        class="flex flex-col gap-3 border-t border-default p-4 sm:flex-row sm:items-center sm:justify-between">
-        <Showing :meta="meta" />
-        <UPagination v-if="meta.total > meta.size" v-model:page="page" size="sm" :page-size="meta.size"
-          :items-per-page="meta.size" :total="meta.total" show-edges />
+      <div ref="sentinel" class="border-t border-default">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="templates.length"
+          :total="meta?.total" noun="salary templates" :error="listError" @retry="loadMore" />
       </div>
     </UCard>
 
-    <ConfirmDeleteModal v-if="selected" v-model:open="deleteModalOpen" title="Delete Salary Template"
-      :item-name="selected.name"
-      description="Teachers already set up from this template keep their own pay - this only removes the reusable template itself."
-      :on-confirm="confirmDelete" />
 
   </div>
 </template>
 
 <script setup lang="ts">
-const store = usePayrollStore()
-const { templates, templatesMeta: meta, loadingTemplates: loading } = storeToRefs(store)
-const { success: toastSuccess, error: toastError } = useNotify()
 
 const route = useRoute()
 const router = useRouter()
@@ -174,7 +154,6 @@ const columns = [
   { accessorKey: 'totalAllowances', header: 'Allowances', meta: right },
   { accessorKey: 'totalDeductions', header: 'Deductions', meta: right },
   { accessorKey: 'netSalary', header: 'Net Salary', meta: right },
-  { id: 'actions', header: '' },
 ]
 
 const sortOptions = [
@@ -191,7 +170,7 @@ const search = ref(String(route.query.search ?? ''))
 
 const sort = computed<string>({
   get: () => String(route.query.sort ?? DEFAULT_SORT),
-  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val, page: 1 })
+  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val })
 })
 
 const sortBy = computed(() => sort.value.split(':')[0])
@@ -201,13 +180,8 @@ const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT
 
 function resetFilters() {
   search.value = ''
-  updateQuery({ search: undefined, sort: undefined, page: 1 })
+  updateQuery({ search: undefined, sort: undefined })
 }
-
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
@@ -217,7 +191,7 @@ let searchTimeout: ReturnType<typeof setTimeout>
 watch(search, (value) => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    updateQuery({ search: value || undefined, page: 1 })
+    updateQuery({ search: value || undefined })
   }, 300)
 })
 
@@ -227,35 +201,28 @@ function formatCurrency(value?: number | null) {
   return format(value || 0)
 }
 
-function load() {
-  store.fetchSalaryTemplates(page.value, 12, String(route.query.search ?? ''), sortBy.value, sortDirection.value)
-}
+// One scrolling list: the next templates load as the end comes into view. A row (or card) opens the template,
+// where it is edited or deleted.
+const { items: templates, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<SalaryTemplate>((page, size) => PayrollApi().listSalaryTemplates(page, size,
+    String(route.query.search ?? ''), sortBy.value, sortDirection.value) as any)
 
-watch(() => [route.query.page, route.query.search, route.query.sort], load)
+watch(() => [route.query.search, route.query.sort], () => reload())
 
-const selected = ref<SalaryTemplate>()
-const deleteModalOpen = ref(false)
-
-function remove(template: SalaryTemplate) {
-  selected.value = template
-  deleteModalOpen.value = true
-}
-
-async function confirmDelete() {
-  if (!selected.value) return
-  try {
-    await store.deleteSalaryTemplate(selected.value.id)
-    toastSuccess('Salary template deleted successfully')
-  } catch (err: any) {
-    toastError(err?.message || 'Failed to delete salary template')
-  }
+function openTemplate(t: SalaryTemplate) {
+  navigateTo(`/payroll/salary-templates/edit/${t.id}`)
 }
 
 onMounted(() => {
   useAppStore().setTitle('Salary Templates')
   document.title = 'Salary Templates | Payroll | Skultem'
 
-  load()
+  // Old links may still carry ?page=; the list starts at the top now.
+  if (route.query.page) {
+    const { page: _page, ...rest } = route.query
+    router.replace({ query: rest })
+  }
+  reload()
 })
 
 onBeforeUnmount(() => clearTimeout(searchTimeout))

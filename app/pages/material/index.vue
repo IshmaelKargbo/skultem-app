@@ -1,8 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
-const store = useMaterialStore()
-const { records: data, loading, meta } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 const { format } = useMoney()
 
@@ -41,26 +39,27 @@ const columns = [
     {
         accessorKey: 'updatedAt',
         header: 'Last Restocked At'
-    },
-    {
-        id: 'actions',
-        meta: {
-            class: {
-                td: 'text-right'
-            }
-        }
     }
 ]
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
+// One scrolling list: the next materials load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<Material>((page, size) => MaterialApi().getAll(page, size, search.value) as any)
 
-const size = ref(runtimeConf().limit)
+// A row opens the material's edit form; Delete is in that form.
+const editing = ref<Material>()
+const editOpen = ref(false)
+function openMaterial(material: Material) {
+    editing.value = material
+    editOpen.value = true
+}
 
-async function fetchRecord() {
-    await store.fetchAll(page.value, size.value, search.value)
+// Saved or restocked: the list again from the top (stock and prices change).
+const refresh = () => reload()
+
+function onDeleted(id: string) {
+    data.value = data.value.filter(m => m.id !== id)
+    if (meta.value) meta.value = { ...meta.value, total: Math.max(0, (meta.value.total ?? 1) - 1) }
 }
 
 let timeout: ReturnType<typeof setTimeout>
@@ -74,27 +73,23 @@ watch(value, (val) => {
 })
 
 watch(search, () => {
-    updateQuery({ search: search.value || undefined, page: 1 })
-
-    if (page.value === 1) fetchRecord()
+    router.replace({ query: { ...route.query, search: search.value || undefined } })
+    reload()
 })
 
-watch(page, () => fetchRecord())
-
 onMounted(async () => {
-    if (!route.query.page || !route.query.size) {
-        router.replace({
-            query: {
-                page: page.value,
-                search: search.value || undefined
-            }
-        })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query
+        router.replace({ query: rest })
     }
 
-    await fetchRecord()
+    reload()
     useAppStore().setTitle('All Materials')
     document.title = 'Materials | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(timeout))
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -111,15 +106,16 @@ definePageMeta({
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or category"
                             class="w-full" />
                         <div class="flex space-x-2">
-                            <div data-guide="mat-add"><MaterialAdd /></div>
-                            <div data-guide="mat-restock"><MaterialRestock /></div>
+                            <div data-guide="mat-add"><MaterialAdd @saved="refresh" /></div>
+                            <div data-guide="mat-restock"><MaterialRestock @success="refresh" /></div>
                         </div>
                     </div>
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+                :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openMaterial(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-16">
                         <div
@@ -173,14 +169,6 @@ definePageMeta({
                     </p>
                 </template>
 
-                <template #actions-cell="{ row }">
-                    <div class="flex justify-end gap-1">
-                        <MaterialAdd :material="row.original" />
-
-                        <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                            @click="remove(row.original)" />
-                    </div>
-                </template>
 
                 <template #loading>
                     <TableLoading :size="columns.length" />
@@ -191,7 +179,7 @@ definePageMeta({
             <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <div v-for="i in size" :key="i"
+                    <div v-for="i in 6" :key="i"
                         class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="space-y-2">
@@ -213,8 +201,9 @@ definePageMeta({
 
                 <!-- Records -->
                 <template v-else-if="data?.length">
-                    <div v-for="item in data" :key="item.id"
-                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                    <div v-for="item in data" :key="item.id" role="button" tabindex="0" @click="openMaterial(item)"
+                        @keydown.enter="openMaterial(item)"
+                        class="cursor-pointer border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0 space-y-1">
                                 <h3 class="truncate text-sm font-semibold">
@@ -239,11 +228,6 @@ definePageMeta({
                                 {{ item.lastRestockedAt ? `Restocked ${formatDateTime(item.lastRestockedAt)}` : 'Never restocked' }}
                             </p>
 
-                            <div class="flex items-center gap-1">
-                                <MaterialAdd :material="item" />
-                                <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                                    @click="remove(item)" />
-                            </div>
                         </div>
                     </div>
                 </template>
@@ -317,7 +301,9 @@ definePageMeta({
 
                 <!-- Cards -->
                 <template v-else>
-                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'p-0 sm:p-0' }">
+                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'p-0 sm:p-0' }" role="button" tabindex="0"
+                        class="cursor-pointer hover:ring-primary/40" @click="openMaterial(item)"
+                        @keydown.enter="openMaterial(item)">
                         <div>
 
                             <!-- Header -->
@@ -352,12 +338,6 @@ definePageMeta({
                                         {{ item.inStock > 0 ? 'Available' : 'Out of stock' }}
                                     </UBadge>
 
-                                    <div class="flex gap-1">
-                                        <MaterialAdd :material="item" />
-
-                                        <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                                            @click="remove(item)" />
-                                    </div>
                                 </div>
                             </div>
 
@@ -476,15 +456,17 @@ definePageMeta({
                 v-model:open="deleteModal"
                 :material-id="selected.id"
                 :material-name="selected.name"
+                @deleted="onDeleted"
             />
 
-            <template #footer>
-                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <!-- One edit form, opened by whichever row was clicked -->
+            <MaterialAdd v-if="editing" :key="editing.id" v-model:open="editOpen" :material="editing" hide-trigger
+                can-delete @saved="refresh" @delete="remove" />
+
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="materials" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </div>
 </template>

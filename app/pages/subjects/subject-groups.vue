@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { FilterField } from "~/components/filter/Drawer.vue";
-import type { Row } from "@tanstack/vue-table";
 
 const view = ref<'table' | 'card'>('table')
 const route = useRoute();
@@ -8,11 +7,7 @@ const router = useRouter();
 const { can } = useAuth();
 const store = useSubjectGroupStore();
 const clazzStore = useClassStore();
-const { records: data, meta, loading } = storeToRefs(store);
-const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
 
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 const { success, error: toastError } = useNotify();
 
 // Same roles the backend allows to edit/delete a subject group.
@@ -23,11 +18,11 @@ const editOpen = ref(false);
 const deleteTarget = ref<SubjectGroup | null>(null);
 const deleteOpen = ref(false);
 
-function rowActions(group: SubjectGroup) {
-    return [
-        [{ label: "Edit", icon: EDIT_ICON, onSelect: () => { editRecord.value = group; editOpen.value = true; } }],
-        [{ label: "Delete", icon: "i-lucide-trash-2", color: "error" as const, onSelect: () => { deleteTarget.value = group; deleteOpen.value = true; } }],
-    ];
+// A row opens the group's edit form (for those who can change groups); Delete is in that form.
+function openGroup(group: SubjectGroup) {
+    if (!canManage.value) return;
+    editRecord.value = group;
+    editOpen.value = true;
 }
 
 async function confirmDelete() {
@@ -35,9 +30,10 @@ async function confirmDelete() {
     try {
         await store.remove(deleteTarget.value.id);
         success(`${deleteTarget.value.name} deleted`);
-        // Deleting the last group on a page leaves it empty, so step back a page.
-        if (data.value.length === 1 && page.value > 1) page.value = page.value - 1;
-        else await fetchRecord();
+        // Taken out of the list in place, so the list doesn't jump back to the top.
+        const id = deleteTarget.value.id;
+        data.value = data.value.filter(g => g.id !== id);
+        if (meta.value) meta.value = { ...meta.value, total: Math.max(0, (meta.value.total ?? 1) - 1) };
     } catch (err: any) {
         toastError(err?.message || "Subject group could not be deleted");
         throw err;
@@ -65,33 +61,7 @@ const columns = [
         accessorKey: "totalSelection",
         header: "Select",
     },
-    {
-        id: "actions",
-        meta: { class: { td: "text-right" } },
-        cell: ({ row }: { row: Row<SubjectGroup> }) => {
-            if (!canManage.value) return null;
-            return h(UDropdownMenu, { items: rowActions(row.original), content: { align: "end" } }, {
-                default: () => h(UButton, {
-                    icon: "i-lucide-ellipsis-vertical",
-                    color: "neutral",
-                    size: "sm",
-                    variant: "ghost",
-                    "aria-label": "Subject group actions",
-                }),
-            });
-        },
-    },
 ];
-
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val }),
-});
-
-const size = computed<number>({
-    get: () => Number(route.query.size ?? runtimeConf().limit),
-    set: (val) => updateQuery({ size: val }),
-});
 
 const classId = ref(String(route.query.classId ?? ""));
 const searchInput = ref(String(route.query.search ?? ""));
@@ -131,50 +101,42 @@ watch(searchInput, (val) => {
     }, 350);
 });
 
-watch(
-    () => page.value,
-    () => {
-        nextTick(() => {
-            scrollContainer?.value?.scrollTo({
-                top: 0,
-                behavior: "smooth",
-            });
-        });
-
-        fetchRecord();
-    },
-    { immediate: true }
-);
-
 watch([classId, search, sort], () => {
     updateQuery({
         classId: classId.value || undefined,
         search: search.value || undefined,
         sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-        page: 1,
     })
-
-    if (page.value === 1) fetchRecord();
+    reload();
 });
 
 function updateQuery(newQuery: Record<string, any>) {
     router.replace({ query: { ...route.query, ...newQuery } });
 }
 
-async function fetchRecord() {
-    await store.fetchAll(page.value, size.value, classId.value || undefined, search.value || undefined,
-        sortBy.value, sortDirection.value);
-}
+// One scrolling list: the next groups load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<SubjectGroup>(
+    (page, size) => SubjectGroupApi().getAll(page, size, classId.value || undefined, search.value || undefined,
+        sortBy.value, sortDirection.value) as any
+);
+
+// After adding or editing a group: load the list again from the top.
+const fetchRecord = () => reload();
 
 onMounted(async () => {
-    updateQuery({
-        page: page.value
-    })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query;
+        router.replace({ query: rest });
+    }
+    reload();
 
     clazzStore.fetchAll(0, 0);
     useAppStore().setTitle('Subject Groups');
     document.title = 'Subject Groups | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(searchTimer));
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -198,7 +160,8 @@ definePageMeta({
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
-            <UTable v-if="view === 'table'" class="md:block hidden" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="md:block hidden" :columns="columns" :data="data" :loading="loading"
+                :ui="{ tr: canManage ? 'cursor-pointer' : '' }" @select="(_e: Event, row: any) => openGroup(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -232,8 +195,8 @@ definePageMeta({
 
                 <!-- Data -->
                 <template v-else-if="data?.length">
-                    <div v-for="item in data" :key="item.id"
-                        class="border-b md:border md:rounded-2xl border-default p-3">
+                    <div v-for="item in data" :key="item.id" @click="openGroup(item)"
+                        class="border-b md:border md:rounded-2xl border-default p-3" :class="{ 'cursor-pointer': canManage }">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <UAvatar icon="i-lucide-folder-tree" />
@@ -257,10 +220,6 @@ definePageMeta({
                             <div class="flex shrink-0 items-center gap-2 self-center">
                                 <UBadge variant="outline" icon="mdi:select-multiple" color="neutral"
                                     :label="`${item.totalSelection || 0}`" />
-                                <UDropdownMenu v-if="canManage" :items="rowActions(item)" :content="{ align: 'end' }">
-                                    <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm"
-                                        aria-label="Subject group actions" />
-                                </UDropdownMenu>
                             </div>
                         </div>
                     </div>
@@ -279,16 +238,14 @@ definePageMeta({
                 </template>
             </div>
 
-            <template #footer>
-                <div v-if="!loading" class="flex justify-between items-center">
-                    <Showing :meta="meta" />
-                    <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="subject groups" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
 
-        <SubjectGroupEdit v-model:open="editOpen" :record="editRecord" @saved="fetchRecord" />
+        <SubjectGroupEdit v-model:open="editOpen" :record="editRecord" can-delete @saved="fetchRecord"
+            @delete="(group) => { deleteTarget = group; deleteOpen = true; }" />
 
         <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete Subject Group"
             :item-name="deleteTarget.name" :on-confirm="confirmDelete"

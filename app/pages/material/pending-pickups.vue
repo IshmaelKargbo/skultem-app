@@ -2,8 +2,13 @@
 const route = useRoute()
 const router = useRouter()
 
-const store = usePendingPickupStore()
-const { records: data, loading, meta } = storeToRefs(store)
+// One scrolling list: the next pickups load as the end comes into view. A pickup comes from a sale or a supply, and
+// the two can share an id, so the list keys them on both.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<any>(async (page, size) => {
+        const res = await PendingPickupApi().getAll(page, size) as any
+        return res ? { ...res, data: (res.data || []).map((p: any) => ({ ...p, rowId: p.id, id: `${p.source}-${p.id}` })) } : res
+    })
 const view = ref<'table' | 'card'>('table')
 
 const sourceColorMap: Record<string, 'info' | 'primary'> = {
@@ -31,29 +36,18 @@ const columns = [
     { accessorKey: 'since', header: 'Since' }
 ]
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
-
-const size = ref(runtimeConf().limit)
-
-async function fetchRecord() {
-    await store.fetchAll(page.value, size.value)
-}
-
-watch(page, () => fetchRecord())
 
 function remaining(item: PendingPickup) {
     return item.quantity - item.collectedQuantity
 }
 
 onMounted(async () => {
-    if (!route.query.page || !route.query.size) {
-        updateQuery({ page: page.value })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query
+        router.replace({ query: rest })
     }
-
-    await fetchRecord()
+    reload()
     useAppStore().setTitle('Pending Pickups')
     document.title = 'Pending Pickups | Materials | Skultem'
 })
@@ -149,7 +143,7 @@ definePageMeta({
             <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <div v-for="i in size" :key="i"
+                    <div v-for="i in 6" :key="i"
                         class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="space-y-2">
@@ -171,7 +165,7 @@ definePageMeta({
 
                 <!-- Records -->
                 <template v-else-if="data?.length">
-                    <div v-for="item in data" :key="`${item.source}-${item.id}`"
+                    <div v-for="item in data" :key="item.id"
                         class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0 space-y-1">
@@ -252,7 +246,7 @@ definePageMeta({
                 </UCard>
 
                 <template v-else>
-                    <UCard v-for="item in data" :key="`${item.source}-${item.id}`"
+                    <UCard v-for="item in data" :key="item.id"
                         class="rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-4' }">
                         <div class="space-y-3">
                             <div class="flex items-center justify-between gap-3">
@@ -294,13 +288,10 @@ definePageMeta({
                 </template>
             </div>
 
-            <template #footer>
-                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="pending pickups" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </div>
 </template>

@@ -2,9 +2,10 @@ export const ExpenseApi = () => {
   const { $api } = useNuxtApp()
 
   return {
-    getAllCategories: async (page: number, size: number) => {
+    getAllCategories: async (page: number, size: number, query?: string) => {
       try {
-        const res = await $api(`/expense/category?page=${page}&size=${size}`) as any
+        const q = query?.trim() ? `&query=${encodeURIComponent(query.trim())}` : ''
+        const res = await $api(`/expense/category?page=${page}&size=${size}${q}`) as any
 
         if (!res)
           throw new Error('Failed to fetch expense categories')
@@ -17,9 +18,10 @@ export const ExpenseApi = () => {
         useHandleError(err)
       }
     },
-    getAll: async (page: number, size: number) => {
+    getAll: async (page: number, size: number, query?: string) => {
        try {
-        const res = await $api(`/expense?page=${page}&size=${size}`) as any
+        const q = query?.trim() ? `&query=${encodeURIComponent(query.trim())}` : ''
+        const res = await $api(`/expense?page=${page}&size=${size}${q}`) as any
 
         if (!res)
           throw new Error('Failed to fetch expenses')
@@ -28,6 +30,21 @@ export const ExpenseApi = () => {
         const meta = useMeta(res.meta)
 
         return { ...res, data, meta }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    updateCategory: async (id: string, payload: CreateExpenseCategoryDTO) => {
+      try {
+        const res = await $api(`/expense/category/${id}`, { method: 'PUT', body: payload }) as any
+        return res.data
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    removeCategory: async (id: string) => {
+      try {
+        return await $api(`/expense/category/${id}`, { method: 'DELETE' })
       } catch (err: any) {
         useHandleError(err)
       }

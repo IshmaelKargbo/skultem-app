@@ -61,7 +61,7 @@
 
     <!-- Footer -->
     <template #footer>
-      <div class="flex space-x-3">
+      <div class="flex w-full items-center gap-3">
         <u-button
           :icon="SAVE_ICON"
           :loading="isLoading"
@@ -75,6 +75,9 @@
           @click="close"
           :disabled="isLoading"
         />
+        <!-- Delete lives here now that the list's rows open this form. -->
+        <u-button v-if="canDelete" class="ml-auto" label="Delete" icon="i-lucide-trash-2" color="error"
+          variant="soft" :disabled="isLoading" @click="askDelete" />
       </div>
     </template>
   </u-slideover>
@@ -84,15 +87,23 @@
 import * as yup from "yup";
 import type { FormSubmitEvent } from "#ui/types";
 
-const { open, record } = defineProps<{
+const { open, record, canDelete } = defineProps<{
   open: boolean
   record: Subject | null
+  canDelete?: boolean
 }>()
 
 const emit = defineEmits<{
   "update:open": [boolean]
   saved: []
+  delete: [subject: Subject]
 }>()
+
+function askDelete() {
+  if (!record) return
+  emit("update:open", false)
+  emit("delete", record)
+}
 
 const store = useSubjectStore();
 const { error: toastError, success: toastSuccess } = useNotify();

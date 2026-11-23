@@ -220,6 +220,15 @@ export const StudentApi = () => {
     // Moves the student to another guardian: an existing one (parentId), or any account already at the
     // school (userId - given a guardian profile from phone/street/city if they have none). See
     // ChangeStudentGuardianUseCase.
+    // The father's and mother's details recorded on the student (not the guardian account).
+    updateFamily: async (id: string, family: StudentFamilyDetails) => {
+      try {
+        const res = await $api(`/student/${id}/family`, { method: 'PATCH', body: family }) as any
+        return res.data as Student
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     changeGuardian: async (id: string, payload: ChangeGuardianDto) => {
       try {
         const res = await $api(`/student/${id}/guardian`, { method: 'PATCH', body: payload }) as any
@@ -320,4 +329,13 @@ export const StudentApi = () => {
       }
     }
   }
+}
+
+export interface StudentFamilyDetails {
+  fatherName?: string | null
+  fatherContact?: string | null
+  fatherOccupation?: string | null
+  motherName?: string | null
+  motherContact?: string | null
+  motherOccupation?: string | null
 }

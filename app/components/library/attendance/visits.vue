@@ -14,12 +14,6 @@ const from = ref(addDays(today, -30))
 const to = ref(today)
 const searchValue = ref('')
 const search = ref('')
-const page = ref(1)
-const size = runtimeConf().limit
-
-const data = ref<LibraryVisit[]>([])
-const meta = ref<any>({})
-const loading = ref(true) // until the first load lands - no "nothing here" flash
 const busyId = ref('')
 
 const tabs = computed(() => [
@@ -38,21 +32,11 @@ function filters() {
   }
 }
 
-let request = 0
-async function load() {
-  const mine = ++request
-  loading.value = true
-  try {
-    const res = await LibraryAttendanceApi().listVisits(page.value, size, { ...filters(), search: search.value })
-    if (mine !== request) return
-    data.value = res.data
-    meta.value = res.meta
-  } catch (err: any) {
-    if (mine === request) toastError(err?.message || 'Failed to load visits')
-  } finally {
-    if (mine === request) loading.value = false
-  }
-}
+// One scrolling list: the next visits load as the end comes into view. Check out and Follow up stay on the rows -
+// they are what this list is for.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<LibraryVisit>((page, size) =>
+    LibraryAttendanceApi().listVisits(page, size, { ...filters(), search: search.value }) as any)
 
 async function checkOut(visit: LibraryVisit) {
   busyId.value = visit.id
@@ -105,13 +89,11 @@ watch(searchValue, (val) => {
   timer = setTimeout(() => { search.value = val.trim() }, 400)
 })
 
-watch([view, search, from, to], () => {
-  if (page.value === 1) load()
-  else page.value = 1
-})
-watch(page, load)
-watch(() => store.changeVersion, load)
-onMounted(load)
+watch([view, search, from, to], () => reload())
+// Checked in, checked out or followed up - here or on the rest of the page.
+watch(() => store.changeVersion, () => reload())
+onBeforeUnmount(() => clearTimeout(timer))
+onMounted(reload)
 </script>
 
 <template>
@@ -197,12 +179,10 @@ onMounted(load)
       </template>
     </UTable>
 
-    <template v-if="meta.total" #footer>
-      <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
-        <Showing :meta="meta" />
-        <UPagination v-model:page="page" size="sm" :items-per-page="meta.size" :total="meta.total" show-edges />
-      </div>
-    </template>
+    <div ref="sentinel">
+      <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+        :total="meta?.total" noun="visits" :error="listError" @retry="loadMore" />
+    </div>
   </UCard>
 
   <LibraryAttendanceReasonModal v-model:open="resolveOpen" title="Follow Up Visit"

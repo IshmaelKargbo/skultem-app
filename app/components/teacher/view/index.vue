@@ -105,6 +105,10 @@
         <TeacherStatusPrompt v-if="record" v-model:open="showStatusPrompt" :teacher-id="record.id" :teacher-name="name"
             :active="record.status === 'ACTIVE'" @changed="record = $event" />
 
+        <TeacherDeletePermanently v-if="record && deleteOpen" v-model:open="deleteOpen" :teacher-id="record.id"
+            :name="`${record.user?.givenNames ?? ''} ${record.user?.familyName ?? ''}`.trim()"
+            @deleted="navigateTo('/teachers')" />
+
         <!-- A teacher who forgot their password: a temporary one to pass on; they set their own at the next login. -->
         <AuthUsersResetPasswordPrompt v-if="record?.user && resetOpen" v-model:open="resetOpen" :user-id="record.user.id"
             :user-name="name" :sign-in-with="record.user.email || undefined" />
@@ -117,6 +121,9 @@ const store = useTeacherStore()
 const { record, loading } = storeToRefs(store)
 const route = useRoute()
 const showStatusPrompt = ref(false)
+const deleteOpen = ref(false)
+const { can } = useAuth()
+const canDeletePermanently = computed(() => can([Role.PROPRIETOR, Role.OWNER]))
 const resetOpen = ref(false)
 
 definePageMeta({
@@ -158,11 +165,17 @@ const actionItems = computed(() => {
                 ? [{ label: 'Reset password', icon: 'i-lucide-key-round', onSelect: () => { resetOpen.value = true } }]
                 : [])
         ],
-        ...(r.status !== 'DELETED' ? [[
-            r.status === 'ACTIVE'
-                ? { label: 'Deactivate', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }
-                : { label: 'Reactivate', icon: 'lucide:user-check', color: 'success' as const, onSelect: () => { showStatusPrompt.value = true } }
-        ]] : [])
+        ...[[
+            ...(r.status !== 'DELETED' ? [
+                r.status === 'ACTIVE'
+                    ? { label: 'Deactivate', icon: 'lucide:user-x', color: 'error' as const, onSelect: () => { showStatusPrompt.value = true } }
+                    : { label: 'Reactivate', icon: 'lucide:user-check', color: 'success' as const, onSelect: () => { showStatusPrompt.value = true } }
+            ] : []),
+            // Owner/proprietor only, same as the backend - for someone added by mistake.
+            ...(canDeletePermanently.value
+                ? [{ label: 'Delete permanently', icon: 'lucide:trash-2', color: 'error' as const, onSelect: () => { deleteOpen.value = true } }]
+                : [])
+        ]].filter(group => group.length)
     ]
 })
 

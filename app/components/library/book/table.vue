@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const store = useLibraryStore()
 const { canManage } = useLibraryAccess()
-const { books: data, booksMeta: meta, booksLoading: loading, categoryOptions } = storeToRefs(store)
+const { categoryOptions } = storeToRefs(store)
 
 const view = ref<'table' | 'card'>('table')
 const value = ref('')
@@ -15,24 +15,26 @@ const categoryFilter = ref<string | undefined>()
 const sectionFilter = ref<string | undefined>()
 const librarySections = useLibrarySections()
 const { options: sectionOptions, showSections, nameOf: sectionName } = librarySections
-const page = ref(1)
-const size = runtimeConf().limit
 
 const columns = [
   { accessorKey: 'title', header: 'Title' },
   { id: 'category', header: 'Category' },
   { id: 'copies', header: 'Copies' },
-  { accessorKey: 'shelf', header: 'Shelf' },
-  { id: 'actions', meta: { class: { td: 'text-right' } } }
+  { accessorKey: 'shelf', header: 'Shelf' }
 ]
 
 
-function load() {
-  return store.fetchBooks(page.value, size, {
+// One scrolling list: the next books load as the end comes into view. A row opens the book's page, where it is
+// edited, issued or deleted.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<Book>((page, size) => LibraryApi().listBooks(page, size, {
     search: search.value,
     categoryId: categoryFilter.value || undefined,
     sectionId: sectionFilter.value || undefined
-  })
+  }) as any)
+
+function openBook(book: Book) {
+  navigateTo(`/library/books/${book.id}`)
 }
 
 let timeout: ReturnType<typeof setTimeout>
@@ -41,15 +43,14 @@ watch(value, (val) => {
   timeout = setTimeout(() => { search.value = val.trim() }, 400)
 })
 
-watch([search, categoryFilter, sectionFilter], () => {
-  if (page.value === 1) load()
-  else page.value = 1
-})
+watch([search, categoryFilter, sectionFilter], () => reload())
+// A book added, edited, issued or returned anywhere: copies and titles change.
+watch(() => store.changeVersion, () => reload())
 
-watch(page, load)
+onBeforeUnmount(() => clearTimeout(timeout))
 
 onMounted(() => {
-  load()
+  reload()
   store.fetchCategoryOptions()
   librarySections.load()
 })
@@ -72,7 +73,8 @@ onMounted(() => {
     </template>
 
     <!-- Desktop table -->
-    <UTable :ui="{ loading: 'py-0' }" v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+      :ui="{ loading: 'py-0', tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openBook(row.original)">
       <template #title-cell="{ row }">
         <div class="min-w-0">
           <div>
@@ -105,11 +107,6 @@ onMounted(() => {
         <p class="text-sm text-gray-500">{{ row.original.shelf || '—' }}</p>
       </template>
 
-      <template #actions-cell="{ row }">
-        <div class="flex justify-end gap-1">
-          <UButton :to="`/library/books/${row.original.id}`" :icon="VIEW_ICON" size="xs" color="neutral" variant="ghost" />
-        </div>
-      </template>
 
       <template #empty>
         <div class="flex flex-col items-center gap-3 py-16">
@@ -144,7 +141,9 @@ onMounted(() => {
       </template>
 
       <template v-else-if="data.length">
-        <div v-for="book in data" :key="book.id" class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+        <div v-for="book in data" :key="book.id" role="button" tabindex="0" @click="openBook(book)"
+          @keydown.enter="openBook(book)"
+          class="cursor-pointer border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
           <div class="flex items-center justify-between gap-3">
             <NuxtLink :to="`/library/books/${book.id}`" class="min-w-0 space-y-1">
               <h3 class="truncate text-sm font-semibold">{{ book.title }}</h3>
@@ -162,7 +161,6 @@ onMounted(() => {
           <div class="mt-2 flex items-center justify-between">
             <p class="text-xs text-muted">{{ book.shelf ? `Shelf ${book.shelf}` : 'No shelf set' }}</p>
 
-            <UButton :to="`/library/books/${book.id}`" :icon="VIEW_ICON" size="xs" color="neutral" variant="ghost" />
           </div>
         </div>
       </template>
@@ -203,7 +201,8 @@ onMounted(() => {
       </div>
 
       <template v-else>
-        <UCard v-for="book in data" :key="book.id" :ui="{ body: 'p-0 sm:p-0' }">
+        <UCard v-for="book in data" :key="book.id" :ui="{ body: 'p-0 sm:p-0' }" role="button" tabindex="0"
+          class="cursor-pointer hover:ring-primary/40" @click="openBook(book)" @keydown.enter="openBook(book)">
           <!-- Header -->
           <div class="flex items-start justify-between gap-4 border-b border-gray-200 p-3 dark:border-gray-800">
             <NuxtLink :to="`/library/books/${book.id}`" class="flex min-w-0 items-center gap-3">
@@ -275,19 +274,15 @@ onMounted(() => {
               </div>
             </div>
 
-            <UButton :to="`/library/books/${book.id}`" label="View" trailing-icon="i-lucide-chevron-right"
-              color="neutral" variant="ghost" size="sm" />
           </div>
         </UCard>
       </template>
     </div>
 
-    <template v-if="meta.total" #footer>
-      <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
-        <Showing :meta="meta" />
-        <UPagination v-model:page="page" size="sm" :items-per-page="meta.size" :total="meta.total" show-edges />
-      </div>
-    </template>
+    <div ref="sentinel">
+      <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+        :total="meta?.total" noun="books" :error="listError" @retry="loadMore" />
+    </div>
 
   </UCard>
 </template>

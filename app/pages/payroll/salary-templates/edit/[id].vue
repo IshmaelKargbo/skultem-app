@@ -2,6 +2,8 @@
   <div class="space-y-3 px-4 md:px-6">
 
     <Heading title="Edit Salary Template" subtitle="Changes only affect teachers set up from this template after you save.">
+      <UButton variant="soft" color="error" :icon="DELETE_ICON" label="Delete" :disabled="loading || saving"
+        @click="deleteOpen = true" />
       <UButton variant="soft" color="neutral" to="/payroll/salary-templates" label="Cancel" />
       <UButton icon="i-lucide-check" :loading="saving" :disabled="loading" label="Save Changes" data-guide="pay-save" @click="formRef?.submit()" />
     </Heading>
@@ -64,6 +66,10 @@
 
     </UForm>
 
+
+    <ConfirmDeleteModal v-model:open="deleteOpen" title="Delete Salary Template" :item-name="state.name"
+      description="Teachers already set up from this template keep their own pay - this only removes the reusable template itself."
+      :on-confirm="confirmDelete" />
   </div>
 </template>
 
@@ -80,6 +86,19 @@ const saving = ref(false)
 const loading = ref(true)
 
 const templateId = route.params.id as string
+
+// Delete lives here now that the template list's rows open this page.
+const deleteOpen = ref(false)
+async function confirmDelete() {
+  try {
+    await store.deleteSalaryTemplate(templateId)
+    notify.success('Salary template deleted successfully')
+    await router.push('/payroll/salary-templates')
+  } catch (err: any) {
+    notify.error(err?.message || 'Failed to delete salary template')
+    throw err
+  }
+}
 
 const state = reactive<{
   name: string

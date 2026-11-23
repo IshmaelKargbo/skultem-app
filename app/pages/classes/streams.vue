@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import type { Row } from "@tanstack/vue-table";
 
 const view = ref<'table' | 'card'>('table');
 const route = useRoute();
 const router = useRouter();
-const store = useStreamStore();
-const loading = ref(true);
-const { records: data, meta } = storeToRefs(store);
 
 const searchInput = ref(String(route.query.search ?? ""));
 const search = ref(searchInput.value);
@@ -29,8 +25,6 @@ function toggleFilter() {
 const editRcord = ref<Stream | null>(null);
 const editState = ref(false);
 
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 const columns = [
   {
     accessorKey: "name",
@@ -40,60 +34,47 @@ const columns = [
     accessorKey: "description",
     header: "Description",
   },
-  {
-    id: "actions",
-    meta: {
-      class: {
-        td: "text-right",
-      },
-    },
-    cell: ({ row }: any) => {
-      return h(
-        UDropdownMenu,
-        {
-          content: {
-            align: "end",
-          },
-          size: "sm",
-          items: getRowItems(row),
-          "aria-label": "Actions dropdown",
-        },
-        () =>
-          h(UButton, {
-            icon: "i-lucide-ellipsis-vertical",
-            color: "neutral",
-            size: "sm",
-            variant: "ghost",
-            "aria-label": "Actions dropdown",
-          })
-      );
-    },
-  },
 ];
 
-function getRowItems(row: Row<Stream>) {
-  return [
-    {
-      label: "Edit Record",
-      icon: "i-lucide-edit",
-      onClick: () => {
-        editState.value = true;
-        editRcord.value = row.original;
-      },
-    },
-    {
-      label: "Delete Record",
-      icon: "i-lucide-trash",
-    },
-  ];
+// A row opens the stream's edit form; Delete is in that form.
+function openStream(stream: Stream) {
+  editRcord.value = stream;
+  editState.value = true;
 }
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val }),
-});
+const deleteTarget = ref<Stream | null>(null);
+const deleteOpen = ref(false);
+const deleting = ref(false);
+const { success: toastSuccess, error: toastError } = useNotify();
 
-const size = ref(runtimeConf().limit);
+function askDelete(stream: Stream) {
+  deleteTarget.value = stream;
+  deleteOpen.value = true;
+}
+
+async function confirmDelete() {
+  const target = deleteTarget.value;
+  if (!target) return;
+  deleting.value = true;
+  try {
+    await StreamApi().remove(target.id);
+    toastSuccess(`${target.name} deleted`);
+    // Taken out of the list in place, so the list doesn't jump back to the top.
+    data.value = data.value.filter(s => s.id !== target.id);
+    if (meta.value) meta.value = { ...meta.value, total: Math.max(0, (meta.value.total ?? 1) - 1) };
+    deleteOpen.value = false;
+  } catch (err: any) {
+    // Refused while classes, students, subjects or fees still use it - the message says which.
+    toastError(err?.message || "Stream could not be deleted");
+  } finally {
+    deleting.value = false;
+  }
+}
+
+// The edited stream replaces its row in place.
+function onEdited(stream: Stream) {
+  data.value = data.value.map(s => (s.id === stream.id ? stream : s));
+}
 
 const hasActiveFilters = computed(() => !!search.value);
 
@@ -106,29 +87,31 @@ function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } });
 }
 
-async function fetchRecord() {
-  loading.value = true;
-  await store.fetchAll(page.value, size.value, search.value || undefined);
-  loading.value = false;
-}
+// One scrolling list: the next streams load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<Stream>((page, size) => StreamApi().getAll(page, size, search.value || undefined) as any);
 
-watch(() => page.value, () => fetchRecord());
+// After adding a stream: load the list again from the top.
+const fetchRecord = () => reload();
 
 watch(search, () => {
-  updateQuery({ search: search.value || undefined, page: 1 });
-
-  if (page.value === 1) fetchRecord();
+  updateQuery({ search: search.value || undefined });
+  reload();
 });
 
 onMounted(async () => {
-  updateQuery({
-    page: page.value
-  })
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) {
+    const { page: _page, size: _size, ...rest } = route.query;
+    router.replace({ query: rest });
+  }
 
-  await fetchRecord();
+  reload();
   useAppStore().setTitle('Streams')
   document.title = 'Streams | Classes | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(searchTimer));
 
 definePageMeta({
   role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER]
@@ -144,7 +127,7 @@ definePageMeta({
         <div>
           <div class="flex p-4 justify-between items-center">
             <div class="flex space-x-3 flex-1">
-              <div data-guide="stream-add"><ClassStreamAdd /></div>
+              <div data-guide="stream-add"><ClassStreamAdd @saved="fetchRecord" /></div>
             </div>
 
             <div>
@@ -167,7 +150,8 @@ definePageMeta({
           </div>
         </div>
       </template>
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
+                @select="(_e: Event, row: any) => openStream(row.original)">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -215,7 +199,8 @@ definePageMeta({
 
         <!-- Data -->
         <template v-else>
-          <div v-for="item in data" :key="item.id" class="border-b md:border md:rounded-2xl border-default p-3">
+          <div v-for="item in data" :key="item.id" role="button" tabindex="0" @click="openStream(item)"
+            @keydown.enter="openStream(item)" class="cursor-pointer border-b md:border md:rounded-2xl border-default p-3">
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
                 <div class="min-w-0">
@@ -235,14 +220,32 @@ definePageMeta({
         </template>
       </div>
 
-      <template #footer>
-        <!-- Footer -->
-        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
-          <Showing :meta="meta" />
-          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="streams" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
+
+    <ClassStreamEdit v-model:open="editState" :record="editRcord" can-delete @saved="onEdited" @delete="askDelete" />
+
+    <UModal v-model:open="deleteOpen">
+      <template #content>
+        <UCard>
+          <template #header>
+            <h3 class="text-lg font-semibold">Delete stream</h3>
+          </template>
+          <p class="text-sm">
+            Delete <b>{{ deleteTarget?.name }}</b>? This can't be undone. A stream that classes, students, subjects or
+            fees still use can't be deleted - you'll be told what is using it.
+          </p>
+          <template #footer>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <UButton label="Cancel" variant="soft" @click="deleteOpen = false" />
+              <UButton label="Delete" color="error" :loading="deleting" :disabled="deleting" @click="confirmDelete" />
+            </div>
+          </template>
+        </UCard>
+      </template>
+    </UModal>
   </div>
 </template>

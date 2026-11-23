@@ -3,11 +3,8 @@ import type { FilterField } from "~/components/filter/Drawer.vue";
 const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
-const store = useTeacherSubjectStore();
 const clazzStore = useClassStore();
 const streamStore = useStreamStore();
-const { records: data, meta, loading } = storeToRefs(store);
-const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
 
 const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
@@ -47,12 +44,6 @@ const columns = [
   },
 ];
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val }),
-});
-
-const size = ref(runtimeConf().limit);
 // Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
 // why a v-model bound straight to a computed setter that triggers router.replace() reads as
 // "picking an option/typing does nothing". These still seed from the URL on load and push back
@@ -107,25 +98,10 @@ watch(searchInput, (val) => {
   }, 350);
 });
 
-async function fetchRecord() {
-  await store.fetchAll(page.value, size.value, classId.value || undefined, streamId.value || undefined,
-    search.value || undefined, sortBy.value, sortDirection.value);
-}
-
-watch(
-  () => page.value,
-  () => {
-    nextTick(() => {
-      scrollContainer?.value?.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    });
-
-    fetchRecord();
-  },
-  { immediate: true }
-)
+// One scrolling list: the next assignments load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<any>((page, size) => TeacherSubjectApi().getAll(page, size, classId.value || undefined,
+    streamId.value || undefined, search.value || undefined, sortBy.value, sortDirection.value) as any);
 
 watch([classId, streamId, search, sort], () => {
   updateQuery({
@@ -133,22 +109,25 @@ watch([classId, streamId, search, sort], () => {
     streamId: streamId.value || undefined,
     search: search.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-    page: 1,
   })
-
-  if (page.value === 1) fetchRecord();
+  reload();
 });
 
 onMounted(async () => {
-  updateQuery({
-    page: page.value
-  })
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) {
+    const { page: _page, size: _size, ...rest } = route.query;
+    router.replace({ query: rest });
+  }
+  reload();
 
   clazzStore.fetchAll(0, 0);
   streamStore.fetchAll(0, 0);
   useAppStore().setTitle('Teacher Assignment')
   document.title = 'Teacher Assignment | Subjects | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(searchTimer));
 
 definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -248,14 +227,10 @@ definePageMeta({
           </div>
         </template>
       </div>
-      <template #footer>
-        <div class="flex items-center justify-between flex-col md:flex-row space-y-2 md:space-y-0">
-          <Showing :meta="meta" />
-
-          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="assignments" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
   </div>
 </template>

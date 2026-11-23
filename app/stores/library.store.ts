@@ -96,11 +96,13 @@ export const useLibraryStore = defineStore('library', {
         async saveCategory(payload: SaveBookCategoryDto, id?: string) {
             if (id) await LibraryApi().updateCategory(id, payload)
             else await LibraryApi().createCategory(payload)
+            this.changeVersion++
             await Promise.all([this.fetchCategories(), this.fetchCategoryOptions()])
         },
 
         async deleteCategory(id: string) {
             await LibraryApi().deleteCategory(id)
+            this.changeVersion++
             await Promise.all([this.fetchCategories(), this.fetchCategoryOptions()])
         },
 

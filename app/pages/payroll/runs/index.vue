@@ -50,7 +50,7 @@
       </div>
 
       <!-- Empty -->
-      <UCard v-else class="border-none py-16 shadow-none">
+      <UCard v-else-if="!failed" class="border-none py-16 shadow-none">
         <div class="flex flex-col items-center gap-3 text-center">
           <UIcon name="i-lucide-history" class="text-4xl text-muted" />
           <h3 class="font-semibold">{{ hasActiveFilters ? 'No matches found' : 'No payroll runs yet' }}</h3>
@@ -61,10 +61,9 @@
         </div>
       </UCard>
 
-      <div v-if="!loading && runs.length && meta.total > meta.size"
-        class="flex flex-col gap-3 border-t border-default p-4 sm:flex-row sm:items-center sm:justify-between">
-        <Showing :meta="meta" />
-        <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total" show-edges />
+      <div ref="sentinel" class="border-t border-default">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="runs.length"
+          :total="meta?.total" noun="payroll runs" :error="listError" @retry="loadMore" />
       </div>
     </UCard>
 
@@ -72,8 +71,6 @@
 </template>
 
 <script setup lang="ts">
-const store = usePayrollStore()
-const { runs, runsMeta: meta, loadingRuns: loading } = storeToRefs(store)
 
 const route = useRoute()
 const router = useRouter()
@@ -108,12 +105,12 @@ const search = ref(String(route.query.search ?? ''))
 
 const status = computed<string>({
   get: () => String(route.query.status ?? ''),
-  set: (val) => updateQuery({ status: val || undefined, page: 1 })
+  set: (val) => updateQuery({ status: val || undefined })
 })
 
 const sort = computed<string>({
   get: () => String(route.query.sort ?? DEFAULT_SORT),
-  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val, page: 1 })
+  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val })
 })
 
 const sortBy = computed(() => sort.value.split(':')[0])
@@ -123,13 +120,8 @@ const hasActiveFilters = computed(() => !!search.value || !!status.value || sort
 
 function resetFilters() {
   search.value = ''
-  updateQuery({ search: undefined, status: undefined, sort: undefined, page: 1 })
+  updateQuery({ search: undefined, status: undefined, sort: undefined })
 }
-
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
@@ -139,21 +131,27 @@ let searchTimeout: ReturnType<typeof setTimeout>
 watch(search, (value) => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    updateQuery({ search: value || undefined, page: 1 })
+    updateQuery({ search: value || undefined })
   }, 300)
 })
 
-function load() {
-  store.fetchRuns(page.value, 10, String(route.query.search ?? ''), status.value, sortBy.value, sortDirection.value)
-}
+// One scrolling list: the next runs load as the end comes into view.
+const { items: runs, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<PayrollRun>((page, size) => PayrollApi().listRuns(page, size, String(route.query.search ?? ''),
+    status.value, sortBy.value, sortDirection.value) as any)
 
-watch(() => [route.query.page, route.query.search, route.query.status, route.query.sort], load)
+watch(() => [route.query.search, route.query.status, route.query.sort], () => reload())
 
 onMounted(() => {
   useAppStore().setTitle('Payroll Runs')
   document.title = 'Payroll Runs | Payroll | Skultem'
 
-  load()
+  // Old links may still carry ?page=; the list starts at the top now.
+  if (route.query.page) {
+    const { page: _page, ...rest } = route.query
+    router.replace({ query: rest })
+  }
+  reload()
 })
 
 onBeforeUnmount(() => clearTimeout(searchTimeout))

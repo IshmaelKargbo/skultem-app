@@ -3,9 +3,7 @@ const { formatScore } = useScoreFormat()
 const tableView = ref<'table' | 'card'>('table');
 const route = useRoute();
 const router = useRouter();
-const store = useStudentStore();
 const clazzStore = useClassStore();
-const { records: data, meta, loading } = storeToRefs(store)
 
 const classOptions = computed(() =>
   clazzStore.records.map((e) => ({ label: e.name, value: e.id }))
@@ -49,7 +47,6 @@ const columns = [
   { id: "attendance", header: "Attendance" },
   { id: "average", header: "Average" },
   { id: "fees", header: "Fees" },
-  { id: "actions", header: "", meta: { class: { td: "text-right" } } },
 ];
 
 const { format } = useMoney()
@@ -170,28 +167,17 @@ function view(row: Student) {
   router.push(`/students/${row.id}`);
 }
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val }),
-});
-
 const search = ref(value.value)
 
-const size = ref(runtimeConf().limit);
+// One scrolling list: the next students load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<Student>(
+  (page, size) => StudentApi().getAll(search.value, page, size, classId.value || undefined, sortBy.value,
+    sortDirection.value, gender.value || undefined) as any
+)
 
 function updateQuery(newQuery: Record<string, any>) {
   router.replace({ query: { ...route.query, ...newQuery } })
 }
-
-async function fetchRecord() {
-  await store.fetchAll(page.value, size.value, search.value, classId.value || undefined, sortBy.value, sortDirection.value, gender.value || undefined);
-}
-
-watch(
-  () => page.value,
-  () => fetchRecord(),
-  { immediate: true }
-);
 
 let timeout: ReturnType<typeof setTimeout>
 
@@ -208,23 +194,20 @@ watch([search, classId, gender, sort], () => {
     classId: classId.value || undefined,
     gender: gender.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-    page: 1,
   })
-
-  if (page.value === 1) fetchRecord();
+  reload()
 });
 
 onMounted(async () => {
-  if (!route.query.page || !route.query.size) {
-    updateQuery({
-      page: page.value
-    })
-  }
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) updateQuery({ page: undefined, size: undefined })
 
   clazzStore.fetchAll(0, 0)
   fetchInsights();
-  fetchRecord();
+  reload();
 });
+
+onBeforeUnmount(() => clearTimeout(timeout))
 </script>
 
 <template>
@@ -256,7 +239,8 @@ onMounted(async () => {
           </div>
         </div>
       </template>
-      <UTable v-if="tableView === 'table'" class="hidden md:block" :ui="{ th: 'px-3', td: 'px-3 py-2.5' }" :columns="columns" :data="data" :loading="loading">
+      <UTable v-if="tableView === 'table'" class="hidden md:block" :ui="{ th: 'px-3', td: 'px-3 py-2.5', tr: 'cursor-pointer' }" :columns="columns" :data="data" :loading="loading"
+        @select="(_e: Event, row: any) => view(row.original)">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -329,10 +313,6 @@ onMounted(async () => {
         </template>
         <template #loading>
           <TableLoading :size="columns.length" />
-        </template>
-        <template #actions-cell="{ row }">
-          <UButton @click="view(row.original)" size="sm" variant="ghost" color="neutral" class="cursor-pointer"
-            icon="i-lucide-chevron-right" aria-label="Open student" />
         </template>
       </UTable>
       <div class="md:p-4  md:space-y-4"
@@ -409,13 +389,10 @@ onMounted(async () => {
           </UCard>
         </template>
       </div>
-      <template #footer>
-        <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
-          <Showing :meta="meta" />
-          <UPagination size="sm" v-model:page="page" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="students" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
   </div>
 </template>

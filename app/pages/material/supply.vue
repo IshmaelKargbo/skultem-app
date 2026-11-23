@@ -2,9 +2,7 @@
 const route = useRoute()
 const router = useRouter()
 
-const store = useMaterialStore()
 
-const { supplies: data, suppliesLoading: loading, suppliesMeta: meta } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
 const value = ref(route.query.search as string || '')
@@ -37,16 +35,9 @@ const columns = [
     }
 ]
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
-
-const size = ref(runtimeConf().limit)
-
-async function fetchRecord() {
-    await store.fetchAllSupply(page.value, size.value, search.value)
-}
+// One scrolling list: the next supplies load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<any>((page, size) => MaterialApi().getAllSupply(page, size, search.value) as any)
 
 let timeout: ReturnType<typeof setTimeout>
 
@@ -59,27 +50,22 @@ watch(value, (val) => {
 })
 
 watch(search, () => {
-    updateQuery({ search: search.value || undefined, page: 1 })
-
-    if (page.value === 1) fetchRecord()
+    router.replace({ query: { ...route.query, search: search.value || undefined } })
+    reload()
 })
 
-watch(page, () => fetchRecord())
-
 onMounted(async () => {
-    if (!route.query.page || !route.query.size) {
-        router.replace({
-            query: {
-                page: page.value,
-                search: search.value || undefined
-            }
-        })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query
+        router.replace({ query: rest })
     }
-
-    await fetchRecord()
+    reload()
     useAppStore().setTitle('Material Supplies')
     document.title = 'Supplies | Materials | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(timeout))
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -95,7 +81,7 @@ definePageMeta({
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex-1 flex space-x-3 items-center">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by student or material" />
-                        <div data-guide="mat-supply-add"><MaterialSupplyGive /></div>
+                        <div data-guide="mat-supply-add"><MaterialSupplyGive @success="reload" /></div>
                     </div>
                     <TableViewToggle v-model="view" />
                 </div>
@@ -175,7 +161,7 @@ definePageMeta({
             <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <div v-for="i in size" :key="i"
+                    <div v-for="i in 6" :key="i"
                         class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="space-y-2">
@@ -435,13 +421,10 @@ definePageMeta({
 
             </div>
 
-            <template #footer>
-                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="supplies" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </div>
 </template>

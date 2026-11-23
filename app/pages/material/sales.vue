@@ -5,7 +5,7 @@ const router = useRouter()
 const store = useMaterialSaleStore()
 const { format } = useMoney()
 
-const { records: data, loading, meta, summary } = storeToRefs(store)
+const { summary } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
 const metrics = computed(() => [
@@ -95,37 +95,43 @@ const columns = [
     { accessorKey: 'totalAmount', header: 'Total' },
     { accessorKey: 'balance', header: 'Balance' },
     { accessorKey: 'status', header: 'Status' },
-    { accessorKey: 'createdAt', header: 'Date' },
-    { id: 'actions', meta: { class: { td: 'text-right' } } }
+    { accessorKey: 'createdAt', header: 'Date' }
 ]
-
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: val => updateQuery({ page: val })
-})
-
-const size = ref(runtimeConf().limit)
-
-async function fetchRecord(statusOverride?: string) {
-    const currentStatus = statusOverride !== undefined ? statusOverride : status.value
-    const isPaidPending = currentStatus === 'PAID_PENDING'
-    await store.fetchAll(
-        page.value,
-        size.value,
-        search.value,
-        isPaidPending ? undefined : currentStatus || undefined,
-        isPaidPending || undefined
-    )
-}
 
 const status = computed<string>({
     get: () => (route.query.status as string) || '',
-    set: (val) => {
-        const alreadyOnPage1 = page.value === 1
-        updateQuery({ status: val || undefined, page: 1 })
-        if (alreadyOnPage1) fetchRecord(val)
-    }
+    set: (val) => updateQuery({ status: val || undefined })
 })
+
+// One scrolling list: the next sales load as the end comes into view. "Paid, not collected" is its own filter on the
+// server, not a status.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<MaterialSale>((page, size) => {
+        const isPaidPending = status.value === 'PAID_PENDING'
+        return MaterialSaleApi().getAll(page, size, search.value, isPaidPending ? undefined : status.value || undefined,
+            isPaidPending || undefined) as any
+    })
+
+watch(status, () => reload())
+
+// After a sale is created, paid, fulfilled or cancelled: the list again, and the totals above it.
+function fetchRecord() {
+    reload()
+    store.fetchSummary()
+}
+
+// A row opens the sale's details, where its actions are.
+const detailOpen = ref(false)
+function openSale(sale: MaterialSale) {
+    selected.value = sale
+    detailOpen.value = true
+}
+function fromDetail(action: (sale: MaterialSale) => void) {
+    const sale = selected.value
+    if (!sale) return
+    detailOpen.value = false
+    action(sale)
+}
 
 let timeout: ReturnType<typeof setTimeout>
 
@@ -135,12 +141,9 @@ watch(value, (val) => {
 })
 
 watch(search, () => {
-    const alreadyOnPage1 = page.value === 1
-    updateQuery({ search: search.value || undefined, page: 1 })
-    if (alreadyOnPage1) fetchRecord()
+    updateQuery({ search: search.value || undefined })
+    reload()
 })
-
-watch(page, () => fetchRecord())
 
 function buyerName(sale: MaterialSale) {
     return sale.student ? `${sale.student.givenNames} ${sale.student.familyName}` : sale.customerName
@@ -151,14 +154,19 @@ function isPaidAwaitingPickup(sale: MaterialSale) {
 }
 
 onMounted(async () => {
-    if (!route.query.page || !route.query.size) {
-        updateQuery({ page: page.value, search: search.value || undefined })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query
+        router.replace({ query: rest })
     }
 
-    await Promise.all([fetchRecord(), store.fetchSummary()])
+    reload()
+    store.fetchSummary()
     useAppStore().setTitle('Material Sales')
     document.title = 'Sales | Materials | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(timeout))
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -202,7 +210,8 @@ definePageMeta({
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+                :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openSale(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
                         <div
@@ -269,17 +278,6 @@ definePageMeta({
                     <p class="text-sm text-gray-500">{{ formatDateTime(row.original.createdAt) }}</p>
                 </template>
 
-                <template #actions-cell="{ row }">
-                    <div class="flex justify-end gap-1">
-                        <UButton v-if="row.original.status !== 'CANCELLED' && row.original.balance > 0" size="xs"
-                            variant="ghost" icon="i-lucide-hand-coins" title="Record Payment"
-                            @click="openPayment(row.original)" />
-                        <UButton v-if="row.original.status === 'PENDING_SUPPLY'" size="xs" color="success"
-                            variant="ghost" :icon="FULFILL_ICON" title="Fulfill" @click="openFulfill(row.original)" />
-                        <UButton v-if="row.original.status === 'PENDING_SUPPLY'" size="xs" color="error" variant="ghost"
-                            :icon="CANCEL_ICON" title="Cancel" @click="openCancel(row.original)" />
-                    </div>
-                </template>
 
                 <template #loading>
                     <TableLoading :size="columns.length" />
@@ -290,7 +288,7 @@ definePageMeta({
             <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <div v-for="i in size" :key="i"
+                    <div v-for="i in 6" :key="i"
                         class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="space-y-2">
@@ -312,8 +310,9 @@ definePageMeta({
 
                 <!-- Records -->
                 <template v-else-if="data?.length">
-                    <div v-for="item in data" :key="item.id"
-                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                    <div v-for="item in data" :key="item.id" role="button" tabindex="0" @click="openSale(item)"
+                        @keydown.enter="openSale(item)"
+                        class="cursor-pointer border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0 space-y-1">
                                 <h3 class="truncate text-sm font-semibold">{{ buyerName(item) }}</h3>
@@ -338,20 +337,9 @@ definePageMeta({
                             </div>
                         </div>
 
-                        <div v-if="item.status !== 'CANCELLED'" class="mt-2 flex items-center justify-between">
-                            <p class="text-xs text-muted">
-                                {{ item.student ? item.student.admissionNumber : 'Walk-in customer' }}
-                            </p>
-
-                            <div class="flex items-center gap-1">
-                                <UButton v-if="item.balance > 0" size="xs" variant="ghost" icon="i-lucide-hand-coins"
-                                    aria-label="Record payment" @click="openPayment(item)" />
-                                <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="success"
-                                    variant="ghost" :icon="FULFILL_ICON" aria-label="Fulfill" @click="openFulfill(item)" />
-                                <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="error" variant="ghost"
-                                    :icon="CANCEL_ICON" aria-label="Cancel sale" @click="openCancel(item)" />
-                            </div>
-                        </div>
+                        <p class="mt-2 text-xs text-muted">
+                            {{ item.student ? item.student.admissionNumber : 'Walk-in customer' }}
+                        </p>
                     </div>
                 </template>
 
@@ -404,8 +392,10 @@ definePageMeta({
                 </UCard>
 
                 <template v-else>
-                    <UCard v-for="item in data" :key="item.id" class="rounded-2xl border border-default shadow-sm"
-                        :ui="{ body: 'p-4' }">
+                    <UCard v-for="item in data" :key="item.id"
+                        class="cursor-pointer rounded-2xl border border-default shadow-sm hover:ring-primary/40"
+                        :ui="{ body: 'p-4' }" role="button" tabindex="0" @click="openSale(item)"
+                        @keydown.enter="openSale(item)">
                         <div class="space-y-4">
                             <div
                                 class="flex items-center justify-between gap-3 border-b border-gray-200 pb-3 dark:border-gray-800">
@@ -464,34 +454,69 @@ definePageMeta({
                                 </div>
                             </div>
 
-                            <div class="flex items-center justify-between border-t border-default pt-4">
-                                <p class="text-xs text-muted">{{ formatDateTime(item.createdAt) }}</p>
-
-                                <div class="flex gap-1">
-                                    <UButton v-if="item.status !== 'CANCELLED' && item.balance > 0" size="xs"
-                                        variant="ghost" icon="i-lucide-hand-coins" aria-label="Record payment" @click="openPayment(item)" />
-                                    <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="success"
-                                        variant="ghost" :icon="FULFILL_ICON" aria-label="Fulfill" @click="openFulfill(item)" />
-                                    <UButton v-if="item.status === 'PENDING_SUPPLY'" size="xs" color="error"
-                                        variant="ghost" :icon="CANCEL_ICON" aria-label="Cancel sale" @click="openCancel(item)" />
-                                </div>
-                            </div>
+                            <p class="border-t border-default pt-4 text-xs text-muted">{{ formatDateTime(item.createdAt) }}</p>
                         </div>
                     </UCard>
                 </template>
             </div>
 
-            <MaterialSaleRecordPayment v-if="selected" v-model:open="paymentModal" :sale="selected" />
-            <MaterialSaleFulfillPrompt v-if="selected" v-model:open="fulfillModal" :sale="selected" />
-            <MaterialSaleCancelPrompt v-if="selected" v-model:open="cancelModal" :sale="selected" />
+            <MaterialSaleRecordPayment v-if="selected" v-model:open="paymentModal" :sale="selected" @done="fetchRecord" />
+            <MaterialSaleFulfillPrompt v-if="selected" v-model:open="fulfillModal" :sale="selected" @done="fetchRecord" />
+            <MaterialSaleCancelPrompt v-if="selected" v-model:open="cancelModal" :sale="selected" @done="fetchRecord" />
 
-            <template #footer>
-                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <!-- A sale row opens this: what was sold, and what can still be done with it. -->
+            <UModal v-model:open="detailOpen">
+                <template #content>
+                    <UCard v-if="selected">
+                        <template #header>
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-semibold">{{ buyerName(selected) }}</h3>
+                                    <p class="text-xs text-muted">
+                                        {{ selected.student ? selected.student.admissionNumber : 'Walk-in customer' }}
+                                    </p>
+                                </div>
+                                <UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm" aria-label="Close"
+                                    @click="detailOpen = false" />
+                            </div>
+                        </template>
+                        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+                            <dt class="text-muted">Item</dt>
+                            <dd>{{ selected.quantity }}× {{ selected.material.name }}
+                                <span class="text-muted">({{ format(selected.unitPrice) }} each)</span></dd>
+                            <dt class="text-muted">Total</dt>
+                            <dd class="font-semibold">{{ format(selected.totalAmount) }}</dd>
+                            <dt class="text-muted">Balance</dt>
+                            <dd class="font-semibold" :class="selected.balance > 0 ? 'text-error' : 'text-success'">
+                                {{ format(selected.balance) }}</dd>
+                            <dt class="text-muted">Status</dt>
+                            <dd>
+                                <UBadge size="sm" variant="soft" :color="statusColorMap[selected.status]"
+                                    :label="selected.status === 'PENDING_SUPPLY' ? 'Settle Later' : clean(selected.status)" />
+                                <span v-if="isPaidAwaitingPickup(selected)" class="ml-2 text-xs text-info">Paid - not yet
+                                    collected</span>
+                            </dd>
+                            <dt class="text-muted">Date</dt>
+                            <dd>{{ formatDateTime(selected.createdAt) }}</dd>
+                        </dl>
+                        <template v-if="selected.status !== 'CANCELLED' && (selected.balance > 0 || selected.status === 'PENDING_SUPPLY')" #footer>
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <UButton v-if="selected.balance > 0" label="Record payment" icon="i-lucide-hand-coins"
+                                    variant="soft" @click="fromDetail(openPayment)" />
+                                <UButton v-if="selected.status === 'PENDING_SUPPLY'" label="Fulfill" :icon="FULFILL_ICON"
+                                    color="success" variant="soft" @click="fromDetail(openFulfill)" />
+                                <UButton v-if="selected.status === 'PENDING_SUPPLY'" class="sm:ml-auto" label="Cancel sale"
+                                    :icon="CANCEL_ICON" color="error" variant="soft" @click="fromDetail(openCancel)" />
+                            </div>
+                        </template>
+                    </UCard>
+                </template>
+            </UModal>
+
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="sales" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </div>
 </template>

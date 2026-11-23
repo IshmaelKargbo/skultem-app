@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [boolean]
+  deleted: [id: string]
 }>()
 
 const store = useMaterialStore()
@@ -28,6 +29,7 @@ async function remove() {
     loading.value = true
     await store.remove(props.materialId)
     toastSuccess('Material deleted successfully')
+    emit('deleted', props.materialId)
     close()
   } catch (error: any) {
     toastError(error?.message || 'Failed to delete material')

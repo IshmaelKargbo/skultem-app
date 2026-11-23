@@ -15,7 +15,8 @@
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+                :ui="{ tr: canEdit ? 'cursor-pointer' : '' }" @select="(_e: Event, row: any) => openSubject(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -45,7 +46,8 @@
 
                 <!-- Data -->
                 <template v-else-if="data?.length">
-                    <div v-for="value in data" :key="value.id" class="border-b md:border md:rounded-2xl border-default p-3">
+                    <div v-for="value in data" :key="value.id" @click="openSubject(value)"
+                        class="border-b md:border md:rounded-2xl border-default p-3" :class="{ 'cursor-pointer': canEdit }">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="min-w-0">
@@ -63,10 +65,6 @@
                                 </div>
                             </div>
 
-                            <UDropdownMenu v-if="canEdit" :items="rowActions(value)" :content="{ align: 'end' }">
-                                <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" size="sm"
-                                    class="shrink-0" aria-label="Subject actions" />
-                            </UDropdownMenu>
                         </div>
                     </div>
                 </template>
@@ -83,16 +81,14 @@
                 </template>
             </div>
 
-            <template #footer>
-                <div class="flex items-center justify-between flex-col md:flex-row space-y-2 md:space-y-0">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="subjects" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
 
-        <SubjectEdit v-model:open="editState" :record="editRcord" @saved="fetchRecords" />
+        <SubjectEdit v-model:open="editState" :record="editRcord" can-delete @saved="fetchRecords"
+            @delete="(subject) => { deleteTarget = subject; deleteOpen = true; }" />
 
         <ConfirmDeleteModal v-if="deleteTarget" v-model:open="deleteOpen" title="Delete Subject"
             :item-name="deleteTarget.name" :on-confirm="confirmDelete"
@@ -101,8 +97,6 @@
 </template>
 <script setup lang="ts">
 import type { FilterField } from "~/components/filter/Drawer.vue";
-import { nextTick } from "vue";
-import type { Row } from "@tanstack/vue-table";
 
 const view = ref<"table" | "card">("table");
 const route = useRoute();
@@ -112,8 +106,6 @@ const { can } = useAuth();
 const editRcord = ref<Subject | null>(null);
 const editState = ref(false);
 
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 const { success, error: toastError } = useNotify();
 
 const canEdit = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER]));
@@ -131,40 +123,18 @@ const columns = [
         accessorKey: "description",
         header: "Description",
     },
-    {
-        id: "actions",
-        meta: {
-            class: {
-                td: "text-right",
-            },
-        },
-        cell: ({ row }: { row: Row<Subject> }) => {
-            if (!canEdit.value) return null
-
-            return h(UDropdownMenu, { items: rowActions(row.original), content: { align: "end" } }, {
-                default: () => h(UButton, {
-                    icon: "i-lucide-ellipsis-vertical",
-                    color: "neutral",
-                    size: "sm",
-                    variant: "ghost",
-                    "aria-label": "Subject actions",
-                }),
-            });
-        },
-    },
 ];
 
 const store = useSubjectStore();
 
-// Edit and delete live in one actions menu per subject.
 const deleteTarget = ref<Subject | null>(null);
 const deleteOpen = ref(false);
 
-function rowActions(subject: Subject) {
-    return [
-        [{ label: "Edit", icon: EDIT_ICON, onSelect: () => { editRcord.value = subject; editState.value = true; } }],
-        [{ label: "Delete", icon: "i-lucide-trash-2", color: "error" as const, onSelect: () => { deleteTarget.value = subject; deleteOpen.value = true; } }],
-    ];
+// A row opens the subject's edit form (for those who can change subjects); Delete is in that form.
+function openSubject(subject: Subject) {
+    if (!canEdit.value) return;
+    editRcord.value = subject;
+    editState.value = true;
 }
 
 async function confirmDelete() {
@@ -172,36 +142,15 @@ async function confirmDelete() {
     try {
         await store.remove(deleteTarget.value.id);
         success(`${deleteTarget.value.name} deleted`);
-        // The last subject on a page leaves it empty, so step back a page.
-        if (data.value.length === 1 && page.value > 1) page.value = page.value - 1;
-        else await fetchRecords();
+        // Taken out of the list in place, so the list doesn't jump back to the top.
+        const id = deleteTarget.value.id;
+        data.value = data.value.filter(s => s.id !== id);
+        if (meta.value) meta.value = { ...meta.value, total: Math.max(0, (meta.value.total ?? 1) - 1) };
     } catch (err: any) {
         toastError(err?.message || "Subject could not be deleted");
         throw err;
     }
 }
-const { records: data, meta, loading } = storeToRefs(store);
-const scrollContainer = inject<Ref<HTMLElement | null>>("scrollContainer");
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-
-    set: (value) => {
-        updateQuery({
-            page: value,
-        });
-    },
-});
-
-const size = computed<number>({
-    get: () => Number(route.query.size ?? 9),
-
-    set: (value) => {
-        updateQuery({
-            size: value,
-        });
-    },
-});
-
 // Plain local refs, not URL-bound computed getters/setters - see grades/approval/admin.vue for
 // why a v-model bound straight to a computed setter that triggers router.replace() reads as
 // "typing does nothing". These still seed from the URL on load and push back to it (see the
@@ -255,49 +204,36 @@ function updateQuery(query: Record<string, any>) {
     });
 }
 
-async function fetchRecords() {
-    await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value);
-}
+// One scrolling list: the next subjects load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<Subject>(
+    (page, size) => SubjectApi().getAll(page, size, search.value || undefined, sortBy.value, sortDirection.value) as any
+);
 
-watch(
-    [page, size],
-    async () => {
-        nextTick(() => {
-            scrollContainer?.value?.scrollTo({
-                top: 0,
-                behavior: "smooth",
-            });
-        });
+// After adding or editing a subject: load the list again from the top.
+const fetchRecords = () => reload();
 
-        await fetchRecords();
-    },
-    {
-        immediate: true,
-    }
-)
-
-// Setting a filter also resets the page to 1 and mirrors it into the URL (for a shareable
-// link/refresh) - the fetch itself is keyed off the local refs above, not the URL.
+// A new search or sort mirrors itself into the URL (for a shareable link/refresh) and starts the list again.
 watch([search, sort], () => {
     updateQuery({
         search: search.value || undefined,
         sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-        page: 1,
     });
-
-    if (page.value === 1) fetchRecords();
+    reload();
 });
 
 onMounted(() => {
-    if (!route.query.page || !route.query.size) {
-        updateQuery({
-            page: page.value,
-        })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query;
+        router.replace({ query: rest });
     }
+    reload();
 
     useAppStore().setTitle("Subjects");
     document.title = "Subjects | Skultem";
 });
+
+onBeforeUnmount(() => clearTimeout(searchTimer));
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN],

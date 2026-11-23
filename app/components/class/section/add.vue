@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+const emit = defineEmits<{ saved: [] }>()
 import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
@@ -88,6 +89,7 @@ const onSubmit = async (event: FormSubmitEvent<SectionForm>) => {
         })
 
         await store.fetchAll()
+        emit('saved')
         toastSuccess('Section created successfully')
         close()
     } catch (err: any) {

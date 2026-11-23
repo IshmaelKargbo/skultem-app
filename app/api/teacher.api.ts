@@ -107,6 +107,18 @@ export const TeacherApi = () => {
         useHandleError(err)
       }
     },
+    // For a staff member added by mistake; refused while they have any history (see DeleteTeacherPermanentlyUseCase).
+    deletePermanently: async (id: string, confirmation: string) => {
+      try {
+        const res = await $api(`/teacher/${id}/delete-permanently`, {
+          method: 'POST',
+          body: { confirmation }
+        }) as any
+        return res.data as { name: string, account: string }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     setStatus: async (id: string, active: boolean) => {
       try {
         const res = await $api(`/teacher/${id}/status?active=${active}`, {

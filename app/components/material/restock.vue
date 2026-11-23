@@ -101,6 +101,7 @@ async function onSubmit() {
 
     await store.fetchAll()
     toastSuccess('Material restocked successfully')
+    emit('success')
 
     close()
   } catch (error: any) {

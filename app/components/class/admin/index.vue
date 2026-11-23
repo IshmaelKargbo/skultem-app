@@ -24,7 +24,8 @@
             </template>
 
             <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
-                :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5' }">
+                :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5', tr: 'cursor-pointer' }"
+                @select="(_e: Event, row: any) => viewClass(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400 dark:text-gray-500" />
@@ -92,10 +93,6 @@
                 </template>
                 <template #loading>
                     <TableLoading :size="columns.length" />
-                </template>
-                <template #actions-cell="{ row }">
-                    <UButton @click="viewClass(row.original)" size="sm" variant="ghost" color="neutral"
-                        class="cursor-pointer" icon="i-lucide-chevron-right" aria-label="Open class" />
                 </template>
             </UTable>
             <div class="md:p-4 md:space-y-4"
@@ -189,8 +186,7 @@ const columns = [
     { accessorKey: 'sectionName', header: 'Section' },
     { accessorKey: 'teacherName', header: 'Class master' },
     { accessorKey: 'totalStudent', header: 'Students' },
-    { id: 'fees', header: 'Fees' },
-    { id: 'actions', header: '', meta: { class: { td: 'text-right' } } }
+    { id: 'fees', header: 'Fees' }
 ];
 
 const { can } = useAuth();

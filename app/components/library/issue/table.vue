@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const store = useLibraryStore()
 const { canManage } = useLibraryAccess()
-const { loans: data, loansMeta: meta, loansLoading: loading } = storeToRefs(store)
 const { success: toastSuccess, error: toastError } = useNotify()
 
 const value = ref('')
@@ -11,8 +10,6 @@ const initialStatus = String(useRoute().query.status || '').toUpperCase()
 const statusFilter = ref<'ALL' | LoanStatus>(
   loanStatusOptions.some(o => o.value === initialStatus) ? initialStatus as LoanStatus : 'ALL'
 )
-const page = ref(1)
-const size = runtimeConf().limit
 const returningId = ref('')
 
 const columns = computed(() => [
@@ -24,17 +21,32 @@ const columns = computed(() => [
   ...(canManage.value ? [{ id: 'actions', meta: { class: { td: 'text-right' } } }] : [])
 ])
 
-function load() {
-  return store.fetchLoans(page.value, size, { search: search.value, status: statusFilter.value })
+// One scrolling list: the next loans load as the end comes into view. Return stays on the row - returning books is
+// what this list is for; the rest of the row opens the book.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<BookLoan>((page, size) =>
+    LibraryApi().listLoans(page, size, { search: search.value, status: statusFilter.value }) as any)
+
+function openBook(loan: BookLoan) {
+  navigateTo(`/library/books/${loan.book.id}`)
 }
+
+// Our own return already updated the row; the change it adds to the store's counter shouldn't also reload the list.
+let ownVersion = -1
 
 async function returnBook(loan: BookLoan) {
   returningId.value = loan.id
   try {
-    await store.returnBook(loan.id)
+    ownVersion = store.changeVersion + 1
+    const returned = await store.returnBook(loan.id)
     toastSuccess(`"${loan.book.title}" marked as returned`)
-    // A returned loan no longer belongs in the Issued / Overdue views.
-    if (statusFilter.value === 'ISSUED' || statusFilter.value === 'OVERDUE') await load()
+    // A returned loan no longer belongs in the Issued / Overdue views; elsewhere it updates in place.
+    if (statusFilter.value === 'ISSUED' || statusFilter.value === 'OVERDUE') {
+      data.value = data.value.filter(l => l.id !== loan.id)
+      if (meta.value) meta.value = { ...meta.value, total: Math.max(0, (meta.value.total ?? 1) - 1) }
+    } else if (returned) {
+      data.value = data.value.map(l => (l.id === loan.id ? returned : l))
+    }
   } catch (err: any) {
     toastError(err?.message || 'Failed to return book')
   } finally {
@@ -48,14 +60,16 @@ watch(value, (val) => {
   timeout = setTimeout(() => { search.value = val.trim() }, 400)
 })
 
-watch([search, statusFilter], () => {
-  if (page.value === 1) load()
-  else page.value = 1
+watch([search, statusFilter], () => reload())
+// A book issued (or anything else changed) elsewhere on the page.
+watch(() => store.changeVersion, (version) => {
+  if (version === ownVersion) return
+  reload()
 })
 
-watch(page, load)
+onBeforeUnmount(() => clearTimeout(timeout))
 
-onMounted(load)
+onMounted(reload)
 </script>
 
 <template>
@@ -70,13 +84,14 @@ onMounted(load)
     </template>
 
     <!-- Desktop table -->
-    <UTable :ui="{ loading: 'py-0' }" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+      :ui="{ loading: 'py-0', tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openBook(row.original)">
       <template #book-cell="{ row }">
         <div class="flex items-center gap-3">
           <div class="min-w-0">
-            <ULink :to="`/library/books/${row.original.book.id}`" class="block max-w-xs truncate font-medium text-gray-900 hover:text-primary dark:text-white">
+            <p class="block max-w-xs truncate font-medium text-gray-900 dark:text-white">
               {{ row.original.book.title }}
-            </ULink>
+            </p>
             <p class="max-w-xs truncate text-xs text-gray-500">{{ row.original.book.author }}</p>
           </div>
         </div>
@@ -110,7 +125,8 @@ onMounted(load)
       </template>
 
       <template #actions-cell="{ row }">
-        <div class="flex justify-end">
+        <!-- .stop: returning shouldn't also open the book -->
+        <div class="flex justify-end" @click.stop>
           <UButton v-if="row.original.status !== 'RETURNED'" :icon="RETURN_BOOK_ICON" size="xs" color="success"
             variant="soft" label="Return" :loading="returningId === row.original.id" @click="returnBook(row.original)" />
         </div>
@@ -149,7 +165,9 @@ onMounted(load)
       </template>
 
       <template v-else-if="data.length">
-        <div v-for="loan in data" :key="loan.id" class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+        <div v-for="loan in data" :key="loan.id" role="button" tabindex="0" @click="openBook(loan)"
+          @keydown.enter="openBook(loan)"
+          class="cursor-pointer border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0 space-y-1">
               <h3 class="truncate text-sm font-semibold">{{ loan.book.title }}</h3>
@@ -166,12 +184,12 @@ onMounted(load)
             </p>
 
             <UButton v-if="canManage && loan.status !== 'RETURNED'" :icon="RETURN_BOOK_ICON" size="xs" color="success"
-              variant="soft" label="Return" :loading="returningId === loan.id" @click="returnBook(loan)" />
+              variant="soft" label="Return" :loading="returningId === loan.id" @click.stop="returnBook(loan)" />
           </div>
         </div>
       </template>
 
-      <div v-else class="flex flex-col items-center py-16 text-center">
+      <div v-else-if="!failed" class="flex flex-col items-center py-16 text-center">
         <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
           <UIcon :name="ISSUE_BOOK_ICON" class="size-10 text-muted" />
         </div>
@@ -180,11 +198,9 @@ onMounted(load)
       </div>
     </div>
 
-    <template v-if="meta.total" #footer>
-      <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
-        <Showing :meta="meta" />
-        <UPagination v-model:page="page" size="sm" :items-per-page="meta.size" :total="meta.total" show-edges />
-      </div>
-    </template>
+    <div ref="sentinel">
+      <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+        :total="meta?.total" noun="loans" :error="listError" @retry="loadMore" />
+    </div>
   </UCard>
 </template>

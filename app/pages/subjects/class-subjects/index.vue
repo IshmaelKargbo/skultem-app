@@ -4,14 +4,12 @@ const view = ref<'table' | 'card'>('table')
 const showDuplicate = ref(false);
 const route = useRoute();
 const router = useRouter();
-const store = useClassSubjectStore();
 const { can } = useAuth();
 // Teachers can view class subjects but the backend only lets admins/leadership change them.
 const canManage = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]));
 const clazzStore = useClassStore();
 const streamStore = useStreamStore();
 const sectionStore = useSectionStore();
-const { records: data, meta, loading } = storeToRefs(store);
 
 const UButton = resolveComponent("UButton");
 
@@ -54,12 +52,6 @@ const columns = [
   },
 ];
 
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val }),
-});
-
-const size = ref(runtimeConf().limit);
 const classId = ref(String(route.query.classId ?? ""));
 const mandatory = ref(String(route.query.mandatory ?? ""));
 const streamId = ref(String(route.query.streamId ?? ""));
@@ -111,10 +103,11 @@ watch(searchInput, (val) => {
   }, 350);
 });
 
-async function fetchRecord() {
-  await store.fetchAll(
-    page.value,
-    size.value,
+// One scrolling list: the next class subjects load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<ClassSubject>((page, size) => ClassSubjectApi().getAll(
+    page,
+    size,
     classId.value || undefined,
     mandatory.value === "" ? undefined : mandatory.value === "true",
     search.value || undefined,
@@ -122,16 +115,10 @@ async function fetchRecord() {
     sortDirection.value,
     streamId.value || undefined,
     sectionId.value || undefined
-  );
-}
+  ) as any);
 
-watch(
-  () => page.value,
-  () => {
-    fetchRecord();
-  },
-  { immediate: true }
-);
+// After copying subjects to another class: load the list again from the top.
+const fetchRecord = () => reload();
 
 watch([classId, mandatory, streamId, sectionId, search, sort], () => {
   updateQuery({
@@ -141,16 +128,17 @@ watch([classId, mandatory, streamId, sectionId, search, sort], () => {
     sectionId: sectionId.value || undefined,
     search: search.value || undefined,
     sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-    page: 1,
   })
-
-  if (page.value === 1) fetchRecord();
+  reload();
 });
 
 onMounted(async () => {
-  updateQuery({
-    page: page.value
-  })
+  // Old links may still carry ?page= / ?size=; the list starts at the top now.
+  if (route.query.page || route.query.size) {
+    const { page: _page, size: _size, ...rest } = route.query;
+    router.replace({ query: rest });
+  }
+  reload();
 
   clazzStore.fetchAll(0, 0);
   streamStore.fetchAll(0, 0);
@@ -158,6 +146,8 @@ onMounted(async () => {
   useAppStore().setTitle('Class Subjects')
   document.title = 'Class Subjects | Subject | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(searchTimer));
 
 definePageMeta({
   role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -275,14 +265,10 @@ definePageMeta({
           </div>
         </template>
       </div>
-      <template #footer>
-        <div class="flex items-center justify-between flex-col md:flex-row space-y-2 md:space-y-0">
-          <Showing :meta="meta" />
-
-          <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-            :total="meta.total" show-edges />
-        </div>
-      </template>
+      <div ref="sentinel">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+          :total="meta?.total" noun="class subjects" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
 
     <SubjectClassSubjectDuplicate v-model:open="showDuplicate" @duplicated="fetchRecord" />

@@ -45,6 +45,8 @@ import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
+const emit = defineEmits<{ saved: [] }>()
+
 const store = useStreamStore()
 const { error: toastError, success: toastSuccess } = useNotify()
 const isLoading = ref(false)
@@ -85,6 +87,7 @@ const onSubmit = async (event: FormSubmitEvent<StreamForm>) => {
         })
 
         await store.fetchAll()
+        emit('saved')
         toastSuccess('Stream created successfully')
         close()
     } catch (err: any) {

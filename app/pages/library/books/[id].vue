@@ -13,10 +13,14 @@ const details = computed(() => book.value ? [
 const store = useLibraryStore()
 const { canManage } = useLibraryAccess()
 const { format } = useMoney()
-const { book, bookLoading, bookLoans: history, bookLoansMeta: historyMeta, bookLoansLoading } = storeToRefs(store)
+const { book, bookLoading } = storeToRefs(store)
 
 const bookId = computed(() => route.params.id as string)
-const historyPage = ref(1)
+// The book's loan history: one scrolling list, the next loans loading as the end comes into view.
+const {
+  items: history, meta: historyMeta, loading: bookLoansLoading, loadingMore: historyLoadingMore,
+  failed: historyFailed, error: historyError, sentinel: historyEnd, reload: reloadHistory, loadMore: loadMoreHistory
+} = useInfiniteList<BookLoan>((page, size) => LibraryApi().listBookLoans(bookId.value, page, size) as any, { size: 10 })
 const deleteModal = ref(false)
 const editRef = ref()
 
@@ -33,7 +37,8 @@ const { success: toastSuccess, error: toastError } = useNotify()
 async function returnBook(loan: BookLoan) {
   returningId.value = loan.id
   try {
-    await store.returnBook(loan.id)
+    const returned = await store.returnBook(loan.id)
+    if (returned) history.value = history.value.map(l => (l.id === loan.id ? returned : l))
     toastSuccess(`Returned by ${loan.borrowerName}`)
   } catch (err: any) {
     toastError(err?.message || 'Failed to return book')
@@ -61,14 +66,13 @@ const columns = [
 // Teachers see the history but can't return books from it.
 const visibleColumns = computed(() => canManage.value ? columns : columns.filter(c => c.id !== 'actions'))
 
-watch(historyPage, (page) => store.fetchBookLoans(bookId.value, page))
 
 onMounted(async () => {
   useAppStore().setTitle('Book Details')
   useAppStore().setBack('/library/books')
   document.title = 'Book Details | Skultem'
   store.book = null
-  await Promise.all([store.fetchBook(bookId.value), store.fetchBookLoans(bookId.value, 1)])
+  await Promise.all([store.fetchBook(bookId.value), reloadHistory()])
 })
 
 definePageMeta({
@@ -196,7 +200,7 @@ definePageMeta({
               <p class="text-xs-base text-muted">Everyone who has borrowed this book.</p>
             </div>
 
-            <UBadge color="neutral" variant="subtle">{{ historyMeta.total ?? 0 }} total</UBadge>
+            <UBadge color="neutral" variant="subtle">{{ historyMeta?.total ?? 0 }} total</UBadge>
           </div>
         </template>
 
@@ -296,12 +300,11 @@ definePageMeta({
           </div>
         </div>
 
-        <template v-if="(historyMeta.total ?? 0) > (historyMeta.size ?? 0)" #footer>
-          <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
-            <Showing :meta="historyMeta" />
-            <UPagination v-model:page="historyPage" size="sm" :items-per-page="historyMeta.size" :total="historyMeta.total" show-edges />
-          </div>
-        </template>
+        <div ref="historyEnd">
+          <InfiniteListEnd :loading="bookLoansLoading" :loading-more="historyLoadingMore" :failed="historyFailed"
+            :shown="history.length" :total="historyMeta?.total" noun="loans" :error="historyError"
+            @retry="loadMoreHistory" />
+        </div>
       </UCard>
 
       <LibraryBookDeletePrompt v-if="canManage" v-model:open="deleteModal" :book-id="book.id" :book-title="book.title"

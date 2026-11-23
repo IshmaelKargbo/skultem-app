@@ -3,14 +3,16 @@ import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
-const { material } = defineProps<{ material?: Material }>()
+// hideTrigger: the page opens it itself (a list row opens the edit form) - see v-model:open.
+const { material, hideTrigger, canDelete } = defineProps<{ material?: Material, hideTrigger?: boolean, canDelete?: boolean }>()
+const emit = defineEmits<{ saved: [], delete: [material: Material] }>()
 
 const store = useMaterialStore()
 const { categories: records } = storeToRefs(store)
 const { error: toastError, success: toastSuccess } = useNotify()
 
 const isEdit = computed(() => !!material)
-const open = ref(false)
+const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const formRef = ref()
 
@@ -42,6 +44,17 @@ function defaultState(): MaterialForm {
 
 const state = reactive<MaterialForm>(defaultState())
 
+// Filled from the material each time the form opens (one form is reused for every row).
+watch(open, (isOpen) => {
+    if (isOpen) Object.assign(state, defaultState())
+})
+
+function askDelete() {
+    if (!material) return
+    open.value = false
+    emit('delete', material)
+}
+
 const schema = yup.object({
     name: yup.string().required(),
     categoryId: yup.string().required(),
@@ -63,10 +76,12 @@ const onSubmit = async (event: FormSubmitEvent<MaterialForm>) => {
             const { inStock, ...rest } = state
             await store.update({ id: material.id, ...rest })
             toastSuccess('Material updated successfully')
+            emit('saved')
         } else {
             await store.create(state)
             await store.fetchAll()
             toastSuccess('Material created successfully')
+            emit('saved')
         }
 
         close()
@@ -83,7 +98,8 @@ onMounted(() => {
 </script>
 <template>
     <USlideover :dismissible="false" v-model:open="open">
-        <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
+        <template v-if="hideTrigger" />
+        <UButton v-else-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
         <div v-else>
             <UButton color="primary" class="md:hidden" icon="prime:plus" />
             <UButton color="primary" class="hidden md:flex" label="Add Material" icon="prime:plus" />
@@ -144,9 +160,12 @@ onMounted(() => {
 
         <!-- Footer -->
         <template #footer>
-            <div class="flex space-x-3">
+            <div class="flex w-full items-center gap-3">
                 <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
+                <!-- Delete lives here now that the list's rows open this form. -->
+                <UButton v-if="isEdit && canDelete" class="ml-auto" label="Delete" icon="i-lucide-trash-2" color="error"
+                    variant="soft" :disabled="isLoading" @click="askDelete" />
             </div>
         </template>
     </USlideover>

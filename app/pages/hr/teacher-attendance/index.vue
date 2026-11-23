@@ -202,7 +202,7 @@
           </div>
         </button>
 
-        <div v-if="!history.length"
+        <div v-if="!history.length && !historyFailed"
           class="flex flex-col m-4 items-center justify-center rounded-xl border-2 border-dashed dark:border-gray-700 border-gray-200 py-10">
           <UIcon name="i-lucide-calendar-x" class="mb-2 text-4xl text-muted" />
 
@@ -216,10 +216,10 @@
         </div>
       </div>
 
-      <div v-if="!loadingHistory && historyMeta.total > historyMeta.size"
-        class="flex justify-center border-t border-gray-200 py-4 dark:border-gray-800">
-        <UPagination v-model:page="historyPage" size="sm" :page-size="historyMeta.size"
-          :items-per-page="historyMeta.size" :total="historyMeta.total" show-edges />
+      <div ref="historyEnd">
+        <InfiniteListEnd :loading="loadingHistory" :loading-more="loadingMoreHistory" :failed="historyFailed"
+          :shown="history.length" :total="historyMeta?.total" noun="days" :error="historyError"
+          @retry="loadMoreHistory" />
       </div>
     </UCard>
   </div>
@@ -228,12 +228,19 @@
 <script setup lang="ts">
 const notify = useNotify()
 const store = useTeacherAttendanceStore()
-const { roster, loadingRoster, history, historyMeta, loadingHistory, error, adminClockingTeacherId, unclockingTeacherId, saving } = storeToRefs(store)
+const { roster, loadingRoster, error, adminClockingTeacherId, unclockingTeacherId, saving } = storeToRefs(store)
 
 const today = new Date().toISOString().slice(0, 10)
 const date = ref(today)
-const historyPage = ref(1)
-const historySize = ref(7)
+// History: one scrolling list of days, the next ones loading as the end comes into view. Days have no id of their
+// own, so the date is used as one.
+const {
+  items: history, meta: historyMeta, loading: loadingHistory, loadingMore: loadingMoreHistory, failed: historyFailed,
+  error: historyError, sentinel: historyEnd, reload: reloadHistory, loadMore: loadMoreHistory
+} = useInfiniteList<any>(async (page, size) => {
+  const res = await TeacherAttendanceApi().history(page, size)
+  return res ? { ...res, data: (res.data || []).map((day: any) => ({ ...day, id: day.date })) } : res
+}, { size: 14 })
 const search = ref('')
 const trendRef = ref<{ reload: () => void } | null>(null)
 
@@ -281,7 +288,7 @@ function statusMenuItems(teacherId: string) {
   return TEACHER_ATTENDANCE_STATUS_OPTIONS.map(option => ({
     label: option.label,
     icon: option.icon,
-    onClick: () => {
+    onSelect: () => {
       const entry = marks[teacherId]
       if (entry) entry.status = option.value
     }
@@ -293,7 +300,7 @@ async function saveAttendance() {
   try {
     await store.mark(date.value, pendingChanges.value)
     notify.success('Attendance saved successfully')
-    store.fetchHistory(historyPage.value, historySize.value)
+    reloadHistory()
     trendRef.value?.reload()
   } catch (err: any) {
     notify.error(err?.message || 'Failed to save attendance')
@@ -304,7 +311,7 @@ async function onAdminClockIn(teacherId: string) {
   try {
     await store.adminClockIn(teacherId, date.value)
     notify.success('Teacher clocked in.')
-    store.fetchHistory(historyPage.value, historySize.value)
+    reloadHistory()
   } catch (err: any) {
     notify.error(err?.message || 'Unable to clock the teacher in.')
   }
@@ -314,7 +321,7 @@ async function onAdminClockOut(teacherId: string) {
   try {
     await store.adminClockOut(teacherId, date.value)
     notify.success('Teacher clocked out.')
-    store.fetchHistory(historyPage.value, historySize.value)
+    reloadHistory()
   } catch (err: any) {
     notify.error(err?.message || 'Unable to clock the teacher out.')
   }
@@ -324,14 +331,13 @@ async function onAdminUnclock(teacherId: string) {
   try {
     await store.adminUnclock(teacherId, date.value)
     notify.success('Clock corrected.')
-    store.fetchHistory(historyPage.value, historySize.value)
+    reloadHistory()
   } catch (err: any) {
     notify.error(err?.message || 'Unable to undo the clock.')
   }
 }
 
 watch(date, () => store.fetchRoster(date.value))
-watch(historyPage, () => store.fetchHistory(historyPage.value, 7))
 
 onMounted(() => {
   useAppStore().setTitle('Mark Attendance')
@@ -339,7 +345,7 @@ onMounted(() => {
   document.title = 'Mark Attendance | HR | Skultem'
 
   store.fetchRoster(date.value)
-  store.fetchHistory(1, historySize.value)
+  reloadHistory()
 })
 
 definePageMeta({

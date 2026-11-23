@@ -1,10 +1,9 @@
 <script setup lang="ts">
+// Parents with their fee totals, as one scrolling list: the next ones load when you scroll near the bottom.
 const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
-const store = useParentStore()
 const { format } = useMoney()
-const { records: data, meta, loading } = storeToRefs(store)
 
 const sortOptions = [
   { label: 'Name (A-Z)', value: 'user.givenName:asc' },
@@ -25,19 +24,6 @@ const columns = [
   { accessorKey: 'status', header: 'Status' }
 ]
 
-// PAGE (URL synced)
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => {
-    updateQuery({
-      page: val
-    })
-  }
-})
-
-// SIZE (URL synced)
-const size = ref(runtimeConf().limit)
-
 const searchInput = ref(String(route.query.search ?? ''))
 const search = ref(searchInput.value)
 const sort = ref(String(route.query.sort ?? DEFAULT_SORT))
@@ -46,10 +32,6 @@ const sortDirection = computed(() => sort.value.split(':')[1])
 
 // What the filter drawer holds (search sits outside it).
 const activeFilterCount = computed(() => (sort.value !== DEFAULT_SORT ? 1 : 0))
-
-function updateQuery(newQuery: Record<string, any>) {
-  router.replace({ query: { ...route.query, ...newQuery } })
-}
 
 // Debounced so every keystroke doesn't fire a request.
 let searchTimer: ReturnType<typeof setTimeout> | undefined
@@ -60,41 +42,27 @@ watch(searchInput, (val) => {
   }, 350)
 })
 
-// FETCH whenever query changes
-watch(
-  () => [page.value, size.value],
-  async () => {
-    await fetchRecord()
-  },
-  { immediate: true }
+watch([search, sort], () => {
+  const { page: _page, ...rest } = route.query
+  router.replace({ query: { ...rest, sort: sort.value === DEFAULT_SORT ? undefined : sort.value } })
+  reload()
+})
+
+// One scrolling list: the next parents load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed: loadMoreFailed, error: listError, sentinel, reload, loadMore } = useInfiniteList<any>(
+  (page, size) => ParentApi().getAll(page, size, search.value || undefined, sortBy.value, sortDirection.value) as any
 )
 
-watch([search, sort], () => {
-  updateQuery({
-    sort: sort.value === DEFAULT_SORT ? undefined : sort.value,
-    page: 1,
-  })
-
-  if (page.value === 1) fetchRecord()
-})
-
-async function fetchRecord() {
-  loading.value = true
-  try {
-    await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value)
-  } finally {
-    loading.value = false
-  }
-}
-
-// Ensure initial query exists
 onMounted(() => {
-  updateQuery({
-    page: page.value
-  })
+  // Old links may still carry ?page=; the list starts at the top now.
+  if (route.query.page) {
+    const { page: _page, ...rest } = route.query
+    router.replace({ query: rest })
+  }
+  reload()
 })
+onBeforeUnmount(() => clearTimeout(searchTimer))
 </script>
-
 <template>
   <div class="space-y-4">
     <UCard data-guide="acc-parent-list" :ui="{ body: 'p-0 sm:p-0', header: 'p-0 sm:p-0' }">
@@ -318,7 +286,7 @@ onMounted(() => {
         </template>
 
         <!-- Empty -->
-        <template v-else>
+        <template v-else-if="!loadMoreFailed">
           <UCard class="col-span-full">
             <div class="flex flex-col items-center justify-center py-14">
               <UIcon name="ph:books-light" class="mb-3 text-4xl text-gray-400 dark:text-gray-500" />
@@ -330,13 +298,11 @@ onMounted(() => {
 
       </div>
 
-      <template #footer>
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Showing :meta="meta" />
-          <UPagination v-model:page="page" :page-size="meta.size" :items-per-page="meta.size" :total="meta.total"
-            size="sm" show-edges class="justify-center lg:justify-end" />
-        </div>
-      </template>
+      <!-- Reaching this loads the next parents. -->
+      <div ref="sentinel" class="border-t border-default">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="loadMoreFailed" :shown="data.length"
+          :total="meta?.total" noun="parents" :error="listError" @retry="loadMore" />
+      </div>
     </UCard>
   </div>
 </template>

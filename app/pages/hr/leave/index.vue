@@ -46,8 +46,9 @@
                     <USkeleton v-for="i in 6" :key="i" class="h-56 w-full rounded-xl" />
                 </div>
                 <div v-else-if="records.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <UCard v-for="request in records" :key="request.id"
-                        class="transition-colors hover:border-primary/40">
+                    <UCard v-for="request in records" :key="request.id" role="button" tabindex="0"
+                        class="cursor-pointer transition-colors hover:ring-primary/40"
+                        @click="openRequest(request)" @keydown.enter="openRequest(request)">
                         <div class="space-y-4">
 
                             <div class="flex flex-col items-center justify-center gap-3">
@@ -80,38 +81,27 @@
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-3">
-                                <UBadge :color="leaveStatusColor(request.status)" size="lg" variant="soft"
-                                    class="w-full items-center justify-center">
-                                    {{ clean(request.status) }}
-                                </UBadge>
-
-                                <UButton size="sm" class="w-full items-center justify-center" icon="i-lucide-eye"
-                                    :to="`/hr/leave/${request.id}`">
-                                    View
-                                </UButton>
-                            </div>
+                            <UBadge :color="leaveStatusColor(request.status)" size="lg" variant="soft"
+                                class="w-full items-center justify-center">
+                                {{ clean(request.status) }}
+                            </UBadge>
 
                         </div>
                     </UCard>
                 </div>
 
 
-                <div v-else class="flex flex-col items-center gap-3 text-center">
+                <div v-else-if="!failed" class="flex flex-col items-center gap-3 text-center">
                     <UIcon name="i-lucide-calendar-x" class="text-4xl text-muted" />
                     <h3 class="font-semibold">No leave requests yet</h3>
                     <p class="text-sm text-muted">{{ isAdmin ? 'No requests match your filters.' : NoLeave }}</p>
                     <UButton size="sm" icon="i-lucide-plus" to="/hr/leave/add">New Request</UButton>
                 </div>
             </div>
-            <template #footer>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-if="meta.total > meta.size" v-model:page="page" size="sm" :page-size="meta.size"
-                        :items-per-page="meta.size" :total="meta.total" show-edges />
-                </div>
-
-            </template>
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="records.length"
+                    :total="meta?.total" noun="leave requests" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </div>
 </template>
@@ -122,7 +112,7 @@ const isAdmin = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Rol
 const guideTopic = computed(() => (isAdmin.value ? 'admin-leave' : 'staff-leave'))
 
 const store = useLeaveStore()
-const { records, meta, loading, summary, error } = storeToRefs(store)
+const { summary, error } = storeToRefs(store)
 
 const route = useRoute()
 const router = useRouter()
@@ -148,10 +138,10 @@ function resetFilters() {
     type.value = ''
 }
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => router.replace({ query: { ...route.query, page: val } })
-})
+// A card opens the request; approving and rejecting are on its page.
+function openRequest(request: LeaveRequest) {
+    navigateTo(`/hr/leave/${request.id}`)
+}
 
 function teacherName(teacher?: Teacher) {
     if (!teacher) return ''
@@ -162,30 +152,35 @@ function leaveTypeLabel(value: LeaveType) {
     return LEAVE_TYPE_OPTIONS.find(o => o.value === value)?.label || clean(value)
 }
 
-function load() {
-    if (isAdmin.value) {
-        store.fetchAll(page.value, 9, { search: search.value, status: status.value, type: type.value })
-    } else {
-        store.fetchMine(page.value, 9)
-    }
-}
+// One scrolling list: the next requests load as the end comes into view. Admins see everyone's (filtered), staff
+// their own.
+const { items: records, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<LeaveRequest>((page, size) => (isAdmin.value
+        ? LeaveApi().list(page, size, { search: search.value, status: status.value, type: type.value })
+        : LeaveApi().listMine(page, size)) as any, { size: 18 })
 
 let searchTimeout: ReturnType<typeof setTimeout>
 watch([search, status, type], () => {
     clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => {
-        router.replace({ query: { ...route.query, search: search.value || undefined, status: status.value || undefined, type: type.value || undefined, page: 1 } })
+        const { page: _page, ...rest } = route.query
+        router.replace({ query: { ...rest, search: search.value || undefined, status: status.value || undefined, type: type.value || undefined } })
+        reload()
     }, 300)
 })
 
-watch(() => [route.query.page, route.query.search, route.query.status, route.query.type], load)
 
 onMounted(() => {
     useAppStore().setTitle(isAdmin.value ? 'Leave Management' : 'My Leave Requests')
     useAppStore().setBack('/hr')
     document.title = 'Leave Management | Skultem'
 
-    load()
+    // Old links may still carry ?page=; the list starts at the top now.
+    if (route.query.page) {
+        const { page: _page, ...rest } = route.query
+        router.replace({ query: rest })
+    }
+    reload()
     if (isAdmin.value) store.fetchSummary()
 })
 

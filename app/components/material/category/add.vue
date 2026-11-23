@@ -1,7 +1,8 @@
 <template>
     <USlideover :dismissible="false" v-model:open="open">
         <!-- Trigger -->
-        <UButton v-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
+        <template v-if="hideTrigger" />
+        <UButton v-else-if="isEdit" :icon="EDIT_ICON" size="xs" color="neutral" variant="ghost" @click="open = true" />
         <div v-else>
             <UButton color="primary" class="md:hidden" icon="prime:plus" />
             <UButton color="primary" class="hidden md:flex" label="Add Material Category" icon="prime:plus" />
@@ -42,9 +43,12 @@
 
         <!-- Footer -->
         <template #footer>
-            <div class="flex space-x-3">
+            <div class="flex w-full items-center gap-3">
                 <UButton icon="lucide:save" :loading="isLoading" label="Save" @click="formRef?.submit()" />
                 <UButton label="Cancel" variant="outline" color="neutral" @click="close" :disabled="isLoading" />
+                <!-- Delete lives here now that the list's rows open this form. -->
+                <UButton v-if="isEdit && canDelete" class="ml-auto" label="Delete" icon="i-lucide-trash-2" color="error"
+                    variant="soft" :disabled="isLoading" @click="askDelete" />
             </div>
         </template>
     </USlideover>
@@ -55,13 +59,15 @@ import * as yup from 'yup'
 import { reactive, ref } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 
-const { category } = defineProps<{ category?: MaterialCategory }>()
+// hideTrigger: the page opens it itself (a list row opens the edit form) - see v-model:open.
+const { category, hideTrigger, canDelete } = defineProps<{ category?: MaterialCategory, hideTrigger?: boolean, canDelete?: boolean }>()
+const emit = defineEmits<{ saved: [], delete: [category: MaterialCategory] }>()
 
 const store = useMaterialStore()
 const { error: toastError, success: toastSuccess } = useNotify()
 
 const isEdit = computed(() => !!category)
-const open = ref(false)
+const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const formRef = ref()
 
@@ -78,6 +84,17 @@ function defaultState(): MaterialCategoryForm {
 }
 
 const state = reactive<MaterialCategoryForm>(defaultState())
+
+// Filled from the category each time the form opens (one form is reused for every row).
+watch(open, (isOpen) => {
+    if (isOpen) Object.assign(state, defaultState())
+})
+
+function askDelete() {
+    if (!category) return
+    open.value = false
+    emit('delete', category)
+}
 
 const schema = yup.object({
     name: yup.string().required('Name is required'),
@@ -96,10 +113,12 @@ const onSubmit = async (event: FormSubmitEvent<MaterialCategoryForm>) => {
         if (isEdit.value && category) {
             await store.updateCategory({ id: category.id, ...state })
             toastSuccess('Material category updated successfully')
+            emit('saved')
         } else {
             await store.createCategory(state)
             await store.fetchAllCategory()
             toastSuccess('Material category created successfully')
+            emit('saved')
         }
 
         close()

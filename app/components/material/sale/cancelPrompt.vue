@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [boolean]
+  done: []
 }>()
 
 const store = useMaterialSaleStore()
@@ -28,6 +29,7 @@ async function cancel() {
     await store.cancel(props.sale.id)
     await store.fetchSummary()
     toastSuccess('Sale cancelled')
+    emit('done')
     close()
   } catch (error: any) {
     toastError(error?.message || 'Failed to cancel sale')

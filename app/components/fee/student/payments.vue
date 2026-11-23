@@ -67,7 +67,11 @@
           <div
             v-for="item in records"
             :key="item.id"
-            class="border-b px-4 py-3 border-gray-200 last:border-0"
+            role="button"
+            tabindex="0"
+            class="cursor-pointer border-b px-4 py-3 border-gray-200 last:border-0"
+            @click="openPayment(item)"
+            @keydown.enter="openPayment(item)"
           >
             <div class="flex items-center justify-between">
               <div class="min-w-0 space-y-1">
@@ -85,19 +89,14 @@
                 <p class="text-sm font-bold text-info">
                   {{ format(item.amount || 0) }}
                 </p>
-                <div class="flex justify-end gap-1">
-                  <UDropdownMenu :items="paymentActions(item)" :content="{ align: 'end' }">
-                    <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-ellipsis-vertical"
-                      aria-label="Payment options" />
-                  </UDropdownMenu>
-                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="hidden md:block">
-          <UTable :columns="columns" :data="records" :loading="isLoading">
+          <UTable :columns="columns" :data="records" :loading="isLoading" :ui="{ tr: 'cursor-pointer' }"
+            @select="(_e: Event, row: any) => openPayment(row.original)">
             <template #empty>
               <div class="flex flex-col items-center gap-2 py-10">
                 <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -135,14 +134,6 @@
             <template #referenceNo-cell="{ row }">
               <p class="font-medium">{{ row.original.referenceNo || "-" }}</p>
             </template>
-            <template #actions-cell="{ row }">
-              <div class="flex justify-end gap-1">
-                <UDropdownMenu :items="paymentActions(row.original)" :content="{ align: 'end' }">
-                  <UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-ellipsis-vertical"
-                    aria-label="Payment options" />
-                </UDropdownMenu>
-              </div>
-            </template>
             <template #loading>
               <TableLoading :size="columns.length" />
             </template>
@@ -152,6 +143,49 @@
     </div>
 
     <ReceiptViewer ref="receiptViewer" />
+
+    <!-- A payment row opens this: what it was, and what can be done with it. -->
+    <UModal v-model:open="detailOpen">
+      <template #content>
+        <UCard v-if="detail">
+          <template #header>
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-lg font-semibold">Payment</h3>
+              <UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm" aria-label="Close"
+                @click="detailOpen = false" />
+            </div>
+          </template>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+            <dt class="text-muted">Amount</dt>
+            <dd class="font-semibold">{{ format(detail.amount || 0) }}</dd>
+            <template v-if="detail.fee">
+              <dt class="text-muted">Fee</dt>
+              <dd>{{ detail.fee }}<span v-if="detail.term" class="text-muted"> ({{ detail.term }})</span></dd>
+            </template>
+            <dt class="text-muted">Method</dt>
+            <dd>{{ paymentMethods[detail.paymentMethod]?.label || detail.paymentMethod }}</dd>
+            <dt class="text-muted">Receipt</dt>
+            <dd>{{ detail.referenceNo || "-" }}</dd>
+            <template v-if="detail.externalReference">
+              <dt class="text-muted">Reference</dt>
+              <dd>{{ detail.externalReference }}</dd>
+            </template>
+            <dt class="text-muted">Paid</dt>
+            <dd>{{ formatDateTime(detail.paidAt) || "-" }}</dd>
+          </dl>
+          <template #footer>
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <UButton label="View receipt" icon="i-lucide-eye" variant="soft" color="neutral"
+                @click="receiptViewer?.view(detail.referenceNo)" />
+              <UButton label="Download receipt" icon="i-lucide-download" variant="soft" color="neutral"
+                @click="receiptViewer?.download(detail.referenceNo)" />
+              <UButton v-if="canReverse" class="sm:ml-auto" label="Reverse payment" icon="i-lucide-undo-2"
+                color="error" variant="soft" @click="detailOpen = false; askReverse(detail)" />
+            </div>
+          </template>
+        </UCard>
+      </template>
+    </UModal>
 
     <UModal v-model:open="reverseOpen">
       <template #content>
@@ -234,10 +268,6 @@ const columns = [
     header: "Reference No",
     cell: ({ row }: any) => row.original.referenceNo || "-",
   },
-  {
-    id: "actions",
-    header: "",
-  },
 ];
 
 const emit = defineEmits<{ reversed: [] }>();
@@ -250,14 +280,12 @@ const reverseLoading = ref(false);
 const reversing = ref<any>(null);
 const reason = ref("");
 
-// The options for one payment: view and download its receipt, and reverse it (for the roles allowed to).
-function paymentActions(item: any) {
-  const receipt = [
-    { label: "View receipt", icon: "i-lucide-eye", onSelect: () => receiptViewer.value?.view(item.referenceNo) },
-    { label: "Download receipt", icon: "i-lucide-download", onSelect: () => receiptViewer.value?.download(item.referenceNo) },
-  ];
-  if (!canReverse.value) return [receipt];
-  return [receipt, [{ label: "Reverse payment", icon: "i-lucide-undo-2", color: "error" as const, onSelect: () => askReverse(item) }]];
+// A payment row opens its details, with View receipt, Download receipt and (for the roles allowed to) Reverse.
+const detailOpen = ref(false);
+const detail = ref<any>(null);
+function openPayment(item: any) {
+  detail.value = item;
+  detailOpen.value = true;
 }
 
 function askReverse(item: any) {

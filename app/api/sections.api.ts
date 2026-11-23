@@ -38,6 +38,23 @@ export const SectionApi = () => {
       }
     },
 
+    update: async (id: string, payload: CreateSectionDto) => {
+      try {
+        const res = await $api(`/section/${id}`, { method: 'PUT', body: payload }) as any
+        return res.data as Section
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
+    remove: async (id: string) => {
+      try {
+        return await $api(`/section/${id}`, { method: 'DELETE' })
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     create: async (payload: CreateSectionDto) => {
       try {
         return await $api('/section', {

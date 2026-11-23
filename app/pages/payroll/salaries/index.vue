@@ -33,7 +33,8 @@
 
       <!-- Table view (desktop) -->
       <UTable v-if="view === 'table' && (loading || salaries.length)" class="hidden border-t border-default md:block"
-        :columns="columns" :data="salaries" :loading="loading">
+        :columns="columns" :data="salaries" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
+        @select="(_e: Event, row: any) => openSalary(row.original)">
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
@@ -63,12 +64,6 @@
         </template>
         <template #netSalary-cell="{ row }">
           <span class="font-semibold text-primary">{{ formatCurrency(row.original.netSalary) }}</span>
-        </template>
-        <template #actions-cell="{ row }">
-          <div class="flex justify-end">
-            <UButton size="xs" variant="ghost" color="neutral" trailing-icon="i-lucide-arrow-right" label="View"
-              :to="`/payroll/salaries/${row.original.teacher.id}`" />
-          </div>
         </template>
       </UTable>
 
@@ -105,7 +100,8 @@
 
       <!-- Salaries -->
       <div v-else-if="view === 'card' && salaries.length" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-        <UCard v-for="s in salaries" :key="s.id">
+        <UCard v-for="s in salaries" :key="s.id" role="button" tabindex="0" class="cursor-pointer hover:ring-primary/40"
+          @click="openSalary(s)" @keydown.enter="openSalary(s)">
           <div class="space-y-4">
 
             <div class="flex items-start justify-between gap-2">
@@ -145,16 +141,12 @@
               <p class="text-2xl font-bold text-primary">{{ formatCurrency(s.netSalary) }}</p>
             </div>
 
-            <UButton block variant="soft" trailing-icon="i-lucide-arrow-right" :to="`/payroll/salaries/${s.teacher.id}`">
-              View Salary Structure
-            </UButton>
-
           </div>
         </UCard>
       </div>
 
       <!-- Empty -->
-      <UCard v-if="!loading && !salaries.length" class="border-none py-16 shadow-none">
+      <UCard v-if="!loading && !salaries.length && !failed" class="border-none py-16 shadow-none">
         <div class="flex flex-col items-center gap-3 text-center">
           <UIcon name="i-lucide-wallet" class="text-4xl text-muted" />
           <h3 class="font-semibold">{{ hasActiveFilters ? 'No matches found' : 'No salary structures yet' }}</h3>
@@ -165,11 +157,9 @@
         </div>
       </UCard>
 
-      <div v-if="!loading && salaries.length"
-        class="flex flex-col gap-3 border-t border-default p-4 sm:flex-row sm:items-center sm:justify-between">
-        <Showing :meta="meta" />
-        <UPagination v-if="meta.total > meta.size" v-model:page="page" size="sm" :page-size="meta.size"
-          :items-per-page="meta.size" :total="meta.total" show-edges />
+      <div ref="sentinel" class="border-t border-default">
+        <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="salaries.length"
+          :total="meta?.total" noun="salary structures" :error="listError" @retry="loadMore" />
       </div>
     </UCard>
 
@@ -178,7 +168,7 @@
 
 <script setup lang="ts">
 const store = usePayrollStore()
-const { salaries, salariesMeta: meta, loadingSalaries: loading, summary } = storeToRefs(store)
+const { summary } = storeToRefs(store)
 
 const route = useRoute()
 const router = useRouter()
@@ -194,7 +184,6 @@ const columns = [
   { accessorKey: 'totalAllowances', header: 'Allowances', meta: right },
   { accessorKey: 'totalDeductions', header: 'Deductions', meta: right },
   { accessorKey: 'netSalary', header: 'Net Salary', meta: right },
-  { id: 'actions', header: '' },
 ]
 
 const sortOptions = [
@@ -211,7 +200,7 @@ const search = ref(String(route.query.search ?? ''))
 
 const sort = computed<string>({
   get: () => String(route.query.sort ?? DEFAULT_SORT),
-  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val, page: 1 })
+  set: (val) => updateQuery({ sort: val === DEFAULT_SORT ? undefined : val })
 })
 
 const sortBy = computed(() => sort.value.split(':')[0])
@@ -221,19 +210,14 @@ const hasActiveFilters = computed(() => !!search.value || sort.value !== DEFAULT
 
 function resetFilters() {
   search.value = ''
-  updateQuery({ search: undefined, sort: undefined, page: 1 })
+  updateQuery({ search: undefined, sort: undefined })
 }
-
-const page = computed<number>({
-  get: () => Number(route.query.page ?? 1),
-  set: (val) => updateQuery({ page: val })
-})
 
 let searchTimeout: ReturnType<typeof setTimeout>
 watch(search, (value) => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    updateQuery({ search: value || undefined, page: 1 })
+    updateQuery({ search: value || undefined })
   }, 300)
 })
 
@@ -248,17 +232,27 @@ function formatCurrency(value?: number | null) {
   return format(value || 0)
 }
 
-function load() {
-  store.fetchSalaries(page.value, 12, String(route.query.search ?? ''), sortBy.value, sortDirection.value)
-}
+// One scrolling list: the next salaries load as the end comes into view. A row (or card) opens the teacher's salary.
+const { items: salaries, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+  useInfiniteList<TeacherSalary>((page, size) => PayrollApi().listSalaries(page, size, String(route.query.search ?? ''),
+    sortBy.value, sortDirection.value) as any)
 
-watch(() => [route.query.page, route.query.search, route.query.sort], load)
+watch(() => [route.query.search, route.query.sort], () => reload())
+
+function openSalary(s: TeacherSalary) {
+  navigateTo(`/payroll/salaries/${s.teacher.id}`)
+}
 
 onMounted(() => {
   useAppStore().setTitle('Salary Structures')
   document.title = 'Salary Structures | Payroll | Skultem'
 
-  load()
+  // Old links may still carry ?page=; the list starts at the top now.
+  if (route.query.page) {
+    const { page: _page, ...rest } = route.query
+    router.replace({ query: rest })
+  }
+  reload()
   if (!summary.value) store.fetchSummary()
 })
 

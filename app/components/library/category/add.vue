@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import * as yup from 'yup'
 
-const { category } = defineProps<{ category?: BookCategory }>()
+// hideTrigger: the page opens it itself (a list row opens the edit form) - see v-model:open.
+const { category, hideTrigger, canDelete } = defineProps<{ category?: BookCategory, hideTrigger?: boolean, canDelete?: boolean }>()
+const emit = defineEmits<{ delete: [category: BookCategory] }>()
+
+function askDelete() {
+  if (!category) return
+  open.value = false
+  emit('delete', category)
+}
 
 const store = useLibraryStore()
 const { success: toastSuccess, error: toastError } = useNotify()
 
 const isEdit = computed(() => !!category)
-const open = ref(false)
+const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const formRef = ref()
 
@@ -51,8 +59,9 @@ async function onSubmit() {
 
 <template>
   <USlideover :dismissible="false" v-model:open="open">
+    <template v-if="hideTrigger" />
     <UButton
-      v-if="isEdit"
+      v-else-if="isEdit"
       :icon="EDIT_ICON"
       size="xs"
       color="neutral"
@@ -87,9 +96,12 @@ async function onSubmit() {
     </template>
 
     <template #footer>
-      <div class="flex space-x-3">
+      <div class="flex w-full items-center gap-3">
         <UButton :icon="SAVE_ICON" :loading="isLoading" label="Save" @click="formRef?.submit()" />
         <UButton label="Cancel" variant="outline" color="neutral" :disabled="isLoading" @click="close" />
+        <!-- Delete lives here now that the list's rows open this form. -->
+        <UButton v-if="isEdit && canDelete" class="ml-auto" label="Delete" :icon="DELETE_ICON" color="error"
+          variant="soft" :disabled="isLoading" @click="askDelete" />
       </div>
     </template>
   </USlideover>

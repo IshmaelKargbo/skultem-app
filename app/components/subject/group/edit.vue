@@ -44,9 +44,12 @@
     </template>
 
     <template #footer>
-      <div class="flex space-x-3">
+      <div class="flex w-full items-center gap-3">
         <u-button :icon="SAVE_ICON" :loading="isLoading" label="Save" @click="formRef?.submit()" />
         <u-button label="Cancel" variant="outline" color="neutral" :disabled="isLoading" @click="close" />
+        <!-- Delete lives here now that the list's rows open this form. -->
+        <u-button v-if="canDelete" class="ml-auto" label="Delete" icon="i-lucide-trash-2" color="error"
+          variant="soft" :disabled="isLoading" @click="askDelete" />
       </div>
     </template>
   </u-slideover>
@@ -55,15 +58,23 @@
 <script setup lang="ts">
 import * as yup from "yup";
 
-const { open, record } = defineProps<{
+const { open, record, canDelete } = defineProps<{
   open: boolean
   record: SubjectGroup | null
+  canDelete?: boolean
 }>()
 
 const emit = defineEmits<{
   "update:open": [boolean]
   saved: []
+  delete: [group: SubjectGroup]
 }>()
+
+function askDelete() {
+  if (!record) return
+  emit("update:open", false)
+  emit("delete", record)
+}
 
 const store = useSubjectGroupStore();
 const { error: toastError, success: toastSuccess } = useNotify();

@@ -107,6 +107,9 @@
                         <!-- Edits the guardian themselves (name, phone, address) - shared with every child they have -->
                         <ParentEdit v-if="record?.guardian && editGuardianOpen" v-model:open="editGuardianOpen"
                             :parent="record.guardian" @saved="fetchStudent" />
+                        <!-- The father's and mother's details recorded on the student -->
+                        <StudentEditFamily v-if="record && editFamilyOpen" v-model:open="editFamilyOpen"
+                            :student-id="record.id" :student-name="name" :family="record.family" @saved="fetchStudent" />
                     </div>
                 </div>
             </div>
@@ -203,6 +206,7 @@ const changeGuardianRef = ref<{ open: () => void } | null>(null)
 // Same roles as PATCH /student/{id}/guardian and PATCH /parent/{id}.
 const canManageGuardian = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.SUPER_ADMIN]))
 const editGuardianOpen = ref(false)
+const editFamilyOpen = ref(false)
 
 // Everything you can do to this student, in one menu: change it, move it, then the serious ones.
 const actionItems = computed(() => {
@@ -221,6 +225,7 @@ const actionItems = computed(() => {
             guardian.push({ label: 'Edit guardian', icon: 'i-lucide-user-pen', onSelect: () => { editGuardianOpen.value = true } })
         }
         guardian.push({ label: 'Change guardian', icon: 'i-lucide-users-round', onSelect: () => changeGuardianRef.value?.open() })
+        guardian.push({ label: 'Edit parent details', icon: 'i-lucide-users', onSelect: () => { editFamilyOpen.value = true } })
     }
     return [first, ...(guardian.length ? [guardian] : []), ...exitActions.value]
 })
@@ -230,15 +235,15 @@ const exitActions = computed(() => {
 
     if (canManageExit.value) {
         groups.push(hasLeft.value
-            ? [{ label: 'Reinstate student', icon: 'lucide:user-check', onClick: () => openExit('reinstate') }]
+            ? [{ label: 'Reinstate student', icon: 'lucide:user-check', onSelect: () => openExit('reinstate') }]
             : [
-                { label: 'Stop enrolment (withdraw)', icon: 'lucide:user-minus', onClick: () => openExit('withdraw') },
-                { label: 'Expel student', icon: 'lucide:user-x', color: 'error', onClick: () => openExit('expel') }
+                { label: 'Stop enrolment (withdraw)', icon: 'lucide:user-minus', onSelect: () => openExit('withdraw') },
+                { label: 'Expel student', icon: 'lucide:user-x', color: 'error', onSelect: () => openExit('expel') }
             ])
     }
 
     if (canDeletePermanently.value) {
-        groups.push([{ label: 'Delete permanently', icon: 'lucide:trash-2', color: 'error', onClick: () => { showDelete.value = true } }])
+        groups.push([{ label: 'Delete permanently', icon: 'lucide:trash-2', color: 'error', onSelect: () => { showDelete.value = true } }])
     }
 
     return groups

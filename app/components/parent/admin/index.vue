@@ -10,7 +10,7 @@ function updateQuery(newQuery: Record<string, any>) {
 
 const search = computed<string>({
     get: () => String(route.query.search ?? ''),
-    set: (value) => updateQuery({ search: value || undefined, page: 1 }),
+    set: (value) => updateQuery({ search: value || undefined }),
 })
 
 const sortOptions = [
@@ -37,11 +37,13 @@ watch(searchInput, (val) => {
 })
 
 watch(sort, () => {
-    updateQuery({ sort: sort.value === DEFAULT_SORT ? undefined : sort.value, page: 1 })
+    updateQuery({ sort: sort.value === DEFAULT_SORT ? undefined : sort.value })
 })
 
-const store = useParentStore();
-const { records: data, meta, loading } = storeToRefs(store);
+// One scrolling list: the next parents load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } = useInfiniteList<Parent>(
+    (page, size) => ParentApi().getAll(page, size, search.value || undefined, sortBy.value, sortDirection.value) as any
+)
 
 const STATUS_LABELS: Record<string, string> = {
     ACTIVE: "Active",
@@ -72,66 +74,27 @@ const columns = [
         accessorKey: "city",
         header: "Address",
     },
-    {
-        id: "open",
-        meta: { class: { td: "text-right w-10" } },
-    },
 ]
 
-// Edit, add email, give login and delete live on the parent's own page (pages/parents/[id].vue) now -
-// the list just opens it.
+// Edit, add email, give login and delete live on the parent's own page (pages/parents/[id].vue) - clicking a row
+// opens it.
 const parentLink = (parent: Parent) => `/parents/${parent.id}`
 
-const page = computed<number>({
-    get: () => Number(route.query.page || 1),
-    set: (value) => {
-        updateQuery({
-            page: value,
-        });
-    },
-})
-
-const size = ref(runtimeConf().limit);
-
-async function fetchRecords() {
-    try {
-        loading.value = true;
-
-        await store.fetchAll(page.value, size.value, search.value || undefined, sortBy.value, sortDirection.value);
-    } catch (error) {
-        console.error("Failed to fetch parents:", error);
-    } finally {
-        loading.value = false;
-    }
-}
-
-watch(
-    [page, size],
-    async () => {
-        await fetchRecords();
-    },
-    {
-        immediate: true,
-    }
-);
-
 onMounted(() => {
-    if (!route.query.page || !route.query.size) {
-        updateQuery({
-            page: page.value,
-        });
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query
+        router.replace({ query: rest })
     }
+    reload()
 
     useAppStore().setTitle('All Parents')
     document.title = 'Parents | Skultem'
 });
 
-watch(
-    [() => search.value, () => sort.value],
-    async () => {
-        await fetchRecords()
-    },
-)
+watch([() => search.value, () => sort.value], () => reload())
+
+onBeforeUnmount(() => clearTimeout(searchTimer))
 </script>
 <template>
     <div class="px-4 sm:px-6">
@@ -148,7 +111,8 @@ watch(
                     <div data-guide="list-view"><TableViewToggle v-model="view" /></div>
                 </div>
             </template>
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+                :ui="{ tr: 'cursor-pointer group' }" @select="(_e: Event, row: any) => navigateTo(parentLink(row.original))">
                 <template #empty>
                     <div class="flex flex-col items-center justify-center py-14">
                         <UIcon name="i-lucide-users" class="mb-3 size-10 text-gray-400" />
@@ -157,7 +121,7 @@ watch(
                     </div>
                 </template>
                 <template #name-cell="{ row }">
-                    <NuxtLink :to="parentLink(row.original)" class="flex items-center gap-3 group">
+                    <div class="flex items-center gap-3">
                         <UAvatar icon="i-lucide-user" />
 
                         <div>
@@ -165,7 +129,7 @@ watch(
                             <p v-if="row.original.email" class="text-xs text-muted">{{ row.original.email }}</p>
                             <UBadge v-else size="xs" variant="subtle" color="warning" label="No Email" />
                         </div>
-                    </NuxtLink>
+                    </div>
                 </template>
                 <template #students-cell="{ row }">
                     <UBadge :label="`${row.original.students} Students`" variant="outline" />
@@ -181,10 +145,6 @@ watch(
                 </template>
                 <template #loading>
                     <TableLoading :size="columns.length" />
-                </template>
-                <template #open-cell="{ row }">
-                    <UButton :to="parentLink(row.original)" size="sm" variant="ghost" color="neutral"
-                        icon="i-lucide-chevron-right" aria-label="View parent" />
                 </template>
             </UTable>
             <div class="md:p-4 md:space-y-4"
@@ -247,14 +207,10 @@ watch(
                 </template>
             </div>
             <!-- Footer -->
-            <template #footer>
-                <div class="flex justify-between items-center flex-col md:flex-row space-y-2 md:space-y-0">
-                    <Showing :meta="meta" />
-
-                    <UPagination v-model:page="page" size="sm" :page-size="meta?.size || 10"
-                        :items-per-page="meta?.size || 10" :total="meta?.total || 0" show-edges />
-                </div>
-            </template>
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="parents" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
 
     </div>

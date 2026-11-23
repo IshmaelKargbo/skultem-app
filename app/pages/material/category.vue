@@ -2,9 +2,7 @@
 const route = useRoute()
 const router = useRouter()
 
-const store = useMaterialStore()
 
-const { categories: data, categoriesLoading: loading, categoriesMeta: meta } = storeToRefs(store)
 const view = ref<'table' | 'card'>('table')
 
 const value = ref(route.query.search as string || '')
@@ -26,26 +24,26 @@ const columns = [
     {
         accessorKey: 'description',
         header: 'Description'
-    },
-    {
-        id: 'actions',
-        meta: {
-            class: {
-                td: 'text-right'
-            }
-        }
     }
 ]
 
-const page = computed<number>({
-    get: () => Number(route.query.page ?? 1),
-    set: (val) => updateQuery({ page: val })
-})
+// One scrolling list: the next categories load as the end comes into view.
+const { items: data, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<MaterialCategory>((page, size) => MaterialApi().getAllCategories(page, size, search.value) as any)
 
-const size = ref(runtimeConf().limit)
+// A row opens the category's edit form; Delete is in that form.
+const editing = ref<MaterialCategory>()
+const editOpen = ref(false)
+function openCategory(category: MaterialCategory) {
+    editing.value = category
+    editOpen.value = true
+}
 
-async function fetchRecord() {
-    await store.fetchAllCategory(page.value, size.value, search.value)
+const refresh = () => reload()
+
+function onDeleted(id: string) {
+    data.value = data.value.filter(c => c.id !== id)
+    if (meta.value) meta.value = { ...meta.value, total: Math.max(0, (meta.value.total ?? 1) - 1) }
 }
 
 let timeout: ReturnType<typeof setTimeout>
@@ -59,27 +57,23 @@ watch(value, (val) => {
 })
 
 watch(search, () => {
-    updateQuery({ search: search.value || undefined, page: 1 })
-
-    if (page.value === 1) fetchRecord()
+    router.replace({ query: { ...route.query, search: search.value || undefined } })
+    reload()
 })
 
-watch(page, () => fetchRecord())
-
 onMounted(async () => {
-    if (!route.query.page || !route.query.size) {
-        router.replace({
-            query: {
-                page: page.value,
-                search: search.value || undefined
-            }
-        })
+    // Old links may still carry ?page= / ?size=; the list starts at the top now.
+    if (route.query.page || route.query.size) {
+        const { page: _page, size: _size, ...rest } = route.query
+        router.replace({ query: rest })
     }
 
-    await fetchRecord()
+    reload()
     useAppStore().setTitle('Material Categories')
     document.title = 'Categories | Materials | Skultem'
 })
+
+onBeforeUnmount(() => clearTimeout(timeout))
 
 definePageMeta({
     role: [Role.ADMIN, Role.PROPRIETOR, Role.OWNER, Role.PRINCIPAL, Role.SUPER_ADMIN]
@@ -95,13 +89,14 @@ definePageMeta({
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex flex-1 space-x-3 items-center">
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" />
-                        <div data-guide="mat-cat-add"><MaterialCategoryAdd /></div>
+                        <div data-guide="mat-cat-add"><MaterialCategoryAdd @saved="refresh" /></div>
                     </div>
                     <TableViewToggle v-model="view" />
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+                :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openCategory(row.original)">
                 <template #name-cell="{ row }">
                     <div class="flex items-center gap-3">
                         <div
@@ -130,14 +125,6 @@ definePageMeta({
                     </p>
                 </template>
 
-                <template #actions-cell="{ row }">
-                    <div class="flex justify-end gap-1">
-                        <MaterialCategoryAdd :category="row.original" />
-
-                        <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                            @click="remove(row.original)" />
-                    </div>
-                </template>
 
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-16">
@@ -167,7 +154,7 @@ definePageMeta({
             <div v-if="view === 'table'" class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
-                    <div v-for="i in size" :key="i"
+                    <div v-for="i in 6" :key="i"
                         class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0 space-y-2">
@@ -185,8 +172,9 @@ definePageMeta({
 
                 <!-- Records -->
                 <template v-else-if="data?.length">
-                    <div v-for="item in data" :key="item.id"
-                        class="border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
+                    <div v-for="item in data" :key="item.id" role="button" tabindex="0" @click="openCategory(item)"
+                        @keydown.enter="openCategory(item)"
+                        class="cursor-pointer border-b border-gray-200 px-4 py-3 last:border-0 dark:border-neutral-800">
                         <div class="flex items-center justify-between gap-3">
                             <div class="min-w-0 space-y-1">
                                 <h3 class="truncate text-sm font-semibold">
@@ -197,11 +185,6 @@ definePageMeta({
                                 </p>
                             </div>
 
-                            <div class="flex shrink-0 items-center gap-1">
-                                <MaterialCategoryAdd :category="item" />
-                                <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                                    @click="remove(item)" />
-                            </div>
                         </div>
                     </div>
                 </template>
@@ -274,7 +257,9 @@ definePageMeta({
 
                 <!-- Cards -->
                 <template v-else>
-                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }">
+                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }" role="button" tabindex="0"
+                        class="cursor-pointer hover:ring-primary/40" @click="openCategory(item)"
+                        @keydown.enter="openCategory(item)">
                         <div class=" gap-3">
                             <div class="flex items-center gap-3 border-b border-gray-200 p-3 dark:border-neutral-800">
                                 <!-- Icon -->
@@ -292,12 +277,6 @@ definePageMeta({
                                     </p>
                                 </div>
 
-                                <div class="flex shrink-0 gap-1">
-                                    <MaterialCategoryAdd :category="item" />
-
-                                    <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                                        @click="remove(item)" />
-                                </div>
                             </div>
 
                             <!-- Content -->
@@ -312,15 +291,16 @@ definePageMeta({
             </div>
 
             <MaterialCategoryDeletePrompt v-if="selected" v-model:open="deleteModal" :category-id="selected.id"
-                :category-name="selected.name" />
+                :category-name="selected.name" @deleted="onDeleted" />
 
-            <template #footer>
-                <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 justify-between">
-                    <Showing :meta="meta" />
-                    <UPagination v-model:page="page" size="sm" :page-size="meta.size" :items-per-page="meta.size"
-                        :total="meta.total" show-edges />
-                </div>
-            </template>
+            <!-- One edit form, opened by whichever row was clicked -->
+            <MaterialCategoryAdd v-if="editing" :key="editing.id" v-model:open="editOpen" :category="editing"
+                hide-trigger can-delete @saved="refresh" @delete="remove" />
+
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"
+                    :total="meta?.total" noun="categories" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </div>
 </template>

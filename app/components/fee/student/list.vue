@@ -41,124 +41,139 @@
                 </div>
             </div>
 
-            <div v-else>
+            <div v-else ref="listEl" class="max-h-[calc(100dvh-15rem)] min-h-64 overflow-y-auto overscroll-contain">
                 <div v-for="item in records" :key="item.id" role="button" tabindex="0"
                     class="cursor-pointer border-b last:border-b-0 border-default" @click="select(item)"
                     @keydown.enter="select(item)">
                     <FeeStudentCard :active="item.id == selected?.id" :student="item" />
                 </div>
+
+                <!-- Reaching this loads the next students. -->
+                <div ref="sentinel" class="flex items-center justify-center py-3 text-xs text-muted">
+                    <span v-if="loadingMore" class="flex items-center gap-2">
+                        <UIcon name="i-lucide-loader-circle" class="animate-spin" /> Loading more...
+                    </span>
+                    <UButton v-else-if="loadMoreFailed" size="xs" variant="soft" label="Couldn't load more - try again"
+                        @click="loadMore" />
+                    <span v-else-if="!hasMore && records.length > size">All {{ meta?.total }} students shown</span>
+                </div>
             </div>
         </div>
-        <template #footer>
-            <div class="flex flex-col items-center gap-2">
-                <Showing :meta="meta" />
-                <UPagination v-if="meta && !isLoading" size="sm" v-model:page="page" :page-size="meta.size"
-                    :items-per-page="meta.size" :total="meta.total" show-edges />
-            </div>
-        </template>
     </UCard>
 </template>
 <script setup lang="ts">
-const route = useRoute()
-const router = useRouter()
-
+// The students, as one scrolling list: the next ones load when you scroll near the bottom.
 const store = useStudentStore()
 const emit = defineEmits(['select'])
 
+const size = 20
 const isLoading = ref(true)
+const loadingMore = ref(false)
+const loadMoreFailed = ref(false)
 const records = ref<Student[]>([])
 const selected = ref<Student | null>(null)
 const meta = ref<Meta>()
 const searchInput = ref()
+const listEl = ref<HTMLElement | null>(null)
+const sentinel = ref<HTMLElement | null>(null)
 
-// Search lives only in this variable - typing never touches the URL.
 const search = ref('')
-const currentPage = ref(Number(route.query.page ?? 1))
+let page = 1
+// Each new search gets a number, so an older, slower answer can't overwrite a newer one.
+let request = 0
 
 const scrollContainer = inject<Ref<HTMLElement | null>>('scrollContainer')
 
 let timeout: ReturnType<typeof setTimeout>
+let observer: IntersectionObserver | null = null
 
-const page = computed<number>({
-    get: () => currentPage.value,
-    set: async (value) => {
-        currentPage.value = value
-        await router.replace({
-            query: {
-                ...route.query,
-                page: value
-            }
-        })
-        await loadData()
-    }
-})
-
-const size = ref(6)
+const hasMore = computed(() => !!meta.value && records.value.length < (meta.value.total ?? 0))
 
 const focusSearch = async () => {
     await nextTick()
-
-    const input =
-        searchInput.value?.inputRef ||
-        searchInput.value?.$el?.querySelector('input')
-
+    const input = searchInput.value?.inputRef || searchInput.value?.$el?.querySelector('input')
     input?.focus?.()
 }
 
-const loadData = async () => {
+// First page (on open or a new search): replaces the list.
+async function loadFirst() {
+    const mine = ++request
     isLoading.value = true
-
+    loadMoreFailed.value = false
+    page = 1
     try {
-        const res = await store.fetchAllAndReturn(page.value, size.value,
-            search.value.trim()
-        )
-
-        if (res) {
-            records.value = res.records
-            meta.value = res.meta
-
-            if (res.records.length > 0) {
-                select(res.records[0])
-            }
-        }
+        const res = await store.fetchAllAndReturn(1, size, search.value.trim())
+        if (mine !== request || !res) return
+        records.value = res.records
+        meta.value = res.meta
+        if (res.records.length > 0 && !selected.value) select(res.records[0])
     } finally {
-        isLoading.value = false
+        if (mine === request) isLoading.value = false
     }
+    await nextTick()
+    watchSentinel()
+}
+
+// The next page: added to the end.
+async function loadMore() {
+    if (isLoading.value || loadingMore.value || !hasMore.value) return
+    const mine = request
+    loadingMore.value = true
+    loadMoreFailed.value = false
+    try {
+        const res = await store.fetchAllAndReturn(page + 1, size, search.value.trim())
+        if (mine !== request) return
+        if (!res) {
+            loadMoreFailed.value = true
+            return
+        }
+        page += 1
+        const seen = new Set(records.value.map(r => r.id))
+        records.value.push(...(res.records as Student[]).filter(r => !seen.has(r.id)))
+        meta.value = res.meta
+    } finally {
+        loadingMore.value = false
+    }
+    // A short page may still leave the end in view - keep filling.
+    await nextTick()
+    if (sentinelVisible()) loadMore()
+}
+
+function sentinelVisible() {
+    if (!sentinel.value || !listEl.value) return false
+    const s = sentinel.value.getBoundingClientRect()
+    const l = listEl.value.getBoundingClientRect()
+    return s.top < l.bottom + 200
+}
+
+function watchSentinel() {
+    observer?.disconnect()
+    if (!sentinel.value || !listEl.value || typeof IntersectionObserver === 'undefined') return
+    observer = new IntersectionObserver(
+        entries => { if (entries.some(e => e.isIntersecting)) loadMore() },
+        { root: listEl.value, rootMargin: '0px 0px 200px 0px' }
+    )
+    observer.observe(sentinel.value)
 }
 
 function select(row: Student) {
     selected.value = row
     emit('select', row)
-
-    nextTick(() => {
-        scrollContainer?.value?.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        })
-    })
+    nextTick(() => scrollContainer?.value?.scrollTo({ top: 0, behavior: 'smooth' }))
 }
 
 watch(search, () => {
     clearTimeout(timeout)
-
     timeout = setTimeout(async () => {
-        currentPage.value = 1
-        await loadData()
+        listEl.value?.scrollTo({ top: 0 })
+        await loadFirst()
         await focusSearch()
     }, 400)
 })
 
-// Pagination (and any outside change to the page in the URL) reloads the list.
-watch(
-    () => [route.query.page, route.query.size],
-    async () => {
-        // The pagination setter already loaded this page itself.
-        if (Number(route.query.page ?? 1) === currentPage.value && records.value.length) return
-        currentPage.value = Number(route.query.page ?? 1)
-        await loadData()
-        await focusSearch()
-    },
-    { immediate: true }
-)
-onBeforeUnmount(() => clearTimeout(timeout))
+onMounted(() => loadFirst())
+onBeforeUnmount(() => {
+    clearTimeout(timeout)
+    observer?.disconnect()
+})
 </script>
