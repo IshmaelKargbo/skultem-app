@@ -9,7 +9,6 @@ const { items: data, meta, loading, loadingMore, failed, error: listError, senti
         const res = await PendingPickupApi().getAll(page, size) as any
         return res ? { ...res, data: (res.data || []).map((p: any) => ({ ...p, rowId: p.id, id: `${p.source}-${p.id}` })) } : res
     })
-const view = ref<'table' | 'card'>('table')
 
 const sourceColorMap: Record<string, 'info' | 'primary'> = {
     SUPPLY: 'primary',
@@ -71,11 +70,10 @@ definePageMeta({
                             Combines fee-entitled supplies and sold-but-not-yet-handed-over items into one list.
                         </p>
                     </div>
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
                         <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
@@ -140,7 +138,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i"
@@ -218,75 +216,6 @@ definePageMeta({
             </div>
 
             <!-- Card view -->
-            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
-                <div v-if="loading" class="space-y-4 col-span-full">
-                    <div v-for="i in 5" :key="i"
-                        class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                        <div class="flex gap-3">
-                            <USkeleton class="h-14 w-14 rounded-2xl" />
-                            <div class="flex-1 space-y-3">
-                                <USkeleton class="h-4 w-40" />
-                                <USkeleton class="h-3 w-28" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <UCard v-else-if="!loading && !data?.length"
-                    class="rounded-2xl border border-default shadow-sm col-span-full" :ui="{ body: 'p-4' }">
-                    <div class="flex flex-col items-center gap-3 py-14">
-                        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
-                            <UIcon :name="PENDING_PICKUP_ICON" class="text-3xl text-gray-400" />
-                        </div>
-                        <div class="text-center">
-                            <p class="font-medium text-gray-900 dark:text-white">Nothing pending</p>
-                            <p class="text-sm text-gray-500">Everyone's collected what they're owed.</p>
-                        </div>
-                    </div>
-                </UCard>
-
-                <template v-else>
-                    <UCard v-for="item in data" :key="item.id"
-                        class="rounded-2xl border border-default shadow-sm" :ui="{ body: 'p-4' }">
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <UAvatar v-if="item.buyerPhoto" size="lg" :src="item.buyerPhoto" loading="lazy"
-                                        class="shrink-0" />
-                                    <UIcon v-else name="i-lucide-user-round" class="size-9 text-muted shrink-0" />
-                                    <div class="min-w-0">
-                                        <h3 class="truncate text-sm font-semibold text-highlighted">{{ item.buyerName }}</h3>
-                                        <p class="text-xs text-muted">{{ item.admissionNumber || 'Walk-in customer' }}</p>
-                                    </div>
-                                </div>
-                                <UBadge size="sm" variant="soft" :color="sourceColorMap[item.source]">
-                                    {{ sourceLabelMap[item.source] }}
-                                </UBadge>
-                            </div>
-
-                            <div class="flex items-center justify-between rounded-2xl border border-default bg-gray-50 dark:bg-gray-900 p-3">
-                                <div>
-                                    <p class="text-sm font-medium text-highlighted">{{ item.materialName }}</p>
-                                    <p class="text-xs text-muted">{{ item.categoryName }}</p>
-                                </div>
-                                <p class="text-lg font-bold text-highlighted">
-                                    {{ remaining(item) }}
-                                    <span v-if="item.collectedQuantity > 0" class="text-xs font-normal text-muted">
-                                        / {{ item.quantity }}
-                                    </span>
-                                </p>
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <UBadge :color="paymentStatusColorMap[item.paymentStatus] ?? 'neutral'" variant="soft" size="sm">
-                                    {{ clean(item.paymentStatus) }}
-                                </UBadge>
-                                <p class="text-xs text-muted">{{ formatDateTime(item.since) }}</p>
-                            </div>
-                        </div>
-                    </UCard>
-                </template>
-            </div>
 
             <div ref="sentinel">
                 <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"

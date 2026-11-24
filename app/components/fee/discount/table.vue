@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Row } from '@tanstack/vue-table'
 
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const { format } = useMoney()
 const store = useFeeDiscountStore()
@@ -152,10 +151,9 @@ onMounted(async () => {
           <UInput placeholder="Search by name" />
           <UButton data-guide="fin-discount-add" icon="prime:plus" label="Create Discount" to="/fees-payment/discounts/add" />
         </div>
-        <TableViewToggle v-model="view" />
       </div>
     </template>
-    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #empty>
         <div class="flex flex-col items-center gap-2 py-10">
           <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -207,8 +205,7 @@ onMounted(async () => {
     </UTable>
 
     <!-- Mobile -->
-    <div class="space-y-4 p-4"
-      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+    <div class="space-y-4 p-4 md:hidden">
       <!-- Loading Skeleton -->
       <template v-if="loading">
         <UCard v-for="n in 6" :key="`discount-skeleton-${n}`" class="overflow-hidden rounded-3xl border border-default"

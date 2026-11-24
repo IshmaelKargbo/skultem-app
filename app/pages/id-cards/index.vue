@@ -38,12 +38,11 @@
           </UButton>
           <UButton data-guide="idc-design" icon="i-lucide-settings-2" variant="soft" color="neutral" to="/id-cards/settings"
             aria-label="Card Design" class="md:hidden" />
-          <TableViewToggle v-model="tableView" />
         </div>
       </template>
 
       <!-- Table (desktop) -->
-      <UTable v-if="tableView === 'table'" class="hidden md:block" :columns="columns" :data="filteredRecords"
+      <UTable class="hidden md:block" :columns="columns" :data="filteredRecords"
         :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -79,8 +78,7 @@
       </UTable>
 
       <!-- List on a phone / grid in card view on desktop -->
-      <div class="md:p-4 md:space-y-4"
-        :class="tableView === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:p-4 md:space-y-4 md:hidden">
         <template v-if="loading && !filteredRecords.length">
           <div v-for="i in 6" :key="i" class="animate-pulse">
             <div class="flex items-center justify-between gap-3 border-b border-default p-3 md:rounded-2xl md:border">
@@ -152,7 +150,6 @@ const { records: students, meta: studentMeta, loading: studentLoading } = storeT
 const { records: teachers, meta: teacherMeta, loading: teacherLoading } = storeToRefs(teacherStore)
 const { records: classes, loading: classLoading } = storeToRefs(classStore)
 
-const tableView = ref<'table' | 'card'>('table')
 const cardType = ref<'student' | 'staff'>('student')
 const searchInput = ref('')
 const search = ref('')

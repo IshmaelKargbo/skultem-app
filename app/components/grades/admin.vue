@@ -117,12 +117,9 @@
 
     <UCard data-guide="grades-table" :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-end">
-          <TableViewToggle v-model="view" />
-        </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="rows" :loading="loading"
+      <UTable class="hidden md:block" :columns="columns" :data="rows" :loading="loading"
         scrollable>
         <template #student-cell="{ row }">
           <StudentIdentityCell :given-names="row.original.givenNames || row.original.name"
@@ -139,8 +136,7 @@
         </template>
       </UTable>
 
-      <div v-if="state.teacherSubjectId && rows.length" class="grid gap-4 p-4" :class="view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
-        ">
+      <div v-if="state.teacherSubjectId && rows.length" class="grid gap-4 p-4 md:hidden">
         <GradesStudentCard v-for="student in rows" :key="student.id" :record="student" :assessments="assessments"
           :total="calculateTotal(student)" :position="hasSubmittedAssessments ? rankingMap[student.id] || '-' : 'N/A'"
           @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)" @open-ca="openCa" />
@@ -208,7 +204,6 @@ const state = reactive<GradeAssessmentForm>({
   termId: "",
 });
 
-const view = ref<"table" | "card">("table");
 const loadingTerm = ref(true);
 const loadingClass = ref(true);
 const loadingSubject = ref(true);

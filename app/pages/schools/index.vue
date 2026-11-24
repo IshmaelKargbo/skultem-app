@@ -6,7 +6,6 @@ const { success: toastSuccess, error: toastError } = useNotify();
 const { format } = useMoney();
 
 const loading = ref(true);
-const view = ref<"table" | "card">("table");
 
 const platformFeeModal = ref(false);
 const platformFeeTarget = ref<SystemSchool>();
@@ -177,11 +176,10 @@ definePageMeta({
             <SystemAdminSchoolFilterDrawer v-model:status="statusFilter" v-model:type="typeFilter"
               :active-count="activeFilterCount" />
           </div>
-          <TableViewToggle v-model="view" />
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="schools" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="schools" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon :name="SCHOOL_ICON" class="text-4xl text-gray-400" />
@@ -244,8 +242,7 @@ definePageMeta({
       </UTable>
 
       <!-- Mobile -->
-      <div class="space-y-3 p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="space-y-3 p-4 md:hidden">
         <template v-if="loading">
           <UCard v-for="i in 4" :key="i" class="overflow-hidden">
             <div class="animate-pulse space-y-2 p-4">

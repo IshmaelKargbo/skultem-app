@@ -12,10 +12,9 @@
                             <FilterDrawer v-model="filters" :fields="filterFields" title="Filter subjects" description="Change how subjects are sorted" />
                         </div>
                     </div>
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
                 :ui="{ tr: canEdit ? 'cursor-pointer' : '' }" @select="(_e: Event, row: any) => openSubject(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
@@ -28,8 +27,7 @@
                 </template>
             </UTable>
             <!-- Mobile -->
-            <div class="md:p-4 md:space-y-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <div class="md:p-4 md:space-y-4 md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
@@ -98,7 +96,6 @@
 <script setup lang="ts">
 import type { FilterField } from "~/components/filter/Drawer.vue";
 
-const view = ref<"table" | "card">("table");
 const route = useRoute();
 const router = useRouter();
 const { can } = useAuth();

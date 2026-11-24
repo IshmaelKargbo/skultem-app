@@ -19,11 +19,10 @@
                     </div>
                     <UButton data-guide="adm-class-order" icon="i-lucide-arrow-up-down" color="neutral" variant="soft"
                         :disabled="classStore.records.length < 2" @click="arrangeOpen = true" />
-                    <div data-guide="list-view"><TableViewToggle v-model="view" /></div>
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
                 :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5', tr: 'cursor-pointer' }"
                 @select="(_e: Event, row: any) => viewClass(row.original)">
                 <template #empty>
@@ -95,8 +94,7 @@
                     <TableLoading :size="columns.length" />
                 </template>
             </UTable>
-            <div class="md:p-4 md:space-y-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <div class="md:p-4 md:space-y-4 md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
@@ -171,7 +169,6 @@ const sectionStore = useSectionStore();
 const streamStore = useStreamStore();
 const { records: data, meta, loading } = storeToRefs(store);
 
-const view = ref<'table' | 'card'>('table');
 
 const sectionOptions = computed(() =>
     sectionStore.records.map((e) => ({ label: e.name, value: e.id }))

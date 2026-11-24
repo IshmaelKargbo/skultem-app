@@ -1,7 +1,6 @@
 <template>
     <div class="px-4 md:px-6 space-y-3">
         <TransactionSectionNav />
-        <GuideBar topic="finance-transactions" />
         <div data-guide="fin-tx-summary"><TransactionReport /></div>
         <div data-guide="fin-tx-list"><TransactionTable /></div>
     </div>

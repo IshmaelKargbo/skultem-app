@@ -21,12 +21,11 @@
             <template #header>
                 <div class="flex items-center gap-2 px-4 py-3">
                     <UInput v-model="search" :icon="SEARCH_ICON" placeholder="Search by class or subject" class="flex-1" />
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
             <!-- Desktop table -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filteredClasses"
+            <UTable class="hidden md:block" :columns="columns" :data="filteredClasses"
                 :loading="loading" :ui="{ th: 'text-xs uppercase tracking-wide text-muted font-medium', td: 'py-3.5', tr: 'cursor-pointer' }"
                 @select="(_e: Event, row: any) => openClass(row.original)">
                 <template #loading>
@@ -92,8 +91,7 @@
             </UTable>
 
             <!-- Mobile / card view -->
-            <div class="md:p-4 md:space-y-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <div class="md:p-4 md:space-y-4 md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 4" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">
@@ -228,7 +226,6 @@ const classes = computed<UnifiedClass[]>(() => {
     return Array.from(map.values())
 })
 
-const view = ref<'table' | 'card'>('table')
 const search = ref('')
 
 const filteredClasses = computed(() => {

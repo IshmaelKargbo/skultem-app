@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const feeStore = useFeeStore()
@@ -67,11 +66,10 @@ watch(
           <p class="hidden md:block">Students: <span>{{ feeDetails.records?.length || 0 }}</span></p>
           <p class="md:hidden">Students:</p>
           <p class="md:hidden">{{ feeDetails.records?.length || 0 }}</p>
-          <TableViewToggle v-model="view" />
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="feeDetails.records"
+      <UTable class="hidden md:block" :columns="columns" :data="feeDetails.records"
         :loading="loading">
 
         <!-- Empty State -->
@@ -97,8 +95,7 @@ watch(
 
       </UTable>
 
-      <div class="md:p-4 md:space-y-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:p-4 md:space-y-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="i in 6" :key="i" :ui="{ body: 'p-0' }" class="overflow-hidden">

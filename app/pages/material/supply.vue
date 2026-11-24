@@ -3,7 +3,6 @@ const route = useRoute()
 const router = useRouter()
 
 
-const view = ref<'table' | 'card'>('table')
 
 const value = ref(route.query.search as string || '')
 const search = ref(value.value)
@@ -83,11 +82,10 @@ definePageMeta({
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by student or material" />
                         <div data-guide="mat-supply-add"><MaterialSupplyGive @success="reload" /></div>
                     </div>
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
                         <div
@@ -158,7 +156,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i"
@@ -237,189 +235,6 @@ definePageMeta({
             </div>
 
             <!-- Card view -->
-            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
-                <!-- Loading -->
-                <div v-if="loading" class="space-y-4 col-span-full">
-                    <div v-for="i in 5" :key="i"
-                        class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                        <div class="flex gap-3">
-                            <USkeleton class="h-14 w-14 rounded-2xl" />
-
-                            <div class="flex-1 space-y-3">
-                                <USkeleton class="h-4 w-40" />
-                                <USkeleton class="h-3 w-28" />
-                                <USkeleton class="h-3 w-full" />
-
-                                <div class="flex gap-2 pt-2">
-                                    <USkeleton class="h-6 w-16 rounded-full" />
-                                    <USkeleton class="h-6 w-20 rounded-full" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Empty -->
-                <UCard v-else-if="!loading && !data?.length"
-                    class="rounded-2xl border border-default shadow-sm col-span-full" :ui="{ body: 'p-4' }">
-                    <div class="flex flex-col items-center gap-3 py-14">
-                        <div
-                            class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
-                            <UIcon name="ph:books-light" class="text-3xl text-gray-400" />
-                        </div>
-
-                        <div class="text-center">
-                            <p class="font-medium text-gray-900 dark:text-white">
-                                No supply found
-                            </p>
-
-                            <p class="text-sm text-gray-500">
-                                Material supply records will appear here.
-                            </p>
-                        </div>
-                    </div>
-                </UCard>
-
-
-                <!-- Cards -->
-                <template v-else>
-                    <UCard v-for="item in data" :key="item.id" class="rounded-2xl border border-default shadow-sm"
-                        :ui="{ body: 'p-4' }">
-                        <div class="space-y-4">
-
-                            <!-- Student Header -->
-                            <div
-                                class="flex items-center justify-between gap-3 border-b border-gray-200 p-3 md:p-0 md:pb-3  dark:border-gray-800">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <UAvatar v-if="item.student" size="lg" :src="item.student.photo"
-                                        :alt="`${item.student.givenNames} ${item.student.familyName}`" loading="lazy"
-                                        class="shrink-0 ring-2 ring-primary/10" />
-                                    <UIcon v-else name="i-lucide-user-round" class="size-10 text-muted shrink-0" />
-
-                                    <div class="min-w-0">
-                                        <h3 v-if="item.student" class="truncate text-sm font-semibold text-highlighted">
-                                            {{ item.student.givenNames }}
-                                            {{ item.student.familyName }}
-                                        </h3>
-                                        <h3 v-else class="truncate text-sm font-semibold text-highlighted">
-                                            {{ item.customerName }}
-                                        </h3>
-
-                                        <div class="mt-1 flex items-center gap-1.5">
-                                            <UIcon name="i-lucide-id-card" class="size-3.5 text-muted" />
-
-                                            <span class="text-xs text-muted">
-                                                {{ item.student ? item.student.admissionNumber : 'Walk-in customer' }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <UBadge size="sm" variant="soft"
-                                    :color="item.status === 'COLLECTED' ? 'success' : 'warning'" :icon="item.status === 'COLLECTED'
-                                        ? 'i-lucide-check'
-                                        : 'i-lucide-clock-3'
-                                        ">
-                                    {{ clean(item.status) }}
-                                </UBadge>
-                            </div>
-
-                            <div class="p-4">
-                                <!-- Material -->
-                                <div
-                                    class="flex items-center gap-3 rounded-2xl border border-primary/10 bg-primary-50 dark:bg-primary-500/10 p-4">
-                                    <div
-                                        class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/10">
-                                        <UIcon name="i-lucide-package" class="size-5 text-primary" />
-                                    </div>
-
-                                    <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-semibold text-highlighted">
-                                            {{ item.material.name }}
-                                        </p>
-
-                                        <div class="mt-1 flex items-center gap-1.5">
-                                            <UIcon name="i-lucide-layers-2" class="size-3.5 text-muted" />
-
-                                            <p class="truncate text-xs text-muted">
-                                                {{ item.material.category.name }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Quantity -->
-                                <div class="grid grid-cols-2 gap-3 mt-3">
-                                    <!-- Requested -->
-                                    <div class="rounded-2xl border border-default bg-gray-50 dark:bg-gray-600 p-3.5">
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="flex size-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-600">
-                                                <UIcon name="i-lucide-package" class="size-4 text-muted" />
-                                            </div>
-
-                                            <p class="text-xs font-medium text-muted">
-                                                Requested
-                                            </p>
-                                        </div>
-
-                                        <p class="mt-3 text-xl font-bold text-highlighted">
-                                            {{ item.qty }}
-                                        </p>
-                                    </div>
-
-                                    <!-- Collected -->
-                                    <div
-                                        class="rounded-2xl border border-success/10 bg-success-50 dark:bg-success-500/10 p-3.5">
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="flex size-8 items-center justify-center rounded-lg bg-success-100 ">
-                                                <UIcon name="i-lucide-package-check" class="size-4 text-success" />
-                                            </div>
-
-                                            <p class="text-xs font-medium text-muted">
-                                                Collected
-                                            </p>
-                                        </div>
-
-                                        <p class="mt-3 text-xl font-bold text-success">
-                                            {{ item.collectedQty }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <!-- Collection Date -->
-                            <div class="mt-4 flex items-center justify-between border-t border-default pt-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex size-9 items-center justify-center rounded-xl bg-muted">
-                                        <UIcon name="i-lucide-calendar-days" class="size-4 text-muted" />
-                                    </div>
-
-                                    <div>
-                                        <p class="text-[11px] text-muted">
-                                            Collection Date
-                                        </p>
-
-                                        <p class="mt-0.5 text-sm font-medium text-highlighted">
-                                            {{
-                                                item.collectedOn
-                                                    ? formatDateTime(item.collectedOn)
-                                            : 'Not collected yet'
-                                            }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <UBadge v-if="item.collectedQty >= item.qty" color="success" variant="soft" size="xs">
-                                    Complete
-                                </UBadge>
-                            </div>
-                        </div>
-                    </UCard>
-                </template>
-
-            </div>
 
             <div ref="sentinel">
                 <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="data.length"

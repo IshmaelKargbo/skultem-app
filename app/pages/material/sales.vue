@@ -6,7 +6,6 @@ const store = useMaterialSaleStore()
 const { format } = useMoney()
 
 const { summary } = storeToRefs(store)
-const view = ref<'table' | 'card'>('table')
 
 const metrics = computed(() => [
     {
@@ -197,7 +196,6 @@ definePageMeta({
                                 class="w-full" />
                             <div data-guide="mat-sale-add"><MaterialSaleCreate @success="fetchRecord" /></div>
                         </div>
-                        <TableViewToggle v-model="view" />
                     </div>
 
                     <div class="flex gap-2 px-4 py-3 overflow-x-auto">
@@ -210,7 +208,7 @@ definePageMeta({
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
                 :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openSale(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
@@ -285,7 +283,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i"
@@ -362,103 +360,6 @@ definePageMeta({
             </div>
 
             <!-- Card view -->
-            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
-                <div v-if="loading" class="space-y-4 col-span-full">
-                    <div v-for="i in 5" :key="i"
-                        class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                        <div class="flex gap-3">
-                            <USkeleton class="h-14 w-14 rounded-2xl" />
-                            <div class="flex-1 space-y-3">
-                                <USkeleton class="h-4 w-40" />
-                                <USkeleton class="h-3 w-28" />
-                                <USkeleton class="h-3 w-full" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <UCard v-else-if="!loading && !data?.length"
-                    class="rounded-2xl border border-default shadow-sm col-span-full" :ui="{ body: 'p-4' }">
-                    <div class="flex flex-col items-center gap-3 py-14">
-                        <div
-                            class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
-                            <UIcon :name="SALE_ICON" class="text-3xl text-gray-400" />
-                        </div>
-                        <div class="text-center">
-                            <p class="font-medium text-gray-900 dark:text-white">No sales found</p>
-                            <p class="text-sm text-gray-500">Material sales will appear here once recorded.</p>
-                        </div>
-                    </div>
-                </UCard>
-
-                <template v-else>
-                    <UCard v-for="item in data" :key="item.id"
-                        class="cursor-pointer rounded-2xl border border-default shadow-sm hover:ring-primary/40"
-                        :ui="{ body: 'p-4' }" role="button" tabindex="0" @click="openSale(item)"
-                        @keydown.enter="openSale(item)">
-                        <div class="space-y-4">
-                            <div
-                                class="flex items-center justify-between gap-3 border-b border-gray-200 pb-3 dark:border-gray-800">
-                                <div class="flex min-w-0 items-center gap-3">
-                                    <UAvatar v-if="item.student" size="lg" :src="item.student.photo" loading="lazy"
-                                        class="shrink-0 ring-2 ring-primary/10" />
-                                    <UIcon v-else name="i-lucide-user-round" class="size-9 text-muted shrink-0" />
-
-                                    <div class="min-w-0">
-                                        <h3 class="truncate text-sm font-semibold text-highlighted">{{ buyerName(item)
-                                            }}</h3>
-                                        <p class="text-xs text-muted">{{ item.student ? item.student.admissionNumber :
-                                            'Walk-in customer' }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-1.5 shrink-0">
-                                    <UIcon
-                                        v-if="isPaidAwaitingPickup(item)"
-                                        name="i-lucide-bell-ring"
-                                        class="size-4 text-info"
-                                        title="Paid - not yet collected"
-                                    />
-                                    <UBadge size="sm" variant="soft" :color="statusColorMap[item.status]">
-                                        {{ item.status === 'PENDING_SUPPLY' ? 'Settle Later' : clean(item.status) }}
-                                    </UBadge>
-                                </div>
-                            </div>
-
-                            <div
-                                class="flex items-center gap-3 rounded-2xl border border-primary/10 bg-primary-50 dark:bg-primary-500/10 p-4">
-                                <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-500/10">
-                                    <UIcon name="i-lucide-package" class="size-5 text-primary" />
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-semibold text-highlighted">{{ item.quantity }}× {{
-                                        item.material.name }}</p>
-                                    <p class="truncate text-xs text-muted">{{ format(item.unitPrice) }} each</p>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="rounded-2xl border border-default bg-gray-50 dark:bg-gray-600 p-3.5">
-                                    <p class="text-xs font-medium text-muted">Total</p>
-                                    <p class="mt-2 text-lg font-bold text-highlighted">{{ format(item.totalAmount) }}
-                                    </p>
-                                </div>
-                                <div class="rounded-2xl border p-3.5"
-                                    :class="item.balance > 0 ? 'border-error/10 bg-error-50 dark:bg-error-500/10' : 'border-success/10 bg-success-50 dark:bg-success-500/10'">
-                                    <p class="text-xs font-medium text-muted">Balance</p>
-                                    <p class="mt-2 text-lg font-bold"
-                                        :class="item.balance > 0 ? 'text-error' : 'text-success'">
-                                        {{ format(item.balance) }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <p class="border-t border-default pt-4 text-xs text-muted">{{ formatDateTime(item.createdAt) }}</p>
-                        </div>
-                    </UCard>
-                </template>
-            </div>
 
             <MaterialSaleRecordPayment v-if="selected" v-model:open="paymentModal" :sale="selected" @done="fetchRecord" />
             <MaterialSaleFulfillPrompt v-if="selected" v-model:open="fulfillModal" :sale="selected" @done="fetchRecord" />

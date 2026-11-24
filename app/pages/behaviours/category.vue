@@ -5,7 +5,6 @@ const route = useRoute();
 const store = useBehaviourCategoryStore();
 const loading = ref(true);
 const { records: data, meta } = storeToRefs(store);
-const view = ref<"table" | "card">("table");
 const editRcord = ref<Holiday | null>(null);
 const editState = ref(false);
 
@@ -119,11 +118,10 @@ definePageMeta({
                         <UInput placeholder="Search by name . . ." />
                         <div data-guide="beh-cat-add"><BehaviourCategoriesAdd /></div>
                     </div>
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
                 <template #empty>
                     <div class="flex flex-col items-center gap-2 py-10">
                         <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -136,13 +134,10 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div class="p-4 space-y-4" :class="{ 'md:hidden': view === 'table' }">
+            <div class="p-4 space-y-4 md:hidden">
                 <!-- Loading -->
                 <div v-if="loading">
-                    <div class="space-y-4" :class="{
-                        'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3':
-                            view === 'card',
-                    }">
+                    <div class="space-y-4">
                         <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default"
                             :ui="{ body: 'p-0' }">
                             <!-- Header -->
@@ -216,8 +211,7 @@ definePageMeta({
                     </p>
                 </Ucard>
 
-                <div class="space-y-4"
-                    :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }">
+                <div class="space-y-4">
                     <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }">
                         <!-- Header -->
                         <template #header>

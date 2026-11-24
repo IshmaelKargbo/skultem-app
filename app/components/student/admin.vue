@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const { formatScore } = useScoreFormat()
-const tableView = ref<'table' | 'card'>('table');
 const route = useRoute();
 const router = useRouter();
 const clazzStore = useClassStore();
@@ -234,12 +233,11 @@ onBeforeUnmount(() => clearTimeout(timeout))
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <div data-guide="list-view"><TableViewToggle v-model="tableView" /></div>
             </div>
           </div>
         </div>
       </template>
-      <UTable v-if="tableView === 'table'" class="hidden md:block" :ui="{ th: 'px-3', td: 'px-3 py-2.5', tr: 'cursor-pointer' }" :columns="columns" :data="data" :loading="loading"
+      <UTable class="hidden md:block" :ui="{ th: 'px-3', td: 'px-3 py-2.5', tr: 'cursor-pointer' }" :columns="columns" :data="data" :loading="loading"
         @select="(_e: Event, row: any) => view(row.original)">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -315,8 +313,7 @@ onBeforeUnmount(() => clearTimeout(timeout))
           <TableLoading :size="columns.length" />
         </template>
       </UTable>
-      <div class="md:p-4  md:space-y-4"
-        :class="tableView === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:p-4 md:space-y-4 md:hidden">
         
         <template v-if="loading">
           <div v-for="i in 6" :key="i">

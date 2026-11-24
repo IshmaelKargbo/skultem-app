@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const store = useTermStore()
 const loading = ref(true)
@@ -138,7 +137,6 @@ definePageMeta({
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <TableViewToggle v-model="view" />
                             <UButton @click="filterState = !filterState"
                                 :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
                                 :color="!filterState ? 'info' : 'error'" class="md:hidden" />
@@ -162,7 +160,7 @@ definePageMeta({
             </template>
 
             <!-- Desktop table -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filtered"
+            <UTable class="hidden md:block" :columns="columns" :data="filtered"
                 :loading="loading">
                 <template #empty>
                     <div class="flex flex-col items-center justify-center py-14">
@@ -197,7 +195,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile list: one clean row per term -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <template v-if="loading">
                     <div v-for="i in 5" :key="i"
                         class="flex items-start justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
@@ -241,76 +239,6 @@ definePageMeta({
             </div>
 
             <!-- Card view -->
-            <div v-if="view === 'card'" class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-                <template v-if="loading">
-                    <UCard v-for="i in 6" :key="i">
-                        <div class="animate-pulse space-y-4">
-                            <div class="flex items-center gap-3">
-                                <USkeleton class="size-10 rounded-xl" />
-                                <USkeleton class="h-4 w-32" />
-                            </div>
-                            <USkeleton class="h-14 w-full rounded-xl" />
-                        </div>
-                    </UCard>
-                </template>
-
-                <template v-else-if="filtered.length">
-                    <UCard v-for="item in filtered" :key="item.id"
-                        class="overflow-hidden rounded-2xl border-t-2 transition-shadow hover:shadow-md"
-                        :style="{ borderTopColor: item.status === 'ACTIVE' ? 'var(--ui-success)' : 'var(--ui-border-accented)' }"
-                        :ui="{ body: 'p-0 sm:p-0' }">
-                        <div class="space-y-4 p-5">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                                    <UIcon name="i-lucide-calendar-days" class="size-5 text-primary" />
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-display font-semibold text-highlighted">{{ item.name }}</p>
-                                    <p class="truncate text-xs text-muted">{{ item.academicYear?.name }}</p>
-                                </div>
-
-                                <UBadge size="sm" variant="soft" :color="parseStatusColor[item.status]"
-                                    :icon="parseStatusIcon[item.status]" :label="parseStaus[item.status]" />
-                            </div>
-
-                            <!-- The span of the term -->
-                            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl bg-elevated/50 p-3">
-                                <div>
-                                    <p class="text-[11px] uppercase tracking-wide text-muted">Starts</p>
-                                    <p class="text-sm font-semibold text-highlighted">{{ formatDate(item.startDate) }}</p>
-                                </div>
-                                <UIcon name="i-lucide-arrow-right" class="size-4 text-muted" />
-                                <div class="text-right">
-                                    <p class="text-[11px] uppercase tracking-wide text-muted">Ends</p>
-                                    <p class="text-sm font-semibold text-highlighted">{{ formatDate(item.endDate) }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2 border-t border-default bg-elevated/40 px-5 py-3">
-                            <span class="text-xs text-muted">Term {{ item.termNumber }}</span>
-
-                            <div v-if="canManage(item)" class="flex items-center gap-1">
-                                <AcademicsTermAdd :term="item" />
-                                <UButton :icon="DELETE_ICON" size="xs" color="error" variant="ghost"
-                                    aria-label="Delete term" @click="remove(item)" />
-                            </div>
-                            <span v-else class="flex items-center gap-1 text-xs text-muted">
-                                <UIcon name="i-lucide-lock" class="size-3.5" /> Locked
-                            </span>
-                        </div>
-                    </UCard>
-                </template>
-
-                <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
-                    <UIcon name="i-lucide-calendar-range" class="text-4xl text-gray-400" />
-                    <p class="text-sm text-gray-500">
-                        {{ hasActiveFilters ? 'No term on this page matches your filters.' : 'No terms found.' }}
-                    </p>
-                </div>
-            </div>
 
             <AcademicsTermDeletePrompt v-if="selected" v-model:open="deleteModal" :term-id="selected.id"
                 :term-name="selected.name" />

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
-const view = ref<'table' | 'card'>('table')
 
 const searchInput = ref((route.query.search as string) || '')
 let searchTimeout: ReturnType<typeof setTimeout>
@@ -158,12 +157,11 @@ definePageMeta({
             </div>
           </div>
 
-          <div data-guide="list-view"><TableViewToggle v-model="view" /></div>
         </div>
       </template>
 
       <!-- Desktop Table -->
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading" :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openTeacher(row.original)">
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading" :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openTeacher(row.original)">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -219,8 +217,7 @@ definePageMeta({
         </template>
 
       </UTable>
-      <div class="md:p-4 md:space-y-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:p-4 md:space-y-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">

@@ -9,7 +9,6 @@ const page = computed<number>({
   set: (val) => router.replace({ query: { ...route.query, page: val } }),
 });
 
-const view = ref<"table" | "card">("table");
 
 const columns = [
   { accessorKey: "school", header: "School" },
@@ -43,11 +42,10 @@ definePageMeta({
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-sm font-semibold text-highlighted">Requests</h2>
-          <TableViewToggle v-model="view" />
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="demoRequests"
+      <UTable class="hidden md:block" :columns="columns" :data="demoRequests"
         :loading="demoRequestsLoading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -113,8 +111,7 @@ definePageMeta({
       </UTable>
 
       <!-- Mobile -->
-      <div class="space-y-3 p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="space-y-3 p-4 md:hidden">
         <template v-if="demoRequestsLoading">
           <UCard v-for="i in 4" :key="i" class="overflow-hidden">
             <div class="animate-pulse space-y-2 p-4">

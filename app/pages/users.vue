@@ -60,7 +60,6 @@ const rolesOf = (u: SystemUser) => [...new Set(u.schools.map(m => m.role))]
 const inactiveOf = (u: SystemUser) => u.schools.filter(m => m.status !== 'ACTIVE').length
 
 const addModal = ref(false);
-const view = ref<"table" | "card">("table");
 
 const columns = [
   { accessorKey: "admin", header: "Admin" },
@@ -115,11 +114,10 @@ definePageMeta({
     <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-default p-2 shadow-sm ring-1 ring-default">
       <UInput data-guide="adm-search" v-model="searchInput" icon="i-lucide-search" variant="soft" size="lg" placeholder="Search by name or email..." class="min-w-0 flex-1" />
       <UButton v-if="query || searchInput" icon="i-lucide-x" variant="ghost" color="neutral" label="Clear" @click="() => { searchInput = ''; query = ''; }" />
-      <TableViewToggle v-model="view" />
     </div>
 
     <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="users" :loading="usersLoading"
+      <UTable class="hidden md:block" :columns="columns" :data="users" :loading="usersLoading"
         :ui="{ thead: 'bg-elevated/50', th: 'py-3 text-[11px] font-semibold uppercase tracking-wide text-muted', td: 'py-3.5', tr: 'hover:bg-primary/5 transition-colors' }">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -185,8 +183,7 @@ definePageMeta({
       </UTable>
 
       <!-- Mobile / card view -->
-      <div class="space-y-3 p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="space-y-3 p-4 md:hidden">
         <template v-if="usersLoading">
           <div v-for="i in 4" :key="i" class="animate-pulse space-y-2 rounded-xl border border-default p-4">
             <USkeleton class="h-4 w-32" />

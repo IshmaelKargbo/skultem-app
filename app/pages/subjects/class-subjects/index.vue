@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { FilterField } from "~/components/filter/Drawer.vue";
-const view = ref<'table' | 'card'>('table')
 const showDuplicate = ref(false);
 const route = useRoute();
 const router = useRouter();
@@ -172,10 +171,9 @@ definePageMeta({
                       <FilterDrawer v-model="filters" :fields="filterFields" title="Filter class subjects" description="Narrow the list by class or type, or change the sort" />
                   </div>
               </div>
-              <TableViewToggle v-model="view" />
           </div>
       </template>
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -203,10 +201,7 @@ definePageMeta({
       </UTable>
 
       <!-- Mobile -->
-      <div class="md:p-4 md:space-y-4" :class="view === 'table'
-        ? 'md:hidden'
-        : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'
-        ">
+      <div class="md:p-4 md:space-y-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <div v-for="i in 6" :key="i" class="border-b md:border md:rounded-2xl border-default p-3">

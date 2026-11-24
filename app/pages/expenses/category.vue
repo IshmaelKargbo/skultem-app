@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const { success: toastSuccess, error: toastError } = useNotify()
@@ -99,12 +98,11 @@ definePageMeta({
                             class="flex-1" />
                         <ExpensesCategoryAdd @saved="reload" />
                     </div>
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
             <!-- Desktop -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
                 :ui="{ tr: canManage ? 'cursor-pointer' : '' }" @select="(_e: Event, row: any) => openCategory(row.original)">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-12">
@@ -152,8 +150,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div class="p-4 space-y-4"
-                :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+            <div class="p-4 space-y-4 md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <UCard v-for="i in 4" :key="i" variant="outline">

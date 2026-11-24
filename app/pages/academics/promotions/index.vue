@@ -15,7 +15,6 @@ const route = useRoute()
 const router = useRouter()
 const { success: toastSuccess, error: toastError } = useNotify()
 
-const view = ref<'table' | 'card'>('table')
 const filterState = ref(false) // the filter row's open/closed state on mobile
 
 const progress = ref<PromotionProgress | null>(null)
@@ -251,7 +250,6 @@ async function saveConfig() {
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <TableViewToggle v-model="view" />
                             <UButton @click="filterState = !filterState"
                                 :icon="!filterState ? FILTER_ICON : CLOSE_ICON" variant="outline"
                                 :color="!filterState ? 'info' : 'error'" class="md:hidden" />
@@ -272,7 +270,7 @@ async function saveConfig() {
             </template>
 
             <!-- Desktop table -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="requests"
+            <UTable class="hidden md:block" :columns="columns" :data="requests"
                 :loading="requestsLoading">
                 <template #loading>
                     <TableLoading :size="columns.length" />
@@ -305,7 +303,7 @@ async function saveConfig() {
             </UTable>
 
             <!-- Mobile list: one clean row per request -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <template v-if="requestsLoading">
                     <div v-for="i in 5" :key="i"
                         class="flex items-start justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
@@ -349,65 +347,6 @@ async function saveConfig() {
             </div>
 
             <!-- Card view -->
-            <div v-if="view === 'card'" class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-                <template v-if="requestsLoading">
-                    <UCard v-for="i in 6" :key="i">
-                        <div class="animate-pulse space-y-4">
-                            <div class="flex items-center gap-3">
-                                <USkeleton class="size-10 rounded-xl" />
-                                <USkeleton class="h-4 w-32" />
-                            </div>
-                            <USkeleton class="h-14 w-full rounded-xl" />
-                        </div>
-                    </UCard>
-                </template>
-
-                <template v-else-if="requests.length">
-                    <UCard v-for="item in requests" :key="item.id"
-                        class="overflow-hidden rounded-2xl border-t-2 transition-shadow hover:shadow-md"
-                        :style="{ borderTopColor: `var(--ui-${requestStyle(item)?.color ?? 'border-accented'})` }"
-                        :ui="{ body: 'p-0 sm:p-0' }">
-                        <div class="space-y-4 p-5">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                                    <UIcon :name="PROMOTE_STUDENTS_ICON" class="size-5 text-primary" />
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-display font-semibold text-highlighted">{{ item.sessionName }}</p>
-                                    <p class="truncate text-xs text-muted">{{ item.classMasterName || 'No class master' }}</p>
-                                </div>
-
-                                <UBadge size="sm" variant="soft" :label="requestStyle(item)?.label"
-                                    :color="requestStyle(item)?.color" />
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="rounded-xl bg-elevated/50 p-3">
-                                    <p class="text-[11px] uppercase tracking-wide text-muted">Promote</p>
-                                    <p class="text-lg font-semibold text-success">{{ item.promoteCount }}</p>
-                                </div>
-                                <div class="rounded-xl bg-elevated/50 p-3">
-                                    <p class="text-[11px] uppercase tracking-wide text-muted">Repeat</p>
-                                    <p class="text-lg font-semibold text-warning">{{ item.repeatCount }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2 border-t border-default bg-elevated/40 px-5 py-3">
-                            <p class="text-xs text-muted">Submitted {{ formatDate(item.submittedAt) }}</p>
-                            <UButton :to="`/academics/promotions/${item.id}`" size="sm" variant="soft"
-                                label="Review" trailing-icon="i-lucide-arrow-right" />
-                        </div>
-                    </UCard>
-                </template>
-
-                <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
-                    <UIcon :name="PROMOTE_STUDENTS_ICON" class="text-4xl text-gray-400" />
-                    <p class="text-sm text-gray-500">No promotion requests found.</p>
-                </div>
-            </div>
 
             <template #footer>
                 <div v-if="requests.length" class="flex flex-col items-center justify-between gap-2 md:flex-row">

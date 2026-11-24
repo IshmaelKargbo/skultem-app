@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 
@@ -166,7 +165,9 @@ onMounted(() => {
               <p class="font-semibold">Student Ledger</p>
               <p class="text-xs text-muted">Every school fee charged, paid and discounted</p>
             </div>
-            <TableViewToggle v-model="view" />
+            <div class="flex items-center gap-2">
+              <GuideBar topic="finance-ledger" />
+            </div>
           </div>
 
           <div class="flex items-center gap-2 border-t border-default p-4">
@@ -177,7 +178,7 @@ onMounted(() => {
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
         :ui="{ tfoot: 'bg-app-50/10' }">
         <template #loading>
           <TableLoading :size="columns.length" />
@@ -207,82 +208,6 @@ onMounted(() => {
           <p>Total</p>
         </template>
       </UTable>
-      <div v-else-if="view === 'card'" class="hidden md:block">
-        <div v-if="!loading && !data?.length" class="flex flex-col items-center justify-center py-16">
-          <div class="flex size-20 items-center justify-center rounded-3xl bg-muted">
-            <UIcon name="ph:books-light" class="text-4xl text-muted" />
-          </div>
-
-          <p class="mt-4 text-sm text-muted">
-            No ledger records found
-          </p>
-        </div>
-
-        <div v-else-if="loading" class="grid grid-cols-1 gap-4 space-y-0! p-4 md:grid-cols-2 lg:grid-cols-3">
-          <div v-for="i in size" :key="i" class="flex items-start justify-between gap-4 rounded-2xl border border-default p-4">
-            <div class="space-y-2">
-              <USkeleton class="h-4 w-32" />
-              <USkeleton class="h-3 w-40" />
-            </div>
-            <div class="flex flex-col items-end space-y-2">
-              <USkeleton class="h-4 w-20" />
-              <div class="flex gap-2">
-                <USkeleton class="h-3 w-14" />
-                <USkeleton class="h-5 w-16 rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <template v-else>
-          <div class="grid grid-cols-1 gap-4 space-y-0! p-4 md:grid-cols-2 lg:grid-cols-3">
-            <!-- Ledger Cards -->
-            <div v-for="item in data" :key="`${item.date}-${item.student}-${item.type}`"
-              class="border rounded-2xl border-default" :ui="{ body: 'sm:p-0 p-0' }">
-              <!-- Header -->
-              <div class="flex items-start justify-between gap-4 border-default p-4">
-                <div class="flex min-w-0 items-center gap-3">
-                  <div class="min-w-0 space-y-0.5">
-                    <div class="flex items-center gap-2">
-                      <h3 class="truncate text-sm font-semibold text-highlighted">
-                        {{ item.student || 'No Student' }}
-                      </h3>
-                    </div>
-
-                    <div class="flex space-x-2 items-center text-muted">
-                      <p class="truncate text-xs">
-                        {{ item.clazz || 'No Class' }}
-                      </p>
-                      <p>·</p>
-                      <p class="text-xs">
-                        {{ item.date }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Type -->
-                <div class="flex flex-col space-y-0.5 items-end">
-                  <p class="font-bold text-info">
-                    {{ format(item.balance || 0) }}
-                  </p>
-                  <div class="flex space-x-2">
-                    <p :class="item.credit
-                      ? 'text-success'
-                      : 'text-error'
-                      ">
-                      {{ item.credit ? '+' : '-' }}{{
-                        format(item.credit || item.debit || 0)
-                      }}
-                    </p>
-                    <UBadge size="xs" variant="soft" :label="parseType[item.type]" :color="parseTypeColor[item.type]" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-      </div>
 
       <!-- Mobile List (default Table view fallback, mirrors /transactions mobile design) -->
       <div class="md:hidden">

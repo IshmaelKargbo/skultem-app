@@ -20,7 +20,6 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <TableViewToggle v-model="view" />
             <GuideBar topic="admin-assessment-templates" />
           </div>
         </div>
@@ -33,7 +32,7 @@
       </div>
 
       <!-- Table -->
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filtered" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="filtered" :loading="loading">
         <template #name-cell="{ row }">
           <button type="button" class="block max-w-64 text-left" @click="openView(row.original)">
             <p class="truncate font-medium text-highlighted">{{ row.original.name }}</p>
@@ -106,8 +105,7 @@
       </UTable>
 
       <!-- Phone list (table view) and card grid (card view) -->
-      <div class="md:p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'">
+      <div class="md:p-4 md:hidden">
         <template v-if="loading">
           <div v-for="i in 6" :key="i" class="space-y-3 border-b border-default p-3 md:rounded-2xl md:border">
             <USkeleton class="h-4 w-36" />
@@ -202,7 +200,6 @@ const store = useAssessmentStore()
 const { success } = useNotify()
 
 const { records: data, meta, loading } = storeToRefs(store)
-const view = ref<'table' | 'card'>('table')
 
 // Each term's tests must share 100% (tests limited to some terms are checked term by term).
 function calculateTotal(t: AssessmentTemplate) {

@@ -27,12 +27,11 @@
         <div class="flex items-center gap-2">
           <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
             :disabled="!hasActiveFilters" @click="resetFilters" />
-          <TableViewToggle v-model="view" />
         </div>
       </div>
 
       <!-- Table view (desktop) -->
-      <UTable v-if="view === 'table' && (loading || salaries.length)" class="hidden border-t border-default md:block"
+      <UTable v-if="(loading || salaries.length)" class="hidden border-t border-default md:block"
         :columns="columns" :data="salaries" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
         @select="(_e: Event, row: any) => openSalary(row.original)">
         <template #loading>
@@ -68,7 +67,7 @@
       </UTable>
 
       <!-- Table view (mobile list) -->
-      <div v-if="view === 'table' && (loading || salaries.length)" class="border-t border-default md:hidden">
+      <div v-if="(loading || salaries.length)" class="border-t border-default md:hidden">
         <template v-if="loading">
           <div v-for="i in 6" :key="i" class="flex items-center gap-3 border-b border-default px-4 py-3 last:border-0">
             <USkeleton class="size-8 rounded-full" />
@@ -94,56 +93,8 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="view === 'card' && loading" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-        <USkeleton v-for="i in 6" :key="i" class="h-60 w-full rounded-xl" />
-      </div>
 
       <!-- Salaries -->
-      <div v-else-if="view === 'card' && salaries.length" class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-        <UCard v-for="s in salaries" :key="s.id" role="button" tabindex="0" class="cursor-pointer hover:ring-primary/40"
-          @click="openSalary(s)" @keydown.enter="openSalary(s)">
-          <div class="space-y-4">
-
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex items-center gap-3">
-                <UAvatar size="xl" :src="s.teacher?.user?.photo || undefined" :alt="teacherName(s.teacher)"
-                  loading="lazy" />
-                <div>
-                  <h3 class="font-semibold leading-tight">{{ teacherName(s.teacher) }}</h3>
-                  <p class="text-xs text-muted">{{ s.teacher?.staffId }}</p>
-                </div>
-              </div>
-
-              <UBadge color="success" variant="soft" class="shrink-0">Active</UBadge>
-            </div>
-
-            <UBadge v-if="s.templateName" variant="subtle" color="neutral" icon="i-lucide-layout-template" size="sm">
-              {{ s.templateName }}
-            </UBadge>
-
-            <div class="space-y-2 rounded-xl bg-elevated/50 p-4 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted">Basic Salary</span>
-                <span class="font-medium">{{ formatCurrency(s.basicSalary) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted">Allowances ({{ s.allowances.length }})</span>
-                <span class="font-medium text-success">+ {{ formatCurrency(s.totalAllowances) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted">Deductions ({{ s.deductions.length }})</span>
-                <span class="font-medium text-error">- {{ formatCurrency(s.totalDeductions) }}</span>
-              </div>
-            </div>
-
-            <div class="rounded-xl bg-primary/10 p-4 text-center">
-              <p class="text-xs text-muted">Net Salary</p>
-              <p class="text-2xl font-bold text-primary">{{ formatCurrency(s.netSalary) }}</p>
-            </div>
-
-          </div>
-        </UCard>
-      </div>
 
       <!-- Empty -->
       <UCard v-if="!loading && !salaries.length && !failed" class="border-none py-16 shadow-none">
@@ -174,7 +125,6 @@ const route = useRoute()
 const router = useRouter()
 
 // Table is easier to scan with many staff; cards are kept for anyone who prefers them.
-const view = ref<'table' | 'card'>('table')
 
 const right = { class: { th: 'text-right', td: 'text-right' } }
 const columns = [

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // Parents with their fee totals, as one scrolling list: the next ones load when you scroll near the bottom.
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const { format } = useMoney()
@@ -74,11 +73,10 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
             <ParentFilterDrawer v-model:sort="sort" :sort-options="sortOptions" :active-count="activeFilterCount"
               :default-sort="DEFAULT_SORT" />
           </div>
-          <div data-guide="acc-view"><TableViewToggle v-model="view" /></div>
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block w-full" :columns="columns" :data="data" :loading="loading">
+      <UTable class="hidden md:block w-full" :columns="columns" :data="data" :loading="loading">
         <template #loading>
           <TableLoading :size="columns.length" />
         </template>
@@ -118,8 +116,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         </template>
       </UTable>
 
-      <div class="p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="p-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm"

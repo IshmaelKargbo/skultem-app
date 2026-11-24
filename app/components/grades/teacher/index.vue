@@ -115,7 +115,6 @@
       <template #header>
         <div class="hidden md:flex justify-between items-center">
           <p>Students: <span class="font-semibold">{{ rows.length }}</span></p>
-          <TableViewToggle v-model="view" />
         </div>
         <div class="flex justify-between md:hidden">
           <p>Students:</p>
@@ -123,7 +122,7 @@
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="rows" :loading="loading"
+      <UTable class="hidden md:block" :columns="columns" :data="rows" :loading="loading"
         scrollable>
         <template #student-cell="{ row }">
           <StudentIdentityCell :given-names="row.original.givenNames || row.original.name"
@@ -135,8 +134,7 @@
         </template>
       </UTable>
 
-      <div v-if="state.teacherSubjectId && rows.length" class="grid"
-        :class="view === 'table' ? 'md:hidden' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 md:p-4 md:gap-3'">
+      <div v-if="state.teacherSubjectId && rows.length" class="grid md:hidden">
         <GradesStudentCard v-for="student in rows" :key="student.id" :record="student" :assessments="assessments"
           :total="calculateTotal(student)" :position="hasSubmittedAssessments ? (rankingMap[student.id] || '-') : 'N/A'"
           @score-change="(assessmentId, value) => updateStudentScore(student, assessmentId, value)"
@@ -192,7 +190,6 @@ const state = reactive<GradeAssessmentForm>({
   termId: ''
 })
 
-const view = ref<'table' | 'card'>('table')
 const loading = ref(true)
 const saving = ref(false)
 const completing = ref(false)

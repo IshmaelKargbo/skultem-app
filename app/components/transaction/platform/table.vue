@@ -7,7 +7,7 @@
                 <p class="font-semibold">Platform Fee Entries</p>
                 <p class="text-xs text-muted">The platform fee charged to each student and the payments made towards it</p>
               </div>
-              
+              <GuideBar topic="admin-platform-fee" />
             </div>
 
             <div class="flex items-center gap-2 border-t border-default p-4">

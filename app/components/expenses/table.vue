@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const { format } = useMoney()
@@ -79,12 +78,11 @@ onMounted(() => {
               class="flex-1" />
             <ExpensesAdd @refresh-report="refreshReport" />
           </div>
-          <TableViewToggle v-model="view" />
         </div>
       </template>
 
       <!-- Desktop -->
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-12">
             <div class="flex size-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-neutral-800">
@@ -121,8 +119,7 @@ onMounted(() => {
       </UTable>
 
       <!-- Mobile -->
-      <div class="p-4 space-y-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="p-4 space-y-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="i in 4" :key="i">

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const sectionStore = useSectionStore()
@@ -109,14 +108,13 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
             <ClassFilterDrawer v-model:section-id="sectionId" v-model:stream-id="streamId" v-model:level="level"
               :section-options="sectionOptions" :stream-options="streamOptions" :active-count="activeFilterCount" />
           </div>
-          <div data-guide="acc-view" class="flex">
-            <TableViewToggle v-model="view" />
+          <div class="flex">
             <GuideBar topic="accountant-classes" />
           </div>
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -159,8 +157,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
       </UTable>
 
       <!-- Mobile / Card view -->
-      <div class="p-4 space-y-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="p-4 space-y-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm"

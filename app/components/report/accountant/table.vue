@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useStudentStore()
@@ -95,19 +94,15 @@ onMounted(() => {
   <div class="space-y-4">
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header>
-        <div class="flex justify-end">
-          <TableViewToggle v-model="view" />
-        </div>
       </template>
 
       <UTable
-        v-if="view === 'table'"
+       
         class="hidden md:block w-full"
         :column-pinning="columnPinning"
         :columns="columns"
         :data="data"
-        :loading="loading"
-      >
+        :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="ph:books-light" class="text-4xl text-gray-400" />
@@ -150,14 +145,13 @@ onMounted(() => {
         </template>
       </UTable>
 
-      <div class="p-4" :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="p-4 md:hidden">
         <UCard
           v-for="item in data"
           :key="item.id"
           variant="outline"
           class="overflow-hidden"
-          :ui="{ body: 'p-4 sm:p-5' }"
-        >
+          :ui="{ body: 'p-4 sm:p-5' }">
           <div class="space-y-4">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">

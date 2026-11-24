@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const clazzStore = useClassStore()
@@ -121,12 +120,12 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
           <StudentFilterDrawer v-model:class-id="classId" v-model:gender="gender" v-model:sort="sort"
             :class-options="classOptions" :sort-options="sortOptions" :active-count="activeFilterCount"
             :default-sort="DEFAULT_SORT" />
+          <GuideBar topic="accountant-students" />
         </div>
-        <TableViewToggle v-model="view" />
       </div>
     </template>
 
-    <UTable v-if="view === 'table'" class="hidden md:block w-full" :column-pinning="columnPinning" :columns="columns"
+    <UTable class="hidden md:block w-full" :column-pinning="columnPinning" :columns="columns"
       :data="data" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
       @select="(_e: Event, row: any) => viewStudent(row.original)">
       <template #loading>
@@ -163,8 +162,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
     </UTable>
 
     <!-- Mobile -->
-    <div class="p-4 space-y-4"
-      :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+    <div class="p-4 space-y-4 md:hidden">
       <template v-if="loading">
         <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl border border-default shadow-sm"
           :ui="{ body: 'p-0' }">

@@ -12,12 +12,11 @@
                             description="Narrow the list by status" />
                     </div>
 
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
             <!-- Desktop table -->
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="filtered"
+            <UTable class="hidden md:block" :columns="columns" :data="filtered"
                 :loading="loading">
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 py-14">
@@ -77,7 +76,7 @@
             </UTable>
 
             <!-- Mobile list: one clean row per log -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i" class="border-b border-default px-4 py-3 last:border-0">
                         <div class="flex items-start justify-between gap-3">
@@ -123,75 +122,6 @@
             </div>
 
             <!-- Card view -->
-            <div v-if="view === 'card'" class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-                <template v-if="loading">
-                    <UCard v-for="i in 6" :key="i">
-                        <div class="animate-pulse space-y-4">
-                            <div class="flex items-center gap-3">
-                                <USkeleton class="size-10 rounded-xl" />
-                                <USkeleton class="h-4 w-36" />
-                            </div>
-                            <USkeleton class="h-3 w-full" />
-                            <USkeleton class="h-3 w-2/3" />
-                        </div>
-                    </UCard>
-                </template>
-
-                <template v-else-if="filtered.length">
-                    <UCard v-for="item in filtered" :key="item.id"
-                        class="overflow-hidden rounded-2xl border-t-2 transition-shadow hover:shadow-md"
-                        :style="{ borderTopColor: `var(--ui-${statusColor(item.status)})` }"
-                        :ui="{ body: 'p-0 sm:p-0' }">
-                        <div class="space-y-4 p-5">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                                    <UIcon name="i-lucide-shield-check" class="size-5 text-primary" />
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-display font-semibold text-highlighted">
-                                        {{ clean(item.action) }}
-                                    </p>
-                                    <p class="text-xs text-muted">{{ formatDateTime(item.createdAt) }}</p>
-                                </div>
-
-                                <UBadge size="sm" variant="soft" :color="statusColor(item.status)"
-                                    :label="clean(item.status)" />
-                            </div>
-
-                            <div class="flex items-center gap-3 rounded-xl bg-elevated/50 p-3">
-                                <UAvatar size="md" :alt="item.userName || 'System'" />
-
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-medium text-highlighted">
-                                        {{ item.userName || 'System' }}
-                                    </p>
-                                    <p class="truncate text-xs text-muted">{{ item.userEmail || 'No email' }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <dl class="grid grid-cols-2 divide-x divide-default border-t border-default">
-                            <div class="min-w-0 px-5 py-3">
-                                <dt class="text-[11px] uppercase tracking-wide text-muted">IP address</dt>
-                                <dd class="mt-0.5 truncate font-mono text-sm">{{ item.ipAddress || 'Not available' }}</dd>
-                            </div>
-                            <div class="min-w-0 px-5 py-3">
-                                <dt class="text-[11px] uppercase tracking-wide text-muted">Device</dt>
-                                <dd class="mt-0.5 truncate text-sm">{{ item.device || 'Unknown' }}</dd>
-                            </div>
-                        </dl>
-                    </UCard>
-                </template>
-
-                <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
-                    <UIcon name="lucide:shield-check" class="text-4xl text-gray-400" />
-                    <p class="text-sm text-gray-500">
-                        {{ hasActiveFilters ? 'No log on this page matches your filters.' : 'No audit logs found.' }}
-                    </p>
-                </div>
-            </div>
 
             <template #footer>
                 <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
@@ -207,7 +137,6 @@
 
 <script setup lang="ts">
 import type { FilterField } from '~/components/filter/Drawer.vue'
-const view = ref<'table' | 'card'>('table')
 const store = useAuditStore()
 const { records, meta, loading } = storeToRefs(store)
 

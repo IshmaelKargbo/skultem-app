@@ -1,10 +1,6 @@
 export const TITLE = "Skultem"
 export const DOT = "·"
 
-// Mirrors backend SchoolTimeZone.ZONE - the app is single-tenant (Sierra Leone) so every
-// attendance/clock-in timestamp should always display in this zone, not the viewer's own
-// device/browser timezone (which is what `toLocaleTimeString(undefined, ...)` silently uses,
-// producing different displayed times for the same record depending on who's looking at it).
 export const SCHOOL_TIMEZONE = 'Africa/Freetown'
 
 export type Meta = {
@@ -19,9 +15,7 @@ export type Meta = {
 export function todayISO() {
     return new Date().toISOString().split('T')[0]
 }
-// A named alias, not `Record<string, string>` written out on each `export const`: Nuxt's
-// auto-import scanner reads the comma in that annotation as a second declared name and registers a
-// phantom `string` import from every such file (the "Duplicated imports 'string'" warning).
+
 export type StringMap = Record<string, string>
 
 export const unitLabelMap: StringMap = {
@@ -290,8 +284,6 @@ export const parseFeeCollectionStatusColor: StringMap = {
     NO_PAYMENT: 'error',
 }
 
-// Legacy display-cased level values - the backend upper-cases them. New code should use LevelCode
-// and the school's offered levels (useSchoolStructure) instead of this fixed list.
 export enum Level {
     Daycare = 'Daycare',
     Nursery = 'Nursery',
@@ -776,8 +768,12 @@ export function formatTime(dateStr: string): string {
 }
 
 export const useMoney = () => {
-    const format = (value: number) =>
-        new Intl.NumberFormat('en-SL', { style: 'currency', currency: 'NLE', minimumFractionDigits: 2 }).format(value)
+    // Leones, written "Le" the way Sierra Leoneans write it (e.g. "Le 1,250.00", "-Le 50.00").
+    const number = new Intl.NumberFormat('en-SL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    const format = (value: number) => {
+        const v = Number(value) || 0
+        return `${v < 0 ? '-' : ''}Le ${number.format(Math.abs(v))}`
+    }
 
     return { format }
 }

@@ -68,11 +68,10 @@
               :term-options="terms" :class-options="classes" :section-options="sectionOptions"
               :stream-options="streamOptions" :active-count="activeFilterCount" />
           </div>
-          <TableViewToggle v-model="view" />
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="records" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
             <UIcon name="i-lucide-file-text" class="text-4xl text-gray-400" />
@@ -136,8 +135,7 @@
       </UTable>
 
       <!-- Mobile -->
-      <div class="space-y-3 p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="space-y-3 p-4 md:hidden">
         <template v-if="loading && !records.length">
           <UCard v-for="i in 4" :key="i" class="overflow-hidden">
             <div class="animate-pulse space-y-2 p-4">
@@ -213,7 +211,6 @@ const { records, meta, loading, stats } = storeToRefs(reportCardStore)
 
 // Plain local refs seeded from the URL and mirrored back to it - same pattern as the class list.
 const searchInput = ref(String(route.query.search ?? ''))
-const view = ref<'table' | 'card'>('table')
 
 const columns = [
   { accessorKey: 'studentName', header: 'Student' },

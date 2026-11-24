@@ -49,7 +49,7 @@ function buildOptions(labels: string[]) {
       fontSize: "12px"
     },
     tooltip: {
-      y: { formatter: (val: number) => `NLE ${val.toLocaleString()}` }
+      y: { formatter: (val: number) => `Le ${val.toLocaleString()}` }
     },
     dataLabels: {
       enabled: true,

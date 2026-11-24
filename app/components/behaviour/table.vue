@@ -13,7 +13,6 @@ const { state, selectable = true } = defineProps<{
 }>();
 const store = useBehaviourStore();
 const { records: data, meta, loading } = storeToRefs(store);
-const view = ref<'table' | 'card'>('table');
 const reportRef = ref()
 
 function refreshReport() {
@@ -103,10 +102,9 @@ onMounted(async () => {
           <BehaviourAdd @refresh="refreshReport" :clazz="state.classId" />
         </div>
 
-        <TableViewToggle v-model="view" />
       </div>
     </template>
-    <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading">
+    <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading">
       <template #loading>
         <TableLoading :size="columns.length" />
       </template>
@@ -124,11 +122,10 @@ onMounted(async () => {
       </template>
     </UTable>
     <!-- Mobile -->
-    <div class="p-4" :class="{ 'md:hidden': view === 'table' }">
+    <div class="p-4 md:hidden">
       <!-- Loading -->
       <template v-if="loading">
-        <div class="space-y-4"
-          :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }">
+        <div class="space-y-4">
           <UCard v-for="i in 6" :key="i" class="overflow-hidden rounded-[28px]" :ui="{ body: 'p-0' }">
             <!-- Header -->
             <div class="border-b border-default p-5">
@@ -203,8 +200,7 @@ onMounted(async () => {
       </div>
 
       <!-- Cards -->
-      <div v-else class="space-y-4"
-        :class="{ 'grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3': view === 'card' }">
+      <div v-else class="space-y-4">
         <UCard v-for="row in data" :key="row.id" :ui="{ body: 'p-0 sm:p-0' }">
           <!-- Header -->
           <div class="border-b border-default p-3">

@@ -3,7 +3,6 @@ const route = useRoute()
 const router = useRouter()
 
 
-const view = ref<'table' | 'card'>('table')
 
 const value = ref(route.query.search as string || '')
 const search = ref(value.value)
@@ -91,11 +90,10 @@ definePageMeta({
                         <UInput v-model="value" :icon="SEARCH_ICON" placeholder="Search by name or description" />
                         <div data-guide="mat-cat-add"><MaterialCategoryAdd @saved="refresh" /></div>
                     </div>
-                    <TableViewToggle v-model="view" />
                 </div>
             </template>
 
-            <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="data" :loading="loading"
+            <UTable class="hidden md:block" :columns="columns" :data="data" :loading="loading"
                 :ui="{ tr: 'cursor-pointer' }" @select="(_e: Event, row: any) => openCategory(row.original)">
                 <template #name-cell="{ row }">
                     <div class="flex items-center gap-3">
@@ -151,7 +149,7 @@ definePageMeta({
             </UTable>
 
             <!-- Mobile -->
-            <div v-if="view === 'table'" class="md:hidden">
+            <div class="md:hidden">
                 <!-- Loading -->
                 <template v-if="loading">
                     <div v-for="i in 6" :key="i"
@@ -212,83 +210,6 @@ definePageMeta({
             </div>
 
             <!-- Card view -->
-            <div v-else class="p-4 grid grid-cols-1 gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3">
-                <!-- Loading -->
-                <template v-if="loading">
-                    <div v-for="i in 5" :key="i"
-                        class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                        <div class="flex gap-3">
-                            <USkeleton class="h-14 w-14 rounded-2xl" />
-
-                            <div class="flex-1 space-y-3">
-                                <USkeleton class="h-4 w-32" />
-                                <USkeleton class="h-3 w-full" />
-                                <USkeleton class="h-3 w-2/3" />
-
-                                <div class="flex gap-2 pt-2">
-                                    <USkeleton class="h-6 w-20 rounded-full" />
-                                    <USkeleton class="h-6 w-16 rounded-full" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Empty -->
-                <div v-else-if="!data?.length"
-                    class="col-span-full flex min-h-[60vh] flex-col items-center justify-center rounded-4xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
-                    <div
-                        class="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-primary-50 dark:bg-primary-500/10">
-                        <UIcon name="lucide:folder-open" class="text-5xl text-primary-500" />
-                    </div>
-
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                        No categories found
-                    </h3>
-
-                    <p class="mt-2 max-w-xs text-sm leading-6 text-gray-500">
-                        Create categories to organize your school materials better.
-                    </p>
-
-                    <UButton class="mt-6 rounded-full px-5" icon="i-lucide-plus" size="sm">
-                        Add Category
-                    </UButton>
-                </div>
-
-                <!-- Cards -->
-                <template v-else>
-                    <UCard v-for="item in data" :key="item.id" :ui="{ body: 'sm:p-0 p-0' }" role="button" tabindex="0"
-                        class="cursor-pointer hover:ring-primary/40" @click="openCategory(item)"
-                        @keydown.enter="openCategory(item)">
-                        <div class=" gap-3">
-                            <div class="flex items-center gap-3 border-b border-gray-200 p-3 dark:border-neutral-800">
-                                <!-- Icon -->
-                                <div
-                                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-500/10">
-                                    <UIcon name="lucide:folder-kanban" class="text-xl text-primary-500" />
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="truncate text-sm font-semibold text-highlighted">
-                                        {{ item.name }}
-                                    </h3>
-
-                                    <p class="mt-1 text-xs text-muted">
-                                        Material Category
-                                    </p>
-                                </div>
-
-                            </div>
-
-                            <!-- Content -->
-                            <div class="min-w-0 p-3">
-                                <p class="text-sm text-muted line-clamp-2">
-                                    {{ item.description || 'No description available.' }}
-                                </p>
-                            </div>
-                        </div>
-                    </UCard>
-                </template>
-            </div>
 
             <MaterialCategoryDeletePrompt v-if="selected" v-model:open="deleteModal" :category-id="selected.id"
                 :category-name="selected.name" @deleted="onDeleted" />

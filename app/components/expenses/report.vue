@@ -45,8 +45,8 @@ const isLoading = ref(true)
 
 const report = ref<ExpenseReport>({
   totalExpenses: 0,
-  balance: "NLE 0.00",
-  total: "NLE 0.00"
+  balance: "Le 0.00",
+  total: "Le 0.00"
 })
 
 async function fetchRecord() {

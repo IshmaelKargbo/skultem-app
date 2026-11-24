@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const router = useRouter()
 const store = useFeeStore()
@@ -95,11 +94,10 @@ definePageMeta({
             <UInput placeholder="Search by name . . ." />
             <div data-guide="fin-category-add"><FeeCategoryAdd /></div>
           </div>
-          <TableViewToggle v-model="view" />
         </div>
       </template>
 
-      <UTable v-if="view === 'table'" class="hidden md:block" :columns="columns" :data="records" :loading="loading">
+      <UTable class="hidden md:block" :columns="columns" :data="records" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-3 py-16">
             <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary-50 dark:bg-primary-500/10">
@@ -163,8 +161,7 @@ definePageMeta({
         </template>
       </UTable>
       <!-- Mobile -->
-      <div class="md:space-y-3 md:p-4"
-        :class="view === 'table' ? 'md:hidden' : 'grid grid-cols-1 md:gap-4 space-y-0! md:grid-cols-2 lg:grid-cols-3'">
+      <div class="md:space-y-3 md:p-4 md:hidden">
         <!-- Loading -->
         <template v-if="loading">
           <UCard v-for="i in 4" :key="i" variant="outline">

@@ -19,12 +19,11 @@
         <div class="flex items-center gap-2">
           <UButton :trailing-icon="DELETE_ICON" variant="outline" color="error" label="Clear"
             :disabled="!hasActiveFilters" @click="resetFilters" />
-          <TableViewToggle v-model="view" />
         </div>
       </div>
 
       <!-- Table view (desktop) -->
-      <UTable v-if="view === 'table' && (loading || templates.length)" class="hidden border-t border-default md:block"
+      <UTable v-if="(loading || templates.length)" class="hidden border-t border-default md:block"
         :columns="columns" :data="templates" :loading="loading" :ui="{ tr: 'cursor-pointer' }"
         @select="(_e: Event, row: any) => openTemplate(row.original)">
         <template #loading>
@@ -51,7 +50,7 @@
       </UTable>
 
       <!-- Table view (mobile list) -->
-      <div v-if="view === 'table' && (loading || templates.length)" class="border-t border-default md:hidden">
+      <div v-if="(loading || templates.length)" class="border-t border-default md:hidden">
         <template v-if="loading">
           <div v-for="i in 5" :key="i" class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 last:border-0">
             <div class="space-y-2">
@@ -77,46 +76,8 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="view === 'card' && loading" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
-        <USkeleton v-for="i in 6" :key="i" class="h-52 w-full rounded-xl" />
-      </div>
 
       <!-- Templates -->
-      <div v-else-if="view === 'card' && templates.length" class="grid gap-4 border-t border-default p-4 md:grid-cols-2 xl:grid-cols-3">
-        <UCard v-for="t in templates" :key="t.id" role="button" tabindex="0" class="cursor-pointer hover:ring-primary/40"
-          @click="openTemplate(t)" @keydown.enter="openTemplate(t)">
-          <div class="space-y-4">
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex items-center gap-3">
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <UIcon name="i-lucide-layout-template" class="size-5" />
-                </div>
-                <div class="min-w-0">
-                  <h3 class="truncate font-semibold leading-tight">{{ t.name }}</h3>
-                  <p class="text-xs text-muted">Basic {{ formatCurrency(t.basicSalary) }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-2 rounded-xl bg-elevated/50 p-4 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted">Allowances ({{ t.allowances.length }})</span>
-                <span class="font-medium text-success">+ {{ formatCurrency(t.totalAllowances) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted">Deductions ({{ t.deductions.length }})</span>
-                <span class="font-medium text-error">- {{ formatCurrency(t.totalDeductions) }}</span>
-              </div>
-            </div>
-
-            <div class="rounded-xl bg-primary/10 p-4 text-center">
-              <p class="text-xs text-muted">Net Salary (at this basic)</p>
-              <p class="text-2xl font-bold text-primary">{{ formatCurrency(t.netSalary) }}</p>
-            </div>
-
-          </div>
-        </UCard>
-      </div>
 
       <!-- Empty -->
       <UCard v-if="!loading && !templates.length && !failed" class="border-none py-16 shadow-none">
@@ -145,7 +106,6 @@
 const route = useRoute()
 const router = useRouter()
 
-const view = ref<'table' | 'card'>('table')
 
 const right = { class: { th: 'text-right', td: 'text-right' } }
 const columns = [

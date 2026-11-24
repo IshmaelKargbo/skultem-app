@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { FilterField } from '~/components/filter/Drawer.vue'
-const view = ref<'table' | 'card'>('table')
 const route = useRoute()
 const store = useUserStore()
 const appStore = useAppStore()
@@ -156,14 +155,11 @@ definePageMeta({
               description="Narrow the list by role or status" />
           </div>
 
-          <div class="flex items-center gap-2">
-            <TableViewToggle v-model="view" />
-          </div>
         </div>
       </template>
 
       <!-- Desktop table -->
-      <UTable v-if="view === 'table'" class="hidden md:block" :ui="{
+      <UTable class="hidden md:block" :ui="{
         loading: 'py-0'
       }" :columns="columns" :data="filtered" :loading="loading">
         <template #empty>
@@ -276,63 +272,6 @@ definePageMeta({
       </div>
 
       <!-- Card view -->
-      <div v-if="view === 'card'" class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-        <template v-if="loading">
-          <UCard v-for="i in 6" :key="i">
-            <div class="animate-pulse space-y-4">
-              <div class="flex items-center gap-3">
-                <USkeleton class="size-12 rounded-full" />
-                <div class="flex-1 space-y-2">
-                  <USkeleton class="h-4 w-32" />
-                  <USkeleton class="h-3 w-40" />
-                </div>
-              </div>
-              <USkeleton class="h-5 w-24" />
-            </div>
-          </UCard>
-        </template>
-
-        <div class="hidden md:block" v-else-if="filtered.length">
-          <div v-for="item in filtered" :key="item.id" class="overflow-hidden rounded-2xl border border-default"
-            :ui="{ body: 'p-0 sm:p-0' }">
-            <div class="space-y-4 p-5">
-              <div class="flex items-start gap-3">
-                <UAvatar :alt="fullName(item)" size="xl" class="shrink-0" />
-
-                <div class="min-w-0 flex-1">
-                  <NuxtLink :to="`/auth/${item.id}`"
-                    class="block truncate font-display font-semibold text-highlighted hover:text-primary">
-                    {{ fullName(item) }}
-                  </NuxtLink>
-                  <p class="truncate text-sm text-muted">{{ item.email }}</p>
-                </div>
-
-                <UBadge size="sm" variant="soft" :label="parseStatus[statusOf(item)]"
-                  :color="parseStatusColor[statusOf(item)]" />
-              </div>
-
-              <div class="flex flex-wrap items-center gap-1.5">
-                <UBadge v-for="r in item.roles" :key="r" size="sm" variant="subtle" :color="parseRoleColor[r] as any"
-                  :label="parseRole[r] || r" :trailing-icon="parseRoleIcon[r]" />
-                <span v-if="!item.roles.length" class="text-xs text-muted">No roles assigned</span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between gap-2 border-t border-default bg-elevated/40 px-5 py-3">
-              <UButton :to="`/auth/${item.id}`" label="View profile" variant="ghost" color="neutral" size="sm"
-                trailing-icon="i-lucide-arrow-right" />
-
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="col-span-full flex flex-col items-center gap-2 py-12">
-          <UIcon name="i-lucide-users" class="text-4xl text-gray-400" />
-          <p class="text-sm text-gray-500">
-            {{ hasActiveFilters ? 'No user matches your search or filters.' : 'No users found.' }}
-          </p>
-        </div>
-      </div>
 
       <template #footer>
         <div class="flex flex-col items-center justify-between gap-2 md:flex-row">
