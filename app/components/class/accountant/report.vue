@@ -39,8 +39,7 @@
 </template>
 
 <script lang="ts" setup>
-const widgetStore = useWidgetStore()
-const { loading } = storeToRefs(widgetStore)
+const loading = ref(true)
 const { format } = useMoney()
 
 const report = ref<{
@@ -58,119 +57,27 @@ const report = ref<{
 })
 
 async function fetchRecord() {
-
-    const [studentRes, classRes, paymentRes, pendingRes] = await Promise.all([
-        widgetStore.runAnalytic({
-            entity: "students",
-            title: "Total Student",
-            filters: [],
-            metrics: [
-                { name: "Total", aggregation: "count" }
-            ],
-            chartType: "bar"
-        }, 1, 10),
-
-        widgetStore.runAnalytic({
-            entity: "classes",
-            title: "Total Class",
-            filters: [],
-            metrics: [
-                { name: "Total", aggregation: "count" }
-            ],
-            chartType: "bar"
-        }, 1, 10),
-
-        widgetStore.runAnalytic({
-            entity: "fees",
-            title: "Fee Paid",
-            filters: [],
-            metrics: [
-                {
-                    name: "Paid",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Paid" }
-                },
-                {
-                    name: "Partial",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Partial" }
-                }
-            ],
-            chartType: "bar"
-        }, 1, 10),
-
-        widgetStore.runAnalytic({
-            entity: "fees",
-            title: "Pending Fees",
-            filters: [],
-            metrics: [
-                {
-                    name: "Paid",
-                    aggregation: "sum",
-                    field: "amount",
-                    tags: { field: "status", value: "Paid" }
-                },
-                {
-                    name: "Partial",
-                    aggregation: "sum",
-                    field: "amountPaid",
-                    tags: { field: "status", value: "Partial" }
-                },
-                {
-                    name: "Total",
-                    aggregation: "sum",
-                    field: "amount"
-                }
-            ],
-            chartType: "bar"
-        }, 1, 10),
+    loading.value = true
+    // Counts are the totals of the same lists shown below (a 1-row page is enough to get them). Money comes from the
+    // same summary as the Fees reports: this academic year, net of discounts, without the
+    // Skultem platform fee (that isn't the school's money), and outstanding added up fee by fee.
+    const [studentRes, classRes, money] = await Promise.all([
+        StudentApi().getAll('', 1, 1).catch(() => null),
+        ClassApi().getAllClassSessions(1, 1).catch(() => null),
+        FeeReportApi().getDashboard().catch(() => null)
     ])
 
-    const paidDatasets = paymentRes?.data?.datasets ?? []
-    const pendingDatasets = pendingRes?.data?.datasets ?? []
-    const classDatasets = classRes?.data?.datasets ?? []
-    const studentsDatasets = studentRes?.data?.datasets ?? []
-
-    const paid = paidDatasets.find((e:any) => e.label === "Paid")
-    const partial = paidDatasets.find((e:any) => e.label === "Partial")
-
-    const totalStudentRow = studentsDatasets.find((e:any) => e.label === "Total")
-    const totalClassRow = classDatasets.find((e:any) => e.label === "Total")
-
-    const pendingPartial = pendingDatasets.find((e:any) => e.label === "Partial")
-    const pendingPaid = pendingDatasets.find((e:any) => e.label === "Paid")
-    const pendingTotal = pendingDatasets.find((e:any) => e.label === "Total")
-
-    const totalStudent = Number(totalStudentRow?.data?.[0] ?? 0)
-    const totalClass = Number(totalClassRow?.data?.[0] ?? 0)
-
-    const totalPaid =
-        Number(paid?.data?.[0] ?? 0) +
-        Number(partial?.data?.[0] ?? 0)
-
-    const pendingPaidTotal =
-        Number(pendingPaid?.data?.[0] ?? 0) +
-        Number(pendingPartial?.data?.[0] ?? 0)
-
-    const expectedAmount = Number(pendingTotal?.data?.[0] ?? 0)
-
-    const totalPending = expectedAmount - pendingPaidTotal
-
-    // Collection Rate Calculation
-    const collectionRate =
-        expectedAmount > 0
-            ? ((totalPaid / expectedAmount) * 100).toFixed(1)
-            : "0"
+    const students = Number(studentRes?.meta?.total ?? 0)
+    const classes = Number(classRes?.meta?.total ?? 0)
 
     report.value = {
-        classes: totalClass.toString(),
-        students: totalStudent.toString(),
-        expected: format(expectedAmount),
-        outstanding: format(totalPending),
-        collectedRate: `${collectionRate}%`
+        classes: classes.toString(),
+        students: students.toString(),
+        expected: format(money?.totalExpected ?? 0),
+        outstanding: format(money?.totalOutstanding ?? 0),
+        collectedRate: `${(money?.collectionRate ?? 0).toFixed(1)}%`
     }
+    loading.value = false
 }
 
 onMounted(fetchRecord)

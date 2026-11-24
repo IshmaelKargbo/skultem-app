@@ -69,12 +69,12 @@ const statusStyle = computed(() => statusStyles[student.feeDetail.status] ?? sta
 
 const discount = computed(() => Number(student.feeDetail.discount || 0))
 
-// Progress is measured against what is actually owed - the total less any discount - so a student who
-// has paid everything they owe reads 100%, not the fraction of the undiscounted total.
+// Progress is measured against what is actually owed - feeDetail.total is already net of discounts - so a
+// student who has paid everything they owe reads 100%.
 const progressPct = computed(() => {
-    const payable = student.feeDetail.total - discount.value
-    if (payable <= 0) return student.feeDetail.total > 0 ? 100 : 0
-    return Math.min(100, Math.round((student.feeDetail.paid / payable) * 100))
+    const owed = Number(student.feeDetail.total || 0)
+    if (owed <= 0) return discount.value > 0 ? 100 : 0
+    return Math.min(100, Math.round((student.feeDetail.paid / owed) * 100))
 })
 
 const progressColor = computed(() => {

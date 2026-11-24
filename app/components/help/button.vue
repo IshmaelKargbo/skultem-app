@@ -1,6 +1,8 @@
 <!-- Opens the help for a feature: what it does, what has to be in place first, how to use it, and tips. -->
 <template>
-  <UButton icon="i-lucide-book-open" color="neutral" variant="ghost" label="Help" class="justify-center"
+  <UButton icon="i-lucide-book-open" color="neutral" variant="ghost" label="Help" class="justify-center hidden md:flex"
+    :disabled="!help" @click="() => { open = true }" />
+    <UButton icon="i-lucide-book-open" color="neutral" variant="ghost" class="md:hidden"
     :disabled="!help" @click="() => { open = true }" />
 
   <UModal v-if="help" v-model:open="open" :title="help.title" :description="help.summary" :ui="{ content: 'max-w-xl' }">

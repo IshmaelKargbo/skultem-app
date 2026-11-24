@@ -67,21 +67,21 @@ const performanceOf = (s: Student) => performanceByName.value[fullName(s)]
 
 const feeDiscountOf = (s: Student) => Number(s.feeDetail?.discount || 0)
 
-// Progress against what the student actually owes (total minus any discount), so a 100% discount
+// Progress against what the student owes - feeDetail.total is already net of discounts - so a 100% discount
 // shows a full bar, same as the fee card.
 function feePaidPercent(s: Student) {
   const f = s.feeDetail
-  if (!f || !Number(f.total)) return 0
-  const payable = Number(f.total) - feeDiscountOf(s)
-  if (payable <= 0) return 100
-  return Math.min(100, Math.round((Number(f.paid) / payable) * 100))
+  if (!f) return 0
+  const owed = Number(f.total || 0)
+  if (owed <= 0) return feeDiscountOf(s) > 0 ? 100 : 0
+  return Math.min(100, Math.round((Number(f.paid) / owed) * 100))
 }
 
 function feeDiscountLabel(s: Student) {
-  const total = Number(s.feeDetail?.total || 0)
+  const owed = Number(s.feeDetail?.total || 0)
   const discount = feeDiscountOf(s)
   if (discount <= 0) return ''
-  if (total > 0 && discount >= total) return '100% discount'
+  if (owed <= 0) return '100% discount'
   return `${format(discount)} discount`
 }
 

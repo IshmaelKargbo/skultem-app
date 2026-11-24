@@ -1,7 +1,9 @@
 <!-- Replays this page's guide; opens it by itself the first time someone visits the page. -->
 <template>
   <UButton data-guide="guide-button" icon="i-lucide-circle-help" color="neutral" variant="ghost" label="Guide"
-    class="justify-center" @click="start(guide)" />
+    class="justify-center hidden md:flex" @click="start(guide)" />
+  <UButton data-guide="guide-button" icon="i-lucide-circle-help" color="neutral" variant="ghost"
+    class="md:hidden" @click="start(guide)" />
 </template>
 
 <script setup lang="ts">

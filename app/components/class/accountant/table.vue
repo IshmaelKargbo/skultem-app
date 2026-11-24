@@ -109,7 +109,10 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
             <ClassFilterDrawer v-model:section-id="sectionId" v-model:stream-id="streamId" v-model:level="level"
               :section-options="sectionOptions" :stream-options="streamOptions" :active-count="activeFilterCount" />
           </div>
-          <div data-guide="acc-view"><TableViewToggle v-model="view" /></div>
+          <div data-guide="acc-view" class="flex">
+            <TableViewToggle v-model="view" />
+            <GuideBar topic="accountant-classes" />
+          </div>
         </div>
       </template>
 
