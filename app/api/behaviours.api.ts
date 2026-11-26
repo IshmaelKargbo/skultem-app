@@ -2,6 +2,23 @@ export const BehaviourApi = () => {
   const { $api } = useNuxtApp()
 
   return {
+    // One student's records across all their classes and years, newest first.
+    getByStudent: async (studentId: string, page: number, size: number) => {
+      try {
+        const res = await $api(`/behaviours/student/${studentId}?page=${page}&size=${size}`) as any
+        return { ...res, data: res.data || [], meta: useMeta(res.meta) }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+    studentSummary: async (studentId: string) => {
+      try {
+        const res = await $api(`/behaviours/student/${studentId}/summary`) as any
+        return res.data as { total: number, positive: number, negative: number }
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
     getAll: async (classId: string, page: number, size: number) => {
       try {
         const res = await $api(`/behaviours?classId=${classId}&page=${page}&size=${size}`) as any

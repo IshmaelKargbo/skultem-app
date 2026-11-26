@@ -6,7 +6,6 @@
         <div v-if="can(Role.LIBRARIAN)" class="px-4 md:px-6 space-y-3">
             <DashboardTeacherClockInOut v-if="isInstalled(ModuleKey.STAFF_HR)" />
             <div data-guide="lib-tabs"><LibrarySectionNav /></div>
-            <GuideBar topic="lib-dashboard" />
             <LibraryDashboard />
         </div>
         <div v-if="can(Role.NURSE)" class="px-4 md:px-6 space-y-3">

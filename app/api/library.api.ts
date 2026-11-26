@@ -81,6 +81,9 @@ export const LibraryApi = () => {
     },
     listBookLoans: (id: string, page: number, size: number) =>
       list(`/library/books/${id}/loans`, { page, size }),
+    // One student's borrowing history, newest first.
+    listStudentLoans: (studentId: string, page: number, size: number) =>
+      list(`/library/students/${studentId}/loans`, { page, size }),
     createBook: (payload: SaveBookDto) => send('/library/books', 'POST', payload),
     updateBook: (id: string, payload: SaveBookDto) => send(`/library/books/${id}`, 'PUT', payload),
     deleteBook: (id: string) => send(`/library/books/${id}`, 'DELETE'),

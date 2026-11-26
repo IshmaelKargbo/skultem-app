@@ -290,8 +290,14 @@ async function fetchEvents() {
     eventsByDate.value = {}
 
     try {
-        const res = await CalendarEventApi().getAll(1, 100) as any
-        const entries: CalendarEntry[] = res?.data || []
+        // Events come oldest first, so read every page - the first 100 alone would miss this year's once a school
+        // has more than that.
+        const entries: CalendarEntry[] = []
+        for (let page = 1; page <= 50; page++) {
+            const res = await CalendarEventApi().getAll(page, 100) as any
+            entries.push(...(res?.data || []))
+            if (!res?.meta || page >= (res.meta.totalPages || 1)) break
+        }
         const map: Record<string, CalendarEntry[]> = {}
 
         for (const entry of entries) {

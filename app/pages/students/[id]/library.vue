@@ -8,7 +8,7 @@
                             Library
                         </h3>
                         <p class="text-xs-base text-muted">
-                            Visits to the library and class library sessions for this student, kept apart.
+                            Books this student has borrowed, their library visits and class library sessions.
                         </p>
                     </div>
                     <UDropdownMenu v-if="canSuperviseAttendance" :items="exportItems">
@@ -19,7 +19,10 @@
                 </div>
             </template>
 
-            <LibraryAttendanceStudentHistory :student-id="studentId" />
+            <div class="space-y-8">
+                <LibraryStudentLoans :student-id="studentId" />
+                <LibraryAttendanceStudentHistory :student-id="studentId" />
+            </div>
         </UCard>
     </StudentView>
 </template>

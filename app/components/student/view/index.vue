@@ -155,6 +155,8 @@ const { can } = useAuth()
 // profile but not their report cards, so the tab only shows for roles that can actually open it.
 const { isPathAvailable } = useModules()
 const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
+// Behaviour records: the roles the backend lets read them (accountants can't).
+const canViewBehaviours = computed(() => can([Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
 // Library history: only the roles the backend lets see library attendance (teachers and accountants can't).
 const { canViewAttendance: canViewLibrary } = useLibraryAccess()
 // Health care records: the nurse and principal-level only. A nurse sees nothing else of the profile, so their only tab.
@@ -323,7 +325,7 @@ const mobileTabs = computed(() => [
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
+    ...(canViewBehaviours.value ? [{ label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }] : []),
     ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : []),
     ...(canViewHealthCare.value ? [{ label: 'Health Care', to: healthCareInfo, icon: HEALTH_CARE_ICON, exact: true }] : [])
     // Tabs for a module this school hasn't installed (Grading, Report Cards, Behaviour) drop out.
@@ -336,7 +338,7 @@ const desktopTabs = computed(() => [
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
-    { label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true },
+    ...(canViewBehaviours.value ? [{ label: 'Behaviours', to: behavioursInfo, icon: BEHAVIOUR_ICON, exact: true }] : []),
     ...(canViewLibrary.value ? [{ label: 'Library', to: libraryInfo, icon: LIBRARY_ICON, exact: true }] : []),
     ...(canViewHealthCare.value ? [{ label: 'Health Care', to: healthCareInfo, icon: HEALTH_CARE_ICON, exact: true }] : [])
 ].filter((tab) => isPathAvailable(tab.to) && (!nurseOnly.value || tab.to === healthCareInfo)))

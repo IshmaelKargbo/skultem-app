@@ -89,10 +89,13 @@
                     <p class="mt-2 text-sm text-muted">
                         {{ row.note || 'No behaviour note recorded.' }}
                     </p>
+                    <p class="mt-2 text-xs text-muted">
+                        {{ formatDateTime(row.createdAt) }}<template v-if="row.classLabel"> · {{ row.classLabel }}</template>
+                    </p>
                 </div>
             </div>
 
-            <div v-else
+            <div v-else-if="!failed"
                 class="flex flex-col items-center space-y-2 justify-center rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 md:p-10 p-4">
                 <UIcon name="i-lucide-shield-check" class="mb-2 text-4xl text-muted" />
 
@@ -104,48 +107,36 @@
                     Behaviour notes for this student will appear here.
                 </p>
             </div>
+
+            <div ref="sentinel">
+                <InfiniteListEnd :loading="loading" :loading-more="loadingMore" :failed="failed" :shown="records.length"
+                    :total="meta?.total" noun="records" :error="listError" @retry="loadMore" />
+            </div>
         </UCard>
     </StudentView>
 </template>
 
 <script setup lang="ts">
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    // The roles the backend lets read behaviour records - not accountants.
+    role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
 const route = useRoute()
-const store = useStudentStore()
-const behaviourStore = useBehaviourStore()
-const { record } = storeToRefs(store)
-const { records: allRecords, loading } = storeToRefs(behaviourStore)
+const studentId = computed(() => String(route.params.id))
 
-const studentName = computed(() =>
-    record.value ? `${record.value.givenNames} ${record.value.familyName}`.trim() : ''
-)
+// The student's own records - every class and year, newest first, loaded as you scroll - found by the student, not by
+// matching a name within one class's first 100 records.
+const { items: records, meta, loading, loadingMore, failed, error: listError, sentinel, reload, loadMore } =
+    useInfiniteList<any>((page, size) => BehaviourApi().getByStudent(studentId.value, page, size) as any)
 
-const records = computed(() => allRecords.value.filter(row => row.student === studentName.value))
-
-const summary = computed(() => ({
-    total: records.value.length,
-    positive: records.value.filter(row => row.kind === 'POSITIVE').length,
-    negative: records.value.filter(row => row.kind !== 'POSITIVE').length
-}))
-
-async function fetchBehaviours() {
-    if (!record.value?.classId) return
-
-    await behaviourStore.fetchAll(record.value.classId, 1, 100)
+// Counts over all of the student's records, not just the ones loaded so far.
+const summary = ref({ total: 0, positive: 0, negative: 0 })
+async function fetchSummary() {
+    summary.value = (await BehaviourApi().studentSummary(studentId.value).catch(() => null)) ?? { total: 0, positive: 0, negative: 0 }
 }
 
-watch(
-    () => record.value,
-    async value => {
-        if (!value) return
-
-        await fetchBehaviours()
-    },
-    { immediate: true }
-)
+watch(studentId, () => { reload(); fetchSummary() }, { immediate: true })
 
 onMounted(() => {
     useAppStore().setTitle('View Student')

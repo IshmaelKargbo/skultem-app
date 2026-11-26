@@ -4,15 +4,18 @@ const { error: toastError } = useNotify()
 
 const history = ref<HealthCareStudentHistory | null>(null)
 const loading = ref(false)
+const failed = ref('')
 
 async function load() {
   history.value = null
+  failed.value = ''
   if (!props.studentId) return
   loading.value = true
   try {
     history.value = await HealthCareApi().studentHistory(props.studentId)
   } catch (err: any) {
-    toastError(err?.message || 'Failed to load the student\'s health care record')
+    failed.value = err?.message || 'Failed to load the student\'s health care record'
+    toastError(failed.value)
   } finally {
     loading.value = false
   }
@@ -26,6 +29,10 @@ watch(() => props.studentId, load, { immediate: true })
 <template>
   <div v-if="loading" class="space-y-2">
     <USkeleton v-for="i in 3" :key="i" class="h-12 w-full" />
+  </div>
+  <div v-else-if="failed" class="flex flex-col items-center gap-2 py-8 text-center">
+    <p class="text-sm text-error">Couldn't load the health care record: {{ failed }}</p>
+    <UButton size="xs" variant="soft" label="Try again" @click="load" />
   </div>
   <div v-else-if="history" class="space-y-6">
     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
