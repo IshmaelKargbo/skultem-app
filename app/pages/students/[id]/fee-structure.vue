@@ -20,7 +20,7 @@
             </template>
 
             <!-- Fee Summary (amounts only — hidden for Teacher, who sees status only) -->
-            <StudentViewFeeSummary v-if="canSeeAmount" />
+            <StudentViewFeeSummary v-if="canSeeAmount" :fees="fees" :loading="loading" />
 
             <!-- Fee Groups -->
             <div v-if="loading" class="space-y-3">
@@ -96,7 +96,11 @@
                                 <tr v-for="fee in group.items" :key="fee.id" class="border-t border-default">
                                     <td class="px-4 py-2.5">{{ fee.fee }}</td>
                                     <td class="px-4 py-2.5 text-muted">{{ formatDateString(fee.dueDate) }}</td>
-                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right">{{ format(fee.amount) }}</td>
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right">
+                                        {{ format(fee.amount) }}
+                                        <p v-if="Number((fee as any).discount) > 0" class="text-[11px] text-purple-500">
+                                            − {{ format((fee as any).discount) }} discount</p>
+                                    </td>
                                     <td v-if="canSeeAmount" class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
                                         format(fee.amountPaid) }}</td>
                                     <td v-if="canSeeAmount" class="px-4 py-2.5 text-right"
@@ -117,7 +121,11 @@
                                 <tr class="font-semibold"
                                     :class="group.fullyPaid ? 'bg-success-50 dark:bg-success-950/60' : 'bg-warning-50 dark:bg-warning-950/60'">
                                     <td class="px-4 py-2.5" colspan="2">Sub-Total ({{ group.items.length }} items)</td>
-                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right">{{ format(group.total) }}</td>
+                                    <td v-if="canSeeAmount" class="px-4 py-2.5 text-right">
+                                        {{ format(group.total) }}
+                                        <p v-if="group.discount > 0" class="text-[11px] font-normal text-purple-500">
+                                            − {{ format(group.discount) }} discount</p>
+                                    </td>
                                     <td v-if="canSeeAmount" class="px-4 py-2.5 text-right text-success-600 dark:text-success-400">{{
                                         format(group.paid)
                                         }}</td>
@@ -173,6 +181,7 @@ type FeeGroup = {
     total: number
     paid: number
     due: number
+    discount: number
     unpaidCount: number
     fullyPaid: boolean
 }
@@ -191,6 +200,7 @@ const groups = computed<FeeGroup[]>(() => {
         const total = items.reduce((sum, fee) => sum + fee.amount, 0)
         const paid = items.reduce((sum, fee) => sum + fee.amountPaid, 0)
         const due = items.reduce((sum, fee) => sum + fee.outstanding, 0)
+        const discount = items.reduce((sum, fee) => sum + (Number((fee as any).discount) || 0), 0)
         const unpaidCount = items.filter(fee => fee.status !== 'Paid').length
 
         return {
@@ -200,6 +210,7 @@ const groups = computed<FeeGroup[]>(() => {
             total,
             paid,
             due,
+            discount,
             unpaidCount,
             fullyPaid: unpaidCount === 0
         }
@@ -221,7 +232,10 @@ function toggle(key: string) {
 
 async function fetchFeeStructure() {
     loading.value = true
-    if (!record.value?.id) return
+    if (!record.value?.id) {
+        loading.value = false
+        return
+    }
 
     await reportStore.runReport(
         {

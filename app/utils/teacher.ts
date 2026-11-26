@@ -52,6 +52,9 @@ export type TeacherSubject = {
     assignedAt: string
     createdAt: string
     updatedAt: string
+    // The academic year of the class it was for, and whether it is the school's active year.
+    academicYearName?: string | null
+    currentYear?: boolean
 }
 
 export type CreateTeacherSubjectDto = {

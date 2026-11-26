@@ -54,7 +54,7 @@
                     </div>
 
                     <p class="text-xs-base text-muted">
-                        Admission and enrollment details recorded when the student was enrolled.
+                        Admission details, and the student's class, class teacher and house now.
                     </p>
                 </div>
             </template>
@@ -184,14 +184,32 @@ definePageMeta({
     role: [Role.ADMIN, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
-const personalDetails = computed(() => ([
-    { label: 'Given Names', icon: 'i-lucide-user-round', value: record.value?.givenNames },
-    { label: 'Family Name', icon: 'i-lucide-user', value: record.value?.familyName },
-    { label: 'Date of Birth', icon: 'i-lucide-calendar-days', value: record.value?.dateOfBirth ? formatDate(record.value.dateOfBirth) : '' },
+// Whole years since a "YYYY-MM-DD" date of birth, read as a local date (no timezone shift); null when unknown.
+function ageOf(dob?: string | null): number | null {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dob || '')
+    if (!m) return null
+    const today = new Date()
+    let years = today.getFullYear() - Number(m[1])
+    const month = today.getMonth() + 1 - Number(m[2])
+    if (month < 0 || (month === 0 && today.getDate() < Number(m[3]))) years--
+    return years >= 0 ? years : null
+}
+
+const personalDetails = computed(() => {
+    const s = record.value
+    const age = ageOf(s?.dateOfBirth)
+    return [
+    { label: 'Given Names', icon: 'i-lucide-user-round', value: s?.givenNames },
+    { label: 'Family Name', icon: 'i-lucide-user', value: s?.familyName },
+    { label: 'Gender', icon: 'i-lucide-venus-and-mars', value: clean(s?.gender || '') },
+    { label: 'Date of Birth', icon: 'i-lucide-calendar-days',
+        value: s?.dateOfBirth ? `${formatDate(s.dateOfBirth)}${age !== null ? ` (${age} ${age === 1 ? 'year' : 'years'})` : ''}` : '' },
+    { label: 'Nationality', icon: 'i-lucide-flag', value: clean(s?.nationality || '') },
     { label: 'Religion', icon: 'i-lucide-heart', value: clean(record.value?.religion || '') },
-    { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.city },
-    { label: 'Address', icon: 'i-lucide-house', value: record.value?.street }
-]))
+    { label: 'City', icon: 'i-lucide-map-pinned', value: s?.city },
+    { label: 'Address', icon: 'i-lucide-house', value: s?.street }
+    ]
+})
 
 // Previous school / last grade only apply to transfers and re-enrolments (shown for others only if filled in).
 const admissionDetails = computed(() => {
@@ -201,6 +219,9 @@ const admissionDetails = computed(() => {
         { label: 'Admission Number', icon: 'i-lucide-id-card', value: s?.admissionNumber },
         { label: 'Admission Date', icon: 'i-lucide-calendar-check', value: s?.admissionDate ? formatDate(s.admissionDate) : '' },
         { label: 'Enrollment Type', icon: 'i-lucide-user-cog', value: ENROLLMENT_TYPES.find(t => t.value === s?.enrollmentType)?.label },
+        { label: 'Current Class', icon: CLASS_ICON, value: s?.className },
+        { label: 'Class Teacher', icon: 'i-lucide-user-check', value: s?.classTeacher },
+        { label: 'House', icon: 'i-lucide-flag-triangle-right', value: s?.house?.name },
         ...(transfer || s?.previousSchool ? [{ label: 'Previous School', icon: 'i-lucide-school', value: s?.previousSchool }] : []),
         ...(transfer || s?.lastClass ? [{ label: 'Last Grade Completed', icon: 'i-lucide-book-open', value: s?.lastClass }] : [])
     ]

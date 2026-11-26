@@ -99,7 +99,11 @@
             </template>
 
             <UCard v-else class="py-16">
-                <div class="text-center">
+                <div v-if="failed" class="flex flex-col items-center gap-2 text-center">
+                    <p class="text-sm text-error">Couldn't load curriculum progress: {{ failed }}</p>
+                    <UButton size="xs" variant="soft" label="Try again" @click="load(id)" />
+                </div>
+                <div v-else class="text-center">
                     <UIcon name="i-lucide-chart-column" class="mx-auto text-5xl text-muted" />
                     <h3 class="mt-4 text-lg font-semibold">No curriculum data yet</h3>
                 </div>
@@ -114,6 +118,20 @@ const id = computed(() => route.params.id as string)
 
 const loading = ref(true)
 const progress = ref<TeacherProgressDetail>()
+const failed = ref('')
+
+async function load(teacherId: string) {
+    loading.value = true
+    failed.value = ''
+    try {
+        progress.value = await CurriculumsApi().getTeacherProgressDetail(teacherId)
+    } catch (err: any) {
+        progress.value = undefined
+        failed.value = err?.message || 'Could not load curriculum progress'
+    } finally {
+        loading.value = false
+    }
+}
 
 definePageMeta({
     role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER]
@@ -124,12 +142,7 @@ watch(
     async (teacherId) => {
         if (!teacherId) return
 
-        loading.value = true
-        try {
-            progress.value = await CurriculumsApi().getTeacherProgressDetail(teacherId as string)
-        } finally {
-            loading.value = false
-        }
+        await load(teacherId as string)
 
         useAppStore().setTitle('Teacher Curriculum Progress')
         useAppStore().setBack('/teachers')

@@ -361,6 +361,7 @@ onMounted(() => {
 })
 
 definePageMeta({
-  role: [Role.ADMIN, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+  // The roles the backend lets load a student's terms and class position - not accountants.
+  role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 </script>

@@ -111,7 +111,7 @@
                                 <template v-if="isSubmitted(subject)">
                                     <div class="hidden w-40 sm:block">
                                         <div class="h-1.5 overflow-hidden rounded-full bg-elevated">
-                                            <div class="h-full rounded-full" :class="scoreBar(Number(subject.score))"
+                                            <div class="h-full rounded-full" :class="scoreBar(Number(subject.score), subject.passed)"
                                                 :style="{ width: `${Math.min(100, Number(subject.score))}%` }" />
                                         </div>
                                     </div>
@@ -144,7 +144,8 @@
 
 <script setup lang="ts">
 definePageMeta({
-    role: [Role.ADMIN, Role.ACCOUNTANT, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
+    // The roles the backend lets load a student's terms - not accountants.
+    role: [Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]
 })
 
 const store = useStudentStore()
@@ -156,8 +157,9 @@ const { grades } = storeToRefs(reportStore)
 const ALL_SUBJECTS = 1000
 const gradeColor = (grade: string | null) => grade === 'A' ? 'success'
     : grade === 'B' ? 'primary' : grade === 'C' ? 'warning' : grade === null ? 'neutral' : 'error'
-// Bar colour by score: under 50 fails, 50-69 is fair, 70+ is good.
-const scoreBar = (score: number) => score < 50 ? 'bg-error' : score < 70 ? 'bg-warning' : 'bg-success'
+// Bar colour by score: a fail (against the school's own pass mark, when known) is red, under 70 fair, 70+ good.
+const scoreBar = (score: number, passed?: boolean | null) =>
+    passed === false || (passed == null && score < 50) ? 'bg-error' : score < 70 ? 'bg-warning' : 'bg-success'
 const loading = ref(true)
 const route = useRoute()
 const state = reactive({
@@ -179,7 +181,8 @@ const isSubmitted = (g: any) => RELEASED.includes(g.status) && g.score !== null 
 function tally(list: any[]) {
     const submitted = list.filter(isSubmitted)
     const scores = submitted.map((g: any) => Number(g.score)).filter((n: number) => !Number.isNaN(n))
-    const passed = submitted.filter((g: any) => Number(g.score) >= 50).length
+    // Pass/fail as the server judged it against the assessment's own pass mark (60 or 65 in some schools), not 50.
+    const passed = submitted.filter((g: any) => g.passed === true || (g.passed == null && Number(g.score) >= 50)).length
     const failed = submitted.length - passed
     const average = scores.length
         ? (scores.reduce((sum: number, n: number) => sum + n, 0) / scores.length).toFixed(1)

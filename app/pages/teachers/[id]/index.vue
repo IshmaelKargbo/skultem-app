@@ -54,6 +54,7 @@ definePageMeta({
 })
 
 const personalDetails = computed(() => ([
+    { label: 'Title', icon: 'i-lucide-badge', value: clean(record.value?.title || '') },
     { label: 'Given Names', icon: 'i-lucide-user-round', value: record.value?.user?.givenNames },
     { label: 'Family Name', icon: 'i-lucide-user', value: record.value?.user?.familyName },
     { label: 'Gender', icon: 'i-lucide-user', value: clean(record.value?.gender || '') },
@@ -62,6 +63,10 @@ const personalDetails = computed(() => ([
     { label: 'Phone Number', icon: 'i-lucide-phone', value: record.value?.phone },
     { label: 'Address', icon: 'i-lucide-house', value: record.value?.street },
     { label: 'City', icon: 'i-lucide-map-pinned', value: record.value?.city },
+    { label: 'Staff Type', icon: 'i-lucide-id-card', value: record.value ? (record.value.teaching ? 'Teaching staff' : 'Non-teaching staff') : '' },
+    // The classes they are class master of this year.
+    ...(record.value?.teaching ? [{ label: 'Class Master Of', icon: CLASS_ICON, value: (record.value?.classes || []).join(', ') || 'Not a class master' }] : []),
+    { label: 'Joined', icon: 'i-lucide-calendar-plus', value: record.value?.createdAt ? formatDate(record.value.createdAt) : '' },
 ]))
 
 onMounted(() => {

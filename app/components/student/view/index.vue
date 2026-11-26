@@ -118,7 +118,7 @@
         <!-- Left the school: why and when -->
         <UAlert v-if="record && hasLeft" :color="record.status === 'EXPELLED' ? 'error' : 'warning'" variant="soft"
             :icon="record.status === 'EXPELLED' ? 'lucide:user-x' : 'lucide:user-minus'"
-            :title="`${name} was ${record.status === 'EXPELLED' ? 'expelled' : 'withdrawn'}${record.exitDate ? ' on ' + record.exitDate : ''}`">
+            :title="`${name} was ${record.status === 'EXPELLED' ? 'expelled' : 'withdrawn'}${record.exitDate ? ' on ' + formatDate(record.exitDate) : ''}`">
             <template #description>
                 <p v-if="record.exitReason">Reason: {{ record.exitReason }}</p>
                 <p v-if="record.exitNote" class="mt-0.5">{{ record.exitNote }}</p>
@@ -154,7 +154,11 @@ const { can } = useAuth()
 // Report cards are ADMIN/OWNER/PROPRIETOR only server-side - Accountant can view a student's
 // profile but not their report cards, so the tab only shows for roles that can actually open it.
 const { isPathAvailable } = useModules()
-const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER]))
+// Same roles the backend lets list a student's report cards (super admins included).
+const canViewReportCards = computed(() => can([Role.ADMIN, Role.PROPRIETOR, Role.PRINCIPAL, Role.OWNER, Role.SUPER_ADMIN]))
+// Marks and class position: the roles the backend lets load a student's terms and rank - not accountants, who'd get an
+// empty tab.
+const canViewPerformance = computed(() => can([Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
 // Behaviour records: the roles the backend lets read them (accountants can't).
 const canViewBehaviours = computed(() => can([Role.ADMIN, Role.PRINCIPAL, Role.SUPER_ADMIN, Role.PROPRIETOR, Role.OWNER, Role.TEACHER]))
 // Library history: only the roles the backend lets see library attendance (teachers and accountants can't).
@@ -171,7 +175,9 @@ definePageMeta({
 
 // "12 years · Female · Sierra Leonean" - the facts people look for under the name.
 const details = computed(() => {
-    const dob = record.value?.dateOfBirth ? new Date(record.value.dateOfBirth) : null
+    // Read "YYYY-MM-DD" as a local date - new Date() would take it as UTC midnight and shift it a day west of UTC.
+    const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(record.value?.dateOfBirth || '')
+    const dob = parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null
     let age = ''
     if (dob && !isNaN(dob.getTime())) {
         const today = new Date()
@@ -320,8 +326,8 @@ const reportCardInfo = `/students/${route.params.id}/report-card${backQuery}`
 // fees and behaviours - all real but secondary to the academic picture.
 const mobileTabs = computed(() => [
     { label: 'Personal', to: personalInfo, icon: USER_ICON, exact: true },
-    { label: 'Academics', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
-    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
+    ...(canViewPerformance.value ? [{ label: 'Academics', to: academicInfo, icon: ACADEMIC_ICON, exact: true }] : []),
+    ...(canViewPerformance.value ? [{ label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true }] : []),
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fees', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },
@@ -333,8 +339,8 @@ const mobileTabs = computed(() => [
 
 const desktopTabs = computed(() => [
     { label: 'Personal Information', to: personalInfo, icon: USER_ICON, exact: true },
-    { label: 'Academic Information', to: academicInfo, icon: ACADEMIC_ICON, exact: true },
-    { label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true },
+    ...(canViewPerformance.value ? [{ label: 'Academic Information', to: academicInfo, icon: ACADEMIC_ICON, exact: true }] : []),
+    ...(canViewPerformance.value ? [{ label: 'Performance', to: performanceInfo, icon: PERFORMANCE_ICON, exact: true }] : []),
     ...(canViewReportCards.value ? [{ label: 'Report Card', to: reportCardInfo, icon: REPORT_CARD_ICON, exact: true }] : []),
     { label: 'Attendance', to: attendanceInfo, icon: ATTENDANCE_ICON, exact: true },
     { label: 'Fee Structure', to: feeStructureInfo, icon: STUDENT_FEES_ICON, exact: true },

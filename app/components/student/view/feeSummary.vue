@@ -1,23 +1,25 @@
 <script lang="ts" setup>
-const widgetStore = useWidgetStore()
-const { record } = storeToRefs(useStudentStore())
+// Totals for the fees listed below it on the student's Fees tab - worked out from those same rows, so the two always
+// agree (it used to sum only the first 10 fee records and ignored discounts).
+const props = defineProps<{ fees: Fee[], loading?: boolean }>()
 const { format } = useMoney()
-const loading = ref(true)
+const loading = computed(() => !!props.loading)
 
-const report = reactive<{
-    paid: number
-    outstanding: number
-    total: number
-}>({
-    paid: 0,
-    outstanding: 0,
-    total: 0
+const report = computed(() => {
+    const sum = (pick: (f: Fee) => number) => props.fees.reduce((total, f) => total + (Number(pick(f)) || 0), 0)
+    return {
+        total: sum(f => f.amount),
+        discount: sum(f => (f as any).discount ?? 0),
+        paid: sum(f => f.amountPaid),
+        outstanding: sum(f => f.outstanding)
+    }
 })
 
+// Against what is actually owed (after discounts).
 const percentPaid = computed(() => {
-    if (report.total <= 0) return 0
-
-    return Math.round((report.paid / report.total) * 100)
+    const owed = report.value.total - report.value.discount
+    if (owed <= 0) return report.value.total > 0 ? 100 : 0
+    return Math.min(100, Math.round((report.value.paid / owed) * 100))
 })
 
 const RADIUS = 52
@@ -28,65 +30,31 @@ const dashOffset = computed(() => CIRCUMFERENCE * (1 - percentPaid.value / 100))
 const tiles = computed(() => [
     {
         key: 'Total',
-        value: format(report.total),
+        value: format(report.value.total),
         text: 'text-highlighted',
         border: 'border-info-200 bg-info-50 dark:border-info-800 dark:bg-info-950'
     },
     {
         key: 'Paid',
-        value: format(report.paid),
+        value: format(report.value.paid),
         text: 'text-success-600 dark:text-success-400',
         border: 'border-success-200 bg-success-50 dark:border-success-800 dark:bg-success-950'
     },
     {
         key: 'Outstanding',
-        value: format(report.outstanding),
+        value: format(report.value.outstanding),
         text: 'text-warning-600 dark:text-warning-400',
         border: 'border-warning-200 bg-warning-50 dark:border-warning-800 dark:bg-warning-950'
-    }
+    },
+    // Only when the student has one - Total less Discount less Paid is Outstanding.
+    ...(report.value.discount > 0 ? [{
+        key: 'Discount',
+        value: format(report.value.discount),
+        text: 'text-purple-600 dark:text-purple-400',
+        border: 'border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950'
+    }] : [])
 ])
 
-async function fetchRecord() {
-    loading.value = true
-    if (record.value == null) return
-
-    const [count] = await Promise.all([
-        widgetStore.runAnalytic({
-            entity: "fees",
-            filters: [
-                {
-                    field: 'enrollment.student.id',
-                    value: record.value?.id,
-                    operator: 'EQUALS',
-                    type: 'select'
-                }
-            ],
-            metrics: [
-                { field: "amountPaid", aggregation: "sum", name: "Paid", tags: { value: "Paid", field: "status" } },
-                { field: "amountPaid", aggregation: "sum", name: "Partial", tags: { value: "Partial", field: "status" } },
-                { field: "amount", aggregation: "sum", name: "Total" }
-            ],
-            chartType: "stat"
-        }, 1, 10),
-    ])
-
-    const datasets = count?.data.datasets || []
-
-    const paid = datasets.find((e: any) => e.label === 'Paid')
-    const partial = datasets.find((e: any) => e.label === 'Partial')
-    const total = datasets.find((e: any) => e.label === 'Total')
-
-    const amountPaid = paid?.data?.[0] + partial?.data?.[0] || 0
-    const outstanding = (total?.data?.[0] || 0) - amountPaid
-    Object.assign(report, {
-        paid: amountPaid,
-        total: total?.data?.[0] || 0,
-        outstanding: outstanding
-    })
-    loading.value = false
-}
-
-watch(() => record.value, () => fetchRecord(), { immediate: true })
 </script>
 
 <template>

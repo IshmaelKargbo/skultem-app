@@ -33,6 +33,10 @@
         </UDropdownMenu>
       </div>
 
+      <div v-else-if="loadError" class="flex flex-col items-center gap-2 py-10 text-center">
+        <p class="text-sm text-error">Couldn't load this parent: {{ loadError }}</p>
+        <UButton variant="soft" size="sm" label="Try again" @click="load(); loadStudents()" />
+      </div>
       <div v-else class="flex flex-col items-center gap-2 py-10 text-center">
         <UIcon name="i-lucide-user-x" class="text-4xl text-muted" />
         <p class="font-medium">Parent not found</p>
@@ -68,7 +72,15 @@
       <!-- Children -->
       <UCard class="lg:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
-          <p class="font-semibold">Children</p>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-semibold">Children</p>
+            <!-- What the family owes this year, all children together -->
+            <div v-if="canSeeAmounts && students.length" class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+              <span class="text-muted">Fees <b class="text-highlighted">{{ format(family.owed) }}</b></span>
+              <span class="text-muted">Paid <b class="text-success">{{ format(family.paid) }}</b></span>
+              <span class="text-muted">Balance <b :class="family.balance > 0 ? 'text-error' : 'text-success'">{{ format(family.balance) }}</b></span>
+            </div>
+          </div>
         </template>
 
         <div v-if="loadingStudents" class="divide-y divide-default">
@@ -88,13 +100,27 @@
             <div class="min-w-0 flex-1">
               <p class="truncate font-medium text-highlighted">{{ s.givenNames }} {{ s.familyName }}</p>
               <p class="truncate text-xs text-muted">
-                {{ s.admissionNumber || 'No admission number' }}<template v-if="s.className"> · {{ s.className }}</template>
+                {{ s.admissionNumber || 'No admission number' }}<template v-if="s.className && s.className !== 'N/A'"> · {{ s.className }}</template>
               </p>
+            </div>
+            <UBadge v-if="hasLeft(s)" size="sm" variant="subtle" :color="s.status === 'EXPELLED' ? 'error' : 'warning'"
+              :label="s.status === 'EXPELLED' ? 'Expelled' : 'Withdrawn'" class="shrink-0" />
+            <div v-if="s.feeDetail" class="shrink-0 text-right">
+              <p v-if="canSeeAmounts" class="text-sm font-semibold"
+                :class="Number(s.feeDetail.balance) > 0 ? 'text-error' : 'text-success'">
+                {{ Number(s.feeDetail.balance) > 0 ? `${format(s.feeDetail.balance)} owed` : 'Paid up' }}
+              </p>
+              <UBadge v-else size="sm" variant="subtle" :color="parseFeeStatusColor[s.feeDetail.status] || 'neutral'"
+                :label="s.feeDetail.status" />
             </div>
             <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0 text-muted" />
           </NuxtLink>
         </div>
 
+        <div v-else-if="studentsError" class="flex flex-col items-center gap-2 py-10 text-center">
+          <p class="text-sm text-error">Couldn't load the children: {{ studentsError }}</p>
+          <UButton variant="soft" size="xs" label="Try again" @click="loadStudents" />
+        </div>
         <div v-else class="flex flex-col items-center gap-2 py-10 text-center">
           <UIcon name="i-lucide-users" class="text-4xl text-muted" />
           <p class="text-sm text-muted">No children linked to this guardian.</p>
@@ -130,6 +156,22 @@ const parent = ref<Parent | null>(null)
 const students = ref<Student[]>([])
 const loading = ref(true)
 const loadingStudents = ref(true)
+// Why a load failed - shown instead of "Parent not found" / "No children" when it was really an error.
+const loadError = ref('')
+const studentsError = ref('')
+
+// Only the owner and principal see what is paid or owed (same as the student list); others see the status.
+const canSeeAmounts = computed(() => can([Role.OWNER, Role.PRINCIPAL]))
+const { format } = useMoney()
+const hasLeft = (s: Student) => s.status === 'WITHDRAWN' || s.status === 'EXPELLED'
+const family = computed(() => {
+  const sum = (pick: (s: Student) => number) => students.value.reduce((t, s) => t + (Number(pick(s)) || 0), 0)
+  return {
+    owed: sum(s => s.feeDetail?.total ?? 0),
+    paid: sum(s => s.feeDetail?.paid ?? 0),
+    balance: sum(s => s.feeDetail?.balance ?? 0)
+  }
+})
 
 const editOpen = ref(false)
 const deleteOpen = ref(false)
@@ -154,17 +196,21 @@ const details = computed(() => [
   { label: 'Phone', value: parent.value?.phone, icon: 'i-lucide-phone' },
   { label: 'Email', value: parent.value?.email, icon: 'i-lucide-mail' },
   { label: 'Address', value: [parent.value?.street, parent.value?.city].filter(Boolean).join(', '), icon: 'i-lucide-map-pin' },
-  { label: 'Added', value: parent.value?.createdAt ? new Date(parent.value.createdAt).toLocaleDateString() : '', icon: 'i-lucide-calendar' }
+  { label: 'Added', value: parent.value?.createdAt ? formatDate(parent.value.createdAt) : '', icon: 'i-lucide-calendar' }
 ])
 
 async function load() {
   loading.value = true
+  loadError.value = ''
   try {
     parent.value = await ParentApi().getOne(id.value) ?? null
     if (parent.value) {
       useAppStore().setTitle(parent.value.name)
       document.title = `${parent.value.name} | Parents | Skultem`
     }
+  } catch (err: any) {
+    parent.value = null
+    loadError.value = err?.message || 'Could not load this parent'
   } finally {
     loading.value = false
   }
@@ -172,8 +218,12 @@ async function load() {
 
 async function loadStudents() {
   loadingStudents.value = true
+  studentsError.value = ''
   try {
     students.value = await ParentApi().getStudentsOf(id.value) ?? []
+  } catch (err: any) {
+    students.value = []
+    studentsError.value = err?.message || 'Could not load the children'
   } finally {
     loadingStudents.value = false
   }
