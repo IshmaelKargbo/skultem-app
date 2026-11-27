@@ -10,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-const store = useWidgetStore()
 const { id } = defineProps<{
     id: string
 }>()
@@ -27,52 +26,10 @@ async function fetchRecord() {
     isReady.value = false
     let outstanding = 0
     try {
-        const [payments] = await Promise.all([
-            store.runAnalytic({
-                entity: "fees",
-                title: "Fee Paid",
-                filters: [
-                    {
-                        field: "student.id",
-                        value: id,
-                        operator: "EQUALS",
-                        type: "select"
-                    }
-                ],
-                metrics: [
-                    {
-                        name: "Paid",
-                        aggregation: "sum",
-                        field: "amountPaid",
-                        tags: { field: "status", value: "Paid" }
-                    },
-                    {
-                        name: "Partial",
-                        aggregation: "sum",
-                        field: "amountPaid",
-                        tags: { field: "status", value: "Partial" }
-                    },
-                    {
-                        name: "Total",
-                        aggregation: "sum",
-                        field: "amount",
-                    }
-                ],
-                chartType: "bar"
-            }, 1, 10),
-        ])
-
-        const datasets = payments?.data?.datasets ?? []
-
-        const paid = datasets.find((e: any) => e.label === "Paid")
-        const partial = datasets.find((e: any) => e.label === "Partial")
-        const total = datasets.find((e: any) => e.label === "Total")
-
-        const totalPaid =
-            Number(paid?.data?.[0] ?? 0) +
-            Number(partial?.data?.[0] ?? 0)
-
-        outstanding = Number(total?.data?.[0] ?? 0) - totalPaid
+        // Every fee on the child's account that still has something owing, after discounts and payments - the same
+        // list the Pay page uses. (The old sum read only the first 10 fee records and ignored discounts.)
+        const res = await StudentApi().getAllStudentOutstandingFeesById(id) as { data?: any[] } | undefined
+        outstanding = (res?.data ?? []).reduce((sum, r) => sum + (Number(r.outstanding) || 0), 0)
     } catch (err) {
         console.error("Failed to load fee balance", err)
     } finally {

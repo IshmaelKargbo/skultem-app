@@ -12,10 +12,10 @@
 <script setup lang="ts">
 const { formatScore } = useScoreFormat()
 const store = useWidgetStore()
-const { sessionId, term, assessment, teacher } = defineProps<{
-  sessionId: string | undefined
+// teacherSubjectId: this teacher's subject in one class section - exactly the marks this card is about.
+const { term, assessment, teacherSubjectId } = defineProps<{
   assessment: string | undefined
-  teacher: string | undefined
+  teacherSubjectId: string | undefined
   term: Term | undefined
 }>()
 
@@ -24,15 +24,15 @@ const termAverage = ref("0")
 const message = ref('')
 
 async function fetchTermAverage() {
-  if (term == null) return
+  if (term == null || !teacherSubjectId) return
 
   const res = await store.runAnalytic({
     entity: "assessments",
     title: "Term Average",
     filters: [
       {
-        field: "studentAssessment.enrollment.clazz.id",
-        value: sessionId,
+        field: "studentAssessment.teacherSubject.id",
+        value: teacherSubjectId,
         operator: "EQUALS",
         type: "select"
       },
@@ -48,10 +48,11 @@ async function fetchTermAverage() {
         operator: "EQUALS",
         type: "select"
       },
+      // Approved marks only - a draft or unmarked test (still 0) would drag the average down.
       {
-        field: "cycle.subject.id",
-        value: teacher,
-        operator: "EQUALS",
+        field: "cycle.status",
+        values: ['APPROVED', 'COMPLETED'],
+        operator: "IN_LIST",
         type: "select"
       }
     ],
@@ -65,7 +66,7 @@ async function fetchTermAverage() {
     chartType: "stat"
   })
 
-  message.value = `Assessment for ${term.name}`
+  message.value = `${term.name}, approved marks`
   const widget = res?.data ?? res
   const currentAverage = Number(widget?.datasets?.[0]?.data?.[0] ?? 0)
   termAverage.value = formatScore(currentAverage, '0')
@@ -75,7 +76,7 @@ async function fetchTermAverage() {
 
 watch
   (
-    () => [term, sessionId, teacher, assessment],
+    () => [term, teacherSubjectId, assessment],
     async () => {
       isReady.value = false
       await fetchTermAverage()

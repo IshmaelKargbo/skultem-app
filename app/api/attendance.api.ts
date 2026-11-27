@@ -187,6 +187,17 @@ export const AttendanceApi = () => {
       return res?.data as StudentTermAttendanceDetail | undefined
     },
 
+    // The school days between two dates this academic year (weekdays inside a term, up to today, less the days
+    // the school is closed) - what a student's or a teacher's attendance is measured against.
+    schoolDays: async (from: string, to: string) => {
+      try {
+        const res = await $api(`/attendance/school-days?from=${from}&to=${to}`) as any
+        return (res?.data || []) as string[]
+      } catch (err: any) {
+        useHandleError(err)
+      }
+    },
+
     getMarkingCompliance: async (params: { academicYearId?: string, termId?: string } = {}) => {
       try {
         const query = new URLSearchParams()

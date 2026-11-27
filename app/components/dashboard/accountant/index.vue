@@ -19,7 +19,7 @@
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 md:flex md:flex-wrap md:justify-end">
                     <UButton to="/fees-payment/structure/add" label="Create Fee Structure" :icon="ADD_ICON" />
                     <UButton to="/fees-payment/pay" label="Record Payment" color="neutral" :icon="PAYMENT_ICON" variant="outline" />
-                    <UButton to="/reports" label="Generate Report" color="neutral" :icon="REPORT_ICON" variant="outline" />
+                    <UButton to="/analytics/financial-reports" label="Generate Report" color="neutral" :icon="REPORT_ICON" variant="outline" />
                 </div>
             </div>
         </section>

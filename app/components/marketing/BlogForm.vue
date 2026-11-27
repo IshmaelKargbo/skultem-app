@@ -8,8 +8,15 @@ const { success, error: toastError } = useNotify()
 type Form = Omit<SaveBlogPostDto, 'tags'> & { tags: string }
 
 const form = reactive<Form>({
-  title: '', slug: '', excerpt: '', content: '', images: [], authorName: '', tags: '', published: false
+  title: '', slug: '', excerpt: '', content: '', images: [], authorName: '', tags: '', published: false, categoryId: ''
 })
+
+// The categories to pick from; managed on the blog list (Categories).
+const categories = ref<BlogCategory[]>([])
+const categoryOptions = computed(() => [
+  { label: 'No category', value: '' },
+  ...categories.value.map(c => ({ label: c.name, value: c.id }))
+])
 
 const previewOpen = ref(false)
 const loading = ref(!!id)
@@ -62,7 +69,7 @@ async function load() {
     Object.assign(form, {
       title: post.title, slug: post.slug, excerpt: post.excerpt ?? '', content: post.content ?? '',
       images: post.images ?? [], authorName: post.authorName ?? '', tags: post.tags.join(', '),
-      published: post.published
+      published: post.published, categoryId: post.categoryId ?? ''
     })
   } catch {
     notFound.value = true
@@ -149,6 +156,7 @@ onMounted(() => {
   useAppStore().setBack('/blog')
   document.title = `${id ? 'Edit Post' : 'New Post'} | Blog | System Admin | Skultem`
   load()
+  MarketingApi().listCategories().then(list => { categories.value = list || [] })
 })
 </script>
 
@@ -247,6 +255,10 @@ onMounted(() => {
             </div>
           </template>
           <div class="space-y-4">
+            <UFormField label="Category" help="Readers can browse the blog by category.">
+              <USelectMenu v-model="form.categoryId" value-key="value" :items="categoryOptions"
+                icon="i-lucide-folder" class="w-full" />
+            </UFormField>
             <UFormField label="Author" :error="shown('authorName')">
               <UInput v-model="form.authorName" class="w-full" placeholder="e.g. The Skultem Team" />
             </UFormField>
@@ -259,7 +271,7 @@ onMounted(() => {
     </UForm>
 
     <MarketingBlogPreview v-model:open="previewOpen"
-      :post="{ title: form.title, excerpt: form.excerpt, content: form.content, images: form.images, authorName: form.authorName, tags: tagList, published: form.published }" />
+      :post="{ title: form.title, excerpt: form.excerpt, content: form.content, images: form.images, authorName: form.authorName, tags: tagList, published: form.published, categoryName: categories.find(c => c.id === form.categoryId)?.name ?? null }" />
   </div>
 </template>
 

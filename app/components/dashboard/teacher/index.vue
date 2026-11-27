@@ -56,15 +56,15 @@
                     </UCard>
 
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        <DashboardTeacherTotal :term="term" :session-id="selected?.classId" />
-                        <DashboardTeacherClassAvarage :assessment="state.assessment" :class-id="selected?.classId"
-                            :teacher="selected?.id" :term="term" :session-id="selected?.classId" />
-                        <DashboardTeacherAttendance class="col-span-2 md:col-span-1"  :classId="selected?.classId" />
+                        <DashboardTeacherTotal :subject="selected" />
+                        <DashboardTeacherClassAvarage :assessment="state.assessment" :teacher-subject-id="selected?.id"
+                            :term="term" />
+                        <DashboardTeacherAttendance class="col-span-2 md:col-span-1" :subject="selected" :term="term" />
                     </div>
 
                     <DashboardTeacherGradeDistribution :assessment="state.assessment" :term="state.term"
-                        :class-id="selected?.classId" :teacher="selected?.id" />
-                    <DashboardTeacherAttendanceTrend :class-id="selected?.classId" />
+                        :teacher-subject-id="selected?.id" />
+                    <DashboardTeacherAttendanceTrend :subject="selected" :term="term" />
                 </template>
 
                 <template v-else>

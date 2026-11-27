@@ -8,6 +8,8 @@ const loading = ref(true)
 
 const cursor = ref(startOfMonth(new Date()))
 const recordsByDate = ref<Record<string, TeacherAttendanceDay>>({})
+// The month's school days so far - what the attendance ring is measured against.
+const schoolDays = ref<string[]>([])
 
 const statusStyles: Record<TeacherAttendanceStatus, { circle: string, text: string, dot: string }> = {
     PRESENT: {
@@ -89,7 +91,11 @@ const stats = computed(() => {
     }
 
     const total = counts.PRESENT + counts.ABSENT + counts.LATE + counts.EXCUSED
-    const percent = total === 0 ? 0 : Math.round((counts.PRESENT / total) * 100)
+    // Like the staff summaries: late counts as attended, and a school day with no record counts as missed.
+    const expected = schoolDays.value.length
+    const attended = Math.min(counts.PRESENT + counts.LATE, expected)
+    const notMarked = schoolDays.value.filter(d => !recordsByDate.value[d]?.status).length
+    const percent = expected === 0 ? 0 : Math.round((attended / expected) * 100)
 
     return {
         PRESENT: counts.PRESENT,
@@ -97,6 +103,8 @@ const stats = computed(() => {
         LATE: counts.LATE,
         EXCUSED: counts.EXCUSED,
         total,
+        expected,
+        notMarked,
         percent
     }
 })
@@ -172,6 +180,7 @@ function goNextMonth() {
 async function fetchMonth() {
     loading.value = true
     recordsByDate.value = {}
+    schoolDays.value = []
 
     if (!mine && !teacher?.id) {
         loading.value = false
@@ -180,9 +189,13 @@ async function fetchMonth() {
 
     const from = dateKey(cursor.value)
     const to = dateKey(monthEnd.value)
-    const days = await (mine
-        ? TeacherAttendanceApi().myHistory(from, to)
-        : TeacherAttendanceApi().byTeacher(teacher!.id, from, to)) as TeacherAttendanceDay[] | undefined
+    const [days, open] = await Promise.all([
+        (mine
+            ? TeacherAttendanceApi().myHistory(from, to)
+            : TeacherAttendanceApi().byTeacher(teacher!.id, from, to)) as Promise<TeacherAttendanceDay[] | undefined>,
+        AttendanceApi().schoolDays(from, to)
+    ])
+    schoolDays.value = open || []
 
     const map: Record<string, TeacherAttendanceDay> = {}
 
@@ -226,7 +239,7 @@ watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
                             </span>
 
                             <span class="text-[10px] font-semibold uppercase tracking-wide text-muted">
-                                Present
+                                Attended
                             </span>
                         </div>
                     </div>
@@ -245,7 +258,12 @@ watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
                 </div>
 
                 <!-- Stat tiles -->
-                <div class="grid w-full flex-1 grid-cols-2 gap-3 md:grid-cols-4">
+                <div class="w-full flex-1 space-y-3">
+                <p v-if="!loading" class="text-xs text-muted">
+                    {{ Math.min(stats.PRESENT + stats.LATE, stats.expected) }} of {{ stats.expected }} school day{{ stats.expected === 1 ? '' : 's' }} so far this month
+                    <template v-if="stats.notMarked"> · {{ stats.notMarked }} not marked (counted as missed)</template>
+                </p>
+                <div class="grid w-full grid-cols-2 gap-3 md:grid-cols-4">
                     <div v-for="tile in tiles" :key="tile.key"
                         class="rounded-xl border-2 p-4 text-center"
                         :class="[
@@ -265,6 +283,7 @@ watch(() => [mine, teacher?.id, cursor.value], fetchMonth, { immediate: true })
                             {{ tile.label }}
                         </p>
                     </div>
+                </div>
                 </div>
             </div>
         </UCard>

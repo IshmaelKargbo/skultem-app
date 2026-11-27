@@ -51,7 +51,7 @@
           <p class="mt-1 text-sm font-semibold text-gray-600">Staff Term Attendance Summary</p>
           <div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
             <span>Term: {{ summary.termLabel }}</span>
-            <span>Total School Days (term start to date): {{ totalSchoolDays }}</span>
+            <span>School Days (term start to date): {{ totalSchoolDays }}</span>
           </div>
         </div>
 
@@ -61,7 +61,7 @@
             <p class="text-lg font-bold text-primary-600">{{ summary.totalTeachers }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Total School Days</p>
+            <p class="text-xs text-gray-500">School Days So Far</p>
             <p class="text-lg font-bold text-primary-600">{{ totalSchoolDays }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
@@ -130,27 +130,17 @@ const search = ref('')
 const downloading = ref(false)
 const { success, error: toastError } = useNotify()
 
-// Mon-Fri days from the term's start up to today (or the term's end, if it is over) - how many
-// days teachers were expected in. Holidays aren't excluded.
-const totalSchoolDays = computed(() => {
-  const term = termStore.records.find(t => t.id === filters.termId)
-  if (!term) return 0
-  const today = new Date()
-  const end = term.endDate && new Date(term.endDate) < today ? term.endDate : today
-  return countWeekdays(term.startDate, end)
-})
+// From the backend: weekdays from the term's start up to today (or its end), less the days the school was
+// closed - how many days teachers were expected in.
+const totalSchoolDays = computed(() => summary.value?.schoolDays ?? 0)
 const terms = computed(() => termStore.records.map(t => ({ label: t.name, value: t.id })))
 
 const summary = computed(() => teacherAttendanceStore.termSummary)
 const loading = computed(() => teacherAttendanceStore.loadingTermSummary)
 
-// Attendance is measured against every school day so far, not just the days a teacher has a record for -
-// a teacher with 12 days marked out of 19 is at 63.2%, not 100%.
-function rateAgainstSchoolDays(t: { present: number, late: number }) {
-  if (!totalSchoolDays.value) return null
-  return Math.min(100, Math.round(((t.present + t.late) / totalSchoolDays.value) * 1000) / 10)
-}
-const rated = computed(() => (summary.value?.teachers || []).map(t => ({ ...t, attendancePercentage: rateAgainstSchoolDays(t) })))
+// The backend measures every teacher against every school day so far - a teacher with 12 days marked out of 19
+// is at 63.2%, not 100% - so its percentages are used as they are.
+const rated = computed(() => summary.value?.teachers || [])
 const averageAttendance = computed(() => {
   const rates = rated.value.map(t => t.attendancePercentage).filter((r): r is number => r != null)
   return rates.length ? Math.round((rates.reduce((a, b) => a + b, 0) / rates.length) * 10) / 10 : 0

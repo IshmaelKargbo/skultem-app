@@ -44,7 +44,7 @@
           <div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
             <span>Month: {{ monthLabel }}</span>
             <span v-if="term">Term: {{ term.name }}</span>
-            <span>Total School Days (term start to date): {{ totalSchoolDays }}</span>
+            <span>School Days This Month: {{ totalSchoolDays }}</span>
           </div>
         </div>
 
@@ -116,14 +116,9 @@ const term = computed(() => {
   }
   return termStore.records.find(t => t.status === 'ACTIVE') || null
 })
-// Mon-Fri days from the term's start up to today (or the term's end, if it is over) - how many days
-// teachers were expected in. Holidays aren't excluded.
-const totalSchoolDays = computed(() => {
-  if (!term.value) return 0
-  const today = new Date()
-  const end = term.value.endDate && new Date(term.value.endDate) < today ? term.value.endDate : today
-  return countWeekdays(term.value.startDate, end)
-})
+// From the backend (the same for every teacher): the month's weekdays inside a term, up to today, less the
+// days the school was closed - how many days teachers were expected in.
+const totalSchoolDays = computed(() => summary.value[0]?.workingDays ?? 0)
 
 const monthLabel = computed(() => {
   if (!filters.month) return '—'

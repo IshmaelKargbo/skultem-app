@@ -25,11 +25,21 @@ function defaultState() {
     startDate: entry?.startDate ? entry.startDate.slice(0, 10) : '',
     endDate: entry?.endDate ? entry.endDate.slice(0, 10) : '',
     location: entry?.location || '',
-    managementSectionId: entry?.managementSectionId || ''
+    managementSectionId: entry?.managementSectionId || '',
+    // A holiday means no school unless they say otherwise; an event is a normal school day.
+    noSchool: entry ? !!entry.noSchool : false
   }
 }
 
 const state = reactive(defaultState())
+
+// Switching the type of a new entry moves the default with it (a holiday is a day off, an event isn't).
+watch(() => state.type, (type) => {
+  if (!isEdit.value) state.noSchool = type === 'HOLIDAY'
+})
+
+// Only a whole-school entry can close the school.
+const wholeSchool = computed(() => !state.managementSectionId)
 
 const schema = yup.object({
   title: yup.string().required('Title is required'),
@@ -60,7 +70,8 @@ async function onSubmit() {
       startDate: new Date(state.startDate).toISOString(),
       endDate: new Date(state.endDate).toISOString(),
       location: state.location,
-      managementSectionId: state.managementSectionId || null
+      managementSectionId: state.managementSectionId || null,
+      noSchool: wholeSchool.value && state.noSchool
     }
 
     if (isEdit.value && entry) {
@@ -187,6 +198,15 @@ async function onSubmit() {
 
   <!-- Who: the whole school or one management section -->
   <CommunicateSectionPicker v-model="state.managementSectionId" :locked="!!entry" :disabled="isLoading" />
+
+  <!-- Whether the school is closed: those days come off the school days attendance is counted against. -->
+  <div v-if="wholeSchool" class="flex items-start justify-between gap-4 rounded-lg border border-default p-3">
+    <div>
+      <p class="text-sm font-medium text-highlighted">No school on {{ state.startDate && state.endDate && state.startDate !== state.endDate ? 'these days' : 'this day' }}</p>
+      <p class="text-xs text-muted">The school is closed, so attendance isn't taken and these days don't count as school days.</p>
+    </div>
+    <USwitch v-model="state.noSchool" :disabled="isLoading" />
+  </div>
 
   <!-- Location -->
   <UFormField

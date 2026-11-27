@@ -51,7 +51,7 @@
         <template #header>
           <div>
             <h2 class="font-semibold">{{ scopeLabel }}</h2>
-            <p class="text-sm text-muted">{{ summary.startDate }} – {{ summary.endDate }} · present = present or late, counted per student per day</p>
+            <p class="text-sm text-muted">{{ summary.startDate }} – {{ summary.endDate }} · present = present or late, counted per student per school day; a day with no mark counts as missed</p>
           </div>
         </template>
 
@@ -142,13 +142,19 @@
             <tbody>
               <tr v-for="day in report.days" :key="day.date">
                 <td class="border border-default p-2.5">{{ day.dayLabel }}</td>
-                <td class="border border-default p-2.5 text-center">{{ day.boysPresent }}</td>
-                <td class="border border-default p-2.5 text-center">{{ day.boysAbsent }}</td>
-                <td class="border border-default p-2.5 text-center">{{ day.girlsPresent }}</td>
-                <td class="border border-default p-2.5 text-center">{{ day.girlsAbsent }}</td>
-                <td class="border border-default p-2.5 text-center font-semibold">
-                  {{ day.overallAttendancePercentage }}%
+                <!-- A holiday, no-school day, day outside the term or day still to come: nothing was expected. -->
+                <td v-if="day.schoolDay === false" colspan="5" class="border border-default p-2.5 text-center text-muted">
+                  No school
                 </td>
+                <template v-else>
+                  <td class="border border-default p-2.5 text-center">{{ day.boysPresent }}</td>
+                  <td class="border border-default p-2.5 text-center">{{ day.boysAbsent }}</td>
+                  <td class="border border-default p-2.5 text-center">{{ day.girlsPresent }}</td>
+                  <td class="border border-default p-2.5 text-center">{{ day.girlsAbsent }}</td>
+                  <td class="border border-default p-2.5 text-center font-semibold">
+                    {{ day.overallAttendancePercentage }}%
+                  </td>
+                </template>
               </tr>
             </tbody>
           </table>

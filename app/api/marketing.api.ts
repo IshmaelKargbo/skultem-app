@@ -33,7 +33,15 @@ export const MarketingApi = () => {
     updateVideo: (id: string, dto: SaveMarketingVideoDto) => send(`/marketing/videos/${id}`, 'PUT', dto),
     deleteVideo: (id: string) => send(`/marketing/videos/${id}`, 'DELETE'),
 
-    listPosts: (p: number, size: number) => page(`/marketing/blog?page=${p}&size=${size}`),
+    // category: a category id, 'none' for posts without one, or left out for all.
+    listPosts: (p: number, size: number, category?: string) =>
+      page(`/marketing/blog?page=${p}&size=${size}${category ? `&category=${encodeURIComponent(category)}` : ''}`),
+    listCategories: () => $api('/marketing/blog/categories')
+      .then((res: any) => (res?.data || []) as BlogCategory[]).catch(useHandleError),
+    createCategory: (dto: SaveBlogCategoryDto) => send('/marketing/blog/categories', 'POST', dto),
+    updateCategory: (id: string, dto: SaveBlogCategoryDto) => send(`/marketing/blog/categories/${id}`, 'PUT', dto),
+    // Its posts stay, uncategorised.
+    deleteCategory: (id: string) => send(`/marketing/blog/categories/${id}`, 'DELETE'),
     getPost: (id: string) => $api(`/marketing/blog/${id}`).then((res: any) => res.data as BlogPost).catch(useHandleError),
     // Whether the slug is well formed and no other post uses it (a post may keep its own).
     slugAvailable: async (slug: string, excludeId?: string) => {

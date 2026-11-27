@@ -74,6 +74,28 @@ export const useCommunicateStore = defineStore('communicate', {
             }
         },
 
+        // Every calendar entry - they come oldest first, so one page would drop this year's once a school has many.
+        async fetchWholeCalendar() {
+            this.loading = true
+            this.error = null
+            try {
+                const all: any[] = []
+                let meta: any = {}
+                for (let page = 1; page <= 50; page++) {
+                    const res = await CalendarEventApi().getAll(page, 200) as any
+                    all.push(...(res?.data || []))
+                    meta = res?.meta || meta
+                    if (!res?.meta || page >= (res.meta.totalPages || 1)) break
+                }
+                this.calendar = all
+                this.calendarMeta = meta
+            } catch (err: any) {
+                this.error = err?.message || 'Failed to fetch calendar entries'
+            } finally {
+                this.loading = false
+            }
+        },
+
         async fetchCalendar(page: number = 1, size: number = runtimeConf().limit) {
             this.loading = true
             this.error = null

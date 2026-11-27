@@ -5,7 +5,7 @@
     value: value,
     isReady: isReady,
     icon: STUDENT_ICON,
-    subtle: 'All students enrolled'
+    subtle: 'In this class section'
   }" />
 </template>
 
@@ -14,26 +14,27 @@ const { formatScore } = useScoreFormat()
 import { ref, watch } from 'vue'
 
 const store = useWidgetStore()
-const { sessionId } = defineProps<{
-  sessionId: string | undefined
+// The section this subject is taught in.
+const { subject } = defineProps<{
+  subject: TeacherSubject | undefined
 }>()
 
 const isReady = ref(false)
 const value = ref("0")
 
 async function fetchTermAverage() {
-  if (sessionId == null) return
+  if (!subject) return
 
   const res = await store.runAnalytic({
     entity: "students",
     title: "Total Students",
+    // Enrollments (this report counts them): this class section, this academic year, still at school.
     filters: [
-      {
-        field: "clazz.id",
-        value: sessionId,
-        operator: "EQUALS",
-        type: "select"
-      },
+      { field: "clazz.id", value: subject.classId, operator: "EQUALS", type: "select" },
+      { field: "section.id", value: subject.sectionId, operator: "EQUALS", type: "select" },
+      ...(subject.streamId ? [{ field: "stream.id", value: subject.streamId, operator: "EQUALS", type: "select" }] : []),
+      { field: "status", value: "ACTIVE", operator: "EQUALS", type: "select" },
+      { field: "academicYear.active", value: "true", operator: "EQUALS", type: "boolean" }
     ],
     metrics: [
       {
@@ -53,7 +54,7 @@ async function fetchTermAverage() {
 
 watch
   (
-    () => [sessionId],
+    () => [subject?.id],
     async () => {
       isReady.value = false
       await fetchTermAverage()

@@ -32,39 +32,25 @@ async function fetchTermAverage() {
   if (!id || term == null) return
   let currentAverage = 0
   try {
-    const res = await store.runAnalytic({
-      entity: "assessments",
+    // Each subject's weighted score from approved marks (the Performance tab's breakdown), then their average -
+    // the same way the report card averages a term. A plain average over every test also counted drafts and
+    // unmarked tests (still 0) and weighed a 10% quiz like the exam.
+    const res = await ReportApi().runReport({
+      entity: "breakdown",
       title: "Term Average",
       filters: [
-        {
-          field: "studentAssessment.enrollment.student.id",
-          value: id,
-          operator: "EQUALS",
-          type: "select"
-        },
-        {
-          field: 'cycle.term.id',
-          value: term.id,
-          operator: "EQUALS",
-          type: "select"
-        }
-      ],
-      metrics: [
-        {
-          name: "Average",
-          aggregation: "avg",
-          field: "score"
-        }
-      ],
-      chartType: "stat"
-    })
+        { field: "studentAssessment.enrollment.student.id", value: id, operator: "EQUALS", type: "select" },
+        { field: "cycle.term.id", value: term.id, operator: "EQUALS", type: "select" }
+      ]
+    } as any, 1, 200)
 
-    const widget = res?.data ?? res
-    currentAverage = Number(widget?.datasets?.[0]?.data?.[0] ?? 0)
+    // Subjects with nothing approved yet have no score and are left out, like on the report card.
+    const scored = ((res?.data ?? []) as any[]).map(r => r.score).filter((s: any) => s !== null && s !== undefined)
+    currentAverage = scored.length ? scored.reduce((sum: number, s: number) => sum + Number(s), 0) / scored.length : 0
   } catch (err) {
     console.error("Failed to load term average", err)
   } finally {
-    message.value = `Assessment for ${term.name}`
+    message.value = `${term.name}, approved marks`
     termAverage.value = formatScore(currentAverage, '0')
     isReady.value = true
     emit('ready', currentAverage)

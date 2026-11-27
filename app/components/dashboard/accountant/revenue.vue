@@ -83,7 +83,8 @@ async function loadData() {
         const payload = {
             entity: "payments",
             title: "Revenue by Month",
-            filters: [],
+            // The school's own fees - the Skultem platform fee isn't the school's revenue.
+            filters: [{ field: "fee.system", value: "false", operator: "EQUALS", type: "boolean" }],
             metrics: [
                 {
                     name: "Revenue",

@@ -63,12 +63,12 @@
 
         <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Total School Days (Mon–Fri)</p>
+            <p class="text-xs text-gray-500">School Days So Far</p>
             <p class="text-lg font-bold text-primary-600">{{ totalSchoolDays }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Working Days (Recorded)</p>
-            <p class="text-lg font-bold text-primary-600">{{ workingDays }}</p>
+            <p class="text-xs text-gray-500">Days Missed (All Students)</p>
+            <p class="text-lg font-bold text-primary-600">{{ daysMissed }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Boys Attendance</p>
@@ -171,13 +171,11 @@ const genderTotals = computed(() => {
   }
 })
 
-// Weekdays in the chosen month vs. days attendance was actually recorded (holidays drop out of the latter).
-const totalSchoolDays = computed(() => {
-  if (!filters.month) return 0
-  const [year, month] = filters.month.split('-').map(Number)
-  return countWeekdays(new Date(Date.UTC(year!, month! - 1, 1)), new Date(Date.UTC(year!, month!, 0)))
-})
-const workingDays = computed(() => Math.max(0, ...summary.value.map(s => s.schoolDays)))
+// From the backend (the same for every student): the month's weekdays inside a term, up to today, less the
+// days the school was closed. Every student is measured against all of them.
+const totalSchoolDays = computed(() => summary.value[0]?.schoolDays ?? 0)
+// A day with no mark counts as missed, like a marked absence.
+const daysMissed = computed(() => summary.value.reduce((sum, s) => sum + s.absent, 0))
 
 const academicYearLabel = computed(() =>
   academicYears.value.find(y => y.value === filters.academicYearId)?.label || academicYearStore.activeYear?.name || '—')

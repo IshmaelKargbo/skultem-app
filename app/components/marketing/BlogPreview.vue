@@ -13,6 +13,7 @@ const { post } = defineProps<{
     tags?: string[]
     published?: boolean
     publishedAt?: string | null
+    categoryName?: string | null
   } | null
 }>()
 
@@ -108,6 +109,7 @@ const hasContent = computed(() => !!post?.content && post.content.replace(/<[^>]
           <!-- Header -->
           <header class="max-w-3xl space-y-4">
             <div class="flex flex-wrap items-center gap-3 text-xs text-muted">
+              <UBadge v-if="post.categoryName" size="sm" variant="solid" color="primary" :label="post.categoryName" />
               <UBadge v-if="primaryTag" size="sm" variant="subtle" color="primary" :label="primaryTag" />
               <span>{{ date }}</span>
               <span class="flex items-center gap-1"><UIcon name="i-lucide-clock" class="size-3.5" /> {{ readMinutes }} min read</span>

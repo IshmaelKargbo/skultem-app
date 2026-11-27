@@ -20,7 +20,9 @@ const { id, term } = defineProps<{
     term?: string
 }>()
 
-const emit = defineEmits<{ ready: [value: number] }>()
+// value: the term's attendance %, or null when there's nothing to judge yet (no term, or no school days so
+// far); threshold: the student's minimum attendance %.
+const emit = defineEmits<{ ready: [value: number | null, threshold: number | null] }>()
 
 const isReady = ref(false)
 const summary = ref<StudentTermAttendanceDetail | null>(null)
@@ -35,7 +37,11 @@ async function fetchRecord() {
     } finally {
         isReady.value = true
     }
-    emit('ready', summary.value?.percentage ?? 0)
+    // Most school days still unmarked: the rate says more about the register than the child, so it's not
+    // something to warn a parent about (the same rule as the mobile app).
+    const s = summary.value
+    const mostlyUnmarked = !!s && s.notMarked > s.schoolDays - s.notMarked
+    emit('ready', mostlyUnmarked ? null : s?.percentage ?? null, s?.threshold ?? null)
 }
 
 watch(() => [id, term], fetchRecord, { immediate: true })

@@ -35,10 +35,10 @@ export const useMarketingStore = defineStore('marketing', {
         this.loading = false
       }
     },
-    async fetchPosts(page = 1, size = 10) {
+    async fetchPosts(page = 1, size = 10, category?: string) {
       this.loading = true
       try {
-        const res = await MarketingApi().listPosts(page, size)
+        const res = await MarketingApi().listPosts(page, size, category)
         this.posts = res?.data || []
         this.postsMeta = res?.meta || {} as Meta
       } finally {

@@ -6,7 +6,7 @@
             icon: ATTENDANCE_ICON,
             isReady: !isLoading,
             label: 'Total Students',
-            subtle: `+ ${report?.studentGrowth} from last month`
+            subtle: growthText(report?.studentGrowth, ' this month', ' new')
         }" />
         <Metric :record="{
             value: report?.totalTeachers,
@@ -14,7 +14,7 @@
             icon: TEACHER_ICON,
             isReady: !isLoading,
             label: 'Total Teachers',
-            subtle: 'All departments'
+            subtle: 'Active teaching staff'
         }" />
         <Metric :record="{
             value: report?.activeYear,
@@ -30,7 +30,7 @@
             icon: PAYMENT_ICON,
             isReady: !isLoading,
             label: 'Monthly Revenue',
-            subtle: `+${report?.revenueGrowthPercent}% from last month`
+            subtle: growthText(report?.revenueGrowthPercent, '% vs last month')
         }" />
     </div>
 </template>
@@ -49,6 +49,14 @@ async function fetchRecord() {
     if (res == null) return
     report.value = res
     isLoading.value = false
+}
+
+// "+12 new this month", "-40% vs last month", "No change" - the sign comes from the number, never a fixed "+".
+function growthText(value: number | string | null | undefined, suffix: string, noun = '') {
+    const n = Number(value ?? 0)
+    if (!Number.isFinite(n) || n === 0) return suffix.includes('%') ? 'Same as last month' : 'None new this month'
+    const shown = Number.isInteger(n) ? String(Math.abs(n)) : Math.abs(n).toFixed(1)
+    return `${n > 0 ? '+' : '-'}${shown}${noun}${suffix}`
 }
 
 onMounted(async () => await fetchRecord())

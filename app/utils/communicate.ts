@@ -33,6 +33,8 @@ export type CalendarEntry = {
     endDate: string
     location: string
     managementSectionId?: string | null
+    // The school is closed on these days, so they don't count as school days for attendance.
+    noSchool?: boolean
 }
 
 export type Broadcast = {
@@ -76,6 +78,7 @@ export type CreateCalendarEntryDto = {
     endDate: string
     location: string
     managementSectionId?: string | null
+    noSchool?: boolean
 }
 
 export type UpdateCalendarEntryDto = CreateCalendarEntryDto & { id: string }

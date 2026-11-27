@@ -12,6 +12,8 @@ const loading = ref(true)
 const cursor = ref(startOfMonth(new Date()))
 const recordsByDate = ref<Record<string, string>>({})
 const eventsByDate = ref<Record<string, CalendarEntry[]>>({})
+// The month's school days so far (from the backend: weekdays in a term, up to today, less closed days).
+const schoolDays = ref<Set<string>>(new Set())
 
 const eventDotClass: Record<CalendarEntryType, string> = {
     EVENT: 'bg-primary',
@@ -98,8 +100,11 @@ const stats = computed(() => {
     }
 
     const total = counts.Present! + counts.Absent! + counts.Late! + counts.Excused!
-    // Present or late counts as attending - the same rule as every attendance report.
-    const percent = total === 0 ? 0 : Math.round(((counts.Present! + counts.Late!) / total) * 100)
+    // Present or late counts as attending, over every school day so far - the same rule as every attendance
+    // report. Only used when there's no term to summarise.
+    const expected = schoolDays.value.size
+    const attended = Math.min(counts.Present! + counts.Late!, expected)
+    const percent = expected === 0 ? 0 : Math.round((attended / expected) * 100)
 
     return {
         Present: counts.Present!,
@@ -122,6 +127,17 @@ async function fetchTerm() {
         termSummary.value = student?.id
             ? await AttendanceApi().getStudentTermAttendanceDetail(student.id, { termId: termId || undefined }) ?? null
             : null
+        // A term picked on purpose (the parent's picker): show its last month so far on the calendar too,
+        // rather than this month - for a past term, its final month; for the current one, this month.
+        const asOf = termSummary.value?.asOf
+        if (termId && asOf) {
+            const [y, m] = asOf.split('-').map(Number)
+            const month = new Date(y!, m! - 1, 1)
+            if (month.getTime() !== cursor.value.getTime()) {
+                selectedKey.value = null
+                cursor.value = month
+            }
+        }
     } catch {
         termSummary.value = null // e.g. no active term - the month's figures below stand in
     } finally {
@@ -143,7 +159,7 @@ const summaryCaption = computed(() => {
             ? `${t.termName} · ${days} since enrolling (${t.countedFrom} – ${t.asOf})`
             : `${t.termName} · ${days} so far (${t.startDate} – ${t.asOf})`
     }
-    return `${monthLabel.value} · recorded days only`
+    return `${monthLabel.value} · ${schoolDays.value.size} school day${schoolDays.value.size === 1 ? '' : 's'} so far`
 })
 
 const tiles = computed(() => {
@@ -174,6 +190,18 @@ function circleClass(key: string) {
 
 function statusOf(key: string) {
     return recordsByDate.value[key]
+}
+
+// A past school day nobody marked - it counts as missed.
+function notMarked(key: string) {
+    return !recordsByDate.value[key] && key < todayKey && schoolDays.value.has(key)
+}
+
+// A weekday the school was closed for (a no-school calendar entry).
+function noSchool(key: string) {
+    const [y, m, d] = key.split('-').map(Number)
+    const weekday = new Date(y!, m! - 1, d!).getDay()
+    return weekday !== 0 && weekday !== 6 && !recordsByDate.value[key] && eventsOf(key).some(e => e.noSchool)
 }
 
 function statusTextClass(key: string) {
@@ -230,12 +258,14 @@ function goNextMonth() {
 async function fetchMonth() {
     loading.value = true
     recordsByDate.value = {}
+    schoolDays.value = new Set()
 
     if (!student?.id) {
         loading.value = false
         return
     }
 
+    const daysRequest = AttendanceApi().schoolDays(dateKey(cursor.value), dateKey(monthEnd.value))
     await reportStore.runReport(
         {
             entity: 'attendances',
@@ -271,6 +301,7 @@ async function fetchMonth() {
     }
 
     recordsByDate.value = map
+    schoolDays.value = new Set((await daysRequest) || [])
     loading.value = false
 }
 
@@ -350,7 +381,7 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                             </span>
 
                             <span class="text-[10px] font-semibold uppercase tracking-wide text-muted">
-                                Present
+                                Attended
                             </span>
                         </div>
                     </div>
@@ -439,6 +470,12 @@ watch(() => cursor.value, fetchEvents, { immediate: true })
                             :class="statusTextClass(cell.key)"
                         >
                             {{ statusOf(cell.key) }}
+                        </span>
+                        <span v-else-if="noSchool(cell.key)" class="text-[7px] font-semibold text-muted">
+                            No school
+                        </span>
+                        <span v-else-if="notMarked(cell.key)" class="text-[7px] font-semibold text-error-500/70">
+                            Not marked
                         </span>
 
                         <UTooltip

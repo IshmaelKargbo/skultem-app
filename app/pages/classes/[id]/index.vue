@@ -156,11 +156,11 @@
                 <template #attendance-cell="{ row }">
                     <div v-if="attendanceOf(row.original) !== undefined" class="w-28">
                         <p class="text-sm font-medium tabular-nums"
-                            :class="attendanceOf(row.original)! < 75 ? 'text-warning' : 'text-highlighted'">
+                            :class="attendanceOf(row.original)! < attendanceLine ? 'text-warning' : 'text-highlighted'">
                             {{ attendanceOf(row.original) }}%</p>
                         <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
                             <div class="h-full rounded-full"
-                                :class="attendanceOf(row.original)! < 75 ? 'bg-warning' : 'bg-success'"
+                                :class="attendanceOf(row.original)! < attendanceLine ? 'bg-warning' : 'bg-success'"
                                 :style="{ width: `${Math.min(100, attendanceOf(row.original)!)}%` }" />
                         </div>
                     </div>
@@ -343,6 +343,8 @@ const attendanceById = computed<Record<string, number>>(() => Object.fromEntries
 const subjectScores = ref<{ name: string, score: number }[]>([])
 const attentionByStudentId = ref<Record<string, StudentAttention>>({})
 const attentionThresholds = ref<{ passMark: number, attendance: number } | null>(null)
+// The class's minimum attendance (its section's, else the school's) - the same line the attention flags use.
+const attendanceLine = computed(() => attentionThresholds.value?.attendance ?? 75)
 const passMark = computed(() => attentionThresholds.value?.passMark ?? 50)
 // What gets a student flagged in this class, from the same cut-offs the backend applies.
 const attentionRule = computed(() => {
@@ -377,16 +379,16 @@ const headerStats = computed(() => [
         label: 'Attendance', value: avgAttendance.value === null ? '-' : `${avgAttendance.value}%`,
         note: avgAttendance.value === null ? 'No school days yet this term' : `${termAttendance.value?.termName ?? 'This term'} so far`,
         icon: 'i-lucide-calendar-check',
-        box: avgAttendance.value !== null && avgAttendance.value < 75 ? 'bg-warning/10 text-warning' : 'bg-info/10 text-info',
-        ready: !studentsLoading.value, warn: avgAttendance.value !== null && avgAttendance.value < 75
+        box: avgAttendance.value !== null && avgAttendance.value < attendanceLine.value ? 'bg-warning/10 text-warning' : 'bg-info/10 text-info',
+        ready: !studentsLoading.value, warn: avgAttendance.value !== null && avgAttendance.value < attendanceLine.value
     },
-    {
+    ...(!canSeeMarks.value ? [] : [{
         label: 'Average score', value: avgScore.value === null ? '-' : `${avgScore.value}%`,
         note: avgScore.value === null ? 'No approved tests yet' : `${averagesTermName.value || 'This term'}, approved tests`,
         icon: 'i-lucide-star',
         box: avgScore.value !== null && avgScore.value < passMark.value ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success',
         ready: !studentsLoading.value, warn: avgScore.value !== null && avgScore.value < passMark.value
-    },
+    }]),
     {
         label: masterNames.value.length > 1 ? 'Class masters' : 'Class master',
         value: masterNames.value[0] ?? 'Not assigned',
@@ -463,7 +465,7 @@ function attentionSummary(s: Student) {
 }
 
 async function fetchAttention() {
-    if (!canViewRoster.value || !classId.value) return
+    if (!canViewRoster.value || !canSeeMarks.value || !classId.value) return
     const forClass = classId.value
     try {
         const res = await ClassApi().getAttention(forClass)
@@ -583,15 +585,19 @@ const parseStatusColor: Record<string, string> = {
     DELETED: 'danger'
 }
 
-const columns = [
-    { id: 'rank', header: '#', meta: { class: { th: 'w-10', td: 'w-10' } } },
+// Marks, positions and flags come from the attention check, which accountants can't load - for them those parts are
+// left out rather than shown as "no approved tests yet".
+const canSeeMarks = computed(() => !can(Role.ACCOUNTANT))
+
+const columns = computed(() => [
+    ...(canSeeMarks.value ? [{ id: 'rank', header: '#', meta: { class: { th: 'w-10', td: 'w-10' } } }] : []),
     { id: 'name', header: 'Student' },
     { id: 'guardian', header: 'Guardian' },
     { id: 'attendance', header: 'Attendance' },
-    { id: 'average', header: 'Average' },
+    ...(canSeeMarks.value ? [{ id: 'average', header: 'Average' }] : []),
     { id: 'status', header: 'Status' },
     { id: 'actions', header: '', meta: { class: { td: 'text-right' } } }
-]
+])
 
 // The linked parent account first; otherwise the father/mother recorded on the student.
 // Under the name: admission number, gender and age - so the table needs no columns for them.
@@ -615,10 +621,12 @@ function guardianOf(s: Student): { name: string, phone: string } {
     return { name: '', phone: '' }
 }
 
-// Whole years since the date of birth; null when missing or invalid.
+// Whole years since the date of birth; null when missing or invalid. "YYYY-MM-DD" is read as a local date -
+// new Date() would take it as UTC midnight and shift it a day for anyone west of UTC.
 function ageOf(dob?: string) {
     if (!dob) return null
-    const birth = new Date(dob)
+    const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(dob)
+    const birth = parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : new Date(dob)
     if (isNaN(birth.getTime())) return null
     const today = new Date()
     let age = today.getFullYear() - birth.getFullYear()

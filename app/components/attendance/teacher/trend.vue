@@ -4,7 +4,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p class="font-semibold">Attendance Trend</p>
-          <p class="text-xs-base text-muted">Staff attendance rate per day marked - watch it rise or slip over time</p>
+          <p class="text-xs-base text-muted">Staff attendance rate per school day - a day nobody was marked shows as 0%</p>
         </div>
 
         <div class="flex items-center gap-3">

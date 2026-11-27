@@ -122,6 +122,8 @@ export type TermAttendanceSummary = {
     presentBoys: number
     presentGirls: number
     threshold: number
+    // School days in the term so far - what every student is measured against.
+    schoolDays: number
 }
 
 // Mirrors ClassAttendanceSummaryRowDTO - one row per class session, "SSS 1 Science" and
@@ -157,6 +159,8 @@ export type ClassAttendanceSummary = {
     totalGirls: number
     presentBoys: number
     presentGirls: number
+    // School days in the period so far - what every student is measured against.
+    schoolDays: number
 }
 
 export type InspectionReportType = 'DAILY_REGISTER' | 'MONTHLY_SUMMARY' | 'TERM_SUMMARY'
@@ -260,4 +264,6 @@ export type StudentTermAttendanceDetail = {
     excused: number
     notMarked: number
     percentage: number | null
+    // The minimum attendance % for the student's class (its section's, else the school's).
+    threshold: number | null
 }

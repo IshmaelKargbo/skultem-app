@@ -55,42 +55,21 @@ const chartOptions = computed(() => ({
     }
 }))
 
-// Load data and compute outstanding per class
+// What each class still owes this year - the same report as Fees > Reports > Outstanding (no platform fee, net of
+// discounts, added up fee by fee).
 onMounted(loadData)
 
 async function loadData() {
     try {
-        // Fetch total, paid, and partial fees grouped by class
-        const payload = {
-            entity: "fees",
-            title: "Outstanding Fees by Class",
-            filters: [],
-            metrics: [
-                { name: "Total", aggregation: "sum", field: "amount", tags: { groupBy: "clazz" } },
-                { name: "Paid", aggregation: "sum", field: "amountPaid", tags: { groupBy: "clazz", field: "status", value: "Paid" } },
-                { name: "Partial", aggregation: "sum", field: "amountPaid", tags: { groupBy: "clazz", field: "status", value: "Partial" } }
-            ],
-            chartType: "pie"
-        }
-
-        const res = await store.runAnalytic(payload)
-        const widget = res?.data ?? res
-
-        if (!widget?.labels || !widget?.datasets) return
-
-        labels.value = widget.labels
+        const res = await FeeReportApi().getOutstanding()
+        const rows = (res?.byClass ?? []).filter((r: any) => Number(r.outstanding) > 0)
+        labels.value = rows.map((r: any) => r.className)
         colors.value = generateColors(labels.value.length)
-        const total = widget.datasets.find((d: any) => d.label === "Total")?.data || []
-        const paid = widget.datasets.find((d: any) => d.label === "Paid")?.data || []
-        const partial = widget.datasets.find((d: any) => d.label === "Partial")?.data || []
-
-        // Outstanding = Total - (Paid + Partial)
-        const outstanding = total.map((t: number, i: number) => Math.max(0, t - ((paid[i] || 0) + (partial[i] || 0))))
-
-        chartSeries.value = outstanding
-        isReady.value = true
+        chartSeries.value = rows.map((r: any) => Number(r.outstanding))
     } catch (err) {
         console.error("Failed to load outstanding fees", err)
+    } finally {
+        isReady.value = true
     }
 }
 </script>

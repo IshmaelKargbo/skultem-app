@@ -1,144 +1,63 @@
 <template>
     <div class="grid gap-5 md:grid-cols-3 grid-cols-2">
         <Metric :record="{
-            label: 'Total Revenue (This Term)',
-            value: totalRevenue,
-            subtle: '+12.5%',
+            label: 'Collected This Year',
+            value: format(summary?.totalCollected ?? 0),
+            subtle: summary ? `${rate}% of ${format(summary.totalExpected)} expected` : '',
             isReady: isReady,
             icon: 'fe:line-chart',
             color: 'success',
             subtileColor: 'success'
         }" />
         <Metric :record="{
-            label: 'Total Revenue (This Month)',
-            value: monthRevenue,
-            subtle: '+12.5%',
+            label: 'Collected This Month',
+            value: format(month?.totalCollected ?? 0),
+            subtle: month ? `${month.paymentCount} payment${month.paymentCount === 1 ? '' : 's'} since ${monthStartLabel}` : '',
             isReady: isReady,
             icon: ATTENDANCE_ICON,
             color: 'info',
-            subtileColor: 'success'
+            subtileColor: 'info'
         }" />
         <Metric class="col-span-2 md:col-span-1" :record="{
             label: 'Outstanding Fees',
-            value: balance,
-            subtle: '-5.3%',
+            value: format(summary?.totalOutstanding ?? 0),
+            subtle: summary ? `${summary.studentsWithBalance + summary.studentsNoPayment} student${summary.studentsWithBalance + summary.studentsNoPayment === 1 ? '' : 's'} still owe` : '',
             isReady: isReady,
             icon: 'ph:user-list',
             color: 'error',
-            subtileColor: 'success'
+            subtileColor: 'error'
         }" />
     </div>
 </template>
 
 <script setup lang="ts">
-const store = useWidgetStore()
+// The school's own money this academic year - the same figures as the Fees reports: no Skultem platform fee (it isn't
+// the school's), expected net of discounts, outstanding added up fee by fee. Nothing here is a made-up trend.
 const { format } = useMoney()
 
-const totalRevenue = ref("0.00")
-const monthRevenue = ref("0.00")
-const balance = ref("0.00")
+const summary = ref<FeeDashboardSummary | null>(null)
+const month = ref<{ totalCollected: number, paymentCount: number } | null>(null)
 const isReady = ref(false)
+
+const rate = computed(() => Number(summary.value?.collectionRate ?? 0).toFixed(1))
+
+// "YYYY-MM-DD" for the 1st of this month and today, in the viewer's own calendar (not UTC).
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const now = new Date()
+const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+const monthStartLabel = monthStart.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
 
 async function fetchRecord() {
     isReady.value = false
     try {
-        const now = new Date()
-
-        // Start of the month
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-        // End of the month (last day)
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-
-        const [res, monthlys, payments] = await Promise.all([
-            store.runAnalytic({
-                entity: "payments",
-                title: "Total Revenue (This Term)",
-                filters: [],
-                metrics: [
-                    {
-                        name: "Revenue",
-                        aggregation: "sum",
-                        field: "amount"
-                    }
-                ],
-                chartType: "bar"
-            }),
-            store.runAnalytic({
-                entity: "payments",
-                title: "Total Revenue (This Month)",
-                filters: [
-                    {
-                        field: "paidAt",
-                        value: startOfMonth.toISOString().slice(0, 10),
-                        valueTo: endOfMonth.toISOString().slice(0, 10),
-                        operator: "BETWEEN",
-                        type: "instant"
-                    }
-                ],
-                metrics: [
-                    {
-                        name: "Monthly",
-                        aggregation: "sum",
-                        field: "amount"
-                    }
-                ],
-                chartType: "bar"
-            }),
-            store.runAnalytic({
-                entity: "fees",
-                title: "Outstanding Fees",
-                filters: [],
-                metrics: [
-                    {
-                        name: "Paid",
-                        aggregation: "sum",
-                        field: "amountPaid",
-                        tags: { field: "status", value: "Paid" }
-                    },
-                    {
-                        name: "Partial",
-                        aggregation: "sum",
-                        field: "amountPaid",
-                        tags: { field: "status", value: "Partial" }
-                    },
-                    {
-                        name: "Total",
-                        aggregation: "sum",
-                        field: "amount",
-                    }
-                ],
-                chartType: "bar"
-            })
+        const [dash, collected] = await Promise.all([
+            FeeReportApi().getDashboard().catch(() => null),
+            FeeReportApi().getDailyCollection(iso(monthStart), iso(now)).catch(() => null)
         ])
-        const widget = res?.data?.datasets ?? []
-
-        const revenueDataset = widget.find((e: any) => e.label == 'Revenue')
-        totalRevenue.value = format(revenueDataset.data[0] || 0)
-
-        const monthlyDataset = monthlys?.data?.datasets ?? []
-
-        const monthlyRow = monthlyDataset.find((e: any) => e.label == 'Monthly')
-        totalRevenue.value = format(monthlyRow.data[0] || 0)
-
-        monthRevenue.value = format(revenueDataset.data[0] || 0)
-
-
-        const datasets = payments?.data?.datasets ?? []
-
-        const paid = datasets.find((e: any) => e.label === "Paid")
-        const partial = datasets.find((e: any) => e.label === "Partial")
-        const total = datasets.find((e: any) => e.label === "Total")
-
-
-        const totalPaid =
-            Number(paid?.data?.[0] ?? 0) +
-            Number(partial?.data?.[0] ?? 0)
-
-        balance.value = format(Number(total?.data?.[0] ?? 0) - totalPaid)
-
+        summary.value = dash ?? null
+        month.value = collected ? { totalCollected: Number(collected.totalCollected ?? 0), paymentCount: collected.paymentCount ?? 0 } : null
+    } finally {
         isReady.value = true
-    } catch (err) {
-        console.error("Failed to load revenue data", err)
     }
 }
 

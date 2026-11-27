@@ -76,6 +76,29 @@ export type BlogPost = {
     publishedAt: string | null
     createdAt: string
     updatedAt: string
+    // The post's category, or all null when it has none.
+    categoryId: string | null
+    categoryName: string | null
+    categorySlug: string | null
+}
+
+// A blog category: a post sits in at most one, and the marketing site lists and filters posts by them.
+export type BlogCategory = {
+    id: string
+    name: string
+    slug: string
+    description: string | null
+    displayOrder: number
+    // Every post in it (drafts too), and the ones the marketing site shows.
+    postCount: number
+    publishedCount: number
+}
+
+export type SaveBlogCategoryDto = {
+    name: string
+    slug: string
+    description: string
+    displayOrder: number
 }
 
 export type SaveBlogPostDto = {
@@ -87,6 +110,8 @@ export type SaveBlogPostDto = {
     authorName: string
     tags: string[]
     published: boolean
+    // Blank = no category.
+    categoryId: string
 }
 
 // A post can have at most this many photos.

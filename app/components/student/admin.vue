@@ -62,6 +62,12 @@ const fullName = (s: Student) => `${s.givenNames} ${s.familyName}`.trim()
 // enrolled student nobody has marked shows 0% - exactly what this column should make visible.
 const attendanceRowOf = (s: Student) => attendanceById.value.get(s.id)
 const attendanceOf = (s: Student) => attendanceRowOf(s)?.percentage ?? undefined
+// School days the student wasn't there for (absent, excused or not marked) - school days are the days the school was
+// open, so this is their absences so far this term.
+const daysMissed = (s: Student) => {
+  const r = attendanceRowOf(s)
+  return r ? Math.max(0, r.schoolDays - r.presentOrLate) : 0
+}
 const performanceOf = (s: Student) => performanceByName.value[fullName(s)]
 
 const feeDiscountOf = (s: Student) => Number(s.feeDetail?.discount || 0)
@@ -264,8 +270,8 @@ onBeforeUnmount(() => clearTimeout(timeout))
         </template>
         <template #attendance-cell="{ row }">
           <UTooltip v-if="attendanceOf(row.original) !== undefined" :delay-duration="0" arrow
-            :text="`${attendanceRowOf(row.original)!.presentOrLate} of ${attendanceRowOf(row.original)!.schoolDays} school days · ${termAttendance!.termName}${attendanceRowOf(row.original)!.countedFrom !== termAttendance!.startDate ? `, since enrolling ${attendanceRowOf(row.original)!.countedFrom}` : ' so far'}`">
-          <div class="w-20">
+            :text="`${attendanceRowOf(row.original)!.presentOrLate} of ${attendanceRowOf(row.original)!.schoolDays} school days, ${daysMissed(row.original)} missed · ${termAttendance!.termName}${attendanceRowOf(row.original)!.countedFrom !== termAttendance!.startDate ? `, since enrolling ${attendanceRowOf(row.original)!.countedFrom}` : ' so far'}`">
+          <div class="w-24">
             <p class="text-sm font-medium tabular-nums"
               :class="attendanceOf(row.original)! < 75 ? 'text-warning' : 'text-highlighted'">
               {{ attendanceOf(row.original) }}%</p>
@@ -273,6 +279,10 @@ onBeforeUnmount(() => clearTimeout(timeout))
               <div class="h-full rounded-full" :class="attendanceOf(row.original)! < 75 ? 'bg-warning' : 'bg-success'"
                 :style="{ width: `${Math.min(100, attendanceOf(row.original)!)}%` }" />
             </div>
+            <p class="mt-1 text-[11px] tabular-nums text-muted">
+              {{ attendanceRowOf(row.original)!.presentOrLate }}/{{ attendanceRowOf(row.original)!.schoolDays }}
+              <span v-if="daysMissed(row.original) > 0" class="text-warning">· {{ daysMissed(row.original) }} missed</span>
+            </p>
           </div>
           </UTooltip>
           <span v-else class="text-muted">-</span>

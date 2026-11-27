@@ -108,6 +108,8 @@ export type TermTeacherAttendanceSummary = {
     totalPresent: number
     totalAbsent: number
     totalLate: number
+    // School days in the term so far - what every teacher is measured against.
+    schoolDays: number
 }
 
 export type TeacherManagementReportType = 'DAILY_REGISTER' | 'MONTHLY_SUMMARY' | 'TERM_SUMMARY'

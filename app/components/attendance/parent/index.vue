@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-3 px-4 md:px-6">
-        <Heading title="Attendance" subtitle="Track class attendance and export reports">
+        <Heading title="Attendance" subtitle="Your child's attendance this term, measured against every school day so far.">
             <div class="grid w-full gap-3 sm:grid-cols-2 md:w-auto md:min-w-105">
                 <USelectMenu data-guide="par-child"
                     v-model="state.student"
@@ -8,7 +8,6 @@
                     :items="children"
                     value-key="value"
                     placeholder="Select Student"
-                    @change="change"
                 />
                 <USelectMenu data-guide="par-term"
                     v-model="state.term"
@@ -29,7 +28,7 @@
                             Attendance
                         </h3>
                         <p class="text-sm text-muted">
-                            Monthly attendance overview and daily records.
+                            The term so far, then each day of the month. A school day nobody marked counts as missed.
                         </p>
                     </div>
                 </div>
@@ -46,21 +45,9 @@
 <script setup lang="ts">
 const store = useParentStore()
 const studentStore = useStudentStore()
-const reportStore = useReportStore()
 const { students, loading } = storeToRefs(store)
 
 const { activeCycle, loading: cycleLoading } = storeToRefs(studentStore)
-
-const tabs = [
-    {
-        label: 'Overview',
-        key: 'overview'
-    },
-    {
-        label: 'Breakdown',
-        key: 'breakdown'
-    }
-]
 
 const state = reactive<{
     student: string
@@ -75,6 +62,8 @@ async function fetchRecord() {
 }
 
 async function fetchCycle() {
+    // Another child may be in another class: don't carry the last child's term over.
+    state.term = ''
     if (selected.value == null) return null
     await studentStore.fetchActiveCycle(selected.value.sessionId)
     if (activeCycle.value == null) return null
@@ -85,7 +74,6 @@ async function fetchCycle() {
 }
 
 const selected = ref<Student | undefined>()
-const term = computed(() => activeCycle.value?.terms.find(e => e.id == state.term))
 const terms = computed(() => activeCycle.value?.terms.map(e => ({ label: e.name, value: e.id })) || [])
 
 const children = computed(() =>
@@ -100,32 +88,13 @@ function change() {
     selected.value = select
 }
 
-async function fetchAttendance() {
-    if (term.value == null || !state.student) return
-    reportStore.runReport({
-        entity: 'attendances',
-        filters: [
-            {
-                field: "enrollment.student.id",
-                value: state.student,
-                operator: "EQUALS",
-                type: "select"
-            },
-            {
-                field: 'date',
-                value: term.value?.startDate || '',
-                valueTo: term.value?.endDate,
-                operator: "BETWEEN",
-                type: "date"
-            }
-        ]
-    }, 1, 7);
-}
-
 watch(() => children.value, () => {
-    state.student = children.value[0]?.value || ''
+    // Keep the child already picked while the list refreshes; else the first one.
+    if (!children.value.some(c => c.value === state.student)) state.student = children.value[0]?.value || ''
     change()
 }, { immediate: true })
+// Picking another child.
+watch(() => state.student, change)
 
 watch(
     () => selected.value,
@@ -135,22 +104,10 @@ watch(
     { immediate: true }
 )
 
-watch(
-    () => [term.value, selected.value],
-    async () => {
-        await fetchAttendance()
-    },
-    { immediate: true }
-)
-
 onMounted(() => {
     useAppStore().setTitle('Attendance')
     document.title = 'Attendance | Skultem'
     fetchRecord()
-})
-
-onUnmounted(() => {
-    useAttendanceStore().cleanUp()
 })
 
 definePageMeta({

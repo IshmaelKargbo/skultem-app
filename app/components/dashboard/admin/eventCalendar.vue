@@ -150,5 +150,5 @@ function timeRange(e: CalendarEntry) {
   return sameDay ? `${t(s)} - ${t(en)}` : `${s.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, ${t(s)}`
 }
 
-onMounted(() => { store.fetchCalendar(1, 200) })
+onMounted(() => { store.fetchWholeCalendar() })
 </script>

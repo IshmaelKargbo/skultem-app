@@ -85,12 +85,12 @@
 
         <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Total School Days (Mon–Fri)</p>
+            <p class="text-xs text-gray-500">School Days So Far</p>
             <p class="text-lg font-bold text-primary-600">{{ totalSchoolDays }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
-            <p class="text-xs text-gray-500">Working Days (Recorded)</p>
-            <p class="text-lg font-bold text-primary-600">{{ workingDays }}</p>
+            <p class="text-xs text-gray-500">Days Missed (All Students)</p>
+            <p class="text-lg font-bold text-primary-600">{{ daysMissed }}</p>
           </div>
           <div class="rounded-xl bg-primary-50 p-3 text-center">
             <p class="text-xs text-gray-500">Boys Attendance</p>
@@ -174,12 +174,11 @@ const summary = computed(() => attendanceStore.termSummary)
 const sortedStudents = computed(() => sortByDesc(summary.value?.students, s => s.attendancePercentage))
 const loading = computed(() => attendanceStore.loadingTermSummary)
 
-// Weekdays between the term's start and end vs. days attendance was actually recorded (holidays drop out of the latter).
-const totalSchoolDays = computed(() => {
-  const term = termStore.records.find(t => t.id === filters.termId)
-  return countWeekdays(term?.startDate, term?.endDate)
-})
-const workingDays = computed(() => Math.max(0, ...(summary.value?.students.map(s => s.schoolDays) ?? [])))
+// From the backend: weekdays from the term's start up to today (or its end), less the days the school was
+// closed - the same count the students list uses. Every student is measured against all of them.
+const totalSchoolDays = computed(() => summary.value?.schoolDays ?? 0)
+// A day with no mark counts as missed, like a marked absence.
+const daysMissed = computed(() => (summary.value?.students ?? []).reduce((sum, s) => sum + s.absent, 0))
 
 const academicYearLabel = computed(() =>
   academicYears.value.find(y => y.value === filters.academicYearId)?.label || academicYearStore.activeYear?.name || '—')

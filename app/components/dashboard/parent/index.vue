@@ -4,7 +4,7 @@
         <GuideBar topic="parent-dashboard" />
         <UCard data-guide="par-pick">
             <div class="grid grid-cols-2 gap-2">
-                <USelectMenu value-key="value" v-model="state.student" @change="change" :loading="loading"
+                <USelectMenu value-key="value" v-model="state.student" :loading="loading"
                     :items="children" placeholder="Select Student" />
                 <USelectMenu value-key="value" v-model="state.term" :loading="cycleLoading" :items="terms"
                     placeholder="Select Term" />
@@ -167,10 +167,12 @@ function change() {
 
 watch(() => children.value, (val) => {
     if (val.length && !state.student) {
-        state.student = val[0].value
+        state.student = val[0]!.value
         change()
     }
 }, { immediate: true })
+// Picking another child.
+watch(() => state.student, change)
 
 async function fetchRecord() {
     await store.fetchAllStudents(0, 0)
@@ -211,7 +213,10 @@ async function loadRank() {
 // already fetch, via their `ready` emit, so nothing is fetched twice. ---
 const averageValue = ref(0)
 const averageReady = ref(false)
-const attendanceValue = ref(0)
+// null: nothing to judge yet (between terms, or no school days so far) - never read as 0%.
+const attendanceValue = ref<number | null>(null)
+// The student's minimum attendance %, the same line the school flags students by.
+const attendanceLine = ref(75)
 const attendanceReady = ref(false)
 const feeBalance = ref(0)
 const feeReady = ref(false)
@@ -221,8 +226,9 @@ function onAverageReady(value: number) {
     averageReady.value = true
 }
 
-function onAttendanceReady(value: number) {
+function onAttendanceReady(value: number | null, threshold: number | null) {
     attendanceValue.value = value
+    if (threshold != null) attendanceLine.value = threshold
     attendanceReady.value = true
 }
 
@@ -242,7 +248,7 @@ const insight = computed(() => {
         }
     }
 
-    if (attendanceValue.value < 90) {
+    if (attendanceValue.value != null && attendanceValue.value < attendanceLine.value) {
         return {
             icon: 'lucide:calendar-x', bg: 'bg-warning-50 dark:bg-warning-500/10', text: 'text-warning',
             title: `Attendance is at ${attendanceValue.value.toFixed(0)}% this term`,
@@ -257,7 +263,7 @@ const insight = computed(() => {
     }
 })
 
-// Attendance and Fees are keyed only on the student (not the term), so resetting them on every
+// Fees is keyed only on the student (attendance on student and term), so resetting them on every
 // [student, term] tuple change - including the transient student-set/term-still-empty moment
 // during the initial load cascade - raced their own already-arrived `ready` emit: the reset fired
 // again once term populated a moment later, wiping a flag its own component would never re-emit
@@ -276,6 +282,8 @@ watch(() => state.student, (val, old) => {
 watch(() => state.term, (val, old) => {
     if (old && val !== old) {
         averageReady.value = false
+        // The attendance card is per term too, and re-reports for the new one.
+        attendanceReady.value = false
     }
 })
 

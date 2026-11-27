@@ -129,6 +129,7 @@ function remove(entry: CalendarEntry) {
           <UBadge :color="row.original.type === 'HOLIDAY' ? 'warning' : 'info'" variant="subtle" class="mb-1">
             {{ row.original.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
           </UBadge>
+          <UBadge v-if="row.original.noSchool" color="error" variant="subtle" class="mb-1 ml-1">No school</UBadge>
           <p class="text-sm text-muted">
             {{ formatWholeDayInstant(row.original.startDate) }}
             <template v-if="row.original.endDate !== row.original.startDate"> — {{ formatWholeDayInstant(row.original.endDate)
@@ -196,9 +197,12 @@ function remove(entry: CalendarEntry) {
               </p>
             </div>
 
-            <UBadge :color="entry.type === 'HOLIDAY' ? 'warning' : 'info'" variant="subtle" size="xs">
-              {{ entry.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
-            </UBadge>
+            <div class="flex shrink-0 gap-1">
+              <UBadge v-if="entry.noSchool" color="error" variant="subtle" size="xs">No school</UBadge>
+              <UBadge :color="entry.type === 'HOLIDAY' ? 'warning' : 'info'" variant="subtle" size="xs">
+                {{ entry.type === 'HOLIDAY' ? 'Holiday' : 'Event' }}
+              </UBadge>
+            </div>
           </div>
         </div>
       </div>

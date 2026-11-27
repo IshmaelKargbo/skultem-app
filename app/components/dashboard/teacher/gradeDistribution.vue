@@ -17,11 +17,11 @@
 <script setup lang="ts">
 const store = useWidgetStore()
 const colors = ref<string[]>([])
-const { term, classId, assessment, teacher } = defineProps<{
-  term: string
-  assessment: string,
-  teacher: string | undefined,
-  classId: string | undefined
+// teacherSubjectId: this teacher's subject in one class section.
+const { term, assessment, teacherSubjectId } = defineProps<{
+  term: string | undefined
+  assessment: string | undefined
+  teacherSubjectId: string | undefined
 }>()
 const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"))
 
@@ -86,8 +86,8 @@ async function loadData() {
       title: "Grade Distribution",
       filters: [
         {
-          field: "studentAssessment.enrollment.clazz.id",
-          value: classId,
+          field: "studentAssessment.teacherSubject.id",
+          value: teacherSubjectId,
           operator: "EQUALS",
           type: "select"
         },
@@ -97,12 +97,7 @@ async function loadData() {
           operator: "EQUALS",
           type: "select"
         },
-        {
-          field: "cycle.subject.id",
-          value: teacher,
-          operator: "EQUALS",
-          type: "select"
-        },
+
         {
           field: "cycle.assessment.id",
           value: assessment,

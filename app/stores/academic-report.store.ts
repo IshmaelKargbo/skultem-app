@@ -124,6 +124,8 @@ export interface WeeklyGenderAttendanceDay {
   boysAttendancePercentage: number
   girlsAttendancePercentage: number
   overallAttendancePercentage: number
+  // False for a holiday, a no-school day, a day outside the term or one still to come.
+  schoolDay?: boolean
 }
 
 export interface WeeklyGenderAttendance {

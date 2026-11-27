@@ -12,8 +12,37 @@ const page = computed<number>({
   set: (val) => router.replace({ query: { ...route.query, page: val } })
 })
 
+// Filter by category: an id, 'none' for uncategorised posts, or '' for all. Kept in the address.
+const category = computed<string>({
+  get: () => String(route.query.category ?? ''),
+  set: (val) => router.replace({ query: { ...route.query, category: val || undefined, page: undefined } })
+})
+const categories = ref<BlogCategory[]>([])
+const categoryOptions = computed(() => [
+  { label: 'All categories', value: '' },
+  ...categories.value.map(c => ({ label: `${c.name} (${c.postCount})`, value: c.id })),
+  { label: 'No category', value: 'none' }
+])
+const categoriesOpen = ref(false)
+
+async function loadCategories() {
+  categories.value = (await MarketingApi().listCategories()) || []
+}
+const refresh = () => store.fetchPosts(page.value, 10, category.value || undefined)
+
+// After categories change: their names on the posts may have changed, and a deleted one empties its filter.
+async function onCategoriesChanged() {
+  await loadCategories()
+  if (category.value && category.value !== 'none' && !categories.value.some(c => c.id === category.value)) {
+    category.value = ''
+  } else {
+    await refresh()
+  }
+}
+
 const columns: TableColumn<BlogPost>[] = [
   { id: 'post', header: 'Post' },
+  { id: 'category', header: 'Category' },
   { id: 'tags', header: 'Tags' },
   { id: 'status', header: 'Status' },
   { accessorKey: 'updatedAt', header: 'Updated' },
@@ -39,9 +68,9 @@ async function togglePublished(p: BlogPost) {
     await MarketingApi().updatePost(p.id, {
       title: full.title, slug: full.slug, excerpt: full.excerpt ?? '', content: full.content ?? '',
       images: full.images ?? [], authorName: full.authorName ?? '', tags: full.tags,
-      published: !full.published
+      published: !full.published, categoryId: full.categoryId ?? ''
     })
-    await store.fetchPosts(page.value, 10)
+    await refresh()
   } catch (err: any) {
     toastError(err.message)
   }
@@ -55,7 +84,7 @@ async function confirmDelete() {
   try {
     await MarketingApi().deletePost(deleteTarget.value.id)
     success('Post deleted')
-    await store.fetchPosts(page.value, 10)
+    await refresh()
   } catch (err: any) {
     toastError(err.message)
     throw err
@@ -78,13 +107,14 @@ function rowActions(p: BlogPost) {
   ]]
 }
 
-watch(page, () => store.fetchPosts(page.value, 10))
+watch([page, category], refresh)
 
 onMounted(() => {
   useAppStore().setTitle('System Admin · Blog')
   useAppStore().setBack(false)
   document.title = 'Blog | System Admin | Skultem'
-  store.fetchPosts(page.value, 10)
+  refresh()
+  loadCategories()
 })
 
 definePageMeta({ role: [Role.SYSTEM_ADMIN] })
@@ -93,11 +123,17 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
 <template>
   <div class="space-y-3 px-4 md:px-6">
     <Heading title="Blog" subtitle="Articles shown on the marketing site. Drafts stay hidden until published.">
+      <UButton icon="i-lucide-folder-tree" variant="outline" color="neutral" label="Categories"
+        @click="categoriesOpen = true" />
       <UButton data-guide="sa-action" icon="i-lucide-plus" label="New Post" to="/blog/add" />
     </Heading>
     <GuideBar topic="sys-blog" />
 
     <UCard data-guide="adm-list" :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <USelectMenu v-model="category" value-key="value" :items="categoryOptions" :search-input="false"
+          icon="i-lucide-folder" class="w-full sm:w-64" />
+      </template>
       <UTable :columns="columns" :data="posts" :loading="loading">
         <template #empty>
           <div class="flex flex-col items-center gap-2 py-10">
@@ -120,6 +156,12 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
               <p class="text-xs text-muted">{{ row.original.images.length }} photo{{ row.original.images.length === 1 ? '' : 's' }}</p>
             </div>
           </div>
+        </template>
+
+        <template #category-cell="{ row }">
+          <UBadge v-if="row.original.categoryName" size="sm" variant="subtle" color="primary"
+            :label="row.original.categoryName" />
+          <span v-else class="text-xs text-muted">—</span>
         </template>
 
         <template #tags-cell="{ row }">
@@ -162,5 +204,6 @@ definePageMeta({ role: [Role.SYSTEM_ADMIN] })
       description="This removes the post from the marketing site." />
 
     <MarketingBlogPreview v-model:open="previewOpen" :post="previewPost" />
+    <MarketingBlogCategories v-model:open="categoriesOpen" @changed="onCategoriesChanged" />
   </div>
 </template>

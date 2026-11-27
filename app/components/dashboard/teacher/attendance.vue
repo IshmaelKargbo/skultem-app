@@ -5,32 +5,43 @@
         value: `${attendanceRate}%`,
         isReady: isReady,
         icon: ATTENDANCE_ICON,
-        subtle: 'Based on all attendance records'
+        subtle: term ? `${term.name} so far, this section` : 'This section'
     }" />
 </template>
 
 <script setup lang="ts">
 const store = useWidgetStore()
-const { classId } = defineProps<{
-    classId: string | undefined
+const { subject, term } = defineProps<{
+    subject: TeacherSubject | undefined
+    term: Term | undefined
 }>()
+
+// One section (and stream), this term so far - not the whole class over every day ever recorded.
+function sectionTermFilters(s: TeacherSubject | undefined, term: Term | undefined) {
+  if (!s) return []
+  const filters: any[] = [
+    { field: 'enrollment.clazz.id', value: s.classId, operator: 'EQUALS', type: 'select' },
+    { field: 'enrollment.section.id', value: s.sectionId, operator: 'EQUALS', type: 'select' }
+  ]
+  if (s.streamId) filters.push({ field: 'enrollment.stream.id', value: s.streamId, operator: 'EQUALS', type: 'select' })
+  if (term?.startDate) {
+    const today = new Date().toISOString().slice(0, 10)
+    const end = term.endDate && term.endDate.slice(0, 10) < today ? term.endDate.slice(0, 10) : today
+    filters.push({ field: 'date', value: term.startDate.slice(0, 10), valueTo: end, operator: 'BETWEEN', type: 'date' })
+  }
+  return filters
+}
+
 
 const isReady = ref(false)
 const attendanceRate = ref("0.0")
 
 async function fetchRecord() {
-    if (classId == null) return
+    if (!subject) return
     const res = await store.runAnalytic({
         entity: "attendances",
         title: "Attendance Rate",
-        filters: [
-            {
-                field: 'enrollment.clazz.id',
-                value: classId,
-                operator: 'EQUALS',
-                type: 'select'
-            }
-        ],
+        filters: sectionTermFilters(subject, term),
         metrics: [
             {
                 name: "Present",
@@ -58,7 +69,7 @@ async function fetchRecord() {
     isReady.value = true
 }
 
-watch(() => classId, async () => {
+watch(() => [subject?.id, term?.id], async () => {
     isReady.value = false
     await fetchRecord()
 }, { immediate: true })
